@@ -1,0 +1,33 @@
+package io.shulie.takin.web.data.param.activity;
+
+import java.util.List;
+
+import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
+import lombok.Data;
+
+/**
+ * @author shiyajian
+ * create: 2020-12-30
+ */
+@Data
+public class ActivityQueryParam extends AuthQueryParamCommonExt {
+
+    private String activityName;
+
+    private String domain;
+
+    private Integer isChange;
+
+    //private List<Long> userIdList;
+
+    /**
+     * 业务活动 类型
+     */
+    private Integer businessType;
+
+    /**
+     * 业务活动 ids
+     */
+    private List<Long> activityIds;
+
+}

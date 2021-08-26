@@ -1,0 +1,302 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.shulie.takin</groupId>
+        <artifactId>takin-web</artifactId>
+        <version>takin-web-2.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>takin-web-app</artifactId>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <!--takin common 公共包-->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>swagger-bootstrap-ui</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-common-command-channel</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-common-job</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-common-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.github.ben-manes.caffeine</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>poi</artifactId>
+                    <groupId>org.apache.poi</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>poi-ooxml</artifactId>
+                    <groupId>org.apache.poi</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>fastjson</artifactId>
+                    <groupId>com.alibaba</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!--takin common 公共包-->
+
+        <!--内部module 业务依赖-->
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-collections</artifactId>
+                    <groupId>commons-collections</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>okio</artifactId>
+                    <groupId>com.squareup.okio</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>okhttp</artifactId>
+                    <groupId>com.squareup.okhttp3</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-text</artifactId>
+                    <groupId>org.apache.commons</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-entrypoint</artifactId>
+        </dependency>
+
+
+        <!--内部module 业务依赖-->
+
+
+        <!--插件-->
+        <dependency>
+            <groupId>io.shulie.takin.plugin.framework</groupId>
+            <artifactId>takin-plugin-framework-spring</artifactId>
+        </dependency>
+        <!-- spring boot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.pamirs.pradar</groupId>
+            <artifactId>pradar-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>swagger-bootstrap-ui</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.dangdang</groupId>
+            <artifactId>elastic-job-lite-core</artifactId>
+        </dependency>
+        <!--整合springboot job-->
+        <dependency>
+            <groupId>com.dangdang</groupId>
+            <artifactId>elastic-job-lite-spring</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.flywaydb/flyway-core -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.afterturn</groupId>
+            <artifactId>easypoi-base</artifactId>
+            <version>${easypoi-base.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.shulie.tesla</groupId>
+            <artifactId>tesla-sequence</artifactId>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <!-- 通用的私有化部署 -->
+        <profile>
+            <id>standard-private</id>
+            <properties>
+                <profile.active>standard-private</profile.active>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>io.shulie.takin</groupId>
+                    <artifactId>takin-web-diff-privatize</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>io.shulie.takin</groupId>
+                    <artifactId>takin-web-config-sync-zk-impl</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- 通用的公有化部署 -->
+        <profile>
+            <id>standard-public</id>
+            <properties>
+                <profile.active>standard-public</profile.active>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>io.shulie.takin</groupId>
+                    <artifactId>takin-web-diff-cloud</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.github.pagehelper</groupId>
+                            <artifactId>pagehelper-spring-boot-autoconfigure</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>io.shulie.takin</groupId>
+                    <artifactId>takin-web-config-sync-zk-impl</artifactId>
+                </dependency>
+            </dependencies>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+
+        <!-- 通用容器化部署 -->
+        <profile>
+            <id>standard-share</id>
+            <properties>
+                <profile.active>share</profile.active>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>io.shulie.takin</groupId>
+                    <artifactId>takin-web-diff-cloud</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>io.shulie.takin</groupId>
+                    <artifactId>takin-web-config-sync-zk-impl</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+    <build>
+        <finalName>takin-web_${profile.active}_${project.version}</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <!--    插件化框架接入    -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <!--                    <proc>none</proc>-->
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>

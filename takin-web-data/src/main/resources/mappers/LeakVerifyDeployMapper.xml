@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.LeakVerifyDeployMapper">
+  <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.LeakVerifyDeploy">
+    <!--@mbg.generated-->
+    <!--@Table t_leak_verify_deploy-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="leak_verify_id" jdbcType="BIGINT" property="leakVerifyId" />
+    <result column="application_name" jdbcType="VARCHAR" property="applicationName" />
+    <result column="entry_name" jdbcType="VARCHAR" property="entryName" />
+    <result column="pressure_request_count" jdbcType="BIGINT" property="pressureRequestCount" />
+    <result column="pressure_leak_count" jdbcType="BIGINT" property="pressureLeakCount" />
+    <result column="biz_request_count" jdbcType="BIGINT" property="bizRequestCount" />
+    <result column="biz_leak_count" jdbcType="BIGINT" property="bizLeakCount" />
+    <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
+    <result column="gmt_update" jdbcType="TIMESTAMP" property="gmtUpdate" />
+    <result column="is_deleted" jdbcType="BOOLEAN" property="isDeleted" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, leak_verify_id, application_name, entry_name, pressure_request_count, pressure_leak_count, 
+    biz_request_count, biz_leak_count, gmt_create, gmt_update, is_deleted
+  </sql>
+</mapper>

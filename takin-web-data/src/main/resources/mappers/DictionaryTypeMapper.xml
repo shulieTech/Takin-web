@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.DictionaryTypeMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.DictionaryTypeEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_dictionary_type-->
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="TYPE_NAME" jdbcType="VARCHAR" property="typeName"/>
+        <result column="ACTIVE" jdbcType="CHAR" property="active"/>
+        <result column="CREATE_TIME" jdbcType="DATE" property="createTime"/>
+        <result column="MODIFY_TIME" jdbcType="DATE" property="modifyTime"/>
+        <result column="CREATE_USER_CODE" jdbcType="VARCHAR" property="createUserCode"/>
+        <result column="MODIFY_USER_CODE" jdbcType="VARCHAR" property="modifyUserCode"/>
+        <result column="PARENT_CODE" jdbcType="VARCHAR" property="parentCode"/>
+        <result column="TYPE_ALIAS" jdbcType="VARCHAR" property="typeAlias"/>
+        <result column="IS_LEAF" jdbcType="CHAR" property="isLeaf"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        ID, TYPE_NAME, ACTIVE, CREATE_TIME, MODIFY_TIME, CREATE_USER_CODE, MODIFY_USER_CODE,
+        PARENT_CODE, TYPE_ALIAS, IS_LEAF
+    </sql>
+</mapper>

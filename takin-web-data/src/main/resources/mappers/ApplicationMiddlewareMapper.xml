@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ApplicationMiddlewareMapper">
+
+    <insert id="insertBatch">
+        INSERT INTO t_application_middleware(application_id, application_name, artifact_id, group_id, version) VALUES
+        <foreach collection ="applicationMiddlewares" item="applicationMiddleware" separator =",">
+            (#{applicationMiddleware.applicationId}, #{applicationMiddleware.applicationName}, #{applicationMiddleware.artifactId},
+             #{applicationMiddleware.groupId}, #{applicationMiddleware.version})
+        </foreach >
+    </insert>
+
+    <select id="selectByApplicationId"
+            resultType="io.shulie.takin.web.data.result.application.ApplicationMiddlewareListResult">
+        SELECT id, artifact_id, group_id, version, `type`, `status`
+        FROM t_application_middleware WHERE application_id = #{applicationId}
+    </select>
+
+    <select id="selectStatusCountListByApplicationIdAndStatusAndGroupByStatus"
+            resultType="io.shulie.takin.web.data.result.application.ApplicationMiddlewareStatusAboutCountResult">
+        SELECT `status`, COUNT(*) count FROM t_application_middleware
+        WHERE application_id = #{applicationId}
+
+        <if test="statusList != null and statusList.size > 0">
+            AND `status` IN
+
+            <foreach collection ="statusList" item="status" separator ="," open="(" close=")">
+                #{status}
+            </foreach >
+        </if>
+
+        GROUP BY `status`
+    </select>
+    <select id="selectStatusCountByAndGroupByApplicationNameListAndStatusList"
+            resultType="io.shulie.takin.web.data.result.application.ApplicationMiddlewareStatusAboutCountResult">
+        SELECT application_name, `status`, COUNT(*) count FROM t_application_middleware
+        WHERE application_name IN
+
+        <foreach collection ="applicationNameList" item="applicationName" separator ="," open="(" close=")">
+            #{applicationName}
+        </foreach >
+
+        <if test="statusList != null and statusList.size > 0">
+            AND `status` IN
+
+            <foreach collection ="statusList" item="status" separator ="," open="(" close=")">
+                #{status}
+            </foreach >
+        </if>
+
+        GROUP BY application_name, `status`
+    </select>
+</mapper>

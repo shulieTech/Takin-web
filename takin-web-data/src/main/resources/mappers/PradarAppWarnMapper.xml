@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.PradarAppWarnMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.PradarAppWarnEntity">
+        <!--@mbg.generated-->
+        <!--@Table pradar_app_warn-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="app_point_id" jdbcType="BIGINT" property="appPointId"/>
+        <result column="warn_interval" jdbcType="INTEGER" property="warnInterval"/>
+        <result column="span_threshold" jdbcType="INTEGER" property="spanThreshold"/>
+        <result column="span_frequency" jdbcType="INTEGER" property="spanFrequency"/>
+        <result column="error_frequency" jdbcType="INTEGER" property="errorFrequency"/>
+        <result column="warn_level" jdbcType="BOOLEAN" property="warnLevel"/>
+        <result column="deleted" jdbcType="BOOLEAN" property="deleted"/>
+        <result column="gmt_created" jdbcType="TIMESTAMP" property="gmtCreated"/>
+        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <result column="app_name" jdbcType="VARCHAR" property="appName"/>
+        <result column="method" jdbcType="VARCHAR" property="method"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id, app_point_id, warn_interval, span_threshold, span_frequency, error_frequency,
+        warn_level, deleted, gmt_created, gmt_modified, app_name, `method`
+    </sql>
+</mapper>

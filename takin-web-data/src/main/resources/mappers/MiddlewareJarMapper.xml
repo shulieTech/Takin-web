@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.MiddlewareJarMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.MiddlewareJarEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_middleware_jar-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="artifact_id" jdbcType="VARCHAR" property="artifactId"/>
+        <result column="group_id" jdbcType="VARCHAR" property="groupId"/>
+        <result column="version" jdbcType="VARCHAR" property="version"/>
+        <result column="agv" jdbcType="VARCHAR" property="agv"/>
+        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="gmt_update" jdbcType="TIMESTAMP" property="gmtUpdate"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="commit" jdbcType="VARCHAR" property="commit"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id, `name`, `type`, `status`, artifact_id, group_id, version, agv, gmt_create, gmt_update,
+        remark, `commit`
+    </sql>
+
+    <select id="computeNum" resultType="io.shulie.takin.web.data.model.mysql.MiddlewareSummaryEntity">
+        SELECT count(1)                                      AS "totalNum",
+               sum(CASE WHEN `status` = 1 THEN 1 ELSE 0 END) AS "supportedNum",
+               sum(CASE WHEN `status` = 2 THEN 1 ELSE 0 END) AS "notSupportedNum",
+               sum(CASE WHEN `status` = 4 THEN 1 ELSE 0 END) AS "unknownNum"
+        FROM t_middleware_jar
+        WHERE artifact_id = #{artifactId,jdbcType=VARCHAR}
+          AND group_id = #{groupId,jdbcType=VARCHAR}
+    </select>
+</mapper>

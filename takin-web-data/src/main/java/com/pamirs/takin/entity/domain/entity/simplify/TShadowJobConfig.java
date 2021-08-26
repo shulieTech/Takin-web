@@ -1,0 +1,51 @@
+package com.pamirs.takin.entity.domain.entity.simplify;
+
+import java.util.Date;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+/**
+ * @author <a href="tangyuhan@shulie.io">yuhan.tang</a>
+ * @package: com.pamirs.takin.entity.domain.entity.simplify
+ * @date 2020-03-17 15:39
+ */
+@ApiModel(value = "ShadowJobConfigQuery", description = "影子JOB配置实体类")
+@Data
+public class TShadowJobConfig {
+
+    @ApiModelProperty(name = "id", value = "id")
+    private Long id;
+
+    @ApiModelProperty(name = "applicationId", value = "应用ID")
+    private Long applicationId;
+
+    @ApiModelProperty(name = "name", value = "JOB任务名称")
+    private String name;
+
+    @ApiModelProperty(name = "type", value = "JOB类型 0-quartz、1-elastic-job、2-xxl-job")
+    private Integer type;
+
+    @ApiModelProperty(name = "status", value = "0-可用 1-不可用")
+    private Integer status;
+
+    @ApiModelProperty(name = "active", value = "检测是否可用 0-可用 1-不可用")
+    private Integer active;
+
+    @ApiModelProperty(name = "createTime", value = "创建时间")
+    private Date createTime;
+
+    @ApiModelProperty(name = "updateTime", value = "修改时间")
+    private Date updateTime;
+
+    @ApiModelProperty(name = "configCode", value = "JOB配置xml")
+    private String configCode;
+
+    private Long customerId;
+
+    private Long userId;
+
+    @ApiModelProperty(name = "remark", value = "备注")
+    private String remark;
+}

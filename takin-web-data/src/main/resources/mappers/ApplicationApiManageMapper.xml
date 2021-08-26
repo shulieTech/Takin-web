@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ApplicationApiManageMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.ApplicationApiManageEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_application_api_manage-->
+        <id column="ID" jdbcType="BIGINT" property="id"/>
+        <result column="APPLICATION_ID" jdbcType="BIGINT" property="applicationId"/>
+        <result column="APPLICATION_NAME" jdbcType="VARCHAR" property="applicationName"/>
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="IS_DELETED" jdbcType="TINYINT" property="isDeleted"/>
+        <result column="api" jdbcType="VARCHAR" property="api"/>
+        <result column="method" jdbcType="VARCHAR" property="method"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        ID, APPLICATION_ID, APPLICATION_NAME, CREATE_TIME, UPDATE_TIME, IS_DELETED, api,
+        `method`
+    </sql>
+</mapper>

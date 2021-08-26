@@ -1,0 +1,2 @@
+UPDATE t_base_config set CONFIG_VALUE = '{"dataSourceBusiness":{"quorum":"192-168-1-171","port":"2181","znode":"/hbase","params":{}},"dataSourcePerformanceTest":{"quorum":"192-168-1-137","port":"2181","znode":"/hbase","params":{}}}'
+WHERE CONFIG_CODE = 'Hbase_SERVER';

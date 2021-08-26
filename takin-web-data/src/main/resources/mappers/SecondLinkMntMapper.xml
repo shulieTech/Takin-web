@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.SecondLinkMntMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.SecondLinkMntEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_second_link_mnt-->
+        <id column="LINK_ID" jdbcType="VARCHAR" property="linkId"/>
+        <result column="LINK_NAME" jdbcType="VARCHAR" property="linkName"/>
+        <result column="BASE_LINKS" jdbcType="LONGVARCHAR" property="baseLinks"/>
+        <result column="ASWAN_ID" jdbcType="VARCHAR" property="aswanId"/>
+        <result column="LINK_TPS" jdbcType="BIGINT" property="linkTps"/>
+        <result column="TARGET_TPS" jdbcType="BIGINT" property="targetTps"/>
+        <result column="LINK_TPS_RULE" jdbcType="LONGVARCHAR" property="linkTpsRule"/>
+        <result column="USE_YN" jdbcType="INTEGER" property="useYn"/>
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="TEST_STATUS" jdbcType="VARCHAR" property="testStatus"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        LINK_ID, LINK_NAME, BASE_LINKS, ASWAN_ID, LINK_TPS, TARGET_TPS, LINK_TPS_RULE, USE_YN,
+        CREATE_TIME, UPDATE_TIME, remark, TEST_STATUS
+    </sql>
+</mapper>

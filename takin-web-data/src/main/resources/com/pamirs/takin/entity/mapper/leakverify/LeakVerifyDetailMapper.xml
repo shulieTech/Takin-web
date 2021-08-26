@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.LeakVerifyDetailMapper">
+  <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.LeakVerifyDetailEntity">
+    <!--@mbg.generated-->
+    <!--@Table t_tro_leakcheck_detail-->
+    <id column="id" jdbcType="BIGINT" property="id"/>
+    <result column="result_id" jdbcType="BIGINT" property="resultId"/>
+    <result column="leak_sql" jdbcType="VARCHAR" property="leakSql"/>
+    <result column="status" jdbcType="TINYINT" property="status"/>
+    <result column="remark" jdbcType="VARCHAR" property="remark"/>
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    <result column="is_deleted" jdbcType="BOOLEAN" property="isDeleted"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, result_id, leak_sql, is_leaked, remark, create_time, update_time, is_deleted
+  </sql>
+</mapper>

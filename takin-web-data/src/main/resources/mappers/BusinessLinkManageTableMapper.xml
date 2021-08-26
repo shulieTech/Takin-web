@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_business_link_manage_table-->
+        <id column="LINK_ID" jdbcType="BIGINT" property="linkId"/>
+        <result column="LINK_NAME" jdbcType="VARCHAR" property="linkName"/>
+        <result column="ENTRACE" jdbcType="VARCHAR" property="entrace"/>
+        <result column="RELATED_TECH_LINK" jdbcType="VARCHAR" property="relatedTechLink"/>
+        <result column="LINK_LEVEL" jdbcType="VARCHAR" property="linkLevel"/>
+        <result column="PARENT_BUSINESS_ID" jdbcType="VARCHAR" property="parentBusinessId"/>
+        <result column="IS_CHANGE" jdbcType="TINYINT" property="isChange"/>
+        <result column="IS_CORE" jdbcType="TINYINT" property="isCore"/>
+        <result column="IS_DELETED" jdbcType="TINYINT" property="isDeleted"/>
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="BUSINESS_DOMAIN" jdbcType="VARCHAR" property="businessDomain"/>
+        <result column="CAN_DELETE" jdbcType="TINYINT" property="canDelete"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        LINK_ID, LINK_NAME, ENTRACE, RELATED_TECH_LINK, LINK_LEVEL, PARENT_BUSINESS_ID, IS_CHANGE,
+        IS_CORE, IS_DELETED, CREATE_TIME, UPDATE_TIME, BUSINESS_DOMAIN, CAN_DELETE
+    </sql>
+</mapper>

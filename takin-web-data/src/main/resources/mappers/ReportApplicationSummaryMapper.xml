@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ReportApplicationSummaryMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.ReportApplicationSummaryEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_report_application_summary-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="report_id" jdbcType="BIGINT" property="reportId"/>
+        <result column="application_name" jdbcType="VARCHAR" property="applicationName"/>
+        <result column="machine_total_count" jdbcType="INTEGER" property="machineTotalCount"/>
+        <result column="machine_risk_count" jdbcType="INTEGER" property="machineRiskCount"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id, report_id, application_name, machine_total_count, machine_risk_count
+    </sql>
+</mapper>

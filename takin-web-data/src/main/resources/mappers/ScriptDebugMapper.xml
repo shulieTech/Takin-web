@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ScriptDebugMapper">
+
+    <select id="selectScriptDeployFinishDebugResultList"
+            resultType="io.shulie.takin.web.common.vo.script.ScriptDeployFinishDebugVO">
+        SELECT script_deploy_id, IFNULL(COUNT(*), 0) unfinished_count FROM t_script_debug
+        WHERE is_deleted = 0
+
+          AND script_deploy_id IN
+            <foreach collection="scriptDeployIds" item="scriptDeployId" open="(" close=")" separator=",">
+                #{scriptDeployId}
+            </foreach>
+
+          AND `status` NOT IN (4, 5)
+        GROUP BY script_deploy_id
+    </select>
+</mapper>
+
+

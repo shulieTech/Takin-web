@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>takin-web</artifactId>
+        <groupId>io.shulie.takin</groupId>
+        <version>takin-web-2.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>takin-web-entrypoint</artifactId>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+
+        <!--内部module 业务依赖-->
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-biz-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-diff-cloud</artifactId>
+        </dependency>
+        <!-- 内部module 业务依赖-->
+
+        <!--takin common 公共类 -->
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-common-beans</artifactId>
+        </dependency>
+
+        <!--takin common 公共类 -->
+        <!-- spring boot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>swagger-bootstrap-ui</artifactId>
+        </dependency>
+
+
+    </dependencies>
+
+</project>

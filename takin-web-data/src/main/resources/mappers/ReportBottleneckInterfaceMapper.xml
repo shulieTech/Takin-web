@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ReportBottleneckInterfaceMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.ReportBottleneckInterfaceEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_report_bottleneck_interface-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="report_id" jdbcType="BIGINT" property="reportId"/>
+        <result column="application_name" jdbcType="VARCHAR" property="applicationName"/>
+        <result column="sort_no" jdbcType="INTEGER" property="sortNo"/>
+        <result column="interface_type" jdbcType="VARCHAR" property="interfaceType"/>
+        <result column="interface_name" jdbcType="VARCHAR" property="interfaceName"/>
+        <result column="tps" jdbcType="DECIMAL" property="tps"/>
+        <result column="rt" jdbcType="DECIMAL" property="rt"/>
+        <result column="node_count" jdbcType="INTEGER" property="nodeCount"/>
+        <result column="error_reqs" jdbcType="INTEGER" property="errorReqs"/>
+        <result column="bottleneck_weight" jdbcType="DECIMAL" property="bottleneckWeight"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id, report_id, application_name, sort_no, interface_type, interface_name, tps, rt,
+        node_count, error_reqs, bottleneck_weight
+    </sql>
+</mapper>

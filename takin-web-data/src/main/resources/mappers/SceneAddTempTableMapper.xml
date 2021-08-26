@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.SceneAddTempTableMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.SceneAddTempTableEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_scene_add_temp_table-->
+        <id column="ID" jdbcType="BIGINT" property="id"/>
+        <result column="BUSENESS_ID" jdbcType="VARCHAR" property="busenessId"/>
+        <result column="TECH_ID" jdbcType="VARCHAR" property="techId"/>
+        <result column="PARENT_BUSINESS_ID" jdbcType="VARCHAR" property="parentBusinessId"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        ID, BUSENESS_ID, TECH_ID, PARENT_BUSINESS_ID
+    </sql>
+</mapper>

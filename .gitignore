@@ -1,0 +1,30 @@
+### Eclipse ###
+.externalToolBuilders
+.project
+.classpath
+.settings
+
+### IntelliJ IDEA ###
+.idea
+*.iml
+
+### Jrebel File ###
+*rebel.xml.bak
+*rebel.xml
+
+### Common ###
+target
+
+logs
+*/nullfake_table-eqbm0ohq06muhc7/
+**/static/*.*
+
+*.jar
+
+### 针对专门忽略文件的开头 ###
+ig**
+
+# 本地配置文件
+application-local.yml
+.DS_Store
+public/

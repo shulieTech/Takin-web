@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.TraceManageMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.TraceManageEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_trace_manage-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="trace_object" jdbcType="VARCHAR" property="traceObject"/>
+        <result column="report_id" jdbcType="BIGINT" property="reportId"/>
+        <result column="agent_id" jdbcType="VARCHAR" property="agentId"/>
+        <result column="server_ip" jdbcType="VARCHAR" property="serverIp"/>
+        <result column="process_id" jdbcType="INTEGER" property="processId"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="feature" jdbcType="LONGVARCHAR" property="feature"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id, trace_object, report_id, agent_id, server_ip, process_id, create_time, update_time,
+        feature
+    </sql>
+</mapper>

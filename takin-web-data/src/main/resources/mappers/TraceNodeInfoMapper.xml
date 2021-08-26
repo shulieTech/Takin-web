@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.TraceNodeInfoMapper">
+  <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.TraceNodeInfoEntity">
+    <!--@mbg.generated-->
+    <!--@Table t_trace_node_info-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="app_name" jdbcType="VARCHAR" property="appName" />
+    <result column="trace_id" jdbcType="VARCHAR" property="traceId" />
+    <result column="rpc_id" jdbcType="VARCHAR" property="rpcId" />
+    <result column="trace_app_name" jdbcType="VARCHAR" property="traceAppName" />
+    <result column="up_app_name" jdbcType="VARCHAR" property="upAppName" />
+    <result column="start_time" jdbcType="BIGINT" property="startTime" />
+    <result column="cost" jdbcType="BIGINT" property="cost" />
+    <result column="middleware_name" jdbcType="VARCHAR" property="middlewareName" />
+    <result column="service_name" jdbcType="VARCHAR" property="serviceName" />
+    <result column="method_name" jdbcType="VARCHAR" property="methodName" />
+    <result column="remote_ip" jdbcType="VARCHAR" property="remoteIp" />
+    <result column="result_code" jdbcType="VARCHAR" property="resultCode" />
+    <result column="request" jdbcType="VARCHAR" property="request" />
+    <result column="response" jdbcType="VARCHAR" property="response" />
+    <result column="cluster_test" jdbcType="BOOLEAN" property="clusterTest" />
+    <result column="host_ip" jdbcType="VARCHAR" property="hostIp" />
+    <result column="agent_id" jdbcType="VARCHAR" property="agentId" />
+    <result column="customer_id" jdbcType="VARCHAR" property="customerId" />
+    <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
+    <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
+    <result column="is_deleted" jdbcType="BOOLEAN" property="isDeleted" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, app_name, trace_id, rpc_id, trace_app_name, up_app_name, start_time, cost, middleware_name, 
+    service_name, method_name, remote_ip, result_code, request, response, cluster_test, 
+    host_ip, agent_id, customer_id, gmt_create, gmt_modified, is_deleted
+  </sql>
+</mapper>

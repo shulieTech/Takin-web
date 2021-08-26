@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<configuration debug="false">
+    <property name="LOG_NAME" value="service"/>
+    <property name="LOG_HOME" value="./logs/takin-web/"/>
+    <!-- sys log file setting -->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/${LOG_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <FileNamePattern>
+                ${LOG_HOME}/${LOG_NAME}.%i.log
+            </FileNamePattern>
+            <!-- 生成日志序号。maxIndex:只会生成4个日志文件 -->
+            <MinIndex>1</MinIndex>
+            <MaxIndex>4</MaxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <!--使用triggeringPolicy来截断日志, 例如: 我们一个文件只要50MB, 大于50MB则进入下一个序号的日志-->
+            <MaxFileSize>50MB</MaxFileSize>
+        </triggeringPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%logger{36}] %L [%X{traceId}] - %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+        </filter>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%logger{36}] %L [%X{traceId}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="file"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!-- mybatis日志打印-->
+    <logger name="org.apache.ibatis" level="WARN"/>
+    <logger name="java.sql" level="WARN"/>
+    <!-- job -->
+    <property name="JOB_LOG_NAME" value="service_job"/>
+    <property name="JOB_LOG_HOME" value="./logs/job/"/>
+    <appender name="job" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${JOB_LOG_HOME}/${JOB_LOG_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <FileNamePattern>
+                ${JOB_LOG_HOME}/${JOB_LOG_NAME}.%i.log
+            </FileNamePattern>
+            <!-- 生成日志序号。maxIndex:只会生成4个日志文件 -->
+            <MinIndex>1</MinIndex>
+            <MaxIndex>4</MaxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <!--使用triggeringPolicy来截断日志, 例如: 我们一个文件只要50MB, 大于50MB则进入下一个序号的日志-->
+            <MaxFileSize>50MB</MaxFileSize>
+        </triggeringPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%logger{36}] %L [%X{traceId}] - %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+        </filter>
+    </appender>
+    <logger name="io.shulie.takin.job" level="INFO" additivity="false">
+        <appender-ref ref="job"/>
+    </logger>
+
+</configuration>

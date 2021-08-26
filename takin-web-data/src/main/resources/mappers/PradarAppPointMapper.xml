@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.PradarAppPointMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.PradarAppPointEntity">
+        <!--@mbg.generated-->
+        <!--@Table pradar_app_point-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="app_info_id" jdbcType="BIGINT" property="appInfoId"/>
+        <result column="method" jdbcType="VARCHAR" property="method"/>
+        <result column="method_comment" jdbcType="VARCHAR" property="methodComment"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime"/>
+        <result column="deleted" jdbcType="TINYINT" property="deleted"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id, app_info_id, `method`, method_comment, create_time, modify_time, deleted
+    </sql>
+</mapper>

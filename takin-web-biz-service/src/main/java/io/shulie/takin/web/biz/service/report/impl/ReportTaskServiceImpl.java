@@ -71,8 +71,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private SceneTaskApi sceneTaskApi;
 
     @Autowired
-    @Qualifier("reportThreadPool")
-    private ThreadPoolExecutor reportThreadPool;
+    @Qualifier("fastDebugThreadPool")
+    private ThreadPoolExecutor fastDebugThreadPool;
 
 
     @Override
@@ -110,26 +110,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 log.info("finish report，total data  Running Report :{}", reportId);
 
                 // 收集数据 单独线程收集
-                reportThreadPool.execute(() -> {
-                    try {
-                        // 检查风险机器
-                        problemAnalysisService.checkRisk(reportId);
-                    } catch (Exception e) {
-                        log.error("reportId = {}: Check the risk machine ", reportId);
-                    }
-                    try {
-                        // 瓶颈处理
-                        problemAnalysisService.processBottleneck(reportId);
-                    } catch (Exception e) {
-                        log.error("reportId = {}: Bottleneck handling ", reportId);
-                    }
-                    try {
-                        //then 报告汇总接口
-                        summaryService.calcReportSummay(reportId);
-                    } catch (Exception e) {
-                        log.error("reportId = {}: total report ", reportId);
-                    }
-                });
+                fastDebugThreadPool.execute(this.collectData(reportId));
 
                 // 停止报告
                 WebResponse webResponse = reportService.finishReport(reportId);
@@ -168,6 +149,35 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         } finally {
             RUNNINT.compareAndSet(true, false);
         }
+    }
+
+    /**
+     * 收集报告的数据
+     *
+     * @param reportId 报告 id
+     * @return 可运行
+     */
+    private Runnable collectData(Long reportId) {
+        return () -> {
+            try {
+                // 检查风险机器
+                problemAnalysisService.checkRisk(reportId);
+            } catch (Exception e) {
+                log.error("reportId = {}: Check the risk machine ", reportId);
+            }
+            try {
+                // 瓶颈处理
+                problemAnalysisService.processBottleneck(reportId);
+            } catch (Exception e) {
+                log.error("reportId = {}: Bottleneck handling ", reportId);
+            }
+            try {
+                //then 报告汇总接口
+                summaryService.calcReportSummay(reportId);
+            } catch (Exception e) {
+                log.error("reportId = {}: total report ", reportId);
+            }
+        };
     }
 
     @Override

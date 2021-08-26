@@ -13,7 +13,12 @@ import org.springframework.stereotype.Component;
  * @date 2021/6/15 5:30 下午
  */
 @Component
-@ElasticSchedulerJob(jobName = "appAccessStatusJob", cron = "0/10 * *  * * ?", description = "同步大数据应用状态")
+@ElasticSchedulerJob(jobName = "appAccessStatusJob",
+    // 时效转移
+    misfire = true,
+    // 重新执行
+    failover = true,
+    cron = "0/10 * *  * * ?", description = "同步大数据应用状态")
 @Slf4j
 public class AppAccessStatusJob implements SimpleJob {
 

@@ -62,12 +62,6 @@ public class ThreadPoolConfig {
             new ThreadPoolExecutor.AbortPolicy());
     }
 
-    @Bean(name = "reportThreadPool")
-    public ThreadPoolExecutor reportThreadPool() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("report-thread-%d").build();
-        return new ThreadPoolExecutor(20, 100, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1000), nameThreadFactory,
-            new ThreadPoolExecutor.AbortPolicy());
-    }
 
     @Bean(name = "agentDataThreadPool")
     public ThreadPoolExecutor agentDataTaskExecutor() {

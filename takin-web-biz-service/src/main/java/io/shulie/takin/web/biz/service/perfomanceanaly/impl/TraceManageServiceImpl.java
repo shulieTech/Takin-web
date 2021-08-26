@@ -141,7 +141,7 @@ public class TraceManageServiceImpl implements TraceManageService {
         param.put("class", split[0]);
         param.put("method", split[1]);
         param.put("limits", 100);
-        param.put("wait", 3000);
+        param.put("wait", 1000 * 2 * 60L);
         agentCommandFactory.send(AgentCommandEnum.PULL_AGENT_INFO_TRACE_COMMAND, agentId, param);
     }
 
@@ -182,6 +182,7 @@ public class TraceManageServiceImpl implements TraceManageService {
                         new TypeReference<Map<String, String>>() {});
                     errorMessage = error.get("agentError");
                 }
+                // 追踪失败后，更新组装
                 throw new TakinWebException(ExceptionCode.TRACE_MANAGE_ERROR, errorMessage);
             }
 

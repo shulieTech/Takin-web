@@ -41,8 +41,6 @@ import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.PradarWebRequest;
 import io.shulie.takin.web.common.domain.WebResponse;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
@@ -91,8 +89,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             }
         }
         // 取延迟1分钟时间 前5分钟数据
-        return getReportTraceDtoList(reportId, sceneId, System.currentTimeMillis() - 5*60*1000L ,
-            System.currentTimeMillis() -5*60*1000L, type, current, pageSize);
+        return getReportTraceDtoList(reportId, sceneId, System.currentTimeMillis() - 6*60*1000L ,
+            System.currentTimeMillis() -1*60*1000L, type, current, pageSize);
     }
 
     @Override
@@ -125,7 +123,9 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         ReportLinkDetailResponse response = new ReportLinkDetailResponse();
         if (rpcStack == null || CollectionUtils.isEmpty(rpcStack.getRpcEntries())) {
             log.error("amdb返回的流量明细为空！响应体RpcStack：{}", JSON.toJSONString(rpcStack));
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_LINK_DETAIL_THIRD_PARTY_ERROR, "amdb返回的流量明细为空！");
+            //throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_LINK_DETAIL_THIRD_PARTY_ERROR, "amdb返回的流量明细为空！");
+            response.setTraces(Lists.newArrayList());
+            return response;
         }
 
         // 是否是压测流量判断

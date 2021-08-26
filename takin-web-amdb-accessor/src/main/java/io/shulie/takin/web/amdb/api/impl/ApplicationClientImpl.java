@@ -142,26 +142,6 @@ public class ApplicationClientImpl implements ApplicationClient {
     public PagingList<ApplicationDTO> pageApplications(ApplicationQueryDTO query) {
         String url = properties.getUrl().getAmdb() + APPLICATION_QUERY_PATH;
         try {
-//            String params = JSONUtil.toJsonStr(query);
-//            String responseEntity = HttpClientUtil.sendPost(url, query);
-//            if (StringUtils.isEmpty(responseEntity)) {
-//                log.error("向amdb发起POST请求查询应用信息返回为空！amdbUrl=" + url + ",入参=" + params + "");
-//                throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, "向amdb发起POST请求查询应用信息返回为空！具体见日志。");
-//            }
-//            AmdbResult<List<ApplicationDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-//                    new cn.hutool.core.lang.TypeReference<AmdbResult<List<ApplicationDTO>>>() {
-//                    }, true);
-//            String JSON = JSONUtil.toJsonStr(amdbResponse);
-//            if (amdbResponse == null || !amdbResponse.getSuccess()) {
-//                log.error("向amdb发起POST请求查询应用信息返回异常,amdbUrl=" + url + ",入参=" + params + "，响应信息：" + JSON);
-//                throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, "向amdb发起POST请求查询应用信息返回异常!具体见日志。");
-//            }
-//            List<ApplicationDTO> data = amdbResponse.getData();
-//            if (CollectionUtils.isEmpty(data)) {
-//                log.error("向amdb发起POST请求查询应用信息返回状态为成功，但应用信息数据为空！amdbUrl=" + url + ",入参=" + params + ",响应信息：" + JSON + "");
-//            }
-//            return PagingList.of(data, amdbResponse.getTotal());
-
             AmdbResult<List<ApplicationDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.POST)
                     .url(url)
                     .param(query)

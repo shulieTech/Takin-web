@@ -132,14 +132,16 @@
 
         </dependencies>
     </dependencyManagement>
+
     <distributionManagement>
-        <repository>
-            <id>rdc-releases</id>
-            <url>https://packages.aliyun.com/maven/repository/2101190-release-xxuvBf</url>
-        </repository>
         <snapshotRepository>
-            <id>rdc-snapshots</id>
-            <url>https://packages.aliyun.com/maven/repository/2101190-snapshot-EQD7pQ</url>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
+
 </project>

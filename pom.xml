@@ -7,7 +7,28 @@
     <version>takin-web-2.0.0</version>
     <packaging>pom</packaging>
 
-    <name>${project.artifactId}</name>
+    <url>https://github.com/shulieTech/Takin-web.git</url>
+    <description>控制台，用于agent交互，大数据交互，云控制台（cloud）交互</description>
+    <name>takin-web</name>
+    <developers>
+        <developer>
+            <name>shulie</name>
+            <email>shulie@shulie.io</email>
+            <organization>数列科技</organization>
+            <organizationUrl>https://news.shulie.io/</organizationUrl>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <scm>
+        <connection>https://github.com/shulieTech/Takin-web.git</connection>
+        <developerConnection>https://github.com/shulieTech/Takin-web.git</developerConnection>
+        <url>https://github.com/shulieTech/Takin-web.git</url>
+    </scm>
 
     <properties>
         <!-- build properties -->
@@ -19,14 +40,12 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
         <takin.web.version>takin-web-2.0.0</takin.web.version>
-
         <takin.cloud.version>takin-cloud-2.0.0</takin.cloud.version>
         <takin.common.version>common-1.7.2</takin.common.version>
-
-        <pardar.log.protocol.version>2.0.4</pardar.log.protocol.version>
+        <command.channel>common-1.7.2</command.channel>
+        <pardar.log.protocol.version>2.0.4.2</pardar.log.protocol.version>
         <pradar.core.version>1.0.2-SNAPSHOT</pradar.core.version>
-        <license.version>1.0.0-lic</license.version>
-        <encrypt.version>1.0.3</encrypt.version>
+
         <!-- 3rd libs version -->
         <springfox.version>2.8.0</springfox.version>
         <commons-lang3.version>3.5</commons-lang3.version>
@@ -51,7 +70,7 @@
         <swagger.ui.version>1.9.6</swagger.ui.version>
         <swagger.version>1.5.22</swagger.version>
 
-        <command.channel>common-1.7.2</command.channel>
+
 
         <simulator.agent.api.version>1.0.0-SNAPSHOT</simulator.agent.api.version>
         <flyway.version>5.2.4</flyway.version>
@@ -328,29 +347,167 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <!-- 默认 -->
+        <profile>
+            <id>default</id>
+            <properties>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+    </profiles>
+
     <distributionManagement>
-        <repository>
-            <id>rdc-releases</id>
-            <url>https://packages.aliyun.com/maven/repository/2101190-release-xxuvBf</url>
-        </repository>
         <snapshotRepository>
-            <id>rdc-snapshots</id>
-            <url>https://packages.aliyun.com/maven/repository/2101190-snapshot-EQD7pQ</url>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
     <build>
         <plugins>
-            <!-- 设置编译版本为1.8 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.5</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-plugin</artifactId>
+                <version>1.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.1</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.1</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <mavenExecutorId>forked-path</mavenExecutorId>
+                        <useReleaseProfile>false</useReleaseProfile>
+                        <arguments>-Pnexus-release -Dmaven.test.skip=true</arguments>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.2</version>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <IsTinyProject>true</IsTinyProject>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>shade</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>

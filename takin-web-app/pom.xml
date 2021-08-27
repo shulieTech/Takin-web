@@ -139,8 +139,14 @@
 
 
         <dependency>
-            <groupId>com.pamirs.pradar</groupId>
-            <artifactId>pradar-core</artifactId>
+            <groupId>io.shulie.instrument.module</groupId>
+            <artifactId>module-pradar-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -206,10 +212,6 @@
                 <profile.active>standard-private</profile.active>
             </properties>
             <dependencies>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-diff-privatize</artifactId>
-                </dependency>
                 <dependency>
                     <groupId>io.shulie.takin</groupId>
                     <artifactId>takin-web-config-sync-zk-impl</artifactId>

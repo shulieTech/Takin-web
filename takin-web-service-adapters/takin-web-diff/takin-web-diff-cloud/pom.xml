@@ -42,22 +42,32 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-common</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-open-client-starter</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-cloud-open-api</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

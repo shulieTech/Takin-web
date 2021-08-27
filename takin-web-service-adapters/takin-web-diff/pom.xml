@@ -11,7 +11,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>takin-web-diff-api</module>
-        <module>takin-web-diff-privatize</module>
         <module>takin-web-diff-cloud</module>
     </modules>
     <artifactId>takin-web-diff</artifactId>

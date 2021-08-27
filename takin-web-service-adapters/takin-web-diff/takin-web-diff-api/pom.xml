@@ -29,10 +29,27 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-beans</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-open-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-cloud-ext</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

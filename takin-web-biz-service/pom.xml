@@ -95,7 +95,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.shulie.instrument.simulator</groupId>
+            <groupId>io.shulie.instrument.simulator</groupId>
             <artifactId>simulator-agent-api</artifactId>
         </dependency>
         <!-- agent 依赖 -->
@@ -219,6 +219,21 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.shulie.amdb</groupId>
+            <artifactId>amdb-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mapstruct</groupId>
+                    <artifactId>mapstruct</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.instrument.module</groupId>
+            <artifactId>module-pradar-core</artifactId>
         </dependency>
 
     </dependencies>

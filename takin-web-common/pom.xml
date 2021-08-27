@@ -117,7 +117,6 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>

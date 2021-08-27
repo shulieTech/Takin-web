@@ -72,7 +72,7 @@
 
 
 
-        <simulator.agent.api.version>1.0.0-SNAPSHOT</simulator.agent.api.version>
+        <simulator.agent.api.version>5.0.0</simulator.agent.api.version>
         <flyway.version>5.2.4</flyway.version>
         <redisson.version>3.15.6</redisson.version>
         <compress.version>1.20</compress.version>
@@ -330,9 +330,8 @@
                 <artifactId>swagger-bootstrap-ui</artifactId>
                 <version>${swagger.ui.version}</version>
             </dependency>
-
             <dependency>
-                <groupId>com.shulie.instrument.simulator</groupId>
+                <groupId>io.shulie.instrument.simulator</groupId>
                 <artifactId>simulator-agent-api</artifactId>
                 <version>${simulator.agent.api.version}</version>
             </dependency>

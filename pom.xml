@@ -40,9 +40,9 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
         <takin.web.version>takin-web-2.0.0</takin.web.version>
-        <takin.cloud.version>takin-cloud-2.0.0</takin.cloud.version>
-        <takin.common.version>common-1.7.2</takin.common.version>
-        <command.channel>common-1.7.2</command.channel>
+        <takin.cloud.version>takin-cloud-2.0.1</takin.cloud.version>
+        <takin.common.version>common-1.7.3</takin.common.version>
+        <command.channel>common-1.7.3</command.channel>
         <pardar.log.protocol.version>2.0.4.2</pardar.log.protocol.version>
         <pradar.core.version>1.0.2-SNAPSHOT</pradar.core.version>
 
@@ -140,6 +140,12 @@
                 <version>${takin.cloud.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.shulie.takin</groupId>
+                        <artifactId>takin-common-bom</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -359,16 +365,17 @@
             </activation>
         </profile>
     </profiles>
-
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>${releases.id}</id>
+            <name>${releases.name}</name>
+            <url>${releases.url}</url>
         </repository>
+        <snapshotRepository>
+            <id>${snapshots.id}</id>
+            <name>${snapshots.name}</name>
+            <url>${snapshots.url}</url>
+        </snapshotRepository>
     </distributionManagement>
     <build>
         <plugins>
@@ -435,28 +442,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>

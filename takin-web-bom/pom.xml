@@ -33,16 +33,6 @@
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-web-app</artifactId>
-                <version>${takin.web.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-web-diff-privatize</artifactId>
-                <version>${takin.web.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-diff-cloud</artifactId>
                 <version>${takin.web.version}</version>
             </dependency>
@@ -100,7 +90,7 @@
 
             <!--性能分析用-->
             <dependency>
-                <groupId>com.shulie.tesla</groupId>
+                <groupId>io.shulie</groupId>
                 <artifactId>tesla-sequence</artifactId>
                 <version>1.0.1</version>
                 <scope>compile</scope>
@@ -112,36 +102,21 @@
                 <artifactId>takin-plugin-framework-spring</artifactId>
                 <version>${takin.plugin.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-web-ext-api</artifactId>
-                <version>${takin.web.version}</version>
-            </dependency>
-
             <!--拓展插件类-->
-
-            <!--            &lt;!&ndash; https://mvnrepository.com/artifact/com.google.common/google-collect &ndash;&gt;-->
-            <!--            <dependency>-->
-            <!--                <groupId>com.google.common</groupId>-->
-            <!--                <artifactId>google-collect</artifactId>-->
-            <!--                <version>0.5</version>-->
-            <!--            </dependency>-->
-
-
-
         </dependencies>
     </dependencyManagement>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>${releases.id}</id>
+            <name>${releases.name}</name>
+            <url>${releases.url}</url>
         </repository>
+        <snapshotRepository>
+            <id>${snapshots.id}</id>
+            <name>${snapshots.name}</name>
+            <url>${snapshots.url}</url>
+        </snapshotRepository>
     </distributionManagement>
 
 </project>

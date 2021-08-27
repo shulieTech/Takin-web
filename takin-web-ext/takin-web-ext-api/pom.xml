@@ -27,22 +27,27 @@
         <dependency>
             <groupId>io.shulie.takin.plugin.framework</groupId>
             <artifactId>takin-plugin-framework-spring</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-beans</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
+            <scope>provided</scope>
         </dependency>
 
 
@@ -50,6 +55,16 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-ext</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.shulie.takin</groupId>
+                    <artifactId>takin-common-bom</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.shulie.takin</groupId>
+                    <artifactId>takin-common-beans</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

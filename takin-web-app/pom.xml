@@ -15,14 +15,17 @@
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>swagger-bootstrap-ui</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-command-channel</artifactId>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.zookeeper</groupId>
@@ -37,10 +40,12 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-job</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>guava</artifactId>
@@ -66,6 +71,7 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-common</artifactId>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-collections</artifactId>
@@ -93,6 +99,7 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-entrypoint</artifactId>
+            <scope>provided</scope>
         </dependency>
 
 
@@ -103,44 +110,53 @@
         <dependency>
             <groupId>io.shulie.takin.plugin.framework</groupId>
             <artifactId>takin-plugin-framework-spring</artifactId>
+            <scope>provided</scope>
         </dependency>
         <!-- spring boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-data-redis</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
+            <scope>provided</scope>
         </dependency>
 
 
         <dependency>
             <groupId>io.shulie.instrument.module</groupId>
             <artifactId>module-pradar-core</artifactId>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>guava</artifactId>
@@ -152,43 +168,51 @@
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-spring-boot-starter</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>swagger-bootstrap-ui</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.dangdang</groupId>
             <artifactId>elastic-job-lite-core</artifactId>
+            <scope>provided</scope>
         </dependency>
         <!--整合springboot job-->
         <dependency>
             <groupId>com.dangdang</groupId>
             <artifactId>elastic-job-lite-spring</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.flywaydb/flyway-core -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>cn.afterturn</groupId>
             <artifactId>easypoi-base</artifactId>
             <version>${easypoi-base.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
@@ -201,6 +225,12 @@
         <dependency>
            <groupId>io.shulie</groupId>
             <artifactId>tesla-sequence</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-cloud-common</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

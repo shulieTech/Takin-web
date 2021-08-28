@@ -3,7 +3,7 @@ package io.shulie.takin.web.app.conf;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
-import com.alibaba.druid.support.http.StatViewServlet;
+import com.shulie.druid.support.http.StatViewServlet;
 
 @WebServlet(urlPatterns = "/druid/*",
     initParams = {

@@ -3,8 +3,7 @@ package io.shulie.takin.web.app.conf;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebInitParam;
 
-import com.alibaba.druid.support.http.WebStatFilter;
-
+import com.shulie.druid.support.http.WebStatFilter;
 
 @WebFilter(filterName = "druidStatFilter", urlPatterns = "/*",
     initParams = {

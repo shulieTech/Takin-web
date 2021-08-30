@@ -5,7 +5,7 @@ import javax.servlet.annotation.WebInitParam;
 
 import com.shulie.druid.support.http.WebStatFilter;
 
-@WebFilter(filterName = "druidStatFilter", urlPatterns = "/*",
+    @WebFilter(filterName = "druidStatFilter", urlPatterns = "/*",
     initParams = {
         @WebInitParam(name = "exclusions", value = "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*")// 忽略资源
     })

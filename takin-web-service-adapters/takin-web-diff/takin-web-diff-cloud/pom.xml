@@ -62,12 +62,10 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-open-client-starter</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-open-api</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

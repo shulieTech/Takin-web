@@ -80,7 +80,7 @@ public class HttpWebClient {
     }
 
     private void validateParam(WebRequest request) {
-        if (WebPluginUtils.checkUserData() && request.getLicense() == null) {
+        if (WebPluginUtils.checkUserData()  && request.getLicense() == null) {
             throw ApiException.create(500, "license不能为空");
         }
         if (request.getHttpMethod() == null) {

@@ -102,8 +102,16 @@
             <scope>provided</scope>
         </dependency>
 
-
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-biz-service</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!--内部module 业务依赖-->
+
+        <!--cloud 依赖-->
+
+        <!--cloud 依赖-->
 
 
         <!--插件-->
@@ -218,7 +226,6 @@
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
-
             </exclusions>
         </dependency>
 
@@ -231,6 +238,10 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-common</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
         </dependency>
     </dependencies>
 

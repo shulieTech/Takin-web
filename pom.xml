@@ -295,12 +295,21 @@
             <dependency>
                 <groupId>io.shulie.amdb</groupId>
                 <artifactId>amdb-common</artifactId>
-                <version>1.0.1</version>
+                <version>1.0.2</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.mapstruct</groupId>
                         <artifactId>mapstruct</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot</artifactId>
+                    </exclusion>
+
                 </exclusions>
             </dependency>
 

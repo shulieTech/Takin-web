@@ -93,6 +93,10 @@
                     <artifactId>commons-text</artifactId>
                     <groupId>org.apache.commons</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>jsqlparser</artifactId>
+                    <groupId>com.github.jsqlparser</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -106,11 +110,16 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-biz-service</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jsqlparser</artifactId>
+                    <groupId>com.github.jsqlparser</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!--内部module 业务依赖-->
 
         <!--cloud 依赖-->
-
         <!--cloud 依赖-->
 
 
@@ -226,6 +235,10 @@
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>javassist</artifactId>
+                    <groupId>org.javassist</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -238,10 +251,22 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-common</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>pagehelper</artifactId>
+                    <groupId>com.github.pagehelper</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>3.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

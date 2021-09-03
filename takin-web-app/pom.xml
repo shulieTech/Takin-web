@@ -256,6 +256,10 @@
                     <artifactId>pagehelper</artifactId>
                     <groupId>com.github.pagehelper</groupId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.github.pagehelper</groupId>
+                    <artifactId>pagehelper-spring-boot-starter</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

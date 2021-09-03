@@ -7,12 +7,18 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
     * 中间件信息表
     */
 @Data
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @TableName(value = "t_middleware_summary")
 public class MiddlewareSummaryEntity {
     @TableId(value = "id", type = IdType.INPUT)

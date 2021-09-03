@@ -66,6 +66,12 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-open-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.pagehelper</groupId>
+                    <artifactId>pagehelper-spring-boot-starter</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

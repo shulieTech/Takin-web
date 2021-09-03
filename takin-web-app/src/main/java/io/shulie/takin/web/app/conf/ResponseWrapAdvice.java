@@ -1,13 +1,16 @@
 package io.shulie.takin.web.app.conf;
 
 import java.io.File;
+import java.util.Set;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import com.github.pagehelper.PageInfo;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.core.MethodParameter;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.domain.WebResponse;
 import org.springframework.http.server.ServerHttpRequest;
@@ -37,6 +40,17 @@ public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
         @NonNull MethodParameter parameter, @NonNull MediaType mediaType,
         @NonNull Class<? extends HttpMessageConverter<?>> selectedConverterType,
         @NonNull ServerHttpRequest request, ServerHttpResponse response) {
+        // 处理 TAKIN_AUTHORITY 请求头
+        {
+            // 声明字符串
+            String takinAuthorityHeaderName = "takin-authority";
+            String accessControlExposeHeaderName = "Access-Control-Expose-Headers";
+            // 填充请求头并对外暴露(Chrome安全策略)
+            HttpHeaders header = response.getHeaders();
+            header.set(takinAuthorityHeaderName, WebPluginUtils.checkUserData().toString());
+            Set<String> headers = header.keySet();
+            header.set(accessControlExposeHeaderName, String.join(",", headers));
+        }
         if (body instanceof Response
             || body instanceof WebResponse
             || body instanceof File

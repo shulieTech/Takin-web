@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import io.shulie.takin.web.common.util.JsonUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
@@ -47,6 +49,16 @@ public class AbstractInterceptor implements HandlerInterceptor {
      * @throws IOException io 异常
      */
     void printResponse(HttpServletResponse response, String responseJson, Integer responseCode) throws IOException {
+        // 处理 TAKIN_AUTHORITY 请求头
+        {
+            // 声明字符串
+            String takinAuthorityHeaderName = "takin-authority";
+            String accessControlExposeHeaderName = "Access-Control-Expose-Headers";
+            // 填充请求头并对外暴露(Chrome安全策略)
+            response.setHeader(takinAuthorityHeaderName, WebPluginUtils.checkUserData().toString());
+            Collection<String> headers = response.getHeaderNames();
+            response.setHeader(accessControlExposeHeaderName, String.join(",", headers));
+        }
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
         response.setStatus(responseCode);

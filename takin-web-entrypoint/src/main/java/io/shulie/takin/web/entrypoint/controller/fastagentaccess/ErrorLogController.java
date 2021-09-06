@@ -4,7 +4,7 @@ import io.shulie.takin.cloud.common.constants.APIUrls;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.ErrorLogQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.ErrorLogListResponse;
-import io.shulie.takin.web.biz.service.agentfastaccess.AmdbManageService;
+import io.shulie.takin.web.biz.service.fastagentaccess.AmdbManageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

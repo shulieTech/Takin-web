@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.service.agentfastaccess;
+package io.shulie.takin.web.biz.service.fastagentaccess;
 
 import java.util.List;
 

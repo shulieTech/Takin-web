@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.service.agentfastaccess.impl;
+package io.shulie.takin.web.biz.service.fastagentaccess.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,7 +23,7 @@ import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentListResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentStatusStatResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.ErrorLogListResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.PluginLoadListResponse;
-import io.shulie.takin.web.biz.service.agentfastaccess.AmdbManageService;
+import io.shulie.takin.web.biz.service.fastagentaccess.AmdbManageService;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentDiscoverStatusEnum;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;

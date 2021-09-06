@@ -263,4 +263,7 @@ public interface TApplicationMntDao {
     List<TApplicationMnt> getApplicationsByTenants(@Param("userIdList") List<Long> userIdList);
 
     String getIdByName(@Param("applicationName") String applicationName);
+
+    List<TApplicationMnt> getApplicationMntByUserIdAndKeyword(@Param("userId") Long userId,
+        @Param("keyword") String keyword);
 }

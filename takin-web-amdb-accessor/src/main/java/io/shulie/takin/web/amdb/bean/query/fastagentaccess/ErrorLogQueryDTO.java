@@ -1,0 +1,49 @@
+package io.shulie.takin.web.amdb.bean.query.fastagentaccess;
+
+import java.util.Date;
+
+import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * @Description 异常日志查询对象
+ * @Author ocean_wll
+ * @Date 2021/8/18 4:05 下午
+ */
+@EqualsAndHashCode(callSuper = true)
+@Data
+public class ErrorLogQueryDTO extends PageBaseDTO {
+
+    private static final long serialVersionUID = -6512502356697415777L;
+
+    /**
+     * 应用名称
+     */
+    private String appName;
+
+    /**
+     * agentId
+     */
+    private String agentId;
+
+    /**
+     * userAppKey
+     */
+    private String userAppKey;
+
+    /**
+     * 关键词
+     */
+    private String agentInfo;
+
+    /**
+     * 开始时间
+     */
+    private Date startDate;
+
+    /**
+     * 结束时间
+     */
+    private Date endDate;
+}

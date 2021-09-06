@@ -15,30 +15,46 @@
 
 package io.shulie.takin.web.amdb.api.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
+
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
+import io.shulie.amdb.common.dto.agent.AgentInfoDTO;
+import io.shulie.amdb.common.dto.instance.AgentStatusStatInfo;
+import io.shulie.amdb.common.dto.instance.AppInstanceExtDTO;
+import io.shulie.amdb.common.dto.instance.ModuleLoadDetailDTO;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.amdb.common.enums.EdgeTypeGroupEnum;
 import io.shulie.amdb.common.enums.RpcType;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationErrorQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationInterfaceQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.fastagentaccess.ErrorLogQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationErrorDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationInterfaceDTO;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeAgentDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeProbeInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
-import io.shulie.takin.web.amdb.api.ApplicationClient;
+import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -80,6 +96,21 @@ public class ApplicationClientImpl implements ApplicationClient {
      * 节点, 探针, 统计信息
      */
     private static final String APPLICATION_NODE_PROBE_INFO = "/amdb/db/api/appInstanceStatus/queryInstanceSumInfo";
+
+    /**
+     * 异常日志查询api
+     */
+    private static final String ERROR_LOG_PAGE = "/amdb/db/api/appInstance/queryAgentInfo";
+
+    /**
+     * 模块加载状态列表查询api
+     */
+    private static final String PLUGIN_LOAD_LIST = "/amdb/db/api/appInstance/select";
+
+    /**
+     * 探针概述查询接口
+     */
+    private static final String AGENT_COUNT_STATUS = "/amdb/db/api/appInstanceStatus/countStatus";
 
     @Autowired
     private AmdbClientProperties properties;
@@ -303,6 +334,119 @@ public class ApplicationClientImpl implements ApplicationClient {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR,e.getMessage());
+        }
+    }
+
+    @Override
+    public PagingList<ApplicationNodeAgentDTO> pageApplicationNodeByAgent(ApplicationNodeQueryDTO dto) {
+        try {
+            // 因为tro-web的分页从0开始大数据的分页从1开始，所以这里需要加1
+            dto.setCurrentPage(dto.getRealCurrent());
+            String url = this.getPageApplicationNodeUrl();
+            //// 由于date再被json序列化以后转成时间戳，但是接口又是需要接受一个date类型的参数，所以这里特殊处理一下。
+            //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            //if (dto.getMinUpdateDate() != null) {
+            //    url += "?minUpdateDate=" + sdf.format(dto.getMinUpdateDate()) + "&";
+            //    dto.setMinUpdateDate(null);
+            //}
+            String responseJson = HttpClientUtil.sendGet(url, dto);
+            if (StrUtil.isBlank(responseJson)) {
+                return PagingList.empty();
+            }
+
+            AmdbResult<List<ApplicationNodeAgentDTO>> amdbResponse = JsonUtil.json2bean(responseJson,
+                new TypeReference<AmdbResult<List<ApplicationNodeAgentDTO>>>() {});
+
+            if (amdbResponse == null || !amdbResponse.getSuccess()) {
+                log.error("前往amdb查询agent应用节点返回异常,响应信息：{}", responseJson);
+                return PagingList.empty();
+            }
+
+            List<ApplicationNodeAgentDTO> data = amdbResponse.getData();
+            if (CollectionUtils.isEmpty(data)) {
+                return PagingList.empty();
+            }
+
+            return PagingList.of(data, amdbResponse.getTotal());
+        } catch (Exception e) {
+            log.error("前往amdb查询agent应用节点信息报错：{}", JSONUtil.toJsonStr(dto), e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
+    public PagingList<AgentInfoDTO> pageErrorLog(ErrorLogQueryDTO queryDTO) {
+        String url = properties.getUrl().getAmdb() + ERROR_LOG_PAGE;
+        try {
+            // 因为tro-web的分页从0开始大数据的分页从1开始，所以这里需要加1
+            queryDTO.setCurrentPage(queryDTO.getRealCurrent());
+            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)));
+            if (StringUtils.isEmpty(responseEntity)) {
+                return PagingList.empty();
+            }
+            AmdbResult<List<AgentInfoDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
+                new cn.hutool.core.lang.TypeReference<AmdbResult<List<AgentInfoDTO>>>() {}, true);
+            if (amdbResponse == null || !amdbResponse.getSuccess()) {
+                log.error("前往amdb查询异常日志返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
+                return PagingList.empty();
+            }
+            List<AgentInfoDTO> data = amdbResponse.getData();
+            if (CollectionUtils.isEmpty(data)) {
+                return PagingList.empty();
+            }
+            return PagingList.of(data, amdbResponse.getTotal());
+
+        } catch (Exception e) {
+            log.error("前往amdb查询异常日志报错：{}", JSONUtil.toJsonStr(queryDTO), e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
+    public List<ModuleLoadDetailDTO> pluginList(String agentId) {
+        try {
+            String url = properties.getUrl().getAmdb() + PLUGIN_LOAD_LIST + "?agentId=" + agentId;
+            String responseJson = HttpClientUtil.sendGet(url);
+            if (StrUtil.isBlank(responseJson)) {
+                return Collections.emptyList();
+            }
+            AmdbResult<Object> result = JsonUtil.json2bean(responseJson,
+                new TypeReference<AmdbResult<Object>>() {});
+            if (result == null || !result.getSuccess()) {
+                log.error("前往amdb查询模块加载状态返回异常,响应信息：{}", responseJson);
+                return Collections.emptyList();
+            }
+            if (result.getData() != null) {
+                JSONObject data = JSON.parseObject(JSON.toJSONString(result.getData()));
+                String ext = data.getString("ext");
+                if (StringUtils.isNotBlank(ext)) {
+                    AppInstanceExtDTO extDTO = JSON.parseObject(ext, AppInstanceExtDTO.class);
+                    return extDTO.getModuleLoadDetail();
+                }
+            }
+        } catch (Exception e) {
+            log.error("模块加载状态数据处理异常", e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+        }
+
+        return Collections.emptyList();
+    }
+
+    @Override
+    public AgentStatusStatInfo agentCountStatus() {
+        String url = properties.getUrl().getAmdb() + AGENT_COUNT_STATUS;
+        try {
+            String responseEntity = HttpClientUtil.sendGet(url);
+            AmdbResult<AgentStatusStatInfo> amdbResponse = JSONUtil.toBean(responseEntity,
+                new cn.hutool.core.lang.TypeReference<AmdbResult<AgentStatusStatInfo>>() {}, true);
+            if (amdbResponse == null || !amdbResponse.getSuccess()) {
+                log.error("前往amdb查询agent概况返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
+                return null;
+            }
+            return amdbResponse.getData();
+        } catch (Exception e) {
+            log.error("前往amdb查询agent概况信息报错", e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
         }
     }
 }

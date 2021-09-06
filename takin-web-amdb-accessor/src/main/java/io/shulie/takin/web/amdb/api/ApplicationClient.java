@@ -2,15 +2,20 @@ package io.shulie.takin.web.amdb.api;
 
 import java.util.List;
 
+import io.shulie.amdb.common.dto.agent.AgentInfoDTO;
+import io.shulie.amdb.common.dto.instance.AgentStatusStatInfo;
+import io.shulie.amdb.common.dto.instance.ModuleLoadDetailDTO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationErrorQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationInterfaceQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.fastagentaccess.ErrorLogQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationErrorDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationInterfaceDTO;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeAgentDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeProbeInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
@@ -78,5 +83,36 @@ public interface ApplicationClient {
      * @return 应用节点探针统计信息
      */
     ApplicationNodeProbeInfoDTO getApplicationNodeProbeInfo(ApplicationNodeQueryDTO dto);
+
+    /**
+     * 应用节点列表, 分页
+     *
+     * @param dto 查询参数
+     * @return 应用节点列表
+     */
+    PagingList<ApplicationNodeAgentDTO> pageApplicationNodeByAgent(ApplicationNodeQueryDTO dto);
+
+    /**
+     * 异常日志查询
+     *
+     * @param queryDTO 查询条件
+     * @return AgentInfoDTO
+     */
+    PagingList<AgentInfoDTO> pageErrorLog(ErrorLogQueryDTO queryDTO);
+
+    /**
+     * 根据agentId查询插件加载状态
+     *
+     * @param agentId agentId
+     * @return ModuleLoadDetailDTO集合
+     */
+    List<ModuleLoadDetailDTO> pluginList(String agentId);
+
+    /**
+     * 探针概况接口
+     *
+     * @return AgentStatusStatInfo
+     */
+    AgentStatusStatInfo agentCountStatus();
 
 }

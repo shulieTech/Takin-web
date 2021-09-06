@@ -133,7 +133,7 @@ public class Response<T> {
     }
 
     public static <T> Response<List<T>> success(List<T> data, long total) {
-        setHeaders(new HashMap<String, String>(1) {{put(PAGE_TOTAL_HEADER, total + "");}});
+        setHeaders(new HashMap<String, String>(1) {{put(PAGE_TOTAL_HEADER, String.valueOf(total));}});
         return new Response<>(data);
     }
 

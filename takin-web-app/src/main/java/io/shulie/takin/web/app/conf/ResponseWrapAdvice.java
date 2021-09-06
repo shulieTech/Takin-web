@@ -2,12 +2,13 @@ package io.shulie.takin.web.app.conf;
 
 import java.io.File;
 import java.util.Set;
+import java.util.HashSet;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import com.github.pagehelper.PageInfo;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
 import org.springframework.core.MethodParameter;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -46,9 +47,11 @@ public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
             String takinAuthorityHeaderName = "takin-authority";
             String accessControlExposeHeaderName = "Access-Control-Expose-Headers";
             // 填充请求头并对外暴露(Chrome安全策略)
+            Set<String> headers = new HashSet<>(2);
             HttpHeaders header = response.getHeaders();
             header.set(takinAuthorityHeaderName, WebPluginUtils.checkUserData().toString());
-            Set<String> headers = header.keySet();
+            headers.add(takinAuthorityHeaderName);
+            headers.add(Response.PAGE_TOTAL_HEADER);
             header.set(accessControlExposeHeaderName, String.join(",", headers));
         }
         if (body instanceof Response

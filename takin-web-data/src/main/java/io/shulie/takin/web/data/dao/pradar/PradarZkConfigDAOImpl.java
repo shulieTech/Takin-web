@@ -68,7 +68,7 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
             return configResult;
         }).collect(Collectors.toList());
 
-        return PagingList.of(pradarZkConfigResultList, page.getTotal());
+        return PagingList.of(pradarZkConfigResultList, configs.getTotal());
     }
 
     @Override

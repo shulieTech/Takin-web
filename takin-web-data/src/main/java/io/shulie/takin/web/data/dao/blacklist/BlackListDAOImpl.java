@@ -108,7 +108,7 @@ public class BlackListDAOImpl implements BlackListDAO {
             result.setGmtModified(DateUtils.dateToString(entity.getGmtModified(), DateUtils.FORMATE_YMDHMS));
             return result;
         }).collect(Collectors.toList());
-        return PagingList.of(results, page.getTotal());
+        return PagingList.of(results, infoEntityPageInfo.getTotal());
     }
 
     @Override

@@ -11,12 +11,9 @@ package io.shulie.takin.web.entrypoint.controller.whitelist;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
-import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistSearchInput;
 import io.shulie.takin.web.biz.pojo.request.whitelist.WhitelistSearchRequest;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.common.vo.whitelist.WhiteListVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -37,10 +34,6 @@ public class WhitelistController {
 
     @ApiOperation("全量白名单分页接口")
     @GetMapping("/list")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPWHITELIST,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<WhiteListVO> pagingList(WhitelistSearchRequest request) {
         WhitelistSearchInput input = new WhitelistSearchInput();
         BeanUtils.copyProperties(request, input);

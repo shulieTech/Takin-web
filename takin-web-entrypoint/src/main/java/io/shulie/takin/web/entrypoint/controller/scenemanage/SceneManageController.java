@@ -24,8 +24,6 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerDeleteRequest;
@@ -70,10 +68,6 @@ public class SceneManageController {
         subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_CREATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public WebResponse<Object> add(@RequestBody @Valid SceneManageWrapperVO sceneVO) throws TakinWebException {
         sceneManageService.checkParam(sceneVO);
         sceneManageService.addScene(sceneVO);
@@ -88,10 +82,6 @@ public class SceneManageController {
         moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE,
         subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_UPDATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
-        needAuth = ActionTypeEnum.UPDATE
     )
     public WebResponse<String> update(@RequestBody @Valid SceneManageWrapperVO sceneVO) {
         sceneManageService.checkParam(sceneVO);
@@ -202,10 +192,6 @@ public class SceneManageController {
         subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_DELETE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
-        needAuth = ActionTypeEnum.DELETE
-    )
     public WebResponse delete(@RequestBody @Valid SceneManageIdVO deleteVO) {
         ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(deleteVO.getId());
         if (Objects.isNull(webResponse.getData())) {
@@ -226,20 +212,12 @@ public class SceneManageController {
 
     @GetMapping("/detail")
     @ApiOperation(value = "压测场景详情")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public ResponseResult getDetail(@ApiParam(name = "id", value = "ID", required = true) Long id) {
         return sceneManageService.detailScene(id);
     }
 
     @GetMapping("/list")
     @ApiOperation(value = "压测场景列表")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public WebResponse getList(@ApiParam(name = "current", value = "页码", required = true) Integer current,
         @ApiParam(name = "pageSize", value = "页大小", required = true) Integer pageSize,
         @ApiParam(name = "sceneId", value = "压测场景ID") Long sceneId,

@@ -5,7 +5,7 @@
 //
 //import io.shulie.takin.common.beans.annotation.ModuleDef;
 //import io.shulie.takin.common.beans.page.PagingList;
-//import io.shulie.takin.web.common.annocation.AuthVerification;
+//import io.shulie.takin.common.beans.annotation.AuthVerification;
 //import io.shulie.takin.web.common.constant.APIUrls;
 //import io.shulie.takin.web.biz.constant.BizOpConstants;
 //import io.shulie.takin.web.biz.constant.BizOpConstants.Message;

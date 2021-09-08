@@ -12,11 +12,9 @@ import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -50,10 +48,6 @@ public class ApplicationController {
 
     @GetMapping("/application/center/list")
     @ApiOperation("应用列表查询接口")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response<List<ApplicationVo>> getApplicationListWithAuth(
         @ApiParam(name = "applicationName", value = "系统名字") String applicationName,
         @RequestParam(defaultValue = "0") Integer current,
@@ -70,10 +64,6 @@ public class ApplicationController {
 
     @GetMapping("/application/center/list/dictionary")
     @ApiOperation("应用列表查询接口")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response<List<ApplicationVo>> getApplicationListNoAuth(
     ) {
         return applicationService.getApplicationList();
@@ -81,10 +71,6 @@ public class ApplicationController {
 
     @GetMapping("/console/application/center/app/info")
     @ApiOperation("应用详情查询接口")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response<ApplicationVo> getApplicationInfoWithAuth(
         @ApiParam(name = "id", value = "系统id") String id
     ) {
@@ -106,10 +92,6 @@ public class ApplicationController {
         subModuleName = BizOpConstants.SubModules.BASIC_INFO,
         logMsgKey = BizOpConstants.Message.MESSAGE_BASIC_INFO_CREATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public Response addApplication(@RequestBody ApplicationVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.APPLICATION, vo.getApplicationName());
@@ -123,10 +105,6 @@ public class ApplicationController {
         subModuleName = BizOpConstants.SubModules.BASIC_INFO,
         logMsgKey = BizOpConstants.Message.MESSAGE_BASIC_INFO_UPDATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public Response modifyApplication(@RequestBody ApplicationVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
         return applicationService.modifyApplication(vo);
@@ -138,10 +116,6 @@ public class ApplicationController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.BASIC_INFO,
         logMsgKey = BizOpConstants.Message.MESSAGE_BASIC_INFO_DELETE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.DELETE
     )
     public Response deleteApplication(
         @RequestBody ApplicationVo vo) {

@@ -117,6 +117,12 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>simulator-internal-bootstrap-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>

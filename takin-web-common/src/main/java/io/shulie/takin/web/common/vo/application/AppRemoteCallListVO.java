@@ -57,4 +57,11 @@ public class AppRemoteCallListVO extends AppRemoteCallVO {
      * 排序用
      */
     private Integer sort;
+
+
+    /**
+     * 默认是白名单时显示原因
+     */
+    @ApiModelProperty(name = "defaultWhiteInfo", value = "默认白名单信息")
+    private String defaultWhiteInfo;
 }

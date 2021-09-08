@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.biz.constant.DashboardExceptionCode;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.service.dashboard.ApplicationService;
 import io.shulie.takin.web.biz.pojo.response.dashboard.AppPressureSwitchSetResponse;

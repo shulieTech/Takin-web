@@ -3,7 +3,7 @@ package io.shulie.takin.web.entrypoint.controller;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.entity.domain.dto.config.WhiteListSwitchDTO;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants;

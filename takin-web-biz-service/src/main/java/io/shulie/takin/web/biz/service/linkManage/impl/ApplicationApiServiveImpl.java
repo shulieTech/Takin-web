@@ -19,7 +19,7 @@ import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.biz.cache.DictionaryCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;

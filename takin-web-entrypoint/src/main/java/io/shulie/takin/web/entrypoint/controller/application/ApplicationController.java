@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.common.vo.WebOptionEntity;

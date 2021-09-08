@@ -367,8 +367,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         AppRemoteCallQueryParam param = new AppRemoteCallQueryParam();
         BeanUtils.copyProperties(input, param);
         PagingList<AppRemoteCallResult> pagingList = appRemoteCallDAO.pagingList(param);
-        if (pagingList.getTotal() == 0) {
-            return PagingList.empty();
+        if (CollectionUtils.isEmpty(pagingList.getList())) {
+            return PagingList.of(Lists.newArrayList(),pagingList.getTotal());
         }
 
         List<AppRemoteCallListVO> appRemoteCallVoList = pagingList.getList().stream().map(result -> {

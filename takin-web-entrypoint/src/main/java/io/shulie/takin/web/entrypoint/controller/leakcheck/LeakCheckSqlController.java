@@ -5,7 +5,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.web.biz.service.LeakSqlService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlCreateRequest;

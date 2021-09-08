@@ -8,7 +8,7 @@ import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.simplify.AppBusinessTableInfo;
 import com.pamirs.takin.entity.domain.query.agent.AppBusinessTableQuery;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;

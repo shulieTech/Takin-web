@@ -24,7 +24,7 @@ import com.pamirs.takin.entity.domain.query.BListQueryParam;
 import com.pamirs.takin.entity.domain.query.TWListVo;
 import com.pamirs.takin.entity.domain.vo.TApplicationInterface;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.ConfCenterService;

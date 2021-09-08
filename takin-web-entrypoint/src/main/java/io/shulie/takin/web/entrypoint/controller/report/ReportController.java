@@ -4,7 +4,7 @@ import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
 import io.shulie.takin.web.biz.service.report.ReportService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;

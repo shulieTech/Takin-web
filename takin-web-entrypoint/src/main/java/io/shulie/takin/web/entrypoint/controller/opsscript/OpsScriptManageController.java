@@ -21,7 +21,7 @@ import io.shulie.takin.web.data.param.opsscript.OpsUploadFileParam;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptDetailVO;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptVO;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

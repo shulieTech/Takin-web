@@ -14,7 +14,7 @@ import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.BaseConfigService;
 import io.shulie.takin.web.biz.service.scriptmanage.ShellScriptManageService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.ExceptionCode;

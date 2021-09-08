@@ -6,7 +6,7 @@ import com.pamirs.takin.entity.domain.entity.LinkGuardEntity;
 import com.pamirs.takin.entity.domain.query.LinkGuardQueryParam;
 import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;

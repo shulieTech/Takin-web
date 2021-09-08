@@ -21,7 +21,7 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;

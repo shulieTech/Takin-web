@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.dao.perfomanceanaly;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.mapper.mysql.PressureMachineMapper;
 import io.shulie.takin.web.data.model.mysql.PressureMachineEntity;
@@ -131,7 +132,7 @@ public class PressureMachineDaoImpl implements PressureMachineDao {
         Page<PressureMachineEntity> page = new Page<>(queryParam.getCurrent(), queryParam.getPageSize());
         Page<PressureMachineEntity> pressureMachineEntityPage = pressureMachineMapper.selectPage(page, wrapper);
         if (CollectionUtils.isEmpty(pressureMachineEntityPage.getRecords())) {
-            return PagingList.empty();
+            return PagingList.of(Lists.newArrayList(),pressureMachineEntityPage.getTotal());
         }
         List<PressureMachineResult> pressureMachineResultList = pressureMachineEntityPage.getRecords().stream().map(
             pressureMachineEntity -> {

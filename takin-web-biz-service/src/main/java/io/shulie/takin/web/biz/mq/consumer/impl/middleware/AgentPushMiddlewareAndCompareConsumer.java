@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
+import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.MqConstants;
 import io.shulie.takin.web.data.dao.application.ApplicationMiddlewareDAO;
@@ -56,6 +57,7 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
         try {
             // 根据 applicationId 查询应用中间件
             log.info("应用中间件上报 --> 异步消息处理 --> 应用中间件查询");
+            PageUtils.clearPageHelper();
             List<ApplicationMiddlewareListResult> applicationMiddlewareList =
                 applicationMiddlewareDAO.listByApplicationId(applicationId);
             if (applicationMiddlewareList.isEmpty()) {

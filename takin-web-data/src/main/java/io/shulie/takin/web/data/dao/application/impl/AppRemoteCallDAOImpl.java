@@ -111,8 +111,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = getAppRemoteCallEntityLambdaQueryWrapper(param);
         Page<AppRemoteCallEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
         IPage<AppRemoteCallEntity> entityPageInfo = this.page(page, lambdaQueryWrapper);
-        if (entityPageInfo.getTotal() == 0) {
-            return PagingList.empty();
+        if (CollectionUtils.isEmpty(entityPageInfo.getRecords())) {
+            return PagingList.of(Lists.newArrayList(),entityPageInfo.getTotal());
         }
         return PagingList.of(getAppRemoteCallResults(entityPageInfo.getRecords()), entityPageInfo.getTotal());
     }

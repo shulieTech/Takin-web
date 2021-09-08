@@ -3,7 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.statistics;
 import java.util.List;
 
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
 import io.shulie.takin.web.biz.convert.statistics.StatisticsConvert;

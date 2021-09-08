@@ -25,7 +25,7 @@ import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerDeleteRequest;

@@ -170,7 +170,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             String errorMsg = Objects.isNull(errorInfo) ? "" : errorInfo.getMsg();
             log.error("takin-cloud查询场景信息返回错误，id={},错误信息：{}", param.getSceneId(), errorMsg);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR,
-                "takin-cloud查询场景信息返回错误，id=" + param.getSceneId() + ",具体错误查看日志。");
+                getCloudMessage(errorInfo.getCode(),errorInfo.getMsg()));
         }
         String jsonString = JsonHelper.bean2Json(resp.getData());
         SceneManageWrapperDTO sceneData = JsonHelper.json2Bean(jsonString, SceneManageWrapperDTO.class);
@@ -223,12 +223,22 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             String errorMsg = Objects.isNull(errorInfo) ? "" : errorInfo.getMsg();
             log.error("takin-cloud启动压测场景返回错误，id={},错误信息：{}", param.getSceneId(), errorMsg);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR,
-                "takin-cloud启动压测场景返回错误，id=" + param.getSceneId() + ",具体错误查看日志。");
+                getCloudMessage(errorInfo.getCode(),errorInfo.getMsg()));
         }
         // 缓存 报告id
         cacheReportId(response, param);
 
         return response;
+    }
+
+    /**
+     * 返回cloud 数据
+     * @param code
+     * @param errorMsg
+     * @return
+     */
+    private String getCloudMessage(String code , String errorMsg) {
+        return String.format("takin-cloud启动场景失败，异常代码【%s】,异常原因【%s】",code,errorMsg);
     }
 
     private void cacheReportId(WebResponse request, SceneActionParam param) {

@@ -26,7 +26,6 @@ import com.alibaba.excel.util.StringUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -271,10 +270,8 @@ public class ApplicationDAOImpl
 
     @Override
     public ApplicationDetailResult getApplicationById(Long appId) {
-        // 修改原因 ：分页插件与 mybatis-plus 污染线程
         ApplicationMntEntity applicationMntEntity =
-            applicationMntMapper.selectOne(
-                this.getLambdaQueryWrapper().eq(ApplicationMntEntity::getApplicationId, appId));
+            applicationMntMapper.selectOne(this.getLimitOneLambdaQueryWrapper().eq(ApplicationMntEntity::getApplicationId, appId));
         if (!Objects.isNull(applicationMntEntity)) {
             ApplicationDetailResult detailResult = new ApplicationDetailResult();
             BeanUtils.copyProperties(applicationMntEntity, detailResult);

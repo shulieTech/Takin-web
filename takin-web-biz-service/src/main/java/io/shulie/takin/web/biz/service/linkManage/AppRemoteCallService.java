@@ -11,6 +11,7 @@ import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import io.shulie.takin.web.common.vo.application.AppRemoteCallListVO;
+import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 
 /**
  * @author 无涯
@@ -79,4 +80,36 @@ public interface AppRemoteCallService {
      * 根据应用删除
      */
     void deleteByApplicationIds(List<Long> applicationIds);
+
+    /**
+     * 根据配置类型筛选数据
+     *
+     * @return
+     */
+    List<SelectVO> getConfigSelectV2(Integer interfaceType,String typeName);
+
+    /**
+     * 根据接口类型筛选数据
+     *
+     * @return
+     */
+    List<SelectVO> getInterfaceTypeSelect();
+
+    /**
+     * 获取服务端应用的接口
+     * @return
+     */
+    Map<Long,List<AppRemoteCallResult>> getListGroupByAppId();
+
+    /**
+     * 根据id批量逻辑删除
+     * @param ids
+     */
+    void batchLogicDelByIds(List<Long> ids);
+
+    /**
+     * 批量保存
+     * @param list
+     */
+    void batchSave(List<AppRemoteCallResult> list);
 }

@@ -1,9 +1,5 @@
-# Takin组件
-全链路压测-控制台，英文名：Takin-web
-
-[![LICENSE](https://img.shields.io/github/license/pingcap/tidb.svg)](https://github.com/pingcap/tidb/blob/master/LICENSE)
-[![Language](https://img.shields.io/badge/Language-Java-blue.svg)](https://www.java.com/)
-
+# 项目名称
+全链路压测，英文名：Takin
 # 项目简介
 压测是指模拟超大负荷量测试软件系统在处于峰值时如何操作，例如模拟真实的软件和硬件环境和非正常的超多用户负荷，测试软件系统在长时间运行时的可靠性和响应时间。本公司产品在此基础之上引入了全链路压测概念，可以在生产环境对系统全链路进行全方位的压测，找出系统的性能风险问题和瓶颈水平，帮助测试人员提升系统稳定性
 ## 三个原则
@@ -29,6 +25,7 @@
 - mysql 可用公共服务
 - influxdb 可用公共服务
 - nginx 可用公共服务
+- hadoop01（图库） 可用公共服务，需要本地配置，配置如下
 ```
 sudo vim /etc/hosts
 139.217.92.129 hadoop01

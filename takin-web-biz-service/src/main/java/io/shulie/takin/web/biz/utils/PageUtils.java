@@ -3,21 +3,12 @@ package io.shulie.takin.web.biz.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.pagehelper.PageHelper;
-
 /**
  * @author hengyu
  * @date 2020/1/8 17:22
  */
 @Deprecated
 public class PageUtils {
-
-    /**
-     * 清除PageHelper
-     */
-    public static void clearPageHelper() {
-        PageHelper.clearPage();
-    }
 
     public static <T> List<T> getPage(Boolean needPage, Integer current, Integer pageSize, List<T> filteredSources) {
         if (filteredSources == null || filteredSources.isEmpty()) {

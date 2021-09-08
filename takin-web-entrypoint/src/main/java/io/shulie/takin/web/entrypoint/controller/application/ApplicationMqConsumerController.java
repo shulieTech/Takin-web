@@ -3,6 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.application;
 import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerQueryInput;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @author shiyajian

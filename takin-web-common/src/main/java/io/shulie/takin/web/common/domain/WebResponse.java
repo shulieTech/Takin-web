@@ -1,11 +1,15 @@
 package io.shulie.takin.web.common.domain;
 
-import java.util.List;
 import java.util.HashMap;
 import java.io.Serializable;
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.github.pagehelper.PageInfo;
 import io.shulie.takin.web.common.common.Response;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * @author vernon
@@ -79,12 +83,16 @@ public class WebResponse<T> implements Serializable {
     }
 
     public static <T> WebResponse<List<T>> success(PageInfo<T> data) {
-        Response.setHeaders(new HashMap<String, String>(1) {{put(PAGE_TOTAL_HEADER, data.getTotal() + "");}});
+        Response.setHeaders(new HashMap<String, String>(1) {{
+            put(PAGE_TOTAL_HEADER, data.getTotal() + "");
+        }});
         return new WebResponse<>(data.getList());
     }
 
     public static <T> WebResponse<List<T>> success(List<T> data, long total) {
-        Response.setHeaders(new HashMap<String, String>(1) {{put(PAGE_TOTAL_HEADER, String.valueOf(total));}});
+        Response.setHeaders(new HashMap<String, String>(1) {{
+            put(PAGE_TOTAL_HEADER, total + "");
+        }});
         return new WebResponse<>(data);
     }
 
@@ -105,7 +113,9 @@ public class WebResponse<T> implements Serializable {
     }
 
     public WebResponse setTotal(Long total) {
-        Response.setHeaders(new HashMap<String, String>(1) {{put(PAGE_TOTAL_HEADER, String.valueOf(total));}});
+        Response.setHeaders(new HashMap<String, String>(1) {{
+            put(PAGE_TOTAL_HEADER, total + "");
+        }});
         return this;
     }
 

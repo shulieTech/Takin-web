@@ -20,7 +20,7 @@
     <parent>
         <artifactId>takin-web</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-2.0.1</version>
+        <version>takin-web-2.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -63,7 +63,8 @@
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <artifactId>servlet-api</artifactId>
+            <version>3.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -88,7 +89,7 @@
         <dependency>
             <groupId>io.shulie.amdb</groupId>
             <artifactId>amdb-common</artifactId>
-            <scope>provided</scope>
+            <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>

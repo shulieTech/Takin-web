@@ -1,18 +1,17 @@
 package io.shulie.takin.web.app.conf;
 
-import lombok.NonNull;
-import org.springframework.web.filter.CorsFilter;
-import org.springframework.context.annotation.Bean;
-import org.springframework.format.FormatterRegistry;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import io.shulie.takin.web.app.conf.intercepter.AbstractInterceptor;
 import io.shulie.takin.web.app.factory.TrimmedAnnotationFormatterFactory;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.format.FormatterRegistry;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * @author shulie
@@ -27,7 +26,7 @@ public class CustomMvcConfig implements WebMvcConfigurer {
     private TrimmedAnnotationFormatterFactory trimmedAnnotationFormatterFactory;
 
     @Override
-    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
         WebMvcConfigurer.super.addResourceHandlers(registry);
     }
 
@@ -59,6 +58,7 @@ public class CustomMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(abstractInterceptor).addPathPatterns("/**");
+        //registry.addInterceptor(abstractInterceptor).addPathPatterns("/**");
     }
+
 }

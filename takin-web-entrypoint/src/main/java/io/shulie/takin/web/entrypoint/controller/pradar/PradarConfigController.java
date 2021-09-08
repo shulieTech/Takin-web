@@ -7,7 +7,6 @@ import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
 import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
-import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigDeleteRequest;
@@ -48,7 +47,8 @@ public class PradarConfigController {
         needAuth = ActionTypeEnum.QUERY
     )
     public PagingList<PradarZKConfigResponse> pageList(PradarZKConfigQueryRequest queryRequest) {
-        PageUtils.clearPageHelper();
+        //List<PradarZKConfigResponse> configList = pradarConfigService.getConfigList();
+        //PradarZKConfigQueryRequest queryRequest = new PradarZKConfigQueryRequest();
         queryRequest.setCurrent(queryRequest.getCurrent() + 1);
         return pradarConfigService.list(queryRequest);
     }

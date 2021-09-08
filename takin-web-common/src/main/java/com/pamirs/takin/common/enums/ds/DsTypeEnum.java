@@ -40,8 +40,12 @@ public enum DsTypeEnum {
     /**
      *kafka 影子kafka集群
      */
-    SHADOW_KAFKA_CLUSTER(5, "影子kafka集群")
-    ;
+    SHADOW_KAFKA_CLUSTER(5, "影子kafka集群"),
+
+
+    SHADOW_REDIS_KEY(6, "影子key"),
+
+    SHADOW_REDIS_CLUSTER(7, "影子集群");
 
     @Getter
     private final Integer code;

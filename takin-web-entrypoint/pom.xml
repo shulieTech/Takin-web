@@ -5,7 +5,7 @@
     <parent>
         <artifactId>takin-web</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-2.0.1</version>
+        <version>takin-web-2.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -22,17 +22,14 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-biz-service</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-common</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-diff-cloud</artifactId>
-            <scope>provided</scope>
         </dependency>
         <!-- 内部module 业务依赖-->
 
@@ -40,7 +37,6 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-beans</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <!--takin common 公共类 -->
@@ -48,42 +44,30 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>swagger-bootstrap-ui</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-cloud-open-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
 

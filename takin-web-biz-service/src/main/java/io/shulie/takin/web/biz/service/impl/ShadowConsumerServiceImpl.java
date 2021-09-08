@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.impl;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +15,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.pamirs.takin.common.enums.ds.MQTypeEnum;
 import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
+import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.enums.MiddlewareTypeGroupEnum;
@@ -37,6 +40,8 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.dao.application.MqConfigTemplateDAO;
+import io.shulie.takin.web.data.result.application.MqConfigTemplateDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ShadowMqConsumerDAO;
@@ -73,6 +78,9 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
 
     @Autowired
     private ShadowMqConsumerDAO shadowMqConsumerDAO;
+
+    @Autowired
+    private MqConfigTemplateDAO mqConfigTemplateDAO;
 
 
     @Override
@@ -188,6 +196,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                     response.setCanEdit(false);
                     response.setCanRemove(false);
                     response.setCanEnableDisable(false);
+                    response.setIsManual(false);
                     return response;
                 })
                 .collect(Collectors.toMap(ShadowConsumerOutput::getUnionId, e -> e, (oV, nV) -> nV));
@@ -206,6 +215,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                     response.setGmtCreate(e.getCreateTime());
                     response.setGmtUpdate(e.getUpdateTime());
                     response.setUserId(e.getUserId());
+                    response.setIsManual(e.getManualTag() == 1);
                     WebPluginUtils.fillQueryResponse(response);
                     return response;
                 })
@@ -488,5 +498,31 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getApplicationId, applicationId);
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getDeleted, ShadowConsumerConstants.LIVED);
         return shadowMqConsumerMapper.selectList(lambdaQueryWrapper);
+    }
+
+
+    @Override
+    public List<SelectVO> queryMqSupportType() {
+        List<MqConfigTemplateDetailResult> results = mqConfigTemplateDAO.queryList();
+        if(results.isEmpty()){
+            return Collections.emptyList();
+        }
+        List<SelectVO> vos = Lists.newArrayList();
+        results.forEach(mqTemplate ->{
+            vos.add(new SelectVO(MQTypeEnum.getCodeByValue(mqTemplate.getEngName()),mqTemplate.getEngName()));
+        });
+
+        return vos;
+    }
+
+    @Override
+    public List<SelectVO> queryMqSupportProgramme(String engName ) {
+        MqConfigTemplateDetailResult result = mqConfigTemplateDAO.queryOne(engName);
+        List<SelectVO> vos = Lists.newArrayList();
+        vos.add(new SelectVO(String.valueOf(ShadowConsumerConstants.DISABLE),"不消费影子topic"));
+        if(result.getShadowconsumerEnable() == 1){
+            vos.add(new SelectVO(String.valueOf(ShadowConsumerConstants.ENABLE),"消费影子topic"));
+        }
+        return vos;
     }
 }

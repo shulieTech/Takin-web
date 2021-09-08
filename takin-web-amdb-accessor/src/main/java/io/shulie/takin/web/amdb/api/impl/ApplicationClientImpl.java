@@ -29,6 +29,7 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationInterfaceQuery
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
+import io.shulie.takin.web.amdb.bean.result.application.AppShadowDatabaseDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationErrorDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationInterfaceDTO;
@@ -80,6 +81,11 @@ public class ApplicationClientImpl implements ApplicationClient {
      * 节点, 探针, 统计信息
      */
     private static final String APPLICATION_NODE_PROBE_INFO = "/amdb/db/api/appInstanceStatus/queryInstanceSumInfo";
+
+    /**
+     * 影子库表查询
+     */
+    private static final String APPLICATION_SHADOW_DATABASE_PATH = "/amdb/db/api/app/selectShadowDatabases";
 
     @Autowired
     private AmdbClientProperties properties;
@@ -304,5 +310,23 @@ public class ApplicationClientImpl implements ApplicationClient {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR,e.getMessage());
         }
+    }
+
+    /**
+     * 影子库表查询
+     *
+     * @param appName
+     * @return
+     */
+    @Override
+    public List<AppShadowDatabaseDTO> getApplicationShadowDataBaseInfo(String appName) {
+        String url = properties.getUrl().getAmdb() + APPLICATION_SHADOW_DATABASE_PATH;
+        AmdbResult<List<AppShadowDatabaseDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.GET)
+                .url(url)
+                .param(appName)
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .eventName("查询影子库表信息")
+                .list(AppShadowDatabaseDTO.class);
+        return amdbResponse.getData();
     }
 }

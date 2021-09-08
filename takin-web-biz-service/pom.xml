@@ -5,7 +5,7 @@
     <parent>
         <artifactId>takin-web</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-2.0.1</version>
+        <version>takin-web-2.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -62,12 +62,6 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-data</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>fastjson</artifactId>
-                    <groupId>com.alibaba</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
@@ -77,6 +71,8 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-diff-api</artifactId>
         </dependency>
+
+
         <!-- 内部module 业务依赖-->
 
         <!--takin cloud 引入包-->
@@ -95,7 +91,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>io.shulie.instrument.simulator</groupId>
+            <groupId>com.shulie.instrument.simulator</groupId>
             <artifactId>simulator-agent-api</artifactId>
         </dependency>
         <!-- agent 依赖 -->
@@ -103,6 +99,7 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-ext-api</artifactId>
+            <version>takin-web-2.0.0</version>
         </dependency>
 
         <!--插件类-->
@@ -200,41 +197,12 @@
             <artifactId>swagger-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-open-api</artifactId>
-            <scope>provided</scope>
+            <version>takin-cloud-2.0.1</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.dangdang</groupId>
-            <artifactId>elastic-job-lite-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
 
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-cloud-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.shulie.amdb</groupId>
-            <artifactId>amdb-common</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.mapstruct</groupId>
-                    <artifactId>mapstruct</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.shulie.instrument.module</groupId>
-            <artifactId>module-pradar-core</artifactId>
-        </dependency>
 
     </dependencies>
 

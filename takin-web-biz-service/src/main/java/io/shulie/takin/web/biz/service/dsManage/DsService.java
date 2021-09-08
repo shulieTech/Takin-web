@@ -1,20 +1,22 @@
 package io.shulie.takin.web.biz.service.dsManage;
 
-import java.util.List;
-
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.entity.DsModelWithBLOBs;
 import com.pamirs.takin.entity.domain.entity.simplify.AppBusinessTableInfo;
 import com.pamirs.takin.entity.domain.query.agent.AppBusinessTableQuery;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DsAgentVO;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DsServerVO;
+import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
+import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInputV2;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowServerConfigurationOutput;
 import io.shulie.takin.web.common.common.Response;
+
+import java.util.List;
 
 /**
  * @author fanxx
@@ -68,4 +70,18 @@ public interface DsService {
      * @return
      */
     List<DsServerVO> getShadowDsServerConfigs(String namespace, DsTypeEnum shadowHbaseServer);
+
+    Response dsQueryV2(Long applicationId);
+
+    Response dsQueryDetailV2(Long applicationId,Long id,String middlewareType,String agentSourceType);
+
+    /**
+     *  查询中间件支持的隔离方案
+     * @param middlewareType 中间件类型
+     * @param engName 中间件英文名
+     * @return
+     */
+    List<SelectVO> queryDsType(String middlewareType,String engName);
+
+    Response dsUpdateConfig(ApplicationDsUpdateInputV2 updateRequestV2);
 }

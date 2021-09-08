@@ -25,5 +25,6 @@ public class ApplicationRemoteCallDTO {
     private String serviceName;
     @JsonProperty("upAppName")
     private String upAppName;
-
+    @JsonProperty("defaultWhiteInfo")
+    private String defaultWhiteInfo;
 }

@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.service;
 
-import java.util.List;
-
+import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.agent.vo.ShadowConsumerVO;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerCreateInput;
@@ -10,6 +9,8 @@ import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerUpdateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerUpdateUserInput;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumersOperateInput;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
+
+import java.util.List;
 
 /**
  * @author shiyajian
@@ -34,4 +35,9 @@ public interface ShadowConsumerService {
     List<ShadowConsumerVO> agentSelect(String namespace);
 
     int allocationUser(ShadowConsumerUpdateUserInput request);
+
+    List<SelectVO> queryMqSupportType();
+
+    List<SelectVO> queryMqSupportProgramme(String engName);
+
 }

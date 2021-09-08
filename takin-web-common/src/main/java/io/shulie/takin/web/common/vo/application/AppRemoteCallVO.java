@@ -74,6 +74,11 @@ public class AppRemoteCallVO extends UserCommonExt {
      */
     private Boolean isSynchronize;
 
+    /**
+     * 是否是手动录入的
+     */
+    private Boolean isManual;
+
     public AppRemoteCallVO() {}
 
     public AppRemoteCallVO(Date gmtCreate, Date gmtModified) {

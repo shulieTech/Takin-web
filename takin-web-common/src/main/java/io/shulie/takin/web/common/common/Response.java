@@ -61,18 +61,22 @@ public class Response<T> {
         this.error = error;
         this.data = data;
         this.success = success;
+        setHeaders(new HashMap<>(1));
     }
 
     public Response(ErrorInfo error, T data, boolean success, int code) {
         this.error = error;
         this.data = data;
         this.success = success;
+        setHeaders(new HashMap<String, String>(1));
     }
 
     public static Response failByType(String code, String msgTemplate, String headerType) {
         ErrorInfo errorInfo = new ErrorInfo();
         errorInfo.setMsgTemplate(msgTemplate);
-        setHeaders(new HashMap<String, String>(1) {{put("type", headerType);}});
+        setHeaders(new HashMap<String, String>(1) {{
+            put("type", headerType);
+        }});
         return new Response(errorInfo, null, false, Integer.parseInt(code));
     }
 
@@ -82,6 +86,7 @@ public class Response<T> {
      * @return -
      */
     public static <T> Response<T> success() {
+        setHeaders(new HashMap<String, String>(1));
         return new Response<>(null);
     }
 
@@ -91,6 +96,7 @@ public class Response<T> {
      * @return -
      */
     public static <T> Response<T> success(T data) {
+        setHeaders(new HashMap<String, String>(1));
         if (data instanceof PageInfo) {
             return success(data);
         }
@@ -106,7 +112,9 @@ public class Response<T> {
     }
 
     public static <T> Response<List<T>> success(PageInfo<T> data) {
-        setHeaders(new HashMap<String, String>(1) {{put(PAGE_TOTAL_HEADER, String.valueOf(data.getTotal()));}});
+        setHeaders(new HashMap<String, String>(1) {{
+            put(PAGE_TOTAL_HEADER, data.getTotal() + "");
+        }});
         permissionHook(data);
         return new Response<>(data.getList());
     }
@@ -128,12 +136,14 @@ public class Response<T> {
     }
 
     public static <T> Response<List<T>> successPagingList(PagingList<T> data) {
-        setHeaders(new HashMap<String, String>(1) {{put(PAGE_TOTAL_HEADER, String.valueOf(data.getTotal()));}});
+        setHeaders(new HashMap<String, String>(1) {{
+            put(PAGE_TOTAL_HEADER, data.getTotal() + "");
+        }});
         return new Response<>(data.getList());
     }
 
     public static <T> Response<List<T>> success(List<T> data, long total) {
-        setHeaders(new HashMap<String, String>(1) {{put(PAGE_TOTAL_HEADER, String.valueOf(total));}});
+        setHeaders(new HashMap<String, String>(1) {{put(PAGE_TOTAL_HEADER, total + "");}});
         return new Response<>(data);
     }
 
@@ -156,7 +166,9 @@ public class Response<T> {
     }
 
     public Response setTotal(Long total) {
-        setHeaders(new HashMap<String, String>(1) {{put(PAGE_TOTAL_HEADER, String.valueOf(total));}});
+        setHeaders(new HashMap<String, String>(1) {{
+            put(PAGE_TOTAL_HEADER, total + "");
+        }});
         return this;
     }
 
@@ -197,7 +209,14 @@ public class Response<T> {
         if (servletRequestAttributes != null) {
             HttpServletResponse response = servletRequestAttributes.getResponse();
             if (response != null) {
+                data.put(TAKIN_AUTHORITY, WebPluginUtils.checkUserData().toString());
                 data.forEach(response::setHeader);
+                // 暴露请求头
+                {
+                    List<String> headers = new ArrayList<>(response.getHeaderNames());
+                    headers.remove("Access-Control-Expose-Headers");
+                    response.setHeader("Access-Control-Expose-Headers", String.join(",", headers));
+                }
             }
             log.debug("设置响应头失败,servletRequestAttributes.getResponse()=null");
         }

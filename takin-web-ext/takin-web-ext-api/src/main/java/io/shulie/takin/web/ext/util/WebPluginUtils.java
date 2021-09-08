@@ -322,26 +322,26 @@ public class WebPluginUtils {
     }
 
     public static Map<String, String> getSystemInfo() {
-        if(Objects.nonNull(userApi)) {
-            return userApi.getSystemInfo();
-        }
+        UserExt user = null;
+        // TODO:TakinUser;
+        //TakinRestContext.getUser();
+        //TakinUserResult result = userDAO.selectById(user.getCustomerId());
         HashMap<String, String> dataMap = new LinkedHashMap<>();
-        dataMap.put("租户ID", CUSTOMER_ID + "");
-        dataMap.put("租户user-app-key", USER_APP_KEY);
-        dataMap.put("用户ID", USER_ID + "");
-        dataMap.put("用户user-app-key", USER_APP_KEY);
+        //dataMap.put("租户ID", ifNull(user.getCustomerId() + ""));
+        //dataMap.put("租户user-app-key", ifNull(result.getKey()));
+        //dataMap.put("用户ID", ifNull(user.getId() + ""));
+        //dataMap.put("用户user-app-key", ifNull(user.getKey()));
         return dataMap;
     }
 
-    /**
-     * 补充cloud 用户数据
-     * @param cloudUserExt
-     */
     public static void fillCloudUserData(CloudUserCommonRequestExt cloudUserExt) {
-        if(Objects.nonNull(userApi)) {
-             userApi.fillCloudUserData(cloudUserExt);
-             return;
-        }
+        //inParam.setLicense(RemoteConstant.LICENSE_VALUE);
+        //Long uid = TakinRestContext.getUser() != null ? TakinRestContext.getUser().getId() : null;
+        //if (uid == null) {
+        //    uid = inParam.getUid();
+        //}
+        //inParam.setUid(uid);
+        //inParam.setFilterUids(TakinRestContext.getQueryAllowUserIdList());
     }
 
 }

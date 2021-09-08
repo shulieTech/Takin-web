@@ -8,6 +8,7 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationInterfaceQuery
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
+import io.shulie.takin.web.amdb.bean.result.application.AppShadowDatabaseDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationErrorDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationInterfaceDTO;
@@ -78,5 +79,12 @@ public interface ApplicationClient {
      * @return 应用节点探针统计信息
      */
     ApplicationNodeProbeInfoDTO getApplicationNodeProbeInfo(ApplicationNodeQueryDTO dto);
+
+    /**
+     * 影子库表查询
+     * @param appName
+     * @return
+     */
+    List<AppShadowDatabaseDTO> getApplicationShadowDataBaseInfo(String appName);
 
 }

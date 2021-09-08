@@ -1,18 +1,9 @@
 package io.shulie.takin.web.biz.service.linkManage.impl;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
-
-import com.alibaba.fastjson.JSONObject;
-
+import cn.hutool.core.collection.CollStreamUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TBaseConfigDao;
@@ -24,6 +15,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallTypeTemplateDTO;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
@@ -34,9 +26,10 @@ import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;
+import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeTemplateEnum;
+import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeV2Enum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
@@ -45,6 +38,8 @@ import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO.RemoteCall;
 import io.shulie.takin.web.common.vo.application.AppRemoteCallListVO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.application.HttpClientConfigTemplateDAO;
+import io.shulie.takin.web.data.dao.application.RpcConfigTemplateDAO;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
 import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.param.application.AppRemoteCallCreateParam;
@@ -53,7 +48,10 @@ import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.data.result.application.HttpClientConfigTemplateDetailResult;
+import io.shulie.takin.web.data.result.application.RpcConfigTemplateDetailResult;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -62,6 +60,18 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 /**
  * @author 无涯
@@ -94,6 +104,12 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
+
+    @Autowired
+    private HttpClientConfigTemplateDAO httpClientConfigTemplateDAO;
+
+    @Autowired
+    private RpcConfigTemplateDAO rpcConfigTemplateDAO;
 
     @Value("${remote.call.auto.join.white:true}")
     private String autoJoinWhiteFlag;
@@ -315,6 +331,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 listVO.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
                 listVO.setSort(2);
                 listVO.setAppName(call.getAppName());
+                listVO.setDefaultWhiteInfo(call.getDefaultWhiteInfo());
                 // 权限问题
                 fillInPermissions(listVO, detailResult);
                 return listVO;
@@ -639,4 +656,107 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         return resultList;
     }
 
+    @Override
+    public List<SelectVO> getConfigSelectV2(Integer interfaceType,String typeName) {
+        AppRemoteCallTypeV2Enum anEnum = AppRemoteCallTypeV2Enum.getEnum(interfaceType);
+        ApplicationRemoteCallTypeTemplateDTO typeTemplateDTO = new ApplicationRemoteCallTypeTemplateDTO();
+        if(AppRemoteCallTypeTemplateEnum.HTTP.equals(anEnum.getParentEnum())){
+            HttpClientConfigTemplateDetailResult template = httpClientConfigTemplateDAO.selectTemplate(typeName);
+            if(Objects.isNull(template)){
+                return Collections.EMPTY_LIST;
+            }
+            BeanUtils.copyProperties(template,typeTemplateDTO);
+        }
+        if(AppRemoteCallTypeTemplateEnum.RPC.equals(anEnum.getParentEnum())){
+            RpcConfigTemplateDetailResult template = rpcConfigTemplateDAO.selectTemplate(typeName);
+            if(Objects.isNull(template)){
+                return Collections.EMPTY_LIST;
+            }
+            BeanUtils.copyProperties(template,typeTemplateDTO);
+        }
+        return this.buildSelectVos(typeTemplateDTO);
+    }
+
+
+    private List<SelectVO> buildSelectVos( ApplicationRemoteCallTypeTemplateDTO dto){
+        List<SelectVO> vos = Lists.newArrayList();
+        if(dto.getWhitelistEnable() == 1){
+            vos.add(new SelectVO(AppRemoteCallConfigEnum.OPEN_WHITELIST.getType().toString()
+                    ,AppRemoteCallConfigEnum.OPEN_WHITELIST.getConfigName()));
+        }
+
+        if(dto.getReturnMockEnable() == 1){
+            vos.add(new SelectVO(AppRemoteCallConfigEnum.RETURN_MOCK.getType().toString()
+                    ,AppRemoteCallConfigEnum.RETURN_MOCK.getConfigName()));
+        }
+
+        if(dto.getForwardMockEnable() == 1){
+            vos.add(new SelectVO(AppRemoteCallConfigEnum.RETURN_MOCK.getType().toString()
+                    ,AppRemoteCallConfigEnum.RETURN_MOCK.getConfigName()));
+        }
+        return vos;
+    }
+
+    /**
+     * 根据接口类型筛选数据
+     *
+     * @return
+     */
+    @Override
+    public List<SelectVO> getInterfaceTypeSelect() {
+        List<HttpClientConfigTemplateDetailResult> httpResultList = httpClientConfigTemplateDAO.selectList();
+        List<RpcConfigTemplateDetailResult> rpcResultList = rpcConfigTemplateDAO.selectList();
+        List<ApplicationRemoteCallTypeTemplateDTO> collect = Lists.newArrayList();
+        if(CollectionUtils.isNotEmpty(httpResultList)){
+            collect.addAll(httpResultList.stream()
+                    .map(httpTemplate -> Convert.convert(ApplicationRemoteCallTypeTemplateDTO.class, httpTemplate))
+                    .collect(Collectors.toList()));
+        }
+
+        if(CollectionUtils.isNotEmpty(rpcResultList)){
+            collect.addAll(rpcResultList.stream()
+                    .map(rpcTemplate -> Convert.convert(ApplicationRemoteCallTypeTemplateDTO.class, rpcTemplate))
+                    .collect(Collectors.toList()));
+        }
+
+        if(CollectionUtils.isEmpty(collect)){
+            return Collections.EMPTY_LIST;
+        }
+
+        List<SelectVO> vos  = collect.stream().map(templateDto -> {
+            String engName = templateDto.getEngName();
+            Integer type = AppRemoteCallTypeV2Enum.getEnumByDesc(engName).getType();
+            SelectVO selectVO = new SelectVO(String.valueOf(type), engName);
+            return selectVO;
+        }).collect(Collectors.toList());
+        return vos;
+    }
+
+
+    /**
+     * 获取服务端应用的接口
+     *
+     * @return
+     */
+    @Override
+    public Map<Long, List<AppRemoteCallResult>> getListGroupByAppId() {
+        List<AppRemoteCallResult> allRecord = appRemoteCallDAO.getAllRecord();
+        return CollStreamUtil.groupByKey(allRecord, AppRemoteCallResult::getApplicationId);
+    }
+
+    /**
+     * 根据id批量逻辑删除
+     *
+     * @param ids
+     */
+    @Override
+    public void batchLogicDelByIds(List<Long> ids) {
+        appRemoteCallDAO.batchLogicDelByIds(ids);
+    }
+
+    @Override
+    public void batchSave(List<AppRemoteCallResult> appRemoteCallResults){
+        appRemoteCallDAO.batchSave(appRemoteCallResults);
+    }
 }
+

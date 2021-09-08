@@ -104,4 +104,9 @@ public class AppRemoteCallEntity {
     @TableField(value = "is_synchronize")
     private Boolean isSynchronize;
 
+    /**
+     * 是否手动录入 0:否;1:是
+     */
+    @TableField(value = "manual_tag")
+    private Integer manualTag;
 }

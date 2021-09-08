@@ -26,7 +26,6 @@ import io.shulie.takin.web.biz.constant.BizOpConstants.SubModules;
 import io.shulie.takin.web.biz.pojo.request.application.MiddlewareSummaryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.MiddlewareSummaryResponse;
 import io.shulie.takin.web.biz.service.application.MiddlewareSummaryService;
-import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
@@ -96,7 +95,6 @@ public class MiddlewareSummaryController {
         @ApiParam(name = "q", value = "搜索内容") String q,
         @ApiParam(name = "status", value = "状态") Integer status
     ) {
-        PageUtils.clearPageHelper();
         final QueryWrapper<MiddlewareSummaryEntity> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(q)) {
             queryWrapper.lambda().and(

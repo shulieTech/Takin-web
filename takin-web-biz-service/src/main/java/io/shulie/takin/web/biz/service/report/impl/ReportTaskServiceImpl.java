@@ -88,7 +88,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 //Ready 数据准备
                 reportDataCache.readyCloudReportData(reportId);
             } catch (Exception e) {
-                log.error("finish report data preparation：{},errorMsg= {}", reportId,e.getMessage());
+                log.error("finish report data preparation：{}", reportId);
             }
             ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
             if (reportDetailDTO == null) {
@@ -105,7 +105,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 Long startTime = System.currentTimeMillis();
                 WebResponse lockResponse = reportService.lockReport(reportId);
                 if (!lockResponse.getSuccess() || lockResponse.getData() == null || !((Boolean)lockResponse.getData())) {
-                    log.error("Lock Running Report Data Failure, reportId={},errorMsg= {}...", reportId,lockResponse.getError());
+                    log.error("Lock Running Report Data Failure, reportId={}...", reportId);
                 }
                 log.info("finish report，total data  Running Report :{}", reportId);
 
@@ -137,12 +137,12 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 reportDataCache.clearDataCache(reportId);
                 log.info("报告id={}汇总成功，花费时间={}", reportId, (System.currentTimeMillis() - startTime));
             } catch (Exception e) {
-                // log.error("客户端生成报告id={}数据异常:{}", reportId, e.getMessage(), e);
+                log.error("客户端生成报告id={}数据异常:{}", reportId, e.getMessage(), e);
                 //生成报告异常，清空本轮生成表数据
                 reportClearService.clearReportData(reportId);
                 //压测结束，生成压测报告异常，解锁报告
                 reportService.unLockReport(reportId);
-                log.error("Unlock Report Success, reportId={} ,errorMsg= {}...", reportId,e.getMessage());
+                log.error("Unlock Report Success, reportId={}...", reportId);
             }
         } catch (Exception e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());
@@ -163,19 +163,19 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 // 检查风险机器
                 problemAnalysisService.checkRisk(reportId);
             } catch (Exception e) {
-                log.error("reportId = {}: Check the risk machine,errorMsg= {} ", reportId,e.getMessage());
+                log.error("reportId = {}: Check the risk machine ", reportId);
             }
             try {
                 // 瓶颈处理
                 problemAnalysisService.processBottleneck(reportId);
             } catch (Exception e) {
-                log.error("reportId = {}: Bottleneck handling,errorMsg= {} ", reportId,e.getMessage());
+                log.error("reportId = {}: Bottleneck handling ", reportId);
             }
             try {
                 //then 报告汇总接口
                 summaryService.calcReportSummay(reportId);
             } catch (Exception e) {
-                log.error("reportId = {}: total report ,errorMsg= {}", reportId,e.getMessage());
+                log.error("reportId = {}: total report ", reportId);
             }
         };
     }
@@ -190,7 +190,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             problemAnalysisService.syncMachineData(reportId);
             log.info("reportId={} syncMachineData success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
         } catch (Exception e) {
-            log.error("reportId={} syncMachineData false,errorMsg= {}", reportId,e.getMessage());
+            log.error("reportId={} syncMachineData false", reportId);
         }
     }
 
@@ -204,7 +204,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             summaryService.calcTpsTarget(reportId);
             log.info("reportId={} calcTpsTarget success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
         } catch (Exception e) {
-            log.error("reportId={} calcTpsTarget false,errorMsg= {}", reportId,e.getMessage());
+            log.error("reportId={} calcTpsTarget false", reportId);
         }
     }
 
@@ -218,7 +218,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             summaryService.calcApplicationSummary(reportId);
             log.info("reportId={} calcApplicationSummary success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
         } catch (Exception e) {
-            log.error("reportId={} calcApplicationSummary false,errorMsg= {}", reportId,e.getMessage());
+            log.error("reportId={} calcApplicationSummary false", reportId);
         }
     }
 }

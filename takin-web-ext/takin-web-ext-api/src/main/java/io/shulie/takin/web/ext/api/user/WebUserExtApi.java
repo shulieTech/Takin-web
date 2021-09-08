@@ -112,9 +112,5 @@ public interface WebUserExtApi extends ExtensionPoint {
      */
     void fillCloudUserData(CloudUserCommonRequestExt cloudUserExt);
 
-    /**
-     * 获取系统个人信息
-     * @return
-     */
-    Map<String, String> getSystemInfo();
+
 }

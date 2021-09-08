@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-2.0.1</version>
+    <version>takin-web-2.0.0</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -39,12 +39,12 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-2.0.1</takin.web.version>
-        <takin.cloud.version>takin-cloud-2.0.1</takin.cloud.version>
-        <takin.common.version>common-1.7.3</takin.common.version>
-        <command.channel>common-1.7.3</command.channel>
+        <takin.web.version>takin-web-2.0.0</takin.web.version>
+        <takin.cloud.version>takin-cloud-2.0.0</takin.cloud.version>
+        <takin.common.version>common-1.7.2</takin.common.version>
+        <command.channel>common-1.7.2</command.channel>
         <pardar.log.protocol.version>2.0.4.2</pardar.log.protocol.version>
-        <instrument.core.version>1.0.0</instrument.core.version>
+        <pradar.core.version>1.0.2-SNAPSHOT</pradar.core.version>
 
         <!-- 3rd libs version -->
         <springfox.version>2.8.0</springfox.version>
@@ -72,7 +72,7 @@
 
 
 
-        <simulator.agent.api.version>5.0.0</simulator.agent.api.version>
+        <simulator.agent.api.version>1.0.0-SNAPSHOT</simulator.agent.api.version>
         <flyway.version>5.2.4</flyway.version>
         <redisson.version>3.15.6</redisson.version>
         <compress.version>1.20</compress.version>
@@ -140,12 +140,6 @@
                 <version>${takin.cloud.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.shulie.takin</groupId>
-                        <artifactId>takin-common-bom</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -291,39 +285,12 @@
                 <artifactId>log-protocol</artifactId>
                 <version>${pardar.log.protocol.version}</version>
             </dependency>
-
             <dependency>
-                <groupId>io.shulie.amdb</groupId>
-                <artifactId>amdb-common</artifactId>
-                <version>1.0.2</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.mapstruct</groupId>
-                        <artifactId>mapstruct</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot</artifactId>
-                    </exclusion>
-
-                </exclusions>
+                <groupId>com.pamirs.pradar</groupId>
+                <artifactId>pradar-core</artifactId>
+                <version>${pradar.core.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>io.shulie.instrument.module</groupId>
-                <artifactId>module-pradar-core</artifactId>
-                <version>${instrument.core.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>guava</artifactId>
-                        <groupId>com.google.guava</groupId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>
                 <artifactId>knife4j-spring-boot-starter</artifactId>
@@ -339,8 +306,9 @@
                 <artifactId>swagger-bootstrap-ui</artifactId>
                 <version>${swagger.ui.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>io.shulie.instrument.simulator</groupId>
+                <groupId>com.shulie.instrument.simulator</groupId>
                 <artifactId>simulator-agent-api</artifactId>
                 <version>${simulator.agent.api.version}</version>
             </dependency>
@@ -391,17 +359,16 @@
             </activation>
         </profile>
     </profiles>
+
     <distributionManagement>
-        <repository>
-            <id>${releases.id}</id>
-            <name>${releases.name}</name>
-            <url>${releases.url}</url>
-        </repository>
         <snapshotRepository>
-            <id>${snapshots.id}</id>
-            <name>${snapshots.name}</name>
-            <url>${snapshots.url}</url>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
     <build>
         <plugins>
@@ -455,20 +422,42 @@
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-gpg-plugin</artifactId>-->
-<!--                <version>1.5</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>sign-artifacts</id>-->
-<!--                        <phase>verify</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>sign</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>

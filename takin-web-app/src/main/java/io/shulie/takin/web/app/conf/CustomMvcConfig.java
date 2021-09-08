@@ -58,7 +58,7 @@ public class CustomMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        //registry.addInterceptor(abstractInterceptor).addPathPatterns("/**");
+        registry.addInterceptor(abstractInterceptor).addPathPatterns("/**");
     }
 
 }

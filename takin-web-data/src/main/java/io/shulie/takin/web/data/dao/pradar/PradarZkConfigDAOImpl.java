@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.mapper.mysql.PradarZkConfigMapper;
 import io.shulie.takin.web.data.model.mysql.PradarZkConfigEntity;
@@ -60,7 +61,7 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
 
         IPage<PradarZkConfigEntity> configs = pradarZkConfigMapper.selectPage(page, wrapper);
         if (CollectionUtils.isEmpty(configs.getRecords())) {
-            return PagingList.empty();
+            return PagingList.of(Lists.newArrayList(),configs.getTotal());
         }
         List<PradarZKConfigResult> pradarZkConfigResultList = configs.getRecords().stream().map(entity -> {
             PradarZKConfigResult configResult = new PradarZKConfigResult();

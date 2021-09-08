@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.mapper.mysql.TakinDbresourceMapper;
@@ -64,11 +65,11 @@ public class DataSourceDAOImpl implements DataSourceDAO {
         Page<TakinDbresourceEntity> page = new Page<>(queryParam.getCurrent(), queryParam.getPageSize());
         wrapper.orderByDesc(TakinDbresourceEntity::getUpdateTime);
 
-        IPage<TakinDbresourceEntity> takinDbresourceEntityPage = datasourceMapper.selectPage(page, wrapper);
-        if (CollectionUtils.isEmpty(takinDbresourceEntityPage.getRecords())) {
-            return PagingList.empty();
+        IPage<TakinDbresourceEntity> takinResourceEntityPage = datasourceMapper.selectPage(page, wrapper);
+        if (CollectionUtils.isEmpty(takinResourceEntityPage.getRecords())) {
+            return PagingList.of(Lists.newArrayList(),takinResourceEntityPage.getTotal());
         }
-        List<DataSourceResult> dataSourceResultList = takinDbresourceEntityPage.getRecords().stream().map(entity -> {
+        List<DataSourceResult> dataSourceResultList = takinResourceEntityPage.getRecords().stream().map(entity -> {
             DataSourceResult dataSourceResult = new DataSourceResult();
             BeanUtils.copyProperties(entity, dataSourceResult);
             return dataSourceResult;

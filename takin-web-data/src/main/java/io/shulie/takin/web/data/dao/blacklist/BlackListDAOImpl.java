@@ -98,8 +98,8 @@ public class BlackListDAOImpl implements BlackListDAO {
             wrapper.like(BlackListEntity::getRedisKey, param.getRedisKey());
         }
         IPage<BlackListEntity> infoEntityPageInfo = blackListMapper.selectPage(page, wrapper);
-        if (CollectionUtils.isEmpty(infoEntityPageInfo.getRecords())) {
-            return PagingList.empty();
+        if (infoEntityPageInfo.getRecords().isEmpty()) {
+            return PagingList.of(Lists.newArrayList(),infoEntityPageInfo.getTotal());
         }
         List<BlacklistVO> results = infoEntityPageInfo.getRecords().stream().map(entity -> {
             BlacklistVO result = new BlacklistVO();

@@ -158,7 +158,7 @@ public class BlacklistServiceImpl implements BlacklistService {
         BeanUtils.copyProperties(input, param);
         PagingList<BlacklistVO> pagingList = blackListDAO.pageList(param);
         if (pagingList.isEmpty()) {
-            return PagingList.empty();
+            return PagingList.of(Lists.newArrayList(),pagingList.getTotal());
         }
         for (BlacklistVO vo : pagingList.getList()) {
             WebPluginUtils.fillQueryResponse(vo);

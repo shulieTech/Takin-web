@@ -21,13 +21,11 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
-import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityNameResponse;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.swagger.annotations.Api;
@@ -67,10 +65,6 @@ public class LinkManageController {
         subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
         logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_DELETE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
-        needAuth = ActionTypeEnum.DELETE
-    )
     public Response deleteScene(@RequestBody DeleteVo deleteVo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
         BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(deleteVo.getId());
@@ -83,10 +77,6 @@ public class LinkManageController {
 
     @GetMapping("/link/scene/manage")
     @ApiOperation("业务流程列表查询")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response<List<SceneDto>> getScenes
         (
             @ApiParam(name = "sceneId", value = "场景id") Long sceneId,
@@ -155,10 +145,6 @@ public class LinkManageController {
      */
     @GetMapping("/link/tech/linkmanage/all")
     @ApiOperation("系统流程名字和id的模糊搜索,不传数据则全部搜索")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SYSTEM_PROCESS,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response<List<SystemProcessIdAndNameDto>> systemProcessFuzzSearch(
         @ApiParam(name = "systemProcessName", value = "系统流程名字") String systemProcessName) {
         try {
@@ -205,10 +191,6 @@ public class LinkManageController {
 
     @GetMapping("/link/bussinessActive")
     @ApiOperation("获取所有的业务活动名字和id")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response<List<BusinessActiveIdAndNameDto>> bussinessActiveNameFuzzSearch(
         @ApiParam(name = "bussinessActiveName", value = "业务活动名字") String bussinessActiveName) {
 
@@ -230,10 +212,6 @@ public class LinkManageController {
 
     @GetMapping("/link/businessFlow")
     @ApiOperation("获取所有的业务流程名字和id")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response<List<BusinessFlowIdAndNameDto>> businessFlowIdFuzzSearch(
         @ApiParam(name = "businessFlowName", value = "业务流程名字") String businessFlowName
     ) {
@@ -274,10 +252,6 @@ public class LinkManageController {
         subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
         logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_CREATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public Response addBusinessFlow(@RequestBody BusinessFlowVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_PROCESS, vo.getSceneName());
@@ -293,10 +267,6 @@ public class LinkManageController {
 
     @GetMapping("/link/scene/tree/detail")
     @ApiOperation("业务流程树详情获取")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response getBusinessFlowDetail(@NotNull String id) {
         try {
             BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(id);
@@ -313,10 +283,6 @@ public class LinkManageController {
         moduleName = BizOpConstants.Modules.LINK_CARDING,
         subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
         logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
-        needAuth = ActionTypeEnum.UPDATE
     )
     public Response modifyBusinessFlow(@RequestBody BusinessFlowVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);

@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.annocation.AuthVerification;
-import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,10 +29,6 @@ public class ApplicationController {
      */
     @GetMapping("/names")
     @ApiOperation("获得所有的应用名称")
-    @AuthVerification(
-        moduleCode = ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public List<WebOptionEntity> getApplicationName() {
         return applicationService.getApplicationName().stream()
             .map(item -> {

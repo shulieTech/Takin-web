@@ -15,8 +15,6 @@ import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.web.common.annocation.AuthVerification;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -49,10 +47,6 @@ public class ShadowJobConfigController {
 
     @ApiOperation(value = "影子JOB配置分页查询, Owner: yuhan.tang")
     @GetMapping(value = APIUrls.API_TAKIN_SIMPLIFY_SHADOW_QUERY_CONFIGS, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response queryByPage(@RequestParam(value = "pageSize", defaultValue = "0") Integer pageSize,
         @RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
         @RequestParam(value = "orderBy", defaultValue = "") String orderBy,
@@ -74,10 +68,6 @@ public class ShadowJobConfigController {
     @ApiOperation(value = "影子JOB配置查询详情, Owner: yuhan.tang")
     @GetMapping(value = APIUrls.API_TAKIN_SIMPLIFY_SHADOW_QUERY_DETAIL_CONFIGS,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response queryDetail(@RequestParam(value = "id") Long id) {
         try {
             Estimate.notBlank(id, "ID不能为空");
@@ -95,10 +85,6 @@ public class ShadowJobConfigController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.JOB_TASK,
         logMsgKey = BizOpConstants.Message.MESSAGE_JOB_TASK_CREATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.CREATE
     )
     public Response insert(@RequestBody TShadowJobConfig config) {
         try {
@@ -128,10 +114,6 @@ public class ShadowJobConfigController {
         subModuleName = BizOpConstants.SubModules.JOB_TASK,
         logMsgKey = BizOpConstants.Message.MESSAGE_JOB_TASK_UPDATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public Response update(@RequestBody ShadowJobConfigQuery query) {
         try {
             Estimate.notBlank(query.getId(), "ID不能为空");
@@ -155,10 +137,6 @@ public class ShadowJobConfigController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.JOB_TASK,
         logMsgKey = BizOpConstants.Message.MESSAGE_JOB_TASK_ENABLE_DISABLE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response updateStatus(@RequestBody ShadowJobConfigQuery query) {
         try {
@@ -187,10 +165,6 @@ public class ShadowJobConfigController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.JOB_TASK,
         logMsgKey = BizOpConstants.Message.MESSAGE_JOB_TASK_DELETE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.DELETE
     )
     public Response delete(@RequestBody ShadowJobConfigQuery query) {
         ShadowJobConfigVo shadowJobConfigVo = shadowJobConfigVo(query.getId());

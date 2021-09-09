@@ -167,7 +167,7 @@ public class SystemController {
     }
 
     private String getUiVersion() {
-        String json = HttpClientUtil.sendGet(takinWebUrl.substring(0, takinWebUrl.lastIndexOf("/")) + "/" + UI_VERSION_FILE);
+        String json = HttpClientUtil.sendGet(takinWebUrl.substring(0, takinWebUrl.lastIndexOf("/")) + "/tro/" + UI_VERSION_FILE);
         if (!StringUtil.isEmpty(json)) {
             JSONObject object = JSONObject.parseObject(json);
             if (!Objects.isNull(object)) {

@@ -507,10 +507,13 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         // 压测脚本文件检查
         errorMsg.append(this.checkScriptCorrelation(sceneData));
         if (errorMsg.length() > 0) {
+            String msg = "";
             if (errorMsg.toString().endsWith(Constants.SPLIT)) {
-                String msg = StringUtils.substring(errorMsg.toString(), 0, errorMsg.toString().length() - 1);
-                throw ApiException.create(Constants.API_ERROR_CODE, msg);
+                 msg = StringUtils.substring(errorMsg.toString(), 0, errorMsg.toString().length() - 1);
+            }else {
+                 msg = errorMsg.toString();
             }
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_VALIDATE_ERROR, msg);
         }
     }
 

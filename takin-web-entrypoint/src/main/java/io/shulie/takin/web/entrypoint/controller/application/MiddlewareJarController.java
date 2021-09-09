@@ -169,8 +169,13 @@ public class MiddlewareJarController {
             .collect(Collectors.toList());
 
         if (!collect.isEmpty()) {
-            boolean canEdit = WebPluginUtils.getUpdateAllowUserIdList() == null || WebPluginUtils.getUser() == null
-                || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.getUser().getId());
+            boolean tempCanEdit = false;
+            if(WebPluginUtils.validateSuperAdmin()) {
+                tempCanEdit = true;
+            } else {
+                tempCanEdit  = WebPluginUtils.getUser() == null || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.getUser().getId());
+            }
+            final Boolean canEdit = tempCanEdit;
             collect.forEach(response -> response.setCanEdit(canEdit));
         }
 

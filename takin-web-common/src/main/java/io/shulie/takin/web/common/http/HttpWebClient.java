@@ -80,7 +80,7 @@ public class HttpWebClient {
     }
 
     private void validateParam(WebRequest request) {
-        if (WebPluginUtils.checkUserData()  && request.getLicense() == null) {
+        if (WebPluginUtils.checkUserData() && request.getLicense() == null) {
             throw ApiException.create(500, "license不能为空");
         }
         if (request.getHttpMethod() == null) {
@@ -126,8 +126,6 @@ public class HttpWebClient {
         if (!headers.containsKey(RemoteConstant.PAGE_TOTAL_HEADER)) {
             return;
         }
-        Response.setHeaders(new HashMap<String, String>(1) {{
-            put(RemoteConstant.PAGE_TOTAL_HEADER, headers.get(RemoteConstant.PAGE_TOTAL_HEADER).get(0));
-        }});
+        Response.setHeaders(new HashMap<String, String>(1) {{put(RemoteConstant.PAGE_TOTAL_HEADER, headers.get(RemoteConstant.PAGE_TOTAL_HEADER).get(0));}});
     }
 }

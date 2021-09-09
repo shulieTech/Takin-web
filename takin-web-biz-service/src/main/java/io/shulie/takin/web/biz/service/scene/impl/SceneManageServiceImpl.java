@@ -624,9 +624,11 @@ public class SceneManageServiceImpl implements SceneManageService {
         });
 
         ResponseResult<ScriptCheckResp> scriptCheckResp = sceneManageApi.checkAndUpdateScript(scriptCheckAndUpdateReq);
-        if (scriptCheckResp == null) {
+        if (scriptCheckResp == null || !scriptCheckResp.getSuccess()) {
             log.error("cloud检查并更新脚本出错：{}", sceneScriptRef.getUploadPath());
-            dto.setErrmsg("cloud检查并更新脚本出错：" + sceneScriptRef.getUploadPath());
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("cloud检查并更新【%s】脚本异常,异常内容【%s】",sceneScriptRef.getUploadPath(),scriptCheckResp.getError().getMsg()));
+            dto.setErrmsg("|");
             return dto;
         }
         if (scriptCheckResp.getData() != null && CollectionUtils.isNotEmpty(scriptCheckResp.getData().getErrorMsg())) {

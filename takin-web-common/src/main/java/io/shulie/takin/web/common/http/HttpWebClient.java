@@ -93,6 +93,7 @@ public class HttpWebClient {
         if (WebPluginUtils.checkUserData()) {
             header.add(RemoteConstant.LICENSE_REQUIRED, "true");
             header.add(RemoteConstant.LICENSE_KEY, request.getLicense());
+            header.add(RemoteConstant.USER_ID, request.getUserId() + "");
             String filterSql = FilterSqlUtil.buildFilterSql(request.getUserIds());
             if (filterSql != null) {
                 header.add(RemoteConstant.FILTER_SQL, filterSql);

@@ -4,8 +4,6 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -56,10 +54,6 @@ public class AppRemoteCallController {
         subModuleName = BizOpConstants.SubModules.REMOTE_CALL,
         logMsgKey = BizOpConstants.Message.MESSAGE_REMOTE_CALL_CREATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public AppRemoteCallStringResponse insert(@Valid @RequestBody AppRemoteCallUpdateRequest request) {
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.INTERFACE, request.getInterfaceName());
@@ -73,10 +67,6 @@ public class AppRemoteCallController {
 
     @ApiOperation("远程调用详情接口")
     @GetMapping("/application/remote/call")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public AppRemoteCallResponse getById(@RequestParam("id") Long id) {
         AppRemoteCallOutput output = appRemoteCallService.getById(id);
         AppRemoteCallResponse response = new AppRemoteCallResponse();
@@ -86,20 +76,12 @@ public class AppRemoteCallController {
 
     @ApiOperation("远程调用异常&&统计接口")
     @GetMapping("/application/remote/call/getException")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public AppRemoteCallStringResponse getException(@RequestParam("applicationId") Long applicationId) {
         return new AppRemoteCallStringResponse(appRemoteCallService.getException(applicationId));
     }
 
     @ApiOperation("远程调用列表接口")
     @GetMapping("/application/remote/call/list")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<AppRemoteCallListVO> pageList(AppRemoteCallQueryRequest request) {
         AppRemoteCallQueryInput input = new AppRemoteCallQueryInput();
         BeanUtils.copyProperties(request, input);
@@ -108,10 +90,6 @@ public class AppRemoteCallController {
 
     @ApiOperation("远程接口配置类型可用性筛选")
     @GetMapping("/application/remote/call/config/select")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public List<SelectVO> getConfigSelect(@RequestParam("interfaceType") Integer interfaceType,
         @RequestParam(value = "serverAppName", required = false) String serverAppName) {
         return appRemoteCallService.getConfigSelect(interfaceType, serverAppName);

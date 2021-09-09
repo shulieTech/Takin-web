@@ -5,14 +5,11 @@ import javax.validation.constraints.NotNull;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeDashBoardQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoardResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeResponse;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +34,6 @@ public class ApplicationNodeController {
 
     @ApiOperation("根据应用id获取节点信息")
     @GetMapping("application/node/list")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<ApplicationNodeResponse> getNodesByAppId(ApplicationNodeQueryRequest request) {
         return applicationNodeService.pageNodes(request);
     }

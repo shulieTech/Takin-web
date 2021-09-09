@@ -14,7 +14,6 @@ import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.BaseConfigService;
 import io.shulie.takin.web.biz.service.scriptmanage.ShellScriptManageService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.ExceptionCode;
@@ -42,7 +41,6 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.shell.ShellScriptManag
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.shell.ShellScriptManageExecuteResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.shell.ShellScriptManageResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.common.constant.BaseConfigConstant;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -82,10 +80,6 @@ public class ShellScriptManageController {
     @ModuleDef(moduleName = BizOpConstants.Modules.SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.SHELL_SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.SCRIPT_MANAGE_CREATE)
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public ScriptManageStringResponse createScriptManage(@RequestBody @Valid ShellScriptManageCreateRequest request) {
         checkScriptManageRequest(request);
         ShellScriptManageCreateInput input = new ShellScriptManageCreateInput();
@@ -120,10 +114,6 @@ public class ShellScriptManageController {
     @ModuleDef(moduleName = BizOpConstants.Modules.SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.SHELL_SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.SCRIPT_MANAGE_UPDATE)
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public ScriptManageStringResponse updateScriptManage(@RequestBody @Valid ShellScriptManageUpdateRequest request) {
         checkScriptManageRequest(request);
         if (request.getScriptDeployId() == null) {
@@ -148,10 +138,6 @@ public class ShellScriptManageController {
     @ModuleDef(moduleName = BizOpConstants.Modules.SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.SHELL_SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.SCRIPT_MANAGE_SCRIPTID_DELETE)
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.DELETE
-    )
     public ScriptManageStringResponse deleteScriptManage(@RequestBody ShellScriptManageDeleteRequest request) {
         shellScriptManageService.deleteScriptManage(request.getScriptId());
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
@@ -167,10 +153,6 @@ public class ShellScriptManageController {
      */
     @GetMapping("/getDownload")
     @ApiOperation(value = "获取下载样例")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.DOWNLOAD
-    )
     public List<ShellScriptManageDownloadResponse> getDownload() {
         TBaseConfig tBaseConfig = baseConfigService.queryByConfigCode(BaseConfigConstant.SHELL_SCRIPT_DOWNLOAD_SAMPLE);
         if (tBaseConfig == null) {
@@ -193,10 +175,6 @@ public class ShellScriptManageController {
 
     @GetMapping
     @ApiOperation(value = "查询shell详情")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public ShellScriptManageDetailResponse getScriptManageDetail(@RequestParam("scriptId") Long scriptId) {
         ShellScriptManageDetailOutput output = shellScriptManageService.getScriptManageDetail(scriptId);
         ShellScriptManageDetailResponse response = new ShellScriptManageDetailResponse();
@@ -206,10 +184,6 @@ public class ShellScriptManageController {
 
     @GetMapping("/history")
     @ApiOperation(value = "查看shell版本内容")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public ShellScriptManageContentResponse compareScriptDeploy(@RequestParam("scriptId") Long scriptId, @RequestParam("version") Integer version) {
         ShellScriptManageContentResponse response = new ShellScriptManageContentResponse();
         ShellScriptManageContentOutput output = shellScriptManageService.getShellScriptManageContent(scriptId, version);
@@ -226,10 +200,6 @@ public class ShellScriptManageController {
      */
     @PostMapping("/list")
     @ApiOperation(value = "查询shell列表")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<ShellScriptManageResponse> pageQueryScriptManage(@RequestBody @Valid ShellScriptManagePageQueryRequest request) {
         ShellScriptManagePageQueryInput input = new ShellScriptManagePageQueryInput();
         BeanUtils.copyProperties(request, input);
@@ -257,10 +227,6 @@ public class ShellScriptManageController {
     @ModuleDef(moduleName = BizOpConstants.Modules.SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.SHELL_SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.SCRIPT_MANAGE_EXECUTE)
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.START_STOP
-    )
     public ShellScriptManageExecuteResponse execute(@RequestParam("scriptDeployId") Long scriptDeployId) {
         ShellScriptManageExecuteOutput output = shellScriptManageService.execute(scriptDeployId);
         ShellScriptManageExecuteResponse response = new ShellScriptManageExecuteResponse();
@@ -274,10 +240,6 @@ public class ShellScriptManageController {
 
     @GetMapping("/getExecuteResult")
     @ApiOperation(value = "获取脚本执行结果")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<ScriptExecuteResponse> getExecuteResult(ShellExecuteRequest request) {
         ShellExecuteInput input = new ShellExecuteInput();
         BeanUtils.copyProperties(request, input);

@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.http.DateUtil;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -106,8 +107,8 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
         queryParam.setApplicationNames(Collections.singletonList(applicationVo.getApplicationName()));
         queryParam.setIp(request.getIp());
         PagingList<ApplicationNodeResult> applicationNodes = applicationNodeDAO.pageNodes(queryParam);
-        if (applicationNodes.isEmpty()) {
-            return PagingList.empty();
+        if (CollectionUtils.isEmpty(applicationNodes.getList())) {
+            return PagingList.of(Lists.newArrayList(),applicationNodes.getTotal());
         }
         List<ApplicationNodeResponse> responseNodes = applicationNodes.getList().stream()
             .map(instance -> {

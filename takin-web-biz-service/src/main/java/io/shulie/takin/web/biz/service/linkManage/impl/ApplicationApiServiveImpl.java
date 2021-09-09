@@ -18,8 +18,6 @@ import com.pamirs.takin.entity.domain.entity.ApplicationApiManage;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.biz.cache.DictionaryCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
@@ -238,10 +236,6 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
     }
 
     @Override
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.ENTRYRULE,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public Response create(ApiCreateVo vo) {
         ApplicationApiCreateParam createParam = new ApplicationApiCreateParam();
         //前端给的是字典中的枚举数据

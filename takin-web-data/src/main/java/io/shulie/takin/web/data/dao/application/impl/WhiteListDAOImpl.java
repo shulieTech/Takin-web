@@ -89,8 +89,8 @@ public class WhiteListDAOImpl extends ServiceImpl<WhiteListMapper, WhiteListEnti
         wrapper.orderByDesc(WhiteListEntity::getGmtModified);
         Page<WhiteListEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
         IPage<WhiteListEntity> entityPageInfo = this.page(page, wrapper);
-        if (entityPageInfo.getTotal() == 0) {
-            return PagingList.empty();
+        if (CollectionUtils.isEmpty(entityPageInfo.getRecords())) {
+            return PagingList.of(Lists.newArrayList(),entityPageInfo.getTotal());
         }
         List<WhiteListVO> vos = entityPageInfo.getRecords().stream().map(entity -> {
             WhiteListVO vo = new WhiteListVO();

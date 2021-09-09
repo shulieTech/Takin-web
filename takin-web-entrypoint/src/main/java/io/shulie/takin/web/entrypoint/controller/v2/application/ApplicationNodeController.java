@@ -2,10 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.v2.application;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoardResponse;
@@ -37,10 +34,6 @@ public class ApplicationNodeController {
 
     @ApiOperation("|_ 节点列表")
     @GetMapping("list")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<ApplicationNodeResponse> getNodesByAppId(@Validated ApplicationNodeQueryRequest request) {
         return applicationNodeService.pageNodesV2(request);
     }

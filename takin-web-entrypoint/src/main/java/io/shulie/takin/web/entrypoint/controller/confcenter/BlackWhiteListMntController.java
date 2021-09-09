@@ -23,8 +23,6 @@ import com.pamirs.takin.entity.domain.entity.TWList;
 import com.pamirs.takin.entity.domain.query.BListQueryParam;
 import com.pamirs.takin.entity.domain.query.TWListVo;
 import com.pamirs.takin.entity.domain.vo.TApplicationInterface;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.ConfCenterService;
@@ -344,10 +342,6 @@ public class BlackWhiteListMntController {
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_BLACKLIST_CREATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BLACKLIST,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public Response saveBList(@RequestBody @Valid TBList tBList, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return Response.fail("0", bindingResult.getFieldError().getDefaultMessage());
@@ -375,10 +369,6 @@ public class BlackWhiteListMntController {
     @ApiOperation(value = "查询黑名单列表")
     @RequestMapping(method = RequestMethod.GET, value = APIUrls.API_TAKIN_CONFCENTER_QUERY_BLIST_URI,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BLACKLIST,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response queryBList(@ApiParam(name = "redisKey", value = "Redis Key名称") String redisKey,
         Integer current,
         Integer pageSize) {
@@ -406,10 +396,6 @@ public class BlackWhiteListMntController {
     @ApiImplicitParam(name = "blistId", value = "黑名单编号")
     @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_BLISTBYID_URI,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BLACKLIST,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response querySingleBListById(@RequestParam("blistId") String blistId) {
         try {
             return Response.success(confCenterService.querySingleBListById(blistId));
@@ -431,10 +417,6 @@ public class BlackWhiteListMntController {
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_BLACKLIST_UPDATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BLACKLIST,
-        needAuth = ActionTypeEnum.UPDATE
     )
     public Response updateBListById(@RequestBody @Valid TBList tBList, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -463,10 +445,6 @@ public class BlackWhiteListMntController {
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_BLACKLIST_ACTION
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BLACKLIST,
-        needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response updateStatusBListById(@RequestBody @Valid TBList tBList, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -501,11 +479,6 @@ public class BlackWhiteListMntController {
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_BLACKLIST_DELETE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BLACKLIST,
-        needAuth = ActionTypeEnum.DELETE
-    )
-
 
     public Response deleteBListByIds(@RequestBody @Valid TBListDelete tbListDelete) {
         try {

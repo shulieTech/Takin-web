@@ -12,8 +12,6 @@ import com.pamirs.takin.entity.domain.query.whitelist.WhiteListQueryVO;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.pojo.request.whitelist.WhiteListDeleteRequest;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
@@ -61,10 +59,6 @@ public class WhiteListConfigController {
         subModuleName = BizOpConstants.SubModules.WHITE_LIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITE_LIST_CREATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public Response<Void> saveWhitelist(@RequestBody WhiteListCreateListVO vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.INTERFACE, vo.getInterfaceList() + "");
@@ -84,10 +78,6 @@ public class WhiteListConfigController {
         subModuleName = BizOpConstants.SubModules.WHITE_LIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITE_LIST_ADD_REMOVE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.ENABLE_DISABLE
-    )
     public Response<Void> operateWhitelist(@RequestBody @Valid WhiteListOperateVO vo) {
         OperationLogContextHolder.operationType(
             vo.getType() == 0 ? BizOpConstants.OpTypes.REMOVE : BizOpConstants.OpTypes.ADD);
@@ -105,10 +95,6 @@ public class WhiteListConfigController {
 
     @ApiOperation("查询白名单接口")
     @GetMapping("/application/whitelist")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response<List<WhiteListVO>> listWhitelist(WhiteListQueryVO vo) {
         return Response.success(whiteListService.queryWhitelist(vo));
     }
@@ -119,10 +105,6 @@ public class WhiteListConfigController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.WHITE_LIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITE_LIST_UPDATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
     )
     public Response<Void> updateWhitelist(@Validated @RequestBody WhiteListUpdateRequest request) {
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
@@ -137,10 +119,6 @@ public class WhiteListConfigController {
         subModuleName = BizOpConstants.SubModules.WHITE_LIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITE_LIST_DELETE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.DELETE
-    )
     public Response<Void> deleteWhitelist(@RequestBody @Valid WhiteListDeleteRequest request) {
         OperationLogContextHolder.operationType(OpTypes.DELETE);
         whiteListService.deleteWhitelist(request);
@@ -149,10 +127,6 @@ public class WhiteListConfigController {
 
     @ApiOperation("局部生效应用数据")
     @GetMapping("/application/part")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public WhitelistPartVO getPart(@RequestParam(value = "wlistId") Long wlistId) {
         return whiteListService.getPart(wlistId);
     }
@@ -163,10 +137,6 @@ public class WhiteListConfigController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.WHITE_LIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITE_LIST_UPDATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
     )
     public WhitelistStringResponse part(@RequestBody WhitelistUpdatePartAppNameRequest request) {
         WhitelistUpdatePartAppNameInput input = new WhitelistUpdatePartAppNameInput();
@@ -181,10 +151,6 @@ public class WhiteListConfigController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.WHITE_LIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITE_LIST_UPDATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
     )
     public WhitelistStringResponse global(@RequestParam("wlistId") Long wlistId) {
         whiteListService.global(wlistId);

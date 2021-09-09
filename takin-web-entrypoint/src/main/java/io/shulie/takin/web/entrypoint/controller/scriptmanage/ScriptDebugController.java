@@ -3,7 +3,6 @@ package io.shulie.takin.web.entrypoint.controller.scriptmanage;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PageScriptDebugRequest;
@@ -13,7 +12,6 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugDetailRespo
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugListResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -46,10 +44,6 @@ public class ScriptDebugController {
     @ModuleDef(moduleName = BizOpConstants.Modules.SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.SCRIPT_MANAGE_UPDATE)
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public ScriptDebugResponse debug(@Validated @RequestBody ScriptDebugDoDebugRequest request) {
         return scriptDebugService.debug(request);
     }
@@ -66,10 +60,6 @@ public class ScriptDebugController {
 
     @ApiOperation("|_ 调试列表(分页)")
     @GetMapping("list")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<ScriptDebugListResponse> index(@Validated PageScriptDebugRequest pageScriptDebugRequest) {
         return scriptDebugService.pageFinishedByScriptDeployId(pageScriptDebugRequest);
     }

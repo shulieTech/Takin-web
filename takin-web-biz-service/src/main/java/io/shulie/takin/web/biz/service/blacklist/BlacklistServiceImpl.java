@@ -156,32 +156,11 @@ public class BlacklistServiceImpl implements BlacklistService {
     public PagingList<BlacklistVO> pageList(BlacklistSearchInput input) {
         BlacklistSearchParam param = new BlacklistSearchParam();
         BeanUtils.copyProperties(input, param);
-        // 是否是admin账号
-        // param.setIsAdmin(user.getRole());
         PagingList<BlacklistVO> pagingList = blackListDAO.pageList(param);
         if (pagingList.isEmpty()) {
-            return PagingList.empty();
+            return PagingList.of(Lists.newArrayList(),pagingList.getTotal());
         }
         for (BlacklistVO vo : pagingList.getList()) {
-            //List<Long> allowUpdateUserIdList = TakinRestContext.getUpdateAllowUserIdList();
-            //if (CollectionUtils.isEmpty(allowUpdateUserIdList)) {
-            //    //管理员
-            //    vo.setCanEdit(true);
-            //} else {
-            //    //普通用户
-            //    vo.setCanEdit(allowUpdateUserIdList.contains(vo.getUserId()));
-            //}
-            //
-            //List<Long> allowDeleteUserIdList = TakinRestContext.getDeleteAllowUserIdList();
-            //if (CollectionUtils.isEmpty(allowDeleteUserIdList)) {
-            //    vo.setCanRemove(true);
-            //} else {
-            //    vo.setCanRemove(allowDeleteUserIdList.contains(vo.getUserId()));
-            //}
-            //List<Long> allowEnableDisableUserIdList = TakinRestContext.getEnableDisableAllowUserIdList();
-            //if (CollectionUtils.isNotEmpty(allowEnableDisableUserIdList)) {
-            //    vo.setCanEnableDisable(allowEnableDisableUserIdList.contains(vo.getUserId()));
-            //}
             WebPluginUtils.fillQueryResponse(vo);
         }
         return pagingList;

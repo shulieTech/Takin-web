@@ -243,7 +243,7 @@ public class DataSourceServiceImpl implements DataSourceService {
         }
         PagingList<DataSourceResult> pagingList = dataSourceDAO.selectPage(queryParam);
         if (pagingList.isEmpty()) {
-            return PagingList.empty();
+            return PagingList.of(Lists.newArrayList(),pagingList.getTotal());
         }
         List<Long> dataSourceIdList =
             pagingList.getList().stream().map(DataSourceResult::getId).collect(Collectors.toList());

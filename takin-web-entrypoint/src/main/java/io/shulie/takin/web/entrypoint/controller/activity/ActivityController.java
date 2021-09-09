@@ -3,8 +3,6 @@ package io.shulie.takin.web.entrypoint.controller.activity;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
@@ -56,10 +54,6 @@ public class ActivityController {
         subModuleName = BizOpConstants.SubModules.BUSINESS_ACTIVITY,
         logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_ACTIVITY_CREATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public void createActivity(@Validated @RequestBody ActivityCreateRequest request) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_ACTIVITY, request.getActivityName());
@@ -75,10 +69,6 @@ public class ActivityController {
         moduleName = BizOpConstants.Modules.LINK_CARDING,
         subModuleName = BizOpConstants.SubModules.BUSINESS_ACTIVITY,
         logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_ACTIVITY_UPDATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.UPDATE
     )
     public void updateActivity(@Validated @RequestBody ActivityUpdateRequest request) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
@@ -96,50 +86,30 @@ public class ActivityController {
         subModuleName = BizOpConstants.SubModules.BUSINESS_ACTIVITY,
         logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_ACTIVITY_DELETE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.DELETE
-    )
     public void deleteActivity(@Valid @NotNull @RequestParam Long activityId) {
         activityService.deleteActivity(activityId);
     }
 
     @ApiOperation("业务活动列表")
     @GetMapping
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<ActivityListResponse> pageActivities(@Valid ActivityQueryRequest request) {
         return activityService.pageActivities(request);
     }
 
     @ApiOperation("|_ 业务活动详情")
     @GetMapping("/activity")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public ActivityResponse getActivityById(@RequestParam Long id) {
         return activityService.getActivityById(id);
     }
 
     @ApiOperation("发起业务活动流量验证请求")
     @PostMapping("/startVerify")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.START_STOP
-    )
     public ActivityVerifyResponse verifyActivity(@Valid @RequestBody ActivityVerifyRequest request) {
         return activityService.verifyActivity(request);
     }
 
     @ApiOperation("查询业务活动流量验证状态")
     @GetMapping("/verifyStat")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public ActivityVerifyResponse getVerifyStatus(@Valid @RequestParam Long activityId) {
         return activityService.getVerifyStatus(activityId);
     }
@@ -152,10 +122,6 @@ public class ActivityController {
         moduleName = BizOpConstants.Modules.LINK_CARDING,
         subModuleName = BizOpConstants.SubModules.BUSINESS_ACTIVITY,
         logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_ACTIVITY_CREATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.CREATE
     )
     public void createVirtualActivity(@Valid @RequestBody VirtualActivityCreateRequest request) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
@@ -172,10 +138,6 @@ public class ActivityController {
         moduleName = BizOpConstants.Modules.LINK_CARDING,
         subModuleName = BizOpConstants.SubModules.BUSINESS_ACTIVITY,
         logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_ACTIVITY_UPDATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.UPDATE
     )
     public void updateVirtualActivity(@Valid @RequestBody VirtualActivityUpdateRequest request) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);

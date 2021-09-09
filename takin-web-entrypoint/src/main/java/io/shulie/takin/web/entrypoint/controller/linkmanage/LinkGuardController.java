@@ -5,8 +5,6 @@ import java.util.List;
 import com.pamirs.takin.entity.domain.entity.LinkGuardEntity;
 import com.pamirs.takin.entity.domain.query.LinkGuardQueryParam;
 import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
@@ -56,10 +54,6 @@ public class LinkGuardController {
         subModuleName = BizOpConstants.SubModules.OUTLET_BAFFLE,
         logMsgKey = BizOpConstants.Message.MESSAGE_OUTLET_BAFFLE_CREATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public Response storetechLink(@RequestBody LinkGuardVo vo) {
         // 备注字段上限
         if (StringUtils.isNotBlank(vo.getRemark()) && vo.getRemark().length() > 200) {
@@ -78,10 +72,6 @@ public class LinkGuardController {
      */
     @GetMapping("/link/guard/guardmanage")
     @ApiOperation("挡板列表查询接口")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response<List<LinkGuardVo>> gettGuardList(
         @ApiParam(name = "applicationName", value = "系统名字") @RequestParam(value = "applicationName", required = false)
             String applicationName,
@@ -109,10 +99,6 @@ public class LinkGuardController {
 
     @GetMapping("/link/guard/guardmanage/info")
     @ApiOperation("挡板详情接口")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response<LinkGuardVo> gettGuardInfo(
         @ApiParam(name = "id", value = "挡板id") @RequestParam(value = "id", required = true) Long id
 
@@ -129,10 +115,6 @@ public class LinkGuardController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.OUTLET_BAFFLE,
         logMsgKey = BizOpConstants.Message.MESSAGE_OUTLET_BAFFLE_UPDATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
     )
     public Response modifyGuard(@RequestBody @ApiParam(name = "vo", value = "挡板入参对象") LinkGuardVo vo) {
         // 备注字段上限
@@ -151,10 +133,6 @@ public class LinkGuardController {
         subModuleName = BizOpConstants.SubModules.OUTLET_BAFFLE,
         logMsgKey = BizOpConstants.Message.MESSAGE_OUTLET_BAFFLE_DELETE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.DELETE
-    )
     public Response deleteGuard(@RequestBody LinkGuardVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
 
@@ -172,10 +150,6 @@ public class LinkGuardController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.OUTLET_BAFFLE,
         logMsgKey = BizOpConstants.Message.MESSAGE_OUTLET_BAFFLE_ENABLE_DISABLE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response guard(@RequestBody LinkGuardVo vo) {
         OperationLogContextHolder.operationType(

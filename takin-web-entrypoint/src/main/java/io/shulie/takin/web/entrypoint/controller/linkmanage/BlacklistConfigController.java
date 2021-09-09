@@ -5,8 +5,6 @@ import javax.validation.Valid;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.blacklist.BlacklistService;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
@@ -70,10 +68,6 @@ public class BlacklistConfigController {
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_BLACKLIST_CREATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public BlacklistStringResponse add(@RequestBody @Valid BlacklistCreateRequest request) {
         if (StringUtils.isBlank(request.getRedisKey()) || StringUtils.isBlank(request.getRedisKey().trim())) {
             throw new TakinWebException(ExceptionCode.BLACKLIST_ADD_ERROR, "不允许填写空黑名单");
@@ -95,10 +89,6 @@ public class BlacklistConfigController {
      */
     @ApiOperation("分页查询黑名单列表")
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<BlacklistVO> pageList(BlacklistSearchRequest request) {
         BlacklistSearchInput input = new BlacklistSearchInput();
         BeanUtils.copyProperties(request, input);
@@ -134,10 +124,6 @@ public class BlacklistConfigController {
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_BLACKLIST_UPDATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public BlacklistStringResponse update(@RequestBody BlacklistUpdateRequest request) {
         if (StringUtils.isBlank(request.getRedisKey()) || StringUtils.isBlank(request.getRedisKey().trim())) {
             throw new TakinWebException(ExceptionCode.BLACKLIST_UPDATE_ERROR, "不允许填写空黑名单");
@@ -166,10 +152,6 @@ public class BlacklistConfigController {
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_BLACKLIST_ACTION
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.ENABLE_DISABLE
-    )
     public BlacklistStringResponse enable(@RequestBody @Valid BlacklistEnableRequest request) {
         String operationType = BlacklistEnableEnum.ENABLE.getStatus().equals(request.getUseYn())
             ? BizOpConstants.OpTypes.ENABLE : BizOpConstants.OpTypes.DISABLE;
@@ -192,10 +174,6 @@ public class BlacklistConfigController {
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
         logMsgKey = Message.MESSAGE_BLACKLIST_BATCH_ACTION
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.ENABLE_DISABLE
-    )
     public BlacklistStringResponse listEnable(@RequestBody BlacklistBatchEnableRequest request) {
         String operationType = BlacklistEnableEnum.ENABLE.getStatus().equals(request.getUseYn())
             ? BizOpConstants.OpTypes.ENABLE : BizOpConstants.OpTypes.DISABLE;
@@ -214,10 +192,6 @@ public class BlacklistConfigController {
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
         logMsgKey = Message.MESSAGE_BLACKLIST_BATCH_DELETE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.DELETE
     )
     public BlacklistStringResponse batchDelete(@RequestBody @Valid BlacklistBatchDeleteRequest request) {
         if (request.getIds() == null || request.getIds().size() == 0) {
@@ -240,10 +214,6 @@ public class BlacklistConfigController {
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
         logMsgKey = BizOpConstants.Message.MESSAGE_BLACKLIST_DELETE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.DELETE
     )
     public BlacklistStringResponse delete(@RequestBody @Valid BlacklistDeleteRequest request) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);

@@ -17,13 +17,9 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Assert;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
-import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Modules;
 import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
 import io.shulie.takin.web.biz.constant.BizOpConstants.SubModules;
@@ -105,10 +101,6 @@ public class MiddlewareJarController {
      * @return 导入失败的文件
      */
     @ApiOperation("|_ 导入")
-    @AuthVerification(
-        moduleCode = ModuleCode.MIDDLEWARE,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     @PostMapping("import")
     @ModuleDef(
         moduleName = Modules.MIDDLEWARE_MANAGE,
@@ -128,10 +120,6 @@ public class MiddlewareJarController {
     }
 
     @ApiOperation("|_ 根据id更新")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.MIDDLEWARE,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     @PutMapping("update")
     @ModuleDef(
         moduleName = Modules.MIDDLEWARE_MANAGE,
@@ -145,10 +133,6 @@ public class MiddlewareJarController {
         middlewareJarService.edit(middlewareJarEntity);
     }
 
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.MIDDLEWARE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     @ApiOperation("|_ 分页查询")
     @GetMapping("list")
     public PagingList<MiddlewareJarResponse> list(

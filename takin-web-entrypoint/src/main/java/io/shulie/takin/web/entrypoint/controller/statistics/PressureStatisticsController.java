@@ -2,10 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.statistics;
 
 import java.util.List;
 
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
 import io.shulie.takin.web.biz.convert.statistics.StatisticsConvert;
 import io.shulie.takin.web.biz.pojo.input.statistics.PressureTotalInput;
 import io.shulie.takin.web.biz.pojo.output.statistics.PressureListTotalOutput;
@@ -42,10 +39,6 @@ public class PressureStatisticsController {
      */
     @GetMapping("/getPressurePieTotal")
     @ApiOperation(value = "统计压测场景分类以及脚本类型")
-    @AuthVerification(
-        moduleCode = ModuleCode.PRESSURE_STATISTIC,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public ResponseResult<PressurePieTotalOutput> getPressurePieTotal(
         @RequestParam("startTime") String startTime, @RequestParam("endTime") String endTime,
         @RequestParam("type") String type) {
@@ -64,10 +57,6 @@ public class PressureStatisticsController {
      */
     @GetMapping("/getReportTotal")
     @ApiOperation(value = "统计报告通过以及未通过")
-    @AuthVerification(
-        moduleCode = ModuleCode.PRESSURE_STATISTIC,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public ResponseResult<ReportTotalOutput> getReportTotal(@RequestParam("startTime") String startTime,
         @RequestParam("endTime") String endTime) {
         PressureTotalInput input = new PressureTotalInput();
@@ -84,10 +73,6 @@ public class PressureStatisticsController {
      */
     @GetMapping("/getPressureListTotal")
     @ApiOperation(value = "统计压测场景次数以及压测脚本次数")
-    @AuthVerification(
-        moduleCode = ModuleCode.PRESSURE_STATISTIC,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public ResponseResult<List<PressureListTotalOutput>> getPressureListTotal(
         @RequestParam("startTime") String startTime, @RequestParam("endTime") String endTime,
         @RequestParam("type") String type) {
@@ -106,10 +91,6 @@ public class PressureStatisticsController {
      */
     @GetMapping("/getScriptLabelListTotal")
     @ApiOperation(value = "统计脚本标签")
-    @AuthVerification(
-        moduleCode = ModuleCode.PRESSURE_STATISTIC,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public ResponseResult<List<ScriptLabelListTotalOutput>> getScriptLabelListTotal(
         @RequestParam("startTime") String startTime, @RequestParam("endTime") String endTime) {
         PressureTotalInput input = new PressureTotalInput();

@@ -3,10 +3,8 @@ package io.shulie.takin.web.entrypoint.controller.application;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginsConfigVO;
 import io.swagger.annotations.Api;
@@ -32,10 +30,6 @@ public class ApplicationPluginsConfigController {
 
     @ApiOperation("获取插件管理列表")
     @GetMapping(apiPrefix + "/page")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<ApplicationPluginsConfigVO> findPage(ApplicationPluginsConfigParam param) {
         return configService.getPageByParam(param);
     }
@@ -46,10 +40,6 @@ public class ApplicationPluginsConfigController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.PLUGINS_MANAGER,
         logMsgKey = BizOpConstants.Message.MESSAGE_PLUGIN_MANAGER_UPDATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
     )
     public Boolean update(@RequestBody ApplicationPluginsConfigParam param) {
         return configService.update(param);

@@ -8,12 +8,10 @@ import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -65,10 +63,6 @@ public class ApplicationApiController {
 
     @ApiOperation("查询")
     @GetMapping(value = "/api/get")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.ENTRYRULE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response query(@ApiParam(name = "applicationName", value = "应用名") String applicationName,
         @ApiParam(name = "api", value = "入口名") String api,
         Integer current,
@@ -91,10 +85,6 @@ public class ApplicationApiController {
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.ENTRYRULE,
         logMsgKey = BizOpConstants.Message.MESSAGE_ENTRYRULE_DELETE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.ENTRYRULE,
-        needAuth = ActionTypeEnum.DELETE
     )
     public Response delete(@RequestBody ApiDeleteVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
@@ -119,10 +109,6 @@ public class ApplicationApiController {
         subModuleName = BizOpConstants.SubModules.ENTRYRULE,
         logMsgKey = BizOpConstants.Message.MESSAGE_ENTRYRULE_UPDATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.ENTRYRULE,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public Response update(@RequestBody ApiUpdateVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
         try {
@@ -142,10 +128,6 @@ public class ApplicationApiController {
         subModuleName = BizOpConstants.SubModules.ENTRYRULE,
         logMsgKey = BizOpConstants.Message.MESSAGE_ENTRYRULE_CREATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.ENTRYRULE,
-        needAuth = ActionTypeEnum.CREATE
-    )
     public Response add(@RequestBody ApiCreateVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.APPLICATION_NAME, vo.getApplicationName());
@@ -163,10 +145,6 @@ public class ApplicationApiController {
 
     @ApiOperation("详情")
     @GetMapping(value = "/api/getDetail")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.ENTRYRULE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public Response queryDetail(@RequestParam("id") String id) {
         try {
             return apiService.queryDetail(id);

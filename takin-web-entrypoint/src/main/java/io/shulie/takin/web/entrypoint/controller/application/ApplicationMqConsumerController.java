@@ -10,8 +10,6 @@ import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerUpdateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumersOperateInput;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
 import io.shulie.takin.web.biz.service.ShadowConsumerService;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
 import io.shulie.takin.web.biz.pojo.request.application.ShadowConsumerDeleteRequest;
@@ -42,20 +40,12 @@ public class ApplicationMqConsumerController {
 
     @GetMapping("/get")
     @ApiOperation("查看影子消费者")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public ShadowConsumerOutput getMqConsumerById(@Validated @NotNull @RequestParam("id") Long id) {
         return shadowConsumerService.getMqConsumerById(id);
     }
 
     @GetMapping("/page")
     @ApiOperation("分页查询影子消费者")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
-    )
     public PagingList<ShadowConsumerOutput> pageMqConsumers(@Validated ShadowConsumerQueryInput request) {
         return shadowConsumerService.pageMqConsumers(request);
     }
@@ -66,10 +56,6 @@ public class ApplicationMqConsumerController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.SHADOW_CONSUMER,
         logMsgKey = Message.MESSAGE_SHADOW_CONSUMER_CREATE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.CREATE
     )
     public void createMqConsumers(@Validated @RequestBody ShadowConsumerCreateInput request) {
         shadowConsumerService.createMqConsumers(request);
@@ -82,10 +68,6 @@ public class ApplicationMqConsumerController {
         subModuleName = BizOpConstants.SubModules.SHADOW_CONSUMER,
         logMsgKey = Message.MESSAGE_SHADOW_CONSUMER_UPDATE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public void updateMqConsumers(@Validated @RequestBody ShadowConsumerUpdateInput request) {
         shadowConsumerService.updateMqConsumers(request);
     }
@@ -97,10 +79,6 @@ public class ApplicationMqConsumerController {
         subModuleName = BizOpConstants.SubModules.SHADOW_CONSUMER,
         logMsgKey = Message.MESSAGE_SHADOW_CONSUMER_DELETE
     )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.DELETE
-    )
     public void deleteMqConsumers(@Validated @RequestBody ShadowConsumerDeleteRequest request) {
         shadowConsumerService.deleteMqConsumers(request.getIds());
     }
@@ -111,10 +89,6 @@ public class ApplicationMqConsumerController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.SHADOW_CONSUMER,
         logMsgKey = Message.MESSAGE_SHADOW_CONSUMER_ADD_REMOVE
-    )
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public void operateMqConsumers(@Validated @RequestBody ShadowConsumersOperateInput request) {
         shadowConsumerService.operateMqConsumers(request);

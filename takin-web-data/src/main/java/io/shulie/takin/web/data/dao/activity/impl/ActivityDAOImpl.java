@@ -315,8 +315,8 @@ public class ActivityDAOImpl implements ActivityDAO {
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
         Page<BusinessLinkManageTableEntity> tableEntityPage = businessLinkManageTableMapper
             .selectPage(page, lambdaQueryWrapper);
-        if (tableEntityPage.getSize() <= 0) {
-            return PagingList.empty();
+        if (CollectionUtils.isEmpty(tableEntityPage.getRecords())) {
+            return PagingList.of(Lists.newArrayList(),tableEntityPage.getTotal());
         }
         List<String> techLinkIds = tableEntityPage.getRecords().stream().map(
             BusinessLinkManageTableEntity::getRelatedTechLink).collect(

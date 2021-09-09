@@ -5,8 +5,6 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.web.biz.service.LeakSqlService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlDeleteRequest;
@@ -16,7 +14,6 @@ import io.shulie.takin.web.biz.pojo.request.leakcheck.SqlTestRequest;
 import io.shulie.takin.web.biz.pojo.response.leakcheck.LeakSqlBatchRefsResponse;
 import io.shulie.takin.web.biz.pojo.response.leakcheck.LeakSqlRefsResponse;
 import io.shulie.takin.web.biz.pojo.response.leakcheck.SqlTestResponse;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang.StringUtils;
@@ -44,30 +41,18 @@ public class LeakCheckSqlController {
 
     @PostMapping("/create")
     @ApiOperation("创建脚本")
-    @AuthVerification(
-        moduleCode = ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public void createLeakSqlRef(@Validated @RequestBody LeakSqlCreateRequest createRequest) {
         leakSqlService.createLeakCheckConfig(createRequest);
     }
 
     @PutMapping("/update")
     @ApiOperation("更新脚本")
-    @AuthVerification(
-        moduleCode = ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public void updateLeakSqlRef(@Validated @RequestBody LeakSqlUpdateRequest updateRequest) {
         leakSqlService.updateLeakCheckConfig(updateRequest);
     }
 
     @DeleteMapping("/delete")
     @ApiOperation("删除脚本")
-    @AuthVerification(
-        moduleCode = ModuleCode.BUSINESS_ACTIVITY,
-        needAuth = ActionTypeEnum.UPDATE
-    )
     public void deleteLeakSqlRef(@Validated @RequestBody LeakSqlDeleteRequest deleteRequest) {
         leakSqlService.deleteLeakCheckConfig(deleteRequest);
     }

@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.biz.constant.DashboardExceptionCode;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.service.dashboard.ApplicationService;
 import io.shulie.takin.web.biz.pojo.response.dashboard.AppPressureSwitchSetResponse;
@@ -43,6 +45,10 @@ public class ApplicationController {
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
+    )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
+        needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public AppPressureSwitchSetResponse getAppSwitch(
         @RequestBody ApplicationVo vo) {

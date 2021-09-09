@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
@@ -31,12 +32,14 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.SupportJmeterPluginNam
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.SupportJmeterPluginVersionResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.WebPartResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,6 +62,10 @@ public class ScriptManageController {
 
     @GetMapping("/getZipFileUrl")
     @ApiOperation(value = "打包下载脚本实例所有文件")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.DOWNLOAD
+    )
     public ScriptManageStringResponse getZipFileUrl(@RequestParam("scriptId") @Valid Long scriptDeployId) {
         String zipFileUrl = scriptManageService.getZipFileUrl(scriptDeployId);
         return new ScriptManageStringResponse(zipFileUrl);
@@ -69,6 +76,10 @@ public class ScriptManageController {
     @ModuleDef(moduleName = BizOpConstants.Modules.SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.SCRIPT_MANAGE_UPDATE)
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.UPDATE
+    )
     public ScriptManageStringResponse updateScriptManage(
         @RequestBody @Valid ScriptManageDeployUpdateRequest scriptManageDeployUpdateRequest) {
         List<FileManageUpdateRequest> fileManageUpdateRequests = scriptManageDeployUpdateRequest
@@ -101,6 +112,10 @@ public class ScriptManageController {
     @ModuleDef(moduleName = BizOpConstants.Modules.SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.SCRIPT_MANAGE_CREATE)
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.CREATE
+    )
     public ScriptManageStringResponse createScriptManage(
         @RequestBody @Valid ScriptManageDeployCreateRequest scriptManageDeployCreateRequest) {
         List<FileManageCreateRequest> fileManageCreateRequests = scriptManageDeployCreateRequest
@@ -132,6 +147,10 @@ public class ScriptManageController {
     @ModuleDef(moduleName = BizOpConstants.Modules.SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.SCRIPT_MANAGE_DELETE)
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.DELETE
+    )
     public ScriptManageStringResponse deleteScriptManage(
         @RequestBody ScriptManageDeployDeleteRequest scriptManageDeployDeleteRequest) {
         scriptManageService.deleteScriptManage(scriptManageDeployDeleteRequest.getScriptDeployId());
@@ -143,12 +162,20 @@ public class ScriptManageController {
 
     @GetMapping
     @ApiOperation(value = "查询脚本详情")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public ScriptManageDeployDetailResponse getScriptManageDeployDetail(@RequestParam("scriptId") Long scriptDeployId) {
         return scriptManageService.getScriptManageDeployDetail(scriptDeployId);
     }
 
     @PostMapping("/list")
     @ApiOperation(value = "查询脚本文件列表")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public PagingList<ScriptManageDeployResponse> pageQueryScriptManage(
         @RequestBody @Valid ScriptManageDeployPageQueryRequest scriptManageDeployPageQueryRequest) {
         return scriptManageService.pageQueryScriptManage(scriptManageDeployPageQueryRequest);
@@ -156,6 +183,10 @@ public class ScriptManageController {
 
     @PostMapping("/bigfile/syncWeb")
     @ApiOperation(value = "大文件上传脚本同步数据")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.CREATE
+    )
     public WebPartResponse bigFileSyncRecord(
         @RequestBody WebPartRequest partRequest) {
         return scriptManageService.bigFileSyncRecord(partRequest);
@@ -163,6 +194,10 @@ public class ScriptManageController {
 
     @PostMapping("/createScriptTagRef")
     @ApiOperation(value = "新增脚本标签关联关系")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.UPDATE
+    )
     public ScriptManageStringResponse createScriptTagRef(
         @RequestBody @Valid ScriptTagCreateRefRequest scriptTagCreateRefRequest) {
         scriptManageService.createScriptTagRef(scriptTagCreateRefRequest);
@@ -184,6 +219,10 @@ public class ScriptManageController {
 
     @GetMapping("/getFileDownLoadUrl")
     @ApiOperation(value = "获取文件下载路径")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.DOWNLOAD
+    )
     public ScriptManageStringResponse getFileDownLoadUrl(@RequestParam String filePath) {
         String fileDownLoadUrl = scriptManageService.getFileDownLoadUrl(filePath);
 
@@ -192,12 +231,20 @@ public class ScriptManageController {
 
     @GetMapping("/businessFlow/all")
     @ApiOperation("业务流程列表查询")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public List<ScriptManageSceneManageResponse> getAllScenes() {
         return scriptManageService.getAllScenes(null);
     }
 
     @GetMapping("/businessActivity/all")
     @ApiOperation("业务活动列表查询")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public List<ScriptManageActivityResponse> getAllActivity() {
         return scriptManageService.listAllActivities(null);
     }
@@ -218,6 +265,10 @@ public class ScriptManageController {
 
     @GetMapping("/listScriptDeployByScriptId")
     @ApiOperation(value = "根据脚本id查询脚本实例列表")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public List<ScriptManageDeployResponse> listScriptDeployByScriptId(
         @ApiParam(name = "scriptId", value = "脚本id", required = true) @RequestParam("scriptId") Long scriptId) {
         return scriptManageService.listScriptDeployByScriptId(scriptId);
@@ -228,6 +279,10 @@ public class ScriptManageController {
     @ModuleDef(moduleName = BizOpConstants.Modules.SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.SCRIPT_MANAGE_ROLLBACK)
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public ScriptManageStringResponse rollbackScriptDeploy(@RequestBody ScriptManageDeployRollBackRequest request) {
         String scriptManageName = scriptManageService.rollbackScriptDeploy(request.getScriptDeployId());
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.ROLLBACK);

@@ -2,6 +2,8 @@ package io.shulie.takin.web.entrypoint.controller;
 
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.entity.domain.dto.config.WhiteListSwitchDTO;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
@@ -46,6 +48,10 @@ public class GlobalController {
         subModuleName = BizOpConstants.SubModules.PRESSURE_WHITELIST_SWITCH,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITELIST_SWITCH_ACTION
     )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRESSURE_WHITELIST_SWITCH,
+        needAuth = ActionTypeEnum.ENABLE_DISABLE
+    )
     public Response openWhiteListSwitch() {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.OPEN);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION, BizOpConstants.OpTypes.OPEN);
@@ -61,6 +67,10 @@ public class GlobalController {
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.PRESSURE_WHITELIST_SWITCH,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITELIST_SWITCH_ACTION
+    )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRESSURE_WHITELIST_SWITCH,
+        needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response closeWhiteListSwitch() {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CLOSE);

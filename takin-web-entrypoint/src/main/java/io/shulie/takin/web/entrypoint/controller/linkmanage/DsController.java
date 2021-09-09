@@ -7,6 +7,8 @@ import com.pamirs.takin.common.enums.ds.DbTypeEnum;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.simplify.AppBusinessTableInfo;
 import com.pamirs.takin.entity.domain.query.agent.AppBusinessTableQuery;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
@@ -74,6 +76,10 @@ public class DsController {
         logMsgKey = BizOpConstants.Message.MESSAGE_SHADOW_DATABASE_TABLE_CREATE,
         opTypes = BizOpConstants.OpTypes.CREATE
     )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.CREATE
+    )
     public Response dsAdd(@RequestBody ApplicationDsCreateInput createRequest) {
         return dsService.dsAdd(createRequest);
     }
@@ -90,6 +96,10 @@ public class DsController {
         subModuleName = BizOpConstants.SubModules.SHADOW_DATABASE_TABLE,
         logMsgKey = BizOpConstants.Message.MESSAGE_SHADOW_DATABASE_TABLE_CREATE,
         opTypes = BizOpConstants.OpTypes.CREATE
+    )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.CREATE
     )
     public Response dsAddOld(@RequestBody ApplicationDsCreateInput createRequest) {
         createRequest.setOldVersion(true);
@@ -120,12 +130,20 @@ public class DsController {
      */
     @ApiOperation("查询影子库表配置")
     @GetMapping("link/ds/manage")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public Response dsQuery(@RequestParam(value = "applicationId", required = true) Long applicationId) {
         return dsService.dsQuery(applicationId);
     }
 
     @ApiOperation("影子库表配置详情")
     @GetMapping("link/ds/manage/detail")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.UPDATE
+    )
     public Response dsQueryDetail(@RequestParam(value = "id") Long dsId) {
         return dsService.dsQueryDetail(dsId, false);
     }
@@ -137,6 +155,10 @@ public class DsController {
      */
     @ApiOperation("影子库表配置详情-老版本")
     @GetMapping("link/ds/manage/detail/old")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.UPDATE
+    )
     public Response dsQueryDetailOld(@RequestParam(value = "id", required = true) Long id) {
         return dsService.dsQueryDetail(id, true);
     }
@@ -154,6 +176,10 @@ public class DsController {
         logMsgKey = BizOpConstants.Message.MESSAGE_SHADOW_DATABASE_TABLE_UPDATE,
         opTypes = BizOpConstants.OpTypes.UPDATE
     )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.UPDATE
+    )
     public Response dsUpdate(@RequestBody ApplicationDsUpdateInput updateRequest) {
         return dsService.dsUpdate(updateRequest);
     }
@@ -169,6 +195,10 @@ public class DsController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.SHADOW_DATABASE_TABLE,
         logMsgKey = BizOpConstants.Message.MESSAGE_SHADOW_DATABASE_TABLE_UPDATE
+    )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.UPDATE
     )
     public Response dsUpdateOld(@RequestBody ApplicationDsUpdateInput updateRequest) {
         updateRequest.setOldVersion(true);
@@ -186,6 +216,10 @@ public class DsController {
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.SHADOW_DATABASE_TABLE,
         logMsgKey = BizOpConstants.Message.MESSAGE_SHADOW_DATABASE_ENABLE_DISABLE
+    )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response enableConfig(@RequestBody ApplicationDsEnableInput enableRequest) {
         OperationLogContextHolder.operationType(
@@ -211,6 +245,10 @@ public class DsController {
         subModuleName = BizOpConstants.SubModules.SHADOW_DATABASE_TABLE,
         logMsgKey = BizOpConstants.Message.MESSAGE_SHADOW_DATABASE_TABLE_DELETE,
         opTypes = BizOpConstants.OpTypes.DELETE
+    )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.DELETE
     )
     public Response dsDelete(@RequestBody ApplicationDsDeleteInput deleteRequest) {
         Response<ApplicationDsDetailOutput> response = dsService.dsQueryDetail(deleteRequest.getId(), false);

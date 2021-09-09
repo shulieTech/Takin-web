@@ -3,6 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.pradar;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.pradar.PradarConfigService;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
 import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
@@ -13,6 +14,7 @@ import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,10 @@ public class PradarConfigController {
 
     @ApiOperation("获取配置列表")
     @GetMapping("/list")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRADAR_CONFIG,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public PagingList<PradarZKConfigResponse> pageList(PradarZKConfigQueryRequest queryRequest) {
         PageUtils.clearPageHelper();
         queryRequest.setCurrent(queryRequest.getCurrent() + 1);
@@ -54,6 +60,10 @@ public class PradarConfigController {
         subModuleName = BizOpConstants.SubModules.PRADAR_CONFIG,
         logMsgKey = BizOpConstants.Message.PRADAR_CONFIG_UPDATE
     )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRADAR_CONFIG,
+        needAuth = ActionTypeEnum.UPDATE
+    )
     public void update(@Validated @RequestBody PradarZKConfigUpdateRequest request) {
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
         pradarConfigService.updateConfig(request);
@@ -66,6 +76,10 @@ public class PradarConfigController {
         subModuleName = BizOpConstants.SubModules.PRADAR_CONFIG,
         logMsgKey = BizOpConstants.Message.PRADAR_CONFIG_CREATE
     )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRADAR_CONFIG,
+        needAuth = ActionTypeEnum.CREATE
+    )
     public void add(@Validated @RequestBody PradarZKConfigCreateRequest request) {
         OperationLogContextHolder.operationType(OpTypes.CREATE);
         pradarConfigService.addConfig(request);
@@ -77,6 +91,10 @@ public class PradarConfigController {
         moduleName = BizOpConstants.Modules.PRADAR,
         subModuleName = BizOpConstants.SubModules.PRADAR_CONFIG,
         logMsgKey = Message.PRADAR_CONFIG_DELETE
+    )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRADAR_CONFIG,
+        needAuth = ActionTypeEnum.DELETE
     )
     public void delete(@Validated @RequestBody PradarZKConfigDeleteRequest request) {
         OperationLogContextHolder.operationType(OpTypes.DELETE);

@@ -20,6 +20,8 @@ import io.shulie.takin.web.data.param.opsscript.OpsScriptParam;
 import io.shulie.takin.web.data.param.opsscript.OpsUploadFileParam;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptDetailVO;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptVO;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,18 +56,30 @@ public class OpsScriptManageController {
 
     @ApiOperation("列表接口")
     @GetMapping("page")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.OPS_SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public PagingList<OpsScriptVO> page(OpsScriptParam param) {
         return opsScriptManageService.page(param);
     }
 
     @ApiOperation("运维脚本详情")
     @GetMapping("detail")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.OPS_SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public OpsScriptDetailVO detail(OpsScriptParam param) {
         return opsScriptManageService.detail(param);
     }
 
     @ApiOperation("获取运维脚本类型")
     @GetMapping("/getScriptType")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.OPS_SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public List<TDictionaryVo> getScriptType() {
         HashMap<String, Object> param = Maps.newHashMap();
         param.put("valueActive", "Y");
@@ -80,6 +94,10 @@ public class OpsScriptManageController {
         subModuleName = BizOpConstants.SubModules.OPS_SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.OPS_SCRIPT_MANAGE_CREATE
     )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.OPS_SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.CREATE
+    )
     public Boolean add(@RequestBody OpsScriptParam param) {
         return opsScriptManageService.add(param);
     }
@@ -91,6 +109,10 @@ public class OpsScriptManageController {
         subModuleName = BizOpConstants.SubModules.OPS_SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.OPS_SCRIPT_MANAGE_UPDATE
     )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.OPS_SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.UPDATE
+    )
     public Boolean update(@RequestBody OpsScriptParam param) {
         return opsScriptManageService.update(param);
     }
@@ -101,6 +123,10 @@ public class OpsScriptManageController {
         moduleName = BizOpConstants.Modules.OPS_SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.OPS_SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.OPS_SCRIPT_MANAGE_DELETE
+    )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.OPS_SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.DELETE
     )
     public Boolean delete(@RequestBody OpsScriptParam param) {
         return opsScriptManageService.delete(param);
@@ -157,18 +183,30 @@ public class OpsScriptManageController {
         subModuleName = BizOpConstants.SubModules.OPS_SCRIPT_MANAGE,
         logMsgKey = BizOpConstants.Message.OPS_SCRIPT_MANAGE_CREATE
     )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.OPS_SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.UPDATE
+    )
     public Boolean execute(@RequestBody OpsScriptParam param) {
         return opsScriptManageService.execute(param);
     }
 
     @ApiOperation("获取执行实况")
     @GetMapping("/getExcutionLog")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.OPS_SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public WebResponse getExcutionLog(String id) {
         return WebResponse.success(opsScriptManageService.getExcutionLog(id));
     }
 
     @ApiOperation("获取执行结果")
     @GetMapping("/getExcutionResult")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.OPS_SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public WebResponse getExcutionResult(String id) {
         return WebResponse.success(opsScriptManageService.getExcutionResult(id));
     }

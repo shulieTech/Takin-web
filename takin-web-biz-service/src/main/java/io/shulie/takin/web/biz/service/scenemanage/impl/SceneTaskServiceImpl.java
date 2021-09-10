@@ -505,7 +505,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         }
 
         // 压测脚本文件检查
-        errorMsg.append(this.checkScriptCorrelation(sceneData));
+        String scriptCorrelation = this.checkScriptCorrelation(sceneData);
+        errorMsg.append(scriptCorrelation == null ? "" : scriptCorrelation);
         if (errorMsg.length() > 0) {
             String msg = "";
             if (errorMsg.toString().endsWith(Constants.SPLIT)) {

@@ -25,6 +25,7 @@ import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -80,20 +81,12 @@ public class SceneManageApiImpl implements SceneManageApi {
         return cloudSceneApi.getIpNum(sceneIpNumReq);
     }
 
-    //    @Override
-    //    public ResponseResult<Map<String, Object>> parseScript(SceneParseReq sceneParseReq) {
-    //        return cloudSceneApi.parseScript(sceneParseReq);
-    //    }
 
     @Override
     public ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req) {
         return cloudSceneApi.queryByIds(req);
     }
 
-    //    @Override
-    //    public ResponseResult<Map<String, Object>> parseAndUpdateScript(SceneParseReq sceneParseReq) {
-    //        return cloudSceneApi.parseAndUpdateScript(sceneParseReq);
-    //    }
 
     @Override
     public ResponseResult<List<SceneManageListResp>> getSceneManageList(CloudUserCommonRequestExt requestExt) {
@@ -122,6 +115,7 @@ public class SceneManageApiImpl implements SceneManageApi {
 
     @Override
     public ResponseResult<ScriptCheckResp> checkAndUpdateScript(ScriptCheckAndUpdateReq scriptCheckAndUpdateReq) {
+        WebPluginUtils.fillCloudUserData(scriptCheckAndUpdateReq);
         return cloudSceneApi.checkAndUpdateScript(scriptCheckAndUpdateReq);
     }
 }

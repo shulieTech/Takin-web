@@ -60,9 +60,9 @@ public class SystemController {
 
     @ApiOperation("系统信息")
     @GetMapping()
-    public SystemInfoVo index() {
+    public SystemInfoVo index(String version) {
         //产品版本信息
-        SystemInfoItemVo versionInfo = buildProductVersionInfo();
+        SystemInfoItemVo versionInfo = buildProductVersionInfo(version);
         //产品配置信息
         SystemInfoItemVo confInfo = buildProductConfInfo();
         //个人信息
@@ -73,7 +73,7 @@ public class SystemController {
         return resultVo;
     }
 
-    private SystemInfoItemVo buildProductVersionInfo() {
+    private SystemInfoItemVo buildProductVersionInfo(String uiVersion) {
         CommonInfosResp data = null;
         CloudCommonInfoWrapperReq req = new CloudCommonInfoWrapperReq();
         ResponseResult<CommonInfosResp> infos = commonApi.getCloudConfigurationInfos(req);
@@ -96,7 +96,7 @@ public class SystemController {
         dataMap.put("takin版本", ifNull(environment.getProperty("takin.web.version")));
         dataMap.put("cloud版本", ifNull(data.getCloudVersion()));
         dataMap.put("流量引擎版本", ifNull(data.getPressureEngineVersion()));
-        dataMap.put("前端版本", ifNull(this.getUiVersion()));
+        dataMap.put("前端版本", ifNull(this.getUiVersion(uiVersion)));
         dataMap.put("AMDB版本", version);
 
         itemVo.setDataMap(dataMap);
@@ -140,7 +140,7 @@ public class SystemController {
                         if (!inetAddress.isLoopbackAddress()) {
                             String ipaddress = inetAddress.getHostAddress().toString();
                             if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
-                                && !ipaddress.contains("fe80")) {
+                                    && !ipaddress.contains("fe80")) {
                                 ip = ipaddress;
                             }
                         }
@@ -166,14 +166,26 @@ public class SystemController {
         return "";
     }
 
-    private String getUiVersion() {
-        String json = HttpClientUtil.sendGet(takinWebUrl.substring(0, takinWebUrl.lastIndexOf("/")) + "/tro/" + UI_VERSION_FILE);
-        if (!StringUtil.isEmpty(json)) {
-            JSONObject object = JSONObject.parseObject(json);
-            if (!Objects.isNull(object)) {
-                return object.getString("version");
+    private String getUiVersion(String uiVersion) {
+        String json = uiVersion;
+        if (StringUtil.isBlank(json)) {
+            //兼容以前的获取方式
+            String webUrl = takinWebUrl.substring(0, takinWebUrl.lastIndexOf("/"));
+            json = HttpClientUtil.sendGet(webUrl + "/tro/" + UI_VERSION_FILE);
+
+            if (StringUtil.isBlank(json)){
+                json = HttpClientUtil.sendGet(webUrl + "/" + UI_VERSION_FILE);
             }
         }
+
+        if (StringUtil.isNotBlank(json)){
+            JSONObject parseObject = JSONObject.parseObject(json);
+            String version = parseObject.getString("version");
+            if (StringUtil.isNotBlank(version)) {
+                return version;
+            }
+        }
+
         return "";
     }
 

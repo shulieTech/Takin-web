@@ -40,7 +40,8 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
         <takin.web.version>takin-web-2.0.1</takin.web.version>
-        <takin.cloud.version>takin-cloud-2.0.1</takin.cloud.version>
+        <takin.cloud.open.version>takin-cloud-open-2.0.2.1</takin.cloud.open.version>
+        <takin.cloud.version>takin-cloud-2.0.2</takin.cloud.version>
         <takin.common.version>common-1.7.3</takin.common.version>
         <command.channel>common-1.7.3</command.channel>
         <pardar.log.protocol.version>2.0.4.2</pardar.log.protocol.version>
@@ -136,18 +137,24 @@
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-bom</artifactId>
-                <version>${takin.cloud.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.shulie.takin</groupId>
-                        <artifactId>takin-common-bom</artifactId>
-                    </exclusion>
-                </exclusions>
+                <artifactId>takin-cloud-open-api</artifactId>
+                <version>${takin.cloud.open.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-open-client-starter</artifactId>
+                <version>${takin.cloud.open.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-ext</artifactId>
+                <version>${takin.cloud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-common</artifactId>
+                <version>${takin.cloud.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-common-bom</artifactId>

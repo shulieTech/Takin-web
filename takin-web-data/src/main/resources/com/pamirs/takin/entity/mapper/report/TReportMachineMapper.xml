@@ -92,8 +92,7 @@
                                 agent_id=#{agentId,jdbcType=VARCHAR},
                                 risk_value=#{riskValue,jdbcType=DECIMAL},
                                 risk_flag=#{riskFlag,jdbcType=TINYINT},
-                                risk_content=#{riskContent,jdbcType=VARCHAR},
-                                machine_tps_target_config=#{machineTpsTargetConfig,jdbcType=LONGVARCHAR}
+                                risk_content=#{riskContent,jdbcType=VARCHAR}
     </insert>
 
     <select id="selectSimpleByExample" resultMap="BaseResultMap"

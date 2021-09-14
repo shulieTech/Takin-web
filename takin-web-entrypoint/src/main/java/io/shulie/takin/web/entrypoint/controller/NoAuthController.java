@@ -31,7 +31,7 @@ public class NoAuthController {
             ResponseResult.fail("reportId cannot be null,", "");
         }
         redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
-        redisClientUtils.hmdelete(WebRedisKeyConstant.PTING_APPLICATION_KEY, String.valueOf(reportId));
+        redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY,reportId));
         return ResponseResult.success("resume success");
     }
 }

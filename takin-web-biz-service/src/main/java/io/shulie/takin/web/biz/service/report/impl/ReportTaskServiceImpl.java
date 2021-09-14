@@ -102,6 +102,11 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             // 解除 场景锁
             redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
             try {
+                // 前置删除
+                //删除redis数据
+                redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
+                // 删除key
+                redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY,reportId));
                 Long startTime = System.currentTimeMillis();
                 WebResponse lockResponse = reportService.lockReport(reportId);
                 if (!lockResponse.getSuccess() || lockResponse.getData() == null || !((Boolean)lockResponse.getData())) {
@@ -117,10 +122,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 if (!webResponse.getSuccess() || !(Boolean)webResponse.getData()) {
                     log.info("压测结束失败 Report :{}，cloud更新失败", reportId);
                 }
-                //删除redis数据
-                redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
-                // 删除key
-                redisClientUtils.hmdelete(WebRedisKeyConstant.PTING_APPLICATION_KEY, String.valueOf(reportId));
+
 
                 Boolean isLeaked = leakVerifyResultDAO.querySceneIsLeaked(reportId);
                 if (isLeaked) {

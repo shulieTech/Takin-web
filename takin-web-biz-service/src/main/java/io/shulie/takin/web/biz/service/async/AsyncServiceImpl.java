@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -19,6 +20,7 @@ import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp.SceneS
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
+import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
 import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;
 import io.shulie.takin.web.data.param.baseserver.BaseServerParam;
@@ -57,14 +59,16 @@ public class AsyncServiceImpl implements AsyncService {
     @Async("agentDataThreadPool")
     @Override
     public void savePerformanceBaseData(PerformanceBaseDataParam param) {
-        if (redisClientUtils.hmget(WebRedisKeyConstant.PTING_APPLICATION_KEY).size() == 0) {
+        Set<String> keys = RedisHelper.keys(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, "*"));
+        if(keys.size() == 0) {
             return;
         }
-        Map<Object, Object> map = redisClientUtils.hmget(WebRedisKeyConstant.PTING_APPLICATION_KEY);
         // 应用是否属于压测中
         List<String> applications = Lists.newArrayList();
-        map.values().forEach(value -> applications.addAll((List<String>)value));
-        if (applications.contains(param.getAppName())) {
+        keys.forEach(key -> {
+            applications.addAll((List<String>) RedisHelper.getValueByKey(key));
+        });
+        if(applications.contains(param.getAppName())) {
             performanceBaseDataDAO.insert(param);
         }
     }

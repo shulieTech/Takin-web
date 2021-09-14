@@ -298,7 +298,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             throw new TakinWebException(ExceptionCode.SCENE_STOP_ERROR, response.getError());
         }
         SceneActionResp resp = response.getData();
-        redisClientUtils.hmdelete(WebRedisKeyConstant.PTING_APPLICATION_KEY, String.valueOf(resp.getReportId()));
+        redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY,resp.getReportId()));
         // 最后删除
         return sceneTaskApi.stopTask(req);
     }
@@ -339,10 +339,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             List<TApplicationMnt> applicationMntList = applicationMntDao.queryApplicationMntListByIds(applicationIds);
             List<String> applicationNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName)
                 .collect(Collectors.toList());
-            Map<String, Object> map = Maps.newHashMap();
-            // 报告 带应用
-            map.put(String.valueOf(reportId), applicationNames);
-            redisClientUtils.hmset(WebRedisKeyConstant.PTING_APPLICATION_KEY, map);
+            // 过期时间，根据 压测时间 + 10s
+            redisClientUtils.set(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY,reportId),applicationNames,
+                wrapperResp.getPressureTestSecond() + 10);
         }
         Map<String, List<SceneSlaRefResp>> slaMap = getSceneSla(wrapperResp);
         if (MapUtils.isNotEmpty(slaMap)) {

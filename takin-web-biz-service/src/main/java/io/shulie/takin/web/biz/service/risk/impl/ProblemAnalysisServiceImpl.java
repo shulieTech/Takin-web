@@ -201,6 +201,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                 }
             });
             if (CollectionUtils.isNotEmpty(insertList)) {
+                // machineTpsTargetConfig 指标信息不更新
                 insertList.forEach(reportMachineMapper::insertOrUpdate);
             }
         }

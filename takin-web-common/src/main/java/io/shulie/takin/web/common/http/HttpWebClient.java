@@ -1,23 +1,22 @@
 package io.shulie.takin.web.common.http;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 import com.alibaba.fastjson.JSON;
 
 import com.google.common.collect.Lists;
-import io.shulie.takin.web.common.common.Response;
 import com.pamirs.takin.common.exception.ApiException;
 import io.shulie.takin.parent.exception.entity.ExceptionCode;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.WebRequest;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.web.common.util.FilterSqlUtil;
 import io.shulie.takin.web.common.vo.FileWrapperVO;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -94,9 +93,8 @@ public class HttpWebClient {
             header.add(RemoteConstant.LICENSE_REQUIRED, "true");
             header.add(RemoteConstant.LICENSE_KEY, request.getLicense());
             header.add(RemoteConstant.USER_ID, request.getUserId() + "");
-            String filterSql = FilterSqlUtil.buildFilterSql(request.getUserIds());
-            if (filterSql != null) {
-                header.add(RemoteConstant.FILTER_SQL, filterSql);
+            if (request.getFilterSql() != null) {
+                header.add(RemoteConstant.FILTER_SQL, request.getFilterSql());
             }
         }
         return header;

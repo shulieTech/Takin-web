@@ -89,6 +89,7 @@ import io.shulie.takin.web.data.param.scriptmanage.PageScriptDebugParam;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -975,7 +976,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         debugCloudRequest.setConcurrencyNum(concurrencyNum);
         debugCloudRequest.setScriptId(scriptDeploy.getScriptId());
         debugCloudRequest.setScriptType(scriptDeploy.getType());
-
+        debugCloudRequest.setScriptName(scriptDeploy.getName());
+        debugCloudRequest.setCreatorId(WebPluginUtils.getUserId());
         // 插件ids
         List<PluginConfigDetailResponse> pluginConfigs = ScriptManageUtil.listPluginConfigs(scriptDeploy.getFeature());
         if (CollectionUtils.isNotEmpty(pluginConfigs)) {

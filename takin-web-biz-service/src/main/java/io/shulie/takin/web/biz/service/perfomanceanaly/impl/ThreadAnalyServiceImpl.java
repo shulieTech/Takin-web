@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
-import io.shulie.takin.cloud.common.utils.DateUtil;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceAnalyzeRequest;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceCommonRequest;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.ThreadCpuUseRateRequest;
@@ -189,7 +188,7 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
         ReportTimeResponse timeResponse = reportDetailService.getReportTime(reportId);
         PerformanceBaseQueryParam baseParam = new PerformanceBaseQueryParam();
         baseParam.setStartTime(timeResponse.getStartTime());
-        baseParam.setEndTime(timeResponse.getEndTime() != null ? timeResponse.getEndTime() : DateUtil.formatTime(System.currentTimeMillis()));
+        baseParam.setEndTime(timeResponse.getEndTime() != null ? timeResponse.getEndTime() : DateUtils.getNowDateStr());
         String[] splits = StringUtils.split(request.getProcessName(), "|");
         baseParam.setAppIp(splits[0]);
         baseParam.setAgentId(splits[1]);

@@ -970,9 +970,10 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         // 脚本发布id
         Long scriptDeployId = scriptDeploy.getId();
         debugCloudRequest.setLoopsNum(requestNum);
+        debugCloudRequest.setScriptDeployId(scriptDeployId);
         // 增加并发数
         debugCloudRequest.setConcurrencyNum(concurrencyNum);
-        debugCloudRequest.setScriptId(scriptDeployId);
+        debugCloudRequest.setScriptId(scriptDeploy.getScriptId());
         debugCloudRequest.setScriptType(scriptDeploy.getType());
 
         // 插件ids

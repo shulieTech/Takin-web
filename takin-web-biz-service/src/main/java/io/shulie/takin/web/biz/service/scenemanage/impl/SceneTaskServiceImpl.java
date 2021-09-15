@@ -262,22 +262,23 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private SceneActionParamNew getNewParam(SceneActionParam param) {
         SceneActionParamNew paramNew = CopyUtils.copyFields(param, SceneActionParamNew.class);
         try {
-            paramNew.setContinueRead(false);
-            if (!param.getContinueRead().equals("-1")) {
-                Object hasUnread = redisTemplate.opsForValue().get("hasUnread_" + param.getSceneId());
-                if (hasUnread == null) {
-                    throw ApiException.create(500, "缺少参数hasUnread！无法判断继续压测还是从头压测，请检查redis或者cloud返回的位点数据是否有问题，id=" + param.getSceneId());
-                }
-                if (param.getContinueRead().equals("1")) {
-                    paramNew.setContinueRead(Boolean.parseBoolean(hasUnread + ""));
-                } else {
-                    paramNew.setContinueRead(false);
-                }
-            }
+//            paramNew.setContinueRead(false);
+//            if (!param.getContinueRead().equals("-1")) {
+//                Object hasUnread = redisTemplate.opsForValue().get("hasUnread_" + param.getSceneId());
+//                if (hasUnread == null) {
+//                    throw ApiException.create(500, "缺少参数hasUnread！无法判断继续压测还是从头压测，请检查redis或者cloud返回的位点数据是否有问题，id=" + param.getSceneId());
+//                }
+//                if (param.getContinueRead().equals("1")) {
+//                    paramNew.setContinueRead(Boolean.parseBoolean(hasUnread + ""));
+//                } else {
+//                    paramNew.setContinueRead(false);
+//                }
+//            }
+            paramNew.setContinueRead(param.getContinueRead().equals("1"));
         } catch (Exception e) {
             log.error("未知异常", e);
         } finally {
-            redisTemplate.delete("hasUnread_" + param.getSceneId());
+//            redisTemplate.delete("hasUnread_" + param.getSceneId());
         }
         return paramNew;
     }

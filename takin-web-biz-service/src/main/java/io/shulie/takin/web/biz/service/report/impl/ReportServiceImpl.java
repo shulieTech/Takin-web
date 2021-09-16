@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.vo.report.ReportIdVO;
@@ -42,6 +43,7 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,8 +78,20 @@ public class ReportServiceImpl implements ReportService {
     public WebResponse listReport(ReportQueryParam param) {
         param.setRequestUrl(RemoteConstant.REPORT_LIST);
         param.setHttpMethod(HttpMethod.GET);
-        // 补充报告查询用户数据
-        WebPluginUtils.fillReportUserData(param);
+        // 前端查询条件 传用户
+        if (StringUtils.isNotBlank(param.getUserName())) {
+            List<UserExt> userList = WebPluginUtils.selectByName(param.getUserName());
+            if (CollectionUtils.isNotEmpty(userList)) {
+                List<Long> userIds = userList.stream().map(UserExt::getId).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(userIds)) {
+                    param.setUserIdStr(null);
+                } else {
+                    param.setUserIdStr(StringUtils.join(userIds, ","));
+                }
+            } else {
+                return WebResponse.success(Lists.newArrayList());
+            }
+        }
         WebResponse webResponse = httpWebClient.request(param);
 
         if (!webResponse.getSuccess()) {

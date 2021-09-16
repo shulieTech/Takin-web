@@ -3,27 +3,28 @@ package io.shulie.takin.web.data.dao.blacklist;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import javax.annotation.Resource;
+
+import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.common.util.DateUtils;
+import org.springframework.beans.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.common.enums.blacklist.BlacklistEnableEnum;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.apache.commons.collections4.CollectionUtils;
 import io.shulie.takin.web.common.vo.blacklist.BlacklistVO;
-import io.shulie.takin.web.data.mapper.mysql.BlackListMapper;
 import io.shulie.takin.web.data.model.mysql.BlackListEntity;
+import io.shulie.takin.web.data.mapper.mysql.BlackListMapper;
+import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.web.data.param.blacklist.BlackListCreateParam;
-import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
-import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import io.shulie.takin.web.common.enums.blacklist.BlacklistEnableEnum;
+import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 
 /**
  * 黑名单dao
@@ -34,7 +35,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BlackListDAOImpl implements BlackListDAO {
 
-    @Autowired
+    @Resource
     private BlackListMapper blackListMapper;
 
     @Override
@@ -99,13 +100,13 @@ public class BlackListDAOImpl implements BlackListDAO {
         }
         IPage<BlackListEntity> infoEntityPageInfo = blackListMapper.selectPage(page, wrapper);
         if (infoEntityPageInfo.getRecords().isEmpty()) {
-            return PagingList.of(Lists.newArrayList(),infoEntityPageInfo.getTotal());
+            return PagingList.of(Lists.newArrayList(), infoEntityPageInfo.getTotal());
         }
         List<BlacklistVO> results = infoEntityPageInfo.getRecords().stream().map(entity -> {
             BlacklistVO result = new BlacklistVO();
             BeanUtils.copyProperties(entity, result);
-            result.setGmtCreate(DateUtils.dateToString(entity.getGmtCreate(), DateUtils.FORMATE_YMDHMS));
-            result.setGmtModified(DateUtils.dateToString(entity.getGmtModified(), DateUtils.FORMATE_YMDHMS));
+            result.setGmtCreate(DateUtil.formatDateTime(entity.getGmtCreate()));
+            result.setGmtModified(DateUtil.formatDateTime(entity.getGmtModified()));
             return result;
         }).collect(Collectors.toList());
         return PagingList.of(results, infoEntityPageInfo.getTotal());
@@ -121,12 +122,11 @@ public class BlackListDAOImpl implements BlackListDAO {
         if (CollectionUtils.isEmpty(entities)) {
             return Lists.newArrayList();
         }
-        List<BlacklistResult> results = entities.stream().map(entity -> {
+        return entities.stream().map(entity -> {
             BlacklistResult result = new BlacklistResult();
             BeanUtils.copyProperties(entity, result);
             return result;
         }).collect(Collectors.toList());
-        return results;
     }
 
     private LambdaQueryWrapper<BlackListEntity> getBlackListEntityLambdaQueryWrapper(BlacklistSearchParam param) {
@@ -164,12 +164,11 @@ public class BlackListDAOImpl implements BlackListDAO {
         if (CollectionUtils.isEmpty(entities)) {
             return Lists.newArrayList();
         }
-        List<BlacklistResult> results = entities.stream().map(entity -> {
+        return entities.stream().map(entity -> {
             BlacklistResult result = new BlacklistResult();
             BeanUtils.copyProperties(entity, result);
             return result;
         }).collect(Collectors.toList());
-        return results;
     }
 
     @Override
@@ -185,11 +184,10 @@ public class BlackListDAOImpl implements BlackListDAO {
         if (CollectionUtils.isEmpty(entities)) {
             return Lists.newArrayList();
         }
-        List<BlacklistResult> results = entities.stream().map(entity -> {
+        return entities.stream().map(entity -> {
             BlacklistResult result = new BlacklistResult();
             BeanUtils.copyProperties(entity, result);
             return result;
         }).collect(Collectors.toList());
-        return results;
     }
 }

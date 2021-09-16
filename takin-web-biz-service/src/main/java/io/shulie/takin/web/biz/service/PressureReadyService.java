@@ -1,40 +1,40 @@
 package io.shulie.takin.web.biz.service;
 
-import java.io.ByteArrayOutputStream;
+import java.util.Map;
+import java.util.Date;
+import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import java.io.ByteArrayOutputStream;
+import java.util.concurrent.ConcurrentMap;
 
 import com.alibaba.fastjson.JSON;
 
-import com.github.pagehelper.PageHelper;
-import com.google.common.collect.Lists;
+import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Maps;
-import com.pamirs.takin.common.constant.LinkDetectionConstants;
-import com.pamirs.takin.common.constant.PressureOperateEnum;
-import com.pamirs.takin.common.constant.TakinErrorEnum;
-import com.pamirs.takin.common.exception.TakinModuleException;
-import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.takin.common.util.PageInfo;
-import com.pamirs.takin.entity.domain.vo.TDataBuild;
-import com.pamirs.takin.entity.domain.vo.TLinkDetection;
-import io.shulie.takin.web.biz.common.CommonService;
-import org.apache.commons.collections4.MapUtils;
+import com.google.common.collect.Lists;
+import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
+import com.pamirs.takin.common.util.PageInfo;
 import org.springframework.stereotype.Service;
+import org.apache.commons.collections4.MapUtils;
+import io.shulie.takin.web.biz.common.CommonService;
+import com.pamirs.takin.entity.domain.vo.TDataBuild;
+import com.pamirs.takin.common.constant.TakinErrorEnum;
+import com.pamirs.takin.entity.domain.vo.TLinkDetection;
+import com.pamirs.takin.common.constant.PressureOperateEnum;
+import com.pamirs.takin.common.exception.TakinModuleException;
+import com.pamirs.takin.common.constant.LinkDetectionConstants;
 
 @Service
 @SuppressWarnings("all")
@@ -147,7 +147,7 @@ public class PressureReadyService extends CommonService {
         Map<String, Object> queryScriptExcuteStatus = TDataBuildDao.queryScriptExcuteStatus(applicationId, scriptType);
 
         String lastSuccessTime = MapUtils.getString(queryScriptExcuteStatus, switchFunLastSuccessTime(scriptType));
-        Date transferTime = DateUtils.transferTime(lastSuccessTime);
+        Date transferTime = DateUtil.parseDateTime(lastSuccessTime);
         queryScriptExcuteStatus.put(switchFunLastSuccessTime(scriptType), lastSuccessTime);
         return switchCaseFromMap(queryScriptExcuteStatus);
     }
@@ -664,8 +664,8 @@ public class PressureReadyService extends CommonService {
 
                 long cacheLastSuccessSeconds = 0L;
                 if (StringUtils.isNotEmpty(cacheExcuteTime)) {
-                    cacheLastSuccessSeconds = TimeUnit.SECONDS.toSeconds(
-                        DateUtils.transferTime(cacheExcuteTime).getTime());
+                    cacheLastSuccessSeconds =
+                        TimeUnit.SECONDS.toSeconds(DateUtil.parseDateTime(cacheExcuteTime).getTime());
                 }
                 long nowSeconds = TimeUnit.SECONDS.toSeconds(new Date().getTime());
 

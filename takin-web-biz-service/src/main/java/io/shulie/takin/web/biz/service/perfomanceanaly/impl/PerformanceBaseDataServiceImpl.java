@@ -3,19 +3,19 @@ package io.shulie.takin.web.biz.service.perfomanceanaly.impl;
 import java.util.Date;
 import java.util.List;
 
-import com.pamirs.takin.common.util.DateUtils;
-import io.shulie.takin.web.biz.convert.performace.PerformanceBaseInputConvert;
-import io.shulie.takin.web.biz.pojo.input.PerformanceBaseDataCreateInput;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
+import lombok.extern.slf4j.Slf4j;
+import cn.hutool.core.date.DateUtil;
+import org.springframework.stereotype.Service;
 import io.shulie.takin.web.biz.service.async.AsyncService;
-import io.shulie.takin.web.biz.service.perfomanceanaly.PerformanceBaseDataService;
+import org.springframework.beans.factory.annotation.Autowired;
+import io.shulie.takin.web.biz.pojo.input.PerformanceBaseDataCreateInput;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
 import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;
+import io.shulie.takin.web.biz.convert.performace.PerformanceBaseInputConvert;
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseDataParam;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseQueryParam;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import io.shulie.takin.web.biz.service.perfomanceanaly.PerformanceBaseDataService;
 
 /**
  * @author qianshui
@@ -52,7 +52,6 @@ public class PerformanceBaseDataServiceImpl implements PerformanceBaseDataServic
 
     @Override
     public void clearData(Integer time) {
-        Date nSecond = DateUtils.getPreviousNSecond(time);
-        performanceBaseDataDAO.clearData(DateUtils.dateToString(nSecond, DateUtils.FORMATE_YMDHMS));
+        performanceBaseDataDAO.clearData(DateUtil.offsetSecond(new Date(), -time).toString());
     }
 }

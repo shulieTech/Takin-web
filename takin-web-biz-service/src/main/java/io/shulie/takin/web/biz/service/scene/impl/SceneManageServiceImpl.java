@@ -14,17 +14,15 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.SceneManageConstant;
 import com.pamirs.takin.common.constant.TimeUnitEnum;
 import com.pamirs.takin.common.exception.ApiException;
-import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.ListHelper;
 import com.pamirs.takin.common.util.parse.UrlUtil;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
-import com.pamirs.takin.entity.dao.linkmanage.TBusinessLinkManageTableMapper;
-import com.pamirs.takin.entity.dao.linkmanage.TLinkManageTableMapper;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
@@ -105,9 +103,6 @@ public class SceneManageServiceImpl implements SceneManageService {
     @Value("${script.check:true}")
     private Boolean scriptCheck;
 
-    @Value("${script.check.perfomancetype:false}")
-    private Boolean scriptPreTypeCheck;
-
     @Resource
     private TApplicationMntDao tApplicationMntDao;
 
@@ -131,9 +126,6 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     @Autowired
     private SceneTaskApi sceneTaskApi;
-
-    @Autowired
-    private RedisTemplate redisTemplate;
 
     @Override
     public ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req) {
@@ -234,9 +226,9 @@ public class SceneManageServiceImpl implements SceneManageService {
     }
 
     @Override
-    public WebResponse getPageList(SceneManageQueryVO vo) {
+    public WebResponse<List<SceneManageListOutput>> getPageList(SceneManageQueryVO vo) {
 
-        WebResponse webResponse = new WebResponse();
+        WebResponse<List<SceneManageListOutput>> webResponse = new WebResponse<>();
         webResponse.setData(Lists.newArrayList());
         webResponse.setSuccess(true);
         webResponse.setTotal(0L);
@@ -264,11 +256,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         //responseList.stream().forEach(response -> {
         //    sceneExcuteTimeMap.put(response.getSceneId(), response.getExecuteTime());
         //});
-        if (null != sceneList) {
-            webResponse.setTotal(sceneList.getTotalNum());
-        } else {
-            webResponse.setTotal(0L);
-        }
+        webResponse.setTotal(sceneList.getTotalNum());
         webResponse.setSuccess(true);
         webResponse.setData(listData);
         return webResponse;
@@ -277,7 +265,7 @@ public class SceneManageServiceImpl implements SceneManageService {
     /**
      * 转换bean
      *
-     * @return
+     * @return -
      */
     private List<SceneManageListOutput> convertData(List<SceneManageListResp> data) {
         if (CollectionUtils.isNotEmpty(data)) {
@@ -285,9 +273,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             List<TagManageResponse> allSceneTags = sceneTagService.getAllSceneTags();
             Map<Long, TagManageResponse> tagMap = new HashMap<>();
             if (CollectionUtils.isNotEmpty(allSceneTags)) {
-                allSceneTags.forEach(tagManageResponse -> {
-                    tagMap.put(tagManageResponse.getId(), tagManageResponse);
-                });
+                allSceneTags.forEach(tagManageResponse -> tagMap.put(tagManageResponse.getId(), tagManageResponse));
             }
             List<Long> sceneIds = data.stream().map(SceneManageListResp::getId).collect(Collectors.toList());
             List<SceneTagRefResponse> sceneTagRefList = sceneTagService.getSceneTagRefBySceneIds(sceneIds);
@@ -407,7 +393,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 vo.setApplicationIds(ref.getApplicationIds());
             }
         });
-        WebResponse<List<SceneScriptRefOpen>> webResponse = new WebResponse<List<SceneScriptRefOpen>>();
+        WebResponse<List<SceneScriptRefOpen>> webResponse = new WebResponse<>();
         webResponse.setSuccess(true);
         webResponse.setData(scriptList);
         return webResponse;
@@ -456,7 +442,7 @@ public class SceneManageServiceImpl implements SceneManageService {
     }
 
     @Override
-    public WebResponse deleteScene(SceneManageIdVO vo) {
+    public WebResponse<?> deleteScene(SceneManageIdVO vo) {
         vo.setRequestUrl(RemoteConstant.SCENE_MANAGE_URL);
         vo.setHttpMethod(HttpMethod.DELETE);
         return httpWebClient.request(vo);
@@ -481,11 +467,11 @@ public class SceneManageServiceImpl implements SceneManageService {
         SceneManageWrapperResp data = sceneDetail.getData();
         //组装场景定时时间
         SceneSchedulerTaskResponse sceneScheduler = sceneSchedulerTaskService.selectBySceneId(id);
-        if (sceneScheduler != null && sceneScheduler.getIsDeleted() == false) {
+        if (sceneScheduler != null && !sceneScheduler.getIsDeleted()) {
             Date executeTime = sceneScheduler.getExecuteTime();
             if (executeTime != null) {
                 data.setIsScheduler(true);
-                data.setExecuteTime(DateUtils.dateToString(executeTime, DateUtils.FORMATE_YMDHMS));
+                data.setExecuteTime(DateUtil.formatDateTime(executeTime));
             }
         } else {
             data.setIsScheduler(false);
@@ -611,7 +597,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 return;
             }
             BusinessLinkResult businessLinkResult = businessLinkResults.get(0);
-            EntranceJoinEntity entranceJoinEntity = null;
+            EntranceJoinEntity entranceJoinEntity;
             if (ActivityUtil.isNormalBusiness(businessLinkResult.getType())) {
                 entranceJoinEntity = ActivityUtil.covertEntrance(businessLinkResult.getEntrace());
             } else {
@@ -627,15 +613,13 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (scriptCheckResp == null || !scriptCheckResp.getSuccess()) {
             log.error("cloud检查并更新脚本出错：{}", sceneScriptRef.getUploadPath());
             StringBuilder sb = new StringBuilder();
-            sb.append(String.format("cloud检查并更新【%s】脚本异常,异常内容【%s】",sceneScriptRef.getUploadPath(),scriptCheckResp.getError().getMsg()));
+            sb.append(String.format("cloud检查并更新【%s】脚本异常,异常内容【%s】", sceneScriptRef.getUploadPath(), scriptCheckResp.getError().getMsg()));
             dto.setErrmsg("|");
             return dto;
         }
         if (scriptCheckResp.getData() != null && CollectionUtils.isNotEmpty(scriptCheckResp.getData().getErrorMsg())) {
             StringBuilder stringBuilder = new StringBuilder();
-            scriptCheckResp.getData().getErrorMsg().forEach(errorMsg -> {
-                stringBuilder.append(errorMsg).append("|");
-            });
+            scriptCheckResp.getData().getErrorMsg().forEach(errorMsg -> stringBuilder.append(errorMsg).append("|"));
             stringBuilder.substring(0, stringBuilder.length() - 1);
             dto.setErrmsg(stringBuilder.toString());
         }
@@ -645,7 +629,7 @@ public class SceneManageServiceImpl implements SceneManageService {
     /**
      * 校验脚本
      *
-     * @return
+     * @return -
      */
     private WebResponse<List<SceneScriptRefOpen>> checkScript(Integer scriptType, List<SceneScriptRefOpen> scriptList) {
         if (CollectionUtils.isEmpty(scriptList)) {
@@ -764,17 +748,17 @@ public class SceneManageServiceImpl implements SceneManageService {
                 if (resultData != null) {
                     ScenePositionPointResponse response = new ScenePositionPointResponse();
                     //false = 没有csv文件或位点均为0
-//                    Boolean hasUnread = resultData.getHasUnread();
+                    //                    Boolean hasUnread = resultData.getHasUnread();
                     List<SceneStartCheckResp.FileReadInfo> infos = resultData.getFileReadInfos();
-                    if (Objects.nonNull(infos)){
-                        infos.stream().forEach(t -> {
+                    if (Objects.nonNull(infos)) {
+                        infos.forEach(t -> {
                             response.setScriptName(t.getFileName());
                             response.setScriptSize(t.getFileSize());
                             response.setPressedSize(t.getReadSize());
                             list.add(response);
                         });
                     }
-//                    redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
+                    //                    redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
                 }
             }
         }

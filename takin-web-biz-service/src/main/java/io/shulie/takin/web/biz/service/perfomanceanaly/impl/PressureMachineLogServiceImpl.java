@@ -1,23 +1,23 @@
 package io.shulie.takin.web.biz.service.perfomanceanaly.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
-import com.pamirs.takin.common.util.DateUtils;
-import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PressureMachineLogQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.PressureMachineLogResponse;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.TypeValueDateVo;
-import io.shulie.takin.web.biz.service.perfomanceanaly.PressureMachineLogService;
+import cn.hutool.core.date.DateUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import io.shulie.takin.web.data.dao.perfomanceanaly.PressureMachineLogDao;
 import io.shulie.takin.web.data.param.machine.PressureMachineLogQueryParam;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.TypeValueDateVo;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineLogResult;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import io.shulie.takin.web.biz.service.perfomanceanaly.PressureMachineLogService;
+import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PressureMachineLogQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.PressureMachineLogResponse;
 
 /**
  * @author mubai
@@ -31,10 +31,11 @@ public class PressureMachineLogServiceImpl implements PressureMachineLogService 
 
     @Override
     public PressureMachineLogResponse queryByExample(PressureMachineLogQueryRequest request) {
-
-        String dayStartTime = DateUtils.getDayStartTime(request.getQueryTime());
-        String dayEndTime = DateUtils.getDayEndTime(request.getQueryTime());
-        if (dayEndTime == null || dayStartTime == null) {
+        String dayStartTime, dayEndTime;
+        try {
+            dayStartTime = DateUtil.parseDateTime(request.getQueryTime()).toDateStr() + "00:00:00";
+            dayEndTime = DateUtil.parseDateTime(request.getQueryTime()).toDateStr() + "23:59:59";
+        } catch (Exception ex) {
             throw new RuntimeException("时间的格式不正确");
         }
         PressureMachineLogQueryParam queryParam = new PressureMachineLogQueryParam();
@@ -51,13 +52,12 @@ public class PressureMachineLogServiceImpl implements PressureMachineLogService 
 
     @Override
     public void clearRubbishData() {
-        Date previousDays = DateUtils.getPreviousNDay(21);
-        pressureMachineLogDao.clearRubbishData(DateUtils.dateToString(previousDays, DateUtils.FORMATE_YMDHMS));
+        pressureMachineLogDao.clearRubbishData(DateUtil.offsetDay(new Date(), -21).toString());
     }
 
     List<PressureMachineLogResult> pointSample(List<PressureMachineLogResult> source, int pointNum) {
         List<PressureMachineLogResult> results = new ArrayList<>();
-        int step = 0;
+        int step;
         if (source != null && source.size() > pointNum) {
             step = source.size() / pointNum;
             for (int i = 0; i + step < source.size(); i++) {
@@ -74,7 +74,7 @@ public class PressureMachineLogServiceImpl implements PressureMachineLogService 
     /**
      * 组装成前端需要的格式
      *
-     * @return
+     * @return -
      */
     public PressureMachineLogResponse assembleData(List<PressureMachineLogResult> resultList) {
         PressureMachineLogResponse response = new PressureMachineLogResponse();

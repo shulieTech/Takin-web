@@ -1,27 +1,27 @@
 package io.shulie.takin.web.biz.service;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Calendar;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
+import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.Constants;
-import com.pamirs.takin.common.constant.TakinErrorEnum;
-import com.pamirs.takin.common.exception.TakinModuleException;
-import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.takin.entity.domain.entity.LinkBottleneck;
-import com.pamirs.takin.entity.domain.entity.TLinkTopologyInfo;
 import com.pamirs.takin.entity.domain.entity.TWList;
+import com.pamirs.takin.common.constant.TakinErrorEnum;
+import com.pamirs.takin.entity.domain.entity.LinkBottleneck;
+import com.pamirs.takin.common.exception.TakinModuleException;
+import com.pamirs.takin.entity.domain.entity.TLinkTopologyInfo;
 import com.pamirs.takin.entity.domain.vo.TLinkTopologyInfoVo;
 import com.pamirs.takin.entity.domain.vo.TLinkTopologyShowVo;
 import com.pamirs.takin.entity.domain.vo.TopologyLink;
@@ -118,8 +118,8 @@ public class LinkTopologyInfoService extends CommonService {
     /**
      * 导入excel 直接解析 插入
      *
-     * @param excel
-     * @throws TakinModuleException
+     * @param excel -
+     * @throws TakinModuleException -
      */
     public void importExcelData(MultipartFile excel) throws TakinModuleException {
         checkFile(excel);
@@ -166,7 +166,6 @@ public class LinkTopologyInfoService extends CommonService {
                         if (StringUtils.isNotEmpty(cell.getStringCellValue())) {
                             topologyInfo.setLinkId(Long.parseLong(cell.getStringCellValue()));
                         }
-                        ;
                         break;
                     case 1:
                         topologyInfo.setLinkName(cell.getStringCellValue());
@@ -218,10 +217,10 @@ public class LinkTopologyInfoService extends CommonService {
     /**
      * 更具链路 分组 查出该链路拓扑图
      *
-     * @param linkGroup
-     * @param secondLinkId
-     * @return
-     * @throws TakinModuleException
+     * @param linkGroup    -
+     * @param secondLinkId -
+     * @return -
+     * @throws TakinModuleException -
      */
     public TLinkTopologyShowVo queryLinkTopologyByLinkGroup(String linkGroup, String secondLinkId)
         throws TakinModuleException {
@@ -274,20 +273,20 @@ public class LinkTopologyInfoService extends CommonService {
     /**
      * 查询前一分钟所有瓶颈列表
      *
-     * @return
+     * @return -
      */
     private List<LinkBottleneck> queryBottleNeckPreOneMinute() {
         //1,查询前一分钟时间所有瓶颈
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MINUTE, PRE_FIVE_MINUTE);
-        return queryBottleNeckPreTime(DateUtils.dateToString(calendar.getTime(), "yyyy-MM-dd HH:mm:ss"));
+        return queryBottleNeckPreTime(DateUtil.formatDateTime(calendar.getTime()));
     }
 
     /**
      * 查询之前时间的瓶颈列表
      *
      * @param startTime 查询开始时间
-     * @return
+     * @return -
      */
     private List<LinkBottleneck> queryBottleNeckPreTime(String startTime) {
         return tLinkTopologyInfoDao.queryBottleNeckPreTime(startTime);
@@ -299,7 +298,7 @@ public class LinkTopologyInfoService extends CommonService {
      * @param type            节点入口类型
      * @param linkEntrance    节点入口地址
      * @param applicationName 应用名称
-     * @return
+     * @return -
      */
     private String getBottleLevel(String type, String linkEntrance, String applicationName,
         List<LinkBottleneck> preMinuteBottleNeckList) {
@@ -315,21 +314,21 @@ public class LinkTopologyInfoService extends CommonService {
             //查到了，需要确认是严重还是普通，
             //当前节点瓶颈级别
             Integer minNodeBottleNeckLevel = bottleNeckList.stream().filter(
-                linkBottleneck -> linkEntrance.equals(linkBottleneck.getKeyWords())).map(
-                linkBottleneck -> linkBottleneck.getBottleneckLevel()).distinct().min(Comparator.comparingInt(o -> o))
+                    linkBottleneck -> linkEntrance.equals(linkBottleneck.getKeyWords())).map(
+                    LinkBottleneck::getBottleneckLevel).distinct().min(Comparator.comparingInt(o -> o))
                 .orElse(3);
             //公用瓶颈类型中是否产生告警
             //TPS/RT稳定性是否瓶颈
             Integer tpsRtBottleNeckLevel = bottleNeckList.stream().filter(
-                linkBottleneck -> linkBottleneck.getBottleneckType() == 3).map(
-                linkBottleneck -> linkBottleneck.getBottleneckLevel()).distinct().min(Comparator.comparingInt(o -> o))
+                    linkBottleneck -> linkBottleneck.getBottleneckType() == 3).map(
+                    LinkBottleneck::getBottleneckLevel).distinct().min(Comparator.comparingInt(o -> o))
                 .orElse(3);
 
             //基础资源是否瓶颈,
             Integer basicBottleNeckLevel = bottleNeckList.stream().filter(
-                linkBottleneck -> linkBottleneck.getBottleneckType() == 1
-                    && linkBottleneck.getCreateTime().getTime() > System.currentTimeMillis() - 60000).map(
-                linkBottleneck -> linkBottleneck.getBottleneckLevel()).distinct().min(Comparator.comparingInt(o -> o))
+                    linkBottleneck -> linkBottleneck.getBottleneckType() == 1
+                        && linkBottleneck.getCreateTime().getTime() > System.currentTimeMillis() - 60000).map(
+                    LinkBottleneck::getBottleneckLevel).distinct().min(Comparator.comparingInt(o -> o))
                 .orElse(3);
             //            Integer minValue = minNodeBottleNeckLevel > tpsRtBottleNeckLevel ? minBottleNeckLevel :
             //            minNodeBottleNeckLevel;
@@ -352,7 +351,7 @@ public class LinkTopologyInfoService extends CommonService {
      * 根据节点入口类型获取瓶颈类型列表
      *
      * @param type 接口类型
-     * @return
+     * @return -
      */
     private List<String> getBottleTypeList(String type) {
         List<String> bottleTypeList = Arrays.stream(BOTTLE_TYPE_DEFAULT).collect(Collectors.toList());
@@ -381,7 +380,7 @@ public class LinkTopologyInfoService extends CommonService {
     /**
      * 查询链路瓶颈应用数量
      *
-     * @return
+     * @return -
      */
     public BottleCountVo queryLinkBottleSummary() {
         List<LinkBottleneck> preMinuteBottleNeckList = queryBottleNeckPreOneMinute();
@@ -407,7 +406,7 @@ public class LinkTopologyInfoService extends CommonService {
             List<String> errorList = Lists.newArrayList();
             List<String> normalList = Lists.newArrayList();
 
-            linkGroupMapList.stream().forEach(linkGroupMap -> {
+            linkGroupMapList.forEach(linkGroupMap -> {
                 String appName = MapUtils.getString(linkGroupMap, "APPLICATION_NAME");
                 String entranceType = MapUtils.getString(linkGroupMap, "ENTRANCE_TYPE");
                 String linkEntrance = MapUtils.getString(linkGroupMap, "LINK_ENTRANCE");
@@ -459,7 +458,7 @@ public class LinkTopologyInfoService extends CommonService {
      * 查询瓶颈链路详情
      *
      * @param paramMap 应用名，节点入口，节点类型
-     * @return
+     * @return -
      */
     public BottleNeckDetailVo queryLinkBottleDetail(Map<String, Object> paramMap) {
         String applicationName = MapUtils.getString(paramMap, "applicationName", "");
@@ -476,7 +475,7 @@ public class LinkTopologyInfoService extends CommonService {
                 BottleNeckVo bottleNeckVo = new BottleNeckVo();
                 bottleNeckVo.setBottleNeckContent(linkBottleNeck.getText());
                 bottleNeckVo.setCreateTime(
-                    DateUtils.dateToString(linkBottleNeck.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+                    DateUtil.formatDateTime(linkBottleNeck.getCreateTime()));
                 return bottleNeckVo;
             }).collect(Collectors.toList());
 
@@ -490,7 +489,7 @@ public class LinkTopologyInfoService extends CommonService {
                 BottleNeckVo bottleNeckVo = new BottleNeckVo();
                 bottleNeckVo.setBottleNeckContent(linkBottleNeck.getText());
                 bottleNeckVo.setCreateTime(
-                    DateUtils.dateToString(linkBottleNeck.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+                    DateUtil.formatDateTime(linkBottleNeck.getCreateTime()));
                 return bottleNeckVo;
             }).collect(Collectors.toList());
         List<BottleNeckVo> errorAsync = bottleNeckPre24Hour.stream()
@@ -502,7 +501,7 @@ public class LinkTopologyInfoService extends CommonService {
                 BottleNeckVo bottleNeckVo = new BottleNeckVo();
                 bottleNeckVo.setBottleNeckContent(linkBottleNeck.getText());
                 bottleNeckVo.setCreateTime(
-                    DateUtils.dateToString(linkBottleNeck.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+                    DateUtil.formatDateTime(linkBottleNeck.getCreateTime()));
                 return bottleNeckVo;
             }).collect(Collectors.toList());
         List<AsyncVo> async = Lists.newArrayList();
@@ -518,7 +517,7 @@ public class LinkTopologyInfoService extends CommonService {
                 BottleNeckVo bottleNeckVo = new BottleNeckVo();
                 bottleNeckVo.setBottleNeckContent(linkBottleNeck.getText());
                 bottleNeckVo.setCreateTime(
-                    DateUtils.dateToString(linkBottleNeck.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+                    DateUtil.formatDateTime(linkBottleNeck.getCreateTime()));
                 return bottleNeckVo;
             }).collect(Collectors.toList());
         List<BottleNeckVo> errorStability = bottleNeckPre24Hour.stream()
@@ -529,7 +528,7 @@ public class LinkTopologyInfoService extends CommonService {
                 BottleNeckVo bottleNeckVo = new BottleNeckVo();
                 bottleNeckVo.setBottleNeckContent(linkBottleNeck.getText());
                 bottleNeckVo.setCreateTime(
-                    DateUtils.dateToString(linkBottleNeck.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+                    DateUtil.formatDateTime(linkBottleNeck.getCreateTime()));
                 return bottleNeckVo;
             }).collect(Collectors.toList());
         List<StabilityVo> stability = Lists.newArrayList();
@@ -546,7 +545,7 @@ public class LinkTopologyInfoService extends CommonService {
                 BottleNeckVo bottleNeckVo = new BottleNeckVo();
                 bottleNeckVo.setBottleNeckContent(linkBottleNeck.getText());
                 bottleNeckVo.setCreateTime(
-                    DateUtils.dateToString(linkBottleNeck.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+                    DateUtil.formatDateTime(linkBottleNeck.getCreateTime()));
                 return bottleNeckVo;
             }).collect(Collectors.toList());
         List<RtVo> rt = Lists.newArrayList();
@@ -573,12 +572,12 @@ public class LinkTopologyInfoService extends CommonService {
     /**
      * 查询24小时内的所有瓶颈
      *
-     * @return
+     * @return -
      */
     private List<LinkBottleneck> queryBottleNeckPre24Hour() {
         //1,查询前一分钟时间所有瓶颈
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, PRE_TWENTY_FOUR_HOUR);
-        return queryBottleNeckPreTime(DateUtils.dateToString(calendar.getTime(), "yyyy-MM-dd HH:mm:ss"));
+        return queryBottleNeckPreTime(DateUtil.formatDateTime(calendar.getTime()));
     }
 }

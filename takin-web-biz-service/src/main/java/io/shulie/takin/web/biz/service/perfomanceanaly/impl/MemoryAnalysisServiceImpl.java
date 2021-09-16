@@ -1,33 +1,33 @@
 package io.shulie.takin.web.biz.service.perfomanceanaly.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
-import com.pamirs.takin.common.util.DateUtils;
+import lombok.extern.slf4j.Slf4j;
+import cn.hutool.core.date.DateUtil;
+import org.springframework.beans.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 import io.shulie.takin.channel.bean.CommandResponse;
 import io.shulie.takin.web.biz.agent.AgentCommandEnum;
+import org.apache.commons.collections4.CollectionUtils;
 import io.shulie.takin.web.biz.agent.AgentCommandFactory;
+import io.shulie.takin.web.common.exception.ExceptionCode;
+import org.springframework.beans.factory.annotation.Autowired;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.MemoryModelVo;
+import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
+import io.shulie.takin.web.biz.service.perfomanceanaly.MemoryAnalysisService;
+import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseQueryParam;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
+import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceBaseDataResult;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.MemoryAnalysisRequest;
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.DownloadDumpResponse;
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.MemoryAnalysisResponse;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.MemoryModelVo;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
-import io.shulie.takin.web.biz.service.perfomanceanaly.MemoryAnalysisService;
-import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
-import io.shulie.takin.web.common.exception.ExceptionCode;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;
-import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseQueryParam;
-import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceBaseDataResult;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * @author mubai
@@ -56,7 +56,7 @@ public class MemoryAnalysisServiceImpl implements MemoryAnalysisService {
         if (timeResponse.getEndTime() != null) {
             param.setEndTime(timeResponse.getEndTime());
         } else {
-            param.setEndTime(DateUtils.dateToString(new Date(), DateUtils.FORMATE_YMDHMS));
+            param.setEndTime(DateUtil.formatDateTime(new Date()));
         }
 
         param.setAppName(request.getAppName());

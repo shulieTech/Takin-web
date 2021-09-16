@@ -1,43 +1,44 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.math.BigDecimal;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
 import java.util.Objects;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.text.MessageFormat;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 
+import com.google.gson.Gson;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import com.google.common.base.Joiner;
 import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-import com.pamirs.takin.common.constant.TakinErrorEnum;
-import com.pamirs.takin.common.constant.TimeUnits;
-import com.pamirs.takin.common.util.DateUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 import com.pamirs.takin.common.util.NumberUtil;
-import com.pamirs.takin.entity.domain.entity.TAlarm;
-import com.pamirs.takin.entity.domain.entity.TReport;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import com.pamirs.takin.entity.domain.vo.TScenario;
 import com.pamirs.takin.entity.domain.query.Result;
-import com.pamirs.takin.entity.domain.query.ResultList;
-import com.pamirs.takin.entity.domain.query.TAlarmQuery;
-import com.pamirs.takin.entity.domain.query.TReportQuery;
+import com.pamirs.takin.entity.domain.entity.TAlarm;
+import io.shulie.takin.web.biz.common.CommonService;
+import com.pamirs.takin.entity.domain.entity.TReport;
 import com.pamirs.takin.entity.domain.vo.TLinkBasicVO;
-import com.pamirs.takin.entity.domain.vo.TLinkServiceMntVo;
-import com.pamirs.takin.entity.domain.vo.TReportAppIpDetail;
+import io.shulie.takin.web.biz.service.TReportService;
+import com.pamirs.takin.entity.domain.query.ResultList;
 import com.pamirs.takin.entity.domain.vo.TReportDetail;
 import com.pamirs.takin.entity.domain.vo.TReportResult;
-import com.pamirs.takin.entity.domain.vo.TScenario;
-import io.shulie.takin.web.biz.common.CommonService;
-import io.shulie.takin.web.biz.service.TReportService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.springframework.stereotype.Service;
+import com.pamirs.takin.common.constant.TakinErrorEnum;
+import com.pamirs.takin.entity.domain.query.TAlarmQuery;
+import com.pamirs.takin.entity.domain.query.TReportQuery;
+import com.pamirs.takin.entity.domain.vo.TLinkServiceMntVo;
+import com.pamirs.takin.entity.domain.vo.TReportAppIpDetail;
 
 /**
  * 说明: 压测报告相关服务实接口实现
@@ -53,7 +54,6 @@ public class TReportServiceImpl extends CommonService implements TReportService 
      * 添加压测报告
      *
      * @param tReport 压测报告
-     *
      * @return 添加结果
      */
     @Override
@@ -67,8 +67,8 @@ public class TReportServiceImpl extends CommonService implements TReportService 
             }
         } catch (Exception e) {
             LOGGER.error(MessageFormat.format("error:{0},model:{1}",
-                    TakinErrorEnum.MONITOR_DB_ADD_EXCEPTION.getErrorMessage(),
-                    JSON.toJSONString(tReport)), e);
+                TakinErrorEnum.MONITOR_DB_ADD_EXCEPTION.getErrorMessage(),
+                JSON.toJSONString(tReport)), e);
             result.setSuccess(Boolean.FALSE);
             result.setErrorMessage(TakinErrorEnum.MONITOR_DB_ADD_EXCEPTION.getErrorMessage());
         }
@@ -79,7 +79,6 @@ public class TReportServiceImpl extends CommonService implements TReportService 
      * 按id删除压测报告
      *
      * @param id 报告id
-     *
      * @return 删除结果
      */
     @Override
@@ -97,7 +96,7 @@ public class TReportServiceImpl extends CommonService implements TReportService 
             }
         } catch (Exception e) {
             LOGGER.error(MessageFormat.format("error:{0},id:{1}",
-                    TakinErrorEnum.MONITOR_DB_DELETE_EXCEPTION.getErrorMessage(), id), e);
+                TakinErrorEnum.MONITOR_DB_DELETE_EXCEPTION.getErrorMessage(), id), e);
             result.setSuccess(Boolean.FALSE);
             result.setErrorMessage(TakinErrorEnum.MONITOR_DB_DELETE_EXCEPTION.getErrorMessage());
         }
@@ -108,7 +107,6 @@ public class TReportServiceImpl extends CommonService implements TReportService 
      * 查询压测报告列表
      *
      * @param query 报告查询实体
-     *
      * @return 查询的报告列表
      */
     @Override
@@ -123,7 +121,7 @@ public class TReportServiceImpl extends CommonService implements TReportService 
             return resultList;
         } catch (Exception e) {
             LOGGER.error(MessageFormat.format("error:{0},query:{1}",
-                    TakinErrorEnum.MONITOR_DB_QUERYLIST_EXCEPTION.getErrorMessage(), JSON.toJSONString(query)), e);
+                TakinErrorEnum.MONITOR_DB_QUERYLIST_EXCEPTION.getErrorMessage(), JSON.toJSONString(query)), e);
             resultList.setSuccess(Boolean.FALSE);
             resultList.setErrorMessage(TakinErrorEnum.MONITOR_DB_QUERYLIST_EXCEPTION.getErrorMessage());
 
@@ -135,7 +133,6 @@ public class TReportServiceImpl extends CommonService implements TReportService 
      * 按id查询压测报告
      *
      * @param id 报告id
-     *
      * @return 压测报告
      */
     @Override
@@ -150,7 +147,7 @@ public class TReportServiceImpl extends CommonService implements TReportService 
             result.setData(tReport);
         } catch (Exception e) {
             LOGGER.error(MessageFormat.format("error:{0},id:{1}",
-                    TakinErrorEnum.MONITOR_DB_QUERY_EXCEPTION.getErrorMessage(), id), e);
+                TakinErrorEnum.MONITOR_DB_QUERY_EXCEPTION.getErrorMessage(), id), e);
             result.setSuccess(Boolean.FALSE);
             result.setErrorMessage(TakinErrorEnum.MONITOR_DB_QUERY_EXCEPTION.getErrorMessage());
         }
@@ -169,7 +166,7 @@ public class TReportServiceImpl extends CommonService implements TReportService 
             result.setData(tReport);
         } catch (Exception e) {
             LOGGER.error(MessageFormat.format("error:{0},id:{1}",
-                    TakinErrorEnum.MONITOR_DB_QUERY_EXCEPTION.getErrorMessage(), id), e);
+                TakinErrorEnum.MONITOR_DB_QUERY_EXCEPTION.getErrorMessage(), id), e);
             result.setSuccess(Boolean.FALSE);
             result.setErrorMessage(TakinErrorEnum.MONITOR_DB_QUERY_EXCEPTION.getErrorMessage());
         }
@@ -178,8 +175,7 @@ public class TReportServiceImpl extends CommonService implements TReportService 
 
     @Override
     public List<TReportAppIpDetail> queryMachineDetail(TReport tReport) {
-        List<TReportAppIpDetail> list = tReportAppIpDetailDao.queryMachineDetail(tReport.getId() + "");
-        return list;
+        return tReportAppIpDetailDao.queryMachineDetail(tReport.getId() + "");
     }
 
     @Override
@@ -202,10 +198,10 @@ public class TReportServiceImpl extends CommonService implements TReportService 
             TReport tReport = reportResult.getData();
             //将报告名称去重并逗号分隔,
             List<List<Map<String, Object>>> list = new Gson().fromJson(tReport.getLinkBasicName().trim(),
-                    new TypeToken<List<List<Map<String, Object>>>>() {
-                    }.getType());
-            String basicLinkName = Joiner.on(",").join(list.stream().flatMap(mapList -> mapList.stream()).map(
-                    map -> MapUtils.getString(map, "label")).distinct().collect(Collectors.toList()));
+                new TypeToken<List<List<Map<String, Object>>>>() {
+                }.getType());
+            String basicLinkName = Joiner.on(",").join(list.stream().flatMap(Collection::stream).map(
+                map -> MapUtils.getString(map, "label")).distinct().collect(Collectors.toList()));
             tReport.setLinkBasicName(basicLinkName);
 
             tReportDetail.setPass(true);
@@ -237,29 +233,29 @@ public class TReportServiceImpl extends CommonService implements TReportService 
                 if (statistics != null) {
                     tReportResult.settScenario(statistics);
 
-                    Integer actualTps = Objects.isNull(statistics.getTps()) ? 0 : statistics.getTps();
+                    int actualTps = Objects.isNull(statistics.getTps()) ? 0 : statistics.getTps();
                     Integer targetTps = NumberUtils.createInteger(
-                            StringUtils.isEmpty(tLinkBasicVO.getTps()) ? "0" : tLinkBasicVO.getTps());
+                        StringUtils.isEmpty(tLinkBasicVO.getTps()) ? "0" : tLinkBasicVO.getTps());
 
                     BigDecimal actualRt = Objects.isNull(statistics.getRt()) ? BigDecimal.ZERO : statistics.getRt();
                     BigDecimal targetRt = NumberUtils.createBigDecimal(
-                            StringUtils.isEmpty(tLinkBasicVO.getRt()) ? "0" : tLinkBasicVO.getRt());
+                        StringUtils.isEmpty(tLinkBasicVO.getRt()) ? "0" : tLinkBasicVO.getRt());
 
                     BigDecimal actualSuccessRate = Objects.isNull(statistics.getSuccessRate()) ? BigDecimal.ZERO
-                            : statistics.getSuccessRate();
+                        : statistics.getSuccessRate();
                     BigDecimal targetSuccessRate = NumberUtils.createBigDecimal(
-                            StringUtils.isEmpty(tLinkBasicVO.getTargetSuccessRate()) ? "0"
-                                    : tLinkBasicVO.getTargetSuccessRate());
+                        StringUtils.isEmpty(tLinkBasicVO.getTargetSuccessRate()) ? "0"
+                            : tLinkBasicVO.getTargetSuccessRate());
 
                     BigDecimal actualRtRate = Objects.isNull(statistics.getRtRate()) ? BigDecimal.ZERO
-                            : statistics.getRtRate();
+                        : statistics.getRtRate();
                     BigDecimal targetRtSa = NumberUtils.createBigDecimal(
-                            StringUtils.isEmpty(tLinkBasicVO.getRtSa()) ? "0" : tLinkBasicVO.getRtSa());
+                        StringUtils.isEmpty(tLinkBasicVO.getRtSa()) ? "0" : tLinkBasicVO.getRtSa());
 
                     boolean flag = (actualTps < targetTps ||
-                            actualRt.compareTo(targetRt) > 0 ||
-                            actualSuccessRate.compareTo(targetSuccessRate) < 0) ||
-                            actualRtRate.compareTo(targetRtSa) < 0;
+                        actualRt.compareTo(targetRt) > 0 ||
+                        actualSuccessRate.compareTo(targetSuccessRate) < 0) ||
+                        actualRtRate.compareTo(targetRtSa) < 0;
                     if (flag) {
                         tReportDetail.setPass(false);
                         tReportResult.setPass(false);
@@ -270,11 +266,11 @@ public class TReportServiceImpl extends CommonService implements TReportService 
                 }
 
                 tReportResult.setDuration(
-                        DateUtils.gapTime(tLinkBasicVO.getStartTime(), tLinkBasicVO.getEndTime(), TimeUnits.MINUTES));
+                    DateUtil.between(tLinkBasicVO.getStartTime(), tLinkBasicVO.getEndTime(), DateUnit.MINUTE));
 
                 //查询应用ip(服务器)资源详情
                 List<TReportAppIpDetail> tReportAppIpDetails = queryApplicationIpByIpList(String.valueOf(reportId),
-                        String.valueOf(tLinkBasicVO.getLinkId()));
+                    String.valueOf(tLinkBasicVO.getLinkId()));
                 tReportResult.settReportAppIpDetails(tReportAppIpDetails);
 
                 //对服务器信息进行分租，应用服务器为web，数据库服务器为db，其他为中间件服务器
@@ -309,32 +305,32 @@ public class TReportServiceImpl extends CommonService implements TReportService 
                     List<TReportAppIpDetail> webServer = serverGroup.get("web");
                     Map<String, Float> webServerInfo = new HashMap<>();
                     webServerInfo.put("maxCpuUsageRate", webServer == null ? 0f : webServer.stream()
-                            .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getCpu()))
-                            .max(Comparator.comparing(u -> u)).orElse(0f));
+                        .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getCpu()))
+                        .max(Comparator.comparing(u -> u)).orElse(0f));
                     webServerInfo.put("maxMemoryUsageRate", webServer == null ? 0f : webServer.stream()
-                            .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getMemory()))
-                            .max(Comparator.comparing(u -> u)).orElse(0F));
+                        .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getMemory()))
+                        .max(Comparator.comparing(u -> u)).orElse(0F));
                     tReportResult.setWebServer(webServerInfo);
 
                     List<TReportAppIpDetail> dbServerInfo = serverGroup.get("db");
                     Map<String, Float> dbServer = new HashMap<>();
                     dbServer.put("maxCpuUsageRate", dbServerInfo == null ? 0f : dbServerInfo.stream()
-                            .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getCpu()))
-                            .max(Comparator.comparing(u -> u)).orElse(0f));
+                        .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getCpu()))
+                        .max(Comparator.comparing(u -> u)).orElse(0f));
                     dbServer.put("maxMemoryUsageRate", dbServerInfo == null ? 0f : dbServerInfo.stream()
-                            .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getMemory()))
-                            .max(Comparator.comparing(u -> u)).orElse(0F));
+                        .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getMemory()))
+                        .max(Comparator.comparing(u -> u)).orElse(0F));
                     tReportResult.setDbServer(dbServer);
 
                     List<TReportAppIpDetail> otherServerInfo = serverGroup.get("other");
 
                     Map<String, Float> otherServer = new HashMap<>();
                     otherServer.put("maxCpuUsageRate", dbServerInfo == null ? 0f : otherServerInfo.stream()
-                            .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getCpu()))
-                            .max(Comparator.comparing(u -> u)).orElse(0f));
+                        .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getCpu()))
+                        .max(Comparator.comparing(u -> u)).orElse(0f));
                     otherServer.put("maxMemoryUsageRate", dbServerInfo == null ? 0f : otherServerInfo.stream()
-                            .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getMemory()))
-                            .max(Comparator.comparing(u -> u)).orElse(0F));
+                        .map(tReportAppIpDetail -> NumberUtil.getFloat(tReportAppIpDetail.getMemory()))
+                        .max(Comparator.comparing(u -> u)).orElse(0F));
                     tReportResult.setMiddlewareServer(otherServer);
                 }
                 tReportResult.settScenarioList(tLinkBasicVO.getStatisticsPerMinute());
@@ -349,11 +345,11 @@ public class TReportServiceImpl extends CommonService implements TReportService 
             TAlarmQuery query = new TAlarmQuery();
             TAlarm tAlarm = new TAlarm();
             query.setQuery(tAlarm);
-            query.setBeginAlarmDate(DateUtils.dateToString(tReport.getStartTime(), DateUtils.FORMATE_YMDHMS));
-            query.setEndAlarmDate(DateUtils.dateToString(tReport.getEndTime(), DateUtils.FORMATE_YMDHMS));
+            query.setBeginAlarmDate(DateUtil.formatDateTime(tReport.getStartTime()));
+            query.setEndAlarmDate(DateUtil.formatDateTime(tReport.getEndTime()));
             query.setWarNames(
-                    reportAppIpDetailList.stream().map(reportAppIpDetail -> reportAppIpDetail.getApplicationName())
-                            .collect(Collectors.toList()));
+                reportAppIpDetailList.stream().map(TReportAppIpDetail::getApplicationName)
+                    .collect(Collectors.toList()));
             //            ResultList<TAlarm> alarmResultList = tAlarmService.queryListByQuery(query);
             //            tReportDetail.settAlarms((List<TAlarm>) alarmResultList.getDatalist());
             //            if (CollectionUtils.isNotEmpty(tReportDetail.gettAlarms())) {

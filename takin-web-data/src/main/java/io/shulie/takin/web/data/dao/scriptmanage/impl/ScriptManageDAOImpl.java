@@ -1,58 +1,58 @@
 package io.shulie.takin.web.data.dao.scriptmanage.impl;
 
+import java.util.Map;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import cn.hutool.core.bean.BeanUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.google.common.collect.Lists;
-import com.pamirs.takin.common.util.DateUtils;
-import io.shulie.takin.common.beans.page.PagingList;
+import javax.annotation.Resource;
 
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.data.mapper.mysql.ScriptExecuteResultMapper;
-import io.shulie.takin.web.common.enums.script.ScriptManageDeployStatusEnum;
-import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
-import io.shulie.takin.web.data.mapper.mysql.ScriptManageDeployMapper;
-import io.shulie.takin.web.data.mapper.mysql.ScriptManageMapper;
-import io.shulie.takin.web.data.model.mysql.ScriptExecuteResultEntity;
-import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
-import io.shulie.takin.web.data.model.mysql.ScriptManageEntity;
-import io.shulie.takin.web.data.param.scriptmanage.ScriptExecuteResultCreateParam;
-import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployCreateParam;
-import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployPageQueryParam;
-import io.shulie.takin.web.data.param.scriptmanage.shell.ShellExecuteParam;
-import io.shulie.takin.web.data.result.scriptmanage.ScriptExecuteResult;
-import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
-import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.apache.commons.collections4.CollectionUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.data.model.mysql.ScriptManageEntity;
+import io.shulie.takin.web.data.mapper.mysql.ScriptManageMapper;
+import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
+import io.shulie.takin.web.data.model.mysql.ScriptExecuteResultEntity;
+import io.shulie.takin.web.data.mapper.mysql.ScriptManageDeployMapper;
+import io.shulie.takin.web.data.mapper.mysql.ScriptExecuteResultMapper;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptExecuteResult;
+import io.shulie.takin.web.data.param.scriptmanage.shell.ShellExecuteParam;
+import io.shulie.takin.web.common.enums.script.ScriptManageDeployStatusEnum;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
+import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployCreateParam;
+import io.shulie.takin.web.data.param.scriptmanage.ScriptExecuteResultCreateParam;
+import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployPageQueryParam;
 
 /**
  * @author zhaoyong
  */
 @Slf4j
 @Component
-public class ScriptManageDAOImpl
-    extends ServiceImpl<ScriptManageMapper, ScriptManageEntity>
+public class ScriptManageDAOImpl extends ServiceImpl<ScriptManageMapper, ScriptManageEntity>
     implements ScriptManageDAO {
-
-    @Autowired
+    @Resource
     private ScriptManageMapper scriptManageMapper;
-    @Autowired
+    @Resource
     private ScriptManageDeployMapper scriptManageDeployMapper;
-    @Autowired
+    @Resource
     private ScriptExecuteResultMapper scriptExecuteResultMapper;
 
     @Override
@@ -137,7 +137,7 @@ public class ScriptManageDAOImpl
         Page<ScriptManageDeployEntity> scriptManageDeployEntityPage = scriptManageDeployMapper.selectPage(page,
             wrapper);
         if (CollectionUtils.isEmpty(scriptManageDeployEntityPage.getRecords())) {
-            return PagingList.of(Lists.newArrayList(),scriptManageDeployEntityPage.getTotal());
+            return PagingList.of(Lists.newArrayList(), scriptManageDeployEntityPage.getTotal());
         }
         List<ScriptManageDeployResult> scriptManageDeployResults = scriptManageDeployEntityPage.getRecords().stream()
             .map(scriptManageDeployEntity -> {
@@ -300,7 +300,7 @@ public class ScriptManageDAOImpl
             return PagingList.empty();
         }
         if (scriptManageEntityPage.getRecords().isEmpty()) {
-            return PagingList.of(Lists.newArrayList(),scriptManageEntityPage.getTotal());
+            return PagingList.of(Lists.newArrayList(), scriptManageEntityPage.getTotal());
         }
         Map<Long, List<ScriptManageDeployResult>> longListMap = scriptManageDeployResults.stream().collect(
             Collectors.groupingBy(ScriptManageDeployResult::getScriptId));
@@ -322,9 +322,14 @@ public class ScriptManageDAOImpl
             ScriptManageEntity entity = entityList
                 .stream()
                 .filter(scriptManageEntity -> scriptManageEntity.getId().equals(result.getScriptId()))
-                .findFirst().get();
-            result.setCustomerId(entity.getCustomerId());
-            result.setUserId(entity.getUserId());
+                .findFirst().orElse(null);
+            if (entity == null) {
+                log.debug("entity 是空");
+                // TODO: 逻辑校验
+            } else {
+                result.setCustomerId(entity.getCustomerId());
+                result.setUserId(entity.getUserId());
+            }
         }
         return PagingList.of(scriptManageDeploys, scriptManageEntityPage.getTotal());
     }
@@ -395,7 +400,7 @@ public class ScriptManageDAOImpl
      *
      * @param scriptId 脚本id
      * @param userId   负责人id
-     * @return
+     * @return -
      */
     @Override
     public int allocationUser(Long scriptId, Long userId) {
@@ -404,7 +409,7 @@ public class ScriptManageDAOImpl
             return 0;
         }
         scriptId = deployEntity.getScriptId();
-        LambdaUpdateWrapper<ScriptManageEntity> wrapper = new LambdaUpdateWrapper();
+        LambdaUpdateWrapper<ScriptManageEntity> wrapper = Wrappers.lambdaUpdate();
         wrapper.set(ScriptManageEntity::getUserId, userId)
             .eq(ScriptManageEntity::getId, scriptId);
         return scriptManageMapper.update(null, wrapper);
@@ -423,8 +428,7 @@ public class ScriptManageDAOImpl
             ScriptManageDeployEntity::getId
         );
         List<ScriptManageDeployEntity> list = scriptManageDeployMapper.selectList(wrapper);
-        Map<Long, Long> map = list.stream().collect(Collectors.groupingBy(ScriptManageDeployEntity::getScriptId, Collectors.counting()));
-        return map;
+        return list.stream().collect(Collectors.groupingBy(ScriptManageDeployEntity::getScriptId, Collectors.counting()));
     }
 
     @Override
@@ -445,14 +449,14 @@ public class ScriptManageDAOImpl
         if (pageList == null) {
             return PagingList.empty();
         }
-        if( pageList.getRecords().isEmpty()) {
-            return PagingList.of(Lists.newArrayList(),pageList.getTotal());
+        if (pageList.getRecords().isEmpty()) {
+            return PagingList.of(Lists.newArrayList(), pageList.getTotal());
         }
         List<ScriptExecuteResultEntity> list = pageList.getRecords();
         List<ScriptExecuteResult> results = list.stream().map(entity -> {
             ScriptExecuteResult result = new ScriptExecuteResult();
             BeanUtils.copyProperties(entity, result);
-            result.setGmtCreate(DateUtils.dateToString(entity.getGmtCreate(), DateUtils.FORMATE_YMDHMS));
+            result.setGmtCreate(DateUtil.formatDateTime(entity.getGmtCreate()));
             return result;
         }).collect(Collectors.toList());
         return PagingList.of(results, pageList.getTotal());

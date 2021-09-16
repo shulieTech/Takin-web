@@ -1,37 +1,37 @@
 package io.shulie.takin.web.biz.service.statistics;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
+import java.util.List;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import com.google.common.collect.Lists;
+import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Maps;
-import com.pamirs.takin.common.constant.ScriptEnum;
-import com.pamirs.takin.common.util.DateUtils;
-import io.shulie.takin.cloud.open.req.statistics.PressureTotalReq;
-import io.shulie.takin.cloud.open.resp.statistics.PressureListTotalResp;
-import io.shulie.takin.cloud.open.resp.statistics.PressurePieTotalResp;
-import io.shulie.takin.cloud.open.resp.statistics.ReportTotalResp;
-import io.shulie.takin.web.biz.convert.statistics.StatisticsConvert;
-import io.shulie.takin.web.biz.pojo.input.statistics.PressureTotalInput;
-import io.shulie.takin.web.biz.pojo.output.statistics.PressureListTotalOutput;
-import io.shulie.takin.web.biz.pojo.output.statistics.PressurePieTotalOutput;
-import io.shulie.takin.web.biz.pojo.output.statistics.PressurePieTotalOutput.PressurePieTotal;
-import io.shulie.takin.web.biz.pojo.output.statistics.ReportTotalOutput;
-import io.shulie.takin.web.biz.pojo.output.statistics.ScriptLabelListTotalOutput;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.web.data.dao.statistics.StatisticsManageDao;
-import io.shulie.takin.web.data.result.statistics.PressureListTotalResult;
-import io.shulie.takin.web.data.result.statistics.PressurePieTotalResult;
-import io.shulie.takin.web.data.result.statistics.ScriptLabelListTotalResult;
-import io.shulie.takin.web.diff.api.statistics.PressureStatisticsApi;
-import io.shulie.takin.web.ext.entity.UserExt;
-import org.apache.commons.lang3.StringUtils;
+import com.google.common.collect.Lists;
 import org.springframework.beans.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import io.shulie.takin.web.ext.entity.UserExt;
+import com.pamirs.takin.common.constant.ScriptEnum;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.cloud.open.resp.statistics.ReportTotalResp;
+import io.shulie.takin.cloud.open.req.statistics.PressureTotalReq;
+import io.shulie.takin.web.data.dao.statistics.StatisticsManageDao;
+import io.shulie.takin.web.biz.convert.statistics.StatisticsConvert;
+import io.shulie.takin.web.diff.api.statistics.PressureStatisticsApi;
+import io.shulie.takin.cloud.open.resp.statistics.PressurePieTotalResp;
+import io.shulie.takin.cloud.open.resp.statistics.PressureListTotalResp;
+import io.shulie.takin.web.biz.pojo.input.statistics.PressureTotalInput;
+import io.shulie.takin.web.biz.pojo.output.statistics.ReportTotalOutput;
+import io.shulie.takin.web.data.result.statistics.PressurePieTotalResult;
+import io.shulie.takin.web.data.result.statistics.PressureListTotalResult;
+import io.shulie.takin.web.biz.pojo.output.statistics.PressurePieTotalOutput;
+import io.shulie.takin.web.data.result.statistics.ScriptLabelListTotalResult;
+import io.shulie.takin.web.biz.pojo.output.statistics.PressureListTotalOutput;
+import io.shulie.takin.web.biz.pojo.output.statistics.ScriptLabelListTotalOutput;
+import io.shulie.takin.web.biz.pojo.output.statistics.PressurePieTotalOutput.PressurePieTotal;
 
 /**
  * @author 无涯
@@ -65,9 +65,7 @@ public class PressureStatisticsServiceImpl implements PressureStatisticsService 
                 for (ScriptEnum scriptEnum : ScriptEnum.values()) {
                     totalMap.put(scriptEnum.getName(), 0);
                 }
-                list.forEach(data -> {
-                    totalMap.put(ScriptEnum.getName(data.getType()), data.getCount());
-                });
+                list.forEach(data -> totalMap.put(ScriptEnum.getName(data.getType()), data.getCount()));
                 List<PressurePieTotal> totals = totalMap.entrySet()
                     .stream().map(e -> new PressurePieTotal(e.getKey(), e.getValue())).collect(
                         Collectors.toList());
@@ -101,7 +99,7 @@ public class PressureStatisticsServiceImpl implements PressureStatisticsService 
                 List<Long> ids = outputs.stream().map(PressureListTotalOutput::getId).collect(Collectors.toList());
                 // 获取标签
                 List<PressureListTotalResult> tags = Lists.newArrayList();
-                if (ids != null && ids.size() > 0) {
+                if (ids.size() > 0) {
                     tags = statisticsManageDao.getSceneTag(ids);
                 }
                 Map<Long, PressureListTotalResult> map = tags.stream().collect(
@@ -133,8 +131,8 @@ public class PressureStatisticsServiceImpl implements PressureStatisticsService 
                 // 获取ids
                 List<Long> scriptIds = totalResps.stream().map(PressureListTotalResp::getId).collect(
                     Collectors.toList());
-                List<PressureListTotalResult> results = Lists.newArrayList();
-                if (scriptIds != null && scriptIds.size() > 0) {
+                List<PressureListTotalResult> results;
+                if (scriptIds.size() > 0) {
                     results = statisticsManageDao.getScriptTag(scriptIds);
                 } else {
                     // 脚本必须要有
@@ -150,7 +148,7 @@ public class PressureStatisticsServiceImpl implements PressureStatisticsService 
                     if (result != null) {
                         output.setName(result.getName() + " 版本" + result.getScriptVersion());
                         output.setLabel(result.getTags());
-                        output.setGmtCreate(DateUtils.dateToString(result.getGmtCreate(), DateUtils.FORMATE_YMDHMS));
+                        output.setGmtCreate(DateUtil.formatDateTime(result.getGmtCreate()));
                         output.setCreateName(result.getCreateName());
                     }
                 });

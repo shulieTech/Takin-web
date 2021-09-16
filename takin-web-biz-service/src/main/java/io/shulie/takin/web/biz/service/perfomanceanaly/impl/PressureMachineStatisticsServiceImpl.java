@@ -1,24 +1,24 @@
 package io.shulie.takin.web.biz.service.perfomanceanaly.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
 
+import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.common.util.DateUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.TypeValueDateVo;
+import io.shulie.takin.web.data.dao.perfomanceanaly.PressureMachineStatisticsDao;
+import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineStatisticsResult;
 import io.shulie.takin.web.biz.convert.performace.PressureMachineStatisticsRespConvert;
+import io.shulie.takin.web.biz.service.perfomanceanaly.PressureMachineStatisticsService;
+import io.shulie.takin.web.data.param.perfomanceanaly.PressureMachineStatisticsQueryParam;
+import io.shulie.takin.web.data.param.perfomanceanaly.PressureMachineStatisticsInsertParam;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PressureMachineStatisticsRequest;
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.PressureMachineStatisticsResponse;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.TypeValueDateVo;
-import io.shulie.takin.web.biz.service.perfomanceanaly.PressureMachineStatisticsService;
-import io.shulie.takin.web.data.dao.perfomanceanaly.PressureMachineStatisticsDao;
-import io.shulie.takin.web.data.param.perfomanceanaly.PressureMachineStatisticsInsertParam;
-import io.shulie.takin.web.data.param.perfomanceanaly.PressureMachineStatisticsQueryParam;
-import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineStatisticsResult;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * @author mubai
@@ -61,7 +61,7 @@ public class PressureMachineStatisticsServiceImpl implements PressureMachineStat
 
     List<PressureMachineStatisticsResult> pointSample(List<PressureMachineStatisticsResult> source) {
         List<PressureMachineStatisticsResult> results = new ArrayList<>();
-        int step = 0;
+        int step;
         if (source != null && source.size() > 100) {
             step = source.size() / 100;
             for (int i = 0; i + step < source.size(); i++) {
@@ -119,8 +119,7 @@ public class PressureMachineStatisticsServiceImpl implements PressureMachineStat
 
     @Override
     public void clearRubbishData() {
-        Date previousDays = DateUtils.getPreviousNDay(91);
-        pressureMachineStatisticsDao.clearRubbishData(DateUtils.dateToString(previousDays, DateUtils.FORMATE_YMDHMS));
+        pressureMachineStatisticsDao.clearRubbishData(DateUtil.offsetDay(new Date(), -91).toString());
     }
 
 }

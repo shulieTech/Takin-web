@@ -75,7 +75,6 @@
         <flyway.version>5.2.4</flyway.version>
         <redisson.version>3.15.6</redisson.version>
         <compress.version>1.20</compress.version>
-
         <easypoi-base.version>4.3.0</easypoi-base.version>
         <easypoi-annotation.version>4.3.0</easypoi-annotation.version>
     </properties>
@@ -474,19 +473,8 @@
            </build>
         </profile>
     </profiles>
-    <distributionManagement>
-        <repository>
-            <id>${releases.id}</id>
-            <name>${releases.name}</name>
-            <url>${releases.url}</url>
-        </repository>
-        <snapshotRepository>
-            <id>${snapshots.id}</id>
-            <name>${snapshots.name}</name>
-            <url>${snapshots.url}</url>
-        </snapshotRepository>
-    </distributionManagement>
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -506,6 +494,7 @@
                 </executions>
             </plugin>
         </plugins>
+
         <pluginManagement>
             <plugins>
                 <plugin>

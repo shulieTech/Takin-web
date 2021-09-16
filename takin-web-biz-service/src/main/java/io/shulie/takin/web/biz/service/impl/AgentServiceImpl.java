@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AgentServiceImpl implements AgentService {
 
-    @Value("${agent.interactive.takin.web.url:http://127.0.0.1:10086/takin-web}")
+    @Value("${agent.interactive.takin.web.url:http://127.0.0.1:10008/takin-web}")
     private String takinWebUrl;
 
     @Autowired

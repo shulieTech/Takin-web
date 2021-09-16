@@ -163,6 +163,8 @@ public class WebPluginUtils {
         return null;
     }
 
+
+
     /**
      * 返回 userAppKey
      *
@@ -246,22 +248,7 @@ public class WebPluginUtils {
         return null;
     }
 
-    public static void fillReportUserData(CloudUserCommonRequestExt param) {
-        //if (org.apache.commons.lang.StringUtils.isNotBlank(param.getManagerName())) {
-        //
-        //    List<UserExt> userList = pluginUtils.selectByName(param.getManagerName());
-        //    if (CollectionUtils.isNotEmpty(userList)) {
-        //        List<Long> uids = userList.stream().map(UserCommonResult::getUserId).collect(Collectors.toList());
-        //        if (CollectionUtils.isEmpty(uids)) {
-        //            param.setUserIdStr(null);
-        //        } else {
-        //            param.setUserIdStr(org.apache.commons.lang.StringUtils.join(uids, ","));
-        //        }
-        //    } else {
-        //        return WebResponse.success(Lists.newArrayList());
-        //    }
-        //}
-    }
+
 
     //public void fillMiddlewareUserData(AppMiddlewareQuery query) {
     //    //UserExt user = null;
@@ -271,7 +258,32 @@ public class WebPluginUtils {
     //    //}
     //}
 
-    // 权限相关数据
+
+    public static Class<?> getClassByName(String className) {
+        try {
+            // 先扫描用户插件
+            return Class.forName(className,true,pluginManager.getExtension(WebUserExtApi.class).getClass().getClassLoader());
+        } catch (ClassNotFoundException e) {
+           return null;
+        }
+    }
+
+    /**
+     * 根据用户名 模糊查询
+     * @param userName
+     * @return
+     */
+    public static List<UserExt> selectByName(String userName) {
+        if (Objects.nonNull(userApi)) {
+            return userApi.selectByName(userName);
+        }
+        return Lists.newArrayList();
+    }
+
+    /**
+     * 权限相关数据
+     * @return
+     */
     public static List<Long> getQueryAllowUserIdList() {
         if (Objects.nonNull(dataAuthApi)) {
             return dataAuthApi.getQueryAllowUserIdList();

@@ -988,7 +988,11 @@ public class WhiteListServiceImpl implements WhiteListService {
             List<String> interfaceNames = Lists.newArrayList(StringUtils.split(input.getInterfaceName(), ","));
             param.setInterfaceNames(interfaceNames);
         }
-
+        // 白名单租户数据隔离
+        UserExt user = WebPluginUtils.getUser();
+        if (user != null) {
+            param.setCustomerId(WebPluginUtils.getCustomerId());
+        }
         PagingList<WhiteListVO> pagingList = whiteListDAO.pagingList(param);
         // 生效应用
         // 获取所有生效效应，是否有局部应用

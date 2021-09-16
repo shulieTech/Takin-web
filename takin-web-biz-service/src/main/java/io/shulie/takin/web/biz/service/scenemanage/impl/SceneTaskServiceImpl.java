@@ -262,22 +262,23 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private SceneActionParamNew getNewParam(SceneActionParam param) {
         SceneActionParamNew paramNew = CopyUtils.copyFields(param, SceneActionParamNew.class);
         try {
-            paramNew.setContinueRead(false);
-            if (!param.getContinueRead().equals("-1")) {
-                Object hasUnread = redisTemplate.opsForValue().get("hasUnread_" + param.getSceneId());
-                if (hasUnread == null) {
-                    throw ApiException.create(500, "缺少参数hasUnread！无法判断继续压测还是从头压测，请检查redis或者cloud返回的位点数据是否有问题，id=" + param.getSceneId());
-                }
-                if (param.getContinueRead().equals("1")) {
-                    paramNew.setContinueRead(Boolean.parseBoolean(hasUnread + ""));
-                } else {
-                    paramNew.setContinueRead(false);
-                }
-            }
+//            paramNew.setContinueRead(false);
+//            if (!param.getContinueRead().equals("-1")) {
+//                Object hasUnread = redisTemplate.opsForValue().get("hasUnread_" + param.getSceneId());
+//                if (hasUnread == null) {
+//                    throw ApiException.create(500, "缺少参数hasUnread！无法判断继续压测还是从头压测，请检查redis或者cloud返回的位点数据是否有问题，id=" + param.getSceneId());
+//                }
+//                if (param.getContinueRead().equals("1")) {
+//                    paramNew.setContinueRead(Boolean.parseBoolean(hasUnread + ""));
+//                } else {
+//                    paramNew.setContinueRead(false);
+//                }
+//            }
+            paramNew.setContinueRead(param.getContinueRead().equals("1"));
         } catch (Exception e) {
             log.error("未知异常", e);
         } finally {
-            redisTemplate.delete("hasUnread_" + param.getSceneId());
+//            redisTemplate.delete("hasUnread_" + param.getSceneId());
         }
         return paramNew;
     }
@@ -298,7 +299,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             throw new TakinWebException(ExceptionCode.SCENE_STOP_ERROR, response.getError());
         }
         SceneActionResp resp = response.getData();
-        redisClientUtils.hmdelete(WebRedisKeyConstant.PTING_APPLICATION_KEY, String.valueOf(resp.getReportId()));
+        redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY,resp.getReportId()));
         // 最后删除
         return sceneTaskApi.stopTask(req);
     }
@@ -339,10 +340,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             List<TApplicationMnt> applicationMntList = applicationMntDao.queryApplicationMntListByIds(applicationIds);
             List<String> applicationNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName)
                 .collect(Collectors.toList());
-            Map<String, Object> map = Maps.newHashMap();
-            // 报告 带应用
-            map.put(String.valueOf(reportId), applicationNames);
-            redisClientUtils.hmset(WebRedisKeyConstant.PTING_APPLICATION_KEY, map);
+            // 过期时间，根据 压测时间 + 10s
+            redisClientUtils.set(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY,reportId),applicationNames,
+                wrapperResp.getPressureTestSecond() + 10);
         }
         Map<String, List<SceneSlaRefResp>> slaMap = getSceneSla(wrapperResp);
         if (MapUtils.isNotEmpty(slaMap)) {

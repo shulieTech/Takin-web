@@ -764,7 +764,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 if (resultData != null) {
                     ScenePositionPointResponse response = new ScenePositionPointResponse();
                     //false = 没有csv文件或位点均为0
-                    Boolean hasUnread = resultData.getHasUnread();
+//                    Boolean hasUnread = resultData.getHasUnread();
                     List<SceneStartCheckResp.FileReadInfo> infos = resultData.getFileReadInfos();
                     if (Objects.nonNull(infos)){
                         infos.stream().forEach(t -> {
@@ -774,7 +774,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                             list.add(response);
                         });
                     }
-                    redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
+//                    redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
                 }
             }
         }

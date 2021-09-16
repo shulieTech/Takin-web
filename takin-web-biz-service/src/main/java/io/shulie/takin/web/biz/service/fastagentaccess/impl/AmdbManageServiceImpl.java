@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Joiner;
 import io.shulie.amdb.common.dto.agent.AgentInfoDTO;
 import io.shulie.amdb.common.dto.agent.AgentStatInfoDTO;
 import io.shulie.amdb.common.dto.instance.AgentStatusStatInfo;
@@ -23,6 +24,7 @@ import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentListResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentStatusStatResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.ErrorLogListResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.PluginLoadListResponse;
+import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AmdbManageService;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentDiscoverStatusEnum;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -30,6 +32,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * @Description
@@ -45,13 +48,26 @@ public class AmdbManageServiceImpl implements AmdbManageService {
     @Autowired
     private AgentConfigClient agentConfigClient;
 
+    @Autowired
+    private AgentConfigService agentConfigService;
+
     @Override
     public PagingList<ErrorLogListResponse> pageErrorLog(ErrorLogQueryRequest queryRequest) {
         ErrorLogQueryDTO queryDTO = new ErrorLogQueryDTO();
         BeanUtils.copyProperties(queryRequest, queryDTO);
-        queryDTO.setAppName(queryRequest.getProjectName());
         queryDTO.setAgentInfo(queryRequest.getKeyword());
         queryDTO.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+
+        if (StringUtils.isEmpty(queryRequest.getProjectName())) {
+            List<String> appNameList = agentConfigService.getAllApplication("");
+            if (CollectionUtils.isEmpty(appNameList)) {
+                return PagingList.empty();
+            }
+            String appNames = Joiner.on(",").join(appNameList);
+            queryDTO.setAppNames(appNames);
+        } else {
+            queryDTO.setAppName(queryRequest.getProjectName());
+        }
 
         PagingList<AgentInfoDTO> pagingList = applicationClient.pageErrorLog(queryDTO);
         List<ErrorLogListResponse> list = pagingList.getList().stream().map(item -> {
@@ -80,16 +96,17 @@ public class AmdbManageServiceImpl implements AmdbManageService {
 
     @Override
     public AgentStatusStatResponse agentCountStatus() {
-        AgentStatusStatInfo statusStatInfo = applicationClient.agentCountStatus();
-        if (statusStatInfo == null) {
-            return null;
-        }
+        List<String> appNameList = agentConfigService.getAllApplication("");
+        String appNames = Joiner.on(",").join(appNameList);
+        AgentStatusStatInfo statusStatInfo = applicationClient.agentCountStatus(appNames);
         AgentStatusStatResponse response = new AgentStatusStatResponse();
-        //强调：这里没有写反，大数据的接口需要这里转换一下
-        response.setAgentCount(statusStatInfo.getProbeCount());
-        response.setAgentFailCount(statusStatInfo.getProbeFailCount());
-        response.setProbeCount(statusStatInfo.getAgentCount());
-        response.setProbeFailCount(statusStatInfo.getAgentFailCount());
+        if (statusStatInfo != null) {
+            //强调：这里没有写反，大数据的接口需要这里转换一下
+            response.setAgentCount(statusStatInfo.getProbeCount());
+            response.setAgentFailCount(statusStatInfo.getProbeFailCount());
+            response.setProbeCount(statusStatInfo.getAgentCount());
+            response.setProbeFailCount(statusStatInfo.getAgentFailCount());
+        }
         return response;
     }
 
@@ -111,7 +128,19 @@ public class AmdbManageServiceImpl implements AmdbManageService {
         BeanUtils.copyProperties(queryRequest, queryDTO);
         queryDTO.setAgentStatus(queryRequest.getProbeStatus());
         queryDTO.setProbeStatus(queryRequest.getAgentStatus());
-        queryDTO.setAppName(queryRequest.getProjectName());
+
+        if (StringUtils.isEmpty(queryRequest.getProjectName())) {
+            List<String> appNameList = agentConfigService.getAllApplication("");
+            // 如果当前用户没有应用权限，则直接返回空集合
+            if (CollectionUtils.isEmpty(appNameList)) {
+                return PagingList.empty();
+            }
+            String appNames = Joiner.on(",").join(appNameList);
+            queryDTO.setAppNames(appNames);
+        } else {
+            queryDTO.setAppName(queryRequest.getProjectName());
+        }
+
         PagingList<ApplicationNodeAgentDTO> responsePagingList = applicationClient.pageApplicationNodeByAgent(queryDTO);
         List<ApplicationNodeAgentDTO> dtoList = responsePagingList.getList();
         if (CollectionUtils.isEmpty(dtoList)) {

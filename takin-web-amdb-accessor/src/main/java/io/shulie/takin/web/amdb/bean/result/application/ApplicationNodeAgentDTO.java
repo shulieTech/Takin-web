@@ -23,6 +23,11 @@ public class ApplicationNodeAgentDTO implements Serializable {
     private String appName;
 
     /**
+     * 多个应用集合，用,分割
+     */
+    private String appNames;
+
+    /**
      * agentId
      */
     private String agentId;

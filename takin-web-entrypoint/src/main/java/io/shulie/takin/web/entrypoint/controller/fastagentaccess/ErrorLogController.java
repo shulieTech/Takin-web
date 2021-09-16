@@ -1,7 +1,10 @@
 package io.shulie.takin.web.entrypoint.controller.fastagentaccess;
 
 import io.shulie.takin.cloud.common.constants.APIUrls;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.ErrorLogQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.ErrorLogListResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AmdbManageService;
@@ -27,6 +30,10 @@ public class ErrorLogController {
 
     @ApiOperation("|_ 异常日志列表查询")
     @GetMapping("/list")
+    @AuthVerification(
+        moduleCode = ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public PagingList<ErrorLogListResponse> agentList(ErrorLogQueryRequest queryRequest) {
         return amdbManageService.pageErrorLog(queryRequest);
     }

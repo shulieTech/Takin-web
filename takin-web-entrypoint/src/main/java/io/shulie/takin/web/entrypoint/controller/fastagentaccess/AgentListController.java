@@ -1,7 +1,10 @@
 package io.shulie.takin.web.entrypoint.controller.fastagentaccess;
 
 import io.shulie.takin.cloud.common.constants.APIUrls;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentDiscoverRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentListResponse;
@@ -32,12 +35,20 @@ public class AgentListController {
 
     @ApiOperation("|_ 探针概况接口")
     @GetMapping("/overview")
+    @AuthVerification(
+        moduleCode = ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public AgentStatusStatResponse overview() {
         return amdbManageService.agentCountStatus();
     }
 
     @ApiOperation("|_ 列表分页查询")
     @GetMapping("/list")
+    @AuthVerification(
+        moduleCode = ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public PagingList<AgentListResponse> agentList(AgentListQueryRequest queryRequest) {
         return amdbManageService.agentList(queryRequest);
     }

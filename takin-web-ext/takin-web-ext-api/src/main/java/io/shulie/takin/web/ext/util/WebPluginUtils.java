@@ -18,6 +18,7 @@ import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -104,6 +105,24 @@ public class WebPluginUtils {
             return userApi.selectAllUser();
         }
         return Lists.newArrayList();
+    }
+
+    /**
+     * 根据userAppKey查询用户
+     *
+     * @param userAppKey userAppKey
+     * @return UserExt对象
+     */
+    public static UserExt getUserByAppKey(String userAppKey) {
+        if (StringUtils.isBlank(userAppKey)) {
+            return null;
+        }
+        for (UserExt ext : selectAllUser()) {
+            if (userAppKey.equals(ext.getKey())) {
+                return ext;
+            }
+        }
+        return null;
     }
 
     /**
@@ -295,7 +314,7 @@ public class WebPluginUtils {
 
     public static List<Long> getDownloadAllowUserIdList() {
         if (Objects.nonNull(dataAuthApi)) {
-             return dataAuthApi.getDownloadAllowUserIdList();
+            return dataAuthApi.getDownloadAllowUserIdList();
         }
         return Lists.newArrayList();
     }
@@ -322,7 +341,7 @@ public class WebPluginUtils {
     }
 
     public static Map<String, String> getSystemInfo() {
-        if(Objects.nonNull(userApi)) {
+        if (Objects.nonNull(userApi)) {
             return userApi.getSystemInfo();
         }
         HashMap<String, String> dataMap = new LinkedHashMap<>();
@@ -335,12 +354,13 @@ public class WebPluginUtils {
 
     /**
      * 补充cloud 用户数据
+     *
      * @param cloudUserExt
      */
     public static void fillCloudUserData(CloudUserCommonRequestExt cloudUserExt) {
-        if(Objects.nonNull(userApi)) {
-             userApi.fillCloudUserData(cloudUserExt);
-             return;
+        if (Objects.nonNull(userApi)) {
+            userApi.fillCloudUserData(cloudUserExt);
+            return;
         }
     }
 

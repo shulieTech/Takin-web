@@ -35,6 +35,7 @@ import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
 import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionListResult;
+import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -66,6 +67,16 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         = "%s/fast/agent/access/project/download?projectName=%s&userAppKey=%s&version=%s&expireDate=%s"
         + "&flag=%s";
 
+    /**
+     * userId字符串
+     */
+    private final static String PRADAR_USER_ID = "pradar.user.id";
+
+    /**
+     * userAppKey字符串
+     */
+    private final static String USER_APP_KEY = "user.app.key";
+
     @Autowired
     private AgentVersionDAO agentVersionDAO;
 
@@ -74,7 +85,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     @Override
     public AgentVersionListResponse queryLatestOrFixedVersion(String version) {
-        AgentVersionDetailResult agentVersionDetailResult = null;
+        AgentVersionDetailResult agentVersionDetailResult;
         if (StringUtils.isEmpty(version)) {
             agentVersionDetailResult = agentVersionDAO.findMaxVersionAgent();
         } else {
@@ -191,7 +202,10 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             }
         });
 
-        // 4、将替换后配置参数的文件进行返回
+        // 4、特殊处理一下agentConfig,将当前用户的pradar.user.id和user.app.key写入配置
+        dealAgentConfig(userAppKey, agentConfig);
+
+        // 5、将替换后配置参数的文件进行返回
         return updateZipFile(detailResult.getFilePath(), agentConfig, simulatorConfig);
     }
 
@@ -322,5 +336,36 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             byte[] buf = config.getBytes();
             zos.write(buf, 0, buf.length);
         }
+    }
+
+    /**
+     * 处理agentConfig将
+     * pradar.user.id
+     * user.app.key
+     * 两个配置的值修改成当前用户信息
+     *
+     * @param userAppKey      用户唯一标识
+     * @param agentConfigList AgentConfigDetailResult集合
+     */
+    private void dealAgentConfig(String userAppKey, List<AgentConfigDetailResult> agentConfigList) {
+        UserExt userExt = WebPluginUtils.getUserByAppKey(userAppKey);
+        if (userExt == null) {
+            return;
+        }
+        agentConfigList.removeIf(detailResult -> PRADAR_USER_ID.equals(detailResult.getEnKey()) || USER_APP_KEY.equals(
+            detailResult.getEnKey()));
+
+        AgentConfigDetailResult pradarUserIdObj = new AgentConfigDetailResult();
+        pradarUserIdObj.setDesc("pradar.user.id");
+        pradarUserIdObj.setEnKey(PRADAR_USER_ID);
+        pradarUserIdObj.setDefaultValue(String.valueOf(userExt.getId()));
+
+        AgentConfigDetailResult userAppKeyObj = new AgentConfigDetailResult();
+        userAppKeyObj.setDesc("user.app.key");
+        userAppKeyObj.setEnKey(USER_APP_KEY);
+        userAppKeyObj.setDefaultValue(userAppKey);
+
+        agentConfigList.add(pradarUserIdObj);
+        agentConfigList.add(userAppKeyObj);
     }
 }

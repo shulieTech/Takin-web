@@ -8,6 +8,7 @@ import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigEffectQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigUpdateRequest;
@@ -62,6 +63,10 @@ public class AgentConfigController {
         @ApiImplicitParam(name = "keyword", value = "关键词")
     })
     @GetMapping("/allApplication")
+    @AuthVerification(
+        moduleCode = ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public List<String> allApplication(@RequestParam(required = false) String keyword) {
         return agentConfigService.getAllApplication(keyword);
     }

@@ -93,6 +93,11 @@ public class ApplicationClientImpl implements ApplicationClient {
     private static final String APPLICATION_NODE_V2_PATH = "/amdb/db/api/appInstanceStatus/queryInstanceStatusV2";
 
     /**
+     * 新 应用节点列表路由
+     */
+    private static final String APPLICATION_NODE_PAGE_V3 = "/amdb/db/api/appInstanceStatus/queryInstanceStatusV3";
+
+    /**
      * 节点, 探针, 统计信息
      */
     private static final String APPLICATION_NODE_PROBE_INFO = "/amdb/db/api/appInstanceStatus/queryInstanceSumInfo";
@@ -120,12 +125,13 @@ public class ApplicationClientImpl implements ApplicationClient {
         return pageInterfaces(query).getList();
     }
 
-    private List<ApplicationInterfaceDTO> getApplicationInterfaceDtoList(AmdbResult<List<ServiceInfoDTO>> amdbResponse) {
+    private List<ApplicationInterfaceDTO> getApplicationInterfaceDtoList(
+        AmdbResult<List<ServiceInfoDTO>> amdbResponse) {
         return amdbResponse.getData().stream().map(serviceInfoDTO -> {
             ApplicationInterfaceDTO interfaceDTO = new ApplicationInterfaceDTO();
             interfaceDTO.setId("0");
             interfaceDTO.setInterfaceName(RemoteCallUtils.getInterfaceName(serviceInfoDTO.getRpcType(),
-                    serviceInfoDTO.getServiceName(), serviceInfoDTO.getMethodName()));
+                serviceInfoDTO.getServiceName(), serviceInfoDTO.getMethodName()));
 
             EdgeTypeGroupEnum edgeTypeGroupEnum = EdgeTypeGroupEnum.getEdgeTypeEnum(serviceInfoDTO.getMiddlewareName());
             interfaceDTO.setInterfaceType(edgeTypeGroupEnum.getType());
@@ -139,30 +145,31 @@ public class ApplicationClientImpl implements ApplicationClient {
     public PagingList<ApplicationInterfaceDTO> pageInterfaces(ApplicationInterfaceQueryDTO query) {
         String url = properties.getUrl().getAmdb() + INTERFACE_PATH;
         query.setFieldNames("appName,middlewareName,serviceName,methodName,rpcType");
-        query.setRpcType(StringUtils.join(Lists.newArrayList(String.valueOf(RpcType.TYPE_WEB_SERVER), String.valueOf(RpcType.TYPE_RPC)), ","));
+        query.setRpcType(StringUtils.join(
+            Lists.newArrayList(String.valueOf(RpcType.TYPE_WEB_SERVER), String.valueOf(RpcType.TYPE_RPC)), ","));
         try {
-//            String responseEntity = HttpClientUtil.sendPost(url, query);
-//            if (StringUtils.isBlank(responseEntity)) {
-//                log.error("前往pardar查询应用的接口信息报错,请求地址：{}，响应信息：{}", url, responseEntity);
-//                return PagingList.empty();
-//            } else {
-//                AmdbResult<List<ServiceInfoDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-//                        new cn.hutool.core.lang.TypeReference<AmdbResult<List<ServiceInfoDTO>>>() {
-//                        }, true);
-//                List<ApplicationInterfaceDTO> dtos = getApplicationInterfaceDTOS(amdbResponse);
-//                return PagingList.of(dtos, amdbResponse.getTotal());
-            if (StringUtils.isEmpty(query.getAppName())){
+            //            String responseEntity = HttpClientUtil.sendPost(url, query);
+            //            if (StringUtils.isBlank(responseEntity)) {
+            //                log.error("前往pardar查询应用的接口信息报错,请求地址：{}，响应信息：{}", url, responseEntity);
+            //                return PagingList.empty();
+            //            } else {
+            //                AmdbResult<List<ServiceInfoDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
+            //                        new cn.hutool.core.lang.TypeReference<AmdbResult<List<ServiceInfoDTO>>>() {
+            //                        }, true);
+            //                List<ApplicationInterfaceDTO> dtos = getApplicationInterfaceDTOS(amdbResponse);
+            //                return PagingList.of(dtos, amdbResponse.getTotal());
+            if (StringUtils.isEmpty(query.getAppName())) {
                 query.setAppName("-1");
             }
             AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.POST)
-                    .url(url)
-                    .param(query)
-                    .eventName("查询应用的接口信息")
-                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .list(ServiceInfoDTO.class);
+                .url(url)
+                .param(query)
+                .eventName("查询应用的接口信息")
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .list(ServiceInfoDTO.class);
             List<ApplicationInterfaceDTO> dtos = getApplicationInterfaceDtoList(amdbResponse);
             return PagingList.of(dtos, amdbResponse.getTotal());
-//            }
+            //            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
@@ -174,11 +181,11 @@ public class ApplicationClientImpl implements ApplicationClient {
         String url = properties.getUrl().getAmdb() + APPLICATION_QUERY_PATH;
         try {
             AmdbResult<List<ApplicationDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.POST)
-                    .url(url)
-                    .param(query)
-                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .eventName("查询应用信息")
-                    .list(ApplicationDTO.class);
+                .url(url)
+                .param(query)
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .eventName("查询应用信息")
+                .list(ApplicationDTO.class);
             return PagingList.of(amdbResponse.getData(), amdbResponse.getTotal());
 
         } catch (Exception e) {
@@ -196,25 +203,25 @@ public class ApplicationClientImpl implements ApplicationClient {
     public List<ApplicationErrorDTO> listErrors(ApplicationErrorQueryDTO query) {
         String url = properties.getUrl().getAmdb() + APPLICATION_ERROR_QUERY_PATH;
         try {
-//            String responseEntity = HttpClientUtil.sendGet(url, query);
-//            AmdbResult<List<ApplicationErrorDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-//                    new cn.hutool.core.lang.TypeReference<AmdbResult<List<ApplicationErrorDTO>>>() {
-//                    }, true);
-//            if (amdbResponse == null || !amdbResponse.getSuccess()) {
-//                log.error("前往amdb查询应用异常信息返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
-//                return Collections.emptyList();
-//            }
-//            List<ApplicationErrorDTO> data = amdbResponse.getData();
-//            if (CollectionUtils.isEmpty(data)) {
-//                return Collections.emptyList();
-//            }
-//            return amdbResponse.getData();
+            //            String responseEntity = HttpClientUtil.sendGet(url, query);
+            //            AmdbResult<List<ApplicationErrorDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
+            //                    new cn.hutool.core.lang.TypeReference<AmdbResult<List<ApplicationErrorDTO>>>() {
+            //                    }, true);
+            //            if (amdbResponse == null || !amdbResponse.getSuccess()) {
+            //                log.error("前往amdb查询应用异常信息返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
+            //                return Collections.emptyList();
+            //            }
+            //            List<ApplicationErrorDTO> data = amdbResponse.getData();
+            //            if (CollectionUtils.isEmpty(data)) {
+            //                return Collections.emptyList();
+            //            }
+            //            return amdbResponse.getData();
 
             AmdbResult<List<ApplicationErrorDTO>> amdbResponse = AmdbHelper.newInStance().url(url)
-                    .param(query)
-                    .eventName("查询应用异常信息")
-                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .list(ApplicationErrorDTO.class);
+                .param(query)
+                .eventName("查询应用异常信息")
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .list(ApplicationErrorDTO.class);
             return amdbResponse.getData();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -234,11 +241,12 @@ public class ApplicationClientImpl implements ApplicationClient {
 
     @Override
     public ApplicationNodeProbeInfoDTO getApplicationNodeProbeInfo(ApplicationNodeQueryDTO dto) {
-        AmdbResult<ApplicationNodeProbeInfoDTO> result = AmdbHelper.newInStance().url(this.getApplicationNodeProbeInfoUrl())
-                .param(dto)
-                .eventName("查询应用节点信息")
-                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                .one(ApplicationNodeProbeInfoDTO.class);
+        AmdbResult<ApplicationNodeProbeInfoDTO> result = AmdbHelper.newInStance().url(
+                this.getApplicationNodeProbeInfoUrl())
+            .param(dto)
+            .eventName("查询应用节点信息")
+            .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+            .one(ApplicationNodeProbeInfoDTO.class);
 
         return result.getData();
     }
@@ -253,11 +261,11 @@ public class ApplicationClientImpl implements ApplicationClient {
     private PagingList<ApplicationNodeDTO> pageApplicationNode(String url, ApplicationNodeQueryDTO dto) {
         try {
             AmdbResult<List<ApplicationNodeDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.GET)
-                    .url(url)
-                    .param(dto)
-                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .eventName("查询应用节点列表")
-                    .list(ApplicationNodeDTO.class);
+                .url(url)
+                .param(dto)
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .eventName("查询应用节点列表")
+                .list(ApplicationNodeDTO.class);
             List<ApplicationNodeDTO> data = amdbResponse.getData();
             if (CollectionUtils.isEmpty(data)) {
                 return PagingList.empty();
@@ -267,7 +275,7 @@ public class ApplicationClientImpl implements ApplicationClient {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
-//            return PagingList.empty();
+            //            return PagingList.empty();
         }
     }
 
@@ -307,33 +315,34 @@ public class ApplicationClientImpl implements ApplicationClient {
         return properties.getUrl().getAmdb() + APPLICATION_NODE_V2_PATH;
     }
 
-
     @Override
     public PagingList<ApplicationRemoteCallDTO> listApplicationRemoteCalls(ApplicationRemoteCallQueryDTO query) {
         String url = properties.getUrl().getAmdb() + APPLICATION_REMOTE_CALL_PATH;
         try {
-//            String responseEntity = HttpClientUtil.sendPost(url, query);
-//
-//            if (StringUtils.isBlank(responseEntity)) {
-//                log.error("前往amdb查询远程调用的接口信息报错,请求地址：{}，响应信息：{}", url, responseEntity);
-//                return PagingList.empty();
-//            } else {
-//                AmdbResult<List<ApplicationRemoteCallDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-//                        new cn.hutool.core.lang.TypeReference<AmdbResult<List<ApplicationRemoteCallDTO>>>() {
-//                        }, true);
-//                return PagingList.of(amdbResponse.getData(), amdbResponse.getTotal());
-//            }
+            //            String responseEntity = HttpClientUtil.sendPost(url, query);
+            //
+            //            if (StringUtils.isBlank(responseEntity)) {
+            //                log.error("前往amdb查询远程调用的接口信息报错,请求地址：{}，响应信息：{}", url, responseEntity);
+            //                return PagingList.empty();
+            //            } else {
+            //                AmdbResult<List<ApplicationRemoteCallDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
+            //                        new cn.hutool.core.lang
+            //                        .TypeReference<AmdbResult<List<ApplicationRemoteCallDTO>>>() {
+            //                        }, true);
+            //                return PagingList.of(amdbResponse.getData(), amdbResponse.getTotal());
+            //            }
 
-            AmdbResult<List<ApplicationRemoteCallDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.POST)
-                    .url(url)
-                    .param(query)
-                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
-                    .eventName("查询远程调用的接口信息")
-                    .list(ApplicationRemoteCallDTO.class);
+            AmdbResult<List<ApplicationRemoteCallDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(
+                    HttpMethod.POST)
+                .url(url)
+                .param(query)
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .eventName("查询远程调用的接口信息")
+                .list(ApplicationRemoteCallDTO.class);
             return PagingList.of(amdbResponse.getData(), amdbResponse.getTotal());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR,e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
         }
     }
 
@@ -342,14 +351,8 @@ public class ApplicationClientImpl implements ApplicationClient {
         try {
             // 因为tro-web的分页从0开始大数据的分页从1开始，所以这里需要加1
             dto.setCurrentPage(dto.getRealCurrent());
-            String url = this.getPageApplicationNodeUrl();
-            //// 由于date再被json序列化以后转成时间戳，但是接口又是需要接受一个date类型的参数，所以这里特殊处理一下。
-            //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            //if (dto.getMinUpdateDate() != null) {
-            //    url += "?minUpdateDate=" + sdf.format(dto.getMinUpdateDate()) + "&";
-            //    dto.setMinUpdateDate(null);
-            //}
-            String responseJson = HttpClientUtil.sendGet(url, dto);
+            String url = properties.getUrl().getAmdb() + APPLICATION_NODE_PAGE_V3;
+            String responseJson = HttpClientUtil.sendPost(url, dto);
             if (StrUtil.isBlank(responseJson)) {
                 return PagingList.empty();
             }
@@ -433,10 +436,15 @@ public class ApplicationClientImpl implements ApplicationClient {
     }
 
     @Override
-    public AgentStatusStatInfo agentCountStatus() {
+    public AgentStatusStatInfo agentCountStatus(String appNames) {
+        if (StringUtils.isBlank(appNames)) {
+            return new AgentStatusStatInfo();
+        }
+        ApplicationNodeAgentDTO applicationNodeAgentDTO = new ApplicationNodeAgentDTO();
+        applicationNodeAgentDTO.setAppNames(appNames);
         String url = properties.getUrl().getAmdb() + AGENT_COUNT_STATUS;
         try {
-            String responseEntity = HttpClientUtil.sendGet(url);
+            String responseEntity = HttpClientUtil.sendPost(url, applicationNodeAgentDTO);
             AmdbResult<AgentStatusStatInfo> amdbResponse = JSONUtil.toBean(responseEntity,
                 new cn.hutool.core.lang.TypeReference<AmdbResult<AgentStatusStatInfo>>() {}, true);
             if (amdbResponse == null || !amdbResponse.getSuccess()) {

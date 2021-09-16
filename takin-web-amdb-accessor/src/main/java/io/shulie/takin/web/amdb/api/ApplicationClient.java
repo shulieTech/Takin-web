@@ -111,8 +111,9 @@ public interface ApplicationClient {
     /**
      * 探针概况接口
      *
+     * @param appNames 需要统计的app集合
      * @return AgentStatusStatInfo
      */
-    AgentStatusStatInfo agentCountStatus();
+    AgentStatusStatInfo agentCountStatus(String appNames);
 
 }

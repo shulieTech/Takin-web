@@ -529,13 +529,20 @@
         where application_name = #{applicationName}
     </select>
 
-    <select id="getApplicationMntByUserIdAndKeyword"
+    <select id="getApplicationMntByUserIdsAndKeyword"
             resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
         select *
         from t_application_mnt
-        where user_id = #{userId,jdbcType=BIGINT}
-        <if test="keyword != null and keyword != ''">
-            AND APPLICATION_NAME LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%')
-        </if>
+        <where>
+            <if test="userIds != null and userIds.size() > 0">
+                AND USER_ID in
+                <foreach collection="userIds" item="item" open="(" close=")" separator=",">
+                    #{item,jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND APPLICATION_NAME LIKE CONCAT('%',#{keyword,jdbcType=VARCHAR},'%')
+            </if>
+        </where>
     </select>
 </mapper>

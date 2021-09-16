@@ -106,7 +106,7 @@ public class AgentVersionController {
     @ApiOperation("|_ 应用探针包下载（指令）")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "projectName", value = "应用名", required = true),
-        @ApiImplicitParam(name = "userAppKey", value = "租户id", required = true),
+        @ApiImplicitParam(name = "userAppKey", value = "用户key", required = true),
         @ApiImplicitParam(name = "version", value = "agent版本号", required = true),
         @ApiImplicitParam(name = "expireDate", value = "过期时间", required = true),
         @ApiImplicitParam(name = "flag", value = "验证标识", required = true),

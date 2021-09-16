@@ -23,6 +23,11 @@ public class ErrorLogQueryDTO extends PageBaseDTO {
     private String appName;
 
     /**
+     * 应用名称集合，多个应用以,分割
+     */
+    private String appNames;
+
+    /**
      * agentId
      */
     private String agentId;

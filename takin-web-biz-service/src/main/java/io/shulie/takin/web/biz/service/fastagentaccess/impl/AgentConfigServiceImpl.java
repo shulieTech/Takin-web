@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.service.fastagentaccess.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -118,11 +117,9 @@ public class AgentConfigServiceImpl implements AgentConfigService {
 
     @Override
     public List<String> getAllApplication(String keyword) {
-        if (WebPluginUtils.getUser() == null) {
-            return Collections.emptyList();
-        }
-        List<TApplicationMnt> applicationMntList = tApplicationMntDao.getApplicationMntByUserIdAndKeyword(
-            WebPluginUtils.getUser().getId(), keyword);
+        List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
+        List<TApplicationMnt> applicationMntList = tApplicationMntDao.getApplicationMntByUserIdsAndKeyword(userIdList,
+            keyword);
         return applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(Collectors.toList());
     }
 

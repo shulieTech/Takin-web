@@ -1,46 +1,46 @@
 package io.shulie.takin.web.biz.service.perfomanceanaly.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Map;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import java.util.Comparator;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Collections;
+import java.math.RoundingMode;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
+import lombok.extern.slf4j.Slf4j;
 import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Lists;
-import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceAnalyzeRequest;
-import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceCommonRequest;
-import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.ThreadCpuUseRateRequest;
-import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.ThreadListRequest;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ProcessBaseDataResponse;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadCpuChartResponse;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadCpuUseRateChartResponse;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadListResponse;
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadStatusResponse;
-import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
-import io.shulie.takin.web.biz.service.perfomanceanaly.ThreadAnalyService;
-import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
-import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;
-import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceThreadDataDAO;
-import io.shulie.takin.web.data.param.baseserver.BaseServerParam;
-import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseQueryParam;
-import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceThreadQueryParam;
-import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
-import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceBaseDataResult;
-import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadCountResult;
-import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadDataResult;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.apache.commons.collections4.CollectionUtils;
+import io.shulie.takin.web.data.param.baseserver.BaseServerParam;
+import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
+import io.shulie.takin.web.biz.service.perfomanceanaly.ThreadAnalyService;
+import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;
+import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
+import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceThreadDataDAO;
+import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.ThreadListRequest;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadListResponse;
+import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseQueryParam;
+import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceBaseDataResult;
+import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceThreadQueryParam;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadStatusResponse;
+import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadDataResult;
+import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadCountResult;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadCpuChartResponse;
+import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.ThreadCpuUseRateRequest;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ProcessBaseDataResponse;
+import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceCommonRequest;
+import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceAnalyzeRequest;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadCpuUseRateChartResponse;
 
 /**
  * @author qianshui
@@ -49,18 +49,12 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class ThreadAnalyServiceImpl implements ThreadAnalyService {
-
-    @Autowired
+    @Resource
     private ReportDetailService reportDetailService;
-
-    @Autowired
+    @Resource
     private PerformanceBaseDataDAO performanceBaseDataDAO;
-
-    @Autowired
+    @Resource
     private PerformanceThreadDataDAO performanceThreadDataDAO;
-
-    @Autowired
-    private BaseServerDao baseServerDao;
 
     @Override
     public ProcessBaseDataResponse getBaseData(PerformanceAnalyzeRequest request) {
@@ -80,15 +74,14 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
         if (CollectionUtils.isEmpty(baseList)) {
             return Lists.newArrayList();
         }
-        List<ThreadCpuChartResponse> responses = baseList.stream().map(base -> {
+        return baseList.stream().map(base -> {
             ThreadCpuChartResponse response = new ThreadCpuChartResponse();
-            response.setTime(DateUtils.dateToString(new Date(base.getTimestamp()), DateUtils.FORMATE_YMDHMS).substring(11, 19));
+            response.setTime(DateUtil.formatDateTime(new Date(base.getTimestamp())).substring(11, 19));
             response.setThreadCount(base.getThreadCount());
             response.setBaseId(base.getBaseId());
-            response.setCpuRate(new BigDecimal(base.getCpuUseRate()).setScale(2, RoundingMode.HALF_UP));
+            response.setCpuRate(BigDecimal.valueOf(base.getCpuUseRate()).setScale(2, RoundingMode.HALF_UP));
             return response;
         }).collect(Collectors.toList());
-        return responses;
         //List<String> baseIds = baseList.stream()
         //    .map(data -> data.getBaseId()).collect(Collectors.toList());
         //List<PerformanceThreadCountResult> countList = performanceThreadDataDAO.getPerformanceThreadCountList(baseIds);
@@ -159,12 +152,12 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
     public List<ThreadCpuUseRateChartResponse> getThreadCpuUseRate(ThreadCpuUseRateRequest request) {
         PerformanceBaseQueryParam baseParam = buildBaseQueryParam(request.getReportId(), request);
         List<PerformanceBaseDataResult> baseList = performanceBaseDataDAO.getPerformanceBaseDataList(baseParam);
-        List<String> baseIds = baseList.stream().map(data -> data.getBaseId()).collect(Collectors.toList());
+        List<String> baseIds = baseList.stream().map(PerformanceBaseDataResult::getBaseId).collect(Collectors.toList());
         PerformanceThreadQueryParam param = new PerformanceThreadQueryParam();
         param.setBaseIds(baseIds);
         List<PerformanceThreadDataResult> dataList = performanceThreadDataDAO.getPerformanceThreadDataList(param);
         // 根据 threadName 过滤
-        List<PerformanceThreadDataResult> threadList = null;
+        List<PerformanceThreadDataResult> threadList;
 
         if (request.getThreadName() != null) {
             threadList = dataList.stream().filter(e -> e.getThreadName().equals(request.getThreadName()))
@@ -173,7 +166,7 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
             threadList = dataList;
         }
         List<ThreadCpuUseRateChartResponse> response = Lists.newArrayList();
-        threadList.stream().forEach(data -> {
+        threadList.forEach(data -> {
             ThreadCpuUseRateChartResponse temp = new ThreadCpuUseRateChartResponse();
             temp.setThreadCpuUseRate(data.getThreadCpuUseRate());
             if (StringUtils.isNotBlank(data.getTimestamp()) && data.getTimestamp().length() > 18) {
@@ -211,7 +204,7 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
             temp.setTime(data.getTimestamp().substring(11, 19));
             temp.setThreadCount(data.getThreadCount());
             temp.setBaseId(data.getBaseId());
-            temp.setTimestamp(DateUtils.strToDate(data.getTimestamp(), DateUtils.FORMATE_YMDHMS).getTime());
+            temp.setTimestamp(DateUtil.parseDateTime(data.getTimestamp()).getTime());
             // cpuRate 为 null,因为 app_base_data数据没有查到
             if (cpuSize > 0) {
                 // 开始从app_base_data采样
@@ -224,7 +217,7 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
             }
             responses.add(temp);
         }
-        responses.sort((o1, o2) -> Long.compare(o1.getTimestamp(), o2.getTimestamp()));
+        responses.sort(Comparator.comparingLong(ThreadCpuChartResponse::getTimestamp));
         return responses;
     }
 
@@ -235,12 +228,12 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
 
     @Override
     public void clearData(Integer time) {
-        Date nSecond = DateUtils.getPreviousNSecond(time);
-        performanceThreadDataDAO.clearData(DateUtils.dateToString(nSecond, DateUtils.FORMATE_YMDHMS));
+        Date nSecond = DateUtil.offsetSecond(new Date(), -time);
+        performanceThreadDataDAO.clearData(DateUtil.formatDateTime(nSecond));
     }
 
     private long formatTimestamp(String datetime) {
-        long time = io.shulie.takin.web.biz.service.risk.util.DateUtil.parseSecondFormatter(datetime).getTime();
+        long time = DateUtil.parseDateTime(datetime).getTime();
         String temp = time + "000000";
         return Long.parseLong(temp);
     }

@@ -1,13 +1,7 @@
-INSERT IGNORE INTO `t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`, `USE_YN`, `CREATE_TIME`, `UPDATE_TIME`) VALUES ('ES_SERVER', '{\"businessNodes\": \"192.168.1.210:9200,192.168.1.193:9200\",\"performanceTestNodes\": \"192.168.1.210:9200,192.168.1.193:9200\"}', '影子ES配置模板', 0, '2021-04-13 21:21:08', '2021-04-13 21:21:11');
-INSERT IGNORE INTO `t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`, `USE_YN`, `CREATE_TIME`, `UPDATE_TIME`) VALUES ('Hbase_SERVER', '{\"dataSourceBusiness\":{ \"nodes\":\"192.168.2.241:6379,192.168.2.241:6380\", \"database\":\"aaaa\"},\"dataSourceBusinessPerformanceTest\":{ \"nodes\":\"192.168.1.241:6379,192.168.1.241:6380\", \"password\":\"123456\",  \"database\":\"aaaa\"}}', '影子Hbase配置模板', 0, '2021-04-13 21:23:02', '2021-04-13 21:23:05');
-
 -- 修改字段开始
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count1 INT;
@@ -53,25 +47,18 @@ alter table t_white_list
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
 -- 修改字段结束
 
 -- 插入开始
 DROP PROCEDURE IF EXISTS insert_data;
-
 DELIMITER $$
-
 CREATE PROCEDURE insert_data()
-
 BEGIN
 
 DECLARE count1 INT;
-
 SET count1 = (SELECT COUNT(*) FROM `t_tro_resource` WHERE `code` = 'appWhiteList');
 
 IF count1 = 0 THEN
@@ -79,18 +66,13 @@ IF count1 = 0 THEN
 -- 添加菜单
 INSERT INTO `t_tro_resource`( `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`, `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`) VALUES (12, 0, 'appWhiteList', '白名单列表', NULL, '[\"/api/whitelist/list\"]', 7900, '[]', NULL, NULL, NULL, '2021-04-14 11:39:00', '2021-04-14 11:39:51', 0);
 
-
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL insert_data();
-
 DROP PROCEDURE IF EXISTS insert_data;
 -- 插入结束
-
 
 -- 数据源管理
 CREATE TABLE IF NOT EXISTS `t_whitelist_effective_app`
@@ -107,3 +89,8 @@ CREATE TABLE IF NOT EXISTS `t_whitelist_effective_app`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
+
+BEGIN;
+INSERT INTO `t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`, `USE_YN`, `CREATE_TIME`, `UPDATE_TIME`) VALUES ('ES_SERVER', '{\"businessNodes\": \"192.168.1.210:9200,192.168.1.193:9200\",\"performanceTestNodes\": \"192.168.1.210:9200,192.168.1.193:9200\"}', '影子ES配置模板', 0, '2021-04-13 21:21:08', '2021-04-13 21:21:11');
+INSERT INTO `t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`, `USE_YN`, `CREATE_TIME`, `UPDATE_TIME`) VALUES ('Hbase_SERVER', '{\"dataSourceBusiness\":{ \"nodes\":\"192.168.2.241:6379,192.168.2.241:6380\", \"database\":\"aaaa\"},\"dataSourceBusinessPerformanceTest\":{ \"nodes\":\"192.168.1.241:6379,192.168.1.241:6380\", \"password\":\"123456\",  \"database\":\"aaaa\"}}', '影子Hbase配置模板', 0, '2021-04-13 21:23:02', '2021-04-13 21:23:05');
+COMMIT;

@@ -1,3 +1,36 @@
+CREATE TABLE IF NOT EXISTS `t_dictionary_type` (
+                                     `ID` varchar(50) NOT NULL COMMENT 'ID',
+                                     `TYPE_NAME` varchar(50) DEFAULT NULL COMMENT '分类名称',
+                                     `ACTIVE` char(1) DEFAULT NULL COMMENT '是否启用',
+                                     `CREATE_TIME` date DEFAULT NULL COMMENT '创建时间',
+                                     `MODIFY_TIME` date DEFAULT NULL COMMENT '更新时间',
+                                     `CREATE_USER_CODE` varchar(50) DEFAULT NULL COMMENT '创建人',
+                                     `MODIFY_USER_CODE` varchar(50) DEFAULT NULL COMMENT '更新人',
+                                     `PARENT_CODE` varchar(50) DEFAULT NULL COMMENT '上级分类编码',
+                                     `TYPE_ALIAS` varchar(50) DEFAULT NULL COMMENT '分类别名',
+                                     `IS_LEAF` char(1) DEFAULT NULL COMMENT '是否为子分类',
+                                     PRIMARY KEY (`ID`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据字典分类表';
+
+CREATE TABLE IF NOT EXISTS `t_dictionary_data` (
+                                     `ID` varchar(50) NOT NULL COMMENT 'ID',
+                                     `DICT_TYPE` varchar(50) DEFAULT NULL COMMENT '数据字典分类',
+                                     `VALUE_ORDER` int DEFAULT NULL COMMENT '序号',
+                                     `VALUE_NAME` varchar(50) DEFAULT NULL COMMENT '值名称',
+                                     `VALUE_CODE` varchar(50) DEFAULT NULL COMMENT '值代码',
+                                     `LANGUAGE` varchar(10) DEFAULT NULL COMMENT '语言',
+                                     `ACTIVE` char(1) DEFAULT NULL COMMENT '是否启用',
+                                     `CREATE_TIME` date DEFAULT NULL COMMENT '创建时间',
+                                     `MODIFY_TIME` date DEFAULT NULL COMMENT '更新时间',
+                                     `CREATE_USER_CODE` varchar(50) DEFAULT NULL COMMENT '创建人',
+                                     `MODIFY_USER_CODE` varchar(50) DEFAULT NULL COMMENT '更新人',
+                                     `NOTE_INFO` varchar(250) DEFAULT NULL COMMENT '备注信息',
+                                     `VERSION_NO` bigint DEFAULT '0' COMMENT '版本号',
+                                     PRIMARY KEY (`ID`) USING BTREE,
+                                     KEY `IDX_MUL_QUERY` (`ACTIVE`,`DICT_TYPE`,`VALUE_CODE`) USING BTREE,
+                                     KEY `idx_VERSION_NO` (`VERSION_NO`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据字典基础数据表';
+
 -- 线程栈数据存储
 CREATE TABLE IF NOT EXISTS `t_performance_thread_stack_data` (
   `thread_stack` longtext COMMENT '线程堆栈',
@@ -29,14 +62,6 @@ CREATE TABLE IF NOT EXISTS `t_tc_sequence` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_NAME` (`name`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
-INSERT IGNORE INTO `t_tc_sequence`(`NAME`, `value`,`gmt_modified`) VALUES ('BASE_ORDER_LINE', 0, NOW());
-
-INSERT IGNORE INTO `t_tc_sequence`(`name`, `value`,`gmt_modified`) VALUES ('THREAD_ORDER_LINE', 0, NOW());
-
-
-INSERT IGNORE INTO `t_dictionary_data`(`ID`, `DICT_TYPE`, `VALUE_ORDER`, `VALUE_NAME`, `VALUE_CODE`, `LANGUAGE`, `ACTIVE`, `CREATE_TIME`, `MODIFY_TIME`, `CREATE_USER_CODE`, `MODIFY_USER_CODE`, `NOTE_INFO`, `VERSION_NO`) VALUES ('fc77d5f788dc45528b039d5b1b4fda90', 'f644eb266aba4a2186341b708f33eegg', 5, 'CPU利用率', '4', 'ZH_CN', 'Y', '2020-03-17', '2020-03-17', '000000', '000000', NULL, NULL);
-INSERT IGNORE INTO `t_dictionary_data`(`ID`, `DICT_TYPE`, `VALUE_ORDER`, `VALUE_NAME`, `VALUE_CODE`, `LANGUAGE`, `ACTIVE`, `CREATE_TIME`, `MODIFY_TIME`, `CREATE_USER_CODE`, `MODIFY_USER_CODE`, `NOTE_INFO`, `VERSION_NO`) VALUES ('fc77d5f788dc45528b039d5b1b4fda91', 'f644eb266aba4a2186341b708f33eegg', 6, '内存占用', '5', 'ZH_CN', 'Y', '2020-03-17', '2020-03-17', '000000', '000000', NULL, NULL);
 
 CREATE TABLE IF NOT EXISTS `t_pressure_machine` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -103,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `t_trace_manage_deploy` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
+BEGIN;
 INSERT IGNORE INTO `t_dictionary_type`(`id`,`TYPE_NAME`, `ACTIVE`, `CREATE_TIME`, `MODIFY_TIME`, `CREATE_USER_CODE`, `MODIFY_USER_CODE`, `PARENT_CODE`, `TYPE_ALIAS`, `IS_LEAF`) VALUES ('6ba75716d726493783bfd64cce058110', 'PRESSURE_MACHINE_STATUS', 'Y', '2020-11-17', '2020-11-17', '000000', '000000', NULL, 'PRESSURE_MACHINE_STATUS', NULL);
 
 INSERT IGNORE INTO `t_dictionary_data`(`ID`, `DICT_TYPE`, `VALUE_ORDER`, `VALUE_NAME`, `VALUE_CODE`, `LANGUAGE`, `ACTIVE`, `CREATE_TIME`, `MODIFY_TIME`, `CREATE_USER_CODE`, `MODIFY_USER_CODE`, `NOTE_INFO`, `VERSION_NO`) VALUES ('0723f0bef309485c84ae0d645f26das32', '6ba75716d726493783bfd64cce058110', -1, '离线', '-1', 'ZH_CN', 'Y', '2019-06-17', '2019-06-17', '000000', '000000', NULL, NULL);
@@ -111,3 +136,12 @@ INSERT IGNORE INTO `t_dictionary_data`(`ID`, `DICT_TYPE`, `VALUE_ORDER`, `VALUE_
 INSERT IGNORE INTO `t_dictionary_data`(`ID`, `DICT_TYPE`, `VALUE_ORDER`, `VALUE_NAME`, `VALUE_CODE`, `LANGUAGE`, `ACTIVE`, `CREATE_TIME`, `MODIFY_TIME`, `CREATE_USER_CODE`, `MODIFY_USER_CODE`, `NOTE_INFO`, `VERSION_NO`) VALUES ('0723f0bef309485c84ae0d645f26das33', '6ba75716d726493783bfd64cce058110', 0, '空闲', '0', 'ZH_CN', 'Y', '2019-06-17', '2019-06-17', '000000', '000000', NULL, NULL);
 
 INSERT IGNORE INTO `t_dictionary_data`(`ID`, `DICT_TYPE`, `VALUE_ORDER`, `VALUE_NAME`, `VALUE_CODE`, `LANGUAGE`, `ACTIVE`, `CREATE_TIME`, `MODIFY_TIME`, `CREATE_USER_CODE`, `MODIFY_USER_CODE`, `NOTE_INFO`, `VERSION_NO`) VALUES ('0723f0bef309485c84ae0d645f26das34', '6ba75716d726493783bfd64cce058110', 1, '压测中', '1', 'ZH_CN', 'Y', '2019-06-17', '2019-06-17', '000000', '000000', NULL, NULL);
+
+
+INSERT IGNORE INTO `t_tc_sequence`(`NAME`, `value`,`gmt_modified`) VALUES ('BASE_ORDER_LINE', 0, NOW());
+
+INSERT IGNORE INTO `t_tc_sequence`(`name`, `value`,`gmt_modified`) VALUES ('THREAD_ORDER_LINE', 0, NOW());
+
+INSERT IGNORE INTO `t_dictionary_data`(`ID`, `DICT_TYPE`, `VALUE_ORDER`, `VALUE_NAME`, `VALUE_CODE`, `LANGUAGE`, `ACTIVE`, `CREATE_TIME`, `MODIFY_TIME`, `CREATE_USER_CODE`, `MODIFY_USER_CODE`, `NOTE_INFO`, `VERSION_NO`) VALUES ('fc77d5f788dc45528b039d5b1b4fda90', 'f644eb266aba4a2186341b708f33eegg', 5, 'CPU利用率', '4', 'ZH_CN', 'Y', '2020-03-17', '2020-03-17', '000000', '000000', NULL, NULL);
+INSERT IGNORE INTO `t_dictionary_data`(`ID`, `DICT_TYPE`, `VALUE_ORDER`, `VALUE_NAME`, `VALUE_CODE`, `LANGUAGE`, `ACTIVE`, `CREATE_TIME`, `MODIFY_TIME`, `CREATE_USER_CODE`, `MODIFY_USER_CODE`, `NOTE_INFO`, `VERSION_NO`) VALUES ('fc77d5f788dc45528b039d5b1b4fda91', 'f644eb266aba4a2186341b708f33eegg', 6, '内存占用', '5', 'ZH_CN', 'Y', '2020-03-17', '2020-03-17', '000000', '000000', NULL, NULL);
+COMMIT;

@@ -14,18 +14,12 @@ CREATE TABLE IF NOT EXISTS `t_application_node_probe`  (
 
 -- application 增加 id
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count INT;
-
-SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_application_node_probe' AND COLUMN_NAME = 'operate_id');
+SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = DATABASE() AND TABLE_NAME = 't_application_node_probe' AND COLUMN_NAME = 'operate_id');
 
 IF count = 0 THEN
 
@@ -33,8 +27,7 @@ ALTER TABLE `t_application_node_probe` ADD COLUMN `operate_id` bigint(20) UNSIGN
 
 END IF;
 
-SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_application_mnt' AND COLUMN_NAME = 'id');
+SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = DATABASE() AND TABLE_NAME = 't_application_mnt' AND COLUMN_NAME = 'id');
 
 IF count = 0 THEN
 
@@ -54,10 +47,7 @@ ADD PRIMARY KEY (`id`) USING BTREE;
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
 -- application 增加 id 结束

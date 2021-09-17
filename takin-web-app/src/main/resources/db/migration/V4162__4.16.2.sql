@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `t_application_plugins_config` (
 `creator_id` bigint(20) DEFAULT NULL COMMENT '创建人',
 `modifier_id` bigint(20) DEFAULT NULL COMMENT '更新人',
 PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 修改索引开始
 DROP PROCEDURE

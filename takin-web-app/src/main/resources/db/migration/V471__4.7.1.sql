@@ -64,9 +64,7 @@ CREATE TABLE IF NOT EXISTS `t_fast_debug_config_info`
     `creator_id`       bigint(20)            DEFAULT NULL COMMENT '创建人',
     `modifier_id`      bigint(20)            DEFAULT NULL COMMENT '修改人',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 1
-  DEFAULT CHARSET = utf8mb4;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 -- 快速调试结果表--------
 CREATE TABLE IF NOT EXISTS `t_fast_debug_result`
@@ -166,6 +164,7 @@ CREATE TABLE IF NOT EXISTS `t_exception_info`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 
+BEGIN;
 -- 菜单权限问题-------
 INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
                                      `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
@@ -179,3 +178,4 @@ INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `
                                      `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
 VALUES (402, 12, 0, 'debugTool_linkDebug_detail', '链路调试详情', NULL, '[\"/debugTool/linkDebug/detail\"]', 9002, '[]', NULL,
         NULL, NULL, '2021-01-14 11:23:19', '2021-01-14 11:32:13', 0);
+COMMIT;

@@ -1,12 +1,9 @@
-
 DROP PROCEDURE IF EXISTS change_index;
-
 DELIMITER $$
 CREATE PROCEDURE change_index ()
 BEGIN
+
 DECLARE count1 INT;
-
-
 	SET count1 = ( SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE () AND TABLE_NAME = 't_application_ds_manage' AND index_name = 'idx_app_id' );
 
 IF count1 = 0 THEN
@@ -17,7 +14,6 @@ ALTER TABLE `t_application_ds_manage` ADD INDEX `idx_app_id`(`APPLICATION_ID`) U
 END IF;
 
 END $$
-
 DELIMITER ;
 CALL change_index ();
 DROP PROCEDURE
@@ -26,15 +22,11 @@ DROP PROCEDURE
 
 
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count INT;
-
 SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
 WHERE table_schema = DATABASE() AND TABLE_NAME = 't_black_list' AND COLUMN_NAME = 'value');
 
@@ -111,9 +103,6 @@ ALTER TABLE `t_white_list` ADD COLUMN `gmt_modified` datetime(0) NULL DEFAULT CU
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;

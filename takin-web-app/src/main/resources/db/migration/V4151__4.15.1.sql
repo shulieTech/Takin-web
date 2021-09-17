@@ -1,10 +1,7 @@
 -- 修改字段开始
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count1 INT;
@@ -57,10 +54,7 @@ ALTER TABLE `e_patrol_exception_status_change_log` CONVERT TO CHARACTER SET utf8
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
 -- 修改字段结束

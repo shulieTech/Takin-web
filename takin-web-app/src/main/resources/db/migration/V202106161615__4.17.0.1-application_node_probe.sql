@@ -1,9 +1,6 @@
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count INT;
@@ -28,9 +25,6 @@ ALTER TABLE `t_application_node_probe` ADD COLUMN `operate_id` bigint(20) UNSIGN
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;

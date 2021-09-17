@@ -27,7 +27,6 @@ import io.shulie.takin.web.biz.pojo.response.fastagentaccess.PluginLoadListRespo
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AmdbManageService;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentDiscoverStatusEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,7 +55,7 @@ public class AmdbManageServiceImpl implements AmdbManageService {
         ErrorLogQueryDTO queryDTO = new ErrorLogQueryDTO();
         BeanUtils.copyProperties(queryRequest, queryDTO);
         queryDTO.setAgentInfo(queryRequest.getKeyword());
-        queryDTO.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        //queryDTO.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
 
         if (StringUtils.isEmpty(queryRequest.getProjectName())) {
             List<String> appNameList = agentConfigService.getAllApplication("");

@@ -135,7 +135,7 @@ public class AgentVersionController {
     @GetMapping("/installScript/download")
     @AuthVerification(
         moduleCode = ModuleCode.NEW_PROJECT_ACCESS,
-        needAuth = ActionTypeEnum.DOWNLOAD
+        needAuth = ActionTypeEnum.CREATE
     )
     public void getScriptFile(@RequestParam String projectName, @RequestParam String version,
         @RequestParam String urlPrefix, HttpServletResponse response) {

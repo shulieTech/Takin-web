@@ -6,6 +6,7 @@ import io.shulie.takin.cloud.open.req.report.UpdateReportConclusionReq;
 import io.shulie.takin.cloud.open.req.report.WarnCreateReq;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneStartPreCheckReq;
+import io.shulie.takin.cloud.open.req.scenemanage.ScriptAssetBalanceReq;
 import io.shulie.takin.cloud.open.req.scenetask.SceneStartCheckResp;
 import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskCheckReq;
 import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskStartReq;
@@ -69,5 +70,10 @@ public class SceneTaskApiImpl implements SceneTaskApi {
     @Override
     public ResponseResult<SceneStartCheckResp> sceneStartPreCheck(SceneStartPreCheckReq checkReq) {
         return cloudTaskApi.sceneStartPreCheck(checkReq);
+    }
+
+    @Override
+    public ResponseResult<Boolean> callBackToWriteBalance(ScriptAssetBalanceReq req) {
+        return cloudTaskApi.callBackToWriteBalance(req);
     }
 }

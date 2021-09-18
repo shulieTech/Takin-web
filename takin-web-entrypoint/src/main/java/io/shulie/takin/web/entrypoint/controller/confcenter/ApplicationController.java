@@ -85,9 +85,7 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response<ApplicationVo> getApplicationInfoWithAuth(
-        @ApiParam(name = "id", value = "系统id") String id
-    ) {
+    public Response<ApplicationVo> getApplicationInfoWithAuth(@ApiParam(name = "id", value = "系统id") @RequestParam String id) {
         return applicationService.getApplicationInfo(id);
     }
 

@@ -95,8 +95,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
 
-    @Value("${remote.call.auto.join.white:true}")
-    private String autoJoinWhiteFlag;
+    @Value("${remote.call.auto.join.white: false}")
+    private boolean autoJoinWhiteFlag;
 
     @Value("${query.async.critica.value:20000}")
     private int criticaValue;
@@ -152,8 +152,6 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             param.setAppName(detailResult.getApplicationName());
             appRemoteCallDAO.insert(param);
         }
-        // todo 配置
-        configSyncService.syncRemoteCall(WebPluginUtils.getTenantUserAppKey(), input.getApplicationId(), null);
         agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
 
     }
@@ -512,17 +510,18 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             return;
         }
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
-        // 100个轮询一次
-        if (results.size() > 50) {
+        int size = 50;
+        // size个轮询一次
+        if (results.size() > size) {
             int i = 1;
             boolean loop = true;
             do {
-                List<ApplicationDetailResult> subList = null;
+                List<ApplicationDetailResult> subList;
                 //批量处理
-                if (results.size() > i * 100) {
-                    subList = results.subList((i - 1) * 100, i * 100);
+                if (results.size() > i * size) {
+                    subList = results.subList((i - 1) * size, i * size);
                 } else {
-                    subList = results.subList((i - 1) * 100, results.size());
+                    subList = results.subList((i - 1) * size, results.size());
                     loop = false;
                 }
                 i++;
@@ -591,7 +590,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     // 自动加入白名单 操作
     public void autoJoinWhite(AppRemoteCallCreateParam param) {
         param.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
-        if (Boolean.valueOf(autoJoinWhiteFlag)) {
+        if (autoJoinWhiteFlag) {
             if (StringUtils.isNotBlank(param.getServerAppName())) {
                 param.setType(AppRemoteCallConfigEnum.OPEN_WHITELIST.getType());
             }

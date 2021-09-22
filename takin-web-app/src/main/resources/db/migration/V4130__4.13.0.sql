@@ -2,12 +2,10 @@
 DROP PROCEDURE
     IF
     EXISTS change_data;
-
 DELIMITER $$
 CREATE PROCEDURE change_data() BEGIN
 	DECLARE
 count1 INT;
-
 SET count1 = (SELECT COUNT(*) FROM t_tro_user WHERE EXISTS (select id from t_tro_user group by `name` having count(*)>1));
 
 IF count1 > 0 THEN
@@ -27,7 +25,6 @@ delete from t_tro_dept where id in (select id from t_tro_dept group by `name` ha
 END IF;
 
 END $$
-
 DELIMITER ;
 CALL change_data();
 DROP PROCEDURE
@@ -35,20 +32,15 @@ DROP PROCEDURE
     EXISTS change_data;
 -- 重复数据删除结束
 
-
 -- 索引创建开始
 DROP PROCEDURE
     IF
     EXISTS change_index;
-
 DELIMITER $$
 CREATE PROCEDURE change_index () BEGIN
 	DECLARE
 count1 INT;
-
-
 	SET count1 = ( SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE () AND TABLE_NAME = 't_tro_dept' AND index_name = 'idx_name' );
-
 
 IF count1 = 0 THEN
 
@@ -65,7 +57,6 @@ CREATE UNIQUE INDEX `idx_name` ON t_tro_user(`name`);
 END IF;
 
 END $$
-
 DELIMITER ;
 CALL change_index ();
 DROP PROCEDURE
@@ -75,15 +66,11 @@ DROP PROCEDURE
 
 -- 字段添加开始
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count INT;
-
 SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
 WHERE table_schema = DATABASE() AND TABLE_NAME = 't_trace_node_info' AND COLUMN_NAME = 'rpc_type');
 
@@ -115,10 +102,7 @@ alter table t_trace_node_info
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
 -- 字段添加结束

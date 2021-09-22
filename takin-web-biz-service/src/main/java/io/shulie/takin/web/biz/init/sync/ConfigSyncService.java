@@ -22,9 +22,4 @@ public interface ConfigSyncService {
 
     void syncBlockList(String userAppKey);
 
-    /**
-     * 同步远程调用
-     */
-    void syncRemoteCall(String userAppKey, long applicationId, String applicationName);
-
 }

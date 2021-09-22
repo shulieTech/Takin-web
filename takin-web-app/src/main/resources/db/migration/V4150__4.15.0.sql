@@ -1,39 +1,3 @@
-INSERT IGNORE INTO `t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`, `USE_YN`, `CREATE_TIME`, `UPDATE_TIME`)
-VALUES ('E2E_SUCCESS_RATE', '99.99', '成功率', 0, NOW(), NOW()),
-       ('WECHAT_HOOK_URL', 'https://work.weixin.qq.com/help?person_id=1&doc_id=1337', '微信机器人地址', 0, NOW(), NOW()),
-       ('DINGDING_HOOK_URL', 'https://developers.dingtalk.com/document/app/custom-robot-access/title-72m-8ag-pqw', '钉钉机器人地址', 0, NOW(), NOW()),
-       ('E2E_RT', '3000', '响应时间（单位：毫秒）', 0, NULL, NULL),
-       ('NOTIFY_TYPE', 'DINGDING_HOOK_URL', '通知类型', 0, NOW(), NOW());
-
-
--- 字典表数据
-INSERT IGNORE INTO `t_dictionary_type`
-    (ID, ACTIVE, CREATE_TIME, MODIFY_TIME, CREATE_USER_CODE, MODIFY_USER_CODE, PARENT_CODE, IS_LEAF, TYPE_ALIAS, TYPE_NAME)
-VALUES ('202104281025590e2e00000000000001', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_TYPE', '巡检类型'),
-       ('202104281025590e2e00000000000002', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_TYPE', '巡检异常类型'),
-       ('202104281025590e2e00000000000003', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_LEVEL', '巡检异常程度'),
-       ('202104281025590e2e00000000000004', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_STATUS', '巡检异常状态'),
-       ('202104281025590e2e00000000000005', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'NOTIFY_CHANNEL', '巡检异常通知渠道'),
-       ('202104281025590e2e00000000000006', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_STATUS_CHANGE_1', '巡检异常-状态[误判]更改原因');
-#      ('202104281025590e2e00000000000005', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_NOTIFY_CHANNEL', '巡检异常通知渠道'),
-#      ('202104281025590e2e00000000000006', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_STATUS_CHANGE_TYPE1_CATEGORY', '巡检异常-状态[误判]更改原因');
-INSERT IGNORE INTO `t_dictionary_data`
-    (ID, DICT_TYPE, VALUE_ORDER, VALUE_CODE, LANGUAGE, ACTIVE, CREATE_TIME, CREATE_USER_CODE, MODIFY_TIME, MODIFY_USER_CODE, NOTE_INFO, VERSION_NO, VALUE_NAME)
-VALUES ('202104281025590e2e01000000000001', '202104281025590e2e00000000000001', 0, 0, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '业务'),
-       ('202104281025590e2e01000000000002', '202104281025590e2e00000000000001', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '技术'),
-       ('202104281025590e2e02000000000001', '202104281025590e2e00000000000002', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '卡慢'),
-       ('202104281025590e2e02000000000002', '202104281025590e2e00000000000002', 1, 2, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '接口异常'),
-       ('202104281025590e2e03000000000001', '202104281025590e2e00000000000003', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '一般'),
-       ('202104281025590e2e03000000000002', '202104281025590e2e00000000000003', 1, 2, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '严重'),
-       ('202104281025590e2e05000000000001', '202104281025590e2e00000000000004', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '待处理'),
-       ('202104281025590e2e05000000000002', '202104281025590e2e00000000000004', 1, 2, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '已恢复'),
-       ('202104281025590e2e05000000000003', '202104281025590e2e00000000000004', 2, 3, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '判定为误报'),
-       ('202104281025590e2e04000000000001', '202104281025590e2e00000000000005', 0, 0, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '钉钉'),
-       ('202104281025590e2e04000000000002', '202104281025590e2e00000000000005', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '企业微信'),
-       ('202104231502560e2e06000000000001', '202104281025590e2e00000000000006', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '系统误判(规则不完善)'),
-       ('202104231502560e2e06000000000002', '202104281025590e2e00000000000006', 1, 2, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '不可抗因素(机房断电等)'),
-       ('202104231502560e2e06000000000003', '202104281025590e2e00000000000006', 2, 3, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '其它');
-
 -- 数据表
 create table IF NOT EXISTS e_patrol_activity_assert
 (
@@ -50,7 +14,7 @@ create table IF NOT EXISTS e_patrol_activity_assert
     modify_time      timestamp    null comment '修改时间',
     is_deleted       int(255)     null comment '是否删除：0-否；1-是',
     assert_code      varchar(255) null comment 'code'
-) comment '断言表';
+    ) comment '断言表';
 
 create table IF NOT EXISTS e_patrol_board
 (
@@ -62,7 +26,7 @@ create table IF NOT EXISTS e_patrol_board
     create_time      timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     modify_time      timestamp default CURRENT_TIMESTAMP null comment '更新时间',
     is_deleted       int(2)    default 0                 not null comment '是否已删除'
-) comment '看板信息表' collate = utf8_bin;
+    ) comment '看板信息表' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_board_scene
 (
@@ -74,7 +38,7 @@ create table IF NOT EXISTS e_patrol_board_scene
     create_time       timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     modify_time       timestamp default CURRENT_TIMESTAMP null comment '更新时间',
     is_deleted        int(2)    default 0                 not null comment '是否已删除'
-) comment '看板-场景关联表' collate = utf8_bin;
+    ) comment '看板-场景关联表' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_exception
 (
@@ -96,7 +60,7 @@ create table IF NOT EXISTS e_patrol_exception
     board_name        varchar(100)         not null comment '巡检看板名称',
     is_finish         tinyint(1) default 0 not null comment '是否处理完毕',
     constraint e_patrol_exception_id_uindex unique (id)
-) comment '巡检异常信息' collate = utf8_bin;
+    ) comment '巡检异常信息' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_exception_config
 (
@@ -108,7 +72,7 @@ create table IF NOT EXISTS e_patrol_exception_config
     contrast_factor int              not null comment '对比因子:1.大于;-1.小于;',
     remarks         varchar(10)      null comment '备注',
     is_deleted      int(2) default 0 not null comment '是否已删除'
-) comment '巡检异常配置' collate = utf8_bin;
+    ) comment '巡检异常配置' collate = utf8_bin;
 -- 说明
 INSERT IGNORE INTO e_patrol_exception_config (id, order_number, type_value, level_value, threshold_value, contrast_factor, remarks, is_deleted)
 VALUES (1, 1, 1, 1, 100.0, +1, '一般卡慢', 0),
@@ -136,7 +100,7 @@ create table IF NOT EXISTS e_patrol_exception_notice_config
     modify_user_name         varchar(100)                       null comment '修改者名称',
     create_time              datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     modify_time              datetime default CURRENT_TIMESTAMP not null comment '更新时间'
-) comment '巡检异常通知配置' collate = utf8_bin;
+    ) comment '巡检异常通知配置' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_exception_status_change_log
 (
@@ -148,7 +112,7 @@ create table IF NOT EXISTS e_patrol_exception_status_change_log
     detail       varchar(100) not null comment '详细原因',
     user_id      bigint       not null comment '操作人',
     user_name    varchar(100) not null comment '操作人名称'
-)
+    )
     comment '异常信息状态变更日志' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_scene
@@ -168,7 +132,7 @@ create table IF NOT EXISTS e_patrol_scene
     create_time       timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     modify_time       timestamp default CURRENT_TIMESTAMP null comment '更新时间',
     is_deleted        int(2)    default 0                 not null comment '是否已删除'
-) comment '巡检场景信息表' collate = utf8_bin;
+    ) comment '巡检场景信息表' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_scene_chain
 (
@@ -192,7 +156,7 @@ create table IF NOT EXISTS e_patrol_scene_chain
     entrance_method           varchar(255)                        null comment '入口方法',
     entrance_name             varchar(255)                        null comment '入口名称',
     tech_node_id              varchar(255)                        null comment '技术节点ID'
-) comment '场景链路信息表' collate = utf8_bin;
+    ) comment '场景链路信息表' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_scene_check
 (
@@ -206,21 +170,17 @@ create table IF NOT EXISTS e_patrol_scene_check
     modify_date       datetime         null comment '修改时间',
     activity_name     varchar(255)     null comment '业务活动名称',
     is_deleted        int(2) default 0 not null comment '是否删除'
-) comment '场景异常检查表' collate = utf8_bin;
+    ) comment '场景异常检查表' collate = utf8_bin;
 
 
 -- 创建菜单
 -- 插入开始
 DROP PROCEDURE IF EXISTS insert_data;
-
 DELIMITER $$
-
 CREATE PROCEDURE insert_data()
-
 BEGIN
 
 DECLARE count1 INT;
-
 SET count1 = (SELECT COUNT(*) FROM `t_tro_resource` WHERE `code` = 'patrolManage');
 
 IF count1 = 0 THEN
@@ -265,10 +225,45 @@ IF count1 = 0 THEN
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL insert_data();
-
 DROP PROCEDURE IF EXISTS insert_data;
 -- 插入结束
+
+BEGIN;
+INSERT IGNORE INTO `t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`, `USE_YN`, `CREATE_TIME`, `UPDATE_TIME`)
+VALUES ('E2E_SUCCESS_RATE', '99.99', '成功率', 0, NOW(), NOW()),
+       ('WECHAT_HOOK_URL', 'https://work.weixin.qq.com/help?person_id=1&doc_id=1337', '微信机器人地址', 0, NOW(), NOW()),
+       ('DINGDING_HOOK_URL', 'https://developers.dingtalk.com/document/app/custom-robot-access/title-72m-8ag-pqw', '钉钉机器人地址', 0, NOW(), NOW()),
+       ('E2E_RT', '3000', '响应时间（单位：毫秒）', 0, NULL, NULL),
+       ('NOTIFY_TYPE', 'DINGDING_HOOK_URL', '通知类型', 0, NOW(), NOW());
+
+
+-- 字典表数据
+INSERT IGNORE INTO `t_dictionary_type`
+    (ID, ACTIVE, CREATE_TIME, MODIFY_TIME, CREATE_USER_CODE, MODIFY_USER_CODE, PARENT_CODE, IS_LEAF, TYPE_ALIAS, TYPE_NAME)
+VALUES ('202104281025590e2e00000000000001', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_TYPE', '巡检类型'),
+       ('202104281025590e2e00000000000002', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_TYPE', '巡检异常类型'),
+       ('202104281025590e2e00000000000003', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_LEVEL', '巡检异常程度'),
+       ('202104281025590e2e00000000000004', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_STATUS', '巡检异常状态'),
+       ('202104281025590e2e00000000000005', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'NOTIFY_CHANNEL', '巡检异常通知渠道'),
+       ('202104281025590e2e00000000000006', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_STATUS_CHANGE_1', '巡检异常-状态[误判]更改原因');
+#      ('202104281025590e2e00000000000005', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_NOTIFY_CHANNEL', '巡检异常通知渠道'),
+#      ('202104281025590e2e00000000000006', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, 'PATROL_EXCEPTION_STATUS_CHANGE_TYPE1_CATEGORY', '巡检异常-状态[误判]更改原因');
+INSERT IGNORE INTO `t_dictionary_data`
+    (ID, DICT_TYPE, VALUE_ORDER, VALUE_CODE, LANGUAGE, ACTIVE, CREATE_TIME, CREATE_USER_CODE, MODIFY_TIME, MODIFY_USER_CODE, NOTE_INFO, VERSION_NO, VALUE_NAME)
+VALUES ('202104281025590e2e01000000000001', '202104281025590e2e00000000000001', 0, 0, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '业务'),
+       ('202104281025590e2e01000000000002', '202104281025590e2e00000000000001', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '技术'),
+       ('202104281025590e2e02000000000001', '202104281025590e2e00000000000002', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '卡慢'),
+       ('202104281025590e2e02000000000002', '202104281025590e2e00000000000002', 1, 2, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '接口异常'),
+       ('202104281025590e2e03000000000001', '202104281025590e2e00000000000003', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '一般'),
+       ('202104281025590e2e03000000000002', '202104281025590e2e00000000000003', 1, 2, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '严重'),
+       ('202104281025590e2e05000000000001', '202104281025590e2e00000000000004', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '待处理'),
+       ('202104281025590e2e05000000000002', '202104281025590e2e00000000000004', 1, 2, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '已恢复'),
+       ('202104281025590e2e05000000000003', '202104281025590e2e00000000000004', 2, 3, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '判定为误报'),
+       ('202104281025590e2e04000000000001', '202104281025590e2e00000000000005', 0, 0, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '钉钉'),
+       ('202104281025590e2e04000000000002', '202104281025590e2e00000000000005', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '企业微信'),
+       ('202104231502560e2e06000000000001', '202104281025590e2e00000000000006', 0, 1, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '系统误判(规则不完善)'),
+       ('202104231502560e2e06000000000002', '202104281025590e2e00000000000006', 1, 2, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '不可抗因素(机房断电等)'),
+       ('202104231502560e2e06000000000003', '202104281025590e2e00000000000006', 2, 3, 'ZH_CN', 'Y', DATE(NOW()), NULL, NULL, NULL, NULL, NULL, '其它');
+COMMIT;

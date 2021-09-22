@@ -142,7 +142,7 @@ public class SummaryService {
     }
 
     public void calcTpsTarget(Long reportId) {
-        List<Metrices> metrics = reportDataCache.getAllMetricsData(reportId);
+        List<Metrices> metrics = reportDataCache.listAllMetricsData(reportId);
         if (CollectionUtils.isEmpty(metrics)) {
             return;
         }

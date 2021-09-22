@@ -27,8 +27,8 @@ public class AgentApplicationNodeProbeOperateResponse {
     @ApiModelProperty("命令生成时间戳")
     private Long commandTime;
 
-    @ApiModelProperty("命令有效时间, -1 无限")
-    private Long liveTime = -1L;
+    @ApiModelProperty("命令有效时间, -1 无限, 默认十分钟, 10 * 60 * 100, 单位: 毫秒")
+    private Integer liveTime = 600000;
 
     @ApiModelProperty("安装, 升级 操作时, 数据包的下载地址")
     private String dataPath;

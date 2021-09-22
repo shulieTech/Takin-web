@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.constant.AppConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,17 +22,17 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AppRemoteCallJob implements SimpleJob {
 
+    @Value("${tro-web.remote-call.sync: true}")
+    private boolean remoteCallSync;
+
     @Autowired
     private AppRemoteCallService appRemoteCallService;
 
-    @Autowired
-    private ApiServiceImpl apiService;
-
     @Override
     public void execute(ShardingContext shardingContext) {
-        IsNewAgentResponse config = apiService.getIsNewAgentResponseByConfig();
-        if (config != null && config.getIsNew().equals(AppConstants.YES)) {
+        if (remoteCallSync) {
             appRemoteCallService.syncAmdb();
         }
     }
+
 }

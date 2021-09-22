@@ -10,6 +10,7 @@ import java.util.Set;
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.fastjson.JSONObject;
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
@@ -18,8 +19,10 @@ import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationErrorQueryInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationErrorOutput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationExceptionOutput;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoardResponse;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.application.ApplicationErrorService;
+import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.impl.ApplicationServiceImpl;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.application.AppExceptionCodeEnum;
@@ -52,11 +55,21 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private ApplicationNodeService applicationNodeService;
+
     @Override
     public List<ApplicationErrorOutput> list(ApplicationErrorQueryInput queryRequest) {
         List<ApplicationErrorOutput> responseList = Lists.newArrayList();
         TApplicationMnt tApplicationMnt = ensureApplicationExist(queryRequest);
-        putNodeExceptionIfNeeded(responseList, tApplicationMnt);
+
+        // 应用节点相关错误信息
+        ApplicationErrorOutput nodeErrorResponse =
+            this.getNodeErrorResponse(tApplicationMnt.getApplicationName(), tApplicationMnt.getNodeNum());
+        if (nodeErrorResponse != null) {
+            responseList.add(nodeErrorResponse);
+        }
+
 
         String appUniqueKey = queryRequest.getApplicationId() + ApplicationServiceImpl.PRADARNODE_KEYSET;
         Set<String> keys = redisTemplate.opsForSet().members(appUniqueKey);
@@ -196,6 +209,30 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
             }
         });
         return outputs;
+    }
+
+    /**
+     * 关于节点错误的信息
+     *
+     * @param applicationName 应用名称
+     * @param nodeNum 节点数量
+     * @return 节点错误
+     */
+    private ApplicationErrorOutput getNodeErrorResponse(String applicationName, Integer nodeNum) {
+        ApplicationNodeDashBoardResponse applicationNodeDashBoardResponse =
+            applicationNodeService.getApplicationNodeDashBoardResponse(applicationName, nodeNum);
+        String errorMsg = applicationNodeDashBoardResponse.getErrorMsg();
+        if (StringUtils.isBlank(errorMsg)) {
+            return null;
+        }
+
+        ApplicationErrorOutput applicationErrorResponse = new ApplicationErrorOutput();
+        applicationErrorResponse.setExceptionId("-");
+        applicationErrorResponse.setAgentIdList(Collections.singletonList("-"));
+        applicationErrorResponse.setDescription(errorMsg);
+        applicationErrorResponse.setTime(DateUtils.getNowDateStr());
+        applicationErrorResponse.setDetail(String.format("设置节点数：%d，上报的已安装探针节点数：%d", nodeNum, applicationNodeDashBoardResponse.getProbeInstalledNodeNum()));
+        return applicationErrorResponse;
     }
 
 }

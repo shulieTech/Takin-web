@@ -48,4 +48,13 @@ public interface ApplicationNodeService {
 
     ApplicationNodeDashBoardResponse getApplicationNodeAmount(ApplicationNodeDashBoardQueryRequest request);
 
+    /**
+     * 根据应用名称, 获得节点探针相应数据
+     *
+     * @param applicationName 应用名称
+     * @param nodeNum 应用配置的节点个数
+     * @return 探针数据
+     */
+    ApplicationNodeDashBoardResponse getApplicationNodeDashBoardResponse(String applicationName, Integer nodeNum);
+
 }

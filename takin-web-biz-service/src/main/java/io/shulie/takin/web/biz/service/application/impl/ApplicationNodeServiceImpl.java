@@ -338,18 +338,24 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
             return new ApplicationNodeDashBoardResponse();
         }
 
-        ApplicationNodeDashBoardResponse response = new ApplicationNodeDashBoardResponse();
-        // 总数
-        response.setNodeTotalCount(application.getNodeNum());
+        return this.getApplicationNodeDashBoardResponse(application.getApplicationName(), application.getNodeNum());
+    }
 
+    @Override
+    public ApplicationNodeDashBoardResponse getApplicationNodeDashBoardResponse(String applicationName,
+        Integer nodeNum) {
         ApplicationNodeQueryDTO applicationNodeQueryDTO = new ApplicationNodeQueryDTO();
-        applicationNodeQueryDTO.setAppName(application.getApplicationName());
+        applicationNodeQueryDTO.setAppName(applicationName);
         applicationNodeQueryDTO.setProbeStatus(AmdbProbeStatusEnum.INSTALLED.getCode());
         ApplicationNodeProbeInfoDTO applicationNodeProbeInfo =
             applicationClient.getApplicationNodeProbeInfo(applicationNodeQueryDTO);
 
         // 提示信息
         List<String> messages = new ArrayList<>(3);
+
+        ApplicationNodeDashBoardResponse response = new ApplicationNodeDashBoardResponse();
+        // 总数
+        response.setNodeTotalCount(nodeNum);
 
         if (applicationNodeProbeInfo != null) {
             // 在线

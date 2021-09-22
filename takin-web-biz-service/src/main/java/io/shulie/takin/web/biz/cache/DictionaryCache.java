@@ -17,6 +17,14 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.LinkChangeEnumMappi
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.LinkChangeTypeEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.LinkLevelEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.LinkTypeEnumMapping;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentConfigEditableEnumMapping;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentConfigEffectMechanismEnumMapping;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentConfigEffectTypeEnumMapping;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentConfigTypeEnumMapping;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentConfigValueTypeEnumMapping;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentStatusEnumMapping;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.PluginStatusEnumMapping;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.ProbeStatusEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastdebug.DebugHttpTypeEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastdebug.DebugRequestTypeEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.remotecall.RemoteCallConfigEnumMapping;
@@ -85,6 +93,17 @@ public class DictionaryCache {
         // 远程调用
         DICTIONARY_MAP.put("REMOTE_CALL_CONFIG_TYPE", RemoteCallConfigEnumMapping.neededEnumResults());
         //dicMap.put("REMOTE_CALL_TYPE", RemoteCallTypeEnumMapping.neededEnumResults());
+
+        // agent快速接入
+        DICTIONARY_MAP.put("agent_config_editable", AgentConfigEditableEnumMapping.neededEnumResults());
+        DICTIONARY_MAP.put("agent_config_effect_mechanism", AgentConfigEffectMechanismEnumMapping.neededEnumResults());
+        DICTIONARY_MAP.put("agent_config_effect_type", AgentConfigEffectTypeEnumMapping.neededEnumResults());
+        DICTIONARY_MAP.put("agent_config_type", AgentConfigTypeEnumMapping.neededEnumResults());
+        DICTIONARY_MAP.put("agent_config_value_type", AgentConfigValueTypeEnumMapping.neededEnumResults());
+        DICTIONARY_MAP.put("agent_status", AgentStatusEnumMapping.neededEnumResults());
+        DICTIONARY_MAP.put("agent_plugin_status", PluginStatusEnumMapping.neededEnumResults());
+        DICTIONARY_MAP.put("agent_probe_status", ProbeStatusEnumMapping.neededEnumResults());
+
         //数据字段
         fillDictFromDatabase();
     }

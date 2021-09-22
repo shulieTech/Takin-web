@@ -1,16 +1,16 @@
 -- 新增脚本执行表
 CREATE TABLE IF NOT EXISTS `t_script_execute_result` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `script_deploy_id` bigint(20) NOT NULL COMMENT '实例id',
-  `script_id` bigint(20) NOT NULL COMMENT '脚本id',
-  `script_version` int(11) NOT NULL DEFAULT '0',
-  `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-  `executor` varchar(256) DEFAULT NULL COMMENT '执行人',
-  `success` tinyint(1) DEFAULT NULL COMMENT '执行结果',
-  `result` longtext  DEFAULT NULL COMMENT '执行结果',
-  PRIMARY KEY (`id`),
-  KEY `idx_script_deploy_id` (`script_deploy_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `script_deploy_id` bigint(20) NOT NULL COMMENT '实例id',
+    `script_id` bigint(20) NOT NULL COMMENT '脚本id',
+    `script_version` int(11) NOT NULL DEFAULT '0',
+    `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    `executor` varchar(256) DEFAULT NULL COMMENT '执行人',
+    `success` tinyint(1) DEFAULT NULL COMMENT '执行结果',
+    `result` longtext  DEFAULT NULL COMMENT '执行结果',
+    PRIMARY KEY (`id`),
+    KEY `idx_script_deploy_id` (`script_deploy_id`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 脚本实例表添加操作信息
 -- 修改字段开始
@@ -64,28 +64,28 @@ DROP PROCEDURE IF EXISTS change_field;
 -- 修改字段结束
 
 CREATE TABLE IF NOT EXISTS `t_scene_scheduler_task` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `scene_id` bigint(20) NOT NULL COMMENT '场景id',
-  `user_id` bigint(20) NOT NULL COMMENT '用户id',
-  `content` text COMMENT '启动场景参数',
-  `is_executed` tinyint(2) DEFAULT '0' COMMENT '0：待执行，1:执行中；2:已执行',
-  `execute_time` datetime NOT NULL COMMENT '压测场景定时执行时间',
-  `is_deleted` tinyint(1) DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
-  `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3),
-  `gmt_update` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `scene_id` bigint(20) NOT NULL COMMENT '场景id',
+    `user_id` bigint(20) NOT NULL COMMENT '用户id',
+    `content` text COMMENT '启动场景参数',
+    `is_executed` tinyint(2) DEFAULT '0' COMMENT '0：待执行，1:执行中；2:已执行',
+    `execute_time` datetime NOT NULL COMMENT '压测场景定时执行时间',
+    `is_deleted` tinyint(1) DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
+    `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3),
+    `gmt_update` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 CREATE TABLE IF NOT EXISTS `t_scene_tag_ref` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `scene_id` bigint(20) NOT NULL COMMENT '场景发布id',
-  `tag_id` bigint(20) NOT NULL COMMENT '标签id',
-  `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3),
-  `gmt_update` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `index_sceneId_tagId` (`scene_id`,`tag_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `scene_id` bigint(20) NOT NULL COMMENT '场景发布id',
+    `tag_id` bigint(20) NOT NULL COMMENT '标签id',
+    `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3),
+    `gmt_update` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `index_sceneId_tagId` (`scene_id`,`tag_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 BEGIN;
 -- 添加数据 t_base_config

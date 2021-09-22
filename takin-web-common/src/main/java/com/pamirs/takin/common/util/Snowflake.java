@@ -68,6 +68,6 @@ public class Snowflake {
             referenceTime = currentTime;
         }
 
-        return currentTime << NODE_SHIFT << SEQ_SHIFT | node << SEQ_SHIFT | counter;
+        return currentTime << NODE_SHIFT << SEQ_SHIFT | (long)node << SEQ_SHIFT | counter;
     }
 }

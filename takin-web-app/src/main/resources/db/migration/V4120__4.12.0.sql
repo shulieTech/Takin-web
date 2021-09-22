@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `t_shadow_mq_consumer`
     `create_time`      datetime      DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`      datetime      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT ='影子消费者';
+    ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT ='影子消费者';
 
 -- 插入开始
 DROP PROCEDURE IF EXISTS insert_data;

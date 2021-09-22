@@ -14,7 +14,7 @@ create table IF NOT EXISTS e_patrol_activity_assert
     modify_time      timestamp    null comment '修改时间',
     is_deleted       int(255)     null comment '是否删除：0-否；1-是',
     assert_code      varchar(255) null comment 'code'
-) comment '断言表';
+    ) comment '断言表';
 
 create table IF NOT EXISTS e_patrol_board
 (
@@ -26,7 +26,7 @@ create table IF NOT EXISTS e_patrol_board
     create_time      timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     modify_time      timestamp default CURRENT_TIMESTAMP null comment '更新时间',
     is_deleted       int(2)    default 0                 not null comment '是否已删除'
-) comment '看板信息表' collate = utf8_bin;
+    ) comment '看板信息表' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_board_scene
 (
@@ -38,7 +38,7 @@ create table IF NOT EXISTS e_patrol_board_scene
     create_time       timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     modify_time       timestamp default CURRENT_TIMESTAMP null comment '更新时间',
     is_deleted        int(2)    default 0                 not null comment '是否已删除'
-) comment '看板-场景关联表' collate = utf8_bin;
+    ) comment '看板-场景关联表' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_exception
 (
@@ -60,7 +60,7 @@ create table IF NOT EXISTS e_patrol_exception
     board_name        varchar(100)         not null comment '巡检看板名称',
     is_finish         tinyint(1) default 0 not null comment '是否处理完毕',
     constraint e_patrol_exception_id_uindex unique (id)
-) comment '巡检异常信息' collate = utf8_bin;
+    ) comment '巡检异常信息' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_exception_config
 (
@@ -72,7 +72,7 @@ create table IF NOT EXISTS e_patrol_exception_config
     contrast_factor int              not null comment '对比因子:1.大于;-1.小于;',
     remarks         varchar(10)      null comment '备注',
     is_deleted      int(2) default 0 not null comment '是否已删除'
-) comment '巡检异常配置' collate = utf8_bin;
+    ) comment '巡检异常配置' collate = utf8_bin;
 -- 说明
 INSERT IGNORE INTO e_patrol_exception_config (id, order_number, type_value, level_value, threshold_value, contrast_factor, remarks, is_deleted)
 VALUES (1, 1, 1, 1, 100.0, +1, '一般卡慢', 0),
@@ -100,7 +100,7 @@ create table IF NOT EXISTS e_patrol_exception_notice_config
     modify_user_name         varchar(100)                       null comment '修改者名称',
     create_time              datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     modify_time              datetime default CURRENT_TIMESTAMP not null comment '更新时间'
-) comment '巡检异常通知配置' collate = utf8_bin;
+    ) comment '巡检异常通知配置' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_exception_status_change_log
 (
@@ -112,7 +112,7 @@ create table IF NOT EXISTS e_patrol_exception_status_change_log
     detail       varchar(100) not null comment '详细原因',
     user_id      bigint       not null comment '操作人',
     user_name    varchar(100) not null comment '操作人名称'
-)
+    )
     comment '异常信息状态变更日志' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_scene
@@ -132,7 +132,7 @@ create table IF NOT EXISTS e_patrol_scene
     create_time       timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     modify_time       timestamp default CURRENT_TIMESTAMP null comment '更新时间',
     is_deleted        int(2)    default 0                 not null comment '是否已删除'
-) comment '巡检场景信息表' collate = utf8_bin;
+    ) comment '巡检场景信息表' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_scene_chain
 (
@@ -156,7 +156,7 @@ create table IF NOT EXISTS e_patrol_scene_chain
     entrance_method           varchar(255)                        null comment '入口方法',
     entrance_name             varchar(255)                        null comment '入口名称',
     tech_node_id              varchar(255)                        null comment '技术节点ID'
-) comment '场景链路信息表' collate = utf8_bin;
+    ) comment '场景链路信息表' collate = utf8_bin;
 
 create table IF NOT EXISTS e_patrol_scene_check
 (
@@ -170,7 +170,7 @@ create table IF NOT EXISTS e_patrol_scene_check
     modify_date       datetime         null comment '修改时间',
     activity_name     varchar(255)     null comment '业务活动名称',
     is_deleted        int(2) default 0 not null comment '是否删除'
-) comment '场景异常检查表' collate = utf8_bin;
+    ) comment '场景异常检查表' collate = utf8_bin;
 
 
 -- 创建菜单

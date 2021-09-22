@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `t_ops_script_manage`
     `gmt_create`  datetime    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `gmt_update`  datetime    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4  COMMENT='运维脚本主表';
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4  COMMENT='运维脚本主表';
 
 CREATE TABLE IF NOT EXISTS `t_ops_script_batch_no`
 (
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `t_ops_script_batch_no`
     `gmt_create`    datetime    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `gmt_update`    datetime    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4  COMMENT='运维脚本批次号表';
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4  COMMENT='运维脚本批次号表';
 
 CREATE TABLE IF NOT EXISTS `t_ops_script_execute_result`
 (
@@ -36,22 +36,22 @@ CREATE TABLE IF NOT EXISTS `t_ops_script_execute_result`
     `gmt_create`    datetime    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `gmt_update`    datetime    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4  COMMENT='运维脚本执行结果';
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4  COMMENT='运维脚本执行结果';
 
 CREATE TABLE IF NOT EXISTS `t_ops_script_file` (
-     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-     `ops_script_id` bigint(20) NOT NULL COMMENT '运维脚本ID',
-     `file_type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 1=主要文件 2=附件',
-     `file_name` varchar(50) DEFAULT NULL COMMENT '文件名称',
-     `file_size` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '文件大小：2MB',
-     `file_ext` varchar(16) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '文件后缀',
-     `upload_id` longtext CHARACTER SET utf8 COLLATE utf8_bin COMMENT 'uploadId 用于删除本地文件',
-     `file_path` longtext COMMENT '文件路径',
-     `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
-     `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-     `gmt_update` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-     PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维脚本文件';
+    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `ops_script_id` bigint(20) NOT NULL COMMENT '运维脚本ID',
+    `file_type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 1=主要文件 2=附件',
+    `file_name` varchar(50) DEFAULT NULL COMMENT '文件名称',
+    `file_size` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '文件大小：2MB',
+    `file_ext` varchar(16) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '文件后缀',
+    `upload_id` longtext CHARACTER SET utf8 COLLATE utf8_bin COMMENT 'uploadId 用于删除本地文件',
+    `file_path` longtext COMMENT '文件路径',
+    `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
+    `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `gmt_update` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    PRIMARY KEY (`id`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维脚本文件';
 
 
 -- 更新字段

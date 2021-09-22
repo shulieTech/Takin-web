@@ -1,186 +1,186 @@
 CREATE TABLE IF NOT EXISTS `t_white_list` (
-                                `WLIST_ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-                                `INTERFACE_NAME` varchar(1000) DEFAULT NULL COMMENT '接口名称',
-                                `TYPE` varchar(20) DEFAULT NULL COMMENT '白名单类型',
-                                `DICT_TYPE` varchar(50) DEFAULT NULL COMMENT '字典分类',
-                                `APPLICATION_ID` bigint DEFAULT NULL,
-                                `PRINCIPAL_NO` varchar(10) DEFAULT NULL COMMENT '负责人工号',
-                                `USE_YN` int DEFAULT '1' COMMENT '是否可用(0表示未启动,1表示启动,2表示启用未校验)',
-                                `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
-                                `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
-                                `CREATE_TIME` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                `UPDATE_TIME` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-                                `QUEUE_NAME` varchar(100) DEFAULT NULL COMMENT '队列名称，TYPE=5时该字段才会有值',
-                                `MQ_TYPE` char(1) DEFAULT NULL COMMENT 'MQ类型, 1ESB 2IBM 3ROCKETMQ 4DPBOOT_ROCKETMQ',
-                                `IP_PORT` varchar(512) DEFAULT NULL COMMENT 'IP端口,如1.1.1.1:8080,集群时用逗号分隔;当且仅当TYPE=5,MQ_TYPE=(3,4)时才会有值',
-                                `HTTP_TYPE` int DEFAULT NULL COMMENT 'HTTP类型：1页面 2接口',
-                                `PAGE_LEVEL` int DEFAULT NULL COMMENT '页面分类：1普通页面加载 2简单查询页面/复杂界面 3复杂查询页面',
-                                `INTERFACE_LEVEL` int DEFAULT NULL COMMENT '接口类型：1简单操作/查询 2一般操作/查询 3复杂操作 4涉及级联嵌套调用多服务操作 5调用外网操作 ',
-                                `JOB_INTERVAL` int DEFAULT NULL COMMENT 'JOB调度间隔：1调度间隔≤1分钟 2调度间隔≤5分钟 3调度间隔≤15分钟 4调度间隔≤60分钟',
-                                `is_deleted` tinyint(1) DEFAULT '0' COMMENT '是否已经删除 0:未删除;1:删除',
-                                `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-                                `is_global` tinyint(1) DEFAULT '1' COMMENT '是否全局生效',
-                                `is_handwork` tinyint(1) DEFAULT '0' COMMENT '是否手工添加',
-                                PRIMARY KEY (`WLIST_ID`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='白名单管理';
+                                              `WLIST_ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+                                              `INTERFACE_NAME` varchar(1000) DEFAULT NULL COMMENT '接口名称',
+    `TYPE` varchar(20) DEFAULT NULL COMMENT '白名单类型',
+    `DICT_TYPE` varchar(50) DEFAULT NULL COMMENT '字典分类',
+    `APPLICATION_ID` bigint DEFAULT NULL,
+    `PRINCIPAL_NO` varchar(10) DEFAULT NULL COMMENT '负责人工号',
+    `USE_YN` int DEFAULT '1' COMMENT '是否可用(0表示未启动,1表示启动,2表示启用未校验)',
+    `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
+    `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
+    `CREATE_TIME` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UPDATE_TIME` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    `QUEUE_NAME` varchar(100) DEFAULT NULL COMMENT '队列名称，TYPE=5时该字段才会有值',
+    `MQ_TYPE` char(1) DEFAULT NULL COMMENT 'MQ类型, 1ESB 2IBM 3ROCKETMQ 4DPBOOT_ROCKETMQ',
+    `IP_PORT` varchar(512) DEFAULT NULL COMMENT 'IP端口,如1.1.1.1:8080,集群时用逗号分隔;当且仅当TYPE=5,MQ_TYPE=(3,4)时才会有值',
+    `HTTP_TYPE` int DEFAULT NULL COMMENT 'HTTP类型：1页面 2接口',
+    `PAGE_LEVEL` int DEFAULT NULL COMMENT '页面分类：1普通页面加载 2简单查询页面/复杂界面 3复杂查询页面',
+    `INTERFACE_LEVEL` int DEFAULT NULL COMMENT '接口类型：1简单操作/查询 2一般操作/查询 3复杂操作 4涉及级联嵌套调用多服务操作 5调用外网操作 ',
+    `JOB_INTERVAL` int DEFAULT NULL COMMENT 'JOB调度间隔：1调度间隔≤1分钟 2调度间隔≤5分钟 3调度间隔≤15分钟 4调度间隔≤60分钟',
+    `is_deleted` tinyint(1) DEFAULT '0' COMMENT '是否已经删除 0:未删除;1:删除',
+    `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    `is_global` tinyint(1) DEFAULT '1' COMMENT '是否全局生效',
+    `is_handwork` tinyint(1) DEFAULT '0' COMMENT '是否手工添加',
+    PRIMARY KEY (`WLIST_ID`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='白名单管理';
 
 CREATE TABLE IF NOT EXISTS `t_shadow_job_config` (
-                                       `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-                                       `application_id` bigint NOT NULL COMMENT '应用ID',
-                                       `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL COMMENT '任务名称',
-                                       `type` tinyint NOT NULL COMMENT 'JOB类型 0-quartz、1-elastic-job、2-xxl-job',
-                                       `config_code` text COLLATE utf8mb4_general_ci COMMENT '配置代码',
-                                       `status` tinyint(1) DEFAULT '1' COMMENT '0-可用 1-不可用',
-                                       `active` tinyint(1) DEFAULT '1' COMMENT '0-可用 1-不可用',
-                                       `customer_id` bigint DEFAULT NULL COMMENT '租户id',
-                                       `user_id` bigint DEFAULT NULL COMMENT '用户id',
-                                       `is_deleted` tinyint unsigned DEFAULT '0' COMMENT '是否删除 0-未删除、1-已删除',
-                                       `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                       `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-                                       `remark` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '备注',
-                                       PRIMARY KEY (`id`) USING BTREE,
-                                       KEY `idx_app_id` (`application_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='影子JOB任务配置';
+                                                     `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                                     `application_id` bigint NOT NULL COMMENT '应用ID',
+                                                     `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL COMMENT '任务名称',
+    `type` tinyint NOT NULL COMMENT 'JOB类型 0-quartz、1-elastic-job、2-xxl-job',
+    `config_code` text COLLATE utf8mb4_general_ci COMMENT '配置代码',
+    `status` tinyint(1) DEFAULT '1' COMMENT '0-可用 1-不可用',
+    `active` tinyint(1) DEFAULT '1' COMMENT '0-可用 1-不可用',
+    `customer_id` bigint DEFAULT NULL COMMENT '租户id',
+    `user_id` bigint DEFAULT NULL COMMENT '用户id',
+    `is_deleted` tinyint unsigned DEFAULT '0' COMMENT '是否删除 0-未删除、1-已删除',
+    `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `remark` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '备注',
+    PRIMARY KEY (`id`) USING BTREE,
+    KEY `idx_app_id` (`application_id`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='影子JOB任务配置';
 
 CREATE TABLE IF NOT EXISTS `t_application_ds_manage` (
-                                           `ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                           `APPLICATION_ID` bigint DEFAULT NULL COMMENT '应用主键',
-                                           `APPLICATION_NAME` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '????',
-                                           `DB_TYPE` tinyint DEFAULT '0' COMMENT '存储类型 0:数据库 1:缓存',
-                                           `DS_TYPE` tinyint DEFAULT '0' COMMENT '方案类型 0:影子库 1:影子表 2:影子server',
-                                           `URL` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '数据库url,影子表需填',
-                                           `CONFIG` longtext CHARACTER SET utf8 COLLATE utf8_bin COMMENT 'xml配置',
-                                           `PARSE_CONFIG` longtext CHARACTER SET utf8 COLLATE utf8_bin COMMENT '解析后配置',
-                                           `STATUS` tinyint DEFAULT '0' COMMENT '状态 0:启用；1:禁用',
-                                           `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
-                                           `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
-                                           `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                           `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-                                           `IS_DELETED` tinyint DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
-                                           PRIMARY KEY (`ID`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+                                                         `ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                                         `APPLICATION_ID` bigint DEFAULT NULL COMMENT '应用主键',
+                                                         `APPLICATION_NAME` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '????',
+    `DB_TYPE` tinyint DEFAULT '0' COMMENT '存储类型 0:数据库 1:缓存',
+    `DS_TYPE` tinyint DEFAULT '0' COMMENT '方案类型 0:影子库 1:影子表 2:影子server',
+    `URL` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '数据库url,影子表需填',
+    `CONFIG` longtext CHARACTER SET utf8 COLLATE utf8_bin COMMENT 'xml配置',
+    `PARSE_CONFIG` longtext CHARACTER SET utf8 COLLATE utf8_bin COMMENT '解析后配置',
+    `STATUS` tinyint DEFAULT '0' COMMENT '状态 0:启用；1:禁用',
+    `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
+    `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
+    `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    `IS_DELETED` tinyint DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+    PRIMARY KEY (`ID`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS `t_link_guard` (
-                                `id` bigint NOT NULL AUTO_INCREMENT COMMENT '数据库唯一主键',
-                                `application_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '项目名称',
-                                `application_id` bigint DEFAULT NULL COMMENT '应用id',
-                                `method_info` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '出口信息',
-                                `groovy` longtext CHARACTER SET utf8 COLLATE utf8_bin COMMENT 'GROOVY脚本',
-                                `customer_id` bigint DEFAULT NULL COMMENT '租户id',
-                                `user_id` bigint DEFAULT NULL COMMENT '用户id',
-                                `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                                `is_deleted` tinyint unsigned DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
-                                `is_enable` tinyint DEFAULT '1' COMMENT '0:未启用；1:启用',
-                                `remark` varchar(1024) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
-                                PRIMARY KEY (`id`) USING BTREE,
-                                KEY `idx_app_id` (`application_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+                                              `id` bigint NOT NULL AUTO_INCREMENT COMMENT '数据库唯一主键',
+                                              `application_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '项目名称',
+    `application_id` bigint DEFAULT NULL COMMENT '应用id',
+    `method_info` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '出口信息',
+    `groovy` longtext CHARACTER SET utf8 COLLATE utf8_bin COMMENT 'GROOVY脚本',
+    `customer_id` bigint DEFAULT NULL COMMENT '租户id',
+    `user_id` bigint DEFAULT NULL COMMENT '用户id',
+    `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `is_deleted` tinyint unsigned DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+    `is_enable` tinyint DEFAULT '1' COMMENT '0:未启用；1:启用',
+    `remark` varchar(1024) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+    PRIMARY KEY (`id`) USING BTREE,
+    KEY `idx_app_id` (`application_id`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS `t_black_list` (
-                                `BLIST_ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-                                `REDIS_KEY` varchar(50) DEFAULT NULL COMMENT 'redis的键',
-                                `PRINCIPAL_NO` varchar(10) DEFAULT NULL COMMENT '负责人工号(废弃不用)',
-                                `USE_YN` int DEFAULT NULL COMMENT '是否可用(0表示未启动,1表示启动,2表示启用未校验)',
-                                `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
-                                `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
-                                `CREATE_TIME` datetime DEFAULT NULL COMMENT '插入时间',
-                                `UPDATE_TIME` datetime DEFAULT NULL COMMENT '变更时间',
-                                `type` tinyint DEFAULT NULL COMMENT '黑名单类型',
-                                `value` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '黑名单数据',
-                                `APPLICATION_ID` bigint NOT NULL COMMENT '应用id',
-                                `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                `gmt_modified` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                                `is_deleted` tinyint(1) DEFAULT '0' COMMENT '软删',
-                                PRIMARY KEY (`BLIST_ID`) USING BTREE,
-                                KEY `T_BLACK_LIST_INDEX2` (`PRINCIPAL_NO`) USING BTREE,
-                                KEY `T_BLACK_LIST_INDEX3` (`USE_YN`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='黑名单管理';
+                                              `BLIST_ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+                                              `REDIS_KEY` varchar(50) DEFAULT NULL COMMENT 'redis的键',
+    `PRINCIPAL_NO` varchar(10) DEFAULT NULL COMMENT '负责人工号(废弃不用)',
+    `USE_YN` int DEFAULT NULL COMMENT '是否可用(0表示未启动,1表示启动,2表示启用未校验)',
+    `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
+    `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
+    `CREATE_TIME` datetime DEFAULT NULL COMMENT '插入时间',
+    `UPDATE_TIME` datetime DEFAULT NULL COMMENT '变更时间',
+    `type` tinyint DEFAULT NULL COMMENT '黑名单类型',
+    `value` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '黑名单数据',
+    `APPLICATION_ID` bigint NOT NULL COMMENT '应用id',
+    `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    `gmt_modified` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间',
+    `is_deleted` tinyint(1) DEFAULT '0' COMMENT '软删',
+    PRIMARY KEY (`BLIST_ID`) USING BTREE,
+    KEY `T_BLACK_LIST_INDEX2` (`PRINCIPAL_NO`) USING BTREE,
+    KEY `T_BLACK_LIST_INDEX3` (`USE_YN`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='黑名单管理';
 
 
 CREATE TABLE IF NOT EXISTS `t_application_api_manage` (
-                                            `ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                            `APPLICATION_ID` bigint DEFAULT NULL COMMENT '应用主键',
-                                            `APPLICATION_NAME` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '应用名称',
-                                            `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
-                                            `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
-                                            `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                            `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-                                            `IS_DELETED` tinyint DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
-                                            `api` varchar(200) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT 'api',
-                                            `method` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '请求类型',
-                                            `IS_AGENT_REGISTE` tinyint DEFAULT '0' COMMENT '是否有效 0:否;1:是',
-                                            PRIMARY KEY (`ID`) USING BTREE,
-                                            UNIQUE KEY `APPLICATION_NAME` (`APPLICATION_NAME`,`api`,`method`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+                                                          `ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                                          `APPLICATION_ID` bigint DEFAULT NULL COMMENT '应用主键',
+                                                          `APPLICATION_NAME` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '应用名称',
+    `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
+    `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
+    `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    `IS_DELETED` tinyint DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+    `api` varchar(200) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT 'api',
+    `method` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '请求类型',
+    `IS_AGENT_REGISTE` tinyint DEFAULT '0' COMMENT '是否有效 0:否;1:是',
+    PRIMARY KEY (`ID`) USING BTREE,
+    UNIQUE KEY `APPLICATION_NAME` (`APPLICATION_NAME`,`api`,`method`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 
 CREATE TABLE IF NOT EXISTS `t_scene` (
-                           `ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-                           `SCENE_NAME` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '场景名',
-                           `BUSINESS_LINK` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '场景所绑定的业务链路名集合',
-                           `SCENE_LEVEL` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '场景等级 :p0/p1/02/03',
-                           `IS_CORE` tinyint DEFAULT '0' COMMENT '是否核心场景 0:不是;1:是',
-                           `IS_CHANGED` tinyint DEFAULT '0' COMMENT '是否有变更 0:没有变更，1有变更',
-                           `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
-                           `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
-                           `IS_DELETED` tinyint DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
-                           `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                           `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-                           PRIMARY KEY (`ID`) USING BTREE,
-                           KEY `T_LINK_MNT_INDEX1` (`SCENE_NAME`) USING BTREE,
-                           KEY `T_LINK_MNT_INDEX3` (`CREATE_TIME`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='场景表';
+                                         `ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                         `SCENE_NAME` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '场景名',
+    `BUSINESS_LINK` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '场景所绑定的业务链路名集合',
+    `SCENE_LEVEL` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '场景等级 :p0/p1/02/03',
+    `IS_CORE` tinyint DEFAULT '0' COMMENT '是否核心场景 0:不是;1:是',
+    `IS_CHANGED` tinyint DEFAULT '0' COMMENT '是否有变更 0:没有变更，1有变更',
+    `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
+    `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
+    `IS_DELETED` tinyint DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+    `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`ID`) USING BTREE,
+    KEY `T_LINK_MNT_INDEX1` (`SCENE_NAME`) USING BTREE,
+    KEY `T_LINK_MNT_INDEX3` (`CREATE_TIME`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='场景表';
 
 -- 表创建 开始
 CREATE TABLE IF NOT EXISTS `t_business_link_manage_table` (
-                                                `LINK_ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                                `LINK_NAME` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '链路名称',
-                                                `ENTRACE` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '链路入口',
-                                                `RELATED_TECH_LINK` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '业务链路绑定的技术链路',
-                                                `LINK_LEVEL` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '业务链路级别: p0/p1/p2/p3 ',
-                                                `PARENT_BUSINESS_ID` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '业务链路的上级业务链路id',
-                                                `IS_CHANGE` tinyint DEFAULT NULL COMMENT '是否有变更 0:正常；1:已变更',
-                                                `IS_CORE` tinyint DEFAULT NULL COMMENT '业务链路是否否核心链路 0:不是;1:是',
-                                                `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
-                                                `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
-                                                `IS_DELETED` tinyint DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
-                                                `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                                `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-                                                `BUSINESS_DOMAIN` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '业务域: 0:订单域", "1:运单域", "2:结算域 ',
-                                                `CAN_DELETE` tinyint NOT NULL DEFAULT '0' COMMENT '是否可以删除 0:可以删除;1:不可以删除',
-                                                PRIMARY KEY (`LINK_ID`) USING BTREE,
-                                                KEY `T_LINK_MNT_INDEX1` (`LINK_NAME`) USING BTREE,
-                                                KEY `T_LINK_MNT_INDEX2` (`ENTRACE`(255)) USING BTREE,
-                                                KEY `T_LINK_MNT_INDEX3` (`CREATE_TIME`) USING BTREE,
-                                                KEY `RELATED_TECH_LINK` (`RELATED_TECH_LINK`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='业务链路管理表';
+                                                              `LINK_ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                                              `LINK_NAME` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '链路名称',
+    `ENTRACE` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '链路入口',
+    `RELATED_TECH_LINK` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '业务链路绑定的技术链路',
+    `LINK_LEVEL` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '业务链路级别: p0/p1/p2/p3 ',
+    `PARENT_BUSINESS_ID` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '业务链路的上级业务链路id',
+    `IS_CHANGE` tinyint DEFAULT NULL COMMENT '是否有变更 0:正常；1:已变更',
+    `IS_CORE` tinyint DEFAULT NULL COMMENT '业务链路是否否核心链路 0:不是;1:是',
+    `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
+    `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
+    `IS_DELETED` tinyint DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+    `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    `BUSINESS_DOMAIN` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '业务域: 0:订单域", "1:运单域", "2:结算域 ',
+    `CAN_DELETE` tinyint NOT NULL DEFAULT '0' COMMENT '是否可以删除 0:可以删除;1:不可以删除',
+    PRIMARY KEY (`LINK_ID`) USING BTREE,
+    KEY `T_LINK_MNT_INDEX1` (`LINK_NAME`) USING BTREE,
+    KEY `T_LINK_MNT_INDEX2` (`ENTRACE`(255)) USING BTREE,
+    KEY `T_LINK_MNT_INDEX3` (`CREATE_TIME`) USING BTREE,
+    KEY `RELATED_TECH_LINK` (`RELATED_TECH_LINK`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='业务链路管理表';
 
 CREATE TABLE IF NOT EXISTS `t_link_manage_table` (
-                                       `LINK_ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                       `LINK_NAME` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '链路名称',
-                                       `ENTRACE` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '链路入口',
-                                       `PT_ENTRACE` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '影子入口',
-                                       `CHANGE_BEFORE` longtext CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '技术链路变更前',
-                                       `CHANGE_AFTER` longtext CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '技术链路变更后',
-                                       `CHANGE_REMARK` longtext CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '变化差异',
-                                       `IS_CHANGE` tinyint DEFAULT NULL COMMENT '是否有变更 0:正常；1:已变更',
-                                       `IS_JOB` tinyint DEFAULT '0' COMMENT '任务类型 0:普通入口；1:定时任务',
-                                       `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
-                                       `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
-                                       `IS_DELETED` tinyint DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
-                                       `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                       `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
-                                       `APPLICATION_NAME` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '应用名',
-                                       `CHANGE_TYPE` tinyint DEFAULT NULL COMMENT '变更类型: 1:无流量调用通知;2:添加调用关系通知',
-                                       `CAN_DELETE` tinyint DEFAULT '0' COMMENT '是否可以删除 0:可以删除;1:不可以删除',
-                                       `features` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-                                       PRIMARY KEY (`LINK_ID`) USING BTREE,
-                                       KEY `T_LINK_MNT_INDEX1` (`LINK_NAME`) USING BTREE,
-                                       KEY `T_LINK_MNT_INDEX2` (`ENTRACE`(255)) USING BTREE,
-                                       KEY `T_LINK_MNT_INDEX3` (`CREATE_TIME`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='链路管理表';
+                                                     `LINK_ID` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                                     `LINK_NAME` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '链路名称',
+    `ENTRACE` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '链路入口',
+    `PT_ENTRACE` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '影子入口',
+    `CHANGE_BEFORE` longtext CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '技术链路变更前',
+    `CHANGE_AFTER` longtext CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '技术链路变更后',
+    `CHANGE_REMARK` longtext CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '变化差异',
+    `IS_CHANGE` tinyint DEFAULT NULL COMMENT '是否有变更 0:正常；1:已变更',
+    `IS_JOB` tinyint DEFAULT '0' COMMENT '任务类型 0:普通入口；1:定时任务',
+    `CUSTOMER_ID` bigint DEFAULT NULL COMMENT '租户id',
+    `USER_ID` bigint DEFAULT NULL COMMENT '用户id',
+    `IS_DELETED` tinyint DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+    `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    `APPLICATION_NAME` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '应用名',
+    `CHANGE_TYPE` tinyint DEFAULT NULL COMMENT '变更类型: 1:无流量调用通知;2:添加调用关系通知',
+    `CAN_DELETE` tinyint DEFAULT '0' COMMENT '是否可以删除 0:可以删除;1:不可以删除',
+    `features` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+    PRIMARY KEY (`LINK_ID`) USING BTREE,
+    KEY `T_LINK_MNT_INDEX1` (`LINK_NAME`) USING BTREE,
+    KEY `T_LINK_MNT_INDEX2` (`ENTRACE`(255)) USING BTREE,
+    KEY `T_LINK_MNT_INDEX3` (`CREATE_TIME`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='链路管理表';
 
 CREATE TABLE IF NOT EXISTS `t_file_manage`
 (
@@ -197,9 +197,9 @@ CREATE TABLE IF NOT EXISTS `t_file_manage`
     `gmt_create`  datetime(3)                  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `gmt_update`  datetime(3)                  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8
-  COLLATE = utf8_bin;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8
+    COLLATE = utf8_bin;
 
 CREATE TABLE IF NOT EXISTS `t_script_file_ref`
 (
@@ -209,8 +209,8 @@ CREATE TABLE IF NOT EXISTS `t_script_file_ref`
     `gmt_create`       datetime(3) DEFAULT CURRENT_TIMESTAMP(3),
     `gmt_update`       datetime(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `t_script_manage`
 (
@@ -225,8 +225,8 @@ CREATE TABLE IF NOT EXISTS `t_script_manage`
     `feature`        longtext COMMENT '拓展字段',
     PRIMARY KEY (`id`),
     UNIQUE KEY `name` (`name`) USING BTREE COMMENT '名称需要唯一'
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `t_script_manage_deploy`
 (
@@ -244,8 +244,8 @@ CREATE TABLE IF NOT EXISTS `t_script_manage_deploy`
     `feature`        longtext COMMENT '拓展字段',
     PRIMARY KEY (`id`),
     UNIQUE KEY `name_version` (`name`, `script_version`) COMMENT '名称加版本需要唯一'
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `t_script_tag_ref`
 (
@@ -255,8 +255,8 @@ CREATE TABLE IF NOT EXISTS `t_script_tag_ref`
     `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3),
     `gmt_update` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `t_tag_manage`
 (
@@ -267,8 +267,8 @@ CREATE TABLE IF NOT EXISTS `t_tag_manage`
     `gmt_create` datetime(3)          DEFAULT CURRENT_TIMESTAMP(3),
     `gmt_update` datetime(3)          DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 -- 表创建 结束
 
@@ -368,13 +368,13 @@ IF count1 > 0 THEN
     IF count2 = 0 THEN
 
         -- 备份表
-        CREATE TABLE t_tro_role_copy LIKE t_tro_role;
-        INSERT IGNORE INTO t_tro_role_copy SELECT * FROM t_tro_role;
-        -- 备份表结束
+CREATE TABLE t_tro_role_copy LIKE t_tro_role;
+INSERT IGNORE INTO t_tro_role_copy SELECT * FROM t_tro_role;
+-- 备份表结束
 
-    END IF;
+END IF;
 
-    delete from t_tro_role;
+delete from t_tro_role;
 
 END IF;
 
@@ -405,12 +405,12 @@ IF count1 > 0 THEN
 
     IF count2 = 0 THEN
         -- 备份表
-        CREATE TABLE t_tro_resource_copy LIKE t_tro_resource;
-        INSERT IGNORE INTO t_tro_resource_copy SELECT * FROM t_tro_resource;
-        -- 备份表结束
-    END IF;
+CREATE TABLE t_tro_resource_copy LIKE t_tro_resource;
+INSERT IGNORE INTO t_tro_resource_copy SELECT * FROM t_tro_resource;
+-- 备份表结束
+END IF;
 
-    delete from t_tro_resource;
+delete from t_tro_resource;
 
 END IF;
 
@@ -563,16 +563,16 @@ WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_authority' AND COLUMN_NA
 IF count1 > 0 THEN
     IF count2 = 0 THEN
         -- 备份表
-        CREATE TABLE IF NOT EXISTS t_tro_authority_copy LIKE t_tro_authority;
-        INSERT IGNORE INTO t_tro_authority_copy SELECT * FROM t_tro_authority;
-        -- 备份表结束
-    END IF;
+CREATE TABLE IF NOT EXISTS t_tro_authority_copy LIKE t_tro_authority;
+INSERT IGNORE INTO t_tro_authority_copy SELECT * FROM t_tro_authority;
+-- 备份表结束
+END IF;
 
     IF count3 > 0 THEN
-        delete
-        from t_tro_authority
-        where role_id is null;
-    END IF;
+delete
+from t_tro_authority
+where role_id is null;
+END IF;
 END IF;
 
 END $$

@@ -1,21 +1,21 @@
 CREATE TABLE IF NOT EXISTS `t_app_remote_call` (
-                                     `ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                     `interface_name` varchar(1024) CHARACTER SET utf8 DEFAULT NULL COMMENT '接口名称',
-                                     `interface_type` tinyint(4) DEFAULT NULL COMMENT '接口类型',
-                                     `server_app_name` varchar(2048) CHARACTER SET utf8 DEFAULT NULL COMMENT '服务端应用名',
-                                     `APPLICATION_ID`  bigint(20)  NOT NULL  COMMENT '应用id',
-                                     `APP_NAME`  varchar(500) CHARACTER SET utf8  DEFAULT NULL  COMMENT '应用name',
-                                     `type` tinyint(4)  DEFAULT 0 COMMENT '配置类型，0：未配置，1：白名单配置;2：返回值mock;3:转发mock',
-                                     `mock_return_value` varchar(1024) CHARACTER SET utf8 DEFAULT NULL COMMENT 'mock返回值',
-                                     `CUSTOMER_ID` bigint(20) DEFAULT NULL COMMENT '租户id',
-                                     `USER_ID` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                     `IS_DELETED` tinyint(4) DEFAULT 0 COMMENT '是否有效 0:有效;1:无效',
-                                     `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                     `gmt_modified` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                                     `is_synchronize` tinyint(1) DEFAULT 0 COMMENT '是否同步',
-                                     PRIMARY KEY (`ID`) USING BTREE,
-                                     KEY `T_REMOTE_CALL_INDEX1` (`CUSTOMER_ID`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='远程调用表';
+    `ID` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `interface_name` varchar(1024) CHARACTER SET utf8 DEFAULT NULL COMMENT '接口名称',
+    `interface_type` tinyint(4) DEFAULT NULL COMMENT '接口类型',
+    `server_app_name` varchar(2048) CHARACTER SET utf8 DEFAULT NULL COMMENT '服务端应用名',
+    `APPLICATION_ID`  bigint(20)  NOT NULL  COMMENT '应用id',
+    `APP_NAME`  varchar(500) CHARACTER SET utf8  DEFAULT NULL  COMMENT '应用name',
+    `type` tinyint(4)  DEFAULT 0 COMMENT '配置类型，0：未配置，1：白名单配置;2：返回值mock;3:转发mock',
+    `mock_return_value` varchar(1024) CHARACTER SET utf8 DEFAULT NULL COMMENT 'mock返回值',
+    `CUSTOMER_ID` bigint(20) DEFAULT NULL COMMENT '租户id',
+    `USER_ID` bigint(20) DEFAULT NULL COMMENT '用户id',
+    `IS_DELETED` tinyint(4) DEFAULT 0 COMMENT '是否有效 0:有效;1:无效',
+    `gmt_create` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    `gmt_modified` datetime(3) DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间',
+    `is_synchronize` tinyint(1) DEFAULT 0 COMMENT '是否同步',
+    PRIMARY KEY (`ID`) USING BTREE,
+    KEY `T_REMOTE_CALL_INDEX1` (`CUSTOMER_ID`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='远程调用表';
 
 -- 字段添加
 DROP PROCEDURE IF EXISTS change_field;

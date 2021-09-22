@@ -752,7 +752,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         SceneStartPreCheckReq checkReq = new SceneStartPreCheckReq();
         checkReq.setSceneId(sceneId);
         ResponseResult<SceneStartCheckResp> result = sceneTaskApi.sceneStartPreCheck(checkReq);
-        if (result != null) {
+        if (result != null) {V
             if (!result.getSuccess()) {
                 ResponseResult.ErrorInfo error = Optional.ofNullable(result.getError()).orElse(null);
                 if (error != null) {

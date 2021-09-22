@@ -13,10 +13,10 @@ CREATE TABLE IF NOT EXISTS `t_agent_version`
     `is_deleted`       tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '逻辑删除字段, 1 已删除, 0 未删除, 默认 0, 无符号',
     PRIMARY KEY (`id`),
     UNIQUE KEY `version_unique` (`version`) USING BTREE COMMENT '版本号唯一索引'
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='agent版本管理';
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4 COMMENT ='agent版本管理';
 
- CREATE TABLE IF NOT EXISTS `t_agent_config`
+CREATE TABLE IF NOT EXISTS `t_agent_config`
 (
     `id`                     bigint unsigned  NOT NULL AUTO_INCREMENT COMMENT '主键id',
     `gmt_create`             datetime         NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS `t_agent_version`
     `project_name`           varchar(255)              DEFAULT NULL COMMENT '应用名称（应用配置时才生效）',
     `user_app_key`           varchar(255)              DEFAULT NULL COMMENT '用户信息（应用配置时才生效）',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='agent配置管理';
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4 COMMENT ='agent配置管理';
 
 BEGIN;
 INSERT

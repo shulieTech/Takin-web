@@ -64,8 +64,8 @@ WHERE table_schema = DATABASE() AND TABLE_NAME = 'e_patrol_exception' AND COLUMN
 
 IF count1 > 0 THEN
 	IF count2 = 0 THEN
-        alter  table `e_patrol_exception` change business_id chain_id bigint not null comment '任务标识';
-    END IF;
+alter  table `e_patrol_exception` change business_id chain_id bigint not null comment '任务标识';
+END IF;
 END IF;
 
 SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
@@ -76,8 +76,8 @@ WHERE table_schema = DATABASE() AND TABLE_NAME = 'e_patrol_exception' AND COLUMN
 
 IF count1 > 0 THEN
 	IF count2 = 0 THEN
-        alter  table `e_patrol_exception` change business_name activity_name varchar(100) not null comment '任务名称';
-    END IF;
+alter  table `e_patrol_exception` change business_name activity_name varchar(100) not null comment '任务名称';
+END IF;
 END IF;
 
 SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
@@ -88,8 +88,8 @@ WHERE table_schema = DATABASE() AND TABLE_NAME = 'e_patrol_exception' AND COLUMN
 
 IF count1 > 0 THEN
 	IF count2 = 0 THEN
-        alter  table `e_patrol_exception` change business_type patrol_type int not null comment '任务类型';
-    END IF;
+alter  table `e_patrol_exception` change business_type patrol_type int not null comment '任务类型';
+END IF;
 END IF;
 
 SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
@@ -100,8 +100,8 @@ WHERE table_schema = DATABASE() AND TABLE_NAME = 'e_patrol_exception' AND COLUMN
 
 IF count1 > 0 THEN
 	IF count2 = 0 THEN
-        alter  table `e_patrol_exception` change business_rpc_type rpc_type varchar(100) null comment '业务入口';
-    END IF;
+alter  table `e_patrol_exception` change business_rpc_type rpc_type varchar(100) null comment '业务入口';
+END IF;
 END IF;
 
 SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS

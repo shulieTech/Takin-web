@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS `t_tro_dbresource`
     `update_time` datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`  tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- 标签引用表
 CREATE TABLE IF NOT EXISTS `t_datasource_tag_ref`
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS `t_datasource_tag_ref`
     `gmt_update`    datetime(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `index_datasourceId_tagId` (`datasource_id`, `tag_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- 漏数配置表
 CREATE TABLE IF NOT EXISTS `t_leakcheck_config`
@@ -45,8 +45,8 @@ CREATE TABLE IF NOT EXISTS `t_leakcheck_config`
     `update_time`          datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`           tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- sql配置详情表
 CREATE TABLE IF NOT EXISTS `t_leakcheck_config_detail`
@@ -61,8 +61,8 @@ CREATE TABLE IF NOT EXISTS `t_leakcheck_config_detail`
     `update_time`   datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`    tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- 验证结果表
 CREATE TABLE IF NOT EXISTS `t_leakverify_result`
@@ -81,8 +81,8 @@ CREATE TABLE IF NOT EXISTS `t_leakverify_result`
     `update_time`     datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`      tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- 验证结果详情表
 CREATE TABLE IF NOT EXISTS `t_leakverify_detail`
@@ -96,8 +96,8 @@ CREATE TABLE IF NOT EXISTS `t_leakverify_detail`
     `update_time` datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`  tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- 插入开始
 DROP PROCEDURE IF EXISTS insert_data;

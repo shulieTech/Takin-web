@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS `t_fast_debug_machine_performance`
     `gmt_create`     datetime                DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `gmt_update`     datetime                DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 -- 调试堆栈异常信息------
 CREATE TABLE IF NOT EXISTS `t_fast_debug_stack_info`
@@ -39,8 +39,8 @@ CREATE TABLE IF NOT EXISTS `t_fast_debug_stack_info`
     `gmt_update` datetime              DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
     KEY `index_traceId` (`trace_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 -- 快速调试配置表------
 CREATE TABLE IF NOT EXISTS `t_fast_debug_config_info`
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS `t_fast_debug_config_info`
     `creator_id`       bigint(20)            DEFAULT NULL COMMENT '创建人',
     `modifier_id`      bigint(20)            DEFAULT NULL COMMENT '修改人',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 -- 快速调试结果表--------
 CREATE TABLE IF NOT EXISTS `t_fast_debug_result`
@@ -88,8 +88,8 @@ CREATE TABLE IF NOT EXISTS `t_fast_debug_result`
     `creator_id`         bigint(20)    DEFAULT NULL COMMENT '操作人',
     `debug_result`       tinyint(1)    DEFAULT NULL COMMENT '0:失败；1：成功；调试中根据config中status判断',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 -- 快速调试异常表----------
 CREATE TABLE IF NOT EXISTS `t_fast_debug_exception`
@@ -111,8 +111,8 @@ CREATE TABLE IF NOT EXISTS `t_fast_debug_exception`
     `gmt_modified`     datetime(3)  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间',
     PRIMARY KEY (`id`),
     KEY `index_traceId` (`trace_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 
 -- 节点信息表----------
@@ -143,8 +143,8 @@ CREATE TABLE IF NOT EXISTS `t_trace_node_info`
     `is_deleted`      tinyint(1)   DEFAULT 0 COMMENT '软删',
     `customer_id`     bigint(20)   DEFAULT NULL COMMENT '租户id',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 -- t_exception_info----------
 CREATE TABLE IF NOT EXISTS `t_exception_info`
@@ -161,8 +161,8 @@ CREATE TABLE IF NOT EXISTS `t_exception_info`
     `is_deleted`   tinyint(1)   DEFAULT 0 COMMENT '软删',
     `customer_id`  bigint(20)   DEFAULT NULL COMMENT '租户id',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 BEGIN;
 -- 菜单权限问题-------

@@ -87,8 +87,8 @@ CREATE TABLE IF NOT EXISTS `t_whitelist_effective_app`
     `gmt_modified`  datetime(3)   DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间',
     `is_deleted`    tinyint(1)    DEFAULT 0 COMMENT '软删',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 BEGIN;
 INSERT INTO `t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`, `USE_YN`, `CREATE_TIME`, `UPDATE_TIME`) VALUES ('ES_SERVER', '{\"businessNodes\": \"192.168.1.210:9200,192.168.1.193:9200\",\"performanceTestNodes\": \"192.168.1.210:9200,192.168.1.193:9200\"}', '影子ES配置模板', 0, '2021-04-13 21:21:08', '2021-04-13 21:21:11');

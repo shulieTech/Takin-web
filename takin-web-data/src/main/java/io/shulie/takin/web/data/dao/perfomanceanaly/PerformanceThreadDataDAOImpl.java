@@ -144,30 +144,30 @@ public class PerformanceThreadDataDAOImpl implements PerformanceThreadDataDAO {
     }
 
     @Override
-    public void clearData(String time) {
-        // influxdb
+    public boolean clearStackData(String time) {
         if (StringUtils.isBlank(time)) {
-            return;
+            return true;
         }
-        //StringBuilder influxDBSQL = new StringBuilder();
-        //influxDBSQL.append("delete");
-        //influxDBSQL.append(" from t_performance_thread_data");
-        //influxDBSQL.append(" where time <= ");
-        //influxDBSQL.append("'");
-        //influxDBSQL.append(time);
-        //influxDBSQL.append("'");
-        //influxDBWriter.query(influxDBSQL.toString(), PerformanceThreadDataResult.class);
+
         // mysql
         LambdaUpdateWrapper<PerformanceThreadStackDataEntity> stackWrapper = new LambdaUpdateWrapper<>();
         stackWrapper.lt(PerformanceThreadStackDataEntity::getGmtCreate,time);
-        stackWrapper.orderByAsc(PerformanceThreadStackDataEntity::getThreadStackLink);
         stackWrapper.last("limit 10000");
-        performanceThreadStackDataMapper.delete(stackWrapper);
+        return performanceThreadStackDataMapper.delete(stackWrapper) == 0;
+    }
+
+    @Override
+    public boolean clearData(String time) {
+        if (StringUtils.isBlank(time)) {
+            return true;
+        }
+
         // mysql
+        LambdaUpdateWrapper<PerformanceThreadStackDataEntity> stackWrapper = new LambdaUpdateWrapper<>();
         LambdaUpdateWrapper<PerformanceThreadDataEntity> wrapper = new LambdaUpdateWrapper<>();
         wrapper.lt(PerformanceThreadDataEntity::getGmtCreate,time);
-        stackWrapper.orderByAsc(PerformanceThreadStackDataEntity::getThreadStackLink);
-        stackWrapper.last("limit 10000");
-        performanceThreadDataMapper.delete(wrapper);
+        wrapper.last("limit 10000");
+        return performanceThreadDataMapper.delete(wrapper) == 0;
     }
+
 }

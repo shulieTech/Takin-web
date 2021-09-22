@@ -1,57 +1,57 @@
 CREATE TABLE IF NOT EXISTS `t_application_middleware`  (
-                                                     `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-                                                     `application_id` bigint(20) NOT NULL COMMENT '应用id',
-                                                     `application_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '应用名称',
-                                                     `artifact_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '项目名称',
-                                                     `group_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '项目组织名称',
-                                                     `version` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '版本号',
-                                                     `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '类型, 字符串形式',
-                                                     `status` tinyint(3) UNSIGNED NULL DEFAULT 0 COMMENT '状态, 3已支持, 2 未支持, 4 无需支持, 1 未知, 0 无',
-                                                     `gmt_create` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
-                                                     `gmt_update` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
-                                                     `is_deleted` tinyint(3) UNSIGNED NULL DEFAULT 0 COMMENT '逻辑删除字段, 0 未删除, 1 已删除',
-                                                     PRIMARY KEY (`id`) USING BTREE,
-                                                     INDEX `idx_aid`(`application_id`) USING BTREE,
-                                                     INDEX `idx_a_name`(`application_name`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '应用中间件' ROW_FORMAT = Dynamic;
+    `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+    `application_id` bigint(20) NOT NULL COMMENT '应用id',
+    `application_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '应用名称',
+    `artifact_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '项目名称',
+    `group_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '项目组织名称',
+    `version` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '版本号',
+    `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '类型, 字符串形式',
+    `status` tinyint(3) UNSIGNED NULL DEFAULT 0 COMMENT '状态, 3已支持, 2 未支持, 4 无需支持, 1 未知, 0 无',
+    `gmt_create` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+    `gmt_update` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
+    `is_deleted` tinyint(3) UNSIGNED NULL DEFAULT 0 COMMENT '逻辑删除字段, 0 未删除, 1 已删除',
+    PRIMARY KEY (`id`) USING BTREE,
+    INDEX `idx_aid`(`application_id`) USING BTREE,
+    INDEX `idx_a_name`(`application_name`) USING BTREE
+    ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '应用中间件' ROW_FORMAT = Dynamic;
 
 CREATE TABLE IF NOT EXISTS `t_middleware_jar` (
-                                        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                        `name` varchar(100) COLLATE utf8mb4_bin DEFAULT '' COMMENT '中间件中文名称',
-                                        `type` varchar(25) COLLATE utf8mb4_bin DEFAULT '' COMMENT '中间件类型',
-                                        `status` tinyint(3) unsigned NOT NULL DEFAULT 0 COMMENT '支持的包状态, 1 已支持, 2 待支持, 3 无需支持, 4 待验证',
-                                        `artifact_id` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '中间件名称',
-                                        `group_id` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '中间件组织名称',
-                                        `version` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '中间件版本',
-                                        `agv` varchar(255) COLLATE utf8mb4_bin NOT NULL COMMENT 'artifactId_groupId_version, 做唯一标识,',
-                                        `gmt_create` datetime NOT NULL DEFAULT current_timestamp() COMMENT '创建时间',
-                                        `gmt_update` datetime DEFAULT NULL ON UPDATE current_timestamp() COMMENT '更新时间',
-                                        `remark` varchar(500) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '标记',
-                                        `commit` varchar(500) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
-                                        PRIMARY KEY (`id`) USING BTREE,
-                                        UNIQUE KEY `idx_agv` (`agv`) USING BTREE,
-                                        KEY `idx_artifact_id` (`artifact_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='中间件包表';
+    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    `name` varchar(100) COLLATE utf8mb4_bin DEFAULT '' COMMENT '中间件中文名称',
+    `type` varchar(25) COLLATE utf8mb4_bin DEFAULT '' COMMENT '中间件类型',
+    `status` tinyint(3) unsigned NOT NULL DEFAULT 0 COMMENT '支持的包状态, 1 已支持, 2 待支持, 3 无需支持, 4 待验证',
+    `artifact_id` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '中间件名称',
+    `group_id` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '中间件组织名称',
+    `version` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '中间件版本',
+    `agv` varchar(255) COLLATE utf8mb4_bin NOT NULL COMMENT 'artifactId_groupId_version, 做唯一标识,',
+    `gmt_create` datetime NOT NULL DEFAULT current_timestamp() COMMENT '创建时间',
+    `gmt_update` datetime DEFAULT NULL ON UPDATE current_timestamp() COMMENT '更新时间',
+    `remark` varchar(500) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '标记',
+    `commit` varchar(500) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE KEY `idx_agv` (`agv`) USING BTREE,
+    KEY `idx_artifact_id` (`artifact_id`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='中间件包表';
 
 CREATE TABLE IF NOT EXISTS `t_middleware_summary` (
-                                        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                        `name` varchar(100) COLLATE utf8mb4_bin DEFAULT '' COMMENT '中间件中文名称',
-                                        `type` varchar(25) COLLATE utf8mb4_bin DEFAULT '' COMMENT '中间件类型',
-                                        `total_num` int(11) NOT NULL DEFAULT 0 COMMENT '中间件总数',
-                                        `supported_num` int(11) NOT NULL DEFAULT 0 COMMENT '已支持数量',
-                                        `unknown_num` int(11) NOT NULL DEFAULT 0 COMMENT '未知数量',
-                                        `not_supported_num` int(11) NOT NULL DEFAULT 0 COMMENT '无需支持的数量',
-                                        `artifact_id` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '中间件名称',
-                                        `group_id` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '中间件组织名称',
-                                        `ag` varchar(255) COLLATE utf8mb4_bin NOT NULL COMMENT 'artifactId_groupId, 做唯一标识,',
-                                        `gmt_create` datetime NOT NULL DEFAULT current_timestamp() COMMENT '创建时间',
-                                        `gmt_update` datetime DEFAULT NULL ON UPDATE current_timestamp() COMMENT '更新时间',
-                                        `commit` varchar(500) CHARACTER SET utf8 DEFAULT '' COMMENT '备注',
-                                        `status` tinyint(4) NOT NULL COMMENT '状态',
-                                        PRIMARY KEY (`id`) USING BTREE,
-                                        UNIQUE KEY `idx_ag` (`ag`) USING BTREE,
-                                        KEY `idx_artifact_id` (`artifact_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='中间件信息表';
+    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    `name` varchar(100) COLLATE utf8mb4_bin DEFAULT '' COMMENT '中间件中文名称',
+    `type` varchar(25) COLLATE utf8mb4_bin DEFAULT '' COMMENT '中间件类型',
+    `total_num` int(11) NOT NULL DEFAULT 0 COMMENT '中间件总数',
+    `supported_num` int(11) NOT NULL DEFAULT 0 COMMENT '已支持数量',
+    `unknown_num` int(11) NOT NULL DEFAULT 0 COMMENT '未知数量',
+    `not_supported_num` int(11) NOT NULL DEFAULT 0 COMMENT '无需支持的数量',
+    `artifact_id` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '中间件名称',
+    `group_id` varchar(100) COLLATE utf8mb4_bin NOT NULL DEFAULT '' COMMENT '中间件组织名称',
+    `ag` varchar(255) COLLATE utf8mb4_bin NOT NULL COMMENT 'artifactId_groupId, 做唯一标识,',
+    `gmt_create` datetime NOT NULL DEFAULT current_timestamp() COMMENT '创建时间',
+    `gmt_update` datetime DEFAULT NULL ON UPDATE current_timestamp() COMMENT '更新时间',
+    `commit` varchar(500) CHARACTER SET utf8 DEFAULT '' COMMENT '备注',
+    `status` tinyint(4) NOT NULL COMMENT '状态',
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE KEY `idx_ag` (`ag`) USING BTREE,
+    KEY `idx_artifact_id` (`artifact_id`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='中间件信息表';
 
 -- 插入开始
 DROP PROCEDURE IF EXISTS insert_data;

@@ -97,16 +97,9 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     private DsService dsService;
     @Resource
     private TBListMntDao tbListMntDao;
-    //@Resource
-    //private TUserMapper userMapper;
+
     @Autowired
     private ShadowConsumerService shadowConsumerService;
-
-    @Autowired
-    private AppRemoteCallService appRemoteCallService;
-
-    @Autowired
-    private RemoteCallSyncService remoteCallSyncService;
 
     @PostConstruct
     public void init() {
@@ -366,12 +359,4 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
         return blockLists;
     }
 
-    @Override
-    public void syncRemoteCall(String userAppKey, long applicationId, String applicationName) {
-        if (StringUtils.isEmpty(applicationName)) {
-            TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
-            applicationName = tApplicationMnt.getApplicationName();
-        }
-        remoteCallSyncService.syncRemoteCall(userAppKey, applicationName, appRemoteCallService.agentSelect(applicationName));
-    }
 }

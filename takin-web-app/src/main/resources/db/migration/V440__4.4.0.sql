@@ -38,9 +38,9 @@ CREATE TABLE IF NOT EXISTS `t_operation_log`
     `gmt_create` datetime                     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `gmt_update` datetime                     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8
-  COLLATE = utf8_bin;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8
+    COLLATE = utf8_bin;
 
 -- 插入开始
 DROP PROCEDURE IF EXISTS insert_data;
@@ -75,8 +75,8 @@ CREATE TABLE IF NOT EXISTS `t_agent_plugin`
     `gmt_create`  datetime                                        DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `gmt_update`  datetime                                        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 -- 插件客户端包支持表
 CREATE TABLE IF NOT EXISTS `t_agent_plugin_lib_support`
@@ -91,8 +91,8 @@ CREATE TABLE IF NOT EXISTS `t_agent_plugin_lib_support`
     `gmt_update`         datetime                                          DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE KEY `uni_libname_index` (`lib_name`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 
 BEGIN;

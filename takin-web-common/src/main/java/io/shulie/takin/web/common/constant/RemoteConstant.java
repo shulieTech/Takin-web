@@ -13,6 +13,7 @@ public class RemoteConstant {
 
     public static final String LICENSE_KEY = "licenseKey";
     public static final String FILTER_SQL = "filterSql";
+    public static final String USER_ID = "userId";
     public static final String PAGE_TOTAL_HEADER = "x-total-count";
     public static final String SCENE_MANAGE_URL = "/api/scenemanage";
     public static final String SCENE_MANAGE_PAGELIST_URL = "/api/scenemanage/list";

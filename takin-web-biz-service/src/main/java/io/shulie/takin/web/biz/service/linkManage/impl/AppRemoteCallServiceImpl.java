@@ -215,9 +215,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
         // 从mysql查出数据
         PagingList<AppRemoteCallListVO> dbPagingList = getDbPagingList(input, detailResult);
-        // 从amdb查出数据
-        // 补充插件数据
-        WebPluginUtils.fillUserData(input);
+        // 根据应用的租户查询
+        input.setCustomerId(detailResult.getCustomerId());
         if (dbPagingList.getList().size() < input.getPageSize()) {
             // amdb查询 页码是第一页
             input.setCurrent(input.getCurrent() - (int)(dbPagingList.getTotal() / input.getPageSize()) - 1);
@@ -367,8 +366,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         AppRemoteCallQueryParam param = new AppRemoteCallQueryParam();
         BeanUtils.copyProperties(input, param);
         PagingList<AppRemoteCallResult> pagingList = appRemoteCallDAO.pagingList(param);
-        if (pagingList.getTotal() == 0) {
-            return PagingList.empty();
+        if (CollectionUtils.isEmpty(pagingList.getList())) {
+            return PagingList.of(Lists.newArrayList(),pagingList.getTotal());
         }
 
         List<AppRemoteCallListVO> appRemoteCallVoList = pagingList.getList().stream().map(result -> {

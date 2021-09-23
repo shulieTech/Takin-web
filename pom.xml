@@ -40,7 +40,8 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
         <takin.web.version>takin-web-2.0.1</takin.web.version>
-        <takin.cloud.version>takin-cloud-2.0.1</takin.cloud.version>
+        <takin.cloud.open.version>takin-cloud-open-2.0.2.1</takin.cloud.open.version>
+        <takin.cloud.version>takin-cloud-2.0.2</takin.cloud.version>
         <takin.common.version>common-1.7.3</takin.common.version>
         <command.channel>common-1.7.3</command.channel>
         <pardar.log.protocol.version>2.0.4.2</pardar.log.protocol.version>
@@ -69,8 +70,6 @@
         <spring.swagger.version>2.9.2</spring.swagger.version>
         <swagger.ui.version>1.9.6</swagger.ui.version>
         <swagger.version>1.5.22</swagger.version>
-
-
 
         <simulator.agent.api.version>5.0.0</simulator.agent.api.version>
         <flyway.version>5.2.4</flyway.version>
@@ -136,18 +135,24 @@
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-bom</artifactId>
-                <version>${takin.cloud.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.shulie.takin</groupId>
-                        <artifactId>takin-common-bom</artifactId>
-                    </exclusion>
-                </exclusions>
+                <artifactId>takin-cloud-open-api</artifactId>
+                <version>${takin.cloud.open.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-open-client-starter</artifactId>
+                <version>${takin.cloud.open.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-ext</artifactId>
+                <version>${takin.cloud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-common</artifactId>
+                <version>${takin.cloud.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-common-bom</artifactId>
@@ -383,12 +388,90 @@
     <profiles>
         <!-- 默认 -->
         <profile>
-            <id>default</id>
-            <properties>
-            </properties>
+            <id>rdc</id>
+            <properties></properties>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+        </profile>
+        <profile>
+            <!--远程仓库-->
+            <id>ossrh</id>
+            <properties></properties>
+            <build>
+               <plugins>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-resources-plugin</artifactId>
+                       <version>2.5</version>
+                       <configuration>
+                           <encoding>UTF-8</encoding>
+                       </configuration>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-scm-plugin</artifactId>
+                       <version>1.0</version>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-release-plugin</artifactId>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-javadoc-plugin</artifactId>
+                       <version>2.9.1</version>
+                       <executions>
+                           <execution>
+                               <id>attach-javadocs</id>
+                               <goals>
+                                   <goal>jar</goal>
+                               </goals>
+                               <configuration>
+                                   <additionalparam>-Xdoclint:none</additionalparam>
+                               </configuration>
+                           </execution>
+                       </executions>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-gpg-plugin</artifactId>
+                       <version>1.5</version>
+                       <executions>
+                           <execution>
+                               <id>sign-artifacts</id>
+                               <phase>verify</phase>
+                               <goals>
+                                   <goal>sign</goal>
+                               </goals>
+                           </execution>
+                       </executions>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.sonatype.plugins</groupId>
+                       <artifactId>nexus-staging-maven-plugin</artifactId>
+                       <version>1.6.7</version>
+                       <extensions>true</extensions>
+                       <configuration>
+                           <serverId>ossrh</serverId>
+                           <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                           <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                       </configuration>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-jar-plugin</artifactId>
+                       <version>2.2</version>
+                       <configuration>
+                           <archive>
+                               <manifestEntries>
+                                   <IsTinyProject>true</IsTinyProject>
+                               </manifestEntries>
+                           </archive>
+                       </configuration>
+                   </plugin>
+               </plugins>
+           </build>
         </profile>
     </profiles>
     <distributionManagement>
@@ -411,23 +494,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.5</version>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-scm-plugin</artifactId>
-                <version>1.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>2.1.2</version>
                 <executions>
@@ -439,36 +505,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-gpg-plugin</artifactId>-->
-<!--                <version>1.5</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>sign-artifacts</id>-->
-<!--                        <phase>verify</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>sign</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
         </plugins>
         <pluginManagement>
             <plugins>
@@ -481,42 +517,6 @@
                         <source>1.8</source>
                         <target>1.8</target>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>2.1</version>
-                    <configuration>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-                        <mavenExecutorId>forked-path</mavenExecutorId>
-                        <useReleaseProfile>false</useReleaseProfile>
-                        <arguments>-Pnexus-release -Dmaven.test.skip=true</arguments>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.2</version>
-                    <configuration>
-                        <archive>
-                            <manifestEntries>
-                                <IsTinyProject>true</IsTinyProject>
-                            </manifestEntries>
-                        </archive>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.1.0</version>
-                    <executions>
-                        <execution>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>shade</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

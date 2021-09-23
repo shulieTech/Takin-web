@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -70,4 +71,12 @@ public class UserExt {
      */
     private Long customerId;
     private String customerKey;
+
+    /**
+     * 登录渠道
+     * 0-console 前端页面
+     * 1-agent agent
+     */
+    @ApiModelProperty(value = "登录渠道")
+    private Integer loginChannel = 0;
 }

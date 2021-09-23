@@ -1170,8 +1170,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         PagingList<ScriptManageDeployResult> scriptManageDeployResults = scriptManageDAO
             .pageQueryRecentScriptManageDeploy(
                 scriptManageDeployPageQueryParam);
-        if (scriptManageDeployResults.isEmpty()) {
-            return PagingList.empty();
+        if (CollectionUtils.isEmpty(scriptManageDeployResults.getList())) {
+            return PagingList.of(Lists.newArrayList(),scriptManageDeployResults.getTotal());
         }
         // 获取实例个数
         Map<Long, Long> numMaps = scriptManageDAO.selectScriptDeployNumResult();

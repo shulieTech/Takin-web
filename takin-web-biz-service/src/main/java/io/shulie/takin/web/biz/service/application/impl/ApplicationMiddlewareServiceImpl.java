@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.mq.producer.Producer;
+import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.biz.pojo.dto.application.CompareApplicationMiddlewareDTO;
@@ -73,6 +74,7 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
         BeanUtils.copyProperties(listApplicationMiddlewareRequest, pageApplicationMiddlewareParam);
 
         // 类型排序
+        PageUtils.clearPageHelper();
         IPage<ApplicationMiddlewareListResult> page = applicationMiddlewareDAO.page(pageApplicationMiddlewareParam);
         List<ApplicationMiddlewareListResult> results = page.getRecords();
         if (results.isEmpty()) {
@@ -97,6 +99,7 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
 
     @Override
     public ApplicationMiddlewareCountResponse countSome(Long applicationId) {
+        PageUtils.clearPageHelper();
         List<ApplicationMiddlewareStatusAboutCountResult> statusMapCountResultList = applicationMiddlewareDAO
             .listCountByApplicationIdAndStatusAndGroupByStatus(applicationId, null);
 

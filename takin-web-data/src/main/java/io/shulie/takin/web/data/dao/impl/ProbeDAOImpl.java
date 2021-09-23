@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
+import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.shulie.takin.web.common.util.CommonUtil;
@@ -37,10 +38,11 @@ public class ProbeDAOImpl implements ProbeDAO, MPUtil<ProbeEntity> {
             this.getCustomerLambdaQueryWrapper().select(ProbeEntity::getId, ProbeEntity::getVersion)
                 .orderByDesc(ProbeEntity::getGmtUpdate));
 
-        List<ProbeEntity> records = probeEntityPage.getRecords();
-        if (records.isEmpty()) {
-            return PagingList.empty();
+        if (probeEntityPage.getRecords().isEmpty()) {
+            return PagingList.of(Lists.newArrayList(),probeEntityPage.getTotal());
         }
+
+        List<ProbeEntity> records = probeEntityPage.getRecords();
 
         return PagingList.of(CommonUtil.list2list(records, ProbeListResult.class), probeEntityPage.getTotal());
     }

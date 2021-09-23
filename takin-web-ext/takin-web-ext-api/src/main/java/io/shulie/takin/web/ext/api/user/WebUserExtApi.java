@@ -85,14 +85,6 @@ public interface WebUserExtApi extends ExtensionPoint {
     String getTenantUserKey();
 
     /**
-     * 获取License
-     * todo 后续想办法废除
-     *
-     * @return
-     */
-    String getLicenseValue();
-
-    /**
      * 获取登录用户
      *
      * @return
@@ -105,6 +97,7 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @return
      */
     String getUserAppKey(Long userId);
+
     /**
      * cloud 模块 用户 补充，用于调用cloud接口
      *
@@ -117,4 +110,11 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @return
      */
     Map<String, String> getSystemInfo();
+
+    /**
+     * 根据用户名 模糊查询
+     * @param userName
+     * @return
+     */
+    List<UserExt> selectByName(String userName);
 }

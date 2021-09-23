@@ -344,8 +344,8 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
         }
         PagingList<ScriptManageDeployResult> scriptManageDeployResults = scriptManageDAO
             .pageQueryRecentScriptManageDeploy(queryParam);
-        if (scriptManageDeployResults.isEmpty()) {
-            return PagingList.empty();
+        if (CollectionUtils.isEmpty(scriptManageDeployResults.getList())) {
+            return PagingList.of(Lists.newArrayList(),scriptManageDeployResults.getTotal());
         }
         //用户ids
         List<Long> userIds = scriptManageDeployResults.getList().stream().filter(data -> null != data.getUserId()).map(

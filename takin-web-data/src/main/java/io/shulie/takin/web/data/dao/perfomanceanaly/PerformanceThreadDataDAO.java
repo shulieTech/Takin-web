@@ -33,5 +33,20 @@ public interface PerformanceThreadDataDAO {
      */
     String getThreadStackInfo(String link);
 
-    void clearData(String time);
+    /**
+     * 按时间清除数据
+     *
+     * @param time 时间 之前
+     * @return 是否删除完成
+     */
+    boolean clearData(String time);
+
+    /**
+     * 按时间清除 stack data 数据
+     *
+     * @param time 时间 之前
+     * @return 是否删除完成
+     */
+    boolean clearStackData(String time);
+
 }

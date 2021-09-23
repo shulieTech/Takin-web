@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS `t_tro_dbresource`
     `update_time` datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`  tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- 标签引用表
 CREATE TABLE IF NOT EXISTS `t_datasource_tag_ref`
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS `t_datasource_tag_ref`
     `gmt_update`    datetime(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `index_datasourceId_tagId` (`datasource_id`, `tag_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- 漏数配置表
 CREATE TABLE IF NOT EXISTS `t_leakcheck_config`
@@ -45,9 +45,8 @@ CREATE TABLE IF NOT EXISTS `t_leakcheck_config`
     `update_time`          datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`           tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
-
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- sql配置详情表
 CREATE TABLE IF NOT EXISTS `t_leakcheck_config_detail`
@@ -62,9 +61,8 @@ CREATE TABLE IF NOT EXISTS `t_leakcheck_config_detail`
     `update_time`   datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`    tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
-
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- 验证结果表
 CREATE TABLE IF NOT EXISTS `t_leakverify_result`
@@ -83,9 +81,8 @@ CREATE TABLE IF NOT EXISTS `t_leakverify_result`
     `update_time`     datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`      tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
-
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
 
 -- 验证结果详情表
 CREATE TABLE IF NOT EXISTS `t_leakverify_detail`
@@ -99,8 +96,79 @@ CREATE TABLE IF NOT EXISTS `t_leakverify_detail`
     `update_time` datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`  tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
+
+-- 插入开始
+DROP PROCEDURE IF EXISTS insert_data;
+DELIMITER $$
+CREATE PROCEDURE insert_data()
+BEGIN
+
+DECLARE count1 INT;
+SET count1 = (SELECT COUNT(*) FROM `t_tro_resource` WHERE `code` = 'configCenter_dataSourceConfig');
+
+IF count1 = 0 THEN
+
+-- 添加菜单
+-- 增加数据源配置菜单
+INSERT IGNORE INTO `t_tro_resource` (`parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,                                       `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`) VALUES (11, 0, 'configCenter_dataSourceConfig', '数据源配置', NULL, '[\"/api/datasource/list\"]', 7600, ' [2,3,4]', NULL, NULL, NULL, '2021-01-06 15:17:40', '2021-01-06 15:19:12', 0);
+
+END IF;
+
+END $$
+DELIMITER ;
+CALL insert_data();
+DROP PROCEDURE IF EXISTS insert_data;
+-- 插入结束
+
+-- 字段更新开始
+DROP PROCEDURE IF EXISTS update_field;
+DELIMITER $$
+CREATE PROCEDURE update_field()
+BEGIN
+
+DECLARE count1 INT;
+SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_resource' AND COLUMN_NAME = 'code');
+
+IF count1 > 0 THEN
+
+UPDATE `t_tro_resource`
+SET `action` = '[2,3,4,5]'
+WHERE `code` = 'debugTool_linkDebug';
+
+END IF;
+
+END $$
+DELIMITER ;
+CALL update_field();
+DROP PROCEDURE IF EXISTS update_field;
+-- 字段更新结束
+
+-- 修改字段开始
+DROP PROCEDURE IF EXISTS change_field;
+DELIMITER $$
+CREATE PROCEDURE change_field()
+BEGIN
+
+DECLARE count INT;
+SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tag_manage' AND COLUMN_NAME = 'tag_type');
+
+IF count > 0 THEN
+
+alter table t_tag_manage
+    modify column `tag_type` tinyint(4) DEFAULT NULL COMMENT '标签类型;0为脚本标签;1为数据源标签';
+
+END IF;
+
+END $$
+DELIMITER ;
+CALL change_field();
+DROP PROCEDURE IF EXISTS change_field;
+-- 修改字段结束
+
+BEGIN;
 
 -- 增加可验证的数据源类型对应的数据字典
 INSERT IGNORE INTO `t_dictionary_type`(`ID`, `TYPE_NAME`, `ACTIVE`, `CREATE_TIME`, `MODIFY_TIME`, `CREATE_USER_CODE`,
@@ -133,96 +201,4 @@ INSERT IGNORE INTO `t_dictionary_data`(`ID`, `DICT_TYPE`, `VALUE_ORDER`, `VALUE_
                                         `NOTE_INFO`, `VERSION_NO`)
 VALUES ('6438e36d424c4f54ab4f0773d338f9a3', '51a309asdsdfads8779fd5fb08200f03u', 2, '结算域', '2', 'ZH_CN', 'Y',
         '2021-01-15', '2021-01-15', NULL, NULL, NULL, 0);
-
--- 插入开始
-DROP PROCEDURE IF EXISTS insert_data;
-
-DELIMITER $$
-
-CREATE PROCEDURE insert_data()
-
-BEGIN
-
-DECLARE count1 INT;
-
-SET count1 = (SELECT COUNT(*) FROM `t_tro_resource` WHERE `code` = 'configCenter_dataSourceConfig');
-
-IF count1 = 0 THEN
-
--- 添加菜单
--- 增加数据源配置菜单
-INSERT IGNORE INTO `t_tro_resource` (`parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,                                       `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`) VALUES (11, 0, 'configCenter_dataSourceConfig', '数据源配置', NULL, '[\"/api/datasource/list\"]', 7600, ' [2,3,4]', NULL, NULL, NULL, '2021-01-06 15:17:40', '2021-01-06 15:19:12', 0);
-
-END IF;
-
-END $$
-
-DELIMITER ;
-
-CALL insert_data();
-
-DROP PROCEDURE IF EXISTS insert_data;
--- 插入结束
-
--- 字段更新开始
-DROP PROCEDURE IF EXISTS update_field;
-
-DELIMITER $$
-
-CREATE PROCEDURE update_field()
-
-BEGIN
-
-DECLARE count1 INT;
-
-SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_resource' AND COLUMN_NAME = 'action' AND COLUMN_NAME = 'code');
-
-IF count1 > 0 THEN
-
-UPDATE `t_tro_resource`
-SET `action` = '[2,3,4,5]'
-WHERE `code` = 'debugTool_linkDebug';
-
-END IF;
-
-
-END $$
-
-DELIMITER ;
-
-CALL update_field();
-
-DROP PROCEDURE IF EXISTS update_field;
--- 字段更新结束
-
--- 修改字段开始
-DROP PROCEDURE IF EXISTS change_field;
-
-DELIMITER $$
-
-CREATE PROCEDURE change_field()
-
-BEGIN
-
-DECLARE count INT;
-
-SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tag_manage' AND COLUMN_NAME = 'tag_type');
-
-IF count > 0 THEN
-
-alter table t_tag_manage
-    modify column `tag_type` tinyint(4) DEFAULT NULL COMMENT '标签类型;0为脚本标签;1为数据源标签';
-
-END IF;
-
-END $$
-
-DELIMITER ;
-
-CALL change_field();
-
-DROP PROCEDURE IF EXISTS change_field;
--- 修改字段结束
+COMMIT;

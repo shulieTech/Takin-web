@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -8,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
+import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.vo.report.ReportIdVO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
@@ -288,6 +290,27 @@ public class ReportServiceImpl implements ReportService {
         vo.setRequestUrl(RemoteConstant.REPORT_METRICES);
         vo.setHttpMethod(HttpMethod.GET);
         return httpWebClient.request(vo);
+    }
+
+    @Override
+    public List<Map<String, Object>> listMetrics(Long reportId, Long sceneId, Long customerId) {
+        ReportIdVO vo = new ReportIdVO();
+        vo.setReportId(reportId);
+        vo.setSceneId(sceneId);
+        vo.setCustomerId(customerId);
+        vo.setRequestUrl(RemoteConstant.REPORT_METRICES);
+        vo.setHttpMethod(HttpMethod.GET);
+        WebResponse response = httpWebClient.request(vo);
+        if (response == null) {
+            throw ApiException.create(500, String.format("请求 cloud 指标错误! url: %s", RemoteConstant.REPORT_METRICES));
+        }
+
+        Object metricsObject = response.getData();
+        if (metricsObject == null) {
+            return Collections.emptyList();
+        }
+
+        return (List<Map<String, Object>>)metricsObject;
     }
 
     @Override

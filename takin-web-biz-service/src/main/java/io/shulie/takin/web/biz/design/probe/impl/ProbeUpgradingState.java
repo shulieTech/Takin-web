@@ -17,6 +17,11 @@ public class ProbeUpgradingState extends AbstractApplicationNodeProbeState {
 
     @Override
     public boolean match(MatchApplicationNodeProbeStateDTO dto) {
+        // amdb 失败
+        if (ApplicationNodeProbeUtil.isAmdbFailed(dto.getAmdbProbeState())) {
+            return false;
+        }
+
         // 本地 升级中
         return ApplicationNodeProbeUtil.upgrading(dto);
     }

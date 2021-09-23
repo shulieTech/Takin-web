@@ -4,10 +4,9 @@ server:
   servlet:
     context-path: /takin-web
 
+
+
 spring:
-  main:
-    #解决SWAGGER 请求路径context-path重复问题时候BEAN重复注入问题
-    allow-bean-definition-overriding: true
   # 激活环境
   profiles:
     active: local

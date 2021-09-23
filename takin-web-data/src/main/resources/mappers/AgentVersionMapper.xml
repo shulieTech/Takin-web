@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.AgentVersionMapper">
+    <resultMap id="base_map" type="io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult">
+        <result column="id" property="id" jdbcType="BIGINT"/>
+        <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP"/>
+        <result column="gmt_update" property="gmtUpdate" jdbcType="TIMESTAMP"/>
+        <result column="operator" property="operator" jdbcType="VARCHAR"/>
+        <result column="first_version" property="firstVersion" jdbcType="VARCHAR"/>
+        <result column="version" property="version" jdbcType="VARCHAR"/>
+        <result column="version_num" property="versionNum" jdbcType="BIGINT"/>
+        <result column="file_path" property="filePath" jdbcType="VARCHAR"/>
+        <result column="version_features" property="versionFeatures" jdbcType="VARCHAR"/>
+        <result column="is_deleted" property="isDeleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <select id="findFirstVersionList" resultType="java.lang.String">
+        SELECT DISTINCT(first_version)
+        FROM t_agent_version
+        ORDER BY first_version desc
+    </select>
+
+    <select id="findAllVersionList" resultType="java.lang.String">
+        SELECT version
+        FROM t_agent_version
+        ORDER BY version_num desc
+    </select>
+    <select id="findMaxVersionAgent" resultMap="base_map">
+        SELECT *
+        FROM t_agent_version
+        WHERE version_num = (
+            SELECT max(version_num)
+            FROM t_agent_version
+        )
+    </select>
+</mapper>

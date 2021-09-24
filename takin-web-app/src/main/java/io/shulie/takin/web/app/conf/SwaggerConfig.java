@@ -3,7 +3,6 @@ package io.shulie.takin.web.app.conf;
 import java.time.LocalDate;
 import java.util.function.Predicate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
 import io.shulie.takin.cloud.common.constants.APIUrls;
 import io.swagger.annotations.Api;
@@ -38,10 +37,6 @@ public class SwaggerConfig {
 
     @Value("${server.servlet.context-path:}")
     private String servletContextPath;
-
-
-    private ObjectMapper objectMapper;
-
 
     /**
      * v4.* 版本的都放在这里

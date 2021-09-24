@@ -9,6 +9,12 @@ package io.shulie.takin.web.common.constant;
 public interface ProbeConstants {
 
     /**
+     * 应用下所有的 agentId, 标识
+     * 标记该应用是否一键卸载
+     */
+    String ALL_AGENT_ID = "allAgentId";
+
+    /**
      * 未安装英文描述
      */
     String ENGLISH_DESC_NOT_INSTALLED = "notInstalled";

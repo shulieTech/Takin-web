@@ -244,18 +244,17 @@
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid.stater.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.quartz-scheduler</groupId>
-                <artifactId>quartz</artifactId>
-                <version>${quartz.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.zookeeper</groupId>
-                        <artifactId>zookeeper</artifactId>
-                    </exclusion>
-                </exclusions>
-
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.quartz-scheduler</groupId>-->
+<!--                <artifactId>quartz</artifactId>-->
+<!--                <version>${quartz.version}</version>-->
+<!--                <exclusions>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>org.apache.zookeeper</groupId>-->
+<!--                        <artifactId>zookeeper</artifactId>-->
+<!--                    </exclusion>-->
+<!--                </exclusions>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>com.dangdang</groupId>
                 <artifactId>elastic-job-lite-core</artifactId>

@@ -15,9 +15,11 @@ import io.shulie.takin.channel.bean.CommandRespType;
 import io.shulie.takin.channel.bean.CommandResponse;
 import io.shulie.takin.channel.bean.CommandSend;
 import io.shulie.takin.channel.bean.CommandStatus;
+import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.future.ResponseFuture;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -45,9 +47,10 @@ public class AgentCommandFactory {
     private RedisTemplate redisTemplate;
 
     /**
-     * agentId:command:moduleId:id
+     * redisKey改造
+     * agentId:command:moduleId:tenantId:envCode:id
      */
-    private final String agentKey = "%s:%s:%s:%s";
+    private final String agentKey = "%s:%s:%s:%s:%s:%s";
 
     @Value("${agent.interactive.takin.web.url:http://127.0.0.1:10086/takin-web}")
     private String takinWebUrl;
@@ -57,7 +60,8 @@ public class AgentCommandFactory {
         TakinWebCommandPacket takinPacket = getSendPacket(commandEnum, agentId, params);
         checkPacket(takinPacket);
         String key = String.format(agentKey, takinPacket.getAgentId(), takinPacket.getSend().getCommand(),
-            takinPacket.getSend().getModuleId(), takinPacket.getId());
+            takinPacket.getSend().getModuleId(), WebPluginUtils.getCustomerId(),"envCode" , takinPacket.getId());
+
         ResponseFuture<CommandPacket> future = new ResponseFuture<>(
             takinPacket.getTimeoutMillis() == null ? 3000 : takinPacket.getTimeoutMillis());
         CommandPacket commandPacket = new CommandPacket();
@@ -149,7 +153,8 @@ public class AgentCommandFactory {
         if (!takinWebPacket.getIsAllowMultipleExecute()) {
             // 不允许多次执行，检测命令执行状态
             Set<String> keys = this.keys(String.format(agentKey, takinWebPacket.getAgentId(),
-                takinWebPacket.getSend().getCommand(), takinWebPacket.getSend().getModuleId(), "*"));
+                //redisKey改造
+                takinWebPacket.getSend().getCommand(), takinWebPacket.getSend().getModuleId(),"*","*", "*"));
             if (keys.size() > 0) {
                 for (String agentKey : keys) {
                     CommandStatus commandStatus = null;

@@ -7,6 +7,7 @@ package io.shulie.takin.web.biz.cache.webimpl;
  **/
 
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
+import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -39,9 +40,11 @@ public class ApplicationRegisterCache {
         return applicationExist;
     }
 
+    //RedisKey改造增加tenantId,envCode
     String getKey(Long customerId, String applicationName){
         StringBuilder builder = new StringBuilder();
         builder.append(CACHE_NAME).append(":");
+        builder.append(TenantKeyUtils.getTenantKey());
         builder.append(customerId).append(":").append(applicationName);
         return builder.toString();
     }

@@ -6,6 +6,7 @@ import io.shulie.takin.web.biz.constant.SwitchKeyFactory;
 import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
 import io.shulie.takin.web.biz.service.BaseConfigService;
 import io.shulie.takin.web.biz.service.config.ConfigService;
+import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.config.sync.api.SwitchSyncService;
 import lombok.extern.slf4j.Slf4j;
@@ -37,13 +38,13 @@ public class ConfigServiceImpl implements ConfigService {
         if (value == null) {
             return;
         }
-        redisTemplate.opsForValue().set(SwitchKeyFactory.getClusterTestSwitchRedisKey(userAppKey), value);
+        redisTemplate.opsForValue().set(SwitchKeyFactory.getClusterTestSwitchRedisKey(userAppKey,"envCode"), value);
         configSyncService.syncClusterTestSwitch(WebPluginUtils.getTenantUserAppKey());
     }
 
     @Override
     public boolean getClusterTestSwitch(String userAppKey) {
-        Object o = redisTemplate.opsForValue().get(SwitchKeyFactory.getClusterTestSwitchRedisKey(userAppKey));
+        Object o = redisTemplate.opsForValue().get(SwitchKeyFactory.getClusterTestSwitchRedisKey(userAppKey,"envCode"));
         if (!(o instanceof Boolean)) {
             return true;
         }
@@ -65,7 +66,7 @@ public class ConfigServiceImpl implements ConfigService {
             log.error("发生错误", e);
         }
 
-        redisTemplate.opsForValue().set(SwitchKeyFactory.getAllowListSwitchRedisKey(userAppKey), value);
+        redisTemplate.opsForValue().set(SwitchKeyFactory.getAllowListSwitchRedisKey(userAppKey,"envCode"), value);
         configSyncService.syncAllowListSwitch(WebPluginUtils.getTenantUserAppKey());
     }
 
@@ -76,7 +77,7 @@ public class ConfigServiceImpl implements ConfigService {
         if (tBaseConfig != null) {
             dbResult = "1".equals(tBaseConfig.getConfigValue());
         }
-        Object o = redisTemplate.opsForValue().get(SwitchKeyFactory.getAllowListSwitchRedisKey(userAppKey));
+        Object o = redisTemplate.opsForValue().get(SwitchKeyFactory.getAllowListSwitchRedisKey(userAppKey,"envCode"));
         if (!(o instanceof Boolean)) {
             return dbResult;
         }

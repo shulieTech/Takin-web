@@ -75,4 +75,13 @@ public class QueryLinkDetailDTO extends PagingDevice {
      */
     private Integer clusterTest;
 
+    /**
+     * 用户编码
+     */
+    private String userAppKey;
+    /**
+     * 环境编码
+     */
+    private String envCode;
+
 }

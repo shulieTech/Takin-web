@@ -9,17 +9,22 @@ package io.shulie.takin.web.biz.constant;
  */
 public class SwitchKeyFactory {
 
-    public static final String CLUSTER_TEST_SWITCH_REDIS_KEY = "takin_CLUSTER_TEST_SWITCH#@customerKey@";
+    public static final String CLUSTER_TEST_SWITCH_REDIS_KEY = "takin_CLUSTER_TEST_SWITCH#@customerKey@envCode@";
 
-    public static final String ALLOW_LIST_SWITCH_REDIS_KEY = "takin_ALLOW_LIST_SWITCH#@customerKey@";
+    public static final String ALLOW_LIST_SWITCH_REDIS_KEY = "takin_ALLOW_LIST_SWITCH#@customerKey@envCode@";
 
     public static final String KEY_PLACEHOLDER = "@customerKey@";
+
+    public static final String ENV_CODE_PLACEHOLDER="envCode@";
 
     /**
      * 开关先按客户端分，再按租户分。
      */
-    public static String getClusterTestSwitchRedisKey(String customerKey) {
-        return CLUSTER_TEST_SWITCH_REDIS_KEY.replace(KEY_PLACEHOLDER, customerKey);
+    public static String getClusterTestSwitchRedisKey(String customerKey, String envCode) {
+        String key = CLUSTER_TEST_SWITCH_REDIS_KEY.replace(KEY_PLACEHOLDER, customerKey);
+        return key.replace(ENV_CODE_PLACEHOLDER,envCode);
+
+
     }
 
     /**
@@ -27,7 +32,8 @@ public class SwitchKeyFactory {
      *
      * @param customerKey
      */
-    public static String getAllowListSwitchRedisKey(String customerKey) {
-        return ALLOW_LIST_SWITCH_REDIS_KEY.replace(KEY_PLACEHOLDER, customerKey);
+    public static String getAllowListSwitchRedisKey(String customerKey, String envCode) {
+        String key = ALLOW_LIST_SWITCH_REDIS_KEY.replace(KEY_PLACEHOLDER, customerKey);
+        return key.replace(ENV_CODE_PLACEHOLDER, envCode);
     }
 }

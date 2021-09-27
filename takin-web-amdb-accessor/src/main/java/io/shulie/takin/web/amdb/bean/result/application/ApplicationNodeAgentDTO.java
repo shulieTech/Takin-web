@@ -99,4 +99,14 @@ public class ApplicationNodeAgentDTO implements Serializable {
      */
     private String errorMsg;
 
+    /**
+     * 租户标识
+     */
+    private String userAppKey;
+
+    /**
+     * 环境编码
+     */
+    private String envCode;
+
 }

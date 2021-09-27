@@ -57,7 +57,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
     }
 
     private String getCacheKey(String namespace) {
-        String key = cacheName + ":" + WebPluginUtils.getCustomerId();
+        String key = cacheName + ":" + WebPluginUtils.getCustomerId()+":"+"envCode";
         if (namespace != null) {
             key += ":";
             key += namespace;

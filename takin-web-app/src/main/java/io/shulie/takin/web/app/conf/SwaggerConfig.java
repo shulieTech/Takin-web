@@ -1,8 +1,25 @@
+/*
+ * Copyright (c) 2021. Shulie Technology, Co.Ltd
+ * Email: shulie@shulie.io
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package io.shulie.takin.web.app.conf;
 
 import java.time.LocalDate;
 import java.util.function.Predicate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
 import io.shulie.takin.cloud.common.constants.APIUrls;
 import io.swagger.annotations.Api;
@@ -37,6 +54,10 @@ public class SwaggerConfig {
 
     @Value("${server.servlet.context-path:}")
     private String servletContextPath;
+
+
+    private ObjectMapper objectMapper;
+
 
     /**
      * v4.* 版本的都放在这里
@@ -295,9 +316,7 @@ public class SwaggerConfig {
             .groupName("tro-web-快速使用2期")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(PathSelectors
-                .regex(
-                    "/api/(application/center/app/config|datasource|fastdebug/debug/callStack/node/locate|"
+            .paths(getRegex("/api/(application/center/app/config|datasource|fastdebug/debug/callStack/node/locate|"
                         + "fastdebug/debug/callStack/exception|link/ds/manage|application/plugins/config|opsScriptManage|sys|"
                         + "pradar/switch).*"))
             .build()
@@ -314,9 +333,7 @@ public class SwaggerConfig {
             .groupName("ete巡检1期")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(PathSelectors
-                .regex(
-                    "/api/patrol/manager(/board/create|/board/get|/board/delete|/board/update|"
+            .paths(getRegex("/api/patrol/manager(/board/create|/board/get|/board/delete|/board/update|"
                         + "/scene/create|/scene/get|/scene/detail|/scene/delete|/scene/update|/scene/exception|/scene/start|"
                         + "/init|/exception|/exception_config|/exception_notice|/assert/createOrUpdate|/assert/get|/node/get"
                         + "|/node/add|/node/delete|/error/get).*"))
@@ -334,9 +351,7 @@ public class SwaggerConfig {
             .groupName("ete巡检大屏")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(PathSelectors
-                .regex(
-                    "/api/patrol/screen(/all|/statistic|/detail).*"))
+            .paths(getRegex("/api/patrol/screen(/all|/statistic|/detail).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
@@ -355,8 +370,7 @@ public class SwaggerConfig {
             .groupName("6.4版本")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(PathSelectors
-                .regex("/api/(application/remote/call|/application/remote/call/list|activities/virtual|activities|activities/activity|link/scene/manage).*"))
+            .paths(getRegex("/api/(application/remote/call|/application/remote/call/list|activities/virtual|activities|activities/activity|link/scene/manage).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

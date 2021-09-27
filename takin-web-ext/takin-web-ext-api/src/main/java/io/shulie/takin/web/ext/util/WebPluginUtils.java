@@ -12,11 +12,13 @@ import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.ext.api.auth.WebDataAuthExtApi;
 import io.shulie.takin.web.ext.api.auth.WebUserAuthExtApi;
+import io.shulie.takin.web.ext.api.tenant.WebTenantExtApi;
 import io.shulie.takin.web.ext.api.user.WebUserExtApi;
 import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,7 @@ public class WebPluginUtils {
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
     private static WebUserAuthExtApi userAuthExtApi;
+    private static WebTenantExtApi tenantExtApi;
 
     static PluginManager pluginManager;
 
@@ -47,6 +50,7 @@ public class WebPluginUtils {
         userApi = pluginManager.getExtension(WebUserExtApi.class);
         dataAuthApi = pluginManager.getExtension(WebDataAuthExtApi.class);
         userAuthExtApi = pluginManager.getExtension(WebUserAuthExtApi.class);
+        tenantExtApi = pluginManager.getExtension(WebTenantExtApi.class);
     }
 
     /**
@@ -182,7 +186,16 @@ public class WebPluginUtils {
         return null;
     }
 
-
+    /**
+     * 获取所有租户信息
+     * @return
+     */
+    public static List<TenantInfoExt> getTenantInfoList() {
+        if (Objects.nonNull(tenantExtApi)) {
+            return tenantExtApi.getTenantInfoList();
+        }
+        return null;
+    }
 
     /**
      * 返回 userAppKey

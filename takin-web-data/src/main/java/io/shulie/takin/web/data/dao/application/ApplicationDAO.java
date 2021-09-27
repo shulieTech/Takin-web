@@ -34,7 +34,21 @@ public interface ApplicationDAO {
 
     List<ApplicationDetailResult> getApplications(List<String> appNames);
 
+    /**
+     * 根据应用查
+     * @param appNames
+     * @return
+     */
     List<ApplicationResult> getApplicationByName(List<String> appNames);
+
+    /**
+     * 根据租户查询
+     * @param appNames
+     * @param userAppKey
+     * @param envCode
+     * @return
+     */
+    List<ApplicationResult> getApplicationByName(List<String> appNames,String userAppKey,String envCode);
 
     List<ApplicationDetailResult> getApplicationListByUserIds(List<Long> userIdList);
 

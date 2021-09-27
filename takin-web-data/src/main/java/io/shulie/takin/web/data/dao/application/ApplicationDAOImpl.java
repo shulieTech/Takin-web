@@ -26,7 +26,6 @@ import com.alibaba.excel.util.StringUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -35,7 +34,6 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.InstanceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.LibraryDTO;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
@@ -46,6 +44,7 @@ import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.data.result.application.LibraryResult;
 import io.shulie.takin.web.data.util.MPUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -99,6 +98,41 @@ public class ApplicationDAOImpl
             queryDTO.setFields(Lists.newArrayList("library,instanceInfo".split(",")));
             queryDTO.setPageSize(99999);
             PagingList<ApplicationDTO> applicationDtoPagingList = applicationClient.pageApplications(queryDTO);
+            if (!applicationDtoPagingList.isEmpty()) {
+                List<ApplicationDTO> applicationDTOList = applicationDtoPagingList.getList();
+                applicationDtoTotalList.addAll(applicationDTOList);
+            }
+            if (CollectionUtils.isEmpty(applicationDtoTotalList)) {
+                return applicationResultList;
+            }
+        }
+
+        return toAppResult(applicationResultList, applicationDtoTotalList);
+    }
+
+    @Override
+    public List<ApplicationResult> getApplicationByName(List<String> appNames, String userAppKey, String envCode) {
+        if (CollectionUtils.isEmpty(appNames)) {
+            return Lists.newArrayList();
+        }
+        List<ApplicationResult> applicationResultList = Lists.newArrayList();
+        List<ApplicationDTO> applicationDtoTotalList = Lists.newArrayList();
+        //分批从amdb获取应用数据
+        int BATCH_SIZE = 100;
+        List<String> pageAppNameList;
+        for (int from = 0, to = 0, size = appNames.size(); from < size; from = to) {
+            to = Math.min(from + BATCH_SIZE, size);
+            pageAppNameList = appNames.subList(from, to);
+            ApplicationQueryDTO queryDTO = new ApplicationQueryDTO();
+            queryDTO.setAppNames(pageAppNameList);
+            queryDTO.setFields(Lists.newArrayList("library,instanceInfo".split(",")));
+            queryDTO.setPageSize(99999);
+            //补充租户查询条件
+            queryDTO.setUserAppKey(userAppKey);
+            queryDTO.setUserAppKey(envCode);
+
+            PagingList<ApplicationDTO> applicationDtoPagingList = applicationClient.pageApplications(queryDTO);
+
             if (!applicationDtoPagingList.isEmpty()) {
                 List<ApplicationDTO> applicationDTOList = applicationDtoPagingList.getList();
                 applicationDtoTotalList.addAll(applicationDTOList);

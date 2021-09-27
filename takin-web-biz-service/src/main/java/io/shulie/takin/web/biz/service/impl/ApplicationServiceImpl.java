@@ -88,7 +88,6 @@ import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
@@ -130,6 +129,7 @@ import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.DocumentException;
 import org.mockito.internal.util.collections.Sets;
@@ -607,6 +607,59 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(
                     Collectors.toList());
                 List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames);
+                if (!CollectionUtils.isEmpty(applicationResultList)) {
+                    Set<Long> errorApplicationIdSet = Sets.newSet();
+                    Set<Long> normalApplicationIdSet = Sets.newSet();
+                    applicationMntList.forEach(applicationMnt -> {
+                        String appName = applicationMnt.getApplicationName();
+                        Optional<ApplicationResult> optional =
+                            applicationResultList.stream().filter(
+                                applicationResult -> applicationResult.getAppName().equals(appName)).findFirst();
+                        if (optional.isPresent()) {
+                            ApplicationResult applicationResult = optional.get();
+                            Boolean appIsException = applicationResult.getAppIsException();
+                            if (appIsException) {
+                                //异常
+                                if (applicationMnt.getAccessStatus() != 3) {
+                                    errorApplicationIdSet.add(applicationMnt.getApplicationId());
+                                }
+                            } else {
+                                //正常
+                                if (applicationMnt.getAccessStatus() != 0) {
+                                    normalApplicationIdSet.add(applicationMnt.getApplicationId());
+                                }
+                            }
+                        }
+                    });
+                    if (errorApplicationIdSet.size() > 0) {
+                        modifyAccessStatusWithoutAuth(new ArrayList<>(errorApplicationIdSet), 3);
+                    }
+                    if (normalApplicationIdSet.size() > 0) {
+                        modifyAccessStatusWithoutAuth(new ArrayList<>(normalApplicationIdSet), 0);
+                    }
+                }
+            } else {
+                log.debug("暂无待检测应用");
+            }
+        } catch (Exception e) {
+            log.error("执行定时同步应用状态异常", e);
+        } finally {
+            long endTime = System.currentTimeMillis();
+            log.info("执行定时同步应用状态完成，执行耗时：{}", (endTime - startTime));
+        }
+    }
+
+    @Override
+    public void syncApplicationAccessStatus(Long tenantId,String userAppKey, String envCode) {
+        long startTime = System.currentTimeMillis();
+        try {
+            //查询出所有待检测状态的应用
+            List<TApplicationMnt> applicationMntList = tApplicationMntDao.getAllApplicationByStatusAndTenant(
+                Arrays.asList(0, 1, 2, 3),tenantId,envCode);
+            if (!CollectionUtils.isEmpty(applicationMntList)) {
+                List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName)
+                    .collect(Collectors.toList());
+                List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames,userAppKey,envCode);
                 if (!CollectionUtils.isEmpty(applicationResultList)) {
                     Set<Long> errorApplicationIdSet = Sets.newSet();
                     Set<Long> normalApplicationIdSet = Sets.newSet();

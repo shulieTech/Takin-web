@@ -6,15 +6,15 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import io.shulie.takin.web.common.common.Response;
-import com.pamirs.takin.entity.domain.vo.JarVersionVo;
-import org.springframework.web.multipart.MultipartFile;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
-import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.common.common.Response;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -181,6 +181,14 @@ public interface ApplicationService {
      * 同步应用状态
      */
     void syncApplicationAccessStatus();
+
+    /**
+     * 根据租户 同步应用状态
+     * @param tenantId
+     * @param userAppKey
+     * @param envCode
+     */
+    void syncApplicationAccessStatus(Long tenantId,String userAppKey, String envCode);
 
     /**
      * 通过 applicationId 获得 applicationName

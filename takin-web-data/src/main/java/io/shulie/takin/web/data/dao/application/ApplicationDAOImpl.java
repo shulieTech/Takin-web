@@ -44,6 +44,8 @@ import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.data.result.application.LibraryResult;
 import io.shulie.takin.web.data.util.MPUtil;
+import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -44,7 +44,6 @@ import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.data.result.application.LibraryResult;
 import io.shulie.takin.web.data.util.MPUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -162,17 +161,16 @@ public class ApplicationDAOImpl
             });
             List<Long> userIds = applicationMntEntities.stream().map(ApplicationMntEntity::getUserId).distinct()
                 .collect(Collectors.toList());
-            // List<TakinUserEntity> takinUserEntities = takinUserMapper.selectBatchIds(userIds);
-            // todo user
-            Map<Long, String> userIdUserNameMap = Maps.newHashMap();
-            //takinUserEntities.stream().collect(
-            // Collectors.toMap(TakinUserEntity::getId, TakinUserEntity::getName));
+            Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(userIds);
+
             for (Entry<String, Long> entry : appNameUserIdMap.entrySet()) {
                 String k = entry.getKey();
                 Long v = entry.getValue();
                 String value = appNameUserNameMap.get(k);
                 if (value == null) {
-                    appNameUserNameMap.put(k, userIdUserNameMap.get(v));
+                    if(userExtMap.get(v) != null) {
+                        appNameUserNameMap.put(k, userExtMap.get(v).getName());
+                    }
                 }
             }
         }

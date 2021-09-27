@@ -5,6 +5,7 @@ import java.util.List;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import io.shulie.amdb.common.dto.agent.AgentConfigDTO;
@@ -15,6 +16,7 @@ import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.query.fastagentaccess.AgentConfigQueryDTO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +52,13 @@ public class AgentConfigClientImpl implements AgentConfigClient {
         AgentConfigQueryDTO queryDTO = new AgentConfigQueryDTO();
         queryDTO.setConfigKey(configKey);
         queryDTO.setAppName(projectName);
+        //设置租户表示和环境编码
+        queryDTO.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        queryDTO.setEnvCode("envCode");
+
         try {
-            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)));
+            //添加请求头参数
+            String responseEntity = HttpRequest.post(url).addHeaders(null).form(JSON.toJSONString(queryDTO)).execute().body();
             if (StringUtils.isEmpty(responseEntity)) {
                 return null;
             }
@@ -75,6 +82,9 @@ public class AgentConfigClientImpl implements AgentConfigClient {
         try {
             // 因为tro-web的分页从0开始大数据的分页从1开始，所以这里需要加1
             queryDTO.setCurrentPage(queryDTO.getRealCurrent());
+            //设置租户表示和环境编码
+            queryDTO.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+            queryDTO.setEnvCode("envCode");
             String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)));
             if (StringUtils.isEmpty(responseEntity)) {
                 return PagingList.empty();

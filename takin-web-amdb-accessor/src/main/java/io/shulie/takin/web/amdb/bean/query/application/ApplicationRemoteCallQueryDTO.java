@@ -43,5 +43,13 @@ public class ApplicationRemoteCallQueryDTO {
      */
     @JsonProperty("upAppName")
     private String upAppName;
+    /**
+     * 租户标识
+     */
+    private String userAppKey;
+    /**
+     * 环境编码
+     */
+    private String envCode;
 
 }

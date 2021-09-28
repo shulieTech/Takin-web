@@ -17,12 +17,14 @@
     <select id="findFirstVersionList" resultType="java.lang.String">
         SELECT DISTINCT(first_version)
         FROM t_agent_version
+        where tenant_id =#{tenantId} and env_code=#{envCode}
         ORDER BY first_version desc
     </select>
 
     <select id="findAllVersionList" resultType="java.lang.String">
         SELECT version
         FROM t_agent_version
+        where customer_id=#{tenantId} and env_code=#{envCode}
         ORDER BY version_num desc
     </select>
     <select id="findMaxVersionAgent" resultMap="base_map">
@@ -32,5 +34,6 @@
             SELECT max(version_num)
             FROM t_agent_version
         )
+        and tenant_id=#{tenantId} and env_code=#{envCode}
     </select>
 </mapper>

@@ -2,6 +2,8 @@ package com.pamirs.takin.entity.domain.entity;
 
 import java.io.Serializable;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pamirs.takin.common.util.LongToStringFormatSerialize;
 import lombok.Getter;
@@ -41,5 +43,20 @@ public class TIsolationAppMainConfig extends BaseEntity implements Serializable 
      * 错误信息
      */
     private String errorMsg;
+
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private long tenantId;
+    /**
+     * 用户id
+     */
+    private long userId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
 }

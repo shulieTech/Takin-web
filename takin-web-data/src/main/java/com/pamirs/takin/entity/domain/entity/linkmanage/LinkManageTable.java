@@ -3,6 +3,8 @@ package com.pamirs.takin.entity.domain.entity.linkmanage;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 /**
@@ -65,5 +67,20 @@ public class LinkManageTable implements Serializable {
      * 是否可以删除 0:可以删除;1:不可以删除
      */
     private Integer canDelete;
+
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private long tenantId;
+    /**
+     * 用户id
+     */
+    private long userId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
 }

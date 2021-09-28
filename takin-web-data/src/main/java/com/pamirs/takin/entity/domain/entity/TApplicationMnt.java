@@ -3,6 +3,8 @@ package com.pamirs.takin.entity.domain.entity;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pamirs.takin.common.util.LongToStringFormatSerialize;
 import lombok.Getter;
@@ -78,8 +80,37 @@ public class TApplicationMnt extends BaseEntity {
     //告警人，在链路探活中使用
     private String alarmPerson;
     private String pradarVersion;
-    private Long customerId;
-    private Long userId;
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private long tenantId;
+    /**
+     * 用户id
+     */
+    private long userId;
+
+    public long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(long tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public String getEnvCode() {
+        return envCode;
+    }
+
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
+    }
+
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
     public TApplicationMnt() {
         super();
@@ -455,11 +486,4 @@ public class TApplicationMnt extends BaseEntity {
         return true;
     }
 
-    public Long getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
 }

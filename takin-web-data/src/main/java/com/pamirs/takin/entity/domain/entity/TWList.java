@@ -2,6 +2,9 @@ package com.pamirs.takin.entity.domain.entity;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+
 /**
  * 说明：白名单实体类
  *
@@ -89,12 +92,27 @@ public class TWList extends BaseEntity {
     /**
      * 租户id
      */
-    private Long customerId;
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
 
     /**
      * 用户id
      */
     private Long userId;
+
+    public String getEnvCode() {
+        return envCode;
+    }
+
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
+    }
+
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
     /**
      * 全局
@@ -118,13 +136,16 @@ public class TWList extends BaseEntity {
     }
 
     public static TWList build(String applicationId, String interfaceType, String interfaceName, String useYn,
-                               String dictType) {
+                               String dictType,long tenantId,long userId,String envCode) {
         TWList tWhiteList = new TWList();
         tWhiteList.setApplicationId(applicationId);
         tWhiteList.setType(interfaceType);
         tWhiteList.setInterfaceName(interfaceName);
         tWhiteList.setUseYn(useYn);
         tWhiteList.setDictType(dictType);
+        tWhiteList.setTenantId(tenantId);
+        tWhiteList.setUserId(userId);
+        tWhiteList.setEnvCode(envCode);
         return tWhiteList;
     }
 
@@ -450,12 +471,12 @@ public class TWList extends BaseEntity {
         this.jobInterval = jobInterval;
     }
 
-    public Long getCustomerId() {
-        return customerId;
+    public Long getTenantId() {
+        return tenantId;
     }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
     }
 
     public Long getUserId() {

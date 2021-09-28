@@ -3,6 +3,8 @@ package com.pamirs.takin.entity.domain.entity;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +20,20 @@ public class ChaosDelayMessage implements Delayed {
     private String id;
     private String body;
     private long excuteTime;
-
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private long tenantId;
+    /**
+     * 用户id
+     */
+    private long userId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
     public ChaosDelayMessage(String id, String body, long excuteTime) {
         this.id = id;
         this.body = body;

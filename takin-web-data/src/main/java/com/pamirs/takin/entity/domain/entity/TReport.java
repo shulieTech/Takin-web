@@ -3,6 +3,8 @@ package com.pamirs.takin.entity.domain.entity;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pamirs.takin.common.util.DateToLongFormatSerialize;
 import com.pamirs.takin.common.util.DateToStringFormatSerialize;
@@ -58,6 +60,35 @@ public class TReport implements Serializable {
     @JsonSerialize(using = DateToStringFormatSerialize.class)
     private Date modifyTime;
 
+    public long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(long tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
+
+    public String getEnvCode() {
+        return envCode;
+    }
+
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
+    }
+
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private long tenantId;
+    private long userId;
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
     /**
      * 2018年5月17日
      *

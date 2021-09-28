@@ -19,4 +19,16 @@ public class StrategyConfig {
     private Date updateTime;
 
     private String strategyConfig;
+    /**
+     * 租户id
+     */
+    private long tenantId;
+    /**
+     * 用户id
+     */
+    private long userId;
+    /**
+     * 环境编码
+     */
+    private String envCode;
 }

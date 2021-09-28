@@ -4,7 +4,6 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -19,24 +18,30 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
     private final String cacheName;
     private final RedisTemplate redisTemplate;
 
-    public AbstractAgentConfigCache(String cacheName, RedisTemplate redisTemplate) {
+    public AbstractAgentConfigCache(String cacheName,RedisTemplate redisTemplate) {
         this.cacheName = cacheName;
         this.redisTemplate = redisTemplate;
     }
 
     @Override
-    public T get(String namespace) {
-        T result = (T)redisTemplate.opsForValue().get(getCacheKey(namespace));
+    public T get(String userAppKey,String envCode,String namespace) {
+        T result = (T)redisTemplate.opsForValue().get(getCacheKey(userAppKey,envCode,namespace));
         if (result == null) {
-            result = queryValue(namespace);
-            redisTemplate.opsForValue().set(getCacheKey(namespace), result);
+            result = queryValue(namespace,userAppKey,envCode);
+            redisTemplate.opsForValue().set(getCacheKey(userAppKey,envCode,namespace), result);
         }
         return result;
     }
 
+    /**
+     *
+     * @param userAppKey 租户标识
+     * @param envCode 环境编码
+     * @param namespace
+     */
     @Override
-    public void evict(String namespace) {
-        redisTemplate.delete(getCacheKey(namespace));
+    public void evict(String userAppKey,String envCode,String namespace) {
+        redisTemplate.delete(getCacheKey(userAppKey,envCode,namespace));
     }
 
     /**
@@ -56,21 +61,28 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
         }
     }
 
-    private String getCacheKey(String namespace) {
-        String key = cacheName + ":" + WebPluginUtils.getCustomerId()+":"+"envCode";
+    /**
+     *
+     * @param userAppKey 租户标识
+     * @param envCode 环境编码
+     * @param namespace
+     * @return
+     */
+    private String getCacheKey(String userAppKey,String envCode,String namespace) {
+        String key = cacheName;
         if (namespace != null) {
-            key += ":";
-            key += namespace;
+            key += ":"+userAppKey+":"+envCode+":"+namespace;
         }
         return key;
     }
 
     /**
      * 查询值
-     *
+     * @param userAppKey 租户标识
+     * @param envCode 环境编码
      * @param namespace 命名空间
      * @return 值
      */
-    protected abstract T queryValue(String namespace);
+    protected abstract T queryValue(String userAppKey,String envCode,String namespace);
 
 }

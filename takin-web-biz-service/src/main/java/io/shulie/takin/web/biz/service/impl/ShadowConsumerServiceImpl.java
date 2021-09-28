@@ -300,7 +300,8 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         shadowMqConsumerEntity.setStatus(status);
         shadowMqConsumerEntity.setDeleted(ShadowConsumerConstants.LIVED);
         shadowMqConsumerMapper.insert(shadowMqConsumerEntity);
-        agentConfigCacheManager.evictShadowConsumer(application.getApplicationName());
+        //todo agent改造点
+        agentConfigCacheManager.evictShadowConsumer("","",application.getApplicationName());
     }
 
     @Override
@@ -334,7 +335,8 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         updateEntity.setType(request.getType().name());
         updateEntity.setStatus(request.getStatus());
         shadowMqConsumerMapper.updateById(updateEntity);
-        agentConfigCacheManager.evictShadowConsumer(application.getApplicationName());
+        //todo agent改造点
+        agentConfigCacheManager.evictShadowConsumer("","",application.getApplicationName());
     }
 
     @Override
@@ -358,8 +360,8 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             OperationLogContextHolder.addVars(Vars.CONSUMER_TOPIC_GROUP, mq.getTopicGroup());
             shadowMqConsumerDAO.removeById(mq.getId());
         });
-
-        agentConfigCacheManager.evictShadowConsumer(application.getApplicationName());
+        //todo agent改造点
+        agentConfigCacheManager.evictShadowConsumer("","",application.getApplicationName());
     }
 
     @Override
@@ -415,7 +417,8 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                 }
             }
         }
-        agentConfigCacheManager.evictShadowConsumer(application.getApplicationName());
+        //todo  agent改造点
+        agentConfigCacheManager.evictShadowConsumer("","",application.getApplicationName());
     }
 
     @Override

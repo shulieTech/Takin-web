@@ -60,7 +60,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             redisTemplate.opsForHash().put(NEED_VERIFY_USER_MAP, String.valueOf(tenantId+envCode), System.currentTimeMillis());
             result.setSwitchStutus(voStatus);
         }
-        agentConfigCacheManager.evictPressureSwitch();
+        //todo agent改造点
+        agentConfigCacheManager.evictPressureSwitch("","");
         return result;
     }
 

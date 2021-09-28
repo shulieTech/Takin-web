@@ -257,10 +257,10 @@ public class ApplicationDAOImpl
     public List<ApplicationDetailResult> getApplicationList(ApplicationQueryParam param) {
         LambdaQueryWrapper<ApplicationMntEntity> wrapper = new LambdaQueryWrapper();
         if (param.getTenantId() != null) {
-            wrapper.eq(ApplicationMntEntity::getCustomerId, param.getTenantId());
+            wrapper.eq(ApplicationMntEntity::getTenantId, param.getTenantId());
         }
         if(StringUtils.isNotBlank(param.getEnvCode())) {
-            wrapper.eq(ApplicationMntEntity::getCustomerId, param.getTenantId());
+            wrapper.eq(ApplicationMntEntity::getEnvCode, param.getEnvCode());
         }
         return getApplicationDetailResults(wrapper);
     }
@@ -269,7 +269,7 @@ public class ApplicationDAOImpl
     public List<String> getAllApplicationName(ApplicationQueryParam param) {
         LambdaQueryWrapper<ApplicationMntEntity> wrapper = new LambdaQueryWrapper<>();
         if (param.getTenantId() != null) {
-            wrapper.eq(ApplicationMntEntity::getCustomerId, param.getTenantId());
+            wrapper.eq(ApplicationMntEntity::getTenantId, param.getTenantId());
         }
         if (param.getUserId() != null) {
             wrapper.eq(ApplicationMntEntity::getUserId, param.getUserId());
@@ -325,7 +325,7 @@ public class ApplicationDAOImpl
         if (!StringUtils.isEmpty(appName)) {
             LambdaQueryWrapper<ApplicationMntEntity> queryWrapper = new LambdaQueryWrapper<>();
             if (WebPluginUtils.checkUserData()) {
-                queryWrapper.eq(ApplicationMntEntity::getCustomerId, WebPluginUtils.getCustomerId());
+                queryWrapper.eq(ApplicationMntEntity::getTenantId, WebPluginUtils.getCustomerId());
             }
             queryWrapper.eq(ApplicationMntEntity::getApplicationName, appName);
             ApplicationMntEntity applicationMntEntity = applicationMntMapper.selectOne(queryWrapper);
@@ -358,7 +358,7 @@ public class ApplicationDAOImpl
                 ApplicationMntEntity::getSwitchStatus, ApplicationMntEntity::getNodeNum)
             .in(ApplicationMntEntity::getApplicationName, applicationNames);
         if (WebPluginUtils.checkUserData()) {
-            wrapper.eq(ApplicationMntEntity::getCustomerId, WebPluginUtils.getCustomerId());
+            wrapper.eq(ApplicationMntEntity::getTenantId, WebPluginUtils.getCustomerId());
         }
         return applicationMntMapper.selectList(wrapper);
     }

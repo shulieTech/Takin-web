@@ -367,7 +367,8 @@ public class ConfCenterService extends CommonService {
                 redisManager.removeKey(
                     WhiteBlackListRedisKey.TAKIN_WHITE_LIST_KEY_METRIC + tApplicationMnt.getApplicationName());
                 // 采用租户的userAppKey
-                agentConfigCacheManager.evictRecallCalls(tApplicationMnt.getApplicationName());
+                //todo Aganet改造点
+                agentConfigCacheManager.evictRecallCalls("","",tApplicationMnt.getApplicationName());
             });
             //删除白名单需要更新缓存
             redisManager.removeKey(WhiteBlackListRedisKey.TAKIN_WHITE_LIST_KEY);

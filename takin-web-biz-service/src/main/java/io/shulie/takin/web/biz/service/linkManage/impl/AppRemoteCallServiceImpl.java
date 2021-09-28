@@ -169,7 +169,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             param.setAppName(detailResult.getApplicationName());
             appRemoteCallDAO.insert(param);
         }
-        agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
+        //todo Agent改造点
+        agentConfigCacheManager.evictRecallCalls("","",detailResult.getApplicationName());
 
     }
 

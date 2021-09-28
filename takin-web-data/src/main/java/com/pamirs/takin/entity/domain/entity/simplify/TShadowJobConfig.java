@@ -48,4 +48,8 @@ public class TShadowJobConfig {
 
     @ApiModelProperty(name = "remark", value = "备注")
     private String remark;
+    /**
+     * 环境编码
+     */
+    private String envCode;
 }

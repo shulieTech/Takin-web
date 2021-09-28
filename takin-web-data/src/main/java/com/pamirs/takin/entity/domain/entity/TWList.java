@@ -101,6 +101,7 @@ public class TWList extends BaseEntity {
      */
     private Boolean isGlobal;
 
+
     /**
      * 手工添加
      */

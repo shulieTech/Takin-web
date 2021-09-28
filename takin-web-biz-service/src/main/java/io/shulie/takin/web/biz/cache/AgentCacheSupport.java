@@ -9,10 +9,10 @@ public interface AgentCacheSupport<T> {
     /**
      * 获得缓存
      */
-    T get(String namespace);
+    T get(String userAppKey,String envCode,String namespace);
 
     /**
      * 缓存失效
      */
-    void evict(String namespace);
+    void evict(String userAppKey,String envCode,String namespace);
 }

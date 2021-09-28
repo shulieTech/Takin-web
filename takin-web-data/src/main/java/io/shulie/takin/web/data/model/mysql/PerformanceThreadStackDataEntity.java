@@ -23,4 +23,5 @@ public class PerformanceThreadStackDataEntity extends TenantBaseEntity {
 
     @TableField(value = "gmt_create")
     private Date gmtCreate;
+
 }

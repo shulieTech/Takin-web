@@ -2,6 +2,8 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.io.Serializable;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
@@ -57,4 +59,9 @@ public class AgentVersionEntity extends NewBaseEntity implements Serializable {
      */
     private Integer isDeleted;
 
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    private Long userId;
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 }

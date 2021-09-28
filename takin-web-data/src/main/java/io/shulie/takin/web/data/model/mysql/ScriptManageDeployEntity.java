@@ -88,4 +88,6 @@ public class ScriptManageDeployEntity {
      */
     @TableField(value = "description")
     private String description;
+
+
 }

@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -50,4 +51,9 @@ public class AgentPluginEntity {
      */
     @TableField(value = "gmt_update")
     private Date gmtUpdate;
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    private Long userId;
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 }

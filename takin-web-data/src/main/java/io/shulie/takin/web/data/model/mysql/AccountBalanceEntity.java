@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.model.mysql;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -128,4 +129,9 @@ public class AccountBalanceEntity {
      */
     @TableField(value = "gmt_update")
     private LocalDateTime gmtUpdate;
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    private Long userId;
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 }

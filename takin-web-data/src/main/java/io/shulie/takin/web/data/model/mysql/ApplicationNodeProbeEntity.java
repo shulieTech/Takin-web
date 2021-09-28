@@ -62,4 +62,9 @@ public class ApplicationNodeProbeEntity extends NewBaseEntity implements Seriali
      */
     private Long operateId;
 
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    private Long userId;
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 }

@@ -3,6 +3,8 @@ package io.shulie.takin.web.data.model.mysql;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.BaseEntity;
 import lombok.Data;
@@ -39,5 +41,20 @@ public class OpsScriptBatchNoEntity extends BaseEntity implements Serializable {
      * 修改时间
      */
     private Date gmtUpdate;
+
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    /**
+     * 用户id
+     */
+    private Long userId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
 }

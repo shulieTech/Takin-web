@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.model.mysql;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -26,4 +27,10 @@ public class ApplicationIpEntity {
 
     @TableField(value = "SYSTEM_NAME")
     private String systemName;
+
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    private Long userId;
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 }

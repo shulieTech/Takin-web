@@ -140,5 +140,15 @@ public class WhiteListEntity {
     @TableField(value = "IS_HANDWORK")
     private Boolean isHandwork;
 
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
 
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 }

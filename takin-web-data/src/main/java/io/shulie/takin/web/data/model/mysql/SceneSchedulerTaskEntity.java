@@ -23,7 +23,16 @@ public class SceneSchedulerTaskEntity {
 
     @TableField(value = "scene_id")
     private Long sceneId ;
-
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
     @TableField(value = "user_id" , fill = FieldFill.INSERT)
     private Long userId ;
 

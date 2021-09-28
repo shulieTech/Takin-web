@@ -85,4 +85,9 @@ public class ApplicationPluginsConfigEntity extends BaseEntity implements Serial
      */
     private Long modifierId;
 
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 }

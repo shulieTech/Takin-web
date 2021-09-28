@@ -37,17 +37,24 @@ public class LeakcheckConfigEntity {
     @TableField(value = "leakcheck_sql_ids")
     private String leakcheckSqlIds;
 
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
 
     /**
      * 用户id
      */
     @TableField(value = "user_id", fill = FieldFill.INSERT)
     private Long userId;
+
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
     /**
      * 备注

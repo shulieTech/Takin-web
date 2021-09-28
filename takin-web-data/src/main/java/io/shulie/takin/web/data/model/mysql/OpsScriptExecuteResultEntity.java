@@ -3,6 +3,8 @@ package io.shulie.takin.web.data.model.mysql;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.BaseEntity;
 import lombok.Data;
@@ -19,7 +21,20 @@ import lombok.EqualsAndHashCode;
 @TableName(value = "t_ops_script_execute_result")
 public class OpsScriptExecuteResultEntity extends BaseEntity implements Serializable {
     private static final long serialVersionUID = -97573133771422558L;
-
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    /**
+     * 用户id
+     */
+    private Long userId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
     /**
      * 文件上传ID
      */

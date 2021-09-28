@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.time.LocalDateTime;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -115,6 +116,11 @@ public class DatabaseConfEntity {
      */
     @TableField(value = "PUBLIC_KEY")
     private String publicKey;
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    private Long userId;
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
     public static final String COL_TDC_ID = "TDC_ID";
 

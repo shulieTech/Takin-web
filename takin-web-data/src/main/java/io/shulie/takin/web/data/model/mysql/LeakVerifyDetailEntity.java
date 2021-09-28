@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -60,6 +61,20 @@ public class LeakVerifyDetailEntity {
     @TableField(value = "is_deleted")
     private Boolean isDeleted;
 
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    /**
+     * 用户id
+     */
+    private Long userId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
     public static final String COL_ID = "id";
 
     public static final String COL_RESULT_ID = "result_id";

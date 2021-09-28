@@ -25,10 +25,19 @@ public class TakinRoleUserRelationEntity {
     private String roleId;
 
     /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    /**
      * 用户id
      */
-    @TableField(value = "user_id" , fill = FieldFill.INSERT)
-    private String userId;
+    private Long userId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
     /**
      * 备注

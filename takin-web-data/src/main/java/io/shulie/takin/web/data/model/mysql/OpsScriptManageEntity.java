@@ -45,6 +45,17 @@ public class OpsScriptManageEntity extends BaseEntity implements Serializable {
     private Long userId;
 
     /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
+
+    /**
      * 执行状态 0=待执行,1=执行中,2=已执行
      */
     private Integer status;

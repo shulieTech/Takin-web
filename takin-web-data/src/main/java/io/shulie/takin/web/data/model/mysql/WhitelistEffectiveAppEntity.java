@@ -46,14 +46,17 @@ public class WhitelistEffectiveAppEntity {
     /**
      * 租户id
      */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
     /**
      * 用户id
      */
-    @TableField(value = "user_id" , fill = FieldFill.INSERT)
     private Long userId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
     /**
      * 创建时间

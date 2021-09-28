@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
@@ -37,5 +38,20 @@ public class PerformanceThreadDataEntity extends TenantBaseEntity {
 
     @TableField(value = "gmt_create")
     private Date gmtCreate;
+
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    /**
+     * 用户id
+     */
+    private Long userId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
 }

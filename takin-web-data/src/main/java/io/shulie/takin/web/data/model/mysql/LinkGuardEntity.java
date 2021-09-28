@@ -80,5 +80,17 @@ public class LinkGuardEntity extends BaseEntity {
     @TableField(value = "is_enable")
     private Integer isEnable;
 
+    /**
+     * 租户id
+     */
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
+
 
 }

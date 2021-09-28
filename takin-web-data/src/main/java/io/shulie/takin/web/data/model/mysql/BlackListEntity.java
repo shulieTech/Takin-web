@@ -74,5 +74,10 @@ public class BlackListEntity {
     @TableLogic
     @TableField(value = "is_deleted")
     private Boolean isDeleted;
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
 }

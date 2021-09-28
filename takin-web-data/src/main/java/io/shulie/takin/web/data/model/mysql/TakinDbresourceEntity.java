@@ -51,22 +51,29 @@ public class TakinDbresourceEntity {
      */
     @TableField(value = "name")
     private String name;
+
+
     /**
      * 租户id
      */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    /**
+     * 用户id
+     */
+    private Long userId;
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 
     /**
      * 备注
      */
     @TableField(value = "remark")
     private String remark;
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
+
     /**
      * 创建时间
      */

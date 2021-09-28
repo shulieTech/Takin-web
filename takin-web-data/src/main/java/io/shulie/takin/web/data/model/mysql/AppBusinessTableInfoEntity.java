@@ -62,4 +62,8 @@ public class AppBusinessTableInfoEntity {
      */
     @TableField(value = "UPDATE_TIME")
     private LocalDateTime updateTime;
+    @TableField(value = "customer_id",fill = FieldFill.INSERT)
+    private Long tenantId;
+    @TableField(value = "env_code",fill = FieldFill.INSERT)
+    private String envCode;
 }

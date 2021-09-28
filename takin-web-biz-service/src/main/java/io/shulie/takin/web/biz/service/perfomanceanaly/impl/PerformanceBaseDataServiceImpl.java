@@ -50,9 +50,4 @@ public class PerformanceBaseDataServiceImpl implements PerformanceBaseDataServic
         return performanceBaseDataDAO.getProcessNameList(param);
     }
 
-    @Override
-    public void clearData(Integer time) {
-        Date nSecond = DateUtils.getPreviousNSecond(time);
-        performanceBaseDataDAO.clearData(DateUtils.dateToString(nSecond, DateUtils.FORMATE_YMDHMS));
-    }
 }

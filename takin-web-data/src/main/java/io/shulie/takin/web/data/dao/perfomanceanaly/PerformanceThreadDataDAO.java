@@ -5,6 +5,7 @@ import java.util.List;
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceThreadQueryParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadCountResult;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadDataResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
 * @author qianshui
@@ -37,16 +38,18 @@ public interface PerformanceThreadDataDAO {
      * 按时间清除数据
      *
      * @param time 时间 之前
+     * @param ext
      * @return 是否删除完成
      */
-    boolean clearData(String time);
+    boolean clearData(String time, TenantCommonExt ext);
 
     /**
      * 按时间清除 stack data 数据
      *
      * @param time 时间 之前
+     * @param ext
      * @return 是否删除完成
      */
-    boolean clearStackData(String time);
+    boolean clearStackData(String time, TenantCommonExt ext);
 
 }

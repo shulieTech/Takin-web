@@ -794,7 +794,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                 : Lists.newArrayList());
         // all
         ApplicationQueryParam queryParam = new ApplicationQueryParam();
-        queryParam.setCustomerId(WebPluginUtils.getCustomerId());
+        queryParam.setTenantId(WebPluginUtils.getCustomerId());
         List<String> allAppNames = applicationDAO.getAllApplicationName(queryParam);
         vo.setAllAppNames(allAppNames);
         return vo;
@@ -908,7 +908,7 @@ public class WhiteListServiceImpl implements WhiteListService {
             // 启动不执行
             return Lists.newArrayList();
         }
-        queryParam.setCustomerId(WebPluginUtils.getCustomerId());
+        queryParam.setTenantId(WebPluginUtils.getCustomerId());
         return applicationDAO.getApplicationList(queryParam);
     }
 

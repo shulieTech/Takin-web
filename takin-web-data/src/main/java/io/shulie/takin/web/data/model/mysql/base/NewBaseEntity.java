@@ -1,4 +1,4 @@
-package io.shulie.takin.web.data.model.mysql;
+package io.shulie.takin.web.data.model.mysql.base;
 
 import java.util.Date;
 

@@ -5,6 +5,7 @@ import java.util.Date;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

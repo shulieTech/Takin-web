@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.alibaba.excel.util.CollectionUtils;
-import com.alibaba.excel.util.StringUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -46,6 +45,7 @@ import io.shulie.takin.web.data.result.application.LibraryResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -256,8 +256,11 @@ public class ApplicationDAOImpl
     @Override
     public List<ApplicationDetailResult> getApplicationList(ApplicationQueryParam param) {
         LambdaQueryWrapper<ApplicationMntEntity> wrapper = new LambdaQueryWrapper();
-        if (param.getCustomerId() != null) {
-            wrapper.eq(ApplicationMntEntity::getCustomerId, param.getCustomerId());
+        if (param.getTenantId() != null) {
+            wrapper.eq(ApplicationMntEntity::getCustomerId, param.getTenantId());
+        }
+        if(StringUtils.isNotBlank(param.getEnvCode())) {
+            wrapper.eq(ApplicationMntEntity::getCustomerId, param.getTenantId());
         }
         return getApplicationDetailResults(wrapper);
     }
@@ -265,8 +268,8 @@ public class ApplicationDAOImpl
     @Override
     public List<String> getAllApplicationName(ApplicationQueryParam param) {
         LambdaQueryWrapper<ApplicationMntEntity> wrapper = new LambdaQueryWrapper<>();
-        if (param.getCustomerId() != null) {
-            wrapper.eq(ApplicationMntEntity::getCustomerId, param.getCustomerId());
+        if (param.getTenantId() != null) {
+            wrapper.eq(ApplicationMntEntity::getCustomerId, param.getTenantId());
         }
         if (param.getUserId() != null) {
             wrapper.eq(ApplicationMntEntity::getUserId, param.getUserId());

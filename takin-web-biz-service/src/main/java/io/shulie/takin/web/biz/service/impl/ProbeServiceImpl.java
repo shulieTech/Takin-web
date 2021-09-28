@@ -17,7 +17,6 @@ import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
-import com.google.common.collect.Lists;
 import com.shulie.instrument.simulator.agent.api.AgentFileResolver;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.output.probe.CreateProbeOutput;
@@ -79,7 +78,7 @@ public class ProbeServiceImpl implements ProbeService, ProbeConstants, AppConsta
 
     @Override
     public CreateProbeOutput create(String probePath) {
-        String lockKey = String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.getCustomerId(), probePath.hashCode());
+        String lockKey = String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.getTenantId(), probePath.hashCode());
         this.isCreateError(!distributedLock.tryLockZeroWait(lockKey), TOO_FREQUENTLY);
 
         try {

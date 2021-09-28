@@ -15,7 +15,6 @@ import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.cloud.common.constants.Constants;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerCreateInput;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
-import io.shulie.takin.web.biz.pojo.request.application.ShadowConsumerCreateRequest;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
@@ -185,7 +184,7 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
             newParam.setUseYn(Integer.valueOf(arrayList.get(1)));
             newParam.setApplicationId(applicationId);
             if (result != null) {
-                newParam.setCustomerId(result.getCustomerId());
+                newParam.setTenantId(result.getCustomerId());
                 newParam.setUserId(result.getUserId());
             }
             params.add(newParam);
@@ -242,7 +241,7 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
             input.setMockReturnValue(arrayList.get(4).equals(Constants.NULL_SIGN) ? "" : arrayList.get(4));
             input.setApplicationId(applicationId);
             input.setAppName(applicationDetailResult.getApplicationName());
-            input.setCustomerId(applicationDetailResult.getCustomerId());
+            input.setTenantId(applicationDetailResult.getCustomerId());
             input.setUserId(applicationDetailResult.getUserId());
             input.setGmtCreate(new Date());
             String buildImportRemoteCallName = RemoteCallUtils.buildImportRemoteCallName(input.getInterfaceName(), input.getInterfaceType());

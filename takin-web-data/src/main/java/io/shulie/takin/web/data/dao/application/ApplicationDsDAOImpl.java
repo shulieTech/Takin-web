@@ -47,7 +47,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
         entity.setUrl(createParam.getUrl());
         entity.setConfig(createParam.getConfig());
         entity.setParseConfig(createParam.getParseConfig());
-        entity.setCustomerId(createParam.getCustomerId());
+        entity.setCustomerId(createParam.getTenantId());
         entity.setUserId(createParam.getUserId());
         entity.setStatus(createParam.getStatus());
 

@@ -1,14 +1,12 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -99,7 +97,7 @@ public class ReportDataCache {
      */
     private String getReportApplicationKey(Long reportId) {
 
-        return String.format(REPORT_APPLICATION_KEY,WebPluginUtils.getCustomerId() ,"encCode",reportId);
+        return String.format(REPORT_APPLICATION_KEY,WebPluginUtils.getTenantId() ,"encCode",reportId);
     }
 
     /**
@@ -108,7 +106,7 @@ public class ReportDataCache {
      * @return
      */
     private String getReportDetailKey(Long reportId) {
-        return String.format(REPORT_DETAIL_KEY, WebPluginUtils.getCustomerId(), "envCode" ,reportId);
+        return String.format(REPORT_DETAIL_KEY, WebPluginUtils.getTenantId(), "envCode" ,reportId);
     }
 
     /**
@@ -117,7 +115,7 @@ public class ReportDataCache {
      * @return
      */
     private String getReportMetricKey(Long reportId) {
-        return String.format(REPORT_METRIC_KEY,WebPluginUtils.getCustomerId() ,"envCode",reportId);
+        return String.format(REPORT_METRIC_KEY,WebPluginUtils.getTenantId() ,"envCode",reportId);
     }
 
     /**
@@ -132,7 +130,7 @@ public class ReportDataCache {
         }
 
         // 指标 map
-        List<Map<String, Object>> metricsList = reportService.listMetrics(reportId, reportDetail.getSceneId(), reportDetail.getCustomerId());
+        List<Map<String, Object>> metricsList = reportService.listMetrics(reportId, reportDetail.getSceneId(), reportDetail.getTenantId());
 
         if (CollectionUtils.isEmpty(metricsList)) {
             log.error("ReportDataCache Cache Jmeter Metric is null");

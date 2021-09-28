@@ -137,8 +137,14 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
 
     private LambdaQueryWrapper<AppRemoteCallEntity> getAppRemoteCallEntityLambdaQueryWrapper(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
-        if (WebPluginUtils.checkUserData() && WebPluginUtils.getCustomerId() != null) {
-            lambdaQueryWrapper.eq(AppRemoteCallEntity::getCustomerId, WebPluginUtils.getCustomerId());
+        if (WebPluginUtils.checkUserData()) {
+            if(WebPluginUtils.getTenantId() != null) {
+                lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.getTenantId());
+            }
+            if(WebPluginUtils.getEnvCode() != null) {
+                lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.getEnvCode());
+            }
+
         }
         if (CollectionUtils.isNotEmpty(param.getApplicationIds())) {
             lambdaQueryWrapper.in(AppRemoteCallEntity::getApplicationId, param.getApplicationIds());
@@ -176,7 +182,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     public List<AppRemoteCallResult> selectByAppNameUnderCurrentUser(String appName) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
         if (WebPluginUtils.checkUserData()) {
-            lambdaQueryWrapper.eq(AppRemoteCallEntity::getCustomerId, WebPluginUtils.getCustomerId());
+            lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.getTenantId());
+            lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.getEnvCode());
         }
         lambdaQueryWrapper.eq(AppRemoteCallEntity::getAppName, appName);
         lambdaQueryWrapper.ne(AppRemoteCallEntity::getType, AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
@@ -218,11 +225,13 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     }
 
     @Override
-    public List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList,
-        Long customerId) {
-        LambdaQueryWrapper<AppRemoteCallEntity> wrapper = this.getLambdaQueryWrapper().in(AppRemoteCallEntity::getApplicationId, appIdList)
+    public List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList) {
+        LambdaQueryWrapper<AppRemoteCallEntity> wrapper = this.getLambdaQueryWrapper()
+            .in(AppRemoteCallEntity::getApplicationId, appIdList)
             .in(CollUtil.isNotEmpty(userIdList), AppRemoteCallEntity::getUserId, userIdList)
-            .eq( customerId != null, AppRemoteCallEntity::getCustomerId, customerId);
+            .eq( WebPluginUtils.getTenantId() != null, AppRemoteCallEntity::getTenantId, WebPluginUtils.getTenantId())
+            .eq( StringUtils.isNotBlank(WebPluginUtils.getEnvCode()), AppRemoteCallEntity::getEnvCode, WebPluginUtils.getEnvCode())
+            ;
         List<AppRemoteCallEntity> appRemoteCallEntities = this.getBaseMapper().selectList(wrapper);
         List<AppRemoteCallEntity> updateAppRemoteCallEntityList = appRemoteCallEntities.stream().map(entity -> {
             AppRemoteCallEntity appRemoteCallEntity = new AppRemoteCallEntity();

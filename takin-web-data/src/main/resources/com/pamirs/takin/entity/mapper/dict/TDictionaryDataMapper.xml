@@ -286,6 +286,18 @@
         t_dictionary_type t, t_dictionary_data d
         WHERE
         t.ID = d.DICT_TYPE
+        <if test="tenantId!=null and tenantId!=''">
+            AND t.tenant_id = #{typeName}
+        </if>
+        <if test="tenantId!=null and tenantId!=''">
+            AND d.tenant_id = #{tenantId}
+        </if>
+        <if test="envCode!=null and envCode!=''">
+            AND t.env_code = #{envCode}
+        </if>
+        <if test="envCode!=null and envCode!=''">
+            AND d.env_code = #{envCode}
+        </if>
         <if test="typeName!=null and typeName!=''">
             AND t.TYPE_NAME LIKE CONCAT('%',#{typeName},'%')
         </if>

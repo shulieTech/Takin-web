@@ -15,7 +15,6 @@ import io.shulie.takin.channel.bean.CommandRespType;
 import io.shulie.takin.channel.bean.CommandResponse;
 import io.shulie.takin.channel.bean.CommandSend;
 import io.shulie.takin.channel.bean.CommandStatus;
-import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.future.ResponseFuture;
@@ -60,7 +59,7 @@ public class AgentCommandFactory {
         TakinWebCommandPacket takinPacket = getSendPacket(commandEnum, agentId, params);
         checkPacket(takinPacket);
         String key = String.format(agentKey, takinPacket.getAgentId(), takinPacket.getSend().getCommand(),
-            takinPacket.getSend().getModuleId(), WebPluginUtils.getCustomerId(),"envCode" , takinPacket.getId());
+            takinPacket.getSend().getModuleId(), WebPluginUtils.getTenantId(),"envCode" , takinPacket.getId());
 
         ResponseFuture<CommandPacket> future = new ResponseFuture<>(
             takinPacket.getTimeoutMillis() == null ? 3000 : takinPacket.getTimeoutMillis());

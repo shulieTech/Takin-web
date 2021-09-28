@@ -1090,7 +1090,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileExtend.put("dataCount", fileManageUpdateRequest.getDataCount());
             fileExtend.put("isSplit", fileManageUpdateRequest.getIsSplit());
             fileExtend.put("isOrderSplit", fileManageUpdateRequest.getIsOrderSplit());
-            fileManageCreateParam.setCustomerId(WebPluginUtils.getCustomerId());
+            fileManageCreateParam.setCustomerId(WebPluginUtils.getTenantId());
             fileManageCreateParam.setFileExtend(JsonHelper.bean2Json(fileExtend));
             fileManageCreateParam.setUploadPath(targetScriptPath + fileManageUpdateRequest.getFileName());
             fileManageCreateParam.setUploadTime(fileManageUpdateRequest.getUploadTime());
@@ -1111,7 +1111,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileExtend.put("isSplit", fileManageCreateRequest.getIsSplit());
             fileExtend.put("isOrderSplit", fileManageCreateRequest.getIsOrderSplit());
             fileManageCreateParam.setFileExtend(JsonHelper.bean2Json(fileExtend));
-            fileManageCreateParam.setCustomerId(WebPluginUtils.getCustomerId());
+            fileManageCreateParam.setCustomerId(WebPluginUtils.getTenantId());
             fileManageCreateParam.setUploadPath(targetScriptPath + fileManageCreateRequest.getFileName());
             fileManageCreateParam.setUploadTime(fileManageCreateRequest.getUploadTime());
             return fileManageCreateParam;

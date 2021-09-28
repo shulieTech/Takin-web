@@ -162,7 +162,7 @@ public class ConfCenterService extends CommonService {
     @Transactional(rollbackFor = Exception.class)
     public void saveApplication(TApplicationMnt tApplicationMnt) throws TakinModuleException {
         int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(
-            WebPluginUtils.getCustomerId(), tApplicationMnt.getApplicationName());
+            WebPluginUtils.getTenantId(), tApplicationMnt.getApplicationName());
         if (applicationExist > 0) {
             throw new TakinModuleException(TakinErrorEnum.CONFCENTER_ADD_APPLICATION_DUPICATE_EXCEPTION);
         }
@@ -187,7 +187,7 @@ public class ConfCenterService extends CommonService {
 
     @Transactional(rollbackFor = Exception.class)
     public void saveAgentRegisteApplication(TApplicationMnt tApplicationMnt) {
-        int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(WebPluginUtils.getCustomerId(), tApplicationMnt.getApplicationName());
+        int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(WebPluginUtils.getTenantId(), tApplicationMnt.getApplicationName());
         if (applicationExist > 0) {
             OperationLogContextHolder.ignoreLog();
             return;
@@ -695,7 +695,7 @@ public class ConfCenterService extends CommonService {
         param.setUpdateTime(new Date());
         blackListDAO.insert(param);
         configSyncService.syncBlockList(WebPluginUtils.getTenantUserAppKey());
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.getCustomerId(), WebPluginUtils.getTenantUserAppKey());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.getTenantId(), WebPluginUtils.getTenantUserAppKey());
     }
 
     /**
@@ -718,7 +718,7 @@ public class ConfCenterService extends CommonService {
         TBList originBlackList = tBListMntDao.querySingleBListById(String.valueOf(tBlackList.getBlistId()));
         tBListMntDao.updateBListById(tBlackList);
         configSyncService.syncBlockList(WebPluginUtils.getTenantUserAppKey());
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.getCustomerId(), WebPluginUtils.getTenantUserAppKey());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.getTenantId(), WebPluginUtils.getTenantUserAppKey());
     }
 
     /**
@@ -734,7 +734,7 @@ public class ConfCenterService extends CommonService {
         tBListMntDao.deleteBListByIds(blistIdList);
         configSyncService.syncBlockList(WebPluginUtils.getTenantUserAppKey());
         List<TBList> deleteBlackLists = tBListMntDao.queryBListByIds(blistIdList);
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.getCustomerId(), WebPluginUtils.getTenantUserAppKey());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.getTenantId(), WebPluginUtils.getTenantUserAppKey());
     }
 
     public List<TBList> queryBlackListByIds(List<Long> blistIds) {
@@ -2006,7 +2006,7 @@ public class ConfCenterService extends CommonService {
         param.setUpdateTime(new Date());
         blackListDAO.insert(param);
         configSyncService.syncBlockList(WebPluginUtils.getTenantUserAppKey());
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.getCustomerId(), WebPluginUtils.getTenantUserAppKey());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.getTenantId(), WebPluginUtils.getTenantUserAppKey());
     }
 
     /**
@@ -2030,7 +2030,7 @@ public class ConfCenterService extends CommonService {
     public void updateBListById(TBList tBList) {
         TBList originBList = tBListMntDao.querySingleBListById(String.valueOf(tBList.getBlistId()));
         tBListMntDao.updateBListById(tBList);
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.getCustomerId(), WebPluginUtils.getTenantUserAppKey());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.getTenantId(), WebPluginUtils.getTenantUserAppKey());
     }
 
     /**
@@ -2045,7 +2045,7 @@ public class ConfCenterService extends CommonService {
             .collect(Collectors.toList());
         tBListMntDao.deleteBListByIds(blistIdList);
         configSyncService.syncBlockList(WebPluginUtils.getTenantUserAppKey());
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.getCustomerId(), WebPluginUtils.getTenantUserAppKey());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.getTenantId(), WebPluginUtils.getTenantUserAppKey());
     }
 
     /**

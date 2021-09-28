@@ -39,6 +39,8 @@ public class WebPluginUtils {
     public static String ENV_CODE = "test";
     public static Long USER_ID = -1L;
 
+
+
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
     private static WebUserAuthExtApi userAuthExtApi;
@@ -174,16 +176,7 @@ public class WebPluginUtils {
         return null;
     }
 
-    /**
-     * 获取所有租户信息
-     * @return
-     */
-    public static List<TenantInfoExt> getTenantInfoList() {
-        if (Objects.nonNull(tenantExtApi)) {
-            return tenantExtApi.getTenantInfoList();
-        }
-        return null;
-    }
+
 
     /**
      * 返回 userAppKey
@@ -381,6 +374,17 @@ public class WebPluginUtils {
     }
 
     /**
+     * 获取所有租户信息
+     * @return
+     */
+    public static List<TenantInfoExt> getTenantInfoList() {
+        if (Objects.nonNull(tenantExtApi)) {
+            return tenantExtApi.getTenantInfoList();
+        }
+        return null;
+    }
+
+    /**
      * 租户参数传递
      * @param source
      * @param target
@@ -398,9 +402,14 @@ public class WebPluginUtils {
      */
     public static Long getTenantId() {
         if (userApi != null) {
-            if (userApi.getUser() != null) {
-                return userApi.getUser().getCustomerId();
+            if(tenantExtApi != null) {
+                if (userApi.getUser() != null) {
+                    return userApi.getUser().getCustomerId();
+                }
+            }else {
+                //return
             }
+
         }
         return TAKIN_ID;
     }

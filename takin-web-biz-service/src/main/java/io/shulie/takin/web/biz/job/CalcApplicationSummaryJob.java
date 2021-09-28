@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.job;
 
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
@@ -12,6 +13,7 @@ import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.domain.WebResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +37,10 @@ public class CalcApplicationSummaryJob implements SimpleJob {
 
     @Value("${open.report.task:true}")
     private Boolean openReportTask;
+
+    @Autowired
+    @Qualifier("jobThreadPool")
+    private ThreadPoolExecutor jobThreadPool;
 
     @Override
     public void execute(ShardingContext shardingContext) {

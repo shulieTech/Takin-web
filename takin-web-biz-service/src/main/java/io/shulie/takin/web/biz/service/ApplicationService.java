@@ -14,6 +14,7 @@ import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -23,6 +24,12 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ApplicationService {
 
     void configureTasks();
+
+    /**
+     * 带租户
+     * @param ext
+     */
+    void configureTasks(TenantCommonExt ext);
 
     List<ApplicationListResponse> getApplicationList(String appNames);
 

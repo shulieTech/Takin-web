@@ -2,6 +2,7 @@ package io.shulie.takin.web.ext.entity.tenant;
 
 import io.shulie.takin.common.beans.page.PagingDevice;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -14,13 +15,16 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
 public class TenantCommonExt extends PagingDevice {
     @ApiModelProperty(value = "租户ID")
     private Long tenantId;
 
+    @ApiModelProperty(value = "租户code")
+    private String userAppKey;
+
     @ApiModelProperty(value = "环境")
     private String envCode;
 
-    @ApiModelProperty(value = "租户code")
-    private String userAppKey;
+
 }

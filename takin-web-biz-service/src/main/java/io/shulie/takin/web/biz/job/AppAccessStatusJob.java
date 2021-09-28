@@ -49,8 +49,6 @@ public class AppAccessStatusJob implements SimpleJob {
                 t.getEnvs().forEach(e ->
                     jobThreadPool.execute(() ->applicationService.syncApplicationAccessStatus(t.getTenantId(),t.getUserAppKey(),e.getEnvCode())));
             });
-
         }
-
     }
 }

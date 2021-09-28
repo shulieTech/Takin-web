@@ -18,6 +18,7 @@ import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceThreadDataParam
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceThreadQueryParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadCountResult;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadDataResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -144,7 +145,7 @@ public class PerformanceThreadDataDAOImpl implements PerformanceThreadDataDAO {
     }
 
     @Override
-    public boolean clearStackData(String time) {
+    public boolean clearStackData(String time, TenantCommonExt ext) {
         if (StringUtils.isBlank(time)) {
             return true;
         }
@@ -152,20 +153,27 @@ public class PerformanceThreadDataDAOImpl implements PerformanceThreadDataDAO {
         // mysql
         LambdaUpdateWrapper<PerformanceThreadStackDataEntity> stackWrapper = new LambdaUpdateWrapper<>();
         stackWrapper.lt(PerformanceThreadStackDataEntity::getGmtCreate,time);
+        if (ext != null) {
+            stackWrapper.eq(PerformanceThreadStackDataEntity::getTenantId,ext.getTenantId());
+            stackWrapper.eq(PerformanceThreadStackDataEntity::getEnvCode,ext.getEnvCode());
+        }
         stackWrapper.last("limit 10000");
         return performanceThreadStackDataMapper.delete(stackWrapper) == 0;
     }
 
     @Override
-    public boolean clearData(String time) {
+    public boolean clearData(String time, TenantCommonExt ext) {
         if (StringUtils.isBlank(time)) {
             return true;
         }
 
         // mysql
-        LambdaUpdateWrapper<PerformanceThreadStackDataEntity> stackWrapper = new LambdaUpdateWrapper<>();
         LambdaUpdateWrapper<PerformanceThreadDataEntity> wrapper = new LambdaUpdateWrapper<>();
         wrapper.lt(PerformanceThreadDataEntity::getGmtCreate,time);
+        if (ext != null) {
+            wrapper.eq(PerformanceThreadDataEntity::getTenantId,ext.getTenantId());
+            wrapper.eq(PerformanceThreadDataEntity::getEnvCode,ext.getEnvCode());
+        }
         wrapper.last("limit 10000");
         return performanceThreadDataMapper.delete(wrapper) == 0;
     }

@@ -129,6 +129,7 @@ import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.DocumentException;
@@ -250,6 +251,26 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     //或直接指定时间间隔，例如：5秒
     @Override
     public void configureTasks() {
+        //针对每个用户进行检查
+        Map<String, Long> map = redisTemplate.opsForHash().entries(NEED_VERIFY_USER_MAP);
+        if (map.size() > 0) {
+            log.info("当前待执行用户数： => " + map.size());
+            map.forEach((key, value) -> {
+                if (System.currentTimeMillis() - value >= pradarSwitchProcessingTime * 1000) {
+                    // 操作完删除，保证只执行一次
+                    Long uid = Long.valueOf(key);
+                    String switchStatus = getUserSwitchStatusForAgent(uid);
+                    redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + uid, switchStatus);
+                    // agent接收的关闭信息后不再上报信息
+                    // reCalculateUserSwitch(Long.valueOf(key.toString()));
+                    redisTemplate.opsForHash().delete(NEED_VERIFY_USER_MAP, key);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void configureTasks(TenantCommonExt ext) {
         //针对每个用户进行检查
         Map<String, Long> map = redisTemplate.opsForHash().entries(NEED_VERIFY_USER_MAP);
         if (map.size() > 0) {

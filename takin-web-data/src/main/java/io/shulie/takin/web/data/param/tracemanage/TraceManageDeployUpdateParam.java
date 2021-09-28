@@ -1,16 +1,16 @@
 package io.shulie.takin.web.data.param.tracemanage;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import lombok.Data;
 
 /**
  * @author zhaoyong
  */
 @Data
-public class TraceManageDeployUpdateParam {
+public class TraceManageDeployUpdateParam extends TenantCommonExt {
 
     private Long id;
 

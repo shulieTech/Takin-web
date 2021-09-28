@@ -108,6 +108,8 @@
                 <version>${takin.plugin.version}</version>
             </dependency>
             <!--拓展插件类-->
+
+
         </dependencies>
     </dependencyManagement>
 

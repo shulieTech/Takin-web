@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -61,6 +62,8 @@ import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerUpdateInput;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoardResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
 import io.shulie.takin.web.biz.service.AppConfigEntityConvertService;
@@ -68,6 +71,7 @@ import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.ConfCenterService;
 import io.shulie.takin.web.biz.service.ShadowConsumerService;
+import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
@@ -77,11 +81,14 @@ import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.biz.utils.WhiteListUtil;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.constant.ApplicationConstants;
 import io.shulie.takin.web.common.constant.GuardEnableConstants;
+import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.WhiteListConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
+import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -239,6 +246,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ApplicationPluginsConfigService pluginsConfigService;
+
+    @Autowired
+    private ApplicationNodeService applicationNodeService;
 
     //3.添加定时任务
     //或直接指定时间间隔，例如：5秒
@@ -431,6 +441,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<ApplicationNodeResult> applicationNodeResultList = applicationNodes.getList();
         ApplicationVo vo = this.appEntryToVo(tApplicationMnt, applicationResult,
             applicationNodeResultList);
+
+        // 异常探针状态再判断
+        this.checkAccessStatus(vo);
         return Response.success(vo);
     }
 
@@ -1009,6 +1022,33 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR, "应用不存在!");
         }
         return application.getApplicationName();
+    }
+
+    @Override
+    public void uninstallAllAgent(List<String> appIds) {
+        try {
+            // 查询所有应用
+            List<TApplicationMnt> applicationList = tApplicationMntDao.queryApplicationList(null, appIds);
+            if (CollectionUtil.isEmpty(applicationList)) {
+                return;
+            }
+            for (TApplicationMnt application : applicationList) {
+                try {
+                    ApplicationNodeOperateProbeRequest nodeRequest = new ApplicationNodeOperateProbeRequest();
+                    nodeRequest.setApplicationId(application.getApplicationId());
+                    nodeRequest.setAgentId(ProbeConstants.ALL_AGENT_ID);
+                    nodeRequest.setAppName(application.getApplicationName());
+                    nodeRequest.setOperateType(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode());
+                    applicationNodeService.operateProbe(nodeRequest);
+                } catch (Exception e) {
+                    log.error("一键卸载探针异常, {}", e.getMessage(), e);
+                }
+            }
+        } catch (Exception e) {
+            log.error("一键卸载探针异常", e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_UNSTALL_AGENT_ERROR, e);
+
+        }
     }
 
     /**
@@ -2023,4 +2063,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return tApplicationMntDao.queryApplicationInfoByNameAndTenant(appName,
             WebPluginUtils.checkUserData() ? WebPluginUtils.getCustomerId() : null);
     }
+
+    /**
+     * 应用异常状态检查
+     *
+     * @param vo 应用信息
+     */
+    private void checkAccessStatus(ApplicationVo vo) {
+        ApplicationNodeDashBoardResponse applicationNodeDashBoardResponse =
+            applicationNodeService.getApplicationNodeDashBoardResponse(vo.getApplicationName(), vo.getNodeNum());
+        if (StringUtils.isNotBlank(applicationNodeDashBoardResponse.getErrorMsg())) {
+            vo.setAccessStatus(ApplicationConstants.APPLICATION_ACCESS_STATUS_EXCEPTION);
+        }
+    }
+
 }

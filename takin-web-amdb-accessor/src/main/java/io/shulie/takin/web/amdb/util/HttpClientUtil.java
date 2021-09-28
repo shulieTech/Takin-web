@@ -29,7 +29,7 @@ public class HttpClientUtil {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection conn = null;
         try {
-            if (!inputUrl.endsWith("?")) {
+            if (!inputUrl.contains("?")) {
                 inputUrl += "?";
             }
             inputUrl += parseParams(object);

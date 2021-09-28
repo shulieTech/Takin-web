@@ -1,15 +1,11 @@
 -- agent_id字段
 -- 字段添加
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count1 INT;
-
 SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
 WHERE table_schema = DATABASE() AND TABLE_NAME = 't_report_machine' AND COLUMN_NAME = 'agent_id');
 
@@ -21,11 +17,8 @@ ALTER TABLE `t_report_machine`
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
 
 -- 操作日志表
@@ -45,21 +38,17 @@ CREATE TABLE IF NOT EXISTS `t_operation_log`
     `gmt_create` datetime                     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `gmt_update` datetime                     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8
-  COLLATE = utf8_bin;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8
+    COLLATE = utf8_bin;
 
 -- 插入开始
 DROP PROCEDURE IF EXISTS insert_data;
-
 DELIMITER $$
-
 CREATE PROCEDURE insert_data()
-
 BEGIN
 
 DECLARE count1 INT;
-
 SET count1 = (SELECT COUNT(*) FROM `t_tro_resource` WHERE `code` = 'configCenter_operationLog');
 
 IF count1 = 0 THEN
@@ -68,15 +57,11 @@ IF count1 = 0 THEN
 INSERT INTO `t_tro_resource` (`parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`)
 VALUES (11, 0, 'configCenter_operationLog', '操作日志', NULL, '[\"/operation/log/list\"]', 6500);
 
-
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL insert_data();
-
 DROP PROCEDURE IF EXISTS insert_data;
 -- 插入结束
 
@@ -90,9 +75,27 @@ CREATE TABLE IF NOT EXISTS `t_agent_plugin`
     `gmt_create`  datetime                                        DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `gmt_update`  datetime                                        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
+-- 插件客户端包支持表
+CREATE TABLE IF NOT EXISTS `t_agent_plugin_lib_support`
+(
+    `id`                 bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `plugin_id`          bigint(20) NOT NULL COMMENT '插件id',
+    `lib_name`           varchar(64) CHARACTER SET utf8 COLLATE utf8_bin   DEFAULT NULL COMMENT 'jar包名称',
+    `lib_version_regexp` varchar(1024) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT 'agent支持的中间件版本的正则表达式',
+    `is_ignore`          tinyint(1) NOT NULL                               DEFAULT '0' COMMENT '状态 0: 不忽略 1： 忽略',
+    `is_delete`          tinyint(1) NOT NULL                               DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
+    `gmt_create`         datetime                                          DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `gmt_update`         datetime                                          DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE KEY `uni_libname_index` (`lib_name`)
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8;
+
+
+BEGIN;
 -- 初始化数据
 INSERT IGNORE INTO `t_agent_plugin`(`id`, `plugin_type`, `plugin_name`, `is_delete`, `gmt_create`, `gmt_update`)
 VALUES (1, 'HTTP_CLIENT', 'http-client', 0, '2020-10-13 10:20:04', '2020-10-20 10:10:57');
@@ -178,22 +181,6 @@ INSERT IGNORE INTO `t_agent_plugin`(`id`, `plugin_type`, `plugin_name`, `is_dele
 VALUES (44, 'MQ', 'spring-kafka', 0, '2020-10-23 11:20:07', '2020-10-23 11:20:07');
 INSERT IGNORE INTO `t_agent_plugin`(`id`, `plugin_type`, `plugin_name`, `is_delete`, `gmt_create`, `gmt_update`)
 VALUES (45, 'OTHER', '-', 0, '2020-10-23 17:31:54', '2020-10-23 17:31:54');
-
--- 插件客户端包支持表
-CREATE TABLE IF NOT EXISTS `t_agent_plugin_lib_support`
-(
-    `id`                 bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `plugin_id`          bigint(20) NOT NULL COMMENT '插件id',
-    `lib_name`           varchar(64) CHARACTER SET utf8 COLLATE utf8_bin   DEFAULT NULL COMMENT 'jar包名称',
-    `lib_version_regexp` varchar(1024) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT 'agent支持的中间件版本的正则表达式',
-    `is_ignore`          tinyint(1) NOT NULL                               DEFAULT '0' COMMENT '状态 0: 不忽略 1： 忽略',
-    `is_delete`          tinyint(1) NOT NULL                               DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
-    `gmt_create`         datetime                                          DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `gmt_update`         datetime                                          DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-    PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY `uni_libname_index` (`lib_name`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
 
 -- 初始化数据
 INSERT IGNORE INTO `t_agent_plugin_lib_support`(`id`, `plugin_id`, `lib_name`, `lib_version_regexp`, `is_ignore`,
@@ -360,3 +347,4 @@ VALUES (56, 25, 'mongo-java-driver', '[\"3.2.2\"]', 0, 0, '2020-10-13 10:21:25',
 INSERT IGNORE INTO `t_agent_plugin_lib_support`(`id`, `plugin_id`, `lib_name`, `lib_version_regexp`, `is_ignore`,
                                                  `is_delete`, `gmt_create`, `gmt_update`)
 VALUES (57, 45, 'lombok', '[\"1.18.6\"]', 1, 0, '2020-10-23 17:32:51', '2020-10-23 17:32:51');
+COMMIT;

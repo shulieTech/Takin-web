@@ -1,5 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.application;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -112,6 +113,35 @@ public class ApplicationEntranceController {
         return applicationEntranceClient.updateUnknownNodeToOuter(request.getApplicationName(), request.getLinkId(),
             request.getServiceName(), request.getMethod(),
             request.getRpcType(), request.getExtend(), request.getNodeId());
+    }
+
+    @GetMapping("/all")
+    @ApiOperation("获取应用下所有入口服务列表")
+    public List<ApplicationEntrancesResponse> getApplicationAllEntrances(String appName) {
+        if(StringUtils.isBlank(appName)){
+            log.error("应用名称不能为空");
+            return Collections.emptyList();
+        }
+        List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
+                appName, "");
+        if (CollectionUtils.isEmpty(applicationEntrances)) {
+            return Lists.newArrayList();
+        }
+        return applicationEntrances.stream()
+                .filter(item -> !item.getServiceName().startsWith("PT_"))
+                .map(item -> {
+                    ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
+                    applicationEntrancesResponse.setMethod(item.getMethodName());
+                    applicationEntrancesResponse.setRpcType(item.getRpcType());
+                    applicationEntrancesResponse.setExtend(item.getExtend());
+                    applicationEntrancesResponse.setServiceName(item.getServiceName());
+                    applicationEntrancesResponse.setLabel(
+                            ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
+                    applicationEntrancesResponse.setValue(
+                            ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
+                                    item.getAppName(), item.getRpcType(), item.getExtend()));
+                    return applicationEntrancesResponse;
+                }).collect(Collectors.toList());
     }
 
     //@ApiOperation("获得入口服务拓扑图")

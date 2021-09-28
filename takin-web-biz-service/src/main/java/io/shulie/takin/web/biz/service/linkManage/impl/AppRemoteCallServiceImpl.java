@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2021. Shulie Technology, Co.Ltd
+ * Email: shulie@shulie.io
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import java.util.Arrays;
@@ -30,6 +46,7 @@ import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
@@ -95,8 +112,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
 
-    @Value("${remote.call.auto.join.white:true}")
-    private String autoJoinWhiteFlag;
+    @Value("${remote.call.auto.join.white: false}")
+    private boolean autoJoinWhiteFlag;
 
     @Value("${query.async.critica.value:20000}")
     private int criticaValue;
@@ -152,10 +169,18 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             param.setAppName(detailResult.getApplicationName());
             appRemoteCallDAO.insert(param);
         }
-        // todo 配置
-        configSyncService.syncRemoteCall(WebPluginUtils.getTenantUserAppKey(), input.getApplicationId(), null);
         agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
 
+    }
+
+    @Override
+    public void batchConfig(AppRemoteCallConfigRequest request) {
+        if(WebPluginUtils.validateSuperAdmin()) {
+            appRemoteCallDAO.updateListSelective(request.getType(), request.getAppIds(), null, WebPluginUtils.getCustomerId());
+        } else {
+            appRemoteCallDAO.updateListSelective(request.getType(), request.getAppIds(),
+                WebPluginUtils.getUpdateAllowUserIdList(), WebPluginUtils.getCustomerId());
+        }
     }
 
     @Override
@@ -512,17 +537,18 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             return;
         }
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
-        // 100个轮询一次
-        if (results.size() > 50) {
+        int size = 50;
+        // size个轮询一次
+        if (results.size() > size) {
             int i = 1;
             boolean loop = true;
             do {
-                List<ApplicationDetailResult> subList = null;
+                List<ApplicationDetailResult> subList;
                 //批量处理
-                if (results.size() > i * 100) {
-                    subList = results.subList((i - 1) * 100, i * 100);
+                if (results.size() > i * size) {
+                    subList = results.subList((i - 1) * size, i * size);
                 } else {
-                    subList = results.subList((i - 1) * 100, results.size());
+                    subList = results.subList((i - 1) * size, results.size());
                     loop = false;
                 }
                 i++;
@@ -591,7 +617,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     // 自动加入白名单 操作
     public void autoJoinWhite(AppRemoteCallCreateParam param) {
         param.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
-        if (Boolean.valueOf(autoJoinWhiteFlag)) {
+        if (autoJoinWhiteFlag) {
             if (StringUtils.isNotBlank(param.getServerAppName())) {
                 param.setType(AppRemoteCallConfigEnum.OPEN_WHITELIST.getType());
             }

@@ -104,6 +104,11 @@ public final class BizOpConstants {
 
         // 白名单列表
         public static final String APPWHITELIST = "appWhiteList";
+
+        // 探针快速接入
+        public static final String AGENT_CONFIG = "admins_simulationConfig";
+        public static final String AGENT_VERSION= "admins_admin";
+        public static final String NEW_PROJECT_ACCESS= "appManage_appAccess";
     }
 
     public static class OpTypes {

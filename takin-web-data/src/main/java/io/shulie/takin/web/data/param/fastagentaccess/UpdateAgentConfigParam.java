@@ -1,0 +1,19 @@
+package io.shulie.takin.web.data.param.fastagentaccess;
+
+import io.shulie.takin.web.data.model.mysql.AgentConfigEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+/**
+ * agent配置管理(AgentConfig)更新入参类
+ *
+ * @author ocean_wll
+ * @date 2021-08-12 18:57:01
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class UpdateAgentConfigParam extends AgentConfigEntity {
+
+}

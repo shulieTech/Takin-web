@@ -10,7 +10,7 @@ import org.pf4j.ExtensionPoint;
  */
 public interface WebOperationLogExtApi extends ExtensionPoint {
     /**
-     * 添加日志
+     * 添加日志x
      *
      * @param joinPoint 切面信息
      * @return OperationLogExt

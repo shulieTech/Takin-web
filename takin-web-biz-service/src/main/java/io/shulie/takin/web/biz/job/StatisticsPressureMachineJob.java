@@ -9,9 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * @author 无涯
- * @date 2021/6/15 5:53 下午
- */
+* @Package io.shulie.takin.web.biz.job
+* @ClassName: StatisticsPressureMachineJob
+* @author hezhongqi
+* @description:先不做租户隔离
+* @date 2021/9/28 15:19
+*/
 @Component
 @ElasticSchedulerJob(jobName = "statisticsPressureMachineJob", cron = "0 */1 * * * ?", description = "统计机器信息")
 @Slf4j

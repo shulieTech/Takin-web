@@ -595,7 +595,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
         FileCopyParamReq fileCopyParamReq = new FileCopyParamReq();
         fileCopyParamReq.setTargetPath(targetScriptPath);
-        fileCopyParamReq.setSourcePaths(tmpFilePaths);
+        fileCopyParamReq.setSourcePaths(sourcePaths);
         fileApi.copyFile(fileCopyParamReq);
         if (CollectionUtils.isNotEmpty(tmpFilePaths)) {
             FileDeleteParamReq fileDeleteParamReq = new FileDeleteParamReq();

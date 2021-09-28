@@ -108,7 +108,8 @@ public class BlacklistServiceImpl implements BlacklistService {
         TApplicationMnt tApplicationMnt = applicationMntDao.queryApplicationinfoById(applicationId);
         whiteListFileService.writeWhiteListFile();
         configSyncService.syncAllowList(WebPluginUtils.getUserAppKey(tApplicationMnt.getUserId()), applicationId, tApplicationMnt.getApplicationName());
-        agentConfigCacheManager.evictRecallCalls(tApplicationMnt.getApplicationName());
+        //todo Agent改造点
+        agentConfigCacheManager.evictRecallCalls("","",tApplicationMnt.getApplicationName());
     }
 
     @Override

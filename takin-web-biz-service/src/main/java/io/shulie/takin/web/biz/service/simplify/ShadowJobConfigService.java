@@ -93,7 +93,8 @@ public class ShadowJobConfigService {
         if (null == tApplicationMnt) {
             return Response.fail("未查询到相关应用信息");
         }
-        agentConfigCacheManager.evictShadowJobs(tApplicationMnt.getApplicationName());
+        //todo Agent改造点
+        agentConfigCacheManager.evictShadowJobs("","",tApplicationMnt.getApplicationName());
         return Response.success();
     }
 
@@ -160,7 +161,8 @@ public class ShadowJobConfigService {
             return Response.fail("未查询到相关应用信息");
         }
         configSyncService.syncShadowJob(WebPluginUtils.getTenantUserAppKey(), shadowJobConfig.getApplicationId(), null);
-        agentConfigCacheManager.evictShadowJobs(tApplicationMnt.getApplicationName());
+        //todo Agent改造点
+        agentConfigCacheManager.evictShadowJobs("","",tApplicationMnt.getApplicationName());
         return Response.success();
     }
 
@@ -176,7 +178,8 @@ public class ShadowJobConfigService {
         }
         tShadowJobConfigMapper.delete(id);
         configSyncService.syncShadowJob(WebPluginUtils.getTenantUserAppKey(), shadowJobConfig.getApplicationId(), null);
-        agentConfigCacheManager.evictShadowJobs(tApplicationMnt.getApplicationName());
+        //todo Agent改造点
+        agentConfigCacheManager.evictShadowJobs("","",tApplicationMnt.getApplicationName());
         return Response.success();
     }
 

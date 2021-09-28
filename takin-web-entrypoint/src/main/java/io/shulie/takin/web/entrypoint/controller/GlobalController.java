@@ -57,7 +57,8 @@ public class GlobalController {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION, BizOpConstants.OpTypes.OPEN);
 
         configService.updateAllowListSwitch(WebPluginUtils.getTenantUserAppKey(), true);
-        agentConfigCacheManager.evictAllowListSwitch();
+        //todo Agent改造点
+        agentConfigCacheManager.evictAllowListSwitch("","");
         return Response.success();
     }
 
@@ -76,7 +77,8 @@ public class GlobalController {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CLOSE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION, BizOpConstants.OpTypes.CLOSE);
         configService.updateAllowListSwitch(WebPluginUtils.getTenantUserAppKey(), false);
-        agentConfigCacheManager.evictAllowListSwitch();
+        //todo Agent改造点
+        agentConfigCacheManager.evictAllowListSwitch("","");
         return Response.success();
     }
 

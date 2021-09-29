@@ -182,7 +182,7 @@
             AND tam.APPLICATION_NAME like
             concat('%',#{applicationName},'%')
         </if>
-        <if test="applicationIds !=null">
+        <if test="applicationIds != null and applicationIds.size > 0">
             AND tam.APPLICATION_ID IN
             <foreach collection="applicationIds" item="applicationId" open="(" close=")" separator=",">
                 #{applicationId}

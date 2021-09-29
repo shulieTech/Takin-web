@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.application;
 
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeAgentDTO;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeDashBoardQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeQueryRequest;
@@ -56,5 +57,7 @@ public interface ApplicationNodeService {
      * @return 探针数据
      */
     ApplicationNodeDashBoardResponse getApplicationNodeDashBoardResponse(String applicationName, Integer nodeNum);
+
+    PagingList<ApplicationNodeAgentDTO> getApplicationNodeListResultByApps(String appNames);
 
 }

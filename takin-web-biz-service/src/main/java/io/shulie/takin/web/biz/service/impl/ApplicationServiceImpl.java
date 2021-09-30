@@ -92,6 +92,7 @@ import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
@@ -585,8 +586,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         TApplicationMnt applicationMnt = this.queryTApplicationMntByName(param.getApplicationName());
 
-        if (applicationMnt == null){
-            return Response.fail("0000-0000-0000","查询不到应用【"+param.getApplicationName()+"】,请先上报应用！");
+        if (applicationMnt == null) {
+            return Response.fail("0000-0000-0000", "查询不到应用【" + param.getApplicationName() + "】,请先上报应用！");
         }
 
         if (param.getSwitchErrorMap() != null && !param.getSwitchErrorMap().isEmpty()) {
@@ -606,11 +607,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             }
             //3：应用异常
             applicationDAO.updateApplicationStatus(applicationMnt.getApplicationId(),
-                    AppAccessStatusEnum.EXCEPTION.getCode());
+                AppAccessStatusEnum.EXCEPTION.getCode());
         } else {
             // 应用正常
             applicationDAO.updateApplicationStatus(applicationMnt.getApplicationId(),
-                    AppAccessStatusEnum.NORMAL.getCode());
+                AppAccessStatusEnum.NORMAL.getCode());
         }
         return Response.success("上传应用状态信息成功");
     }
@@ -670,16 +671,17 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public void syncApplicationAccessStatus(Long tenantId,String userAppKey, String envCode) {
+    public void syncApplicationAccessStatus(Long tenantId, String userAppKey, String envCode) {
         long startTime = System.currentTimeMillis();
         try {
             //查询出所有待检测状态的应用
             List<TApplicationMnt> applicationMntList = tApplicationMntDao.getAllApplicationByStatusAndTenant(
-                Arrays.asList(0, 1, 2, 3),tenantId,envCode);
+                Arrays.asList(0, 1, 2, 3), tenantId, envCode);
             if (!CollectionUtils.isEmpty(applicationMntList)) {
                 List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName)
                     .collect(Collectors.toList());
-                List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames,userAppKey,envCode);
+                List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames,
+                    userAppKey, envCode);
                 if (!CollectionUtils.isEmpty(applicationResultList)) {
                     Set<Long> errorApplicationIdSet = Sets.newSet();
                     Set<Long> normalApplicationIdSet = Sets.newSet();
@@ -841,9 +843,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (WebPluginUtils.getUser() != null) {
             uid = WebPluginUtils.getUser().getId();
         }
-        Object o = redisTemplate.opsForValue().get(PRADAR_SWITCH_STATUS_VO + uid);
+        String key = CommonUtil.generateRedisKey(PRADAR_SWITCH_STATUS_VO + uid,
+            WebPluginUtils.getTenantUserAppKey().toString(), WebPluginUtils.getEnvCode());
+        Object o = redisTemplate.opsForValue().get(key);
         if (o == null) {
-            redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + uid, AppSwitchEnum.OPENED.getCode());
+            redisTemplate.opsForValue().set(key, AppSwitchEnum.OPENED.getCode());
             return AppSwitchEnum.OPENED.getCode();
         } else {
             return (String)o;
@@ -1585,7 +1589,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         // 对比
         return String.format("%s%s", importServerConfigResponse.getDataSourceBusiness().getMaster(),
-                importServerConfigResponse.getDataSourceBusiness().getNodes())
+            importServerConfigResponse.getDataSourceBusiness().getNodes())
             .equals(String.format("%s%s", originServerConfigResponse.getDataSourceBusiness().getMaster(),
                 importServerConfigResponse.getDataSourceBusiness().getNodes()));
     }

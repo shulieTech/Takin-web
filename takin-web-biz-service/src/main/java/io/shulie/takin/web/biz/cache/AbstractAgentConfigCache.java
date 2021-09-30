@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import io.shulie.takin.web.common.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -69,11 +70,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      * @return
      */
     private String getCacheKey(String userAppKey,String envCode,String namespace) {
-        String key = cacheName;
-        if (namespace != null) {
-            key += ":"+userAppKey+":"+envCode+":"+namespace;
-        }
-        return key;
+        return CommonUtil.generateRedisKey(cacheName,userAppKey,envCode,namespace);
     }
 
     /**

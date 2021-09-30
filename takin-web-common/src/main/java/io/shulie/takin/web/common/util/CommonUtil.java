@@ -11,7 +11,11 @@ import java.util.stream.Collectors;
 
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.AppConstants;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,7 +39,8 @@ public class CommonUtil implements AppConstants {
      * @return 租户, 环境隔离后的路径
      */
     public static String getZkTenantAndEnvPath(String path) {
-        return String.format("%s/%s/%s", WebPluginUtils.getTenantUserAppKey(), WebPluginUtils.getEnvCode(), path);
+        return generateRedisKeyWithSeparator(Separator.Separator1, WebPluginUtils.getTenantUserAppKey(),
+            WebPluginUtils.getEnvCode(), path);
     }
 
     /**
@@ -174,6 +179,17 @@ public class CommonUtil implements AppConstants {
                 throw new RuntimeException("目标对象实例化错误!");
             }
         }).collect(Collectors.toList());
+    }
+
+    public static String generateRedisKey(String... keyPart) {
+        return generateRedisKeyWithSeparator(Separator.defautSeparator(), keyPart);
+    }
+
+    public static String generateRedisKeyWithSeparator(Separator separator, String... keyPart) {
+        if (separator == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "separator cannot be null!");
+        }
+        return StringUtil.join(separator.getValue(), keyPart);
     }
 
     /* ---------------- 测试 -------------- */

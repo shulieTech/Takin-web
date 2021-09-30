@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.init;
 
 import io.shulie.takin.web.biz.init.fix.BlacklistDataFixer;
 import io.shulie.takin.web.biz.init.fix.LinkManageFixer;
-import io.shulie.takin.web.biz.init.fix.RemoteCallFixer;
 import io.shulie.takin.web.biz.init.fix.WhitelistDataFixer;
 import io.shulie.takin.web.biz.init.fix.WhitelistEffectAppNameDataFixer;
 import io.shulie.takin.web.biz.init.sync.ConfigSynchronizer;
@@ -39,9 +38,6 @@ public class Initializer implements InitializingBean {
     private WhitelistEffectAppNameDataFixer whitelistEffectAppNameDataFixer;
 
     @Autowired
-    private RemoteCallFixer remoteCallFixer;
-
-    @Autowired
     ApplicationPluginsConfigService configService;
 
     @Autowired
@@ -51,7 +47,7 @@ public class Initializer implements InitializingBean {
      * 所有项目启动需要做的事情都统一注册在这里
      */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         // 将agent需要的配置同步到文件、redis、zk等
         new Thread(() -> configSynchronizer.initSyncAgentConfig()).start();
         new Thread(() -> linkManageFixer.fix()).start();

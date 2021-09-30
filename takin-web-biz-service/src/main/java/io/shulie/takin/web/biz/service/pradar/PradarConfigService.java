@@ -1,7 +1,5 @@
 package io.shulie.takin.web.biz.service.pradar;
 
-import java.util.List;
-
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigDeleteRequest;
@@ -10,8 +8,6 @@ import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
 
 public interface PradarConfigService {
-
-    List<PradarZKConfigResponse> getConfigList();
 
     /**
      * 配置列表

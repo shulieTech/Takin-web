@@ -9,11 +9,8 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 /**
  * @author shiyajian
@@ -66,7 +63,7 @@ public final class ZkClient {
     }
 
     public String getNode(String path) {
-        if (!checkNodeExists(CommonUtil.getZkTenantAndEnvPath(path))) {
+        if (!checkNodeExists(path)) {
             return null;
         }
         byte[] bytes = new byte[0];
@@ -91,10 +88,10 @@ public final class ZkClient {
         if (data.getBytes().length > 1024 * 1024) {
             throw new RuntimeException("ZK单个节点的数据大小不能超过1M，请修改ZK配置");
         }
-        if (checkNodeExists(CommonUtil.getZkTenantAndEnvPath(path))) {
-            updateNode(CommonUtil.getZkTenantAndEnvPath(path), data);
+        if (checkNodeExists(path)) {
+            updateNode(path, data);
         } else {
-            addNode(CommonUtil.getZkTenantAndEnvPath(path), data);
+            addNode(path, data);
         }
     }
 

@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2021. Shulie Technology, Co.Ltd
+ * Email: shulie@shulie.io
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package io.shulie.takin.web.entrypoint.controller.linkmanage;
 
 import java.util.List;
@@ -14,8 +30,10 @@ import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateRequest;
+import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallConfigResponse;
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallResponse;
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallStringResponse;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
@@ -23,6 +41,8 @@ import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.application.AppRemoteCallListVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -117,4 +137,25 @@ public class AppRemoteCallController {
         return appRemoteCallService.getConfigSelect(interfaceType, serverAppName);
     }
 
+    @ApiOperation("远程调用批量配置接口")
+    @PostMapping("/application/remote/call/config")
+    @ModuleDef(
+        moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
+        subModuleName = BizOpConstants.SubModules.REMOTE_CALL,
+        logMsgKey = BizOpConstants.Message.MESSAGE_REMOTE_CALL_CREATE
+    )
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.UPDATE
+    )
+    public AppRemoteCallConfigResponse batchConfig(@RequestBody AppRemoteCallConfigRequest request){
+        if(request.getType() != AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType().intValue()
+            && request.getType() != AppRemoteCallConfigEnum.OPEN_WHITELIST.getType().intValue()) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR, "参数type值不合法");
+        }
+        OperationLogContextHolder.operationType(OpTypes.UPDATE);
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.REMOTE_CALL_CONFIG, AppRemoteCallConfigEnum.OPEN_WHITELIST.getConfigName());
+        appRemoteCallService.batchConfig(request);
+        return new AppRemoteCallConfigResponse("操作成功");
+    }
 }

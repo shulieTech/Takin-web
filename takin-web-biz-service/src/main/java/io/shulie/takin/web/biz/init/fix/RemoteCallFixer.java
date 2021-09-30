@@ -103,7 +103,7 @@ public class RemoteCallFixer {
             if (CollectionUtils.isNotEmpty(detailResults)) {
                 // todo 存在多个
                 ApplicationDetailResult detailResult = detailResults.get(0);
-                createParam.setCustomerId(detailResult.getCustomerId());
+                createParam.setTenantId(detailResult.getCustomerId());
                 createParam.setAppName(detailResult.getApplicationName());
                 createParam.setUserId(detailResult.getUserId());
                 // 补充服务应用

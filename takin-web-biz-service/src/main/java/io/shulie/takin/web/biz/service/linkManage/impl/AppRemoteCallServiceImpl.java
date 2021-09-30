@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2021. Shulie Technology, Co.Ltd
+ * Email: shulie@shulie.io
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import java.util.Arrays;
@@ -30,6 +46,7 @@ import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
@@ -139,18 +156,28 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             AppRemoteCallUpdateParam param = new AppRemoteCallUpdateParam();
             BeanUtils.copyProperties(input, param);
 
-            param.setCustomerId(detailResult.getCustomerId());
+            param.setTenantId(detailResult.getCustomerId());
             param.setAppName(detailResult.getApplicationName());
             appRemoteCallDAO.update(param);
         } else {
             AppRemoteCallCreateParam param = new AppRemoteCallCreateParam();
             BeanUtils.copyProperties(input, param);
-            param.setCustomerId(detailResult.getCustomerId());
+            param.setTenantId(detailResult.getCustomerId());
             param.setAppName(detailResult.getApplicationName());
             appRemoteCallDAO.insert(param);
         }
-        agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
+        //todo Agent改造点
+        agentConfigCacheManager.evictRecallCalls("","",detailResult.getApplicationName());
 
+    }
+
+    @Override
+    public void batchConfig(AppRemoteCallConfigRequest request) {
+        if(WebPluginUtils.validateSuperAdmin()) {
+            appRemoteCallDAO.updateListSelective(request.getType(), request.getAppIds(), null);
+        } else {
+            appRemoteCallDAO.updateListSelective(request.getType(), request.getAppIds(), WebPluginUtils.getUpdateAllowUserIdList());
+        }
     }
 
     @Override
@@ -211,7 +238,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         // 从mysql查出数据
         PagingList<AppRemoteCallListVO> dbPagingList = getDbPagingList(input, detailResult);
         // 根据应用的租户查询
-        input.setCustomerId(detailResult.getCustomerId());
+        input.setTenantId(detailResult.getCustomerId());
         if (dbPagingList.getList().size() < input.getPageSize()) {
             // amdb查询 页码是第一页
             input.setCurrent(input.getCurrent() - (int)(dbPagingList.getTotal() / input.getPageSize()) - 1);
@@ -275,6 +302,11 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
         // 出口
         query.setQueryTye("1");
+
+        // 租户传参
+        query.setUserAppKey(input.getUserAppKey());
+        query.setEnvCode(input.getEnvCode());
+
         // 直接取全部数据
         PagingList<ApplicationRemoteCallDTO> calls = applicationClient.listApplicationRemoteCalls(query);
         if (calls.isEmpty()) {
@@ -285,6 +317,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         if (detailResult != null) {
             param.setApplicationId(detailResult.getApplicationId());
         }
+        // 租户传参
+        WebPluginUtils.transferTenantParam(input,param);
+
         List<AppRemoteCallResult> results = this.queryAsyncIfNecessary(param);
         List<String> appNameRemoteCallIds = results.stream().map(result -> {
             // 应用名
@@ -507,6 +542,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             return;
         }
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
+
+        AppRemoteCallQueryInput input = new AppRemoteCallQueryInput();
+
         int size = 50;
         // size个轮询一次
         if (results.size() > size) {
@@ -522,19 +560,60 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                     loop = false;
                 }
                 i++;
-                saveRemoteCall(subList, voList);
+                saveRemoteCall(subList, voList,input);
             } while (loop);
         } else {
-            saveRemoteCall(results, voList);
+            saveRemoteCall(results, voList,input);
         }
     }
 
-    private void saveRemoteCall(List<ApplicationDetailResult> apps, List<TDictionaryVo> voList) {
+    @Override
+    public void syncAmdb(Long tenantId, String userAppKey, String envCode) {
+        // 查询应用
+        ApplicationQueryParam queryParam = new ApplicationQueryParam();
+        queryParam.setTenantId(tenantId);
+        queryParam.setEnvCode(envCode);
+        List<ApplicationDetailResult> results = applicationDAO.getApplicationList(queryParam);
+        if (CollectionUtils.isEmpty(results)) {
+            return;
+        }
+        List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE",tenantId,envCode);
+
+        //租户传参
         AppRemoteCallQueryInput input = new AppRemoteCallQueryInput();
+        input.setUserAppKey(userAppKey);
+        input.setTenantId(tenantId);
+        input.setEnvCode(envCode);
+
+        int size = 50;
+        // size个轮询一次
+        if (results.size() > size) {
+            int i = 1;
+            boolean loop = true;
+            do {
+                List<ApplicationDetailResult> subList;
+                //批量处理
+                if (results.size() > i * size) {
+                    subList = results.subList((i - 1) * size, i * size);
+                } else {
+                    subList = results.subList((i - 1) * size, results.size());
+                    loop = false;
+                }
+                i++;
+                saveRemoteCall(subList, voList,input);
+            } while (loop);
+        } else {
+            saveRemoteCall(results, voList,input);
+        }
+
+    }
+
+    private void saveRemoteCall(List<ApplicationDetailResult> apps, List<TDictionaryVo> voList, AppRemoteCallQueryInput input) {
         input.setStatus(0);
         input.setAppNames(apps.stream().map(ApplicationDetailResult::getApplicationName).collect(Collectors.toList()));
         // 获取所有未存入数据的数据
         input.setIsAll(true);
+
         PagingList<AppRemoteCallListVO> amdbPagingList = getAmdbPagingList(input, null, voList);
         if (amdbPagingList.isEmpty()) {
             return;
@@ -551,7 +630,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 // todo 存在多个
                 ApplicationDetailResult result = results.get(0);
                 param.setApplicationId(result.getApplicationId());
-                param.setCustomerId(result.getCustomerId());
+                param.setTenantId(result.getCustomerId());
                 param.setAppName(result.getApplicationName());
                 param.setUserId(result.getUserId());
                 // 补充服务应用

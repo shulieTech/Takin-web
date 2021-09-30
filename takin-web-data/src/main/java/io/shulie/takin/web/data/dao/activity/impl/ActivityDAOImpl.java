@@ -93,7 +93,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         linkManageTableEntity.setChangeBefore(param.getChangeBefore());
         linkManageTableEntity.setChangeAfter(param.getChangeAfter());
         linkManageTableEntity.setIsChange(param.getIsChange() ? 1 : 0);
-        linkManageTableEntity.setCustomerId(param.getCustomerId());
+        linkManageTableEntity.setCustomerId(param.getTenantId());
         linkManageTableEntity.setUserId(param.getUserId());
         linkManageTableEntity.setIsChange(0);
         linkManageTableEntity.setApplicationName(param.getApplicationName());
@@ -129,7 +129,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         businessLinkManageTableEntity.setIsCore(param.getIsCore());
         businessLinkManageTableEntity.setBusinessDomain(param.getBusinessDomain());
         businessLinkManageTableEntity.setIsDeleted(0);
-        businessLinkManageTableEntity.setCustomerId(param.getCustomerId());
+        businessLinkManageTableEntity.setCustomerId(param.getTenantId());
         businessLinkManageTableEntity.setUserId(param.getUserId());
         businessLinkManageTableEntity.setCanDelete(0);
         if (null != param.getServerMiddlewareType()) {

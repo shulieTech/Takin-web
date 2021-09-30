@@ -21,6 +21,7 @@ public class SceneSchedulerJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
+
         sceneSchedulerTaskService.executeSchedulerPressureTask();
     }
 }

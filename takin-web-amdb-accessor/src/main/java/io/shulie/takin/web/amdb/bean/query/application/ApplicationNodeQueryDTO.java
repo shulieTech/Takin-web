@@ -35,7 +35,12 @@ public class ApplicationNodeQueryDTO extends PageBaseDTO {
     /**
      * 客户Id
      */
-    private String customerId;
+    private String userAppKey;
+
+    /**
+     * 环境编码
+     */
+    private String envCode;
 
     /**
      * agentId

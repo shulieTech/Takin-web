@@ -1,8 +1,26 @@
+/*
+ * Copyright (c) 2021. Shulie Technology, Co.Ltd
+ * Email: shulie@shulie.io
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package io.shulie.takin.web.data.dao.application.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -119,8 +137,14 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
 
     private LambdaQueryWrapper<AppRemoteCallEntity> getAppRemoteCallEntityLambdaQueryWrapper(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
-        if (WebPluginUtils.checkUserData() && WebPluginUtils.getCustomerId() != null) {
-            lambdaQueryWrapper.eq(AppRemoteCallEntity::getCustomerId, WebPluginUtils.getCustomerId());
+        if (WebPluginUtils.checkUserData()) {
+            if(WebPluginUtils.getTenantId() != null) {
+                lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.getTenantId());
+            }
+            if(WebPluginUtils.getEnvCode() != null) {
+                lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.getEnvCode());
+            }
+
         }
         if (CollectionUtils.isNotEmpty(param.getApplicationIds())) {
             lambdaQueryWrapper.in(AppRemoteCallEntity::getApplicationId, param.getApplicationIds());
@@ -158,7 +182,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     public List<AppRemoteCallResult> selectByAppNameUnderCurrentUser(String appName) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
         if (WebPluginUtils.checkUserData()) {
-            lambdaQueryWrapper.eq(AppRemoteCallEntity::getCustomerId, WebPluginUtils.getCustomerId());
+            lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.getTenantId());
+            lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.getEnvCode());
         }
         lambdaQueryWrapper.eq(AppRemoteCallEntity::getAppName, appName);
         lambdaQueryWrapper.ne(AppRemoteCallEntity::getType, AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
@@ -198,4 +223,27 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         List<AppRemoteCallEntity> list = this.list(lambdaQueryWrapper);
         return getAppRemoteCallResults(list);
     }
+
+    @Override
+    public List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList) {
+        LambdaQueryWrapper<AppRemoteCallEntity> wrapper = this.getLambdaQueryWrapper()
+            .in(AppRemoteCallEntity::getApplicationId, appIdList)
+            .in(CollUtil.isNotEmpty(userIdList), AppRemoteCallEntity::getUserId, userIdList)
+            .eq( WebPluginUtils.getTenantId() != null, AppRemoteCallEntity::getTenantId, WebPluginUtils.getTenantId())
+            .eq( StringUtils.isNotBlank(WebPluginUtils.getEnvCode()), AppRemoteCallEntity::getEnvCode, WebPluginUtils.getEnvCode())
+            ;
+        List<AppRemoteCallEntity> appRemoteCallEntities = this.getBaseMapper().selectList(wrapper);
+        List<AppRemoteCallEntity> updateAppRemoteCallEntityList = appRemoteCallEntities.stream().map(entity -> {
+            AppRemoteCallEntity appRemoteCallEntity = new AppRemoteCallEntity();
+            appRemoteCallEntity.setId(entity.getId());
+            appRemoteCallEntity.setType(type.intValue());
+            return appRemoteCallEntity;
+        }).collect(Collectors.toList());
+        this.updateBatchById(updateAppRemoteCallEntityList);
+        if (CollUtil.isEmpty(appRemoteCallEntities)) {
+            return Collections.emptyList();
+        }
+        return getAppRemoteCallResults(appRemoteCallEntities);
+    }
+
 }

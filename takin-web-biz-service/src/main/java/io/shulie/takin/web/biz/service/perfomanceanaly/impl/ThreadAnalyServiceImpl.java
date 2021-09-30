@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.takin.common.util.http.DateUtil;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceAnalyzeRequest;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceCommonRequest;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.ThreadCpuUseRateRequest;
@@ -37,6 +36,7 @@ import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceBaseDataResult;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadCountResult;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadDataResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -235,10 +235,11 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
         return performanceThreadDataDAO.getThreadStackInfo(link);
     }
 
+
     @Override
-    public void clearData(Integer time) {
-        Date nSecond = DateUtils.getPreviousNSecond(time);
-        String timeString = DateUtils.dateToString(nSecond, DateUtils.FORMATE_YMDHMS);
+    public void clearData(Integer time, TenantCommonExt ext) {
+
+        String timeString = DateUtils.dateToString(DateUtils.getPreviousNSecond(time), DateUtils.FORMATE_YMDHMS);
 
         boolean dataCleanComplete = false;
         boolean stackDataCleanComplete = false;
@@ -246,11 +247,11 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
         while (true) {
             try {
                 if (!dataCleanComplete) {
-                    dataCleanComplete = performanceThreadDataDAO.clearData(timeString);
+                    dataCleanComplete = performanceThreadDataDAO.clearData(timeString,ext);
                 }
 
                 if (!stackDataCleanComplete) {
-                    stackDataCleanComplete = performanceThreadDataDAO.clearStackData(timeString);
+                    stackDataCleanComplete = performanceThreadDataDAO.clearStackData(timeString,ext);
                 }
 
                 if (dataCleanComplete && stackDataCleanComplete) {

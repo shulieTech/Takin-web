@@ -6,15 +6,16 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import io.shulie.takin.web.common.common.Response;
-import com.pamirs.takin.entity.domain.vo.JarVersionVo;
-import org.springframework.web.multipart.MultipartFile;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
-import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -23,6 +24,12 @@ import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationList
 public interface ApplicationService {
 
     void configureTasks();
+
+    /**
+     * 带租户
+     * @param ext
+     */
+    void configureTasks(TenantCommonExt ext);
 
     List<ApplicationListResponse> getApplicationList(String appNames);
 
@@ -183,6 +190,14 @@ public interface ApplicationService {
     void syncApplicationAccessStatus();
 
     /**
+     * 根据租户 同步应用状态
+     * @param tenantId
+     * @param userAppKey
+     * @param envCode
+     */
+    void syncApplicationAccessStatus(Long tenantId,String userAppKey, String envCode);
+
+    /**
      * 通过 applicationId 获得 applicationName
      *
      * @param applicationId 应用id
@@ -191,4 +206,11 @@ public interface ApplicationService {
     String getApplicationNameByApplicationId(Long applicationId);
 
     TApplicationMnt queryTApplicationMntByName(String appName);
+
+    /**
+     * 一键卸载所有应用
+     */
+    void uninstallAllAgent(List<String> appIds);
+
+
 }

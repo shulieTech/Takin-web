@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
@@ -87,18 +92,22 @@ public class WhiteListFileService {
 
     @PostConstruct
     public void init() {
-        if (WebPluginUtils.checkUserData()) {
-            // 老版本 agent 新版本agent 已转到远程调用模块
-            List<UserExt> users = WebPluginUtils.selectAllUser();
-            if (CollectionUtils.isNotEmpty(users)) {
-                for (UserExt user : users) {
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+            0, 1,
+            0, TimeUnit.MILLISECONDS,
+            new ArrayBlockingQueue<>(1),
+            r -> new Thread(r, "初始化白名单"), new CallerRunsPolicy());
+        threadPoolExecutor.submit(() -> {
+            log.info("开始初始化白名单");
+            if (WebPluginUtils.checkUserData()) {
+                // 老版本 agent 新版本agent 已转到远程调用模块
+                for (UserExt user : WebPluginUtils.selectAllUser()) {
                     writeWhiteListFile(user.getId(), user.getKey());
                 }
             }
-        } else {
-            writeWhiteListFile(null, null);
-        }
-
+            // 无插件实现
+            else {writeWhiteListFile(null, null);}
+        });
     }
 
     public void writeWhiteListFile() {
@@ -108,7 +117,7 @@ public class WhiteListFileService {
     public void writeWhiteListFile(Long id, String key) {
         try {
             if (WebPluginUtils.checkUserData()) {
-                id = WebPluginUtils.getCustomerId();
+                id = WebPluginUtils.getTenantId();
                 key = WebPluginUtils.getTenantUserAppKey();
             }
             Map<String, Object> result = queryBlackWhiteList("", id);

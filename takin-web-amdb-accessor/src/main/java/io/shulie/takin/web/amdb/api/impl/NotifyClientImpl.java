@@ -10,6 +10,7 @@ import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.JsonUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ public class NotifyClientImpl implements NotifyClient {
         calculateParam.setServiceName(serviceName);
         calculateParam.setMethod(method);
         calculateParam.setExtend(extend);
+        calculateParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        calculateParam.setEnvCode("envCode");
 
         String responseEntity = HttpClientUtil.sendPost(url, calculateParam);
         if (StringUtils.isBlank(responseEntity)) {
@@ -67,6 +70,8 @@ public class NotifyClientImpl implements NotifyClient {
         calculateParam.setServiceName(serviceName);
         calculateParam.setMethod(method);
         calculateParam.setExtend(extend);
+        calculateParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        calculateParam.setEnvCode("envCode");
 
         String responseEntity = HttpClientUtil.sendPost(url, calculateParam);
         if (StringUtils.isBlank(responseEntity)) {

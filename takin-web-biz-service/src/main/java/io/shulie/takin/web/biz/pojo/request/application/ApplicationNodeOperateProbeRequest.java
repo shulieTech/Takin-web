@@ -33,4 +33,6 @@ public class ApplicationNodeOperateProbeRequest {
     @ApiModelProperty("探针包记录id, 如果是卸载操作, 不用传")
     private Long probeId;
 
+    @ApiModelProperty("应用名称, 不用传")
+    private String appName;
 }

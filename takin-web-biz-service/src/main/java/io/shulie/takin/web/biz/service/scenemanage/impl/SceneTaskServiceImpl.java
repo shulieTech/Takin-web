@@ -63,6 +63,7 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
+import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.ErrorInfo;
@@ -251,8 +252,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             return;
         }
         Integer reportId = (Integer)jsonObject.get("data");
-        redisTemplate.opsForValue().set(getCacheReportId(param.getSceneId()), reportId);
-        redisTemplate.expire(getCacheReportId(param.getSceneId()), 1L, TimeUnit.DAYS);
+        redisTemplate.opsForValue().set(getCacheReportId(param.getSceneId()),reportId,1L,TimeUnit.DAYS);
+
     }
 
 
@@ -280,8 +281,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         return paramNew;
     }
 
+    //RedisKey改造，在原有的sceneId前面追加tenantId:envCode:
     private String getCacheReportId(Long sceneId) {
-        return PRESSURE_REPORT_ID_SCENE_PREFIX + sceneId;
+        return PRESSURE_REPORT_ID_SCENE_PREFIX + TenantKeyUtils.getTenantKey() + sceneId;
     }
 
     @Override

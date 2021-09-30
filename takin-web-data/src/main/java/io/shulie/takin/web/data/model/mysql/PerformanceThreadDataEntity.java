@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 /**
@@ -14,7 +15,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_performance_thread_data")
-public class PerformanceThreadDataEntity {
+public class PerformanceThreadDataEntity extends TenantBaseEntity {
 
     @TableField(value = "base_id")
     private Long baseId;

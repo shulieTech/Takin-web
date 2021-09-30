@@ -182,7 +182,7 @@
             AND tam.APPLICATION_NAME like
             concat('%',#{applicationName},'%')
         </if>
-        <if test="applicationIds !=null">
+        <if test="applicationIds != null and applicationIds.size > 0">
             AND tam.APPLICATION_ID IN
             <foreach collection="applicationIds" item="applicationId" open="(" close=")" separator=",">
                 #{applicationId}
@@ -507,6 +507,23 @@
         <include refid="Base_Column_List"/>
         from t_application_mnt where
         `access_status` in
+        <foreach collection="statusList" item="status" open="(" close=")" separator=",">
+            #{status}
+        </foreach>
+    </select>
+
+    <select id="getAllApplicationByStatusAndTenant"
+            resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
+        select
+        <include refid="Base_Column_List"/>
+        from t_application_mnt where 1=1
+        <if test="tenantId != null">
+            and tenant_id =  #{tenantId}
+        </if>
+        <if test="envCode != null">
+            and env_code =  #{envCode}
+        </if>
+        and `access_status` in
         <foreach collection="statusList" item="status" open="(" close=")" separator=",">
             #{status}
         </foreach>

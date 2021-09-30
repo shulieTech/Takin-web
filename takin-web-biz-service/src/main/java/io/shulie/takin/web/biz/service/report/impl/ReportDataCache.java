@@ -1,14 +1,12 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -19,6 +17,7 @@ import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.util.RedisHelper;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,16 +39,16 @@ public class ReportDataCache {
     /**
      * 指标信息
      */
-    private static final String REPORT_METRIC_KEY = "takin:web:report:metric:key:%s";
+    private static final String REPORT_METRIC_KEY = "takin:web:report:metric:key:%s:%s:%s";
 
     /**
      * 报告明细
      */
-    private static final String REPORT_DETAIL_KEY = "takin:web:report:detail:key:%s";
+    private static final String REPORT_DETAIL_KEY = "takin:web:report:detail:key:%s:%s:%s";
     /**
      * 报告应用信息
      */
-    private static final String REPORT_APPLICATION_KEY = "takin:web:report:application:key:%s";
+    private static final String REPORT_APPLICATION_KEY = "takin:web:report:application:key:%s:%s:%s";
 
     @Autowired
     private TApplicationMntDao tApplicationMntDao;
@@ -97,7 +96,8 @@ public class ReportDataCache {
      * @return
      */
     private String getReportApplicationKey(Long reportId) {
-        return String.format(REPORT_APPLICATION_KEY, reportId);
+
+        return String.format(REPORT_APPLICATION_KEY,WebPluginUtils.getTenantId() ,"encCode",reportId);
     }
 
     /**
@@ -106,7 +106,7 @@ public class ReportDataCache {
      * @return
      */
     private String getReportDetailKey(Long reportId) {
-        return String.format(REPORT_DETAIL_KEY, reportId);
+        return String.format(REPORT_DETAIL_KEY, WebPluginUtils.getTenantId(), "envCode" ,reportId);
     }
 
     /**
@@ -115,7 +115,7 @@ public class ReportDataCache {
      * @return
      */
     private String getReportMetricKey(Long reportId) {
-        return String.format(REPORT_METRIC_KEY, reportId);
+        return String.format(REPORT_METRIC_KEY,WebPluginUtils.getTenantId() ,"envCode",reportId);
     }
 
     /**
@@ -130,7 +130,7 @@ public class ReportDataCache {
         }
 
         // 指标 map
-        List<Map<String, Object>> metricsList = reportService.listMetrics(reportId, reportDetail.getSceneId(), reportDetail.getCustomerId());
+        List<Map<String, Object>> metricsList = reportService.listMetrics(reportId, reportDetail.getSceneId(), reportDetail.getTenantId());
 
         if (CollectionUtils.isEmpty(metricsList)) {
             log.error("ReportDataCache Cache Jmeter Metric is null");

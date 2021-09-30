@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2021. Shulie Technology, Co.Ltd
+ * Email: shulie@shulie.io
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package io.shulie.takin.web.biz.service.linkManage;
 
 import java.util.List;
@@ -9,6 +25,7 @@ import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import io.shulie.takin.web.common.vo.application.AppRemoteCallListVO;
 
@@ -69,6 +86,14 @@ public interface AppRemoteCallService {
     void syncAmdb();
 
     /**
+     * 同步amdb数据 租户
+     * @param tenantId
+     * @param userAppKey
+     * @param envCode
+     */
+    void syncAmdb(Long tenantId,String userAppKey,String envCode);
+
+    /**
      * 获取服务端应用
      *
      * @return
@@ -79,4 +104,10 @@ public interface AppRemoteCallService {
      * 根据应用删除
      */
     void deleteByApplicationIds(List<Long> applicationIds);
+
+    /**
+     * 批量配置白名单
+     * @param request
+     */
+    void batchConfig(AppRemoteCallConfigRequest request);
 }

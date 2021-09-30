@@ -24,6 +24,7 @@ import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.application.ApplicationErrorService;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.impl.ApplicationServiceImpl;
+import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.application.AppExceptionCodeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -69,9 +70,8 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
         if (nodeErrorResponse != null) {
             responseList.add(nodeErrorResponse);
         }
-
-
-        String appUniqueKey = queryRequest.getApplicationId() + ApplicationServiceImpl.PRADARNODE_KEYSET;
+        //redisKey改造
+        String appUniqueKey = TenantKeyUtils.getTenantKey()+queryRequest.getApplicationId() + ApplicationServiceImpl.PRADARNODE_KEYSET;
         Set<String> keys = redisTemplate.opsForSet().members(appUniqueKey);
         if (keys == null || keys.size() == 0) {
             return responseList;
@@ -169,7 +169,8 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
                 output.setTime(DateUtils.getNowDateStr());
                 outputs.add(output);
             }
-            String appUniqueKey = app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG;
+            //redisKey改造
+            String appUniqueKey = TenantKeyUtils.getTenantKey()+app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG;
             Set<String> keys = redisTemplate.keys(appUniqueKey + "*");
             if (keys != null) {
                 for (String nodeKey : keys) {

@@ -14,6 +14,7 @@ import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             entranceQueryParam.setRpcType("");
         }
         entranceQueryParam.setAppName(applicationName);
+        entranceQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        entranceQueryParam.setEnvCode("envCode");
         //entranceQueryParam.setFieldNames("appName,serviceName,methodName,middlewareName,rpcType");
         try {
 //            String responseEntity = HttpClientUtil.sendGet(url, entranceQueryParam);
@@ -98,6 +101,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         if (extend != null) {
             topologyQueryParam.setExtend(extend);
         }
+        topologyQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        topologyQueryParam.setEnvCode("envCode");
         try {
 //            String responseEntity = HttpClientUtil.sendGet(url, topologyQueryParam);
 //            if (StringUtils.isBlank(responseEntity)) {
@@ -151,6 +156,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             topologyQueryParam.setExtend(extend);
         }
         topologyQueryParam.setId(nodeId);
+        topologyQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        topologyQueryParam.setEnvCode("envCode");
         try {
 //            String responseEntity = HttpClientUtil.sendGet(url, topologyQueryParam);
 //            if (StringUtils.isBlank(responseEntity)) {
@@ -185,6 +192,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         ServiceQueryParam entranceQueryParam = new ServiceQueryParam();
         entranceQueryParam.setRpcType(RpcType.TYPE_MQ + "");
         entranceQueryParam.setAppName(applicationName);
+        entranceQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        entranceQueryParam.setEnvCode("envCode");
         //entranceQueryParam.setFieldNames("appName,serviceName,methodName,middlewareName,rpcType");
         try {
 //            String responseEntity = HttpClientUtil.sendGet(url, entranceQueryParam);

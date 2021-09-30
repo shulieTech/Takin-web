@@ -1,7 +1,6 @@
 package io.shulie.takin.web.app.conf;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
@@ -17,7 +16,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void insertFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, "customerId", Long.class, WebPluginUtils.getCustomerId());
+        this.strictInsertFill(metaObject, "customerId", Long.class, WebPluginUtils.getTenantId());
         this.strictInsertFill(metaObject, "userId", Long.class, WebPluginUtils.getUserId());
     }
 

@@ -88,7 +88,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
                 log.warn("get report id by sceneId is empty,sceneId：{}", sceneId);
             }
         }
-        // 取延迟1分钟时间 前5分钟数据
+        // 取延迟1分钟时间 前5分钟数据 因为 agent上报数据需要1分钟计算出来
         return getReportTraceDtoList(reportId, sceneId, System.currentTimeMillis() - 6*60*1000L ,
             System.currentTimeMillis() -1*60*1000L, type, current, pageSize);
     }

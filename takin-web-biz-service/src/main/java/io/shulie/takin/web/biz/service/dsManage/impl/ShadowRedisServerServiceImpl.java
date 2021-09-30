@@ -111,7 +111,8 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         applicationService.modifyAccessStatus(String.valueOf(createParam.getApplicationId()),
             AppAccessTypeEnum.UNUPLOAD.getValue(), null);
 
-        agentConfigCacheManager.evictShadowServer(applicationDetailResult.getApplicationName());
+        //todo Agent改造点
+        agentConfigCacheManager.evictShadowServer("","envCode",applicationDetailResult.getApplicationName());
 
         // 新增配置
         createParam.setStatus(createRequest.getStatus());
@@ -137,8 +138,8 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
 
         configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
-
-        agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
+        //todo Agent改造点
+        agentConfigCacheManager.evictShadowServer("","envCode",dsResult.getApplicationName());
 
         updateParam.setId(updateRequest.getId());
         updateParam.setStatus(updateRequest.getStatus());
@@ -183,7 +184,8 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         applicationDsDAO.enable(enableParam);
         configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
-        agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
+        //todo Agent改造点
+        agentConfigCacheManager.evictShadowServer("","envCode",dsResult.getApplicationName());
 
         return Response.success();
     }
@@ -201,7 +203,8 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
 
-        agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
+        //todo Agent改造点
+        agentConfigCacheManager.evictShadowServer("","envCode",dsResult.getApplicationName());
         return Response.success();
     }
 

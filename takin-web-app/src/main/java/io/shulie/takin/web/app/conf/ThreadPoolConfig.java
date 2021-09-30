@@ -23,6 +23,17 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class ThreadPoolConfig {
 
+    /**
+     * 用于定时任务
+     * @return
+     */
+    @Bean(name = "jobThreadPool")
+    public ThreadPoolExecutor jobThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
+        return new ThreadPoolExecutor(16, 1000, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
     @Bean(name = "fastDebugThreadPool")
     public ThreadPoolExecutor fastDebug() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("fast-debug-%d").build();

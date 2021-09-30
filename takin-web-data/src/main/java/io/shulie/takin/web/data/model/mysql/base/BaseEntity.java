@@ -1,11 +1,11 @@
-package io.shulie.takin.web.data.model.mysql;
+package io.shulie.takin.web.data.model.mysql.base;
+
+import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Data;
-
-import java.io.Serializable;
 
 /**
  * 数据库映射共有类
@@ -14,7 +14,7 @@ import java.io.Serializable;
  * @date 2021/4/7 5:27 下午
  */
 @Data
-public class BaseEntity implements Serializable {
+public class BaseEntity extends TenantBaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

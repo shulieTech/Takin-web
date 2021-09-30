@@ -415,7 +415,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         }
 
         String lockKey = "";
-        String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.getCustomerId(), param.hashCode());
+        String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.getTenantId(), param.hashCode());
         this.isCreateError(!distributedLock.tryLockZeroWait(lockKey), AppConstants.TOO_FREQUENTLY);
         try {
             //删除原有批次号 生成新批次号

@@ -63,7 +63,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         if (Objects.isNull(param) || Objects.isNull(param.getApplicationId())) {
             throw new TakinWebException(ExceptionCode.POD_NUM_EMPTY, "缺少参数");
         }
-        Long customerId = WebPluginUtils.getCustomerId();
+        Long customerId = WebPluginUtils.getTenantId();
         param.setCustomerId(customerId);
         IPage<ApplicationPluginsConfigEntity> listPage = applicationPluginsConfigDAO.findListPage(param);
         List<ApplicationPluginsConfigEntity> records = listPage.getRecords();

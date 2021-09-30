@@ -74,7 +74,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         createParam.setApplicationName(applicationDetailResult.getApplicationName());
         createParam.setDbType(createRequest.getDbType());
         createParam.setDsType(Integer.parseInt(String.valueOf(createRequest.getDsType())));
-        createParam.setCustomerId(applicationDetailResult.getCustomerId());
+        createParam.setTenantId(applicationDetailResult.getCustomerId());
         WebPluginUtils.fillUserData(createParam);
         syncInfo(createRequest.getApplicationId(), createParam.getApplicationName());
         // 新增配置
@@ -96,7 +96,8 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         //修改应用状态
         applicationService.modifyAccessStatus(String.valueOf(applicationId),
             AppAccessTypeEnum.UNUPLOAD.getValue(), null);
-        agentConfigCacheManager.evictShadowHbase(applicationName);
+        //todo agent改造
+        agentConfigCacheManager.evictShadowHbase("","",applicationName);
     }
 
     private void syncShadowHbase(Long applicationId, String o) {

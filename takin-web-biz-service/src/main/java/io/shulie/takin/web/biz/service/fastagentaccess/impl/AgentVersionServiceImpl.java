@@ -35,7 +35,6 @@ import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
 import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionListResult;
-import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -64,8 +63,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
      * agent下载的url模板
      */
     private final static String AGENT_DOWNLOAD_TEMPLATE
-        = "%s/fast/agent/access/project/download?projectName=%s&userAppKey=%s&version=%s&expireDate=%s"
-        + "&flag=%s";
+        = "%s/fast/agent/access/project/download?projectName=%s&userAppKey=%s&userId=%s&version=%s&envCode=%s"
+        + "&expireDate=%s&flag=%s";
 
     /**
      * userId字符串
@@ -76,6 +75,11 @@ public class AgentVersionServiceImpl implements AgentVersionService {
      * userAppKey字符串
      */
     private final static String USER_APP_KEY = "user.app.key";
+
+    /**
+     * envCode字符串
+     */
+    private final static String PRADAR_ENV_CODE = "pradar.env.code";
 
     @Autowired
     private AgentVersionDAO agentVersionDAO;
@@ -177,7 +181,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
     @Override
-    public File getProjectFile(String projectName, String userAppKey, String version) {
+    public File getProjectFile(String projectName, String userAppKey, String userId, String version, String envCode) {
         // 1、获取对应版本的agent文件
         AgentVersionDetailResult detailResult = agentVersionDAO.selectByVersion(version);
         if (detailResult == null) {
@@ -203,7 +207,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         });
 
         // 4、特殊处理一下agentConfig,将当前用户的pradar.user.id和user.app.key写入配置
-        dealAgentConfig(userAppKey, agentConfig);
+        dealAgentConfig(userAppKey, userId, envCode, agentConfig);
 
         // 5、将替换后配置参数的文件进行返回
         return updateZipFile(detailResult.getFilePath(), agentConfig, simulatorConfig);
@@ -249,9 +253,13 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         // 获取一小时后的时间戳
         long expireDate = System.currentTimeMillis() + 60 * 60 * 1000;
         String userAppKey = WebPluginUtils.getTenantUserAppKey();
-        String flag = AgentDownloadUrlVerifyUtil.generatorFlag(projectName, userAppKey, version, expireDate);
+        String userId = WebPluginUtils.getUserId() == null ? "" : String.valueOf(WebPluginUtils.getUserId());
+        String envCode = WebPluginUtils.getEnvCode();
+        String flag = AgentDownloadUrlVerifyUtil.generatorFlag(projectName, userAppKey, userId, version, envCode,
+            expireDate);
         urlPrefix = urlPrefix.endsWith("/") ? urlPrefix.substring(0, urlPrefix.length() - 1) : urlPrefix;
-        return String.format(AGENT_DOWNLOAD_TEMPLATE, urlPrefix, projectName, userAppKey, version, expireDate, flag);
+        return String.format(AGENT_DOWNLOAD_TEMPLATE, urlPrefix, projectName, userAppKey, userId, version, envCode,
+            expireDate, flag);
     }
 
     /**
@@ -345,27 +353,35 @@ public class AgentVersionServiceImpl implements AgentVersionService {
      * 两个配置的值修改成当前用户信息
      *
      * @param userAppKey      用户唯一标识
+     * @param userId          用户id
+     * @param envCode         环境标识
      * @param agentConfigList AgentConfigDetailResult集合
      */
-    private void dealAgentConfig(String userAppKey, List<AgentConfigDetailResult> agentConfigList) {
-        UserExt userExt = WebPluginUtils.getUserByAppKey(userAppKey);
-        if (userExt == null) {
-            return;
-        }
-        agentConfigList.removeIf(detailResult -> PRADAR_USER_ID.equals(detailResult.getEnKey()) || USER_APP_KEY.equals(
-            detailResult.getEnKey()));
+    private void dealAgentConfig(String userAppKey, String userId, String envCode,
+        List<AgentConfigDetailResult> agentConfigList) {
+        agentConfigList.removeIf(detailResult ->
+            PRADAR_USER_ID.equals(detailResult.getEnKey())
+                || USER_APP_KEY.equals(detailResult.getEnKey())
+                || PRADAR_ENV_CODE.equals(detailResult.getEnKey())
+        );
 
         AgentConfigDetailResult pradarUserIdObj = new AgentConfigDetailResult();
-        pradarUserIdObj.setDesc("pradar.user.id");
+        pradarUserIdObj.setDesc(PRADAR_USER_ID);
         pradarUserIdObj.setEnKey(PRADAR_USER_ID);
-        pradarUserIdObj.setDefaultValue(String.valueOf(userExt.getId()));
+        pradarUserIdObj.setDefaultValue(userId);
 
         AgentConfigDetailResult userAppKeyObj = new AgentConfigDetailResult();
-        userAppKeyObj.setDesc("user.app.key");
+        userAppKeyObj.setDesc(USER_APP_KEY);
         userAppKeyObj.setEnKey(USER_APP_KEY);
         userAppKeyObj.setDefaultValue(userAppKey);
 
+        AgentConfigDetailResult pradarEnvCodeObj = new AgentConfigDetailResult();
+        userAppKeyObj.setDesc(PRADAR_ENV_CODE);
+        userAppKeyObj.setEnKey(PRADAR_ENV_CODE);
+        userAppKeyObj.setDefaultValue(envCode);
+
         agentConfigList.add(pradarUserIdObj);
         agentConfigList.add(userAppKeyObj);
+        agentConfigList.add(pradarEnvCodeObj);
     }
 }

@@ -34,8 +34,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Component
 @Slf4j
+@Component
 public class PradarConfigServiceImpl implements PradarConfigService {
 
     @Value("${takin.config.zk.addr}")

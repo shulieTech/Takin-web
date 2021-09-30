@@ -6,9 +6,7 @@ import com.dangdang.ddframe.job.reg.base.CoordinatorRegistryCenter;
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperConfiguration;
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,23 +17,19 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CoordinatorRegistryCenterService {
 
-    @Autowired
-    private Environment environment;
+    @Value("${takin.config.zk.addr}")
+    private String zkAddr;
 
     private CoordinatorRegistryCenter registryCenter;
 
     @PostConstruct
     public void init() {
-        String zkAddr = environment.getProperty("takin.config.zk.addr");
-        if (StringUtils.isEmpty(zkAddr)) {
-            throw new RuntimeException("配置中心zk地址没有填写，请核对校验`takin.config.zk.addr`");
-        }
-        registryCenter = new ZookeeperRegistryCenter(
-            new ZookeeperConfiguration(zkAddr, "verify-job"));
+        registryCenter = new ZookeeperRegistryCenter(new ZookeeperConfiguration(zkAddr, "verify-job"));
         registryCenter.init();
     }
 
     public CoordinatorRegistryCenter getRegistryCenter() {
         return registryCenter;
     }
+
 }

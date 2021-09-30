@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
  * @author shiyajian
  * create: 2020-09-17
  */
-@Component
 @Slf4j
-public final class ZkClient {
+@Component
+public class ZkClient {
 
     @Value("${takin.config.zk.addr}")
     private String zkAddr;
@@ -45,12 +45,12 @@ public final class ZkClient {
     }
 
     /**
-     * // 递归创建所需父节点
-     * // 创建类型为持久节点
-     * // 目录及内容
+     * 递归创建所需父节点
+     * 创建类型为持久节点
+     * 目录及内容
      *
-     * @param path
-     * @param data
+     * @param path 节点路径
+     * @param data 值
      */
     public void addNode(String path, String data) {
         try {
@@ -111,10 +111,7 @@ public final class ZkClient {
      */
     public void deleteNode(String path) {
         try {
-            client.delete()
-                .guaranteed()
-                .deletingChildrenIfNeeded()
-                .forPath(CommonUtil.getZkTenantAndEnvPath(path));
+            client.delete().guaranteed().deletingChildrenIfNeeded().forPath(CommonUtil.getZkTenantAndEnvPath(path));
         } catch (Exception e) {
             throw new RuntimeException(String.format("删除zk数据节点失败;path=[%s]", CommonUtil.getZkTenantAndEnvPath(path)));
 

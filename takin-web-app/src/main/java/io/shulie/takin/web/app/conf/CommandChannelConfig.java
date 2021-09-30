@@ -23,7 +23,6 @@ public class CommandChannelConfig {
 
     @Bean
     public ServerChannel registerChannel() {
-
         ServerChannel channel = null;
         try {
             ZkClientConfig config = new ZkClientConfig();

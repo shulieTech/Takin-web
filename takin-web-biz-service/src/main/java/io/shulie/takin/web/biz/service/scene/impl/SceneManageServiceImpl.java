@@ -102,11 +102,8 @@ public class SceneManageServiceImpl implements SceneManageService {
     @Autowired
     private HttpWebClient httpWebClient;
 
-    @Value("${script.check:true}")
-    private Boolean scriptCheck;
-
-    @Value("${script.check.perfomancetype:false}")
-    private Boolean scriptPreTypeCheck;
+    @Value("${script.check: true}")
+    private boolean scriptCheck;
 
     @Resource
     private TApplicationMntDao tApplicationMntDao;
@@ -587,7 +584,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (scriptType == 1) {
             return new ScriptCheckDTO();
         }
-        if (scriptCheck == null || !scriptCheck) {
+        if (!scriptCheck) {
             return new ScriptCheckDTO();
         }
         SceneScriptRefOpen sceneScriptRef = scriptList.get(0);

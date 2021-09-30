@@ -163,7 +163,6 @@ public class PerformanceThreadDataDAOImpl implements PerformanceThreadDataDAO {
         }
 
         // mysql
-        LambdaUpdateWrapper<PerformanceThreadStackDataEntity> stackWrapper = new LambdaUpdateWrapper<>();
         LambdaUpdateWrapper<PerformanceThreadDataEntity> wrapper = new LambdaUpdateWrapper<>();
         wrapper.lt(PerformanceThreadDataEntity::getGmtCreate,time);
         wrapper.last("limit 10000");

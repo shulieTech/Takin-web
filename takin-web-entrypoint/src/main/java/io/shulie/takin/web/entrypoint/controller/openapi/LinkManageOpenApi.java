@@ -43,11 +43,6 @@ public class LinkManageOpenApi {
 
     @Autowired
     private LinkManageService linkManageService;
-    /**
-     * 是否展示为图
-     */
-    @Value("${link.graph.enable:false}")
-    private boolean graphEable;
 
     @GetMapping("/link/tech/linkManage")
     @ApiOperation("系统流程列表查询接口")

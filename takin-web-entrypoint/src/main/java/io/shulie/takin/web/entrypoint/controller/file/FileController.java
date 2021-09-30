@@ -48,9 +48,6 @@ public class FileController {
     @Autowired
     private HttpWebClient httpWebClient;
 
-    @Autowired
-    private DiffFileApi fileApi;
-
     @Value("${file.upload.user.data.dir:/data/tmp}")
     private String fileDir;
 
@@ -135,9 +132,8 @@ public class FileController {
      */
     private boolean filePathValidate(String filePath) {
         List<String> arrayList = init();
-
-        for (int i = 0; i < arrayList.size(); i++) {
-            if (filePath.startsWith(arrayList.get(i))) {
+        for (String s : arrayList) {
+            if (filePath.startsWith(s)) {
                 return true;
             }
         }

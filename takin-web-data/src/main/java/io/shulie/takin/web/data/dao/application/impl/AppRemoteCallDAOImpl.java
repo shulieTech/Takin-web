@@ -188,7 +188,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     @Override
     public Long getRecordCount(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = getAppRemoteCallEntityLambdaQueryWrapper(param);
-        return Long.valueOf(this.count(lambdaQueryWrapper));
+        return (long)this.count(lambdaQueryWrapper);
     }
 
     @Override

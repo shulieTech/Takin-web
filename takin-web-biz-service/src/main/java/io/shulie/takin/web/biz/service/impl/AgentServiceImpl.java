@@ -89,13 +89,14 @@ public class AgentServiceImpl implements AgentService {
             applicationNodeProbeDAO.getByApplicationNameAndAgentId(appName, agentId);
 
         log.info("探针操作结果上报 --> 查询操作记录!");
+        AgentApplicationNodeProbeOperateResultResponse response = new AgentApplicationNodeProbeOperateResultResponse();
         if (applicationNodeProbeResult == null) {
-            throw new TakinWebException(ExceptionCode.AGENT_APPLICATION_NODE_PROBE_UPDATE_OPERATE_RESULT_ERROR,
-                "操作记录不存在!");
+            response.setBusinessCode(99);
+            response.setMessage("操作记录不存在");
+            return response;
         }
 
         log.info("探针操作结果上报 --> 更新操作记录!");
-        AgentApplicationNodeProbeOperateResultResponse response = new AgentApplicationNodeProbeOperateResultResponse();
         // 比对操作结果, 如果是一样, 且是成功, 就不往下了
         Integer operateResult = pushOperateRequest.getOperateResult();
         if (operateResult.equals(applicationNodeProbeResult.getOperateResult())

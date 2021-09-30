@@ -72,7 +72,7 @@ public class CommonUtil implements AppConstants {
      * 根据租户id区分文件夹
      *
      * @param uploadPath 上传的文件夹
-     * @param folder 分类目录
+     * @param folder     分类目录
      * @return 文件所在文件夹的绝对路径
      */
     public static String getAbsoluteUploadPath(String uploadPath, String folder) {
@@ -86,7 +86,7 @@ public class CommonUtil implements AppConstants {
      * /data/path/probe/20210610/
      *
      * @param uploadPath 上传的文件路径
-     * @param folder 分类目录
+     * @param folder     分类目录
      * @return 上传文件的临时路径
      */
     public static String getUploadPath(String uploadPath, String folder) {
@@ -128,9 +128,9 @@ public class CommonUtil implements AppConstants {
      * 数据越多, 此方法愈快一些,
      * stream 方法加了 try/catch 是一部分原因, newInstance 可能也是一部分原因
      *
-     * @param sourceList 源list
+     * @param sourceList  源list
      * @param targetClazz 目标对象类对象
-     * @param <T> 要转换的类
+     * @param <T>         要转换的类
      * @return 另一个对象的list
      */
     public static <T> List<T> list2list(List<?> sourceList, Class<T> targetClazz) {
@@ -148,9 +148,9 @@ public class CommonUtil implements AppConstants {
      *
      * 100000 数据, 花费时间 1622712560395
      *
-     * @param sourceList 源list
+     * @param sourceList  源list
      * @param targetClazz 目标对象类对象
-     * @param <T> 要转换的类
+     * @param <T>         要转换的类
      * @return 另一个对象的list
      */
     public static <T> List<T> list2listByStream(List<?> sourceList, Class<T> targetClazz) {

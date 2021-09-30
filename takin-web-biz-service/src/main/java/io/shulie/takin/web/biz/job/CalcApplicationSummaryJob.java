@@ -33,8 +33,8 @@ public class CalcApplicationSummaryJob implements SimpleJob {
     @Autowired
     private ReportService reportService;
 
-    @Value("${open.report.task:true}")
-    private Boolean openReportTask;
+    @Value("${open.report.task: true}")
+    private boolean openReportTask;
 
     @Override
     public void execute(ShardingContext shardingContext) {

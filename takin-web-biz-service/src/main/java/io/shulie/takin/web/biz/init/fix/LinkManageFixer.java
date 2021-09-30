@@ -31,8 +31,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class LinkManageFixer {
 
-    @Value("${link.fix.enable:false}")
-    private Boolean enableLinkFix;
+    @Value("${link.fix.enable: false}")
+    private boolean enableLinkFix;
 
     @Resource
     private LinkManageTableMapper linkManageTableMapper;

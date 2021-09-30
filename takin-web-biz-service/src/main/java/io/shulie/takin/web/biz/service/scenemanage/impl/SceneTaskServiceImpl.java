@@ -99,9 +99,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     public static final String PRESSURE_REPORT_ID_SCENE_PREFIX = "pressure:reportId:scene:";
 
-    @Value("${takin.cloud.url}")
-    private String cloudUrl;
-
     @Autowired
     private LeakSqlService leakSqlService;
 
@@ -118,7 +115,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private TApplicationMntDao applicationMntDao;
 
     @Value("${start.task.check.application: true}")
-    private Boolean checkApplication;
+    private boolean checkApplication;
 
     @Autowired
     private SceneTaskApi sceneTaskApi;

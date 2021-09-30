@@ -148,7 +148,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     @Value("${file.upload.script.path:/nfs/takin/script/}")
     private String scriptFilePath;
     @Value("${script.check:true}")
-    private Boolean scriptCheck;
+    private boolean scriptCheck;
 
     @Value("${file.upload.user.data.dir:/data/tmp}")
     private String fileDir;
@@ -371,7 +371,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     @Override
     public ScriptCheckDTO checkAndUpdateScript(String refType, String refValue, String scriptFileUploadPath) {
         ScriptCheckDTO dto = new ScriptCheckDTO();
-        if (scriptCheck == null || !scriptCheck) {
+        if (!scriptCheck) {
             return dto;
         }
         ScriptCheckAndUpdateReq scriptCheckAndUpdateReq = new ScriptCheckAndUpdateReq();

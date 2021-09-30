@@ -86,7 +86,7 @@ public class ActivityServiceImpl implements ActivityService {
     @Autowired
     private ReportService reportService;
     @Value("${link.flow.check.enable:false}")
-    private Boolean enableLinkFlowCheck;
+    private boolean enableLinkFlowCheck;
     @Autowired
     private CloudTaskApi cloudTaskApi;
     @Autowired

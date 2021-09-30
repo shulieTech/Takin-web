@@ -47,9 +47,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "影子库表管理", value = "影子库表管理")
 public class DsController {
 
-    @Value("${application.ds.config.is.new.version: false}")
-    private Boolean isNewVersion;
-
     private static final String DATABASE = "影子库 URL：";
 
     private static final String TABLE = "影子表 URL：";

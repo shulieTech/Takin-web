@@ -62,16 +62,12 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private HttpWebClient httpWebClient;
+
     @Autowired
     private ReportApi reportApi;
-    @Value("${file.upload.url:''}")
-    private String fileUploadUrl;
 
     @Autowired
     private VerifyTaskReportService verifyTaskReportService;
-
-    @Value("${file.upload.user.data.dir:/data/tmp}")
-    private String fileDir;
 
     @Autowired
     private ActivityDAO activityDAO;

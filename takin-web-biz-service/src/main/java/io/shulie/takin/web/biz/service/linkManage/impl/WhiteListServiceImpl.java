@@ -127,7 +127,7 @@ public class WhiteListServiceImpl implements WhiteListService {
      * 是否开启校验白名单重名
      */
     @Value("${whitelist.duplicate.name.check:false}")
-    private String isCheckDuplicateName;
+    private boolean isCheckDuplicateName;
 
     @Value("${whitelist.number.limit:5}")
     private Integer number;
@@ -191,7 +191,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                 // 白名单重复
                 if (WhitelistUtil.isDuplicate(existWhite,
                         WhitelistUtil.buildWhiteId(saveOrUpdateParam.getType(), saveOrUpdateParam.getInterfaceName()))) {
-                    saveOrUpdateParam.setIsGlobal(!Boolean.parseBoolean(isCheckDuplicateName));
+                    saveOrUpdateParam.setIsGlobal(!isCheckDuplicateName);
                 }
                 saveOrUpdateParam.setIsHandwork(input.getIsHandwork());
             } else {
@@ -201,7 +201,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                 // 白名单重复
                 if (WhitelistUtil.isDuplicate(existWhite,
                         WhitelistUtil.buildWhiteId(saveOrUpdateParam.getType(), saveOrUpdateParam.getInterfaceName()))) {
-                    saveOrUpdateParam.setIsGlobal(!Boolean.parseBoolean(isCheckDuplicateName));
+                    saveOrUpdateParam.setIsGlobal(!isCheckDuplicateName);
                 }
                 saveOrUpdateParam.setIsHandwork(input.getIsHandwork());
             }
@@ -295,7 +295,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                 // 白名单重复
                 if (WhitelistUtil.isDuplicate(existWhite,
                         WhitelistUtil.buildWhiteId(param.getType(), param.getInterfaceName()))) {
-                    param.setIsGlobal(!Boolean.parseBoolean(isCheckDuplicateName));
+                    param.setIsGlobal(!isCheckDuplicateName);
                 }
                 return param;
             }).collect(Collectors.toList());
@@ -345,7 +345,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                 // 白名单重复
                 if (WhitelistUtil.isDuplicate(existWhite,
                         WhitelistUtil.buildWhiteId(param.getType(), param.getInterfaceName()))) {
-                    param.setIsGlobal(!Boolean.parseBoolean(isCheckDuplicateName));
+                    param.setIsGlobal(!isCheckDuplicateName);
                 }
                 if (twList.getHandwork() == null) {
                     param.setIsHandwork(true);
@@ -403,7 +403,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                         // 全局设置
                         if (WhitelistUtil.isDuplicate(existWhite,
                                 WhitelistUtil.buildWhiteId(twList.getType(), twList.getInterfaceName()))) {
-                            if (Boolean.parseBoolean(isCheckDuplicateName)) {
+                            if (isCheckDuplicateName) {
                                 twList.setGlobal(false);
                             }
                         }
@@ -854,7 +854,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         }
 
         // 判断下不允许修改
-        if (Boolean.parseBoolean(isCheckDuplicateName)) {
+        if (isCheckDuplicateName) {
             // 重名白名单
             List<String> amdbString = Lists.newArrayList();
             amdbString.add(whitelistResult.getInterfaceName());
@@ -1028,7 +1028,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         // 是否重复
         if (WhitelistUtil.isDuplicate(list, WhitelistUtil.buildWhiteId(vo.getInterfaceType(), vo.getInterfaceName()))) {
             tags.add(WhitelistTagEnum.DUPLICATE_NAME.getTagName());
-            if (Boolean.parseBoolean(isCheckDuplicateName)) {
+            if (isCheckDuplicateName) {
                 vo.setIsGlobal(false);
             }
         }

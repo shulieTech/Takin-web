@@ -181,8 +181,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Autowired
     private ApplicationNodeDAO applicationNodeDAO;
     @Autowired
-    private AgentConfigCacheManager agentConfigCacheManager;
-    @Autowired
     private WhiteListService whiteListService;
     @Autowired
     private ShadowJobConfigService shadowJobConfigService;
@@ -206,9 +204,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private LinkGuardDAO linkGuardDAO;
-
-    @Value("${fast.debug.upload.log.path:/data/app/config/}")
-    private String configPath;
 
     @Value("${application.ds.config.is.new.version: false}")
     private Boolean isNewVersion;

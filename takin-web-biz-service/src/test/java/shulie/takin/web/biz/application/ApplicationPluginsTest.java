@@ -35,13 +35,6 @@
 //    @Autowired
 //    RestTemplate restTemplate;
 //
-//    @Value("${login.dingding.push.enable}")
-//    private Boolean pushEnable;
-//
-//    /* 登录  钉钉url */
-//    @Value("${login.dingding.push.url}")
-//    public String DINGDING_URL;
-//
 //    @Before
 //    public void test() {
 //        UserExt user = new UserExt();

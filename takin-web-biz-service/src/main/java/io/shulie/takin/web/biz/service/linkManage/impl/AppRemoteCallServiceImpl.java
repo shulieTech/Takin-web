@@ -90,9 +90,6 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     private BlackListDAO blackListDAO;
 
     @Autowired
-    private ConfigSyncService configSyncService;
-
-    @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
 
     @Value("${remote.call.auto.join.white: false}")
@@ -614,12 +611,12 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         //初始化
         List<AppRemoteCallResult> resultList = Lists.newArrayList();
         //计算实际需开启的线程数
-        Long threadRealNum = totalCount / criticaValue + (totalCount % criticaValue > 0 ? 1 : 0);
+        long threadRealNum = totalCount / criticaValue + (totalCount % criticaValue > 0 ? 1 : 0);
         //初始化
-        List<Future<List<AppRemoteCallResult>>> futureList = Lists.newArrayListWithCapacity(threadRealNum.intValue());
+        List<Future<List<AppRemoteCallResult>>> futureList = Lists.newArrayListWithCapacity((int)threadRealNum);
         //线程执行
-        for (Long index = 0L; index < threadRealNum; index++) {
-            Long startPageIndex = index * criticaValue + 1;
+        for (long index = 0L; index < threadRealNum; index++) {
+            long startPageIndex = index * criticaValue + 1;
             Future<List<AppRemoteCallResult>> future = queryAsyncThreadPool.submit(() -> appRemoteCallDAO.getPartRecord(param, startPageIndex, criticaValue));
             futureList.add(future);
         }

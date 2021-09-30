@@ -9,6 +9,10 @@ import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
 
+import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.common.common.Separator;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -147,5 +151,14 @@ public class RedisHelper {
         return keys;
     }
 
+    public static String generateRedisKey(String... keyPart){
+        return generateRedisKeyWithSeparator(Separator.defautSeparator(),keyPart);
+    }
 
+    public static String generateRedisKeyWithSeparator(Separator separator,String... keyPart){
+        if (separator == null){
+            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON,"separator cannot be null!");
+        }
+        return StringUtil.join(separator.getValue(),keyPart);
+    }
 }

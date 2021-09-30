@@ -12,10 +12,13 @@ import java.util.stream.Collectors;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -26,6 +29,16 @@ import org.springframework.util.StringUtils;
  * @date 2021/6/3 4:43 下午
  */
 public class CommonUtil implements AppConstants {
+
+    /**
+     * 获得 zk 租户, 环境隔离后的路径
+     *
+     * @param path 节点路径
+     * @return 租户, 环境隔离后的路径
+     */
+    public static String getZkTenantAndEnvPath(String path) {
+        return String.format("%s/%s/%s", WebPluginUtils.getTenantUserAppKey(), WebPluginUtils.getEnvCode(), path);
+    }
 
     /**
      * springboot local 环境

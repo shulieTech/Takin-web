@@ -2,6 +2,7 @@ package io.shulie.takin.web.config.sync.zk.impl.client;
 
 import javax.annotation.PostConstruct;
 
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.config.sync.zk.constants.ZkConfigPathConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
@@ -9,6 +10,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -21,27 +23,16 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public final class ZkClient {
 
-    @Autowired
-    private Environment environment;
+    @Value("${takin.config.zk.addr}")
+    private String zkAddr;
+
+    @Value("${takin.config.zk.timeout: 3000}")
+    private Integer timeout;
 
     private CuratorFramework client;
 
     @PostConstruct
     public void init() {
-        String zkAddr = environment.getProperty("takin.config.zk.addr");
-        if (StringUtils.isEmpty(zkAddr)) {
-            throw new RuntimeException("配置中心zk地址没有填写，请核对校验`takin.config.zk.addr`");
-        }
-        int timeout = 3000;
-
-        try {
-            String timeoutString = environment.getProperty("takin.config.zk.timeout");
-            if (timeoutString != null) {
-                timeout = Integer.parseInt(timeoutString);
-            }
-        } catch (Exception e) {
-            // ignore
-        }
         client = CuratorFrameworkFactory
             .builder()
             .connectString(zkAddr)
@@ -68,30 +59,30 @@ public final class ZkClient {
         try {
             client.create().creatingParentContainersIfNeeded()
                 .withMode(CreateMode.PERSISTENT)
-                .forPath(path, data.getBytes());
+                .forPath(CommonUtil.getZkTenantAndEnvPath(path), data.getBytes());
         } catch (Exception e) {
-            log.error("创建zk数据节点失败;path={},data={}", path, data, e);
+            log.error("创建zk数据节点失败;path={},data={}", CommonUtil.getZkTenantAndEnvPath(path), data, e);
         }
     }
 
     public String getNode(String path) {
-        if (!checkNodeExists(path)) {
+        if (!checkNodeExists(CommonUtil.getZkTenantAndEnvPath(path))) {
             return null;
         }
         byte[] bytes = new byte[0];
         try {
-            bytes = client.getData().forPath(path);
+            bytes = client.getData().forPath(CommonUtil.getZkTenantAndEnvPath(path));
         } catch (Exception e) {
-            log.error("读取zk数据节点失败;path={}", path, e);
+            log.error("读取zk数据节点失败;path={}", CommonUtil.getZkTenantAndEnvPath(path), e);
         }
         return new String(bytes);
     }
 
     public boolean checkNodeExists(String path) {
         try {
-            return client.checkExists().forPath(path) != null;
+            return client.checkExists().forPath(CommonUtil.getZkTenantAndEnvPath(path)) != null;
         } catch (Exception e) {
-            log.error("判断数据节点是否存在失败;path={}", path, e);
+            log.error("判断数据节点是否存在失败;path={}", CommonUtil.getZkTenantAndEnvPath(path), e);
         }
         return false;
     }
@@ -100,18 +91,18 @@ public final class ZkClient {
         if (data.getBytes().length > 1024 * 1024) {
             throw new RuntimeException("ZK单个节点的数据大小不能超过1M，请修改ZK配置");
         }
-        if (checkNodeExists(path)) {
-            updateNode(path, data);
+        if (checkNodeExists(CommonUtil.getZkTenantAndEnvPath(path))) {
+            updateNode(CommonUtil.getZkTenantAndEnvPath(path), data);
         } else {
-            addNode(path, data);
+            addNode(CommonUtil.getZkTenantAndEnvPath(path), data);
         }
     }
 
     public void updateNode(String path, String data) {
         try {
-            client.setData().forPath(path, data.getBytes());
+            client.setData().forPath(CommonUtil.getZkTenantAndEnvPath(path), data.getBytes());
         } catch (Exception e) {
-            log.error("创建zk数据节点失败;path={},data={}", path, data, e);
+            log.error("创建zk数据节点失败;path={},data={}", CommonUtil.getZkTenantAndEnvPath(path), data, e);
         }
     }
 
@@ -126,10 +117,9 @@ public final class ZkClient {
             client.delete()
                 .guaranteed()
                 .deletingChildrenIfNeeded()
-                .forPath(path);
+                .forPath(CommonUtil.getZkTenantAndEnvPath(path));
         } catch (Exception e) {
-            // todo 后续修改，异常代码规范后就没有问题了
-            throw new RuntimeException(String.format("删除zk数据节点失败;path=[%s]", path));
+            throw new RuntimeException(String.format("删除zk数据节点失败;path=[%s]", CommonUtil.getZkTenantAndEnvPath(path)));
 
         }
     }

@@ -17,6 +17,11 @@ public class SceneActionParamNew extends WebRequest implements Serializable {
 
     private Long sceneId;
 
+    /**
+     * cloud的统一接收参数
+     */
+    private String resourceName;
+
     private List<Long> enginePluginIds;
 
     private Boolean leakSqlEnable;

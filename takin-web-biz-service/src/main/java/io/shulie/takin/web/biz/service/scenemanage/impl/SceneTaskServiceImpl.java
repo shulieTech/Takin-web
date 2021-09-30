@@ -203,7 +203,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                     }}).collect(Collectors.toList()));
             }
         }
-
+        param.setCreatorId(WebPluginUtils.getUserId());
         param.setRequestUrl(RemoteConstant.SCENE_TASK_START_URL);
         param.setHttpMethod(HttpMethod.POST);
         //封装

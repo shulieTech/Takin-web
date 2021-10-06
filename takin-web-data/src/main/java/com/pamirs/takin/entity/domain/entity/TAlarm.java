@@ -11,7 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月17日
+ * @date 2018年5月17日
  */
 public class TAlarm implements Serializable {
     //序列号

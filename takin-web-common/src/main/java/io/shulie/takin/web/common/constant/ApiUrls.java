@@ -5,9 +5,9 @@ package io.shulie.takin.web.common.constant;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月13日
+ * @date 2018年4月13日
  */
-public class APIUrls {
+public class ApiUrls {
 
     /***
      * root level URI **

@@ -361,7 +361,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         req.setSceneId(request.getSceneId());
         req.setReportId(request.getReportId());
         req.setTpsNum(request.getTargetTps());
-        req.setLicense(WebPluginUtils.getTenantUserAppKey());
+        //req.setLicense(WebPluginUtils.getTenantUserAppKey());
         ResponseResult responseResult = cloudTaskApi.updateSceneTaskTps(req);
         if (responseResult == null || !responseResult.getSuccess()) {
             throw new RuntimeException("修改TPS失败");
@@ -373,7 +373,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         SceneTaskQueryTpsReq req = new SceneTaskQueryTpsReq();
         req.setSceneId(sceneId);
         req.setReportId(reportId);
-        req.setLicense(WebPluginUtils.getTenantUserAppKey());
+        //req.setLicense(WebPluginUtils.getTenantUserAppKey());
         ResponseResult<SceneTaskAdjustTpsResp> respResponseResult = cloudTaskApi.queryAdjustTaskTps(req);
         if (respResponseResult != null && respResponseResult.getData() != null) {
             return respResponseResult.getData().getTotalTps();

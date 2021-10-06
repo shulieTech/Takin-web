@@ -23,7 +23,7 @@ import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.ScriptCheckResp;
 import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +57,7 @@ public class SceneManageApiImpl implements SceneManageApi {
     }
 
     @Override
-    public ResponseResult deleteScene(SceneManageDeleteReq sceneManageDeleteReq) {
+    public ResponseResult<String> deleteScene(SceneManageDeleteReq sceneManageDeleteReq) {
         return cloudSceneApi.deleteScene(sceneManageDeleteReq);
     }
 
@@ -81,22 +81,20 @@ public class SceneManageApiImpl implements SceneManageApi {
         return cloudSceneApi.getIpNum(sceneIpNumReq);
     }
 
-
     @Override
     public ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req) {
         return cloudSceneApi.queryByIds(req);
     }
 
-
     @Override
-    public ResponseResult<List<SceneManageListResp>> getSceneManageList(CloudUserCommonRequestExt requestExt) {
-        return cloudSceneApi.getSceneManageList(requestExt);
+    public ResponseResult<List<SceneManageListResp>> getSceneManageList(ContextExt traceContextExt) {
+        return cloudSceneApi.getSceneManageList(traceContextExt);
     }
 
     /**
      * 获取支持的jmeter插件列表
      *
-     * @return
+     * @return -
      */
     @Override
     public ResponseResult<Map<String, List<EnginePluginSimpleInfoResp>>> listEnginePlugins(EnginePluginFetchWrapperReq wrapperReq) {
@@ -106,7 +104,7 @@ public class SceneManageApiImpl implements SceneManageApi {
     /**
      * 获取支持的jmeter插件详情
      *
-     * @return
+     * @return -
      */
     @Override
     public ResponseResult<EnginePluginDetailResp> getEnginePluginDetails(EnginePluginDetailsWrapperReq wrapperReq) {

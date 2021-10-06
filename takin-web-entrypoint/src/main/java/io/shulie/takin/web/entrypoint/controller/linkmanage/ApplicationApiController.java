@@ -10,7 +10,7 @@ import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2020/4/2 13:09
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "applicationApi", value = "应用api")
 public class ApplicationApiController {
 

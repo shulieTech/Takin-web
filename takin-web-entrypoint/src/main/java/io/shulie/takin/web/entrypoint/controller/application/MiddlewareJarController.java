@@ -32,7 +32,7 @@ import io.shulie.takin.web.biz.pojo.response.application.MiddlewareCompareRespon
 import io.shulie.takin.web.biz.pojo.response.application.MiddlewareImportResponse;
 import io.shulie.takin.web.biz.pojo.response.application.MiddlewareJarResponse;
 import io.shulie.takin.web.biz.service.application.MiddlewareJarService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.model.mysql.MiddlewareJarEntity;
@@ -58,7 +58,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author liqiyu
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + APIUrls.MIDDLEWARE_JAR)
+@RequestMapping(ApiUrls.TAKIN_API_URL + ApiUrls.MIDDLEWARE_JAR)
 @Api(tags = "接口: 中间件信息")
 @Slf4j
 public class MiddlewareJarController {
@@ -169,13 +169,13 @@ public class MiddlewareJarController {
             .collect(Collectors.toList());
 
         if (!collect.isEmpty()) {
-            boolean tempCanEdit = false;
-            if(WebPluginUtils.validateSuperAdmin()) {
+            boolean tempCanEdit;
+            if (WebPluginUtils.validateSuperAdmin()) {
                 tempCanEdit = true;
             } else {
-                tempCanEdit  = WebPluginUtils.getUser() == null || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.getUser().getId());
+                tempCanEdit = WebPluginUtils.getUser() == null || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.getUser().getId());
             }
-            final Boolean canEdit = tempCanEdit;
+            final boolean canEdit = tempCanEdit;
             collect.forEach(response -> response.setCanEdit(canEdit));
         }
 
@@ -183,8 +183,7 @@ public class MiddlewareJarController {
     }
 
     @GetMapping("file/{fileName}")
-    public void getFile(@PathVariable String fileName, HttpServletResponse response)
-        throws FileNotFoundException {
+    public void getFile(@PathVariable String fileName, HttpServletResponse response) {
         File file = new File(uploadPath + File.separator + MIDDLEWARE_MANAGE_DIR + File.separator + fileName);
         if (!file.exists()) {
             return;
@@ -198,7 +197,7 @@ public class MiddlewareJarController {
         try (
             // 使用sendfile:读取磁盘文件，并网络发送
             ServletOutputStream servletOutputStream = response.getOutputStream();
-            FileChannel channel = new FileInputStream(file).getChannel();) {
+            FileChannel channel = new FileInputStream(file).getChannel()) {
             response.setHeader("Content-Length", String.valueOf(channel.size()));
             channel.transferTo(0, channel.size(), Channels.newChannel(servletOutputStream));
         } catch (Exception e) {

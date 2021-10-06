@@ -15,7 +15,7 @@ import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.pojo.openapi.converter.ReportOpenApiConverter;
 import io.shulie.takin.web.biz.pojo.openapi.request.report.ReportQueryOpenApiReq;
 import io.shulie.takin.web.biz.pojo.openapi.request.report.ReportTrendQueryOpenApiReq;
@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2020-04-17
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_OPEN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_OPEN_API_URL)
 @Api(tags = "场景报告模块")
 public class ReportOpenApi {
 
@@ -97,7 +97,7 @@ public class ReportOpenApi {
     /**
      * 详情
      *
-     * @return
+     * @return -
      */
     @GetMapping("/report/machine/detail")
     @ApiOperation("性能详情")

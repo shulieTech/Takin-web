@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
-import io.shulie.takin.cloud.common.constants.APIUrls;
+import io.shulie.takin.cloud.common.constants.ApiUrls;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +43,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 
 /**
  * The type Swagger config.
+ *
  * @author shulie
  */
 @Configuration
@@ -55,12 +56,11 @@ public class SwaggerConfig {
     @Value("${server.servlet.context-path:}")
     private String servletContextPath;
 
-
     private ObjectMapper objectMapper;
-
 
     /**
      * v4.* 版本的都放在这里
+     *
      * @return 文档
      */
     @Bean
@@ -74,8 +74,6 @@ public class SwaggerConfig {
             .useDefaultResponseMessages(false)
             .apiInfo(this.apiInfo()).enable(true);
     }
-
-    
 
     @Bean
     public Docket apiV41() {
@@ -170,9 +168,6 @@ public class SwaggerConfig {
             ;
     }
 
-
-
-
     @Bean
     public Docket apiV461() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -188,7 +183,6 @@ public class SwaggerConfig {
             ;
     }
 
-
     @Bean
     public Docket apiV470() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -203,6 +197,7 @@ public class SwaggerConfig {
             .apiInfo(apiInfo())
             ;
     }
+
     @Bean
     public Docket apiV471() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -301,7 +296,7 @@ public class SwaggerConfig {
             .groupName("压测平台-开放接口v01")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex(APIUrls.TRO_OPEN_API_URL + ".*"))
+            .paths(getRegex(ApiUrls.TRO_OPEN_API_URL + ".*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
@@ -317,8 +312,8 @@ public class SwaggerConfig {
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
             .paths(getRegex("/api/(application/center/app/config|datasource|fastdebug/debug/callStack/node/locate|"
-                        + "fastdebug/debug/callStack/exception|link/ds/manage|application/plugins/config|opsScriptManage|sys|"
-                        + "pradar/switch).*"))
+                + "fastdebug/debug/callStack/exception|link/ds/manage|application/plugins/config|opsScriptManage|sys|"
+                + "pradar/switch).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
@@ -334,9 +329,9 @@ public class SwaggerConfig {
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
             .paths(getRegex("/api/patrol/manager(/board/create|/board/get|/board/delete|/board/update|"
-                        + "/scene/create|/scene/get|/scene/detail|/scene/delete|/scene/update|/scene/exception|/scene/start|"
-                        + "/init|/exception|/exception_config|/exception_notice|/assert/createOrUpdate|/assert/get|/node/get"
-                        + "|/node/add|/node/delete|/error/get).*"))
+                + "/scene/create|/scene/get|/scene/detail|/scene/delete|/scene/update|/scene/exception|/scene/start|"
+                + "/init|/exception|/exception_config|/exception_notice|/assert/createOrUpdate|/assert/get|/node/get"
+                + "|/node/add|/node/delete|/error/get).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
@@ -361,7 +356,8 @@ public class SwaggerConfig {
 
     /**
      * 两周迭代放在这里
-     * @return
+     *
+     * @return -
      */
     @Bean
     public Docket api_twoWeekIteration() {
@@ -391,7 +387,8 @@ public class SwaggerConfig {
 
     /**
      * 重写 PathProvider ,解决 context-path 重复问题
-     * @return
+     *
+     * @return -
      */
     private PathProvider pathProvider() {
         return new DefaultPathProvider() {
@@ -401,6 +398,7 @@ public class SwaggerConfig {
                 UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromPath("/");
                 return Paths.removeAdjacentForwardSlashes(uriComponentsBuilder.path(operationPath).build().toString());
             }
+
             @Override
             public String getResourceListingPath(String groupName, String apiDeclaration) {
                 apiDeclaration = super.getResourceListingPath(groupName, apiDeclaration);
@@ -410,7 +408,7 @@ public class SwaggerConfig {
     }
 
     private Predicate<String> getRegex(String regex) {
-        return PathSelectors.regex(servletContextPath +  regex);
+        return PathSelectors.regex(servletContextPath + regex);
     }
 
 }

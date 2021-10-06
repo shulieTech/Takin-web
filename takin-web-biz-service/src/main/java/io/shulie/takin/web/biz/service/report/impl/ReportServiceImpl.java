@@ -82,9 +82,9 @@ public class ReportServiceImpl implements ReportService {
             if (CollectionUtils.isNotEmpty(userList)) {
                 List<Long> userIds = userList.stream().map(UserExt::getId).collect(Collectors.toList());
                 if (CollectionUtils.isEmpty(userIds)) {
-                    param.setUserIdStr(null);
+                    //param.setUserIdStr(null);
                 } else {
-                    param.setUserIdStr(StringUtils.join(userIds, ","));
+                    //param.setUserIdStr(StringUtils.join(userIds, ","));
                 }
             } else {
                 return WebResponse.success(Lists.newArrayList());

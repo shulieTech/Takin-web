@@ -1,6 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.fastagentaccess;
 
-import io.shulie.takin.cloud.common.constants.APIUrls;
+import io.shulie.takin.cloud.common.constants.ApiUrls;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -16,12 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @Description 异常日志接口
- * @Author ocean_wll
- * @Date 2021/8/18 3:39 下午
+ * 异常日志接口
+ *
+ * @author ocean_wll
+ * @date 2021/8/18 3:39 下午
  */
 @RestController
-@RequestMapping(APIUrls.TRO_API_URL + "fast/agent/access/errorLog")
+@RequestMapping(ApiUrls.TRO_API_URL + "fast/agent/access/errorLog")
 @Api(tags = "接口：异常日志接口")
 public class ErrorLogController {
 

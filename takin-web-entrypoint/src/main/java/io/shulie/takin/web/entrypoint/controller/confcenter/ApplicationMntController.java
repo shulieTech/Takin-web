@@ -10,7 +10,7 @@ import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.web.biz.service.ConfCenterService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -31,11 +31,11 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月13日
+ * @date 2018年4月13日
  */
 @Api(tags = "应用管理接口")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class ApplicationMntController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(ApplicationMntController.class);
@@ -49,8 +49,8 @@ public class ApplicationMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_ADD_APPLICATION_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_ADD_APPLICATION_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> saveApplication(@RequestBody @Valid TApplicationMnt tApplicationMnt,
         BindingResult bindingResult) {
 
@@ -77,8 +77,8 @@ public class ApplicationMntController {
      * @return 成功, 则返回应用信息列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_APPLICATIONINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_APPLICATIONINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryApplicationinfo(@RequestBody Map<String, Object> paramMap) {
         try {
             return ResponseOk.create(confCenterService.queryApplicationList(paramMap));
@@ -94,8 +94,8 @@ public class ApplicationMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_MODIFY_APPLICATIONINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_MODIFY_APPLICATIONINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryApplicationinfoById(@RequestParam("applicationId") long applicationId) {
         if (StringUtils.isEmpty(String.valueOf(applicationId))) {
             return ResponseError.create(1010100301, "参数缺失");
@@ -114,8 +114,8 @@ public class ApplicationMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_DELETE_APPLICATIONINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_APPLICATIONINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteApplicationinfoByIds(@RequestParam("applicationIds") String applicationIds) {
 
         try {
@@ -137,8 +137,8 @@ public class ApplicationMntController {
      * @return 成功, 则返回应用列表下拉框数据, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_APPLICATIONDATA_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_APPLICATIONDATA_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryApplicationdata() {
 
         try {
@@ -155,8 +155,8 @@ public class ApplicationMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_UPDATE_APPLICATIONINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_APPLICATIONINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateApplicationinfo(@RequestBody @Valid TApplicationMnt tApplicationMnt,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -180,8 +180,8 @@ public class ApplicationMntController {
      * @return 成功, 则返回应用信息列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_APPNAMELIST_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_APPNAMELIST_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryAppNameByPradar() {
         try {
             String result = "{\"success\":\"true\",\"code\":200,\"data\":null}";
@@ -199,7 +199,7 @@ public class ApplicationMntController {
      * @param agentVersion
      * @return
      */
-    //@GetMapping(value = APIUrls.API_TAKIN_UPDATE_APP_AGENT_VERSION_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    //@GetMapping(value = ApiUrls.API_TAKIN_UPDATE_APP_AGENT_VERSION_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     //public ResponseEntity<Object> appAgentVersionUpdate(@RequestParam("appName") String appName,
     //    @RequestParam(value = "agentVersion", required = false) String agentVersion,
     //    @RequestParam(value = "pradarVersion", required = false) String pradarVersion) {

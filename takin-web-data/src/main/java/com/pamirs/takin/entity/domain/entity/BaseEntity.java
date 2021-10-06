@@ -14,7 +14,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月20日
+ * @date 2018年4月20日
  */
 @JsonIgnoreProperties(value = {"handler"})
 public class BaseEntity implements Serializable {

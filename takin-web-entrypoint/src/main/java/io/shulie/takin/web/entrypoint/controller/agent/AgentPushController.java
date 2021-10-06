@@ -132,7 +132,7 @@ public class AgentPushController {
 
     //todo agent改造点
     @PostMapping(value = AgentUrls.UPLOAD_APP_INFO,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> judgeNeedUpload(@RequestBody TUploadInterfaceVo tUploadInterfaceVo) {
         try {
             return ResponseOk.create(uploadInterfaceService.saveUploadInterfaceData(tUploadInterfaceVo));
@@ -150,7 +150,7 @@ public class AgentPushController {
      */
     //todo agent改造点
     @PostMapping(value = AgentUrls.UPLOAD,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> judgeNeedUpload(@RequestBody TUploadNeedVo uploadNeedVo) {
         try {
             return ResponseOk.create(uploadInterfaceService.executeNeedUploadInterface(uploadNeedVo));
@@ -162,7 +162,7 @@ public class AgentPushController {
     //todo agent接口改造
     @ApiOperation(value = "影子JOB配置修改")
     @RequestMapping(value = AgentUrls.TAKIN_REPORT_ERROR_SHADOW_JOB_URL, method = {RequestMethod.PUT, RequestMethod.POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Response update(@RequestBody ShadowJobConfigQuery query) {
         try {
             if (query.getId() == null) {
@@ -187,7 +187,7 @@ public class AgentPushController {
      * @return
      */
     @Deprecated
-    @GetMapping(value = AgentUrls.AGENT_VERSION, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = AgentUrls.AGENT_VERSION, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> appAgentVersionUpdate(@RequestParam("appName") String appName,
                                                         @RequestParam(value = "agentVersion") String agentVersion,
                                                         @RequestParam(value = "pradarVersion") String pradarVersion) {

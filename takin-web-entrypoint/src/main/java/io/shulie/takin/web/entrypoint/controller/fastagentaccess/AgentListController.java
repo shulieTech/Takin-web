@@ -1,6 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.fastagentaccess;
 
-import io.shulie.takin.cloud.common.constants.APIUrls;
+import io.shulie.takin.cloud.common.constants.ApiUrls;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -21,12 +21,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @Description 探针管理
- * @Author ocean_wll
- * @Date 2021/8/19 3:22 下午
+ * 探针管理
+ *
+ * @author ocean_wll
+ * @date 2021/8/19 3:22 下午
  */
 @RestController
-@RequestMapping(APIUrls.TRO_API_URL + "fast/agent/access/probe")
+@RequestMapping(ApiUrls.TRO_API_URL + "fast/agent/access/probe")
 @Api(tags = "接口：探针列表")
 public class AgentListController {
 

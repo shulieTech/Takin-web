@@ -10,7 +10,7 @@ import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.takin.web.biz.service.DictionaryMntService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author shulie
  * @version 1.0
- * @create 2018/10/30 0030 15:53
+ * @date 2018/10/30 0030 15:53
  */
 @Api(tags = "数据字典模块入口")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class DictionaryMntController {
     private final Logger LOGGER = LoggerFactory.getLogger(DictionaryMntController.class);
 
@@ -50,8 +50,8 @@ public class DictionaryMntController {
      * @author shulie
      * @date 2018/11/6 0006 16:05
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_SAVE_DICTIONARY_URL,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SAVE_DICTIONARY_URL,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> saveDictionary(@RequestBody @Valid TDictionaryVo tDictionaryVo,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -79,8 +79,8 @@ public class DictionaryMntController {
      * @author shulie
      * @date 2018/11/6 0006 16:05
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_UPDATE_DICTIONARY_URL,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_DICTIONARY_URL,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateDictionary(@RequestBody @Valid TDictionaryVo tDictionaryVo,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -104,8 +104,8 @@ public class DictionaryMntController {
      * @author shulie
      * @date 2018/11/6 0006 16:03
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_DICTIONARY_LIST_URL,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_DICTIONARY_LIST_URL,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryDictionaryList(@RequestBody Map<String, Object> paramMap) {
 
         try {
@@ -125,8 +125,8 @@ public class DictionaryMntController {
      * @author shulie
      * @create 2018/12/17 16:45
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_DICTIONARY_DETAIL_URL,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_DICTIONARY_DETAIL_URL,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryDictionaryDetail(@RequestParam("tDictId") String tDictionaryId) {
         try {
             return ResponseOk.create(dictionaryMntService.queryDictionaryDetail(tDictionaryId));
@@ -145,8 +145,8 @@ public class DictionaryMntController {
      * @author shulie
      * @create 2018/12/17 16:53
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_DELETE_DICTIONARY_URL,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_DICTIONARY_URL,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteDictionary(@RequestParam("tDictIds") String tDidctionaryIds) {
         try {
             dictionaryMntService.deleteDictionary(tDidctionaryIds);
@@ -166,7 +166,7 @@ public class DictionaryMntController {
      * @author shulie
      * @create 2019/6/12 14:51
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_KV_DICTIONARY_URL, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_KV_DICTIONARY_URL, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryDictionaryKeyValue(@RequestParam("dictCode") String dictCode) {
         try {
             Map<String, Object> dictValue = dictionaryMntService.queryDictionaryKeyValue(dictCode);

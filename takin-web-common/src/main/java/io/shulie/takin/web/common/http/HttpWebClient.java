@@ -79,23 +79,27 @@ public class HttpWebClient {
     }
 
     private void validateParam(WebRequest request) {
+        /* TODO web向cloud传参
         if (WebPluginUtils.checkUserData() && request.getLicense() == null) {
             throw ApiException.create(500, "license不能为空");
         }
         if (request.getHttpMethod() == null) {
             throw ApiException.create(500, "请求方式");
         }
+        */
     }
 
     private HttpHeaders buildHeader(WebRequest request) {
         HttpHeaders header = new HttpHeaders();
         if (WebPluginUtils.checkUserData()) {
+            /* TODO web向cloud传参
             header.add(RemoteConstant.LICENSE_REQUIRED, "true");
             header.add(RemoteConstant.LICENSE_KEY, request.getLicense());
             header.add(RemoteConstant.USER_ID, request.getUserId() + "");
             if (request.getFilterSql() != null) {
                 header.add(RemoteConstant.FILTER_SQL, request.getFilterSql());
             }
+             */
         }
         return header;
     }

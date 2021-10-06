@@ -4,7 +4,7 @@ import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PageScriptDebugRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PageScriptDebugRequestRequest;
@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2021-05-10 17:12:03
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "scriptDebug/")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "scriptDebug/")
 @Api(tags = "接口: 脚本调试")
 public class ScriptDebugController {
 

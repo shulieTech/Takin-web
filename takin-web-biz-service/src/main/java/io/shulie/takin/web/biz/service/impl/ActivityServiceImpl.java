@@ -217,7 +217,7 @@ public class ActivityServiceImpl implements ActivityService {
     /**
      * 校验虚拟入口更新参数
      *
-     * @return
+     * @return -
      */
     private ActivityResult checkVirtualActivityUpdate(VirtualActivityUpdateRequest request) {
         ActivityResult oldActivity = getActivityResult(request.getActivityId(), request.getActivityName());
@@ -388,8 +388,6 @@ public class ActivityServiceImpl implements ActivityService {
         return PagingList.of(responses, activityListResultPagingList.getTotal());
     }
 
-
-
     @Override
     public ActivityResponse getActivityById(Long activityId) {
         ActivityResult result = activityDAO.getActivityById(activityId);
@@ -442,7 +440,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setIsChange(result.getIsChange());
         activityResponse.setUserId(result.getUserId());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(Collections.singletonList(result.getUserId()));
-        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
+        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setActivityLevel(result.getActivityLevel());
         activityResponse.setIsCore(String.valueOf(result.getIsCore()));
@@ -489,7 +487,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setIsChange(result.getIsChange());
         activityResponse.setUserId(result.getUserId());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(Collections.singletonList(result.getUserId()));
-        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
+        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
         activityResponse.setExtend(result.getExtend());
         activityResponse.setMethod(result.getMethod());
         activityResponse.setRpcType(result.getRpcType());
@@ -572,9 +570,9 @@ public class ActivityServiceImpl implements ActivityService {
             ).collect(Collectors.toList()));
         }
         taskFlowDebugStartReq.setFeatures(req.getFeatures());
-        taskFlowDebugStartReq.setLicense(WebPluginUtils.getTenantUserAppKey());
+        //taskFlowDebugStartReq.setLicense(WebPluginUtils.getTenantUserAppKey());
         taskFlowDebugStartReq.setCreatorId(WebPluginUtils.getUserId());
-        log.info("流量验证参数：{}", taskFlowDebugStartReq.toString());
+        log.info("流量验证参数：{}", taskFlowDebugStartReq);
         ResponseResult<Long> longResponseResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
         log.info("流量验证发起结果：{}", longResponseResult.toString());
         response.setTaskStatus(longResponseResult.getSuccess());

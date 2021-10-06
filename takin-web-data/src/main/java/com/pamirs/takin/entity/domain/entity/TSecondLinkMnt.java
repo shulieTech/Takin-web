@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月16日
+ * @date 2018年5月16日
  */
 @JsonIgnoreProperties(value = {"handler"})
 public class TSecondLinkMnt extends BaseEntity {

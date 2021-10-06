@@ -8,7 +8,7 @@ import java.util.Objects;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.ext.api.auth.WebDataAuthExtApi;
 import io.shulie.takin.web.ext.api.auth.WebUserAuthExtApi;
@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author by: hezhongqi
- * @ClassName: CustomUtil
  * @date 2021/8/4 14:42
  */
 public class WebPluginUtils {
@@ -38,8 +37,6 @@ public class WebPluginUtils {
     public static Long TAKIN_ID = -1L;
     public static String ENV_CODE = "test";
     public static Long USER_ID = -1L;
-
-
 
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
@@ -60,7 +57,7 @@ public class WebPluginUtils {
     /**
      * 补充 插入 更新 用户数据
      *
-     * @param userCommonExt
+     * @param userCommonExt -
      */
     public static void fillUserData(UserCommonExt userCommonExt) {
         if (Objects.nonNull(userApi)) {
@@ -71,7 +68,7 @@ public class WebPluginUtils {
     /**
      * 补充查询 权限 用户数据
      *
-     * @param queryParamCommonExt
+     * @param queryParamCommonExt -
      */
     public static void fillQueryParam(AuthQueryParamCommonExt queryParamCommonExt) {
         if (Objects.nonNull(userApi)) {
@@ -82,7 +79,7 @@ public class WebPluginUtils {
     /**
      * 补充 查询结果后的用户数据
      *
-     * @param queryResponseCommonExt
+     * @param queryResponseCommonExt -
      */
     public static void fillQueryResponse(AuthQueryResponseCommonExt queryResponseCommonExt) {
         if (Objects.nonNull(userApi)) {
@@ -93,8 +90,8 @@ public class WebPluginUtils {
     /**
      * 查询用户数据
      *
-     * @param userIds
-     * @return
+     * @param userIds -
+     * @return -
      */
     public static Map<Long, UserExt> getUserMapByIds(List<Long> userIds) {
         if (CollectionUtils.isNotEmpty(userIds) && Objects.nonNull(userApi)) {
@@ -106,7 +103,7 @@ public class WebPluginUtils {
     /**
      * 查询所有用户数据
      *
-     * @return
+     * @return -
      */
     public static List<UserExt> selectAllUser() {
         if (Objects.nonNull(userApi)) {
@@ -136,8 +133,8 @@ public class WebPluginUtils {
     /**
      * 根据userID 查询当前的key
      *
-     * @param userId
-     * @return
+     * @param userId -
+     * @return -
      */
     public static String getUserAppKey(Long userId) {
         if (Objects.nonNull(userApi)) {
@@ -162,8 +159,6 @@ public class WebPluginUtils {
         return "";
     }
 
-
-
     /**
      * 获取登录账号
      *
@@ -175,8 +170,6 @@ public class WebPluginUtils {
         }
         return null;
     }
-
-
 
     /**
      * 返回 userAppKey
@@ -193,7 +186,6 @@ public class WebPluginUtils {
         // 返回一个默认
         return USER_APP_KEY;
     }
-
 
     /**
      * 返回用户id
@@ -248,8 +240,6 @@ public class WebPluginUtils {
         return null;
     }
 
-
-
     //public void fillMiddlewareUserData(AppMiddlewareQuery query) {
     //    //UserExt user = null;
     //    ////TakinRestContext.getUser();
@@ -258,20 +248,20 @@ public class WebPluginUtils {
     //    //}
     //}
 
-
     public static Class<?> getClassByName(String className) {
         try {
             // 先扫描用户插件
-            return Class.forName(className,true,pluginManager.getExtension(WebUserExtApi.class).getClass().getClassLoader());
+            return Class.forName(className, true, pluginManager.getExtension(WebUserExtApi.class).getClass().getClassLoader());
         } catch (ClassNotFoundException e) {
-           return null;
+            return null;
         }
     }
 
     /**
      * 根据用户名 模糊查询
-     * @param userName
-     * @return
+     *
+     * @param userName -
+     * @return -
      */
     public static List<UserExt> selectByName(String userName) {
         if (Objects.nonNull(userApi)) {
@@ -282,7 +272,8 @@ public class WebPluginUtils {
 
     /**
      * 权限相关数据
-     * @return
+     *
+     * @return -
      */
     public static List<Long> getQueryAllowUserIdList() {
         if (Objects.nonNull(dataAuthApi)) {
@@ -346,13 +337,13 @@ public class WebPluginUtils {
     }
 
     /**
-     * 补充cloud 用户数据
+     * 补充cloud 溯源数据
      *
-     * @param cloudUserExt
+     * @param traceContextExt 溯源数据对象
      */
-    public static void fillCloudUserData(CloudUserCommonRequestExt cloudUserExt) {
+    public static void fillCloudUserData(ContextExt traceContextExt) {
         if (Objects.nonNull(userApi)) {
-            userApi.fillCloudUserData(cloudUserExt);
+            userApi.fillCloudUserData(traceContextExt);
             return;
         }
     }
@@ -375,7 +366,8 @@ public class WebPluginUtils {
 
     /**
      * 获取所有租户信息
-     * @return
+     *
+     * @return -
      */
     public static List<TenantInfoExt> getTenantInfoList() {
         if (Objects.nonNull(tenantExtApi)) {
@@ -386,10 +378,11 @@ public class WebPluginUtils {
 
     /**
      * 租户参数传递
-     * @param source
-     * @param target
+     *
+     * @param source -
+     * @param target -
      */
-    public static void transferTenantParam(TenantCommonExt source,TenantCommonExt target) {
+    public static void transferTenantParam(TenantCommonExt source, TenantCommonExt target) {
         target.setUserAppKey(source.getUserAppKey());
         target.setEnvCode(source.getEnvCode());
         target.setTenantId(source.getTenantId());
@@ -402,11 +395,11 @@ public class WebPluginUtils {
      */
     public static Long getTenantId() {
         if (userApi != null) {
-            if(tenantExtApi != null) {
+            if (tenantExtApi != null) {
                 if (userApi.getUser() != null) {
                     return userApi.getUser().getCustomerId();
                 }
-            }else {
+            } else {
                 //return
             }
 

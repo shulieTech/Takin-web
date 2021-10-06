@@ -1,7 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.opsscript;
 
 import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2021-06-16 10:43:56
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "opsScriptBatchNo")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "opsScriptBatchNo")
 @Api(tags = "")
 public class OpsScriptBatchNoController {
 

@@ -5,7 +5,7 @@ package com.pamirs.takin.common.constant;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月16日
+ * @date 2018年5月16日
  */
 public enum LinkBottleneckTypeEnum {
     BOTTLENECK_LOAD_EXECEPTION(1, "基础资源负载及异常"),

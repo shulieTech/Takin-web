@@ -12,7 +12,7 @@ import com.pamirs.takin.entity.domain.vo.AppUnstallAgentVo;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
@@ -41,7 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 
 @RestController("confApplicationController")
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "接口: 应用管理中心", value = "应用管理中心")
 public class ApplicationController {
 

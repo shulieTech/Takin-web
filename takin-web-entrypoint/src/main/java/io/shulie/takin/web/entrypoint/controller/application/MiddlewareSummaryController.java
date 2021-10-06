@@ -27,7 +27,7 @@ import io.shulie.takin.web.biz.pojo.request.application.MiddlewareSummaryRequest
 import io.shulie.takin.web.biz.pojo.response.application.MiddlewareSummaryResponse;
 import io.shulie.takin.web.biz.service.application.MiddlewareSummaryService;
 import io.shulie.takin.web.biz.utils.PageUtils;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -51,7 +51,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author liqiyu
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "application/middlewareSummary")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "application/middlewareSummary")
 @Api(tags = "接口: 中间件汇总信息")
 public class MiddlewareSummaryController {
 
@@ -151,7 +151,7 @@ public class MiddlewareSummaryController {
             OperationLogContextHolder.addVars("q", "");
         }
 
-        ApplicationMiddlewareStatusEnum byCode = null;
+        ApplicationMiddlewareStatusEnum byCode;
         if (null != status) {
             byCode = ApplicationMiddlewareStatusEnum.getByCode(status);
             Assert.isTrue(byCode != null, String.format("没有找到对应状态：%s", status));

@@ -9,7 +9,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.pojo.openapi.response.scenemanage.SceneManageListOpenApiResp;
 import io.shulie.takin.web.biz.pojo.openapi.response.scenemanage.SceneManageOpenApiResp;
 import io.shulie.takin.web.common.domain.WebResponse;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2020/4/17 下午2:31
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_OPEN_API_URL + "/scenemanage")
+@RequestMapping(ApiUrls.TAKIN_OPEN_API_URL + "/scenemanage")
 @Api(tags = "压测场景管理")
 public class SceneManageOpenApi {
 
@@ -50,11 +50,14 @@ public class SceneManageOpenApi {
         @ApiParam(name = "sceneName", value = "压测场景名称") String sceneName,
         @ApiParam(name = "status", value = "压测状态") Integer status) {
         SceneManageQueryVO queryVO = new SceneManageQueryVO();
+        /*
+        TODO 具体实现
         queryVO.setCurrent(current);
         queryVO.setCurrentPage(current);
         queryVO.setPageSize(pageSize);
         queryVO.setCustomerName(customerName);
         queryVO.setCustomerId(customerId);
+        */
         queryVO.setSceneId(sceneId);
         queryVO.setSceneName(sceneName);
         queryVO.setStatus(status);

@@ -88,7 +88,7 @@ public class AgentPullController {
     }
 
     @ApiOperation(value = "拉取Job配置")
-    @GetMapping(value = AgentUrls.TAKIN_SHADOW_JOB_URL, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = AgentUrls.TAKIN_SHADOW_JOB_URL, produces = MediaType.APPLICATION_JSON_VALUE)
     public Response<List<TShadowJobConfig>> queryByAppName(
         @RequestParam(value = "appName", defaultValue = "") String appName) {
         //todo Agent改造点

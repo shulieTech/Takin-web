@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月21日
+ * @date 2018年5月21日
  */
 public class IPUtils {
 
@@ -29,7 +29,7 @@ public class IPUtils {
      * @param httpServletRequest http请求
      * @return 用户的ip地址
      * @author shulie
-     * @2018年5月21日
+     * @date 2018年5月21日
      * @version v1.0
      */
     public static String getIP(HttpServletRequest httpServletRequest) {
@@ -73,7 +73,7 @@ public class IPUtils {
      * @param strIP 字符串ip地址
      * @return long型的ip地址
      * @author shulie
-     * @2018年5月21日
+     * @date 2018年5月21日
      * @version v1.0
      */
     public static long ipToLong(String strIP) {
@@ -105,11 +105,9 @@ public class IPUtils {
     /**
      * 说明：获取linux服务器的ip地址
      *
-     * @return
-     * @throws UnknownHostException
-     * @throws SocketException
+     * @return -
      * @author shulie
-     * @time：2017年10月5日 下午2:46:42
+     * @date 2017年10月5日 下午2:46:42
      */
     public static InetAddress getInetAddress() {
         try {

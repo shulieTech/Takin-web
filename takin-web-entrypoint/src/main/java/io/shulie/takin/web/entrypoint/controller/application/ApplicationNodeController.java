@@ -6,7 +6,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeDashBoardQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeQueryRequest;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "ApplicationNodeController", value = "应用实例（节点）管理")
 public class ApplicationNodeController {
 
@@ -60,7 +60,7 @@ public class ApplicationNodeController {
     /**
      * 删除节点
      *
-     * @return
+     * @return -
      */
     @ApiOperation("删除节点")
     @GetMapping("application/node/info/deleteNode")

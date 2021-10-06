@@ -3,7 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.simplify;
 import com.pamirs.takin.entity.domain.query.agent.AppMiddlewareQuery;
 import io.shulie.takin.web.biz.service.simplify.AppMiddlewareInfoService;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author <a href="tangyuhan@shulie.io">yuhan.tang</a>
- * @package: com.pamirs.takin.web.api.controller.simplify
  * @date 2020-03-25 17:42
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "应用中间件信息", value = "应用中间件信息")
 public class AppMiddlewareInfoController {
 

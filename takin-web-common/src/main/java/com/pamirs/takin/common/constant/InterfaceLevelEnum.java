@@ -3,7 +3,7 @@ package com.pamirs.takin.common.constant;
 /**
  * @author shulie
  * @version v1.0
- * @2018年5月16日
+ * @date 2018年5月16日
  */
 public enum InterfaceLevelEnum {
     //接口类型：1简单操作/查询 2一般操作/查询 3复杂操作 4涉及级联嵌套调用多服务操作 5调用外网操作

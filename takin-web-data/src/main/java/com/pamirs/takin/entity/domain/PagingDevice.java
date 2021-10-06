@@ -14,7 +14,6 @@ public class PagingDevice extends WebRequest implements Cloneable {
     private int pageSize = 20;
     private int current = 0;
 
-    @Override
     public int getOffset() {
         int i = getCurrentPage() * pageSize;
         return Math.max(i, 0);
@@ -49,7 +48,7 @@ public class PagingDevice extends WebRequest implements Cloneable {
         if (num < 1) {
             num = 1;
         }
-        endNum = (int) (num * 0.4);
+        endNum = (int)(num * 0.4);
         beforeNum = num - endNum;
         endStart = totalPage - endNum;
         beforeStart = current - beforeNum / 2;
@@ -82,23 +81,19 @@ public class PagingDevice extends WebRequest implements Cloneable {
         this.count = count;
     }
 
-    @Override
     public int getCurrentPage() {
         return current;
     }
 
-    @Override
     public void setCurrentPage(Integer currentPage) {
         currentPage = currentPage == null ? 0 : currentPage;
         this.current = currentPage < 0 ? 0 : currentPage;
     }
 
-    @Override
     public int getPageSize() {
         return pageSize;
     }
 
-    @Override
     public void setPageSize(Integer pageSize) {
         pageSize = pageSize == null ? getPageSize() : pageSize;
         this.pageSize = pageSize;
@@ -113,12 +108,10 @@ public class PagingDevice extends WebRequest implements Cloneable {
         return "";
     }
 
-    @Override
     public int getCurrent() {
         return current;
     }
 
-    @Override
     public void setCurrent(int current) {
         this.current = current;
     }

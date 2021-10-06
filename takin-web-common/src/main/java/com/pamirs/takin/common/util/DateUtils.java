@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月21日
+ * @date 2018年5月21日
  */
 @SuppressWarnings("all")
 public class DateUtils {
@@ -382,7 +382,7 @@ public class DateUtils {
      * @param ld 本地日期
      * @return Date类型日期
      * @author shulie
-     * @time：2017年12月4日 上午11:03:16
+     * @date 2017年12月4日 上午11:03:16
      */
     public static Date covertToDate(LocalDate ld) {
         return Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -409,7 +409,7 @@ public class DateUtils {
      * @param timeEnd   结束时间
      * @return 时间段集合
      * @author shulie
-     * @time：2017年10月12日 下午4:48:05
+     * @date 2017年10月12日 下午4:48:05
      */
     public static List<String> show(String timeStart, String timeEnd) {
         try {
@@ -437,7 +437,7 @@ public class DateUtils {
      * @param end   结束时间
      * @return 时间段集合
      * @author shulie
-     * @time：2017年10月12日 下午4:48:32
+     * @date 2017年10月12日 下午4:48:32
      */
     public static List<String> collectLocalDates(LocalDate start, LocalDate end) {
         // 用起始时间作为流的源头，按照每次加一天的方式创建一个无限流
@@ -460,7 +460,7 @@ public class DateUtils {
      * @param endDay     结束天
      * @return 时间集合
      * @author shulie
-     * @time：2017年11月23日 下午4:24:21
+     * @date 2017年11月23日 下午4:24:21
      */
     public static List<Date> transferTime(int year, int startMonth, int startDay, int endMonth, int endDay) {
         LocalDate timeStart = LocalDate.of(year, startMonth, startDay);
@@ -485,7 +485,7 @@ public class DateUtils {
      * @param date 日期
      * @return 字符串型日期
      * @author shulie
-     * @time：2017年10月13日 下午2:15:42
+     * @date 2017年10月13日 下午2:15:42
      */
     public static String dateToString(Date date) {
         return sdf.format(date);
@@ -511,7 +511,7 @@ public class DateUtils {
      * @param min  分钟
      * @return 几分钟前的日期
      * @author shulie
-     * @2018年5月21日
+     * @date 2018年5月21日
      * @version v1.0
      */
     public static String returnPreMin(Date date, int min) {
@@ -525,7 +525,7 @@ public class DateUtils {
      * @param min  分钟
      * @return 几分钟前的日期
      * @author shulie
-     * @2018年5月21日
+     * @date 2018年5月21日
      * @version v1.0
      */
     public static String returnPreSecond(Date date, int second) {
@@ -539,7 +539,7 @@ public class DateUtils {
      * @param timeUnits 时间枚举类
      * @return ① 相差的天数 ② 相差的小时数 ② 相差的分钟数 ② 相差的毫秒数
      * @author shulie
-     * @time：2017年12月13日 下午5:33:09
+     * @date 2017年12月13日 下午5:33:09
      */
     public static long gapTime(Date beginDate, Date endDate, TimeUnits timeUnits) {
         //
@@ -577,7 +577,7 @@ public class DateUtils {
      * @param min  分钟
      * @return 几分钟前的日期
      * @author shulie
-     * @2018年5月21日
+     * @date 2018年5月21日
      * @version v1.0
      */
     public static Date returnPreMinToDate(Date date, int min) {
@@ -594,7 +594,7 @@ public class DateUtils {
      * @param min  分钟
      * @return 几分钟前的日期
      * @author shulie
-     * @2018年5月21日
+     * @date 2018年5月21日
      * @version v1.0
      */
     public static Date returnPreSecondToDate(Date date, int second) {

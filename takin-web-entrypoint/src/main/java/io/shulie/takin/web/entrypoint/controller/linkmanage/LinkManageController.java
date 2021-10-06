@@ -23,7 +23,7 @@ import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityNameResponse;
@@ -52,7 +52,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "linkmanage", value = "链路标注")
 @Deprecated
 public class LinkManageController {
@@ -151,7 +151,7 @@ public class LinkManageController {
     /**
      * 获取所有的系统流程名字和id
      *
-     * @return
+     * @return -
      */
     @GetMapping("/link/tech/linkmanage/all")
     @ApiOperation("系统流程名字和id的模糊搜索,不传数据则全部搜索")
@@ -173,7 +173,7 @@ public class LinkManageController {
     /**
      * 获取所有的系统流程名字和id
      *
-     * @return
+     * @return -
      */
     @GetMapping("/link/tech/linkmanage/canRelate/all")
     @ApiOperation("系统流程名字和id的模糊搜索,不传数据则全部搜索")
@@ -250,7 +250,7 @@ public class LinkManageController {
     /**
      * 业务流程页面的中间件去重
      *
-     * @return
+     * @return -
      */
     @PostMapping("/link/scene/middlewares")
     @ApiOperation("业务流程页面的中间件去重")
@@ -278,7 +278,7 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.CREATE
     )
-    public Response addBusinessFlow(@RequestBody BusinessFlowVo vo) {
+    public Response<?> addBusinessFlow(@RequestBody BusinessFlowVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_PROCESS, vo.getSceneName());
         try {
@@ -297,7 +297,7 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response getBusinessFlowDetail(@NotNull String id) {
+    public Response<?> getBusinessFlowDetail(@NotNull String id) {
         try {
             BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(id);
             return Response.success(dto);
@@ -318,7 +318,7 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.UPDATE
     )
-    public Response modifyBusinessFlow(@RequestBody BusinessFlowVo vo) {
+    public Response<?> modifyBusinessFlow(@RequestBody BusinessFlowVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
         try {
             linkManageService.modifyBusinessFlow(vo);

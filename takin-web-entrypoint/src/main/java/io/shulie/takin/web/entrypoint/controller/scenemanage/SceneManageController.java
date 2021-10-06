@@ -250,9 +250,12 @@ public class SceneManageController {
         @ApiParam(name = "lastPtEndTime", value = "压测结束时间") String lastPtEndTime
     ) {
         SceneManageQueryVO queryVO = new SceneManageQueryVO();
+        /*
+        TODO 具体实现
         queryVO.setCurrent(current);
         queryVO.setCurrentPage(current);
         queryVO.setPageSize(pageSize);
+        */
         queryVO.setSceneId(sceneId);
         queryVO.setSceneName(sceneName);
         queryVO.setStatus(status);

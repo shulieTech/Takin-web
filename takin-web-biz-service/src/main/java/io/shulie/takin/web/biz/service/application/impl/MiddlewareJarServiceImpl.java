@@ -16,6 +16,8 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
@@ -44,7 +46,7 @@ import io.shulie.takin.web.biz.pojo.response.application.MiddlewareImportRespons
 import io.shulie.takin.web.biz.service.application.MiddlewareJarService;
 import io.shulie.takin.web.biz.service.application.MiddlewareSummaryService;
 import io.shulie.takin.web.biz.utils.FunctionUtils;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
 import io.shulie.takin.web.data.mapper.mysql.MiddlewareJarMapper;
@@ -77,13 +79,13 @@ import static io.shulie.takin.web.common.enums.application.ApplicationMiddleware
 public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, MiddlewareJarEntity>
     implements MiddlewareJarService {
     public static final String MIDDLEWARE_MANAGE_DIR = "middleware_manage";
-    @Autowired
+    @Resource(type = MiddlewareSummaryService.class)
     private MiddlewareSummaryService middlewareSummaryService;
 
-    @Autowired
+    @Resource(type = MiddlewareJarMapper.class)
     private MiddlewareJarMapper middlewareJarMapper;
 
-    @Autowired
+    @Resource(type = DictionaryCache.class)
     private DictionaryCache dictionaryCache;
 
     private volatile List<String> middlewareTypeList = null;
@@ -499,7 +501,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
             .fail(importExcelVOList.parallelStream().filter(importExcelVO -> importExcelVO.getStatusDesc() == null)
                 .count())
             // 设置下载url
-            .url("/" + APIUrls.MIDDLEWARE_JAR + "/file/" + fileUrl)
+            .url("/" + ApiUrls.MIDDLEWARE_JAR + "/file/" + fileUrl)
             .build();
 
         final Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams(), ImportExcelVO.class,
@@ -773,9 +775,8 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
             .fail(failNum)
             .success(importExcelVOList.size() - failNum)
             // 设置下载url
-            .url("/" + APIUrls.MIDDLEWARE_JAR + "/file/" + fileUrl)
+            .url("/" + ApiUrls.MIDDLEWARE_JAR + "/file/" + fileUrl)
             .build();
-
 
         final Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams(), ImportExcelVO.class,
             importExcelVOList);

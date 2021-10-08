@@ -5,13 +5,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import com.google.common.collect.Lists;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
-import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
-import io.shulie.takin.web.common.domain.WebResponse;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -60,32 +56,34 @@ public class SyncMachineDataJob implements SimpleJob {
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         if(CollectionUtils.isEmpty(tenantInfoExts)) {
             // 私有化 + 开源 根据 报告id 分片
-            syncMachineData(null);
+            //syncMachineData(null);
 
         }else {
             // saas 分配
-            tenantInfoExts.forEach(t -> {
-                // 根据环境 分线程
-                t.getEnvs().forEach(e ->
-                    jobThreadPool.execute(() ->  collectData(new TenantCommonExt(t.getTenantId(),t.getUserAppKey(),e.getEnvCode()))));
-            });
+            //tenantInfoExts.forEach(t -> {
+            //    // 根据环境 分线程
+            //    t.getEnvs().forEach(e ->
+            //        jobThreadPool.execute(() ->  collectData(new TenantCommonExt(t.getTenantId(),t.getUserAppKey(),e.getEnvCode()))));
+            //});
         }
 
     }
 
-    // 获取 报告id
-    private List<Long> getReport
+    //// 获取 报告id
+    //private List<Long> getReportList() {
+    //    return null;
+    //}
 
-    private void syncMachineData(TenantCommonExt tenantCommonExt) {
-        long start = System.currentTimeMillis();
-
-        for (Object obj : reportIds) {
-            // 开始数据层分片
-            long reportId = Long.parseLong(String.valueOf(obj));
-            if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                reportTaskService.syncMachineData(reportId);
-            }
-        }
-        log.info("syncMachineData 执行时间:{}", System.currentTimeMillis() - start);
-    }
+    //private void syncMachineData(TenantCommonExt tenantCommonExt) {
+    //    long start = System.currentTimeMillis();
+    //
+    //    for (Object obj : reportIds) {
+    //        // 开始数据层分片
+    //        long reportId = Long.parseLong(String.valueOf(obj));
+    //        if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+    //            reportTaskService.syncMachineData(reportId);
+    //        }
+    //    }
+    //    log.info("syncMachineData 执行时间:{}", System.currentTimeMillis() - start);
+    //}
 }

@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
-import io.shulie.takin.cloud.common.constants.ApiUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -296,7 +296,7 @@ public class SwaggerConfig {
             .groupName("压测平台-开放接口v01")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex(ApiUrls.TRO_OPEN_API_URL + ".*"))
+            .paths(getRegex(ApiUrls.TAKIN_OPEN_API_URL + ".*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

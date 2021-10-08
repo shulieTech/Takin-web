@@ -344,7 +344,6 @@ public class WebPluginUtils {
     public static void fillCloudUserData(ContextExt traceContextExt) {
         if (Objects.nonNull(userApi)) {
             userApi.fillCloudUserData(traceContextExt);
-            return;
         }
     }
 

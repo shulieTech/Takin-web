@@ -1,6 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.fastagentaccess;
 
-import io.shulie.takin.cloud.common.constants.ApiUrls;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -10,6 +9,7 @@ import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentListQueryReques
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentListResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentStatusStatResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AmdbManageService;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentDiscoverStatusEnum;
 import io.swagger.annotations.Api;
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2021/8/19 3:22 下午
  */
 @RestController
-@RequestMapping(ApiUrls.TRO_API_URL + "fast/agent/access/probe")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "fast/agent/access/probe")
 @Api(tags = "接口：探针列表")
 public class AgentListController {
 

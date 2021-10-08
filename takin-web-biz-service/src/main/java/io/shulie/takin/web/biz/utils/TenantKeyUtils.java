@@ -12,7 +12,7 @@ public class TenantKeyUtils {
         StringBuilder builder=new StringBuilder();
         builder.append(WebPluginUtils.getTenantId());
         builder.append(":");
-        builder.append("envCode");
+        builder.append(WebPluginUtils.getEnvCode());
         builder.append(":");
         return builder.toString();
     }

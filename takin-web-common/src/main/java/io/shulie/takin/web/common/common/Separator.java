@@ -39,6 +39,10 @@ public enum Separator {
         this.code = code;
     }
 
+    /**
+     * 默认使用冒号 :
+     * @return
+     */
     public static Separator defautSeparator(){
         return Separator2;
     }

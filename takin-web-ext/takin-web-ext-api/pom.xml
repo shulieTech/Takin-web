@@ -5,14 +5,14 @@
     <parent>
         <artifactId>takin-web-ext</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-2.0.1</version>
+        <version>takin-web-5.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>takin-web-ext-api</artifactId>
-    <version>takin-web-2.0.1</version>
+    <version>takin-web-5.0.0</version>
     <dependencies>
 
         <dependency>

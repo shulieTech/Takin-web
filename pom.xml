@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-2.0.1</version>
+    <version>takin-web-5.0.0</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -24,6 +24,11 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
+    <scm>
+        <connection>https://github.com/shulieTech/Takin-web.git</connection>
+        <developerConnection>https://github.com/shulieTech/Takin-web.git</developerConnection>
+        <url>https://github.com/shulieTech/Takin-web.git</url>
+    </scm>
 
     <properties>
         <!-- build properties -->
@@ -241,6 +246,17 @@
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid.stater.version}</version>
             </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.quartz-scheduler</groupId>-->
+<!--                <artifactId>quartz</artifactId>-->
+<!--                <version>${quartz.version}</version>-->
+<!--                <exclusions>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>org.apache.zookeeper</groupId>-->
+<!--                        <artifactId>zookeeper</artifactId>-->
+<!--                    </exclusion>-->
+<!--                </exclusions>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>com.dangdang</groupId>
                 <artifactId>elastic-job-lite-core</artifactId>
@@ -258,7 +274,6 @@
                 <artifactId>elastic-job-lite-spring</artifactId>
                 <version>2.1.5</version>
             </dependency>
-
             <!-- zk客户端框架 -->
             <dependency>
                 <groupId>org.apache.curator</groupId>
@@ -275,13 +290,13 @@
                         <artifactId>zookeeper</artifactId>
                     </exclusion>
                 </exclusions>
+
             </dependency>
             <dependency>
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-framework</artifactId>
                 <version>${curator-version}</version>
             </dependency>
-
             <!-- 德鲁伊数据库连接池 -->
             <dependency>
                 <groupId>com.alibaba</groupId>
@@ -354,7 +369,7 @@
             <dependency>
                 <groupId>io.shulie.amdb</groupId>
                 <artifactId>amdb-common</artifactId>
-                <version>1.1.0</version>
+                <version>1.0.2.1</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.mapstruct</groupId>
@@ -425,4 +440,141 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <!-- 默认 -->
+        <profile>
+            <id>rdc</id>
+            <properties></properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <!--远程仓库-->
+            <id>ossrh</id>
+            <properties></properties>
+            <build>
+               <plugins>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-resources-plugin</artifactId>
+                       <version>2.5</version>
+                       <configuration>
+                           <encoding>UTF-8</encoding>
+                       </configuration>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-scm-plugin</artifactId>
+                       <version>1.0</version>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-release-plugin</artifactId>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-javadoc-plugin</artifactId>
+                       <version>2.9.1</version>
+                       <executions>
+                           <execution>
+                               <id>attach-javadocs</id>
+                               <goals>
+                                   <goal>jar</goal>
+                               </goals>
+                               <configuration>
+                                   <additionalparam>-Xdoclint:none</additionalparam>
+                               </configuration>
+                           </execution>
+                       </executions>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-gpg-plugin</artifactId>
+                       <version>1.5</version>
+                       <executions>
+                           <execution>
+                               <id>sign-artifacts</id>
+                               <phase>verify</phase>
+                               <goals>
+                                   <goal>sign</goal>
+                               </goals>
+                           </execution>
+                       </executions>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.sonatype.plugins</groupId>
+                       <artifactId>nexus-staging-maven-plugin</artifactId>
+                       <version>1.6.7</version>
+                       <extensions>true</extensions>
+                       <configuration>
+                           <serverId>ossrh</serverId>
+                           <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                           <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                       </configuration>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-jar-plugin</artifactId>
+                       <version>2.2</version>
+                       <configuration>
+                           <archive>
+                               <manifestEntries>
+                                   <IsTinyProject>true</IsTinyProject>
+                               </manifestEntries>
+                           </archive>
+                       </configuration>
+                   </plugin>
+               </plugins>
+           </build>
+        </profile>
+    </profiles>
+    <distributionManagement>
+        <repository>
+            <id>${releases.id}</id>
+            <name>${releases.name}</name>
+            <url>${releases.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>${snapshots.id}</id>
+            <name>${snapshots.name}</name>
+            <url>${snapshots.url}</url>
+        </snapshotRepository>
+    </distributionManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.1</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

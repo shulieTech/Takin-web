@@ -34,7 +34,7 @@ public class WebPluginUtils {
      * 默认 userAppkey 解决zk PATH 问题
      */
     public static String USER_APP_KEY = "takin";
-    public static Long TAKIN_ID = -1L;
+    public static Long TENANT_ID = -1L;
     public static String ENV_CODE = "test";
     public static Long USER_ID = -1L;
 
@@ -329,7 +329,7 @@ public class WebPluginUtils {
             return userApi.getSystemInfo();
         }
         HashMap<String, String> dataMap = new LinkedHashMap<>();
-        dataMap.put("租户ID", TAKIN_ID + "");
+        dataMap.put("租户ID", TENANT_ID + "");
         dataMap.put("租户user-app-key", USER_APP_KEY);
         dataMap.put("用户ID", USER_ID + "");
         dataMap.put("用户user-app-key", USER_APP_KEY);
@@ -377,7 +377,7 @@ public class WebPluginUtils {
 
     /**
      * 租户参数传递
-     *
+     * 转 TenantCommonExt
      * @param source -
      * @param target -
      */
@@ -389,7 +389,7 @@ public class WebPluginUtils {
 
     /**
      * 租户参数传递 cloud 简单传递
-     *
+     * 转 ContextExt
      * @param source -
      * @param target -
      */
@@ -414,7 +414,7 @@ public class WebPluginUtils {
             }
 
         }
-        return TAKIN_ID;
+        return TENANT_ID;
     }
 
     /**
@@ -436,6 +436,20 @@ public class WebPluginUtils {
      */
     public static String getDefaultEnvCode() {
         return ENV_CODE;
+    }
+
+    /**
+     * 判断租户,默认存在
+     */
+    public static Boolean isExistTenant() {
+        return Boolean.TRUE;
+    }
+
+    /**
+     * 判断租户,默认存在
+     */
+    public static Long getTenantIdByUserAppKey() {
+        return TENANT_ID;
     }
 
 }

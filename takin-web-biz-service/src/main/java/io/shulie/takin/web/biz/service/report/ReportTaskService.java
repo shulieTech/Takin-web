@@ -1,10 +1,21 @@
 package io.shulie.takin.web.biz.service.report;
 
+import java.util.List;
+
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+
 /**
  * @author qianshui
  * @date 2020/7/28 上午10:59
  */
 public interface ReportTaskService {
+
+    /**
+     * 根据租户获取报告id 列表
+     * @param ext
+     * @return
+     */
+    List<Long> getRunningReport(TenantCommonExt ext);
 
     /**
      * 完成报告

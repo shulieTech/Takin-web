@@ -17,6 +17,7 @@ import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.SceneIdVO;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
 import io.shulie.takin.cloud.common.bean.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.open.req.common.CloudCommonInfoWrapperReq;
 import io.shulie.takin.cloud.open.req.report.ReportDetailByIdReq;
 import io.shulie.takin.cloud.open.req.report.ReportDetailBySceneIdReq;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
@@ -42,6 +43,7 @@ import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -327,7 +329,10 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public WebResponse queryListRunningReport() {
+    public List<Long> queryListRunningReport(TenantCommonExt ext) {
+        CloudCommonInfoWrapperReq req = new CloudCommonInfoWrapperReq();
+        //req.set
+        reportApi.queryListRunningReport()
         WebRequest request = new WebRequest();
         request.setRequestUrl(RemoteConstant.REPORT_RUNNINNG_LIST);
         request.setHttpMethod(HttpMethod.GET);

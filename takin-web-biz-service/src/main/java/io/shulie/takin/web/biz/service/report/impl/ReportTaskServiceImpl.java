@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -10,6 +11,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.open.req.report.UpdateReportConclusionReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
@@ -18,6 +20,7 @@ import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -74,6 +77,16 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     @Qualifier("fastDebugThreadPool")
     private ThreadPoolExecutor fastDebugThreadPool;
 
+    @Override
+    public List<Long> getRunningReport(TenantCommonExt ext) {
+        List<Long> reportIds = reportService.queryListRunningReport(ext);
+        if (ext != null) {
+            log.info("获取租户【{}】，环境【{}】的正在压测中的报告:{}", ext.getTenantId(),ext.getEnvCode(),JsonHelper.bean2Json(reportIds));
+        }else {
+            log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
+        }
+        return reportIds;
+    }
 
     @Override
     public void finishReport(Long reportId) {

@@ -24,7 +24,8 @@ public class ReportApiImpl implements ReportApi {
 
     @Override
     public ResponseResult<List<Long>> queryListRunningReport(CloudCommonInfoWrapperReq req) {
-        return cloudReportApi.queryListRunningReport(req);
+        //return cloudReportApi.queryListRunningReport(req);
+        return null;
     }
 
     @Override

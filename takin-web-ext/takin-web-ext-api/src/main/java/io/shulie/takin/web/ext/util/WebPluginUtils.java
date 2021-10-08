@@ -420,4 +420,11 @@ public class WebPluginUtils {
         return ENV_CODE;
     }
 
+    /**
+     * 返回默认的环境 目前给插件user-module使用
+     */
+    public static String getDefaultEnvCode() {
+        return ENV_CODE;
+    }
+
 }

@@ -7,7 +7,6 @@ import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
 import io.shulie.takin.web.biz.service.BaseConfigService;
 import io.shulie.takin.web.biz.service.config.ConfigService;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.web.config.sync.api.SwitchSyncService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,8 +25,6 @@ public class ConfigServiceImpl implements ConfigService {
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
     @Autowired
-    private SwitchSyncService switchSyncService;
-    @Autowired
     private BaseConfigService baseConfigService;
     @Autowired
     private ConfigSyncService configSyncService; //FIXME 这个引用不对,configSyncService是初始化那块用的，用switchSyncService；
@@ -37,13 +34,13 @@ public class ConfigServiceImpl implements ConfigService {
         if (value == null) {
             return;
         }
-        redisTemplate.opsForValue().set(SwitchKeyFactory.getClusterTestSwitchRedisKey(userAppKey,WebPluginUtils.getEnvCode()), value);
+        redisTemplate.opsForValue().set(SwitchKeyFactory.getClusterTestSwitchRedisKey(userAppKey), value);
         configSyncService.syncClusterTestSwitch(WebPluginUtils.getTenantUserAppKey());
     }
 
     @Override
     public boolean getClusterTestSwitch(String userAppKey) {
-        Object o = redisTemplate.opsForValue().get(SwitchKeyFactory.getClusterTestSwitchRedisKey(userAppKey,WebPluginUtils.getEnvCode()));
+        Object o = redisTemplate.opsForValue().get(SwitchKeyFactory.getClusterTestSwitchRedisKey(userAppKey));
         if (!(o instanceof Boolean)) {
             return true;
         }
@@ -65,7 +62,7 @@ public class ConfigServiceImpl implements ConfigService {
             log.error("发生错误", e);
         }
 
-        redisTemplate.opsForValue().set(SwitchKeyFactory.getAllowListSwitchRedisKey(userAppKey,WebPluginUtils.getEnvCode()), value);
+        redisTemplate.opsForValue().set(SwitchKeyFactory.getAllowListSwitchRedisKey(userAppKey), value);
         configSyncService.syncAllowListSwitch(WebPluginUtils.getTenantUserAppKey());
     }
 
@@ -76,7 +73,7 @@ public class ConfigServiceImpl implements ConfigService {
         if (tBaseConfig != null) {
             dbResult = "1".equals(tBaseConfig.getConfigValue());
         }
-        Object o = redisTemplate.opsForValue().get(SwitchKeyFactory.getAllowListSwitchRedisKey(userAppKey,WebPluginUtils.getEnvCode()));
+        Object o = redisTemplate.opsForValue().get(SwitchKeyFactory.getAllowListSwitchRedisKey(userAppKey));
         if (!(o instanceof Boolean)) {
             return dbResult;
         }

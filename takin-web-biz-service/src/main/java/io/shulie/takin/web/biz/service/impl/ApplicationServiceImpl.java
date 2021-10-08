@@ -52,7 +52,6 @@ import com.pamirs.takin.entity.domain.vo.dsmanage.DataSource;
 import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.cloud.common.constants.Constants;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
@@ -246,28 +245,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ApplicationNodeService applicationNodeService;
-
-    //3.添加定时任务
-    //或直接指定时间间隔，例如：5秒
-    @Override
-    public void configureTasks() {
-        //针对每个用户进行检查
-        Map<String, Long> map = redisTemplate.opsForHash().entries(NEED_VERIFY_USER_MAP);
-        if (map.size() > 0) {
-            log.info("当前待执行用户数： => " + map.size());
-            map.forEach((key, value) -> {
-                if (System.currentTimeMillis() - value >= pradarSwitchProcessingTime * 1000) {
-                    // 操作完删除，保证只执行一次
-                    Long uid = Long.valueOf(key);
-                    String switchStatus = getUserSwitchStatusForAgent(uid);
-                    redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + uid, switchStatus);
-                    // agent接收的关闭信息后不再上报信息
-                    // reCalculateUserSwitch(Long.valueOf(key.toString()));
-                    redisTemplate.opsForHash().delete(NEED_VERIFY_USER_MAP, key);
-                }
-            });
-        }
-    }
 
     @Override
     public void configureTasks(TenantCommonExt ext) {

@@ -20,7 +20,6 @@ import com.pamirs.takin.common.constant.AppAccessTypeEnum;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.common.constant.Constants;
-import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
@@ -83,6 +82,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -159,8 +159,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
      */
     @Override
     public WebResponse<StartResponse> startTask(SceneActionParam param) {
-
         SceneManageIdReq req = new SceneManageIdReq();
+        BeanUtils.copyProperties(param,req);
         req.setId(param.getSceneId());
         ResponseResult<SceneManageWrapperResp> resp = sceneManageApi.getSceneDetail(req);
         if (!resp.getSuccess()) {

@@ -388,6 +388,17 @@ public class WebPluginUtils {
     }
 
     /**
+     * 租户参数传递 cloud 简单传递
+     *
+     * @param source -
+     * @param target -
+     */
+    public static void transferTenantParam(TenantCommonExt source, ContextExt target) {
+        target.setEnvCode(source.getEnvCode());
+        target.setTenantId(source.getTenantId());
+    }
+
+    /**
      * 返回租户id
      *
      * @return 租户主键

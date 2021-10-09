@@ -117,4 +117,11 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @return
      */
     List<UserExt> selectByName(String userName);
+
+    /**
+     * 根据userappkey获取用户信息
+     * @param userAppKey
+     * @return
+     */
+    UserExt queryUserFromCache(String userAppKey);
 }

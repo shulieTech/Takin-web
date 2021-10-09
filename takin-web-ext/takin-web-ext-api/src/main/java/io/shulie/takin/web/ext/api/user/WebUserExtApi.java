@@ -71,26 +71,10 @@ public interface WebUserExtApi extends ExtensionPoint {
      */
     UserExt queryUserByKey();
 
-    /**
-     * 获取登录的租户id
-     *
-     * @return -
-     */
-    Long getTenantId();
 
-    /**
-     * 获取登录租户的key
-     *
-     * @return -
-     */
-    String getTenantUserKey();
 
-    /**
-     * 获取登录用户
-     *
-     * @return -
-     */
-    UserExt getUser();
+
+
 
     /**
      * 根据userid 查询 key信息
@@ -120,4 +104,32 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @return -
      */
     List<UserExt> selectByName(String userName);
+
+
+    //********************************http线程上下文模块**********************************//
+    /**
+     * 获取登录用户
+     *
+     * @return -
+     */
+    UserExt getUser();
+    /**
+     * 获取登录用户的租户key
+     *
+     * @return -
+     */
+    String getTenantUserKey();
+    /**
+     * 获取登录用户的租户id
+     *
+     * @return -
+     */
+    Long getTenantId();
+    /**
+     * 获取登录用户的环境
+     *
+     * @return -
+     */
+    String getEnvCode();
+    //********************************http线程上下文模块**********************************//
 }

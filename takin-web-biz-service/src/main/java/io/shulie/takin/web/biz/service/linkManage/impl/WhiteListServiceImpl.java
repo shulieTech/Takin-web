@@ -228,7 +228,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                 addPartAppNameParam.setInterfaceName(listResult.get(0).getInterfaceName());
                 addPartAppNameParam.setType(listResult.get(0).getType());
                 addPartAppNameParam.setEffectiveAppName(appName);
-                addPartAppNameParam.setCustomerId(applicationDetailResult.getCustomerId());
+                addPartAppNameParam.setTenantId(applicationDetailResult.getCustomerId());
                 addPartAppNameParam.setUserId(applicationDetailResult.getUserId());
                 addPartAppNameParam.setWlistId(listResult.get(0).getWlistId());
                 addPartAppNameParams.add(addPartAppNameParam);
@@ -238,7 +238,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         List<Long> wlistIds = addPartAppNameParams.stream().map(WhitelistAddPartAppNameParam::getWlistId).collect(
                 Collectors.toList());
         WhitelistEffectiveAppDeleteParam deleteParam = new WhitelistEffectiveAppDeleteParam();
-        deleteParam.setCustomerId(applicationDetailResult.getCustomerId());
+        deleteParam.setTenantId(applicationDetailResult.getCustomerId());
         deleteParam.setWlistIds(wlistIds);
         whitelistEffectiveAppDao.batchDelete(deleteParam);
         // 新增
@@ -757,7 +757,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         }).collect(Collectors.toList());
         whitelistEffectiveAppDao.updatePartAppName(params);
         whiteListFileService.writeWhiteListFile();
-        configSyncService.syncAllowList(WebPluginUtils.getUser().getCustomerKey(), whiteListEntity.getApplicationId(),
+        configSyncService.syncAllowList(WebPluginUtils.getTenantUserAppKey(), whiteListEntity.getApplicationId(),
                 null);
     }
 
@@ -778,7 +778,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         whitelistEffectiveAppDao.batchDelete(deleteParam);
         whiteListFileService.writeWhiteListFile();
         listEntities.forEach(entry -> configSyncService
-                .syncAllowList(WebPluginUtils.getUser().getCustomerKey(), entry.getApplicationId(), null));
+                .syncAllowList(WebPluginUtils.getTenantUserAppKey(), entry.getApplicationId(), null));
     }
 
     @Override
@@ -818,7 +818,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
         // 先删除原先的
         WhitelistEffectiveAppDeleteParam deleteParam = new WhitelistEffectiveAppDeleteParam();
-        deleteParam.setCustomerId(user.getCustomerId());
+        deleteParam.setTenantId(WebPluginUtils.getTenantId());
         deleteParam.setWlistId(input.getWlistId());
         whitelistEffectiveAppDao.delete(deleteParam);
         // 添加新的
@@ -828,7 +828,7 @@ public class WhiteListServiceImpl implements WhiteListService {
             param.setInterfaceName(whitelistResult.getInterfaceName());
             param.setType(whitelistResult.getType());
             param.setEffectiveAppName(appName);
-            param.setCustomerId(user.getCustomerId());
+            param.setTenantId(WebPluginUtils.getTenantId());
             param.setUserId(user.getId());
             param.setWlistId(input.getWlistId());
             params.add(param);
@@ -841,7 +841,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         whiteListDAO.updateWhitelistGlobal(param);
         // agent生效
         whiteListFileService.writeWhiteListFile();
-        configSyncService.syncAllowList(WebPluginUtils.getUser().getCustomerKey(), whitelistResult.getApplicationId(),
+        configSyncService.syncAllowList(WebPluginUtils.getTenantUserAppKey(), whitelistResult.getApplicationId(),
                 null);
     }
 
@@ -870,7 +870,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         whiteListDAO.updateWhitelistGlobal(param);
         // agent生效
         whiteListFileService.writeWhiteListFile();
-        configSyncService.syncAllowList(WebPluginUtils.getUser().getCustomerKey(), whitelistResult.getApplicationId(),
+        configSyncService.syncAllowList(WebPluginUtils.getTenantUserAppKey(), whitelistResult.getApplicationId(),
                 null);
     }
 

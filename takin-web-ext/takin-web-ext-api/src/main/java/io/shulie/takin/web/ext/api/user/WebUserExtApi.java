@@ -76,7 +76,7 @@ public interface WebUserExtApi extends ExtensionPoint {
      *
      * @return -
      */
-    Long getCustomerId();
+    Long getTenantId();
 
     /**
      * 获取登录租户的key

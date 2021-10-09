@@ -18,7 +18,7 @@ public interface WebTenantExtApi extends ExtensionPoint {
      * @param tenantId
      * @return
      */
-    TenantInfoExt getTenantInfo(String tenantId);
+    TenantInfoExt getTenantInfo(Long tenantId);
 
     /**
      * 根据userappkey 获取 租户信息
@@ -32,4 +32,12 @@ public interface WebTenantExtApi extends ExtensionPoint {
      * @return
      */
     List<TenantInfoExt> getTenantInfoList();
+
+    /**
+     * 判断租户,默认存在
+     * @param userAppKey
+     * @return
+     */
+     Boolean isExistTenant(String userAppKey);
+
 }

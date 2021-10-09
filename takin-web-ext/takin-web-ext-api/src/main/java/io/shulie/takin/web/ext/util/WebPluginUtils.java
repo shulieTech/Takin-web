@@ -180,7 +180,7 @@ public class WebPluginUtils {
         if (userApi != null) {
             if (userApi.getUser() != null) {
                 // 返回租户
-                return userApi.getUser().getCustomerKey();
+                //return userApi.getUser().getCustomerKey();
             }
         }
         // 返回一个默认
@@ -400,14 +400,14 @@ public class WebPluginUtils {
 
     /**
      * 返回租户id
-     *
+     * 租户依赖于用户
      * @return 租户主键
      */
     public static Long getTenantId() {
         if (userApi != null) {
             if (tenantExtApi != null) {
                 if (userApi.getUser() != null) {
-                    return userApi.getUser().getCustomerId();
+                    return userApi.getTenantId();
                 }
             } else {
                 //return

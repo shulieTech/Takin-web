@@ -20,7 +20,6 @@ import com.pamirs.takin.common.constant.AppAccessTypeEnum;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.common.constant.Constants;
-import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;

@@ -47,7 +47,7 @@ public class AppAccessStatusJob implements SimpleJob {
             tenantInfoExts.forEach(t -> {
                 // 根据环境 分线程
                 t.getEnvs().forEach(e ->
-                    jobThreadPool.execute(() ->applicationService.syncApplicationAccessStatus(t.getTenantId(),t.getUserAppKey(),e.getEnvCode())));
+                    jobThreadPool.execute(() ->applicationService.syncApplicationAccessStatus(t.getTenantId(),t.getTenantAppKey(),e.getEnvCode())));
             });
         }
     }

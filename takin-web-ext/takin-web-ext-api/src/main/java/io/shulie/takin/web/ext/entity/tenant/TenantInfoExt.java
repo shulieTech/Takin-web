@@ -34,7 +34,7 @@ public class TenantInfoExt {
     /**
      * 租户key
      */
-    private String userAppKey;
+    private String tenantAppKey;
     /**
      * 租户环境
      */

@@ -72,7 +72,7 @@ public class CalcTpsTargetJob implements SimpleJob {
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     // 根据环境 分线程
                     ext.getEnvs().forEach(e ->
-                        jobThreadPool.execute(() ->  this.calcTpsTarget(new TenantCommonExt(ext.getTenantId(),ext.getUserAppKey(),e.getEnvCode()))));
+                        jobThreadPool.execute(() ->  this.calcTpsTarget(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode()))));
                 }
             }
         }

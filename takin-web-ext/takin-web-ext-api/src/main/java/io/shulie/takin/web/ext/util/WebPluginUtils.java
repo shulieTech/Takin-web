@@ -438,10 +438,39 @@ public class WebPluginUtils {
     }
 
     /**
-     * 判断租户,默认存在 目前给插件user-module使用
+     * 前端 根据租户code 判断租户,默认存在 目前给插件user-module使用
+     * @param tenantCode
+     * @return
      */
-    public static Boolean isExistTenant() {
+    public static Boolean isExistTenantByCode(String tenantCode) {
         return Boolean.TRUE;
+    }
+
+    /**
+     * agent 根据租户code 判断租户,默认存在 目前给插件user-module使用
+     * @param userAppKey
+     * @return
+     */
+    public static Boolean isExistTenantByKey(String userAppKey) {
+        return Boolean.TRUE;
+    }
+
+    /**
+     * 前端 根据租户code 获取租户信息 目前给插件user-module使用
+     * @param tenantCode
+     * @return
+     */
+    public static TenantInfoExt getTenantInfoByCode(String tenantCode) {
+        return null;
+    }
+
+    /**
+     * 前端 根据租户userAppKey 获取租户信息 目前给插件user-module使用
+     * @param userAppKey
+     * @return
+     */
+    public static TenantInfoExt getTenantInfoByKey(String userAppKey) {
+        return null;
     }
 
     /**

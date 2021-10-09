@@ -45,7 +45,7 @@ public class TraceManageJob implements SimpleJob {
             tenantInfoExts.forEach(t -> {
                 // 根据环境 分线程
                 t.getEnvs().forEach(e ->
-                    jobThreadPool.execute(() ->  collectData(new TenantCommonExt(t.getTenantId(),t.getUserAppKey(),e.getEnvCode()))));
+                    jobThreadPool.execute(() ->  collectData(new TenantCommonExt(t.getTenantId(),t.getTenantAppKey(),e.getEnvCode()))));
             });
         }
     }

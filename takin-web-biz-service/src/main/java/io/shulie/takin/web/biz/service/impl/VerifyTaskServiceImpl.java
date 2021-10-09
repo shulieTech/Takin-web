@@ -1,63 +1,64 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
-import java.util.Objects;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import lombok.extern.slf4j.Slf4j;
 import cn.hutool.core.bean.BeanUtil;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Lists;
-import org.springframework.stereotype.Component;
-import io.shulie.takin.cloud.common.bean.sla.SlaBean;
-import com.dangdang.ddframe.job.lite.api.JobScheduler;
-import io.shulie.takin.web.biz.service.LeakSqlService;
-import com.pamirs.takin.common.constant.VerifyTypeEnum;
-import io.shulie.takin.common.beans.component.SelectVO;
-import org.apache.commons.collections4.CollectionUtils;
-import io.shulie.takin.web.biz.service.VerifyTaskService;
-import io.shulie.takin.web.common.exception.ExceptionCode;
-import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
-import io.shulie.takin.web.biz.service.elasticjoblite.VerifyJob;
-import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneActionResp;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
-import org.springframework.transaction.support.TransactionTemplate;
-import io.shulie.takin.web.data.dao.leakverify.LeakVerifyDetailDAO;
-import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
 import com.dangdang.ddframe.job.config.simple.SimpleJobConfiguration;
-import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
-import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
-import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
-import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
-import io.shulie.takin.web.data.param.leakverify.LeakVerifyDetailCreateParam;
-import io.shulie.takin.web.data.param.leakverify.LeakVerifyResultCreateParam;
-import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
-import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyDetailResponse;
+import com.dangdang.ddframe.job.lite.api.JobScheduler;
+import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
+import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
+import io.shulie.takin.cloud.common.bean.sla.SlaBean;
+import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.open.resp.scenetask.SceneActionResp;
+import io.shulie.takin.common.beans.component.SelectVO;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskJobParameter;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
-import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyDsResultResponse;
-import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
-import io.shulie.takin.web.biz.service.elasticjoblite.CoordinatorRegistryCenterService;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunAssembleRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunWithSaveRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunWithoutSaveRequest;
+import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
+import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
+import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
+import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyDsResultResponse;
+import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
+import io.shulie.takin.web.biz.service.LeakSqlService;
+import io.shulie.takin.web.biz.service.VerifyTaskService;
+import io.shulie.takin.web.biz.service.elasticjoblite.CoordinatorRegistryCenterService;
+import io.shulie.takin.web.biz.service.elasticjoblite.VerifyJob;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
+import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.data.dao.leakverify.LeakVerifyDetailDAO;
+import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
+import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.web.data.param.leakverify.LeakVerifyDetailCreateParam;
+import io.shulie.takin.web.data.param.leakverify.LeakVerifyResultCreateParam;
+import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * @author fanxx
@@ -89,7 +90,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
     private CoordinatorRegistryCenterService registryCenterService;
 
     @Override
-    public void showdownVerifyTask() {
+    public void showdownVerifyTask(TenantCommonExt ext) {
         Map<Object, Object> serviceMap = redis.hmget(jobSchedulerRedisKey);
         if (!serviceMap.isEmpty()) {
             Set<Object> keySet = serviceMap.keySet();

@@ -23,8 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface ApplicationService {
 
-    void configureTasks();
-
     /**
      * 带租户
      * @param ext

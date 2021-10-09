@@ -19,21 +19,25 @@ public interface ReportTaskService {
 
     /**
      * 完成报告
+     * @param reportId
      */
     void finishReport(Long reportId);
 
     /**
      * 同步应用基础信息
+     * @param reportId
      */
     void syncMachineData(Long reportId);
 
     /**
      * tps指标图
+     * @param reportId
      */
     void calcTpsTarget(Long reportId);
 
     /**
      * 汇总应用 机器数 风险机器数
+     * @param reportId
      */
     void calcApplicationSummary(Long reportId);
 

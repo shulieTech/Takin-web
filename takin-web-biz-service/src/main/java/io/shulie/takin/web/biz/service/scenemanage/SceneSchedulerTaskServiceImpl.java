@@ -7,17 +7,19 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
-import io.shulie.takin.web.common.exception.ExceptionCode;
-import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
+import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.data.dao.scenemanage.SceneSchedulerTaskDao;
 import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskInsertParam;
 import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskQueryParam;
 import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskUpdateParam;
 import io.shulie.takin.web.data.result.scenemanage.SceneSchedulerTaskResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -134,11 +136,12 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
     }
 
     @Override
-    public void executeSchedulerPressureTask() {
+    public void executeSchedulerPressureTask(TenantCommonExt ext) {
         SceneSchedulerTaskQueryRequest request = new SceneSchedulerTaskQueryRequest();
         Date previousSeconds = DateUtils.getPreviousNSecond(-67);
         String time = DateUtils.dateToString(previousSeconds, DateUtils.FORMATE_YMDHM);
         request.setEndTime(time);
+        WebPluginUtils.transferTenantParam(ext,request);
         List<SceneSchedulerTaskResponse> responseList = this.selectByExample(request);
         if (CollectionUtils.isEmpty(responseList)) {
             return;
@@ -154,8 +157,7 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                 //执行
                 SceneActionParam startParam = new SceneActionParam();
                 startParam.setSceneId(scheduler.getSceneId());
-                //startParam.setUid(scheduler.getUserId());
-
+                WebPluginUtils.transferTenantParam(ext,startParam);
                 new Thread(() -> {
                     try {
                         sceneTaskService.startTask(startParam);
@@ -165,6 +167,7 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                         SceneSchedulerTaskUpdateRequest updateRequest = new SceneSchedulerTaskUpdateRequest();
                         updateRequest.setId(scheduler.getId());
                         updateRequest.setIsExecuted(2);
+                        updateRequest.setIsDeleted(true);
                         updateRequest.setIsDeleted(true);
                         this.update(updateRequest, false);
                     }
@@ -179,7 +182,7 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
             Lists.newArrayList();
         }
         List<SceneSchedulerTaskResponse> responseList = new ArrayList<>();
-        resultList.stream().forEach(result -> {
+        resultList.forEach(result -> {
             SceneSchedulerTaskResponse response = new SceneSchedulerTaskResponse();
             BeanUtils.copyProperties(result, response);
             responseList.add(response);

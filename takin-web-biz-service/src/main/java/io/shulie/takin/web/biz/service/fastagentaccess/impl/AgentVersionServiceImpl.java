@@ -348,7 +348,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
      * @param agentConfigList AgentConfigDetailResult集合
      */
     private void dealAgentConfig(String userAppKey, List<AgentConfigDetailResult> agentConfigList) {
-        UserExt userExt = WebPluginUtils.getUserByAppKey(userAppKey);
+        UserExt userExt = WebPluginUtils.queryUserFromCache(userAppKey);
         if (userExt == null) {
             return;
         }

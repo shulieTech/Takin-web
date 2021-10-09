@@ -5,6 +5,7 @@ import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
 import io.shulie.takin.web.biz.common.CommonService;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -68,6 +69,9 @@ public class BaseConfigService extends CommonService {
         //if (tBaseConfig.getConfigValue().length() > 128) {
         //    throw new TakinModuleException(TakinErrorEnum.API_TAKIN_CONFCENTER_UPDATE_BASE_CONFIG_VALUE_TOO_LONG_EXCEPTION);
         //}
+        tBaseConfig.setEnvCode(WebPluginUtils.getEnvCode());
+        tBaseConfig.setUserId(WebPluginUtils.getUserId());
+        tBaseConfig.setTenantId(WebPluginUtils.getTenantId());
         tbaseConfigDao.insertSelective(tBaseConfig);
     }
 

@@ -34,6 +34,39 @@ public class BaseEntity implements Serializable {
     @JsonSerialize(using = DateToStringFormatSerialize.class)
     private Date updateTime;
 
+    @ApiModelProperty(name = "tenant_id", value = "租户ID")
+    private Long tenantId;
+
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getEnvCode() {
+        return envCode;
+    }
+
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
+    }
+
+    @ApiModelProperty(name = "userId", value = "用户ID")
+    private Long userId;
+
+    @ApiModelProperty(name = "envCode", value = "环境code")
+    private String envCode;
+
     /**
      * 无参构造
      */

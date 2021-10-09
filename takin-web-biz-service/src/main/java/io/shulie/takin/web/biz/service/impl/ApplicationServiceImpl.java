@@ -80,6 +80,7 @@ import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.biz.utils.WhiteListUtil;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.ApplicationConstants;
 import io.shulie.takin.web.common.constant.GuardEnableConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
@@ -556,9 +557,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 "节点唯一key|应用名称 不能为空");
         }
         UserExt user = WebPluginUtils.getUser();
+        String userAppKey = WebPluginUtils.getTenantUserAppKey();
         if (WebPluginUtils.checkUserData() && user == null) {
             // todo 后续需要修改
-            return Response.fail("0000-0000-0000", "未获取到" + WebPluginUtils.getTenantUserAppKey() + "用户信息");
+            return Response.fail("0000-0000-0000", "未获取到" + userAppKey + "用户信息");
         }
 
         TApplicationMnt applicationMnt = this.queryTApplicationMntByName(param.getApplicationName());
@@ -569,11 +571,14 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         if (param.getSwitchErrorMap() != null && !param.getSwitchErrorMap().isEmpty()) {
             //应用id+ agent id唯一键 作为节点信息
-            String key = applicationMnt.getApplicationId() + PRADAR_SEPERATE_FLAG + param.getAgentId();
+            String envCode = WebPluginUtils.getEnvCode();
+            String key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, userAppKey, envCode,
+                applicationMnt.getApplicationId() + PRADAR_SEPERATE_FLAG + param.getAgentId());
             List<String> nodeUploadDataDTOList = redisTemplate.opsForList().range(key, 0, -1);
             if (CollectionUtils.isEmpty(nodeUploadDataDTOList)) {
                 //节点key信息
-                String nodeSetKey = applicationMnt.getApplicationId() + PRADARNODE_KEYSET;
+                String nodeSetKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, userAppKey, envCode,
+                    applicationMnt.getApplicationId() + PRADARNODE_KEYSET);
                 redisTemplate.opsForSet().add(nodeSetKey, key);
                 redisTemplate.expire(nodeSetKey, 1, TimeUnit.DAYS);
                 //节点异常信息列表

@@ -1,9 +1,11 @@
 package io.shulie.takin.web.app.conf;
 
+import org.apache.commons.lang3.StringUtils;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 import org.redisson.config.SentinelServersConfig;
+import org.redisson.config.SingleServerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties.Sentinel;
@@ -32,8 +34,10 @@ public class RedissonConfig {
             SentinelServersConfig sentinelServersConfig = config.useSentinelServers()
                 .setTimeout(10000)
                 .setDatabase(redisProperties.getDatabase())
-                .setPassword(redisProperties.getPassword())
                 .setMasterName(redisProperties.getSentinel().getMaster());
+            if (StringUtils.isNotBlank(redisProperties.getPassword())){
+                sentinelServersConfig.setPassword(redisProperties.getPassword());
+            }
             for (String node : sentinel.getNodes()) {
                 sentinelServersConfig.addSentinelAddress(String.format("redis://%s", node));
             }
@@ -42,10 +46,12 @@ public class RedissonConfig {
             return Redisson.create(config);
         }
 
-        config.useSingleServer()
+        SingleServerConfig singleServerConfig = config.useSingleServer()
             .setAddress(String.format("redis://%s:%s", redisProperties.getHost(), redisProperties.getPort()))
-            .setDatabase(redisProperties.getDatabase())
-            .setPassword(redisProperties.getPassword());
+            .setDatabase(redisProperties.getDatabase());
+        if (StringUtils.isNotBlank(redisProperties.getPassword())){
+            singleServerConfig.setPassword(redisProperties.getPassword());
+        }
         return Redisson.create(config);
     }
 

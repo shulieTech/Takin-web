@@ -17,6 +17,11 @@ public class ProbeUninstallingState extends AbstractApplicationNodeProbeState {
 
     @Override
     public boolean match(MatchApplicationNodeProbeStateDTO dto) {
+        // amdb 失败
+        if (ApplicationNodeProbeUtil.isAmdbFailed(dto.getAmdbProbeState())) {
+            return false;
+        }
+
         // 本地 卸载中状态
         if (ApplicationNodeProbeUtil.uninstalling(dto)) {
             return true;

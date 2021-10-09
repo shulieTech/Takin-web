@@ -99,7 +99,7 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
             dest.deleteOnExit();
 
             log.error("文件上传 --> 错误, 错误信息: {}", e.getMessage(), e);
-            throw AppCommonUtil.getCommonError("文件上传失败!");
+            throw AppCommonUtil.getCommonError("文件上传失败! 错误信息: " + e.getMessage());
 
         } finally {
             distributedLock.unLockSafely(lockKey);

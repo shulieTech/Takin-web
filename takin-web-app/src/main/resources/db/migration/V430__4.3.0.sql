@@ -1,15 +1,30 @@
+CREATE TABLE IF NOT EXISTS `t_tro_user` (
+                                            `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                            `name` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '登录账号',
+    `nick` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '用户名称',
+    `key` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '用户key',
+    `salt` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '盐值',
+    `password` varchar(100) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '登录密码',
+    `status` tinyint(1) DEFAULT '0' COMMENT '状态 0:启用  1： 冻结',
+    `user_type` int DEFAULT '0' COMMENT '用户类型，0:系统管理员，1:其他',
+    `model` tinyint(1) DEFAULT '0' COMMENT '模式 0:体验模式，1:正式模式',
+    `role` tinyint(1) DEFAULT '0' COMMENT '角色 0:管理员，1:体验用户 2:正式用户',
+    `customer_id` bigint DEFAULT NULL,
+    `is_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
+    `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `gmt_update` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE KEY `idx_name` (`name`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 -- 用户表（t_tro_user）
 -- 字段添加
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count1 INT;
-
 SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
 WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_user' AND COLUMN_NAME = 'user_type');
 
@@ -21,11 +36,8 @@ ALTER TABLE t_tro_user
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
 
 -- 部门表（t_tro_dept）
@@ -44,8 +56,8 @@ CREATE TABLE IF NOT EXISTS `t_tro_dept`
     `update_time` datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`  tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 -- 用户部门关系表（t_tro_user_dept_relation）
 CREATE TABLE IF NOT EXISTS `t_tro_user_dept_relation`
@@ -60,8 +72,8 @@ CREATE TABLE IF NOT EXISTS `t_tro_user_dept_relation`
     PRIMARY KEY (`id`),
     KEY `idx_user_id` (`user_id`(191)),
     KEY `idx_dept_id` (`dept_id`(191))
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 
 -- 角色表（t_tro_role）
@@ -81,8 +93,8 @@ CREATE TABLE IF NOT EXISTS `t_tro_role`
     `is_deleted`     tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`),
     KEY `idx_application_id` (`application_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='角色表';
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4 COMMENT ='角色表';
 
 -- 基础角色表（t_tro_base_role）
 CREATE TABLE IF NOT EXISTS `t_tro_base_role`
@@ -95,8 +107,8 @@ CREATE TABLE IF NOT EXISTS `t_tro_base_role`
     `status`      tinyint(1) DEFAULT '0' COMMENT '状态(0:启用 1:禁用)',
     `action`      varchar(255) NOT NULL COMMENT '操作类型(0:all,1:query,2:create,3:update,4:delete,5:start,6:stop,7:export,8:enable,9:disable,10:auth)',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='基础角色表';
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4 COMMENT ='基础角色表';
 
 -- 资源表（t_tro_resource）
 CREATE TABLE IF NOT EXISTS `t_tro_resource`
@@ -116,8 +128,8 @@ CREATE TABLE IF NOT EXISTS `t_tro_resource`
     `is_deleted`  tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`) USING BTREE,
     KEY `idx_value` (`value`(191))
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 -- 授权表（t_tro_authority）
 CREATE TABLE IF NOT EXISTS `t_tro_authority`
@@ -132,8 +144,8 @@ CREATE TABLE IF NOT EXISTS `t_tro_authority`
     `update_time` datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     `is_deleted`  tinyint(1)   DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
 -- 用户角色关系表（t_tro_role_user_relation）
 CREATE TABLE IF NOT EXISTS `t_tro_role_user_relation`
@@ -148,10 +160,10 @@ CREATE TABLE IF NOT EXISTS `t_tro_role_user_relation`
     PRIMARY KEY (`id`),
     KEY `idx_user_id` (`user_id`(191)),
     KEY `idx_role_id` (`role_id`(191))
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+    ) ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4;
 
-
+BEGIN;
 -- 基础角色初始化数据
 INSERT IGNORE INTO `t_tro_base_role`(`id`, `name`, `alias`, `code`, `description`, `status`, `action`)
 VALUES (1, '应用管理员', '', 'APP_ADMIN', '应用管理员对应用具有基础的「编辑」、「删除」、「查看」权限，并可以对「应用组长」「应用组员」进行账号管理', 0,
@@ -232,3 +244,6 @@ INSERT IGNORE INTO `t_tro_resource` (`id`, `parent_id`, `type`, `code`, `name`, 
                                      `features`, `remark`, `create_time`, `update_time`, `is_deleted`)
 VALUES (16, NULL, 0, 'flowAccount', '流量账户', NULL, '[\"/api/settle/accountbook\",\"/api/settle/balance/list\"]', 7000,
         NULL, NULL, '2020-09-01 17:51:25', '2020-09-09 21:16:46', 0);
+
+INSERT IGNORE INTO `t_tro_user` (`id`,`customer_id`,`name`,`nick`,`key`,`salt`,`password`,`status`,`model`,`role`,`is_delete`,`gmt_create`,`gmt_update`,`user_type`) VALUES (1,1,'admin','admin','5b06060a-17cb-4588-bb71-edd7f65035aa','$2a$10$HucwJ/6sX5c4i8COpazjrO','$2a$10$HucwJ/6sX5c4i8COpazjrOU3S9i4yLNVR9Re22xM./9uWmDdDvqaW',0,0,0,0,'2020-03-25 10:49:35','2021-06-25 17:05:51',0);
+COMMIT;

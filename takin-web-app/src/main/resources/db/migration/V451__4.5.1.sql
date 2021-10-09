@@ -1,16 +1,10 @@
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count INT;
-
-SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_role' AND COLUMN_NAME = 'customer_id');
+SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_role' AND COLUMN_NAME = 'customer_id');
 
 IF count = 0 THEN
 
@@ -64,29 +58,20 @@ alter table t_tro_role
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
 -- 权限相关 4.5.1
 -- 角色表
 
-
 -- 清除表 t_tro_role
 DROP PROCEDURE IF EXISTS delete_table;
-
 DELIMITER $$
-
 CREATE PROCEDURE delete_table()
-
 BEGIN
 
 DECLARE count1 INT;
-
-SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_role');
+SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_role');
 
 IF count1 > 0 THEN
 
@@ -100,27 +85,19 @@ delete from t_tro_role;
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL delete_table();
-
 DROP PROCEDURE IF EXISTS delete_table;
 -- 清除表 t_tro_role 结束
 
 -- 清除表 t_tro_resource
 DROP PROCEDURE IF EXISTS delete_table;
-
 DELIMITER $$
-
 CREATE PROCEDURE delete_table()
-
 BEGIN
 
 DECLARE count1 INT;
-
-SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_resource');
+SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_resource');
 
 IF count1 > 0 THEN
 
@@ -134,28 +111,18 @@ delete from `t_tro_resource`;
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL delete_table();
-
 DROP PROCEDURE IF EXISTS delete_table;
 -- 清除表 t_tro_resource 结束
 
-
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count INT;
-
-SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_resource' AND COLUMN_NAME = 'action');
+SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_resource' AND COLUMN_NAME = 'action');
 
 IF count = 0 THEN
 
@@ -173,94 +140,9 @@ alter table t_tro_resource add column customer_id bigint(20) COMMENT '租户id' 
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
-
-
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (1, NULL, 0, 'dashboard', '系统概览', '',
-        '[\"/api/scenemanage/list\",\"/api/report/listReport\",\"/api/application/center/app/switch\",\"/api/settle/accountbook\",\"/api/user/work/bench/access\",\"/api/user/work/bench\"]',
-        1000, '[]', NULL, NULL, NULL, '2020-09-01 17:10:02', '2020-11-06 14:19:06', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (2, NULL, 0, 'linkTease', '链路梳理', '', '', 2400, '[]', NULL, NULL, NULL, '2020-09-01 17:16:56',
-        '2020-11-12 20:12:24', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (3, 2, 0, 'systemFlow', '系统流程', '',
-        '[\"/api/link/linkmanage/middleware\",\"/api/link/midlleWare/cascade\",\"/api/link/tech/linkManage\",\"/api/application/center/list\"]',
-        2100, '[2,3,4]', NULL, NULL, NULL, '2020-09-01 17:20:17', '2020-11-12 16:51:46', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (4, 2, 0, 'businessActivity', '业务活动', '',
-        '[\"/api/link/business/manage\",\"/api/link/linkmanage/middleware\",\"/api/link/midlleWare/cascade\"]', 2200,
-        '[2,3,4]', NULL, NULL, NULL, '2020-09-01 17:26:09', '2020-11-02 20:17:57', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (5, 2, 0, 'businessFlow', '业务流程', '',
-        '[\"/api/link/scene/manage\",\"/api/link/linkmanage/middleware\",\"/api/link/midlleWare/cascade\"]', 2300,
-        '[2,3,4]', NULL, NULL, NULL, '2020-09-01 17:26:54', '2020-11-02 20:18:26', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (6, NULL, 0, 'appManage', '应用管理', NULL,
-        '[\"/api/application/center/app/switch\",\"/api/application/center/list\",\"/api/application/center/app/info\",\"/api/link/ds/manage\",\"/api/link/ds/enable\",\"/api/link/ds/enable\",\"/api/link/ds/manage/detail\",\"/api/link/guard/guardmanage\",\"/api/link/guard/guardmanage/info\",\"/api/shadow/job/query\",\"/api/shadow/job/query/detail\",\"/api/application/whitelist\",\"/api/global/switch/whitelist\"]',
-        3000, '[2,3,4,6]', NULL, NULL, NULL, '2020-09-01 17:31:32', '2020-11-06 11:59:26', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (8, NULL, 0, 'pressureTestManage', '压测管理', NULL, '', 5300, '[]', NULL, NULL, NULL, '2020-09-01 17:36:41',
-        '2020-11-12 20:12:33', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (9, 8, 0, 'pressureTestManage_pressureTestScene', '压测场景', NULL,
-        '[\"/api/application/center/app/switch\",\"/api/scenemanage/list\",\"/api/settle/accountbook\"]', 5100,
-        '[2,3,4,5]', NULL, NULL, NULL, '2020-09-01 17:38:28', '2020-11-06 11:59:35', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (10, 8, 0, 'pressureTestManage_pressureTestReport', '压测报告', NULL, '[\"/api/report/listReport\"]', 5200, '[]',
-        NULL, NULL, NULL, '2020-09-01 17:43:10', '2020-11-06 14:18:51', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (11, NULL, 0, 'configCenter', '配置中心', NULL, '', 6600, '[]', NULL, NULL, NULL, '2020-09-01 17:44:26',
-        '2020-11-12 20:12:26', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (12, 11, 0, 'configCenter_pressureMeasureSwitch', '压测开关设置', NULL, '[\"/api/application/center/app/switch\"]',
-        6100, '[6]', NULL, NULL, NULL, '2020-09-01 17:46:04', '2020-11-06 11:59:44', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (13, 11, 0, 'configCenter_whitelistSwitch', '白名单开关设置', NULL, '[\"/api/global/switch/whitelist\"]', 6200, '[6]',
-        NULL, NULL, NULL, '2020-09-01 17:47:15', '2020-11-06 11:59:54', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (14, 11, 0, 'configCenter_blacklist', '黑名单', NULL, '[\"/api/confcenter/wbmnt/query/blist\"]', 6300, '[2,3,4,6]',
-        NULL, NULL, NULL, '2020-09-01 17:48:02', '2020-11-06 12:00:05', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (15, 11, 0, 'configCenter_entryRule', '入口规则', NULL, '[\"/api/api/get\"]', 6400, '[2,3,4]', NULL, NULL, NULL,
-        '2020-09-01 17:49:15', '2020-11-02 20:31:16', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (16, NULL, 0, 'flowAccount', '流量账户', NULL, '[\"/api/settle/accountbook\",\"/api/settle/balance/list\"]', 7000,
-        '[]', NULL, NULL, NULL, '2020-09-01 17:51:25', '2020-11-06 14:19:30', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (307, 11, 0, 'configCenter_operationLog', '操作日志', NULL, '[\"/operation/log/list\"]', 6500, '[]', NULL, NULL,
-        NULL, '2020-09-28 15:27:38', '2020-11-12 20:12:28', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (367, 11, 0, 'configCenter_authorityConfig', '权限管理', NULL,
-        '[\"/api/role/list\",\"/api/role/detail\",\"/api/role/add\",\"/api/role/update\",\"/api/role/delete\",\"/api/role/clear\"]',
-        6000, '[2,3,4]', NULL, NULL, NULL, '2020-11-10 11:53:09', '2020-11-16 11:35:39', 0);
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
-                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (368, NULL, 0, 'scriptManage', '脚本管理', NULL, '[\"/api/scriptManage\"]', 4000, '[2,3,4,7]', NULL, NULL, NULL,
-        '2020-11-10 18:55:05', '2020-11-16 18:10:12', 0);
-
 
 -- 授权表
 DROP PROCEDURE IF EXISTS change_field;
@@ -653,47 +535,18 @@ alter table t_shadow_job_config
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 -- 更新字段开始
 DROP PROCEDURE IF EXISTS update_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE update_field()
-
 BEGIN
 
 DECLARE count1 INT;
-
-SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_application_mnt' AND COLUMN_NAME = 'customer_id');
+SET count1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = DATABASE() AND TABLE_NAME = 't_application_mnt' AND COLUMN_NAME = 'customer_id');
 
 IF count1 > 0 THEN
 
@@ -816,35 +669,23 @@ alter table t_base_config
     modify column `CONFIG_VALUE` LONGTEXT NOT NULL COMMENT '配置值';
 END IF;
 
-
-
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
 -- 修改字段结束
 
-
 -- 更新数据开始
 DROP PROCEDURE IF EXISTS update_data;
-
 DELIMITER $$
-
 CREATE PROCEDURE update_data()
-
 BEGIN
 
 DECLARE count3 INT;
-
 SET count3 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
 WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_resource' AND COLUMN_NAME = 'value' AND COLUMN_NAME = 'code');
 
-
 IF count3 > 0 THEN
-
 
 -- 更新菜单权限拦截器拦截url
 UPDATE `t_tro_resource`
@@ -893,14 +734,92 @@ UPDATE `t_tro_resource`
 SET `value` = '[\"/api/scriptManage\"]'
 WHERE code = 'scriptManage';
 
-
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL update_data();
-
 DROP PROCEDURE IF EXISTS update_data;
 -- 更新数据结束
+
+BEGIN;
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (1, NULL, 0, 'dashboard', '系统概览', '',
+        '[\"/api/scenemanage/list\",\"/api/report/listReport\",\"/api/application/center/app/switch\",\"/api/settle/accountbook\",\"/api/user/work/bench/access\",\"/api/user/work/bench\"]',
+        1000, '[]', NULL, NULL, NULL, '2020-09-01 17:10:02', '2020-11-06 14:19:06', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (2, NULL, 0, 'linkTease', '链路梳理', '', '', 2400, '[]', NULL, NULL, NULL, '2020-09-01 17:16:56',
+        '2020-11-12 20:12:24', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (3, 2, 0, 'systemFlow', '系统流程', '',
+        '[\"/api/link/linkmanage/middleware\",\"/api/link/midlleWare/cascade\",\"/api/link/tech/linkManage\",\"/api/application/center/list\"]',
+        2100, '[2,3,4]', NULL, NULL, NULL, '2020-09-01 17:20:17', '2020-11-12 16:51:46', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (4, 2, 0, 'businessActivity', '业务活动', '',
+        '[\"/api/link/business/manage\",\"/api/link/linkmanage/middleware\",\"/api/link/midlleWare/cascade\"]', 2200,
+        '[2,3,4]', NULL, NULL, NULL, '2020-09-01 17:26:09', '2020-11-02 20:17:57', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (5, 2, 0, 'businessFlow', '业务流程', '',
+        '[\"/api/link/scene/manage\",\"/api/link/linkmanage/middleware\",\"/api/link/midlleWare/cascade\"]', 2300,
+        '[2,3,4]', NULL, NULL, NULL, '2020-09-01 17:26:54', '2020-11-02 20:18:26', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (6, NULL, 0, 'appManage', '应用管理', NULL,
+        '[\"/api/application/center/app/switch\",\"/api/application/center/list\",\"/api/application/center/app/info\",\"/api/link/ds/manage\",\"/api/link/ds/enable\",\"/api/link/ds/enable\",\"/api/link/ds/manage/detail\",\"/api/link/guard/guardmanage\",\"/api/link/guard/guardmanage/info\",\"/api/shadow/job/query\",\"/api/shadow/job/query/detail\",\"/api/application/whitelist\",\"/api/global/switch/whitelist\"]',
+        3000, '[2,3,4,6]', NULL, NULL, NULL, '2020-09-01 17:31:32', '2020-11-06 11:59:26', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (8, NULL, 0, 'pressureTestManage', '压测管理', NULL, '', 5300, '[]', NULL, NULL, NULL, '2020-09-01 17:36:41',
+        '2020-11-12 20:12:33', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (9, 8, 0, 'pressureTestManage_pressureTestScene', '压测场景', NULL,
+        '[\"/api/application/center/app/switch\",\"/api/scenemanage/list\",\"/api/settle/accountbook\"]', 5100,
+        '[2,3,4,5]', NULL, NULL, NULL, '2020-09-01 17:38:28', '2020-11-06 11:59:35', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (10, 8, 0, 'pressureTestManage_pressureTestReport', '压测报告', NULL, '[\"/api/report/listReport\"]', 5200, '[]',
+        NULL, NULL, NULL, '2020-09-01 17:43:10', '2020-11-06 14:18:51', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (11, NULL, 0, 'configCenter', '配置中心', NULL, '', 6600, '[]', NULL, NULL, NULL, '2020-09-01 17:44:26',
+        '2020-11-12 20:12:26', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (12, 11, 0, 'configCenter_pressureMeasureSwitch', '压测开关设置', NULL, '[\"/api/application/center/app/switch\"]',
+        6100, '[6]', NULL, NULL, NULL, '2020-09-01 17:46:04', '2020-11-06 11:59:44', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (13, 11, 0, 'configCenter_whitelistSwitch', '白名单开关设置', NULL, '[\"/api/global/switch/whitelist\"]', 6200, '[6]',
+        NULL, NULL, NULL, '2020-09-01 17:47:15', '2020-11-06 11:59:54', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (14, 11, 0, 'configCenter_blacklist', '黑名单', NULL, '[\"/api/confcenter/wbmnt/query/blist\"]', 6300, '[2,3,4,6]',
+        NULL, NULL, NULL, '2020-09-01 17:48:02', '2020-11-06 12:00:05', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (15, 11, 0, 'configCenter_entryRule', '入口规则', NULL, '[\"/api/api/get\"]', 6400, '[2,3,4]', NULL, NULL, NULL,
+        '2020-09-01 17:49:15', '2020-11-02 20:31:16', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (16, NULL, 0, 'flowAccount', '流量账户', NULL, '[\"/api/settle/accountbook\",\"/api/settle/balance/list\"]', 7000,
+        '[]', NULL, NULL, NULL, '2020-09-01 17:51:25', '2020-11-06 14:19:30', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (307, 11, 0, 'configCenter_operationLog', '操作日志', NULL, '[\"/operation/log/list\"]', 6500, '[]', NULL, NULL,
+        NULL, '2020-09-28 15:27:38', '2020-11-12 20:12:28', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (367, 11, 0, 'configCenter_authorityConfig', '权限管理', NULL,
+        '[\"/api/role/list\",\"/api/role/detail\",\"/api/role/add\",\"/api/role/update\",\"/api/role/delete\",\"/api/role/clear\"]',
+        6000, '[2,3,4]', NULL, NULL, NULL, '2020-11-10 11:53:09', '2020-11-16 11:35:39', 0);
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (368, NULL, 0, 'scriptManage', '脚本管理', NULL, '[\"/api/scriptManage\"]', 4000, '[2,3,4,7]', NULL, NULL, NULL,
+        '2020-11-10 18:55:05', '2020-11-16 18:10:12', 0);
+COMMIT;

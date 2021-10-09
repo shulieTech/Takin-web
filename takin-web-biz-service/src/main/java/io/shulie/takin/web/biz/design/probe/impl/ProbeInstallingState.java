@@ -17,6 +17,11 @@ public class ProbeInstallingState extends AbstractApplicationNodeProbeState {
 
     @Override
     public boolean match(MatchApplicationNodeProbeStateDTO dto) {
+        // amdb 失败
+        if (ApplicationNodeProbeUtil.isAmdbFailed(dto.getAmdbProbeState())) {
+            return false;
+        }
+
         // 本地安装中
         if (ApplicationNodeProbeUtil.installing(dto)) {
             return true;

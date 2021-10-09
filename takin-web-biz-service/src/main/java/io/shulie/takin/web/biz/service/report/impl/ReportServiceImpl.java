@@ -1,12 +1,15 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
+import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.vo.report.ReportIdVO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
@@ -42,6 +45,7 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,8 +80,20 @@ public class ReportServiceImpl implements ReportService {
     public WebResponse listReport(ReportQueryParam param) {
         param.setRequestUrl(RemoteConstant.REPORT_LIST);
         param.setHttpMethod(HttpMethod.GET);
-        // 补充报告查询用户数据
-        WebPluginUtils.fillReportUserData(param);
+        // 前端查询条件 传用户
+        if (StringUtils.isNotBlank(param.getUserName())) {
+            List<UserExt> userList = WebPluginUtils.selectByName(param.getUserName());
+            if (CollectionUtils.isNotEmpty(userList)) {
+                List<Long> userIds = userList.stream().map(UserExt::getId).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(userIds)) {
+                    param.setUserIdStr(null);
+                } else {
+                    param.setUserIdStr(StringUtils.join(userIds, ","));
+                }
+            } else {
+                return WebResponse.success(Lists.newArrayList());
+            }
+        }
         WebResponse webResponse = httpWebClient.request(param);
 
         if (!webResponse.getSuccess()) {
@@ -274,6 +290,27 @@ public class ReportServiceImpl implements ReportService {
         vo.setRequestUrl(RemoteConstant.REPORT_METRICES);
         vo.setHttpMethod(HttpMethod.GET);
         return httpWebClient.request(vo);
+    }
+
+    @Override
+    public List<Map<String, Object>> listMetrics(Long reportId, Long sceneId, Long customerId) {
+        ReportIdVO vo = new ReportIdVO();
+        vo.setReportId(reportId);
+        vo.setSceneId(sceneId);
+        vo.setCustomerId(customerId);
+        vo.setRequestUrl(RemoteConstant.REPORT_METRICES);
+        vo.setHttpMethod(HttpMethod.GET);
+        WebResponse response = httpWebClient.request(vo);
+        if (response == null) {
+            throw ApiException.create(500, String.format("请求 cloud 指标错误! url: %s", RemoteConstant.REPORT_METRICES));
+        }
+
+        Object metricsObject = response.getData();
+        if (metricsObject == null) {
+            return Collections.emptyList();
+        }
+
+        return (List<Map<String, Object>>)metricsObject;
     }
 
     @Override

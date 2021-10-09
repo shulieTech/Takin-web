@@ -617,6 +617,20 @@ public class LinkTopologyService extends CommonService {
                                                           Map<String, LinkNodeDTO> nodeMap,
                                                           Map<String, List<LinkEdgeDTO>> providerEdgeMap, Map<String, List<LinkEdgeDTO>> callEdgeMap,
                                                           Map<String, List<ApplicationNodeDTO>> appNodeMap) {
+        // 未知应用或者外部应用
+        if (this.isUnknownNode(node) || this.isOuterService(node)) {
+            NodeExtendInfoBaseDTO extendInfo = this.convertNodeExtendInfo(node.getExtendInfo(),
+                NodeExtendInfoBaseDTO.class);
+            NodeDetailDatasourceInfo nodeDetailDatasourceInfo = new NodeDetailDatasourceInfo();
+            if (extendInfo == null) {
+                nodeDetailDatasourceInfo.setNode("");
+            } else {
+                nodeDetailDatasourceInfo.setNode(String.format("%s:%s", extendInfo.getIp(), extendInfo.getPort()));
+            }
+
+            return Lists.newArrayList(nodeDetailDatasourceInfo);
+        }
+
         if (NodeTypeGroupEnum.MQ.name().equals(node.getNodeTypeGroup())) {
             NodeExtendInfoForMQDTO extendInfo = convertNodeExtendInfo(node.getExtendInfo(),
                     NodeExtendInfoForMQDTO.class);
@@ -667,14 +681,7 @@ public class LinkTopologyService extends CommonService {
             }
             return Lists.newArrayList();
         }
-        if (isUnknownNode(node) || isOuterService(node)) {
-            NodeExtendInfoBaseDTO extendInfo = convertNodeExtendInfo(node.getExtendInfo(),
-                    NodeExtendInfoBaseDTO.class);
-            NodeDetailDatasourceInfo nodeDetailDatasourceInfo
-                    = new NodeDetailDatasourceInfo();
-            nodeDetailDatasourceInfo.setNode(extendInfo.getIp() + ":" + extendInfo.getPort());
-            return Lists.newArrayList(nodeDetailDatasourceInfo);
-        }
+
         return null;
     }
 
@@ -924,16 +931,30 @@ public class LinkTopologyService extends CommonService {
         return node.getNodeType().equalsIgnoreCase(NodeTypeEnum.APP.name());
     }
 
+    /**
+     * 是否是未知应用
+     * 根据节点名称判断
+     *
+     * @param node 节点实例
+     * @return 是否是
+     */
     private boolean isUnknownNode(LinkNodeDTO node) {
-        return node.getNodeName().equalsIgnoreCase("UNKNOWN");// AMDB定义在拓扑图里面的
+        return "UNKNOWN".equalsIgnoreCase(node.getNodeName());
     }
 
     private boolean isUnknownResponseNode(AbstractTopologyNodeResponse node) {
         return node.getNodeType().getType().equals(NodeTypeResponseEnum.UNKNOWN.getType());
     }
 
+    /**
+     * 外部应用
+     * 根据节点名称判断
+     *
+     * @param node 节点实例
+     * @return 是否是
+     */
     private boolean isOuterService(LinkNodeDTO node) {
-        return node.getNodeName().equalsIgnoreCase("OUTSERVICE");
+        return "OUTSERVICE".equalsIgnoreCase(node.getNodeName());
     }
 
     private boolean isVirtualNode(LinkNodeDTO node) {

@@ -67,13 +67,3 @@ spring:
     multipart:
       max-file-size: 204800KB
       max-request-size: 204800KB
-
-#检查
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "prometheus,health"
-  metrics:
-    tags:
-      application: "takin-web"

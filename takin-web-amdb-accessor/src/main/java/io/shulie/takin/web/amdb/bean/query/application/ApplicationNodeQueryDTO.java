@@ -1,5 +1,7 @@
 package io.shulie.takin.web.amdb.bean.query.application;
 
+import java.util.Date;
+
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -44,5 +46,15 @@ public class ApplicationNodeQueryDTO extends PageBaseDTO {
      * 探针状态, 0-已安装,1-未安装,2-安装中,3-卸载中,4-安装失败,99-未知状态
      */
     private Integer probeStatus;
+
+    /**
+     * agent状态, 0-已安装,1-未安装,2-安装中,3-卸载中,4-安装失败,99-未知状态
+     */
+    private Integer agentStatus;
+
+    /**
+     * 查询条件，更新时间下限
+     */
+    private Date minUpdateDate;
 
 }

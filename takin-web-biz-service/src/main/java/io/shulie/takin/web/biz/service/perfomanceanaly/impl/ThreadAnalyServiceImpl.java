@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -237,7 +238,30 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
     @Override
     public void clearData(Integer time) {
         Date nSecond = DateUtils.getPreviousNSecond(time);
-        performanceThreadDataDAO.clearData(DateUtils.dateToString(nSecond, DateUtils.FORMATE_YMDHMS));
+        String timeString = DateUtils.dateToString(nSecond, DateUtils.FORMATE_YMDHMS);
+
+        boolean dataCleanComplete = false;
+        boolean stackDataCleanComplete = false;
+
+        while (true) {
+            try {
+                if (!dataCleanComplete) {
+                    dataCleanComplete = performanceThreadDataDAO.clearData(timeString);
+                }
+
+                if (!stackDataCleanComplete) {
+                    stackDataCleanComplete = performanceThreadDataDAO.clearStackData(timeString);
+                }
+
+                if (dataCleanComplete && stackDataCleanComplete) {
+                    break;
+                }
+
+                TimeUnit.SECONDS.sleep(15);
+            } catch (InterruptedException e) {
+                log.error("定时清理错误 --> 错误信息: {}", e.getMessage(), e);
+            }
+        }
     }
 
     private long formatTimestamp(String datetime) {

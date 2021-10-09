@@ -176,6 +176,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         Map<String, ShadowConsumerOutput> amdbMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(amdbResult)) {
             amdbMap = amdbResult.stream()
+                .filter(item -> ShadowMqConsumerType.getByName(item.getType()) != null)
                 .map(e -> {
                     ShadowConsumerOutput response = new ShadowConsumerOutput();
                     response.setUnionId(
@@ -195,6 +196,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         Map<String, ShadowConsumerOutput> dbMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(dbResult)) {
             dbMap = dbResult.stream()
+                .filter(item -> ShadowMqConsumerType.getByName(item.getType()) != null)
                 .map(e -> {
                     ShadowConsumerOutput response = new ShadowConsumerOutput();
                     response.setId(e.getId());

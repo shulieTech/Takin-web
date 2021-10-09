@@ -43,10 +43,15 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         String url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_PATH;
         ServiceQueryParam entranceQueryParam = new ServiceQueryParam();
         // 获取rpcType
-        EntranceTypeInfo info = EntranceTypeUtils.getRpcType(entranceType);
-        entranceQueryParam.setRpcType(info.getRpcType());
-        if(StringUtils.isNotBlank(info.getMiddlewareName())) {
-            entranceQueryParam.setMiddlewareName(info.getMiddlewareName());
+        if(StringUtils.isNotBlank(entranceType)){
+            EntranceTypeInfo info = EntranceTypeUtils.getRpcType(entranceType);
+            entranceQueryParam.setRpcType(info.getRpcType());
+            if(StringUtils.isNotBlank(info.getMiddlewareName())) {
+                entranceQueryParam.setMiddlewareName(info.getMiddlewareName());
+            }
+        }else{
+            //查询所有的type
+            entranceQueryParam.setRpcType("");
         }
         entranceQueryParam.setAppName(applicationName);
         //entranceQueryParam.setFieldNames("appName,serviceName,methodName,middlewareName,rpcType");

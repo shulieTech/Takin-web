@@ -95,6 +95,41 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     FAST_DEBUG_GET_APP_LOG_ERROR("0700-" + ErrorConstant.QUERY_ERROR, "快速调试应用日志查询异常"),
     FAST_DEBUG_GET_AGENT_LOG_ERROR("0700-" + ErrorConstant.QUERY_ERROR, "快速调试agent日志查询异常"),
     FAST_DEBUG_GET_AGENT_LOG_NAME_ERROR("0700-" + ErrorConstant.QUERY_ERROR, "快速调试agent日志文件名称查询异常"),
+    /**
+     * 巡检场景
+     */
+    PATROL_SCENE_VALIDATE_ERROR("0900-" + ErrorConstant.VALIDATE_ERROR, "巡检场景参数校验"),
+    PATROL_SCENE_ADD_ERROR("0900-" + ErrorConstant.ADD_ERROR, "新增巡检场景异常"),
+    PATROL_SCENE_UPDATE_ERROR("0900-" + ErrorConstant.UPDATE_ERROR, "编辑巡检场景异常"),
+    PATROL_SCENE_DELETE_ERROR("0900-" + ErrorConstant.DELETE_ERROR, "删除巡检场景异常"),
+    PATROL_SCENE_THIRD_PARTY_ERROR("0900-" + ErrorConstant.THIRD_PARTY_ERROR, "巡检场景第三方返回异常"),
+    PATROL_SCENE_START_STATUS_ERROR("0900-" + ErrorConstant.STATUS_ERROR, "巡检场景启动模块状态异常"),
+    PATROL_SCENE_STOP_STATUS_ERROR("0900-" + ErrorConstant.STATUS_ERROR, "巡检场景停止模块状态异常"),
+    PATROL_SCENE_START_VALIDATE_ERROR("0900-" + ErrorConstant.STATUS_ERROR, "巡检场景启动模块参数校验"),
+    PATROL_SCENE_QUERY_ERROR("0900-" + ErrorConstant.QUERY_NULL_ERROR, "巡检场景查询异常"),
+
+    /**
+     * 看板管理
+     */
+    PATROL_BOARD_ADD_ERROR("1000-" + ErrorConstant.ADD_ERROR, "新增巡检看板异常"),
+    PATROL_BOARD_UPDATE_ERROR("1000-" + ErrorConstant.UPDATE_ERROR, "编辑巡检看板异常"),
+    PATROL_BOARD_DELETE_ERROR("1000-" + ErrorConstant.DELETE_ERROR, "删除巡检看板异常"),
+
+    /**
+     * 技术节点
+     */
+    PATROL_TECH_NODE_ADD_ERROR("1100-" + ErrorConstant.ADD_ERROR, "新增技术节点异常"),
+
+    /**
+     * 巡检断言
+     */
+    PATROL_ASSERT_ADD_ERROR("1200-" + ErrorConstant.ADD_ERROR, "新增断言异常"),
+
+    /**
+     *  巡检异常管理
+     */
+    PATROL_EXCEPTION_ADD_ERROR("1300-" + ErrorConstant.ADD_ERROR, "新增异常数据失败"),
+    PATROL_EXCEPTION_QUERY_ERROR("1300-" + ErrorConstant.QUERY_NULL_ERROR, "查询巡检异常失败"),
     ;
 
     private final String errorCode;

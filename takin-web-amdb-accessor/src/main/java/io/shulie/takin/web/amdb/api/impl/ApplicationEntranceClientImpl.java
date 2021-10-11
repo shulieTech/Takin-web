@@ -71,7 +71,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 //                log.error("前往amdb查询入口信息返回异常,请求地址：{}，请求参数：{}", url, JSON.toJSONString(entranceQueryParam));
 //                return Lists.newArrayList();
 //            }
-            AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.newInStance().url(url)
+            AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
                     .param(entranceQueryParam)
                     .eventName("查询入口信息")
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
@@ -115,7 +115,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 //                log.error("前往amdb查询拓扑图信息返回异常,请求地址：{}，请求参数：{}", url, JSON.toJSONString(topologyQueryParam));
 //                return null;
 //            }
-            AmdbResult<LinkTopologyDTO> amdbResponse = AmdbHelper.newInStance().url(url)
+            AmdbResult<LinkTopologyDTO> amdbResponse = AmdbHelper.builder().url(url)
                     .param(topologyQueryParam)
                     .eventName("查询拓扑图信息")
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
@@ -172,7 +172,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 //                log.error("前往amdb更新未知应用返回异常,请求地址：{}，请求参数：{}", url, JSON.toJSONString(topologyQueryParam));
 //                return null;
 //            }
-            AmdbResult<Object> amdbResponse = AmdbHelper.newInStance().url(url)
+            AmdbResult<Object> amdbResponse = AmdbHelper.builder().url(url)
                     .param(topologyQueryParam)
                     .eventName("更新未知应用")
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
@@ -210,7 +210,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 //                throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR,"向amdb发起GET请求查询MQ消费者返回异常！");
 //            }
 
-            AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.newInStance().url(url)
+            AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
                     .param(entranceQueryParam)
                     .eventName("查询MQ消费者")
                     .exception(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR)

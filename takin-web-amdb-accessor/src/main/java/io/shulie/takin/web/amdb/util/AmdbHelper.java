@@ -26,7 +26,11 @@ import org.springframework.util.CollectionUtils;
 @NoArgsConstructor
 public class AmdbHelper {
 
-    public static class AmdbBuilder {
+    public static AmdbBuilder builder() {
+        return new AmdbBuilder();
+    }
+
+    static class AmdbBuilder {
         /**
          * HTTP请求 默认GET请求
          */
@@ -109,7 +113,8 @@ public class AmdbHelper {
 
             if (amdbResponse == null || !amdbResponse.getSuccess()) {
                 log.error("{}返回异常,请求地址：{}，响应体：{},{}", this.eventName, this.url, responseEntity,
-                    ",\"可通过arthas命令 watch io.shulie.takin.web.amdb.util.AmdbHelper$AmdbBuilder param '{params,returnObj,throwExp}'  -n 5  -x 3  获取参数！\"");
+                    ",\"可通过arthas命令 watch io.shulie.takin.web.amdb.util.AmdbHelper$AmdbBuilder param '{params,"
+                        + "returnObj,throwExp}'  -n 5  -x 3  获取参数！\"");
                 throw new TakinWebException(this.exception, this.eventName + "返回异常！");
             }
             final T data = amdbResponse.getData();
@@ -160,7 +165,8 @@ public class AmdbHelper {
 
             if (CollectionUtils.isEmpty(amdbResponse.getData())) {
                 log.error("{}返回状态为成功，但数据为空！amdbUrl={},响应信息：{},{}", eventName, this.url, responseEntity,
-                    "可通过arthas命令 watch io.shulie.takin.web.amdb.util.AmdbHelper$AmdbBuilder param '{params,returnObj,throwExp}'  -n 5  -x 3 获取参数！");
+                    "可通过arthas命令 watch io.shulie.takin.web.amdb.util.AmdbHelper$AmdbBuilder param '{params,returnObj,"
+                        + "throwExp}'  -n 5  -x 3 获取参数！");
             } else {
                 final List<T> list = JSONArray.parseArray(JSON.toJSONString(amdbResponse.getData()), clazz);
                 amdbResponse.setData(list);
@@ -169,10 +175,6 @@ public class AmdbHelper {
             return amdbResponse;
         }
 
-    }
-
-    public static AmdbBuilder builder() {
-        return new AmdbBuilder();
     }
 
     /**

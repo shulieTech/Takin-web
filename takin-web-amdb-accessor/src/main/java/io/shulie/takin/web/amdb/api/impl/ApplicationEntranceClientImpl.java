@@ -56,21 +56,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         }
         entranceQueryParam.setAppName(applicationName);
         entranceQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
-        entranceQueryParam.setEnvCode("envCode");
-        //entranceQueryParam.setFieldNames("appName,serviceName,methodName,middlewareName,rpcType");
+        entranceQueryParam.setEnvCode(WebPluginUtils.getEnvCode());
         try {
-//            String responseEntity = HttpClientUtil.sendGet(url, entranceQueryParam);
-//            if (StringUtils.isBlank(responseEntity)) {
-//                log.error("前往amdb查询入口信息返回异常,请求地址：{}，请求参数：{}", url, JSON.toJSONString(entranceQueryParam));
-//                return null;
-//            }
-//            AmdbResult<List<ServiceInfoDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-//                new TypeReference<AmdbResult<List<ServiceInfoDTO>>>() {}, true);
-//
-//            if (amdbResponse == null || !amdbResponse.getSuccess()) {
-//                log.error("前往amdb查询入口信息返回异常,请求地址：{}，请求参数：{}", url, JSON.toJSONString(entranceQueryParam));
-//                return Lists.newArrayList();
-//            }
             AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
                     .param(entranceQueryParam)
                     .eventName("查询入口信息")
@@ -78,8 +65,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
                     .list(ServiceInfoDTO.class);
             return amdbResponse.getData();
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR,e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR,e.getMessage(),e);
         }
     }
 
@@ -132,8 +118,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             });
             return data;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR,e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR,e.getMessage(),e);
         }
     }
 
@@ -181,8 +166,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 
             return amdbResponse.getSuccess();
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR,e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR,e.getMessage(),e);
         }
     }
 
@@ -193,23 +177,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         entranceQueryParam.setRpcType(RpcType.TYPE_MQ + "");
         entranceQueryParam.setAppName(applicationName);
         entranceQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
-        entranceQueryParam.setEnvCode("envCode");
-        //entranceQueryParam.setFieldNames("appName,serviceName,methodName,middlewareName,rpcType");
+        entranceQueryParam.setEnvCode(WebPluginUtils.getEnvCode());
         try {
-//            String responseEntity = HttpClientUtil.sendGet(url, entranceQueryParam);
-//            if (StringUtils.isBlank(responseEntity)) {
-//                log.error("向amdb发起GET请求查询MQ消费者返回为空,请求地址：{}，请求参数：{}", url, JSON.toJSONString(entranceQueryParam));
-//                throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR,"向amdb发起GET请求查询MQ消费者返回为空！");
-//            }
-//
-//            AmdbResult<List<ServiceInfoDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-//                new TypeReference<AmdbResult<List<ServiceInfoDTO>>>() {}, true);
-//
-//            if (amdbResponse == null || !amdbResponse.getSuccess()) {
-//                log.error("向amdb发起GET请求查询MQ消费者返回异常,请求地址：{}，请求参数：{}，响应体：{}", url, JSON.toJSONString(entranceQueryParam),responseEntity);
-//                throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR,"向amdb发起GET请求查询MQ消费者返回异常！");
-//            }
-
             AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
                     .param(entranceQueryParam)
                     .eventName("查询MQ消费者")
@@ -218,8 +187,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 
             return amdbResponse.getData();
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR,e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR,e.getMessage(),e);
         }
     }
 }

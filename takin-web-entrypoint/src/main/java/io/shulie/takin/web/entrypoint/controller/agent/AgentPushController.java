@@ -137,7 +137,7 @@ public class AgentPushController {
         try {
             return ResponseOk.create(uploadInterfaceService.saveUploadInterfaceData(tUploadInterfaceVo));
         }catch (Exception e) {
-            throw new TakinWebException(ExceptionCode.AGENT_INTERFACE_ERROR,"AgentController.judgeNeedUpload 查询是否需要上传异常");
+            throw new TakinWebException(ExceptionCode.AGENT_INTERFACE_ERROR,"AgentController.judgeNeedUpload 查询是否需要上传异常",e);
         }
     }
 
@@ -155,7 +155,7 @@ public class AgentPushController {
         try {
             return ResponseOk.create(uploadInterfaceService.executeNeedUploadInterface(uploadNeedVo));
         } catch (Exception e) {
-            throw new TakinWebException(ExceptionCode.AGENT_INTERFACE_ERROR,"AgentController.judgeNeedUpload 查询是否需要上传异常");
+            throw new TakinWebException(ExceptionCode.AGENT_INTERFACE_ERROR,"AgentController.judgeNeedUpload 查询是否需要上传异常",e);
         }
     }
 
@@ -201,7 +201,7 @@ public class AgentPushController {
             confCenterService.updateAppAgentVersion(appName, agentVersion, pradarVersion);
             return ResponseOk.create("succeed");
         } catch (Exception e) {
-            throw new TakinWebException(ExceptionCode.AGENT_INTERFACE_ERROR,"AgentController.appAgentVersionUpdate 更新应用版本异常");
+            throw new TakinWebException(ExceptionCode.AGENT_INTERFACE_ERROR,"AgentController.appAgentVersionUpdate 更新应用版本异常",e);
         }
     }
 

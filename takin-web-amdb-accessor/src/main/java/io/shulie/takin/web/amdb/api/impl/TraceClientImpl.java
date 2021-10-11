@@ -73,8 +73,7 @@ public class TraceClientImpl implements TraceClient {
             return PagingList.of(result.getData(), result.getTotal());
 
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),e);
         }
     }
 
@@ -115,8 +114,7 @@ public class TraceClientImpl implements TraceClient {
                 return PagingList.of(list, response.getTotal());
             }
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),e);
         }
         return PagingList.empty();
     }
@@ -132,8 +130,7 @@ public class TraceClientImpl implements TraceClient {
                     .list(RpcBased.class);
             return ProtocolParserFactory.getFactory().parseRpcStackByRpcBase(traceId, amdbResponse.getData());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),e);
         }
     }
 
@@ -148,8 +145,7 @@ public class TraceClientImpl implements TraceClient {
                     .list(RpcBased.class);
             return amdbResponse.getData();
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),e);
         }
     }
 

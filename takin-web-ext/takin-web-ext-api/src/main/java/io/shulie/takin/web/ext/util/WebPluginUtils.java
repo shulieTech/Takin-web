@@ -433,52 +433,53 @@ public class WebPluginUtils {
     /**
      * 返回默认的环境 目前给插件user-module使用
      */
-    public static String getDefaultEnvCode() {
+    public static String getDefaultEnvCode(String userAppKey,String tenantCode) {
+        if (tenantExtApi != null) {
+            return tenantExtApi.getDefaultEnvCode(userAppKey,tenantCode);
+        }
         return ENV_CODE;
     }
 
     /**
-     * 前端 根据租户code 判断租户,默认存在 目前给插件user-module使用
+     * 获取默认用户id
+     * @param userAppKey
      * @param tenantCode
      * @return
      */
-    public static Boolean isExistTenantByCode(String tenantCode) {
-        return Boolean.TRUE;
+    public static Long getDefaultUserId(String userAppKey,String tenantCode) {
+        if (tenantExtApi != null) {
+            return tenantExtApi.getDefaultUserId(userAppKey,tenantCode);
+        }
+        return USER_ID;
     }
 
     /**
-     * agent 根据租户code 判断租户,默认存在 目前给插件user-module使用
+     * 前端 根据租户code 判断租户,默认存在 目前给插件user-module使用
      * @param userAppKey
+     * @param tenantCode
      * @return
      */
-    public static Boolean isExistTenantByKey(String userAppKey) {
+    public static Boolean isExistTenant(String userAppKey,String tenantCode) {
+        if (tenantExtApi != null) {
+            return tenantExtApi.isExistTenant(userAppKey,tenantCode);
+        }
         return Boolean.TRUE;
     }
+
 
     /**
      * 前端 根据租户code 获取租户信息 目前给插件user-module使用
+     * @param userAppKey
      * @param tenantCode
      * @return
      */
-    public static TenantInfoExt getTenantInfoByCode(String tenantCode) {
+    public static TenantInfoExt getTenantInfo(String userAppKey,String tenantCode) {
+        if (tenantExtApi != null) {
+            return tenantExtApi.getTenantInfo(userAppKey,tenantCode);
+        }
         return null;
     }
 
-    /**
-     * 前端 根据租户userAppKey 获取租户信息 目前给插件user-module使用
-     * @param userAppKey
-     * @return
-     */
-    public static TenantInfoExt getTenantInfoByKey(String userAppKey) {
-        return null;
-    }
-
-    /**
-     * 判断租户,默认存在 目前给插件user-module使用
-     */
-    public static Long getTenantIdByUserAppKey() {
-        return TENANT_ID;
-    }
     //********************************插件调用模块**********************************//
 
 

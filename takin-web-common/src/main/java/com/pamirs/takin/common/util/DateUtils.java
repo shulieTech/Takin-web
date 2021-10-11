@@ -1,20 +1,5 @@
 package com.pamirs.takin.common.util;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.TimeUnits;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +7,19 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 日期工具类
@@ -66,6 +64,10 @@ public class DateUtils {
     //日期格式
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
+    private static final DateTimeFormatter LONG_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
+
+    private static final ZoneId SYSTEM_DEFAULT_ZONE = ZoneId.systemDefault();
+
     /**
      * DateTime to Str yyyy-MM-dd HH:mm:ss
      *
@@ -75,6 +77,19 @@ public class DateUtils {
     public static String DateToStr(java.time.LocalDateTime Datetime) {
         String time = Datetime.format(DateTimeFormatter.ofPattern(FORMAT));
         return time;
+    }
+
+    public static LocalDateTime parseLocalDateTime(String text) {
+        try {
+            return LocalDateTime.parse(text, LONG_FORMAT);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException(String.format("[%s] is not parsable", text));
+        }
+    }
+
+    public static Date convertLocalDateTimeToUDate(LocalDateTime localDateTime) {
+        Instant instant = localDateTime.atZone(SYSTEM_DEFAULT_ZONE).toInstant();
+        return Date.from(instant);
     }
 
     public static Date strToDate(String timeStr, String timeFormat) {

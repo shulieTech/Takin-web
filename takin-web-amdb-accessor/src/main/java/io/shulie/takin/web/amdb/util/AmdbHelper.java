@@ -30,7 +30,7 @@ public class AmdbHelper {
         return new AmdbBuilder();
     }
 
-    static class AmdbBuilder {
+    public static class AmdbBuilder {
         /**
          * HTTP请求 默认GET请求
          */

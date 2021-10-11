@@ -1248,10 +1248,15 @@ public class LinkManageServiceImpl implements LinkManageService {
                 .collect(Collectors.toList());
             List<BusinessLinkManageTable> businessLinkManageTables = tBusinessLinkManageTableMapper
                 .selectBussinessLinkByIdList(businessActivityIds);
-            sceneBusinessActivityRefVoList = businessLinkManageTables.stream().map(businessLinkManageTable -> {
+            //因为businessLinkManageTables打乱了业务活动的顺序 所以使用businessActivityIds
+            businessActivityIds.stream().map(activityId -> {
                 BusinessActivityNameResponse businessActivityNameResponse = new BusinessActivityNameResponse();
-                businessActivityNameResponse.setBusinessActivityId(businessLinkManageTable.getLinkId());
-                businessActivityNameResponse.setBusinessActivityName(businessLinkManageTable.getLinkName());
+                businessActivityNameResponse.setBusinessActivityId(activityId);
+                BusinessLinkManageTable linkManageTable = businessLinkManageTables.stream().filter(
+                        link -> activityId.equals(link.getLinkId())).findFirst().get();
+                if(Objects.nonNull(linkManageTable)){
+                    businessActivityNameResponse.setBusinessActivityName(linkManageTable.getLinkName());
+                }
                 return businessActivityNameResponse;
             }).collect(Collectors.toList());
         }

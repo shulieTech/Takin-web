@@ -1241,7 +1241,7 @@ public class LinkManageServiceImpl implements LinkManageService {
 
     @Override
     public List<BusinessActivityNameResponse> getBusinessActiveByFlowId(Long businessFlowId) {
-        List<BusinessActivityNameResponse> sceneBusinessActivityRefVoList = new ArrayList<>();
+        List<BusinessActivityNameResponse> sceneBusinessActivityRefVOS = new ArrayList<>();
         List<SceneLinkRelate> sceneLinkRelates = tSceneLinkRelateMapper.selectBySceneId(businessFlowId);
         if (CollectionUtils.isNotEmpty(sceneLinkRelates)) {
             List<Long> businessActivityIds = sceneLinkRelates.stream().map(o -> Long.valueOf(o.getBusinessLinkId()))
@@ -1249,7 +1249,7 @@ public class LinkManageServiceImpl implements LinkManageService {
             List<BusinessLinkManageTable> businessLinkManageTables = tBusinessLinkManageTableMapper
                 .selectBussinessLinkByIdList(businessActivityIds);
             //因为businessLinkManageTables打乱了业务活动的顺序 所以使用businessActivityIds
-            businessActivityIds.stream().map(activityId -> {
+            sceneBusinessActivityRefVOS = businessActivityIds.stream().map(activityId -> {
                 BusinessActivityNameResponse businessActivityNameResponse = new BusinessActivityNameResponse();
                 businessActivityNameResponse.setBusinessActivityId(activityId);
                 BusinessLinkManageTable linkManageTable = businessLinkManageTables.stream().filter(
@@ -1260,7 +1260,7 @@ public class LinkManageServiceImpl implements LinkManageService {
                 return businessActivityNameResponse;
             }).collect(Collectors.toList());
         }
-        return sceneBusinessActivityRefVoList;
+        return sceneBusinessActivityRefVOS;
     }
 }
 

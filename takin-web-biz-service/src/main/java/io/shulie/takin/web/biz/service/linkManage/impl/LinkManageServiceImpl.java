@@ -993,6 +993,11 @@ public class LinkManageServiceImpl implements LinkManageService {
 
         //获取业务流程基本信息
         Scene scene = tSceneMapper.selectByPrimaryKey(Long.parseLong(id));
+        if (Objects.isNull(scene)) {
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
+                    id + "对应的业务流程不存在");
+        }
+
         dto.setId(String.valueOf(scene.getId()));
         dto.setIsCode(String.valueOf(scene.getIsCore()));
         dto.setLevel(scene.getSceneLevel());

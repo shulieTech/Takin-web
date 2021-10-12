@@ -12,6 +12,7 @@ import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.ext.api.auth.WebDataAuthExtApi;
 import io.shulie.takin.web.ext.api.auth.WebUserAuthExtApi;
+import io.shulie.takin.web.ext.api.e2e.InspectionExtApi;
 import io.shulie.takin.web.ext.api.user.WebUserExtApi;
 import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
@@ -38,6 +39,7 @@ public class WebPluginUtils {
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
     private static WebUserAuthExtApi userAuthExtApi;
+    private static InspectionExtApi inspectionExtApi;
 
     static PluginManager pluginManager;
 
@@ -47,6 +49,17 @@ public class WebPluginUtils {
         userApi = pluginManager.getExtension(WebUserExtApi.class);
         dataAuthApi = pluginManager.getExtension(WebDataAuthExtApi.class);
         userAuthExtApi = pluginManager.getExtension(WebUserAuthExtApi.class);
+        inspectionExtApi = pluginManager.getExtension(InspectionExtApi.class);
+    }
+
+    /**
+     * 判断e2e插件是否存在
+     */
+    public static Boolean checkE2ePlugin() {
+        if (Objects.nonNull(inspectionExtApi)) {
+           return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
     }
 
     /**

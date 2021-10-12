@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.pamirs.takin.common.redis.RedisKey;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
@@ -347,6 +348,9 @@ public class ActivityServiceImpl implements ActivityService {
         OperationLogContextHolder.addVars(Vars.APPLICATION_NAME, oldActivity.getApplicationName());
         OperationLogContextHolder.addVars(Vars.SERVICE_NAME, oldActivity.getServiceName());
         activityDAO.deleteActivity(activityId);
+        //记录业务活动删除事件
+        redisClientUtils.hmset(Vars.ACTIVITY_DELETE_EVENT,
+                String.valueOf(activityId), 0);
         // 正常业务活动
         if (oldActivity.getBusinessType().equals(BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
             notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(),

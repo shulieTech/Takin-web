@@ -151,4 +151,11 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @return
      */
     List<TenantInfoExt> getTenantInfoList();
+
+    /**
+     * 根据userappkey获取用户信息
+     * @param userAppKey
+     * @return
+     */
+    UserExt queryUserFromCache(String userAppKey);
 }

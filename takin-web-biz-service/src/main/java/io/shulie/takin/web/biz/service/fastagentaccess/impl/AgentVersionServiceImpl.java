@@ -248,7 +248,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     private String generatorDownLoadUrl(String projectName, String version, String urlPrefix) {
         // 获取一小时后的时间戳
         long expireDate = System.currentTimeMillis() + 60 * 60 * 1000;
-        String userAppKey = WebPluginUtils.getTenantUserAppKey();
+        String userAppKey = WebPluginUtils.getUser().getKey();
         String flag = AgentDownloadUrlVerifyUtil.generatorFlag(projectName, userAppKey, version, expireDate);
         urlPrefix = urlPrefix.endsWith("/") ? urlPrefix.substring(0, urlPrefix.length() - 1) : urlPrefix;
         return String.format(AGENT_DOWNLOAD_TEMPLATE, urlPrefix, projectName, userAppKey, version, expireDate, flag);
@@ -348,7 +348,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
      * @param agentConfigList AgentConfigDetailResult集合
      */
     private void dealAgentConfig(String userAppKey, List<AgentConfigDetailResult> agentConfigList) {
-        UserExt userExt = WebPluginUtils.getUserByAppKey(userAppKey);
+        UserExt userExt = WebPluginUtils.queryUserFromCache(userAppKey);
         if (userExt == null) {
             return;
         }

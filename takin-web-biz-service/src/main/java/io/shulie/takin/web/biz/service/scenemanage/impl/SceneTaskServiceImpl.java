@@ -160,7 +160,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     @Override
     public WebResponse<StartResponse> startTask(SceneActionParam param) {
         SceneManageIdReq req = new SceneManageIdReq();
-        BeanUtils.copyProperties(param,req);
+        BeanUtils.copyProperties(param, req);
         req.setId(param.getSceneId());
         ResponseResult<SceneManageWrapperResp> resp = sceneManageApi.getSceneDetail(req);
         if (!resp.getSuccess()) {
@@ -168,21 +168,21 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             String errorMsg = Objects.isNull(errorInfo) ? "" : errorInfo.getMsg();
             log.error("takin-cloud查询场景信息返回错误，id={},错误信息：{}", param.getSceneId(), errorMsg);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR,
-                getCloudMessage(errorInfo.getCode(),errorInfo.getMsg()));
+                getCloudMessage(errorInfo.getCode(), errorInfo.getMsg()));
         }
         String jsonString = JsonHelper.bean2Json(resp.getData());
         SceneManageWrapperDTO sceneData = JsonHelper.json2Bean(jsonString, SceneManageWrapperDTO.class);
 
         // 校验该场景是否正在压测中
-        if(redisClientUtils.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))){
+        if (redisClientUtils.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))) {
             // 正在压测中
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_STATUS_ERROR,
                 "场景，id=" + param.getSceneId() + "已启动压测，请刷新页面！");
-        }else {
+        } else {
             // 记录key 过期时长为压测时长
             redisClientUtils.setString(SceneTaskUtils.getSceneTaskKey(param.getSceneId()),
                 DateUtils.getServerTime(),
-                Integer.parseInt(sceneData.getPressureTestTime().getTime().toString()),TimeUnit.MINUTES);
+                Integer.parseInt(sceneData.getPressureTestTime().getTime().toString()), TimeUnit.MINUTES);
         }
 
         preCheckStart(sceneData);
@@ -209,7 +209,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         //封装
         WebResponse response = null;
         //兼容老版本
-        if (StringUtils.isEmpty(param.getContinueRead())){
+        if (StringUtils.isEmpty(param.getContinueRead())) {
             param.setContinueRead("-1");
         }
         //新版本位点
@@ -221,7 +221,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             String errorMsg = Objects.isNull(errorInfo) ? "" : errorInfo.getMsg();
             log.error("takin-cloud启动压测场景返回错误，id={},错误信息：{}", param.getSceneId(), errorMsg);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR,
-                getCloudMessage(errorInfo.getCode(),errorInfo.getMsg()));
+                getCloudMessage(errorInfo.getCode(), errorInfo.getMsg()));
         }
         // 缓存 报告id
         cacheReportId(response, param);
@@ -231,12 +231,13 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     /**
      * 返回cloud 数据
+     *
      * @param code
      * @param errorMsg
      * @return
      */
-    private String getCloudMessage(String code , String errorMsg) {
-        return String.format("takin-cloud启动场景失败，异常代码【%s】,异常原因【%s】",code,errorMsg);
+    private String getCloudMessage(String code, String errorMsg) {
+        return String.format("takin-cloud启动场景失败，异常代码【%s】,异常原因【%s】", code, errorMsg);
     }
 
     private void cacheReportId(WebResponse request, SceneActionParam param) {
@@ -252,31 +253,30 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             return;
         }
         Integer reportId = (Integer)jsonObject.get("data");
-        redisTemplate.opsForValue().set(getCacheReportId(param.getSceneId()),reportId,1L,TimeUnit.DAYS);
+        redisTemplate.opsForValue().set(getCacheReportId(param.getSceneId()), reportId, 1L, TimeUnit.DAYS);
 
     }
-
 
     private SceneActionParamNew getNewParam(SceneActionParam param) {
         SceneActionParamNew paramNew = CopyUtils.copyFields(param, SceneActionParamNew.class);
         try {
-//            paramNew.setContinueRead(false);
-//            if (!param.getContinueRead().equals("-1")) {
-//                Object hasUnread = redisTemplate.opsForValue().get("hasUnread_" + param.getSceneId());
-//                if (hasUnread == null) {
-//                    throw ApiException.create(500, "缺少参数hasUnread！无法判断继续压测还是从头压测，请检查redis或者cloud返回的位点数据是否有问题，id=" + param.getSceneId());
-//                }
-//                if (param.getContinueRead().equals("1")) {
-//                    paramNew.setContinueRead(Boolean.parseBoolean(hasUnread + ""));
-//                } else {
-//                    paramNew.setContinueRead(false);
-//                }
-//            }
+            //            paramNew.setContinueRead(false);
+            //            if (!param.getContinueRead().equals("-1")) {
+            //                Object hasUnread = redisTemplate.opsForValue().get("hasUnread_" + param.getSceneId());
+            //                if (hasUnread == null) {
+            //                    throw ApiException.create(500, "缺少参数hasUnread！无法判断继续压测还是从头压测，请检查redis或者cloud返回的位点数据是否有问题，id=" + param.getSceneId());
+            //                }
+            //                if (param.getContinueRead().equals("1")) {
+            //                    paramNew.setContinueRead(Boolean.parseBoolean(hasUnread + ""));
+            //                } else {
+            //                    paramNew.setContinueRead(false);
+            //                }
+            //            }
             paramNew.setContinueRead(param.getContinueRead().equals("1"));
         } catch (Exception e) {
             log.error("未知异常", e);
         } finally {
-//            redisTemplate.delete("hasUnread_" + param.getSceneId());
+            //            redisTemplate.delete("hasUnread_" + param.getSceneId());
         }
         return paramNew;
     }
@@ -287,7 +287,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     }
 
     @Override
-    public ResponseResult stopTask(SceneActionParam param) {
+    public ResponseResult<String> stopTask(SceneActionParam param) {
         // 释放 场景锁
         redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
         // 停止先删除 redis中的
@@ -298,7 +298,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             throw new TakinWebException(ExceptionCode.SCENE_STOP_ERROR, response.getError());
         }
         SceneActionResp resp = response.getData();
-        redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY,resp.getReportId()));
+        redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, resp.getReportId()));
         // 最后删除
         return sceneTaskApi.stopTask(req);
     }
@@ -340,7 +340,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             List<String> applicationNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName)
                 .collect(Collectors.toList());
             // 过期时间，根据 压测时间 + 10s
-            redisClientUtils.set(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY,reportId),applicationNames,
+            redisClientUtils.set(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId), applicationNames,
                 wrapperResp.getPressureTestSecond() + 10);
         }
         Map<String, List<SceneSlaRefResp>> slaMap = getSceneSla(wrapperResp);
@@ -361,10 +361,11 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         req.setSceneId(request.getSceneId());
         req.setReportId(request.getReportId());
         req.setTpsNum(request.getTargetTps());
-        //req.setLicense(WebPluginUtils.getTenantUserAppKey());
-        ResponseResult responseResult = cloudTaskApi.updateSceneTaskTps(req);
-        if (responseResult == null || !responseResult.getSuccess()) {
-            throw new RuntimeException("修改TPS失败");
+        try {
+            cloudTaskApi.updateSceneTaskTps(req);
+        } catch (Throwable e) {
+            log.error("修改TPS失败", e);
+            throw new RuntimeException("修改TPS失败", e);
         }
     }
 
@@ -373,12 +374,13 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         SceneTaskQueryTpsReq req = new SceneTaskQueryTpsReq();
         req.setSceneId(sceneId);
         req.setReportId(reportId);
-        //req.setLicense(WebPluginUtils.getTenantUserAppKey());
-        ResponseResult<SceneTaskAdjustTpsResp> respResponseResult = cloudTaskApi.queryAdjustTaskTps(req);
-        if (respResponseResult != null && respResponseResult.getData() != null) {
-            return respResponseResult.getData().getTotalTps();
+        try {
+            SceneTaskAdjustTpsResp sceneTaskAdjustTpsResp = cloudTaskApi.queryAdjustTaskTps(req);
+            return sceneTaskAdjustTpsResp.getTotalTps();
+        } catch (Throwable e) {
+            log.error("查询任务TPS失败", e);
+            return null;
         }
-        return null;
     }
 
     @Override
@@ -509,9 +511,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         if (errorMsg.length() > 0) {
             String msg = "";
             if (errorMsg.toString().endsWith(Constants.SPLIT)) {
-                 msg = StringUtils.substring(errorMsg.toString(), 0, errorMsg.toString().length() - 1);
-            }else {
-                 msg = errorMsg.toString();
+                msg = StringUtils.substring(errorMsg.toString(), 0, errorMsg.toString().length() - 1);
+            } else {
+                msg = errorMsg.toString();
             }
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_VALIDATE_ERROR, msg);
         }

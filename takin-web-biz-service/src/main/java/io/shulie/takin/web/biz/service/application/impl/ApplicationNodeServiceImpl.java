@@ -402,7 +402,7 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
 
         // 同一租户下的应用判断
         ApplicationDetailResult application = applicationService.getByApplicationIdWithCheck(request.getApplicationId());
-        if (!Objects.equals(application.getCustomerId(), WebPluginUtils.getCustomerId())) {
+        if (!Objects.equals(application.getTenantId(), WebPluginUtils.traceTenantId())) {
             throw this.getOperateProbeError("不能操作非同一个租户下的应用!");
         }
 

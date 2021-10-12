@@ -439,7 +439,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 SceneSchedulerTaskCreateRequest createRequest = new SceneSchedulerTaskCreateRequest();
                 createRequest.setSceneId(dto.getId());
                 createRequest.setExecuteTime(dto.getExecuteTime());
-                createRequest.setUserId(WebPluginUtils.getUser().getId());
+                createRequest.setUserId(WebPluginUtils.traceUser().getId());
                 sceneSchedulerTaskService.insert(createRequest);
             }
         }

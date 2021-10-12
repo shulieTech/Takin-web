@@ -145,26 +145,16 @@ public class ApplicationClientImpl implements ApplicationClient {
     @Override
     public PagingList<ApplicationInterfaceDTO> pageInterfaces(ApplicationInterfaceQueryDTO query) {
         String url = properties.getUrl().getAmdb() + INTERFACE_PATH;
-        query.setUserAppKey(WebPluginUtils.getTenantAppKey());
-        query.setEnvCode("envCode");
+        query.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        query.setEnvCode(WebPluginUtils.getEnvCode());
         query.setFieldNames("appName,middlewareName,serviceName,methodName,rpcType");
         query.setRpcType(StringUtils.join(
             Lists.newArrayList(String.valueOf(RpcType.TYPE_WEB_SERVER), String.valueOf(RpcType.TYPE_RPC)), ","));
         try {
-            //            String responseEntity = HttpClientUtil.sendPost(url, query);
-            //            if (StringUtils.isBlank(responseEntity)) {
-            //                log.error("前往pardar查询应用的接口信息报错,请求地址：{}，响应信息：{}", url, responseEntity);
-            //                return PagingList.empty();
-            //            } else {
-            //                AmdbResult<List<ServiceInfoDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-            //                        new cn.hutool.core.lang.TypeReference<AmdbResult<List<ServiceInfoDTO>>>() {
-            //                        }, true);
-            //                List<ApplicationInterfaceDTO> dtos = getApplicationInterfaceDTOS(amdbResponse);
-            //                return PagingList.of(dtos, amdbResponse.getTotal());
             if (StringUtils.isEmpty(query.getAppName())) {
                 query.setAppName("-1");
             }
-            AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.POST)
+            AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().httpMethod(HttpMethod.POST)
                 .url(url)
                 .param(query)
                 .eventName("查询应用的接口信息")
@@ -172,20 +162,18 @@ public class ApplicationClientImpl implements ApplicationClient {
                 .list(ServiceInfoDTO.class);
             List<ApplicationInterfaceDTO> dtos = getApplicationInterfaceDtoList(amdbResponse);
             return PagingList.of(dtos, amdbResponse.getTotal());
-            //            }
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
     }
 
     @Override
     public PagingList<ApplicationDTO> pageApplications(ApplicationQueryDTO query) {
-        query.setUserAppKey(WebPluginUtils.getTenantAppKey());
-        query.setEnvCode("envCode");
+        query.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        query.setEnvCode(WebPluginUtils.getEnvCode());
         String url = properties.getUrl().getAmdb() + APPLICATION_QUERY_PATH;
         try {
-            AmdbResult<List<ApplicationDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.POST)
+            AmdbResult<List<ApplicationDTO>> amdbResponse = AmdbHelper.builder().httpMethod(HttpMethod.POST)
                 .url(url)
                 .param(query)
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
@@ -194,8 +182,7 @@ public class ApplicationClientImpl implements ApplicationClient {
             return PagingList.of(amdbResponse.getData(), amdbResponse.getTotal());
 
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
     }
 
@@ -208,30 +195,16 @@ public class ApplicationClientImpl implements ApplicationClient {
     public List<ApplicationErrorDTO> listErrors(ApplicationErrorQueryDTO query) {
         String url = properties.getUrl().getAmdb() + APPLICATION_ERROR_QUERY_PATH;
         try {
-            //            String responseEntity = HttpClientUtil.sendGet(url, query);
-            //            AmdbResult<List<ApplicationErrorDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-            //                    new cn.hutool.core.lang.TypeReference<AmdbResult<List<ApplicationErrorDTO>>>() {
-            //                    }, true);
-            //            if (amdbResponse == null || !amdbResponse.getSuccess()) {
-            //                log.error("前往amdb查询应用异常信息返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
-            //                return Collections.emptyList();
-            //            }
-            //            List<ApplicationErrorDTO> data = amdbResponse.getData();
-            //            if (CollectionUtils.isEmpty(data)) {
-            //                return Collections.emptyList();
-            //            }
-            //            return amdbResponse.getData();
-            query.setUserAppKey(WebPluginUtils.getTenantAppKey());
-            query.setEnvCode("envCode");
-            AmdbResult<List<ApplicationErrorDTO>> amdbResponse = AmdbHelper.newInStance().url(url)
+            query.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+            query.setEnvCode(WebPluginUtils.getEnvCode());
+            AmdbResult<List<ApplicationErrorDTO>> amdbResponse = AmdbHelper.builder().url(url)
                 .param(query)
                 .eventName("查询应用异常信息")
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
                 .list(ApplicationErrorDTO.class);
             return amdbResponse.getData();
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
     }
 
@@ -247,10 +220,10 @@ public class ApplicationClientImpl implements ApplicationClient {
 
     @Override
     public ApplicationNodeProbeInfoDTO getApplicationNodeProbeInfo(ApplicationNodeQueryDTO dto) {
-        dto.setUserAppKey(WebPluginUtils.getTenantAppKey());
-        dto.setEnvCode("envCode");
-        AmdbResult<ApplicationNodeProbeInfoDTO> result = AmdbHelper.newInStance().url(
-                this.getApplicationNodeProbeInfoUrl())
+        dto.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        dto.setEnvCode(WebPluginUtils.getEnvCode());
+        AmdbResult<ApplicationNodeProbeInfoDTO> result = AmdbHelper.builder().url(
+            this.getApplicationNodeProbeInfoUrl())
             .param(dto)
             .eventName("查询应用节点信息")
             .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
@@ -267,24 +240,18 @@ public class ApplicationClientImpl implements ApplicationClient {
      */
     private PagingList<ApplicationNodeDTO> pageApplicationNode(String url, ApplicationNodeQueryDTO dto) {
         try {
-            dto.setUserAppKey(WebPluginUtils.getTenantAppKey());
-            dto.setEnvCode("envCode");
-            AmdbResult<List<ApplicationNodeDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.GET)
+            dto.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+            dto.setEnvCode(WebPluginUtils.getEnvCode());
+            AmdbResult<List<ApplicationNodeDTO>> amdbResponse = AmdbHelper.builder().httpMethod(HttpMethod.GET)
                 .url(url)
                 .param(dto)
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
                 .eventName("查询应用节点列表")
                 .list(ApplicationNodeDTO.class);
             List<ApplicationNodeDTO> data = amdbResponse.getData();
-            if (CollectionUtils.isEmpty(data)) {
-                return PagingList.empty();
-            }
-
             return PagingList.of(data, amdbResponse.getTotal());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
-            //            return PagingList.empty();
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
     }
 
@@ -328,23 +295,10 @@ public class ApplicationClientImpl implements ApplicationClient {
     public PagingList<ApplicationRemoteCallDTO> listApplicationRemoteCalls(ApplicationRemoteCallQueryDTO query) {
         String url = properties.getUrl().getAmdb() + APPLICATION_REMOTE_CALL_PATH;
         try {
-            query.setUserAppKey(WebPluginUtils.getTenantAppKey());
-            query.setEnvCode("envCode");
-            //            String responseEntity = HttpClientUtil.sendPost(url, query);
-            //
-            //            if (StringUtils.isBlank(responseEntity)) {
-            //                log.error("前往amdb查询远程调用的接口信息报错,请求地址：{}，响应信息：{}", url, responseEntity);
-            //                return PagingList.empty();
-            //            } else {
-            //                AmdbResult<List<ApplicationRemoteCallDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-            //                        new cn.hutool.core.lang
-            //                        .TypeReference<AmdbResult<List<ApplicationRemoteCallDTO>>>() {
-            //                        }, true);
-            //                return PagingList.of(amdbResponse.getData(), amdbResponse.getTotal());
-            //            }
-
-            AmdbResult<List<ApplicationRemoteCallDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(
-                    HttpMethod.POST)
+            query.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+            query.setEnvCode(WebPluginUtils.getEnvCode());
+            AmdbResult<List<ApplicationRemoteCallDTO>> amdbResponse = AmdbHelper.builder().httpMethod(
+                HttpMethod.POST)
                 .url(url)
                 .param(query)
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
@@ -352,8 +306,7 @@ public class ApplicationClientImpl implements ApplicationClient {
                 .list(ApplicationRemoteCallDTO.class);
             return PagingList.of(amdbResponse.getData(), amdbResponse.getTotal());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
     }
 
@@ -362,31 +315,20 @@ public class ApplicationClientImpl implements ApplicationClient {
         try {
             // 因为tro-web的分页从0开始大数据的分页从1开始，所以这里需要加1
             dto.setCurrentPage(dto.getRealCurrent());
-            dto.setUserAppKey(WebPluginUtils.getTenantAppKey());
-            dto.setEnvCode("envCode");
+            dto.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+            dto.setEnvCode(WebPluginUtils.getEnvCode());
             String url = properties.getUrl().getAmdb() + APPLICATION_NODE_PAGE_V3;
-            String responseJson = HttpClientUtil.sendPost(url, dto);
-            if (StrUtil.isBlank(responseJson)) {
-                return PagingList.empty();
-            }
 
-            AmdbResult<List<ApplicationNodeAgentDTO>> amdbResponse = JsonUtil.json2bean(responseJson,
-                new TypeReference<AmdbResult<List<ApplicationNodeAgentDTO>>>() {});
-
-            if (amdbResponse == null || !amdbResponse.getSuccess()) {
-                log.error("前往amdb查询agent应用节点返回异常,响应信息：{}", responseJson);
-                return PagingList.empty();
-            }
-
-            List<ApplicationNodeAgentDTO> data = amdbResponse.getData();
-            if (CollectionUtils.isEmpty(data)) {
-                return PagingList.empty();
-            }
-
-            return PagingList.of(data, amdbResponse.getTotal());
+            AmdbResult<List<ApplicationNodeAgentDTO>> amdbResponse = AmdbHelper.builder().httpMethod(
+                HttpMethod.POST)
+                .url(url)
+                .param(dto)
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .eventName("查询agent应用节点")
+                .list(ApplicationNodeAgentDTO.class);
+            return PagingList.of(amdbResponse.getData(), amdbResponse.getTotal());
         } catch (Exception e) {
-            log.error("前往amdb查询agent应用节点信息报错：{}", JSONUtil.toJsonStr(dto), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
     }
 
@@ -400,45 +342,34 @@ public class ApplicationClientImpl implements ApplicationClient {
         try {
             // 因为tro-web的分页从0开始大数据的分页从1开始，所以这里需要加1
             queryDTO.setCurrentPage(queryDTO.getRealCurrent());
-            queryDTO.setUserAppKey(WebPluginUtils.getTenantAppKey());
-            queryDTO.setEnvCode("envCode");
-            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)));
-            if (StringUtils.isEmpty(responseEntity)) {
-                return PagingList.empty();
-            }
-            AmdbResult<List<AgentInfoDTO>> amdbResponse = JSONUtil.toBean(responseEntity,
-                new cn.hutool.core.lang.TypeReference<AmdbResult<List<AgentInfoDTO>>>() {}, true);
-            if (amdbResponse == null || !amdbResponse.getSuccess()) {
-                log.error("前往amdb查询异常日志返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
-                return PagingList.empty();
-            }
-            List<AgentInfoDTO> data = amdbResponse.getData();
-            if (CollectionUtils.isEmpty(data)) {
-                return PagingList.empty();
-            }
-            return PagingList.of(data, amdbResponse.getTotal());
+            queryDTO.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+            queryDTO.setEnvCode(WebPluginUtils.getEnvCode());
+
+            AmdbResult<List<AgentInfoDTO>> amdbResponse = AmdbHelper.builder().httpMethod(
+                HttpMethod.POST)
+                .url(url)
+                .param(queryDTO)
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .eventName("查询异常日志")
+                .list(AgentInfoDTO.class);
+            return PagingList.of(amdbResponse.getData(), amdbResponse.getTotal());
 
         } catch (Exception e) {
-            log.error("前往amdb查询异常日志报错：{}", JSONUtil.toJsonStr(queryDTO), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
     }
 
     @Override
     public List<ModuleLoadDetailDTO> pluginList(String agentId) {
+        String url = properties.getUrl().getAmdb() + PLUGIN_LOAD_LIST + "?agentId=" + agentId
+            + "&userAppKey=" + WebPluginUtils.getTenantUserAppKey() + "&envCode=" + WebPluginUtils.getEnvCode();
         try {
-            String url = properties.getUrl().getAmdb() + PLUGIN_LOAD_LIST + "?agentId=" + agentId
-                +"&userAppKey="+WebPluginUtils.getTenantAppKey()+"&envCode="+"encCode";
-            String responseJson = HttpClientUtil.sendGet(url);
-            if (StrUtil.isBlank(responseJson)) {
-                return Collections.emptyList();
-            }
-            AmdbResult<Object> result = JsonUtil.json2bean(responseJson,
-                new TypeReference<AmdbResult<Object>>() {});
-            if (result == null || !result.getSuccess()) {
-                log.error("前往amdb查询模块加载状态返回异常,响应信息：{}", responseJson);
-                return Collections.emptyList();
-            }
+            AmdbResult<Object> result = AmdbHelper.builder()
+                .url(url)
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .eventName("查询模块加载状态")
+                .one(Object.class);
+
             if (result.getData() != null) {
                 JSONObject data = JSON.parseObject(JSON.toJSONString(result.getData()));
                 String ext = data.getString("ext");
@@ -448,8 +379,7 @@ public class ApplicationClientImpl implements ApplicationClient {
                 }
             }
         } catch (Exception e) {
-            log.error("模块加载状态数据处理异常", e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
 
         return Collections.emptyList();
@@ -462,21 +392,20 @@ public class ApplicationClientImpl implements ApplicationClient {
         }
         ApplicationNodeAgentDTO applicationNodeAgentDTO = new ApplicationNodeAgentDTO();
         applicationNodeAgentDTO.setAppNames(appNames);
-        applicationNodeAgentDTO.setUserAppKey(WebPluginUtils.getTenantAppKey());
-        applicationNodeAgentDTO.setEnvCode("envCode");
+        applicationNodeAgentDTO.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        applicationNodeAgentDTO.setEnvCode(WebPluginUtils.getEnvCode());
         String url = properties.getUrl().getAmdb() + AGENT_COUNT_STATUS;
         try {
-            String responseEntity = HttpClientUtil.sendPost(url, applicationNodeAgentDTO);
-            AmdbResult<AgentStatusStatInfo> amdbResponse = JSONUtil.toBean(responseEntity,
-                new cn.hutool.core.lang.TypeReference<AmdbResult<AgentStatusStatInfo>>() {}, true);
-            if (amdbResponse == null || !amdbResponse.getSuccess()) {
-                log.error("前往amdb查询agent概况返回异常,响应信息：{}", JSONUtil.toJsonStr(amdbResponse));
-                return null;
-            }
+            AmdbResult<AgentStatusStatInfo> amdbResponse = AmdbHelper.builder()
+                .httpMethod(HttpMethod.POST)
+                .param(applicationNodeAgentDTO)
+                .url(url)
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .eventName("查询agent概况")
+                .one(AgentStatusStatInfo.class);
             return amdbResponse.getData();
         } catch (Exception e) {
-            log.error("前往amdb查询agent概况信息报错", e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
     }
 }

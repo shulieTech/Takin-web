@@ -20,6 +20,8 @@ import io.shulie.takin.web.data.dao.ProbeDAO;
 import io.shulie.takin.web.data.param.probe.UpdateOperateResultParam;
 import io.shulie.takin.web.data.result.application.ApplicationNodeProbeResult;
 import io.shulie.takin.web.data.result.probe.ProbeDetailResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,9 +43,6 @@ public class AgentServiceImpl implements AgentService {
 
     @Autowired
     private ApplicationNodeProbeDAO applicationNodeProbeDAO;
-
-    @Autowired
-    private TroUserDAO troUserDAO;
 
     @Override
     public AgentApplicationNodeProbeOperateResponse getOperateResponse(String applicationName, String agentId) {
@@ -188,9 +187,9 @@ public class AgentServiceImpl implements AgentService {
 
         // 根据 userAppKey 查出用户
         // 然后根据用户的 customerId 去查询操作
-        UserDetailResult user = troUserDAO.getByKey(userAppKey);
-        this.isGetFileError(user == null, "userAppKey 对应的用户不存在!");
-        return applicationNodeProbeDAO.getByApplicationNameAndAgentIdAndMaxCustomerId(applicationName, agentId, user.getCustomerId());
+        TenantInfoExt tenant = WebPluginUtils.getTenantInfo(userAppKey, null);
+        this.isGetFileError(tenant == null, "userAppKey 对应的租户不存在!");
+        return applicationNodeProbeDAO.getByApplicationNameAndAgentIdAndMaxCustomerId(applicationName, agentId, tenant.getTenantId());
     }
 
 }

@@ -1253,7 +1253,7 @@ public class LinkManageServiceImpl implements LinkManageService {
                 BusinessActivityNameResponse businessActivityNameResponse = new BusinessActivityNameResponse();
                 businessActivityNameResponse.setBusinessActivityId(activityId);
                 BusinessLinkManageTable linkManageTable = businessLinkManageTables.stream().filter(
-                        link -> activityId.equals(link.getLinkId())).findFirst().get();
+                        link -> activityId.equals(link.getLinkId())).findFirst().orElse(null);
                 if(Objects.nonNull(linkManageTable)){
                     businessActivityNameResponse.setBusinessActivityName(linkManageTable.getLinkName());
                 }

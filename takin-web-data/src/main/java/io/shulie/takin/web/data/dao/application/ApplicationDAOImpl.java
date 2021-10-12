@@ -129,8 +129,8 @@ public class ApplicationDAOImpl
             queryDTO.setFields(Lists.newArrayList("library,instanceInfo".split(",")));
             queryDTO.setPageSize(99999);
             //补充租户查询条件
-            queryDTO.setUserAppKey(userAppKey);
-            queryDTO.setUserAppKey(envCode);
+            queryDTO.setTenantAppKey(userAppKey);
+            queryDTO.setTenantAppKey(envCode);
 
             PagingList<ApplicationDTO> applicationDtoPagingList = applicationClient.pageApplications(queryDTO);
 

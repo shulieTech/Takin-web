@@ -60,7 +60,7 @@ public class TraceClientImpl implements TraceClient {
         // 默认
         dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
         dto.setEntranceList(this.getEntryListString(dto.getEntranceRuleDTOS()));
-        dto.setUserAppKey(WebPluginUtils.traceTenantAppKey());
+        dto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         dto.setEnvCode(WebPluginUtils.traceEnvCode());
         String url = properties.getUrl().getAmdb() + ENTRY_TRACE_BY_TASK_ID_PATH;
         try {
@@ -91,7 +91,7 @@ public class TraceClientImpl implements TraceClient {
             dto.setEntranceList(this.getEntryListString(query.getEntranceRuleDTOS()));
             dto.setCurrentPage(query.getPageNum());
             dto.setPageSize(query.getPageSize());
-            dto.setUserAppKey(WebPluginUtils.traceTenantAppKey());
+            dto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             dto.setEnvCode(WebPluginUtils.traceEnvCode());
             dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
             //固定查询影子链路明细数据

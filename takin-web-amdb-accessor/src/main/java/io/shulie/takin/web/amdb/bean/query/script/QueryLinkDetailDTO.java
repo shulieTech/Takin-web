@@ -78,7 +78,7 @@ public class QueryLinkDetailDTO extends PagingDevice {
     /**
      * 用户编码
      */
-    private String userAppKey;
+    private String tenantAppKey;
     /**
      * 环境编码
      */

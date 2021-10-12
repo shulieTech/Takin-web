@@ -304,7 +304,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         query.setQueryTye("1");
 
         // 租户传参
-        query.setUserAppKey(input.getTenantAppKey());
+        query.setTenantAppKey(input.getTenantAppKey());
         query.setEnvCode(input.getEnvCode());
 
         // 直接取全部数据

@@ -211,6 +211,7 @@ public class TShadowTableDataSource extends BaseEntity {
      * @return the value of t_shadow_table_datasource.UPDATE_TIME
      * @mbggenerated
      */
+    @Override
     public Date getUpdateTime() {
         return updateTime;
     }
@@ -222,6 +223,7 @@ public class TShadowTableDataSource extends BaseEntity {
      * @param updateTime the value for t_shadow_table_datasource.UPDATE_TIME
      * @mbggenerated
      */
+    @Override
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }

@@ -69,9 +69,9 @@ public class BaseConfigService extends CommonService {
         //if (tBaseConfig.getConfigValue().length() > 128) {
         //    throw new TakinModuleException(TakinErrorEnum.API_TAKIN_CONFCENTER_UPDATE_BASE_CONFIG_VALUE_TOO_LONG_EXCEPTION);
         //}
-        tBaseConfig.setEnvCode(WebPluginUtils.getEnvCode());
-        tBaseConfig.setUserId(WebPluginUtils.getUserId());
-        tBaseConfig.setTenantId(WebPluginUtils.getTenantId());
+        tBaseConfig.setEnvCode(WebPluginUtils.traceEnvCode());
+        tBaseConfig.setUserId(WebPluginUtils.traceUserId());
+        tBaseConfig.setTenantId(WebPluginUtils.traceTenantId());
         tbaseConfigDao.insertSelective(tBaseConfig);
     }
 

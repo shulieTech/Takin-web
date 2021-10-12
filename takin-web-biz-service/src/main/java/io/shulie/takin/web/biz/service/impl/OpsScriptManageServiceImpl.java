@@ -415,7 +415,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         }
 
         String lockKey = "";
-        String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.getTenantId(), param.hashCode());
+        String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.traceTenantId(), param.hashCode());
         this.isCreateError(!distributedLock.tryLockZeroWait(lockKey), AppConstants.TOO_FREQUENTLY);
         try {
             //删除原有批次号 生成新批次号
@@ -430,7 +430,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             Long batchId = entity.getId();
             updateScriptStatus(param, OpsScriptExecutionEnum.RUNNING.getStatus());
             //执行文件
-            opsScriptLogCache.remove(param.getId() + "#" + WebPluginUtils.getUserId());
+            opsScriptLogCache.remove(param.getId() + "#" + WebPluginUtils.traceUserId());
             opsScriptThreadPool.execute(() -> this.runOpsShell(one, param, batchId));
         } catch (Exception e) {
             log.error("{}", "脚本执行错误！", e);
@@ -468,7 +468,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         String filename = one.getFilePath().substring(one.getFilePath().lastIndexOf("/") + 1);
         String fileDir = fullpath.substring(0, fullpath.lastIndexOf("/"));
         String command = "su - " + deployUser + " -c 'cd " + fileDir + " && sh " + filename + "' ";
-        final String key = param.getId() + "#" + WebPluginUtils.getUserId();
+        final String key = param.getId() + "#" + WebPluginUtils.traceUserId();
         LinuxHelper.runShell(command, 5000L, new LinuxHelper.Callback() {
             @Override
             public void before(Process process) {
@@ -505,7 +505,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
                     resultEntity.setBatchId(batchId);
                     resultEntity.setOpsScriptId(one.getOpsScriptId());
                     resultEntity.setLogFilePath(logPath);
-                    resultEntity.setExcutorId(WebPluginUtils.getUserId());
+                    resultEntity.setExcutorId(WebPluginUtils.traceUserId());
                     log.info("保存新执行日志...");
                     opsScriptExecuteResultDAO.save(resultEntity);
                 } catch (Exception e) {
@@ -536,7 +536,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         if (Objects.isNull(id)) {
             throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "id不能为空！");
         }
-        OpsExecutionVO executionVO = opsScriptLogCache.get(id + "#" + WebPluginUtils.getUserId());
+        OpsExecutionVO executionVO = opsScriptLogCache.get(id + "#" + WebPluginUtils.traceUserId());
         if (Objects.isNull(executionVO)) {
             executionVO = new OpsExecutionVO("", false);
         }

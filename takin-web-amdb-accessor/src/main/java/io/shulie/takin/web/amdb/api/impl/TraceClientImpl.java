@@ -60,7 +60,7 @@ public class TraceClientImpl implements TraceClient {
         // 默认
         dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
         dto.setEntranceList(this.getEntryListString(dto.getEntranceRuleDTOS()));
-        dto.setUserAppKey(WebPluginUtils.getTenantAppKey());
+        dto.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
         dto.setEnvCode("envCode");
         String url = properties.getUrl().getAmdb() + ENTRY_TRACE_BY_TASK_ID_PATH;
         try {
@@ -91,7 +91,7 @@ public class TraceClientImpl implements TraceClient {
             dto.setEntranceList(this.getEntryListString(query.getEntranceRuleDTOS()));
             dto.setCurrentPage(query.getPageNum());
             dto.setPageSize(query.getPageSize());
-            dto.setUserAppKey(WebPluginUtils.getTenantAppKey());
+            dto.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
             dto.setEnvCode("envCode");
             dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
             //固定查询影子链路明细数据
@@ -123,7 +123,7 @@ public class TraceClientImpl implements TraceClient {
     public RpcStack getTraceDetailById(String traceId) {
         try {
             String url = properties.getUrl().getAmdb() + QUERY_TRACE_PATH.replace("@TraceId@", traceId);
-            url = url+"&userAppKey="+WebPluginUtils.getTenantAppKey()+"&envCode="+"envCode";
+            url = url+"&userAppKey="+WebPluginUtils.fillTenantCommonExt()+"&envCode="+"envCode";
             AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.builder().url(url)
                     .eventName("查询Trace调用栈明细")
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
@@ -138,7 +138,7 @@ public class TraceClientImpl implements TraceClient {
     public List<RpcBased> getTraceBaseById(String traceId) {
         try {
             String url = properties.getUrl().getAmdb() + QUERY_TRACE_PATH.replace("@TraceId@", traceId);
-            url = url + "&userAppKey="+WebPluginUtils.getTenantAppKey()+"&envCode="+"envCode";
+            url = url + "&userAppKey="+WebPluginUtils.fillTenantCommonExt()+"&envCode="+"envCode";
             AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.builder().url(url)
                     .eventName("查询Trace调用栈明细")
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)

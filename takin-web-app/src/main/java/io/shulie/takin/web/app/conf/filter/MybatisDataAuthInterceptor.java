@@ -68,7 +68,7 @@ public class MybatisDataAuthInterceptor implements Interceptor {
             return arg0.proceed();
         }
         ////仅拦截console 不拦截agent登录方式
-        if (WebPluginUtils.getUser() != null && WebPluginUtils.getUser().getLoginChannel() == 1) {
+        if (WebPluginUtils.traceUser() != null && WebPluginUtils.traceUser().getLoginChannel() == 1) {
             return arg0.proceed();
         }
         ////仅拦截非系统管理员

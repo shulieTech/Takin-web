@@ -55,9 +55,9 @@ public class ConfigSynchronizer {
         }
         configSyncService.syncClusterTestSwitch(WebPluginUtils.TENANT_APP_KEY);
         sleep();
-        configSyncService.syncAllowListSwitch(WebPluginUtils.getTenantAppKey());
+        configSyncService.syncAllowListSwitch(WebPluginUtils.fillTenantCommonExt());
         sleep();
-        configSyncService.syncBlockList(WebPluginUtils.getTenantAppKey());
+        configSyncService.syncBlockList(WebPluginUtils.fillTenantCommonExt());
         log.info("所有配置同步到配置中心成功");
     }
 

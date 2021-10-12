@@ -4,13 +4,14 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
 @ApiModel(value = "WhiteListVO", description = "白名单列表接口返参")
-public class WhiteListVO {
+public class WhiteListVO extends TenantCommonExt {
 
     @ApiModelProperty(name = "wlistId", value = "白名单ID")
     private String wlistId;
@@ -24,8 +25,6 @@ public class WhiteListVO {
     @ApiModelProperty(name = "useYn", value = "是否已加入")
     private Integer useYn;
 
-
-    private Long customerId;
 
     private String applicationId;
 

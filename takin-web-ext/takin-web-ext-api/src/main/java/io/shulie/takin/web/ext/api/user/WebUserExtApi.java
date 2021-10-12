@@ -16,7 +16,7 @@ import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
  * @date 2021/7/29 20:30
  */
 public interface WebUserExtApi extends ExtensionPoint {
-    //********************************http线程上下文模块**********************************//
+    //********************************用户插件模块**********************************//
 
     /**
      * 根据userId 获取用户信息
@@ -25,7 +25,7 @@ public interface WebUserExtApi extends ExtensionPoint {
      */
     UserExt getUserExtByUserId(Long userId);
 
-    //********************************http线程上下文模块**********************************//
+
     /**
      * 填充用户数据 简单补充用户数据
      * 用于：
@@ -44,6 +44,7 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @param queryParamCommonExt -
      */
     void fillQueryParam(AuthQueryParamCommonExt queryParamCommonExt);
+
 
     /**
      * 填充返回参数
@@ -68,23 +69,12 @@ public interface WebUserExtApi extends ExtensionPoint {
     /**
      * 查询所有用户
      * 用于：初始化白名单文件
-     * todo 后续想办法如何废弃
      *
      * @return -
      */
     List<UserExt> selectAllUser();
 
-    /**
-     * 根据登录账号的租户查询
-     * todo 后续想办法如何废弃
-     *
-     * @return -
-     */
-    UserExt queryUserByKey();
-
-
-
-
+    //********************************用户插件模块**********************************//
 
 
     /**
@@ -123,25 +113,25 @@ public interface WebUserExtApi extends ExtensionPoint {
      *
      * @return -
      */
-    UserExt getUser();
+    UserExt traceUser();
     /**
      * 获取登录用户的租户key
      *
      * @return -
      */
-    String getTenantUserKey();
+    String traceTenantUserKey();
     /**
      * 获取登录用户的租户id
      *
      * @return -
      */
-    Long getTenantId();
+    Long traceTenantId();
     /**
      * 获取登录用户的环境
      *
      * @return -
      */
-    String getEnvCode();
+    String traceEnvCode();
 
     //********************************http线程上下文模块**********************************//
 

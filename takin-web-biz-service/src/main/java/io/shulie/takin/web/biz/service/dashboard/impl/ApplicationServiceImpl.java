@@ -45,7 +45,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (enable == null) {
             throw new TakinWebException(DashboardExceptionCode.DEFAULT, "开关状态不能为空");
         }
-        long tenantId = WebPluginUtils.getTenantId();
+        long tenantId = WebPluginUtils.traceTenantId();
         String envCode = "_" + "envCode";
         String realStatus = getUserPressureSwitchFromRedis(tenantId, envCode);
         AppPressureSwitchSetResponse result = new AppPressureSwitchSetResponse();

@@ -2,7 +2,6 @@ package io.shulie.takin.web.entrypoint.controller.application;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -173,7 +172,7 @@ public class MiddlewareJarController {
             if (WebPluginUtils.validateSuperAdmin()) {
                 tempCanEdit = true;
             } else {
-                tempCanEdit = WebPluginUtils.getUser() == null || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.getUser().getId());
+                tempCanEdit = WebPluginUtils.traceUser() == null || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.traceUser().getId());
             }
             final boolean canEdit = tempCanEdit;
             collect.forEach(response -> response.setCanEdit(canEdit));

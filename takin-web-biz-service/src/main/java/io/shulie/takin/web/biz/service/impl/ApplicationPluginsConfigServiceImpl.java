@@ -62,7 +62,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         if (Objects.isNull(param) || Objects.isNull(param.getApplicationId())) {
             throw new TakinWebException(ExceptionCode.POD_NUM_EMPTY, "缺少参数");
         }
-        Long customerId = WebPluginUtils.getTenantId();
+        Long customerId = WebPluginUtils.traceTenantId();
         param.setCustomerId(customerId);
         IPage<ApplicationPluginsConfigEntity> listPage = applicationPluginsConfigDAO.findListPage(param);
         List<ApplicationPluginsConfigEntity> records = listPage.getRecords();
@@ -121,9 +121,9 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             entity.setModifierId(param.getUserId());
             entity.setCustomerId(param.getCustomerId());
         } else {
-            entity.setCreatorId(WebPluginUtils.getUserId());
-            entity.setModifierId(WebPluginUtils.getUserId());
-            entity.setCustomerId(WebPluginUtils.getTenantId());
+            entity.setCreatorId(WebPluginUtils.traceUserId());
+            entity.setModifierId(WebPluginUtils.traceUserId());
+            entity.setCustomerId(WebPluginUtils.traceTenantId());
         }
 
         Date now = new Date();
@@ -150,9 +150,9 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         entitys.forEach(entity -> {
             entity.setCreateTime(now);
             entity.setModifieTime(now);
-            entity.setCreatorId(WebPluginUtils.getUserId());
-            entity.setModifierId(WebPluginUtils.getUserId());
-            entity.setCustomerId(WebPluginUtils.getTenantId());
+            entity.setCreatorId(WebPluginUtils.traceUserId());
+            entity.setModifierId(WebPluginUtils.traceUserId());
+            entity.setCustomerId(WebPluginUtils.traceTenantId());
         });
 
         return applicationPluginsConfigDAO.updateBatchById(entitys);
@@ -174,9 +174,9 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         Date now = new Date();
         entity.setCreateTime(now);
         entity.setModifieTime(now);
-        entity.setCreatorId(WebPluginUtils.getUserId());
-        entity.setModifierId(WebPluginUtils.getUserId());
-        entity.setCustomerId(WebPluginUtils.getTenantId());
+        entity.setCreatorId(WebPluginUtils.traceUserId());
+        entity.setModifierId(WebPluginUtils.traceUserId());
+        entity.setCustomerId(WebPluginUtils.traceTenantId());
         applicationPluginsConfigMapper.updateById(entity);
         return true;
     }

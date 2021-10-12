@@ -37,8 +37,8 @@ public class NotifyClientImpl implements NotifyClient {
         calculateParam.setServiceName(serviceName);
         calculateParam.setMethod(method);
         calculateParam.setExtend(extend);
-        calculateParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
-        calculateParam.setEnvCode(WebPluginUtils.getEnvCode());
+        calculateParam.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+        calculateParam.setEnvCode(WebPluginUtils.traceEnvCode());
 
         //String responseEntity = HttpClientUtil.sendPost(url, calculateParam);
         //if (StringUtils.isBlank(responseEntity)) {
@@ -78,8 +78,8 @@ public class NotifyClientImpl implements NotifyClient {
         calculateParam.setServiceName(serviceName);
         calculateParam.setMethod(method);
         calculateParam.setExtend(extend);
-        calculateParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
-        calculateParam.setEnvCode(WebPluginUtils.getEnvCode());
+        calculateParam.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+        calculateParam.setEnvCode(WebPluginUtils.traceEnvCode());
 
         //String responseEntity = HttpClientUtil.sendPost(url, calculateParam);
         //if (StringUtils.isBlank(responseEntity)) {

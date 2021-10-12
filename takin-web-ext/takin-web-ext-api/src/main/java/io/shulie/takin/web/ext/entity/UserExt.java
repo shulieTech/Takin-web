@@ -20,8 +20,6 @@ public class UserExt {
 
     private String nick;
 
-    private String key;
-
     private String salt;
 
     private String password;

@@ -105,7 +105,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         WebPluginUtils.fillUserData(createParam);
 
         //同步配置
-        configSyncService.syncShadowDB(WebPluginUtils.getTenantAppKey(), createParam.getApplicationId(), null);
+        configSyncService.syncShadowDB(WebPluginUtils.fillTenantCommonExt(), createParam.getApplicationId(), null);
 
         //修改应用状态
         applicationService.modifyAccessStatus(String.valueOf(createParam.getApplicationId()),
@@ -136,7 +136,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         updateParam.setConfig(config);
         updateParam.setParseConfig(parseShadowServerConfig(config));
 
-        configSyncService.syncShadowDB(WebPluginUtils.getTenantAppKey(), dsResult.getApplicationId(),
+        configSyncService.syncShadowDB(WebPluginUtils.fillTenantCommonExt(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
         //todo Agent改造点
         agentConfigCacheManager.evictShadowServer("","envCode",dsResult.getApplicationName());
@@ -182,7 +182,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         enableParam.setId(enableRequest.getId());
         enableParam.setStatus(enableRequest.getStatus());
         applicationDsDAO.enable(enableParam);
-        configSyncService.syncShadowDB(WebPluginUtils.getTenantAppKey(), dsResult.getApplicationId(),
+        configSyncService.syncShadowDB(WebPluginUtils.fillTenantCommonExt(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
         //todo Agent改造点
         agentConfigCacheManager.evictShadowServer("","envCode",dsResult.getApplicationName());
@@ -200,7 +200,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         deleteParam.setIdList(Collections.singletonList(dsDeleteRequest.getId()));
         applicationDsDAO.delete(deleteParam);
 
-        configSyncService.syncShadowDB(WebPluginUtils.getTenantAppKey(), dsResult.getApplicationId(),
+        configSyncService.syncShadowDB(WebPluginUtils.fillTenantCommonExt(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
 
         //todo Agent改造点

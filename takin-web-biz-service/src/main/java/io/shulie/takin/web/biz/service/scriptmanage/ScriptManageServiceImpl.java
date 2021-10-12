@@ -227,7 +227,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             e.printStackTrace();
         }
         String[] cmds = {"curl", "-o", fileDir + "/" + fileName, "--create-dirs", "-OL", "-H",
-            "licenseKey:" + WebPluginUtils.getTenantAppKey(), url};
+            "licenseKey:" + WebPluginUtils.fillTenantCommonExt(), url};
         LinuxHelper.execCurl(cmds);
         return fileDir + "/" + fileName;
     }
@@ -782,7 +782,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         }
         // todo 临时方案
         String[] cmds = {"curl", "-o", fileDir + "/" + fileName, "--create-dirs", "-OL", "-H",
-            "licenseKey:" + WebPluginUtils.getTenantAppKey(), url};
+            "licenseKey:" + WebPluginUtils.fillTenantCommonExt(), url};
         LinuxHelper.execCurl(cmds);
         return fileDir + "/" + fileName;
     }
@@ -1088,7 +1088,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileExtend.put("dataCount", fileManageUpdateRequest.getDataCount());
             fileExtend.put("isSplit", fileManageUpdateRequest.getIsSplit());
             fileExtend.put("isOrderSplit", fileManageUpdateRequest.getIsOrderSplit());
-            fileManageCreateParam.setCustomerId(WebPluginUtils.getTenantId());
+            fileManageCreateParam.setCustomerId(WebPluginUtils.traceTenantId());
             fileManageCreateParam.setFileExtend(JsonHelper.bean2Json(fileExtend));
             fileManageCreateParam.setUploadPath(targetScriptPath + fileManageUpdateRequest.getFileName());
             fileManageCreateParam.setUploadTime(fileManageUpdateRequest.getUploadTime());
@@ -1109,7 +1109,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileExtend.put("isSplit", fileManageCreateRequest.getIsSplit());
             fileExtend.put("isOrderSplit", fileManageCreateRequest.getIsOrderSplit());
             fileManageCreateParam.setFileExtend(JsonHelper.bean2Json(fileExtend));
-            fileManageCreateParam.setCustomerId(WebPluginUtils.getTenantId());
+            fileManageCreateParam.setCustomerId(WebPluginUtils.traceTenantId());
             fileManageCreateParam.setUploadPath(targetScriptPath + fileManageCreateRequest.getFileName());
             fileManageCreateParam.setUploadTime(fileManageCreateRequest.getUploadTime());
             return fileManageCreateParam;

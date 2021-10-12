@@ -53,7 +53,7 @@ public class AgentConfigClientImpl implements AgentConfigClient {
         queryDTO.setConfigKey(configKey);
         queryDTO.setAppName(projectName);
         //设置租户表示和环境编码
-        queryDTO.setUserAppKey(WebPluginUtils.getTenantAppKey());
+        queryDTO.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
         queryDTO.setEnvCode("envCode");
 
         try {
@@ -83,7 +83,7 @@ public class AgentConfigClientImpl implements AgentConfigClient {
             // 因为tro-web的分页从0开始大数据的分页从1开始，所以这里需要加1
             queryDTO.setCurrentPage(queryDTO.getRealCurrent());
             //设置租户表示和环境编码
-            queryDTO.setUserAppKey(WebPluginUtils.getTenantAppKey());
+            queryDTO.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
             queryDTO.setEnvCode("envCode");
             String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)));
             if (StringUtils.isEmpty(responseEntity)) {

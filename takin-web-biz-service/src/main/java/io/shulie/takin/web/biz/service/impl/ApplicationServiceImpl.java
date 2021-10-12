@@ -556,8 +556,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_PUSH_APPLICATION_STATUS_VALIDATE_ERROR,
                 "节点唯一key|应用名称 不能为空");
         }
-        UserExt user = WebPluginUtils.getUser();
-        String userAppKey = WebPluginUtils.getTenantAppKey();
+        UserExt user = WebPluginUtils.traceUser();
+        String userAppKey = WebPluginUtils.fillTenantCommonExt();
         if (WebPluginUtils.checkUserData() && user == null) {
             // todo 后续需要修改
             return Response.fail("0000-0000-0000", "未获取到" + userAppKey + "用户信息");
@@ -571,7 +571,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         if (param.getSwitchErrorMap() != null && !param.getSwitchErrorMap().isEmpty()) {
             //应用id+ agent id唯一键 作为节点信息
-            String envCode = WebPluginUtils.getEnvCode();
+            String envCode = WebPluginUtils.traceEnvCode();
             String key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, userAppKey, envCode,
                 applicationMnt.getApplicationId() + PRADAR_SEPERATE_FLAG + param.getAgentId());
             List<String> nodeUploadDataDTOList = redisTemplate.opsForList().range(key, 0, -1);
@@ -749,7 +749,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response<Integer> calculateUserSwitch(Long uid) {
         if (uid == null) {
-            UserExt user = WebPluginUtils.getUser();
+            UserExt user = WebPluginUtils.traceUser();
             if (user == null) {
                 return Response.fail(FALSE_CORE, "当前用户为空");
             }
@@ -762,7 +762,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public ApplicationSwitchStatusDTO agentGetUserSwitchInfo() {
         ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
-        result.setSwitchStatus(getUserSwitchStatusForAgent(WebPluginUtils.getTenantId()));
+        result.setSwitchStatus(getUserSwitchStatusForAgent(WebPluginUtils.traceTenantId()));
         return result;
     }
 
@@ -822,11 +822,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public String getUserSwitchStatusForVo() {
         Long uid = -1L;
-        if (WebPluginUtils.getUser() != null) {
-            uid = WebPluginUtils.getUser().getId();
+        if (WebPluginUtils.traceUser() != null) {
+            uid = WebPluginUtils.traceUser().getId();
         }
         String key = CommonUtil.generateRedisKey(PRADAR_SWITCH_STATUS_VO + uid,
-            WebPluginUtils.getTenantAppKey().toString(), WebPluginUtils.getEnvCode());
+            WebPluginUtils.fillTenantCommonExt().toString(), WebPluginUtils.traceEnvCode());
         Object o = redisTemplate.opsForValue().get(key);
         if (o == null) {
             redisTemplate.opsForValue().set(key, AppSwitchEnum.OPENED.getCode());
@@ -1963,7 +1963,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response<Integer> uploadMiddlewareStatus(Map<String, JarVersionVo> requestMap, String appName) {
         try {
-            UserExt userExt = WebPluginUtils.queryUserByKey();
+            UserExt userExt = WebPluginUtils.traceUser();
             AppMiddlewareQuery query = new AppMiddlewareQuery();
             TApplicationMnt tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
             if (null == tApplicationMnt) {
@@ -2116,7 +2116,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public TApplicationMnt queryTApplicationMntByName(String appName) {
         return tApplicationMntDao.queryApplicationInfoByNameAndTenant(appName,
-            WebPluginUtils.checkUserData() ? WebPluginUtils.getTenantId() : null);
+            WebPluginUtils.checkUserData() ? WebPluginUtils.traceTenantId() : null);
     }
 
     /**

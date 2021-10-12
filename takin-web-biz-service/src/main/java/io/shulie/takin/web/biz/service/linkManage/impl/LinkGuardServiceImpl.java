@@ -19,12 +19,11 @@ import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
 import io.shulie.takin.web.data.param.application.LinkGuardCreateParam;
 import io.shulie.takin.web.data.result.linkguard.LinkGuardResult;
-import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -95,7 +94,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
             return Response.fail(FALSE_CORE, "创建挡板失败");
         }
         applicationService.modifyAccessStatus(vo.getApplicationId(), AppAccessTypeEnum.UNUPLOAD.getValue(), null);
-        configSyncService.syncGuard(WebPluginUtils.getTenantAppKey(), Long.parseLong(vo.getApplicationId()), vo.getApplicationName());
+        configSyncService.syncGuard(WebPluginUtils.fillTenantCommonExt(), Long.parseLong(vo.getApplicationId()), vo.getApplicationName());
         //todo agent改造点
         agentConfigCacheManager.evictGuards("","",vo.getApplicationName());
         return Response.success();
@@ -127,7 +126,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
             return Response.fail(FALSE_CORE, "更新挡板失败", null);
         }
         // 原先是 用户基本的的key ，现在改成 租户级别的
-        configSyncService.syncGuard(WebPluginUtils.getTenantAppKey(), Long.parseLong(applicationId), vo.getApplicationName());
+        configSyncService.syncGuard(WebPluginUtils.fillTenantCommonExt(), Long.parseLong(applicationId), vo.getApplicationName());
         //todo agent改造点
         agentConfigCacheManager.evictGuards("","",vo.getApplicationName());
         return Response.success();
@@ -138,8 +137,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         try {
             LinkGuardEntity linkGuardEntity = tLinkGuardMapper.selectById(id);
             tLinkGuardMapper.deleteById(id);
-            UserExt user = WebPluginUtils.getUser();
-            configSyncService.syncGuard(user.getKey(), linkGuardEntity.getApplicationId(), null);
+            configSyncService.syncGuard(WebPluginUtils.fillTenantCommonExt(), linkGuardEntity.getApplicationId(), null);
             //todo agent改造点
             agentConfigCacheManager.evictGuards("","",linkGuardEntity.getApplicationName());
         } catch (Exception e) {
@@ -159,7 +157,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         }
         try {
             //处理agent携带用户信息的查询
-            if (WebPluginUtils.getTenantAppKey() != null && !WebPluginUtils.getTenantAppKey().isEmpty()) {
+            if (WebPluginUtils.fillTenantCommonExt() != null && !WebPluginUtils.fillTenantCommonExt().isEmpty()) {
                 if (param.getApplicationName() != null) {
                     TApplicationMnt applicationMnt = applicationService.queryTApplicationMntByName(param.getApplicationName());
                     if (applicationMnt != null) {
@@ -227,8 +225,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         entity.setId(id);
         entity.setIsEnable(target);
         tLinkGuardMapper.update(entity);
-        UserExt user = WebPluginUtils.getUser();
-        configSyncService.syncGuard(user.getKey(), linkGuardEntity.getApplicationId(), null);
+        configSyncService.syncGuard(WebPluginUtils.fillTenantCommonExt(), linkGuardEntity.getApplicationId(), null);
         //todo Agent改造点
         agentConfigCacheManager.evictGuards("","",linkGuardEntity.getApplicationName());
         return Response.success();

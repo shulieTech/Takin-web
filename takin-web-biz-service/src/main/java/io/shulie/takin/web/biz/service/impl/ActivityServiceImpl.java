@@ -571,7 +571,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
         taskFlowDebugStartReq.setFeatures(req.getFeatures());
         //taskFlowDebugStartReq.setLicense(WebPluginUtils.getTenantUserAppKey());
-        taskFlowDebugStartReq.setCreatorId(WebPluginUtils.getUserId());
+        taskFlowDebugStartReq.setCreatorId(WebPluginUtils.traceUserId());
         log.info("流量验证参数：{}", taskFlowDebugStartReq);
         ResponseResult<Long> longResponseResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
         log.info("流量验证发起结果：{}", longResponseResult.toString());

@@ -6,6 +6,7 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pamirs.takin.common.util.DateToStringFormatSerialize;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -17,7 +18,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  * @date 2018年4月20日
  */
 @JsonIgnoreProperties(value = {"handler"})
-public class BaseEntity implements Serializable {
+public class BaseEntity extends UserBaseEntity implements Serializable {
 
     //序列号
     private static final long serialVersionUID = 1L;
@@ -33,39 +34,6 @@ public class BaseEntity implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = DateToStringFormatSerialize.class)
     private Date updateTime;
-
-    @ApiModelProperty(name = "tenant_id", value = "租户ID")
-    private Long tenantId;
-
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getEnvCode() {
-        return envCode;
-    }
-
-    public void setEnvCode(String envCode) {
-        this.envCode = envCode;
-    }
-
-    @ApiModelProperty(name = "userId", value = "用户ID")
-    private Long userId;
-
-    @ApiModelProperty(name = "envCode", value = "环境code")
-    private String envCode;
 
     /**
      * 无参构造

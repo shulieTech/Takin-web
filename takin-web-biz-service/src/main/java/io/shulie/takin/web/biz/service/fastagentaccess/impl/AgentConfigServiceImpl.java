@@ -177,7 +177,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
             AgentProjectConfigQueryParam projectConfigQueryParam = new AgentProjectConfigQueryParam();
             projectConfigQueryParam.setEnKey(detailResult.getEnKey());
             projectConfigQueryParam.setProjectName(updateRequest.getProjectName());
-            projectConfigQueryParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
+            projectConfigQueryParam.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
             AgentConfigDetailResult projectConfig = agentConfigDAO.findProjectConfig(projectConfigQueryParam);
 
             boolean checkSuccess = AgentConfigTypeEnum.GLOBAL.getVal().equals(detailResult.getType())
@@ -200,7 +200,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
                 createParam.setValueType(detailResult.getValueType());
                 createParam.setValueOption(detailResult.getValueOption());
                 createParam.setProjectName(updateRequest.getProjectName());
-                createParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
+                createParam.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
                 agentConfigDAO.insert(createParam);
                 return;
             }
@@ -251,7 +251,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
 
         // 2、查询符合条件的应用配置
         if (StringUtils.isEmpty(queryBO.getUserAppKey())) {
-            queryParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
+            queryParam.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
         } else {
             queryParam.setUserAppKey(queryBO.getUserAppKey());
         }
@@ -421,6 +421,6 @@ public class AgentConfigServiceImpl implements AgentConfigService {
      * @return 操作人
      */
     private String getOperator() {
-        return WebPluginUtils.getUser() == null ? LoginConstant.DEFAULT_OPERATOR : WebPluginUtils.getUser().getName();
+        return WebPluginUtils.traceUser() == null ? LoginConstant.DEFAULT_OPERATOR : WebPluginUtils.traceUser().getName();
     }
 }

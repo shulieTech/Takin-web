@@ -24,7 +24,7 @@ public class SwitchKeyFactory {
      */
     public static String getClusterTestSwitchRedisKey(String customerKey) {
         String key = CLUSTER_TEST_SWITCH_REDIS_KEY.replace(KEY_PLACEHOLDER, customerKey);
-        return key.replace(ENV_CODE_PLACEHOLDER, WebPluginUtils.getEnvCode());
+        return key.replace(ENV_CODE_PLACEHOLDER, WebPluginUtils.traceEnvCode());
 
 
     }
@@ -36,6 +36,6 @@ public class SwitchKeyFactory {
      */
     public static String getAllowListSwitchRedisKey(String customerKey) {
         String key = ALLOW_LIST_SWITCH_REDIS_KEY.replace(KEY_PLACEHOLDER, customerKey);
-        return key.replace(ENV_CODE_PLACEHOLDER, WebPluginUtils.getEnvCode());
+        return key.replace(ENV_CODE_PLACEHOLDER, WebPluginUtils.traceEnvCode());
     }
 }

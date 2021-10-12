@@ -118,10 +118,10 @@ public class MiddlewareSummaryController {
             .map(item -> BeanUtil.copyProperties(item, MiddlewareSummaryResponse.class)).collect(
                 Collectors.toList());
         // 1.无权限模块：默认可编辑 2.有权限模块：管理员可编辑，子账号被授权可编辑
-        if(WebPluginUtils.getUser() == null) {
+        if(WebPluginUtils.traceUser() == null) {
             collect.parallelStream().forEach(item -> item.setCanEdit(Boolean.TRUE));
         } else {
-            boolean canEdit =  WebPluginUtils.validateSuperAdmin() || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.getUser().getId());
+            boolean canEdit =  WebPluginUtils.validateSuperAdmin() || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.traceUser().getId());
             collect.parallelStream().forEach(item -> item.setCanEdit(canEdit));
         }
 

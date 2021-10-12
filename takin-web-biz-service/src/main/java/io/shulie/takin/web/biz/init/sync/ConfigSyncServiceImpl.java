@@ -28,7 +28,6 @@ import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
 import io.shulie.takin.web.biz.service.ShadowConsumerService;
 import io.shulie.takin.web.biz.service.config.ConfigService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
-import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
@@ -47,11 +46,11 @@ import io.shulie.takin.web.config.enums.ShadowJobType;
 import io.shulie.takin.web.config.sync.api.AllowListSyncService;
 import io.shulie.takin.web.config.sync.api.BlockListSyncService;
 import io.shulie.takin.web.config.sync.api.GuardSyncService;
-import io.shulie.takin.web.config.sync.api.RemoteCallSyncService;
 import io.shulie.takin.web.config.sync.api.ShadowConsumerSyncService;
 import io.shulie.takin.web.config.sync.api.ShadowDbSyncService;
 import io.shulie.takin.web.config.sync.api.ShadowJobSyncService;
 import io.shulie.takin.web.config.sync.api.SwitchSyncService;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.dom4j.Document;
@@ -109,7 +108,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
      * TODO 未来应用从AMDB查询，applicationId 可能是根据规则生成的字符串
      */
     @Override
-    public void syncGuard(String userAppKey, long applicationId, String applicationName) {
+    public void syncGuard(TenantCommonExt commonExt, long applicationId, String applicationName) {
         if (StringUtils.isEmpty(applicationName)) {
             TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
@@ -138,20 +137,20 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     }
 
     @Override
-    public void syncClusterTestSwitch(String userAppKey) {
+    public void syncClusterTestSwitch(TenantCommonExt commonExt) {
         boolean clusterTestSwitch = configService.getClusterTestSwitch(userAppKey);
         switchSyncService.turnClusterTestSwitch(userAppKey, clusterTestSwitch);
     }
 
     @Override
-    public void syncAllowListSwitch(String userAppKey) {
+    public void syncAllowListSwitch(TenantCommonExt commonExt) {
         boolean clusterTestSwitch = configService.getAllowListSwitch(userAppKey);
         switchSyncService.turnAllowListSwitch(userAppKey, clusterTestSwitch);
 
     }
 
     @Override
-    public void syncAllowList(String userAppKey, long applicationId, String applicationName) {
+    public void syncAllowList(TenantCommonExt commonExt, long applicationId, String applicationName) {
         if (StringUtils.isEmpty(applicationName)) {
             TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
             if (tApplicationMnt == null) {
@@ -161,7 +160,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
             applicationName = tApplicationMnt.getApplicationName();
         }
 
-        allowListSyncService.syncAllowList(userAppKey, applicationName, queryAndParseAllowList(applicationId));
+        allowListSyncService.syncAllowList(commonExt, applicationName, queryAndParseAllowList(applicationId));
     }
 
     private List<AllowList> queryAndParseAllowList(long applicationId) {
@@ -204,7 +203,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     }
 
     @Override
-    public void syncShadowJob(String userAppKey, long applicationId, String applicationName) {
+    public void syncShadowJob(TenantCommonExt commonExt, long applicationId, String applicationName) {
         if (StringUtils.isEmpty(applicationName)) {
             TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
@@ -254,7 +253,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     }
 
     @Override
-    public void syncShadowDB(String userAppKey, long applicationId, String applicationName) {
+    public void syncShadowDB(TenantCommonExt commonExt, long applicationId, String applicationName) {
         if (StringUtils.isEmpty(applicationName)) {
             TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
@@ -263,7 +262,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     }
 
     @Override
-    public void syncShadowConsumer(String userAppKey, long applicationId, String applicationName) {
+    public void syncShadowConsumer(TenantCommonExt commonExt, long applicationId, String applicationName) {
         if (StringUtils.isEmpty(applicationName)) {
             TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
@@ -346,7 +345,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     }
 
     @Override
-    public void syncBlockList(String userAppKey) {
+    public void syncBlockList(TenantCommonExt commonExt) {
         blockListSyncService.syncBlockList(userAppKey, BlockListType.CACHE, queryAndParseShadowDatabase());
     }
 

@@ -7,7 +7,6 @@ import java.util.Map;
 import com.alibaba.fastjson.JSON;
 
 import com.google.common.collect.Lists;
-import com.pamirs.takin.common.exception.ApiException;
 import io.shulie.takin.parent.exception.entity.ExceptionCode;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.common.common.Response;
@@ -91,7 +90,7 @@ public class HttpWebClient {
 
     private HttpHeaders buildHeader(WebRequest request) {
         HttpHeaders header = new HttpHeaders();
-        if (WebPluginUtils.checkUserData()) {
+        if (WebPluginUtils.checkUserPlugin()) {
             /* TODO web向cloud传参
             header.add(RemoteConstant.LICENSE_REQUIRED, "true");
             header.add(RemoteConstant.LICENSE_KEY, request.getLicense());

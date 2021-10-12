@@ -252,7 +252,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     private String generatorDownLoadUrl(String projectName, String version, String urlPrefix) {
         // 获取一小时后的时间戳
         long expireDate = System.currentTimeMillis() + 60 * 60 * 1000;
-        String userAppKey = WebPluginUtils.fillTenantCommonExt();
+        String userAppKey = WebPluginUtils.traceTenantAppKey();
         String userId = WebPluginUtils.traceUserId() == null ? "" : String.valueOf(WebPluginUtils.traceUserId());
         String envCode = WebPluginUtils.traceEnvCode();
         String flag = AgentDownloadUrlVerifyUtil.generatorFlag(projectName, userAppKey, userId, version, envCode,

@@ -137,7 +137,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
 
     private LambdaQueryWrapper<AppRemoteCallEntity> getAppRemoteCallEntityLambdaQueryWrapper(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
-        if (WebPluginUtils.checkUserData()) {
+        if (WebPluginUtils.checkUserPlugin()) {
             if(WebPluginUtils.traceTenantId() != null) {
                 lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.traceTenantId());
             }
@@ -181,7 +181,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     @Override
     public List<AppRemoteCallResult> selectByAppNameUnderCurrentUser(String appName) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
-        if (WebPluginUtils.checkUserData()) {
+        if (WebPluginUtils.checkUserPlugin()) {
             lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.traceTenantId());
             lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.traceEnvCode());
         }

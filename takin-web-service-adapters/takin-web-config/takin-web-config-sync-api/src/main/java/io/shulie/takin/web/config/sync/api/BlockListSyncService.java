@@ -3,6 +3,7 @@ package io.shulie.takin.web.config.sync.api;
 import java.util.List;
 
 import io.shulie.takin.web.config.enums.BlockListType;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author fanxx
@@ -10,6 +11,6 @@ import io.shulie.takin.web.config.enums.BlockListType;
  */
 public interface BlockListSyncService {
 
-    void syncBlockList(String namespace, BlockListType type, List<String> blockLists);
+    void syncBlockList(TenantCommonExt commonExt, BlockListType type, List<String> blockLists);
 
 }

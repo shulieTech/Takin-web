@@ -55,7 +55,7 @@ public class AbstractInterceptor implements HandlerInterceptor {
             String takinAuthorityHeaderName = "takin-authority";
             String accessControlExposeHeaderName = "Access-Control-Expose-Headers";
             // 填充请求头并对外暴露(Chrome安全策略)
-            response.setHeader(takinAuthorityHeaderName, WebPluginUtils.checkUserData().toString());
+            response.setHeader(takinAuthorityHeaderName, WebPluginUtils.checkUserPlugin().toString());
             Collection<String> headers = response.getHeaderNames();
             response.setHeader(accessControlExposeHeaderName, String.join(",", headers));
         }

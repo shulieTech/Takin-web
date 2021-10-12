@@ -9,6 +9,7 @@ import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author fanxx
@@ -82,10 +83,11 @@ public interface BlackListDAO {
     /**
      * 说明: 查询所有启用的黑名单列表
      * @param applicationId
+     * @param tenantCommonExt
      * @return 黑名单列表
      * @author shulie
      */
-    List<BlacklistResult> getAllEnabledBlockList(Long applicationId);
+    List<BlacklistResult> getAllEnabledBlockList(Long applicationId, TenantCommonExt tenantCommonExt);
 
 
 

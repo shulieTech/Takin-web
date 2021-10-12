@@ -3,6 +3,7 @@ package io.shulie.takin.web.config.sync.api;
 import java.util.List;
 
 import io.shulie.takin.web.config.entity.Guard;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * 挡板
@@ -16,6 +17,6 @@ public interface GuardSyncService {
     /**
      * 同步挡板信息
      */
-    void syncGuard(String namespace, String applicationName, List<Guard> newGuards);
+    void syncGuard(TenantCommonExt commonExt, String applicationName, List<Guard> newGuards);
 
 }

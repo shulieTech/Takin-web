@@ -19,6 +19,7 @@ import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -173,13 +174,21 @@ public class BlackListDAOImpl implements BlackListDAO {
     }
 
     @Override
-    public List<BlacklistResult> getAllEnabledBlockList(Long applicationId) {
+    public List<BlacklistResult> getAllEnabledBlockList(Long applicationId, TenantCommonExt tenantCommonExt) {
         LambdaQueryWrapper<BlackListEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(BlackListEntity::getIsDeleted, false);
         wrapper.in(BlackListEntity::getUseYn, BlacklistEnableEnum.ENABLE.getStatus());
 
         if (applicationId != null) {
             wrapper.eq(BlackListEntity::getApplicationId, applicationId);
+        }
+        if (tenantCommonExt != null) {
+            if (tenantCommonExt.getTenantId() != null) {
+                wrapper.eq(BlackListEntity::getTenantId, tenantCommonExt.getTenantId());
+            }
+            if (StringUtils.isNotBlank(tenantCommonExt.getEnvCode())) {
+                wrapper.eq(BlackListEntity::getEnvCode, tenantCommonExt.getEnvCode());
+            }
         }
         List<BlackListEntity> entities = blackListMapper.selectList(wrapper);
         if (CollectionUtils.isEmpty(entities)) {

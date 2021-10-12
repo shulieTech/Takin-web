@@ -119,7 +119,7 @@ public interface WebUserExtApi extends ExtensionPoint {
      *
      * @return -
      */
-    String traceTenantUserKey();
+    String traceTenantAppKey();
     /**
      * 获取登录用户的租户id
      *

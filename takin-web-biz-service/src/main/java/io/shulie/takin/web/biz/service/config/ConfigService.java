@@ -1,16 +1,18 @@
 package io.shulie.takin.web.biz.service.config;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+
 /**
  * @author shiyajian
  * create: 2020-09-18
  */
 public interface ConfigService {
 
-    void updateClusterTestSwitch(String userAppKey, Boolean value);
+    void updateClusterTestSwitch(TenantCommonExt commonExt, Boolean value);
 
-    boolean getClusterTestSwitch(String userAppKey);
+    boolean getClusterTestSwitch(TenantCommonExt commonExt);
 
-    void updateAllowListSwitch(String userAppKey, Boolean value);
+    void updateAllowListSwitch(TenantCommonExt commonExt, Boolean value);
 
-    boolean getAllowListSwitch(String userAppKey);
+    boolean getAllowListSwitch(TenantCommonExt commonExt);
 }

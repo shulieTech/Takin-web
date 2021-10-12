@@ -68,7 +68,7 @@ public class WhitelistDataFixer {
             BeanUtils.copyProperties(fix, updateParam);
             List<ApplicationDetailResult> results = whitelistResultsMap.get(fix.getApplicationId());
             if (!CollectionUtils.isEmpty(results)) {
-                updateParam.setCustomerId(results.get(0).getCustomerId());
+                updateParam.setTenantId(results.get(0).getTenantId());
                 updateParam.setUserId(results.get(0).getUserId());
             }
             return updateParam;

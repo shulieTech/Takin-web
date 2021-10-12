@@ -94,6 +94,6 @@ public interface TBListMntDao {
      * @return 黑名单列表
      * @author shulie
      */
-    List<TBList> getAllEnabledBlockList();
+    List<TBList> getAllEnabledBlockList(@Param("tenantId") Long tenantId,@Param("envCode") String envCode);
 
 }

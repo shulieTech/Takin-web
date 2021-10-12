@@ -112,8 +112,8 @@ public class WhiteListDAOImpl extends ServiceImpl<WhiteListMapper, WhiteListEnti
         if (StringUtils.isNotBlank(param.getInterfaceName())) {
             wrapper.like(WhiteListEntity::getInterfaceName, param.getInterfaceName());
         }
-        if (param.getCustomerId() != null) {
-            wrapper.eq(WhiteListEntity::getCustomerId, param.getCustomerId());
+        if (param.getTenantId() != null) {
+            wrapper.eq(WhiteListEntity::getTenantId, param.getTenantId());
         }
         if (param.getIsGlobal() != null) {
             wrapper.eq(WhiteListEntity::getIsGlobal, param.getIsGlobal());

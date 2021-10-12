@@ -504,7 +504,7 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
                 param.setScriptVersion(deployResult.getScriptVersion());
                 param.setScriptId(deployResult.getScriptId());
                 param.setSuccess(state == 0 ? true : false);
-                param.setExecutor(WebPluginUtils.checkUserData() ? WebPluginUtils.traceUser().getName() : "");
+                param.setExecutor(WebPluginUtils.checkUserPlugin() ? WebPluginUtils.traceUser().getName() : "");
                 param.setGmtCreate(new Date());
                 param.setResult(JsonHelper.bean2Json(temp.getMessage()));
                 param.setScripDeployId(scriptManageDeployId);

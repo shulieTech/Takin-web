@@ -138,7 +138,7 @@ public class ApplicationClientImpl implements ApplicationClient {
     @Override
     public PagingList<ApplicationInterfaceDTO> pageInterfaces(ApplicationInterfaceQueryDTO query) {
         String url = properties.getUrl().getAmdb() + INTERFACE_PATH;
-        query.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+        query.setUserAppKey(WebPluginUtils.traceTenantAppKey());
         query.setEnvCode(WebPluginUtils.traceEnvCode());
         query.setFieldNames("appName,middlewareName,serviceName,methodName,rpcType");
         query.setRpcType(StringUtils.join(
@@ -162,7 +162,7 @@ public class ApplicationClientImpl implements ApplicationClient {
 
     @Override
     public PagingList<ApplicationDTO> pageApplications(ApplicationQueryDTO query) {
-        query.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+        query.setUserAppKey(WebPluginUtils.traceTenantAppKey());
         query.setEnvCode(WebPluginUtils.traceEnvCode());
         String url = properties.getUrl().getAmdb() + APPLICATION_QUERY_PATH;
         try {
@@ -188,7 +188,7 @@ public class ApplicationClientImpl implements ApplicationClient {
     public List<ApplicationErrorDTO> listErrors(ApplicationErrorQueryDTO query) {
         String url = properties.getUrl().getAmdb() + APPLICATION_ERROR_QUERY_PATH;
         try {
-            query.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+            query.setUserAppKey(WebPluginUtils.traceTenantAppKey());
             query.setEnvCode(WebPluginUtils.traceEnvCode());
             AmdbResult<List<ApplicationErrorDTO>> amdbResponse = AmdbHelper.builder().url(url)
                 .param(query)
@@ -213,7 +213,7 @@ public class ApplicationClientImpl implements ApplicationClient {
 
     @Override
     public ApplicationNodeProbeInfoDTO getApplicationNodeProbeInfo(ApplicationNodeQueryDTO dto) {
-        dto.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+        dto.setUserAppKey(WebPluginUtils.traceTenantAppKey());
         dto.setEnvCode(WebPluginUtils.traceEnvCode());
         AmdbResult<ApplicationNodeProbeInfoDTO> result = AmdbHelper.builder().url(
             this.getApplicationNodeProbeInfoUrl())
@@ -233,7 +233,7 @@ public class ApplicationClientImpl implements ApplicationClient {
      */
     private PagingList<ApplicationNodeDTO> pageApplicationNode(String url, ApplicationNodeQueryDTO dto) {
         try {
-            dto.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+            dto.setUserAppKey(WebPluginUtils.traceTenantAppKey());
             dto.setEnvCode(WebPluginUtils.traceEnvCode());
             AmdbResult<List<ApplicationNodeDTO>> amdbResponse = AmdbHelper.builder().httpMethod(HttpMethod.GET)
                 .url(url)
@@ -288,7 +288,7 @@ public class ApplicationClientImpl implements ApplicationClient {
     public PagingList<ApplicationRemoteCallDTO> listApplicationRemoteCalls(ApplicationRemoteCallQueryDTO query) {
         String url = properties.getUrl().getAmdb() + APPLICATION_REMOTE_CALL_PATH;
         try {
-            query.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+            query.setUserAppKey(WebPluginUtils.traceTenantAppKey());
             query.setEnvCode(WebPluginUtils.traceEnvCode());
             AmdbResult<List<ApplicationRemoteCallDTO>> amdbResponse = AmdbHelper.builder().httpMethod(
                 HttpMethod.POST)
@@ -308,7 +308,7 @@ public class ApplicationClientImpl implements ApplicationClient {
         try {
             // 因为tro-web的分页从0开始大数据的分页从1开始，所以这里需要加1
             dto.setCurrentPage(dto.getRealCurrent());
-            dto.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+            dto.setUserAppKey(WebPluginUtils.traceTenantAppKey());
             dto.setEnvCode(WebPluginUtils.traceEnvCode());
             String url = properties.getUrl().getAmdb() + APPLICATION_NODE_PAGE_V3;
 
@@ -335,7 +335,7 @@ public class ApplicationClientImpl implements ApplicationClient {
         try {
             // 因为tro-web的分页从0开始大数据的分页从1开始，所以这里需要加1
             queryDTO.setCurrentPage(queryDTO.getRealCurrent());
-            queryDTO.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+            queryDTO.setUserAppKey(WebPluginUtils.traceTenantAppKey());
             queryDTO.setEnvCode(WebPluginUtils.traceEnvCode());
 
             AmdbResult<List<AgentInfoDTO>> amdbResponse = AmdbHelper.builder().httpMethod(
@@ -355,7 +355,7 @@ public class ApplicationClientImpl implements ApplicationClient {
     @Override
     public List<ModuleLoadDetailDTO> pluginList(String agentId) {
         String url = properties.getUrl().getAmdb() + PLUGIN_LOAD_LIST + "?agentId=" + agentId
-            + "&userAppKey=" + WebPluginUtils.fillTenantCommonExt() + "&envCode=" + WebPluginUtils.traceEnvCode();
+            + "&userAppKey=" + WebPluginUtils.traceTenantAppKey() + "&envCode=" + WebPluginUtils.traceEnvCode();
         try {
             AmdbResult<Object> result = AmdbHelper.builder()
                 .url(url)
@@ -385,7 +385,7 @@ public class ApplicationClientImpl implements ApplicationClient {
         }
         ApplicationNodeAgentDTO applicationNodeAgentDTO = new ApplicationNodeAgentDTO();
         applicationNodeAgentDTO.setAppNames(appNames);
-        applicationNodeAgentDTO.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+        applicationNodeAgentDTO.setUserAppKey(WebPluginUtils.traceTenantAppKey());
         applicationNodeAgentDTO.setEnvCode(WebPluginUtils.traceEnvCode());
         String url = properties.getUrl().getAmdb() + AGENT_COUNT_STATUS;
         try {

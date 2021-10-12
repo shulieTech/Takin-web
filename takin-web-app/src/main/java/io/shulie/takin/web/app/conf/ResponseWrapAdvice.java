@@ -49,7 +49,7 @@ public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
             // 填充请求头并对外暴露(Chrome安全策略)
             Set<String> headers = new HashSet<>(2);
             HttpHeaders header = response.getHeaders();
-            header.set(takinAuthorityHeaderName, WebPluginUtils.checkUserData().toString());
+            header.set(takinAuthorityHeaderName, WebPluginUtils.checkUserPlugin().toString());
             headers.add(takinAuthorityHeaderName);
             headers.add(Response.PAGE_TOTAL_HEADER);
             header.set(accessControlExposeHeaderName, String.join(",", headers));

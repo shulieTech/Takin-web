@@ -695,8 +695,8 @@ public class ConfCenterService extends CommonService {
         param.setCreateTime(new Date());
         param.setUpdateTime(new Date());
         blackListDAO.insert(param);
-        configSyncService.syncBlockList(WebPluginUtils.fillTenantCommonExt());
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantId(), WebPluginUtils.fillTenantCommonExt());
+        configSyncService.syncBlockList(WebPluginUtils.traceTenantCommonExt());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantCommonExt());
     }
 
     /**
@@ -718,8 +718,8 @@ public class ConfCenterService extends CommonService {
     public void updateBlackListById(TBList tBlackList) {
         TBList originBlackList = tBListMntDao.querySingleBListById(String.valueOf(tBlackList.getBlistId()));
         tBListMntDao.updateBListById(tBlackList);
-        configSyncService.syncBlockList(WebPluginUtils.fillTenantCommonExt());
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantId(), WebPluginUtils.fillTenantCommonExt());
+        configSyncService.syncBlockList(WebPluginUtils.traceTenantCommonExt());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantCommonExt());
     }
 
     /**
@@ -733,9 +733,9 @@ public class ConfCenterService extends CommonService {
         List<String> blistIdList = Arrays.stream(blistIds.split(",")).filter(StringUtils::isNotEmpty).distinct()
             .collect(Collectors.toList());
         tBListMntDao.deleteBListByIds(blistIdList);
-        configSyncService.syncBlockList(WebPluginUtils.fillTenantCommonExt());
+        configSyncService.syncBlockList(WebPluginUtils.traceTenantCommonExt());
         List<TBList> deleteBlackLists = tBListMntDao.queryBListByIds(blistIdList);
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantId(), WebPluginUtils.fillTenantCommonExt());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantCommonExt());
     }
 
     public List<TBList> queryBlackListByIds(List<Long> blistIds) {
@@ -2006,8 +2006,8 @@ public class ConfCenterService extends CommonService {
         param.setCreateTime(new Date());
         param.setUpdateTime(new Date());
         blackListDAO.insert(param);
-        configSyncService.syncBlockList(WebPluginUtils.fillTenantCommonExt());
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantId(), WebPluginUtils.fillTenantCommonExt());
+        configSyncService.syncBlockList(WebPluginUtils.traceTenantCommonExt());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantCommonExt());
     }
 
     /**
@@ -2031,7 +2031,7 @@ public class ConfCenterService extends CommonService {
     public void updateBListById(TBList tBList) {
         TBList originBList = tBListMntDao.querySingleBListById(String.valueOf(tBList.getBlistId()));
         tBListMntDao.updateBListById(tBList);
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantId(), WebPluginUtils.fillTenantCommonExt());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantCommonExt());
     }
 
     /**
@@ -2045,8 +2045,8 @@ public class ConfCenterService extends CommonService {
         List<String> blistIdList = Arrays.stream(blistIds.split(",")).filter(StringUtils::isNotEmpty).distinct()
             .collect(Collectors.toList());
         tBListMntDao.deleteBListByIds(blistIdList);
-        configSyncService.syncBlockList(WebPluginUtils.fillTenantCommonExt());
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantId(), WebPluginUtils.fillTenantCommonExt());
+        configSyncService.syncBlockList(WebPluginUtils.traceTenantCommonExt());
+        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantCommonExt());
     }
 
     /**

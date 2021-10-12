@@ -6,12 +6,11 @@ import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -27,7 +26,6 @@ import com.pamirs.takin.entity.dao.confcenter.TWhiteListMntDao;
 import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.query.whitelist.AgentWhiteList;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -41,7 +39,9 @@ import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
-import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -99,28 +99,28 @@ public class WhiteListFileService {
             r -> new Thread(r, "初始化白名单"), new CallerRunsPolicy());
         threadPoolExecutor.submit(() -> {
             log.info("开始初始化白名单");
-            if (WebPluginUtils.checkUserData()) {
-                // 老版本 agent 新版本agent 已转到远程调用模块
-                for (UserExt user : WebPluginUtils.selectAllUser()) {
-                    writeWhiteListFile(user.getId(), user.getKey());
-                }
+            // 老版本 agent 新版本agent 已转到远程调用模块
+            // 带租户插件
+            for (TenantInfoExt infoExt : WebPluginUtils.getTenantInfoList()) {
+                infoExt.getEnvs().forEach(t -> {
+                    TenantCommonExt ext = new TenantCommonExt();
+                    ext.setTenantId(infoExt.getTenantId());
+                    ext.setTenantAppKey(infoExt.getTenantAppKey());
+                    ext.setEnvCode(t.getEnvCode());
+                    writeWhiteListFile(ext);
+                });
             }
-            // 无插件实现
-            else {writeWhiteListFile(null, null);}
         });
     }
 
     public void writeWhiteListFile() {
-        writeWhiteListFile(null, null);
+        writeWhiteListFile(null);
     }
 
-    public void writeWhiteListFile(Long id, String key) {
+    public void writeWhiteListFile(TenantCommonExt ext) {
         try {
-            if (WebPluginUtils.checkUserData()) {
-                id = WebPluginUtils.traceTenantId();
-                key = WebPluginUtils.fillTenantCommonExt();
-            }
-            Map<String, Object> result = queryBlackWhiteList("", id);
+            ext = WebPluginUtils.traceTenantCommonExt();
+            Map<String, Object> result = queryBlackWhiteList("",ext);
             if (null != result && result.size() > 0) {
                 File file = new File(whiteListPath);
                 if (!file.exists()) {
@@ -130,7 +130,7 @@ public class WhiteListFileService {
                  * 白名单写入租户key
                  */
                 if (file.exists()) {
-                    file = new File(whiteListPath + key);
+                    file = new File(whiteListPath + ext.getTenantAppKey());
                     if (!file.isFile()) {
                         if (!file.createNewFile()) {
                             throw new RuntimeException("白名单文件：" + file.getPath() + " 创建失败！");
@@ -160,8 +160,8 @@ public class WhiteListFileService {
      * @return 黑白名单列表
      * @author shulie
      */
-    public Map<String, Object> queryBlackWhiteList(String appName, Long uid) {
-        List<AgentWhiteList> agentWhites = agentListWhitelist(uid);
+    public Map<String, Object> queryBlackWhiteList(String appName, TenantCommonExt ext) {
+        List<AgentWhiteList> agentWhites = agentListWhitelist(ext);
         List<Long> ids = agentWhites.stream().map(AgentWhiteList::getWlistId).collect(Collectors.toList());
         List<AgentWhiteList> agentWhiteLists = agentWhites.stream().distinct().collect(Collectors.toList());
         Map<String, Object> resultMap = Maps.newHashMapWithExpectedSize(30);
@@ -175,14 +175,14 @@ public class WhiteListFileService {
             existWhite = whiteListService.getExistWhite(armdString, Lists.newArrayList());
             // todo 这里再获取一次，感觉很多余，但是不改上面的逻辑，所有这里数据再次从新获取，之后可以重构下
             WhitelistSearchParam param = new WhitelistSearchParam();
-            param.setCustomerId(uid);
+            param.setTenantId(ext.getTenantId());
             param.setUseYn(1);
             List<WhitelistResult> results = whiteListDAO.getList(param);
             whitelistMap = results.stream().collect(Collectors.groupingBy(e -> e.getInterfaceName() + "@@" + e.getType()));
         } else {
             // 获取所有白名单，是否有全局属性
             WhitelistSearchParam param = new WhitelistSearchParam();
-            param.setCustomerId(uid);
+            param.setTenantId(ext.getTenantId());
             param.setIsGlobal(true);
             param.setUseYn(1);
             List<WhitelistResult> results = whiteListDAO.getList(param);
@@ -192,7 +192,7 @@ public class WhiteListFileService {
 
         // 获取所有生效效应，是否有局部应用
         WhitelistEffectiveAppSearchParam searchParam = new WhitelistEffectiveAppSearchParam();
-        searchParam.setCustomerId(uid);
+        searchParam.setTenantId(ext.getTenantId());
         // 只加开启的生效应用
         searchParam.setWlistIds(ids);
         List<WhitelistEffectiveAppResult> appResults = whitelistEffectiveAppDao.getList(searchParam);
@@ -242,9 +242,9 @@ public class WhiteListFileService {
             }
         }
         // 新版黑名单
-        List<AgentBlacklistVO> newBlacklist = getNewBlackList(uid);
+        List<AgentBlacklistVO> newBlacklist = getNewBlackList(ext);
         // 老版黑名单
-        List<Map<String, Object>> blackList = getBlackList(uid);
+        List<Map<String, Object>> blackList = getBlackList(ext);
 
         resultMap.put("wLists", wListsResult);
         resultMap.put("bLists", blackList);
@@ -252,8 +252,8 @@ public class WhiteListFileService {
         return resultMap;
     }
 
-    private List<Map<String, Object>> getBlackList(Long uid) {
-        List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList();
+    private List<Map<String, Object>> getBlackList(TenantCommonExt tenantCommonExt) {
+        List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList(tenantCommonExt.getTenantId(),tenantCommonExt.getEnvCode());
         if (CollectionUtils.isEmpty(tbLists)) {
             return Lists.newArrayList();
         }
@@ -264,12 +264,14 @@ public class WhiteListFileService {
         }).collect(Collectors.toList());
     }
 
-    private List<AgentBlacklistVO> getNewBlackList(Long uid) {
-        List<BlacklistResult> results = blackListDAO.getAllEnabledBlockList(null);
+    private List<AgentBlacklistVO> getNewBlackList(TenantCommonExt tenantCommonExt) {
+        List<BlacklistResult> results = blackListDAO.getAllEnabledBlockList(null,tenantCommonExt);
         ApplicationQueryParam param = new ApplicationQueryParam();
         if (CollectionUtils.isEmpty(results)) {
             return Lists.newArrayList();
         }
+        param.setTenantId(tenantCommonExt.getTenantId());
+        param.setEnvCode(tenantCommonExt.getEnvCode());
         List<ApplicationDetailResult> detailResults = applicationDAO.getApplicationList(param);
 
         Map<Long, List<BlacklistResult>> redisMap = results.stream()
@@ -296,9 +298,11 @@ public class WhiteListFileService {
         return vos;
     }
 
-    private List<AgentWhiteList> agentListWhitelist(Long uid) {
+    private List<AgentWhiteList> agentListWhitelist(TenantCommonExt ext) {
 
-        List<String> list = applicationMntDao.queryIdsByNameAndTenant(Lists.newArrayList(), uid);
+
+        List<String> list = applicationMntDao.queryIdsByNameAndTenant(Lists.newArrayList(),
+            ext != null ? ext.getTenantId():null,ext != null ?ext.getEnvCode():null);
         if (CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }

@@ -74,7 +74,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         createParam.setApplicationName(applicationDetailResult.getApplicationName());
         createParam.setDbType(createRequest.getDbType());
         createParam.setDsType(Integer.parseInt(String.valueOf(createRequest.getDsType())));
-        createParam.setTenantId(applicationDetailResult.getCustomerId());
+        createParam.setTenantId(applicationDetailResult.getTenantId());
         WebPluginUtils.fillUserData(createParam);
         syncInfo(createRequest.getApplicationId(), createParam.getApplicationName());
         // 新增配置

@@ -9,10 +9,6 @@ public final class ZkConfigPathConstants {
     public static final String NAME_SPACE = "/takin/config";
 
     /**
-     * 应用配置标识
-     */
-    public static final String APP = "apps";
-    /**
      * 白名单，按应用名保存
      */
     public static final String ALLOW_LIST_PARENT_PATH = "/allow_list";

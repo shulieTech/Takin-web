@@ -789,7 +789,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         WhitelistPartVO vo = new WhitelistPartVO();
         // 生效应用
         WhitelistEffectiveAppSearchParam appSearchParam = new WhitelistEffectiveAppSearchParam();
-        appSearchParam.setCustomerId(WebPluginUtils.traceTenantId());
+        appSearchParam.setTenantId(WebPluginUtils.traceTenantId());
         appSearchParam.setWlistId(wlistId);
         List<WhitelistEffectiveAppResult> appResults = whitelistEffectiveAppDao.getList(appSearchParam);
         vo.setEffectiveAppNames(CollectionUtils.isNotEmpty(appResults) ?
@@ -993,13 +993,13 @@ public class WhiteListServiceImpl implements WhiteListService {
         // 白名单租户数据隔离
         UserExt user = WebPluginUtils.traceUser();
         if (user != null) {
-            param.setCustomerId(WebPluginUtils.traceTenantId());
+            param.setTenantId(WebPluginUtils.traceTenantId());
         }
         PagingList<WhiteListVO> pagingList = whiteListDAO.pagingList(param);
         // 生效应用
         // 获取所有生效效应，是否有局部应用
         WhitelistEffectiveAppSearchParam searchParam = new WhitelistEffectiveAppSearchParam();
-        searchParam.setCustomerId(WebPluginUtils.traceTenantId());
+        searchParam.setTenantId(WebPluginUtils.traceTenantId());
         List<WhitelistEffectiveAppResult> effectiveAppDaoList = whitelistEffectiveAppDao.getList(searchParam);
         Map<Long, List<WhitelistEffectiveAppResult>> appResultsMap = effectiveAppDaoList.stream()
                 .collect(Collectors.groupingBy(WhitelistEffectiveAppResult::getWlistId));

@@ -37,13 +37,13 @@ public class ConfigureJob implements SimpleJob {
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         if(CollectionUtils.isEmpty(tenantInfoExts)) {
             // 私有化 + 开源
-            applicationService.configureTasks();
+            applicationService.configureTasks(null);
         }else {
             // saas
             tenantInfoExts.forEach(t -> {
                 // 根据环境 分线程
                 t.getEnvs().forEach(e ->
-                    jobThreadPool.execute(() ->applicationService.configureTasks(new TenantCommonExt(t.getTenantId(),t.getUserAppKey(),e.getEnvCode()))));
+                    jobThreadPool.execute(() ->applicationService.configureTasks(new TenantCommonExt(t.getTenantId(),t.getTenantAppKey(),e.getEnvCode()))));
             });
         }
 

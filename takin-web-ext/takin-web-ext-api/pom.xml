@@ -5,14 +5,14 @@
     <parent>
         <artifactId>takin-web-ext</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-2.0.1</version>
+        <version>takin-web-5.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>takin-web-ext-api</artifactId>
-    <version>takin-web-2.0.1</version>
+    <version>takin-web-5.0.1-SNAPSHOT</version>
     <dependencies>
 
         <dependency>
@@ -70,6 +70,18 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

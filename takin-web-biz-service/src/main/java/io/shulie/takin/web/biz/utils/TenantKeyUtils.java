@@ -10,9 +10,9 @@ public class TenantKeyUtils {
 
     public static String getTenantKey(){
         StringBuilder builder=new StringBuilder();
-        builder.append(WebPluginUtils.getTenantId());
+        builder.append(WebPluginUtils.traceTenantId());
         builder.append(":");
-        builder.append("envCode");
+        builder.append(WebPluginUtils.traceEnvCode());
         builder.append(":");
         return builder.toString();
     }

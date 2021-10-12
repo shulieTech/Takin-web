@@ -20,7 +20,6 @@ import com.pamirs.takin.common.constant.AppAccessTypeEnum;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.common.constant.Constants;
-import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
@@ -83,6 +82,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -159,8 +159,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
      */
     @Override
     public WebResponse<StartResponse> startTask(SceneActionParam param) {
-
         SceneManageIdReq req = new SceneManageIdReq();
+        BeanUtils.copyProperties(param,req);
         req.setId(param.getSceneId());
         ResponseResult<SceneManageWrapperResp> resp = sceneManageApi.getSceneDetail(req);
         if (!resp.getSuccess()) {
@@ -203,7 +203,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                     }}).collect(Collectors.toList()));
             }
         }
-        param.setCreatorId(WebPluginUtils.getUserId());
+        param.setCreatorId(WebPluginUtils.traceUserId());
         param.setRequestUrl(RemoteConstant.SCENE_TASK_START_URL);
         param.setHttpMethod(HttpMethod.POST);
         //封装
@@ -361,7 +361,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         req.setSceneId(request.getSceneId());
         req.setReportId(request.getReportId());
         req.setTpsNum(request.getTargetTps());
-        req.setLicense(WebPluginUtils.getTenantUserAppKey());
+        //req.setLicense(WebPluginUtils.getTenantUserAppKey());
         ResponseResult responseResult = cloudTaskApi.updateSceneTaskTps(req);
         if (responseResult == null || !responseResult.getSuccess()) {
             throw new RuntimeException("修改TPS失败");
@@ -373,7 +373,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         SceneTaskQueryTpsReq req = new SceneTaskQueryTpsReq();
         req.setSceneId(sceneId);
         req.setReportId(reportId);
-        req.setLicense(WebPluginUtils.getTenantUserAppKey());
+        //req.setLicense(WebPluginUtils.getTenantUserAppKey());
         ResponseResult<SceneTaskAdjustTpsResp> respResponseResult = cloudTaskApi.queryAdjustTaskTps(req);
         if (respResponseResult != null && respResponseResult.getData() != null) {
             return respResponseResult.getData().getTotalTps();

@@ -11,7 +11,7 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.BusinessQueryVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
 import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.pojo.openapi.converter.LinkManageOpenApiConverter;
 import io.shulie.takin.web.biz.pojo.openapi.response.linkmanage.BusinessActiveViewListOpenApiResp;
 import io.shulie.takin.web.biz.pojo.openapi.response.linkmanage.BusinessFlowOpenApiResp;
@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2019/11/29 14:05
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_OPEN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_OPEN_API_URL)
 @Api(tags = "linkmanage", value = "链路标注")
 public class LinkManageOpenApi {
 

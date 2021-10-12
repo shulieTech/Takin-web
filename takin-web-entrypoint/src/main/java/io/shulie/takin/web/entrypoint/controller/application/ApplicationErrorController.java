@@ -3,7 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.application;
 import java.util.List;
 
 import io.shulie.takin.web.biz.service.application.ApplicationErrorService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationErrorQueryInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationErrorOutput;
 import io.swagger.annotations.Api;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 应用错误信息
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "ApplicationErrorController", value = "应用错误信息")
 public class ApplicationErrorController {
 

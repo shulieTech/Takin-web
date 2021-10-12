@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.linkManage.impl;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -169,32 +170,32 @@ public class LinkManageServiceImpl implements LinkManageService {
         if (CollectionUtils.isEmpty(childList)) {
             return;
         }
-        List<Category> filterChildList = childList.stream().filter(distinctByName(c -> c.getApplicationName())).collect(
+        List<Category> filterChildList = childList.stream().filter(distinctByName(Category::getApplicationName)).collect(
             Collectors.toList());
         int index = 0;
-        for (int i = 0; i < filterChildList.size(); i++) {
+        for (Category category : filterChildList) {
             TopologicalGraphNode childNode = new TopologicalGraphNode();
             childNode.setKey(parentNode.getKey() + "." + index);
             NodeClassEnum nodeClassEnum = getNodeClassEnumByApplicationName(
-                filterChildList.get(i).getApplicationName());
+                category.getApplicationName());
             MiddlewareTypeEnum middlewareTypeEnum = getMiddlewareTypeEnumByApplicationName(
-                filterChildList.get(i).getApplicationName());
+                category.getApplicationName());
             childNode.setNodeType(nodeClassEnum.getCode());
             childNode.setNodeClass(nodeClassEnum.getDesc());
             if (middlewareTypeEnum != null) {
                 childNode.setMiddlewareType(middlewareTypeEnum.getCode());
                 childNode.setMiddlewareName(middlewareTypeEnum.getDesc());
             }
-            childNode.setNodeName(filterChildList.get(i).getApplicationName());
-            childNode.setNodeList(filterChildList.get(i).getNodeList());
-            childNode.setUnKnowNodeList(filterChildList.get(i).getUnKnowNodeList());
+            childNode.setNodeName(category.getApplicationName());
+            childNode.setNodeList(category.getNodeList());
+            childNode.setUnKnowNodeList(category.getUnKnowNodeList());
             nodes.add(childNode);
             TopologicalGraphRelation relation = new TopologicalGraphRelation();
             relation.setFrom(parentNode.getKey());
             relation.setTo(childNode.getKey());
             relations.add(relation);
-            if (CollectionUtils.isNotEmpty(filterChildList.get(i).getChildren())) {
-                iteratorChildNodes(childNode, filterChildList.get(i).getChildren(), nodes, relations);
+            if (CollectionUtils.isNotEmpty(category.getChildren())) {
+                iteratorChildNodes(childNode, category.getChildren(), nodes, relations);
             }
             index++;
         }
@@ -355,8 +356,10 @@ public class LinkManageServiceImpl implements LinkManageService {
         queryVo.setDomain(vo.getDomain());
         List<BusinessLinkDto> queryResult = tBusinessLinkManageTableMapper.selectBussinessLinkListBySelective2(queryVo);
         //用户ids
-        List<Long> userIds = queryResult.stream().filter(data -> null != data.getUserId()).map(
-            BusinessLinkDto::getUserId).collect(Collectors.toList());
+        List<Long> userIds = queryResult.stream()
+            .map(BusinessLinkDto::getUserId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
         //用户信息Map key:userId  value:user对象
         Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
 
@@ -456,7 +459,7 @@ public class LinkManageServiceImpl implements LinkManageService {
                         getMiddleWareResponses(linkManageResult.getApplicationName()));
                     //处理系统流程前端展示数据
                     TechLinkResponse techLinkResponse = businessLinkResponse.getTechLinkResponse();
-                    String linkBody = null;
+                    String linkBody;
                     if (StringUtils.isNotBlank(techLinkResponse.getBody_after())) {
                         linkBody = techLinkResponse.getBody_after();
                     } else {
@@ -587,8 +590,8 @@ public class LinkManageServiceImpl implements LinkManageService {
             }
             single.setTechLinkCount(count);
             single.setBusinessLinkCount(count);
-            String userName = WebPluginUtils.getUserName(single.getUserId(),userExtMap);
-            single.setUserName(userName) ;
+            String userName = WebPluginUtils.getUserName(single.getUserId(), userExtMap);
+            single.setUserName(userName);
             WebPluginUtils.fillQueryResponse(single);
             return single;
         }).collect(Collectors.toList());
@@ -597,13 +600,13 @@ public class LinkManageServiceImpl implements LinkManageService {
     }
 
     @Override
-    public Response getMiddleWareInfo(StatisticsQueryVo vo) {
+    public Response<List<LinkRemarkmiddleWareDto>> getMiddleWareInfo(StatisticsQueryVo vo) {
         try {
             List<LinkRemarkmiddleWareDto> list = tMiddlewareInfoMapper.selectforstatistics(vo);
             List<LinkRemarkmiddleWareDto> pageData = PageUtils.getPage(true, vo.getCurrentPage(), vo.getPageSize(),
                 list);
 
-            pageData = pageData.stream().map(
+            pageData = pageData.stream().peek(
                 single -> {
                     long id = single.getMiddleWareId();
                     List<String> techLinkIds = tMiddlewareLinkRelateMapper.selectTechIdsByMiddleWareIds(id);
@@ -613,13 +616,12 @@ public class LinkManageServiceImpl implements LinkManageService {
                         int countBusinessProcess = tSceneLinkRelateMapper.countByTechLinkIds(techLinkIds);
                         single.setBussinessProcessCount(String.valueOf(countBusinessProcess));
                     }
-                    return single;
                 }
             ).collect(Collectors.toList());
 
             return Response.success(pageData, CollectionUtils.isEmpty(list) ? 0 : list.size());
         } catch (Exception e) {
-            return Response.fail("0", e.getMessage(), null);
+            return Response.fail("0", e.getMessage());
         }
 
     }
@@ -666,7 +668,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         dto.setBusinessCover(businessCoverList);
 
         List<SystemProcessDto> systemProcessList = Lists.newArrayList();
-        dateRange.stream().forEach(date -> {
+        dateRange.forEach(date -> {
             SystemProcessDto systemProcessDto = new SystemProcessDto();
             systemProcessDto.setMonth(DateUtils.dateToString(date));
             long count = tLinkManageTableMapper.countSystemProcessByTime(date);
@@ -676,7 +678,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         dto.setSystemProcess(systemProcessList);
 
         List<ApplicationRemoteDto> applicationRemoteList = Lists.newArrayList();
-        dateRange.stream().forEach(date -> {
+        dateRange.forEach(date -> {
             ApplicationRemoteDto applicationRemoteDto = new ApplicationRemoteDto();
             applicationRemoteDto.setMonth(DateUtils.dateToString(date));
             long count = tLinkManageTableMapper.countApplicationByTime(date);
@@ -699,7 +701,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         long applicationTotalCountNum = tLinkManageTableMapper.countTotal();
         String applicationTotalCount = String.valueOf(applicationTotalCountNum);
         String applicationPressureCount = "0";
-        String applicationPressureRate = (applicationTotalCountNum == 0L || applicationPressureCount.equals("0")) ?
+        String applicationPressureRate = (applicationTotalCountNum == 0L || "0".equals(applicationPressureCount)) ?
             "0" : String.valueOf(applicationTotalCountNum / Long.parseLong(applicationPressureCount));
         dto.setApplicationTotalCount(applicationTotalCount);
         dto.setApplicationPressureCount(applicationPressureCount);
@@ -726,10 +728,9 @@ public class LinkManageServiceImpl implements LinkManageService {
         }
         //查中间件信息
         List<Long> midllewareIdslong = middleWareIds.stream()
-            .map(id -> Long.parseLong(id)).collect(Collectors.toList());
-        List<MiddleWareEntity> middleWareEntities = tMiddlewareInfoMapper.selectByIds(midllewareIdslong);
+            .map(Long::parseLong).collect(Collectors.toList());
 
-        result = middleWareEntities;
+        result = tMiddlewareInfoMapper.selectByIds(midllewareIdslong);
 
         return result;
     }
@@ -741,7 +742,7 @@ public class LinkManageServiceImpl implements LinkManageService {
             .selectBySelective(new TMiddlewareInfo());
 
         //按照中间件类型去重
-        infos.stream().forEach(info -> {
+        infos.forEach(info -> {
             MiddleWareEntity entity = new MiddleWareEntity();
             entity.setId(info.getId());
             entity.setMiddleWareType(info.getMiddlewareType());
@@ -751,8 +752,8 @@ public class LinkManageServiceImpl implements LinkManageService {
         });
         List<MiddleWareEntity> distinct = result.stream()
             .collect(Collectors.collectingAndThen(Collectors.toCollection(
-                () -> new TreeSet<>(
-                    Comparator.comparing(MiddleWareEntity::getMiddleWareType))),
+                    () -> new TreeSet<>(
+                        Comparator.comparing(MiddleWareEntity::getMiddleWareType))),
                 ArrayList::new));
 
         return distinct;
@@ -766,7 +767,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         queryParam.setSystemProcessName(systemProcessName);
         List<LinkManageResult> linkManageResultList = linkManageDAO.selectList(queryParam);
         if (CollectionUtils.isNotEmpty(linkManageResultList)) {
-            linkManageResultList.stream().forEach(table -> {
+            linkManageResultList.forEach(table -> {
                 SystemProcessIdAndNameDto dto = new SystemProcessIdAndNameDto();
                 dto.setId(String.valueOf(table.getLinkId()));
                 dto.setSystemProcessName(table.getLinkName());
@@ -786,7 +787,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         List<LinkManageTable> tables =
             tLinkManageTableMapper.selectBySelective(serachTable);
         if (CollectionUtils.isNotEmpty(tables)) {
-            tables.stream().forEach(table -> {
+            tables.forEach(table -> {
                 SystemProcessIdAndNameDto dto = new SystemProcessIdAndNameDto();
                 dto.setId(String.valueOf(table.getLinkId()));
                 dto.setSystemProcessName(table.getLinkName());
@@ -799,8 +800,7 @@ public class LinkManageServiceImpl implements LinkManageService {
 
     @Override
     public List<String> entranceFuzzSerach(String entrance) {
-        List<String> entrances = tLinkManageTableMapper.entranceFuzzSerach(entrance);
-        return entrances;
+        return tLinkManageTableMapper.entranceFuzzSerach(entrance);
     }
 
     @Override
@@ -881,17 +881,16 @@ public class LinkManageServiceImpl implements LinkManageService {
     /**
      * 解析树并返回关联表封装集合
      *
-     * @return
-     * @throws Exception
+     * @return -
      */
-    private List<SceneLinkRelate> parsingTree(BusinessFlowVo vo, Long sceneId) throws Exception {
+    private List<SceneLinkRelate> parsingTree(BusinessFlowVo vo, Long sceneId) {
 
         List<SceneLinkRelate> relates = Lists.newArrayList();
         //根节点集合
         List<BusinessFlowTree> roots = vo.getRoot();
-        for (int i = 0; i < roots.size(); i++) {
+        for (BusinessFlowTree businessFlowTree : roots) {
             String parentId = null;
-            BusinessFlowTree root = roots.get(i);
+            BusinessFlowTree root = businessFlowTree;
             String businessId = root.getId();
             if (StringUtils.isBlank(businessId)) {
                 continue;
@@ -944,7 +943,7 @@ public class LinkManageServiceImpl implements LinkManageService {
             .collect(Collectors.groupingBy(
                 BusinessLinkManageTable::getLinkId));
 
-        relates.stream().forEach(
+        relates.forEach(
             relate -> {
                 Long businessLinkId = Long.parseLong(relate.getBusinessLinkId());
                 List<BusinessLinkManageTable> lists = map.get(businessLinkId);
@@ -962,13 +961,13 @@ public class LinkManageServiceImpl implements LinkManageService {
      * @param parentId 父亲节点
      * @param sceneId  业务流程id
      * @param result   返回结果的集合
-     * @return
+     * @return -
      */
     private List<SceneLinkRelate> parsing(List<BusinessFlowTree> children, String parentId, Long sceneId,
         List<SceneLinkRelate> result) {
-        for (int i = 0; i < children.size(); i++) {
+        for (BusinessFlowTree businessFlowTree : children) {
             SceneLinkRelate relate = new SceneLinkRelate();
-            BusinessFlowTree child = children.get(i);
+            BusinessFlowTree child = businessFlowTree;
             String businessId = child.getId();
             if (StringUtils.isNotBlank(businessId)) {
                 relate.setBusinessLinkId(child.getId());
@@ -979,7 +978,7 @@ public class LinkManageServiceImpl implements LinkManageService {
                 result.add(relate);
             }
 
-            List<BusinessFlowTree> lowerChildren = children.get(i).getChildren();
+            List<BusinessFlowTree> lowerChildren = businessFlowTree.getChildren();
             if (CollectionUtils.isNotEmpty(lowerChildren)) {
                 parsing(lowerChildren, child.getId(), sceneId, result);
             }
@@ -1015,10 +1014,10 @@ public class LinkManageServiceImpl implements LinkManageService {
         dto.setRoots(roots);
 
         //中间件信息
-        List<String> techLinkIds = relates.stream().map(relate -> relate.getTechLinkId()).collect(Collectors.toList());
+        List<String> techLinkIds = relates.stream().map(SceneLinkRelate::getTechLinkId).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(techLinkIds)) {
             List<String> middleWareIdStrings = tMiddlewareLinkRelateMapper.selectMiddleWareIdsByTechIds(techLinkIds);
-            List<Long> middleWareIds = middleWareIdStrings.stream().map(single -> Long.parseLong(single)).collect(
+            List<Long> middleWareIds = middleWareIdStrings.stream().map(Long::parseLong).collect(
                 Collectors.toList());
 
             List<MiddleWareEntity> middleWareEntityList = Lists.newArrayList();
@@ -1188,18 +1187,15 @@ public class LinkManageServiceImpl implements LinkManageService {
             .selectBySelective(new TMiddlewareInfo());
 
         //按照中间件类型去重
-        infos.stream().forEach(single -> {
+        infos.forEach(single -> {
             MiddleWareNameDto entity = new MiddleWareNameDto();
             entity.setValue(single.getMiddlewareName());
             entity.setLabel(single.getMiddlewareName());
             result.add(entity);
         });
-        List<MiddleWareNameDto> distinct = result.stream()
-            .collect(Collectors.collectingAndThen(Collectors.toCollection(
-                () -> new TreeSet<>(
-                    Comparator.comparing(MiddleWareNameDto::getLabel))),
-                ArrayList::new));
-        return distinct;
+        return result.stream()
+            .collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(
+                Comparator.comparing(MiddleWareNameDto::getLabel))), ArrayList::new));
     }
 
     @Override
@@ -1212,7 +1208,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         List<MiddleWareResponse> middleWareResponses = Lists.newArrayList();
         List<AgentPluginSupportResponse> supportList = agentPluginSupportService.queryAgentPluginSupportList();
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(
-            Arrays.asList(applicationName));
+            Collections.singletonList(applicationName));
         if (CollectionUtils.isEmpty(applicationResultList)) {
             return middleWareResponses;
         }

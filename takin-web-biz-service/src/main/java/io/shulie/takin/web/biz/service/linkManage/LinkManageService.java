@@ -12,6 +12,7 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.SystemProcessIdAndNameDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.TopologicalGraphVo;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkHistoryInfoDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkDto;
+import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkmiddleWareDto;
 import com.pamirs.takin.entity.domain.entity.linkmanage.statistics.StatisticsQueryVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
@@ -60,7 +61,7 @@ public interface LinkManageService {
      */
     Response<List<SceneDto>> getScenes(SceneQueryVo vo);
 
-    Response getMiddleWareInfo(StatisticsQueryVo vo);
+    Response<List<LinkRemarkmiddleWareDto>> getMiddleWareInfo(StatisticsQueryVo vo);
 
     LinkRemarkDto getstatisticsInfo();
 

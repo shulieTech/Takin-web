@@ -94,8 +94,8 @@ public class WhitelistEffectiveAppDaoImpl extends ServiceImpl<WhitelistEffective
             return;
         }
         LambdaQueryWrapper<WhitelistEffectiveAppEntity> wrapper = this.getLambdaQueryWrapper();
-        if(param.getCustomerId() != null) {
-            wrapper.eq(WhitelistEffectiveAppEntity::getCustomerId, param.getCustomerId());
+        if(param.getTenantId() != null) {
+            wrapper.eq(WhitelistEffectiveAppEntity::getCustomerId, param.getTenantId());
         }
         if(param.getUserId() != null) {
             wrapper.eq(WhitelistEffectiveAppEntity::getUserId, param.getUserId());
@@ -113,8 +113,8 @@ public class WhitelistEffectiveAppDaoImpl extends ServiceImpl<WhitelistEffective
     @Override
     public void delete(WhitelistEffectiveAppDeleteParam param) {
         LambdaQueryWrapper<WhitelistEffectiveAppEntity> wrapper = this.getLambdaQueryWrapper();
-        if(param.getCustomerId() != null) {
-            wrapper.eq(WhitelistEffectiveAppEntity::getCustomerId, param.getCustomerId());
+        if(param.getTenantId() != null) {
+            wrapper.eq(WhitelistEffectiveAppEntity::getCustomerId, param.getTenantId());
         }
         if(param.getUserId() != null) {
             wrapper.eq(WhitelistEffectiveAppEntity::getUserId, param.getUserId());

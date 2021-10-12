@@ -3,6 +3,7 @@ package io.shulie.takin.web.ext.entity.tenant;
 import java.util.List;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author by: hezhongqi
@@ -21,6 +22,11 @@ public class TenantInfoExt {
      * 租户名
      */
     private String tenantName;
+
+    /**
+     * 租户名
+     */
+    private String tenantNick;
     /**
      * 租户代码
      */
@@ -28,13 +34,14 @@ public class TenantInfoExt {
     /**
      * 租户key
      */
-    private String userAppKey;
+    private String tenantAppKey;
     /**
      * 租户环境
      */
     private List<TenantEnv> envs;
 
     @Data
+    @NoArgsConstructor
     public class TenantEnv {
         /**
          * 环境代码

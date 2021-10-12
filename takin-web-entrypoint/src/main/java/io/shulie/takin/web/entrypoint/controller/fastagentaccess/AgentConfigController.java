@@ -3,7 +3,6 @@ package io.shulie.takin.web.entrypoint.controller.fastagentaccess;
 import java.util.List;
 import java.util.Map;
 
-import io.shulie.takin.cloud.common.constants.APIUrls;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -19,6 +18,7 @@ import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigStatusCo
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.PluginLoadListResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AmdbManageService;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2021-08-12 18:54:54
  */
 @RestController
-@RequestMapping(APIUrls.TRO_API_URL + "fast/agent/access/config")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "fast/agent/access/config")
 @Api(tags = "接口：agent配置")
 public class AgentConfigController {
 

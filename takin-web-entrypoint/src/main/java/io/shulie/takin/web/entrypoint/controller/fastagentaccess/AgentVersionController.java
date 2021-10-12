@@ -1,12 +1,10 @@
 package io.shulie.takin.web.entrypoint.controller.fastagentaccess;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
-import io.shulie.takin.cloud.common.constants.APIUrls;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -20,6 +18,7 @@ import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
 import io.shulie.takin.web.biz.utils.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentDownloadUrlVerifyUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.ResponseFileUtil;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -43,7 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @date 2021-08-11 19:43:34
  */
 @RestController
-@RequestMapping(APIUrls.TRO_API_URL + "fast/agent/access")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "fast/agent/access")
 @Api(tags = "接口：agent版本管理")
 @Validated
 @Slf4j
@@ -98,8 +97,7 @@ public class AgentVersionController {
         moduleCode = ModuleCode.AGENT_VERSION,
         needAuth = ActionTypeEnum.DOWNLOAD
     )
-    public void getFile(@RequestParam String version, HttpServletResponse response)
-        throws FileNotFoundException {
+    public void getFile(@RequestParam String version, HttpServletResponse response) {
         ResponseFileUtil.transfer(agentVersionService.getFile(version), false, null, false, response);
     }
 

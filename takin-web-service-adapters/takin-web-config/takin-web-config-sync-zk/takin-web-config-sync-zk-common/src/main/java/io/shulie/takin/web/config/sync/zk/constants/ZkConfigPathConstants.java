@@ -7,6 +7,11 @@ package io.shulie.takin.web.config.sync.zk.constants;
 public final class ZkConfigPathConstants {
 
     public static final String NAME_SPACE = "/takin/config";
+
+    /**
+     * 应用配置标识
+     */
+    public static final String APP = "apps";
     /**
      * 白名单，按应用名保存
      */

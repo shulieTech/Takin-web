@@ -994,7 +994,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         debugCloudRequest.setScriptId(scriptDeploy.getScriptId());
         debugCloudRequest.setScriptType(scriptDeploy.getType());
         debugCloudRequest.setScriptName(scriptDeploy.getName());
-        debugCloudRequest.setCreatorId(WebPluginUtils.getUserId());
+        debugCloudRequest.setCreatorId(WebPluginUtils.traceUserId());
         // 插件ids
         List<PluginConfigDetailResponse> pluginConfigs = ScriptManageUtil.listPluginConfigs(scriptDeploy.getFeature());
         if (CollectionUtils.isNotEmpty(pluginConfigs)) {

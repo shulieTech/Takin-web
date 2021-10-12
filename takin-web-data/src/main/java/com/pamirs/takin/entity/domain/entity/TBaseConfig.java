@@ -191,6 +191,7 @@ public class TBaseConfig extends BaseEntity {
      * @return the value of t_base_config.UPDATE_TIME
      * @mbggenerated
      */
+    @Override
     public Date getUpdateTime() {
         return updateTime;
     }
@@ -202,6 +203,7 @@ public class TBaseConfig extends BaseEntity {
      * @param updateTime the value for t_base_config.UPDATE_TIME
      * @mbggenerated
      */
+    @Override
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }

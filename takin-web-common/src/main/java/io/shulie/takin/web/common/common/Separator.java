@@ -11,8 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 
 public enum Separator {
     Separator1(1,"/"),
-    Separator2(2,"_"),
-    Separator3(3,"-");
+    Separator2(2,":"),
+    Separator3(3,"_"),
+    Separator4(4,"-");
 
     private int code;
     private String value;
@@ -38,6 +39,10 @@ public enum Separator {
         this.code = code;
     }
 
+    /**
+     * 默认使用冒号 :
+     * @return
+     */
     public static Separator defautSeparator(){
         return Separator2;
     }

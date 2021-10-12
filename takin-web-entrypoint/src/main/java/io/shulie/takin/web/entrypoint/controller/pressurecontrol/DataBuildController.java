@@ -10,7 +10,7 @@ import com.pamirs.takin.common.constant.ResponseConstant;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import io.shulie.takin.web.biz.service.PressureReadyService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,11 +31,11 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月13日
+ * @date 2018年4月13日
  */
 @Api(tags = "数据构建接口")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class DataBuildController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(DataBuildController.class);
@@ -50,8 +50,8 @@ public class DataBuildController {
      * @return 成功, 则返回构建列表信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_QUERY_BUILDINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_QUERY_BUILDINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryBuildinfo(@RequestBody Map<String, Object> paramMap) {
         try {
             return ResponseOk.create(pressureReadyService.queryBuildinfo(paramMap));
@@ -69,8 +69,8 @@ public class DataBuildController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_UPDATE_SCRIPTSTATUS_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_UPDATE_SCRIPTSTATUS_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateScriptExcuteStatus(@RequestBody Map<String, Object> map) {
         if (map == null || map.isEmpty() || StringUtils.isEmpty(MapUtils.getString(map, "applicationId"))) {
             return ResponseError.create(TakinErrorEnum.BUILDDATA_UPDATE_SCRIPTSTATUS_PARAMLACK.getErrorCode(),
@@ -95,8 +95,8 @@ public class DataBuildController {
      * @return 成功, 则返回脚本构建状态信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_QUERY_SCRIPTBUILDSTATUS_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_QUERY_SCRIPTBUILDSTATUS_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryScriptExcuteStatus(@RequestParam("applicationId") String applicationId,
         @RequestParam("scriptType") String scriptType
     ) {
@@ -120,8 +120,8 @@ public class DataBuildController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_QUERY_BATCHCLEAN_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_QUERY_BATCHCLEAN_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> batchClean(@RequestParam("applicationIds") String applicationIds) {
         try {
             pressureReadyService.batchClean(applicationIds);
@@ -140,8 +140,8 @@ public class DataBuildController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_EXECUTE_SCRIPT_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_EXECUTE_SCRIPT_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> executeScript(@RequestBody Map<String, Object> paraMap) {
         try {
             pressureReadyService.executeScriptPreCheck(paraMap);
@@ -163,8 +163,8 @@ public class DataBuildController {
      * @return 成功, 更新所有的应用为成功状态, 则返回成功信息; 失败则返回构建应用失败错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_DEBUG_SWITCH_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_BUILDDATA_DEBUG_SWITCH_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> debugSwitch(@RequestBody List<Map<String, Object>> switchList) {
         try {
             pressureReadyService.debugSwitch(switchList, PressureOperateEnum.DATA_BUILD_DEBUG_SWITCH);

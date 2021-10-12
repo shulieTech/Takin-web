@@ -8,11 +8,12 @@ import com.alibaba.fastjson.JSONObject;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.Constants;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.config.entity.AllowList;
 import io.shulie.takin.web.config.sync.api.AllowListSyncService;
 import io.shulie.takin.web.config.sync.zk.constants.ZkConfigPathConstants;
 import io.shulie.takin.web.config.sync.zk.impl.client.ZkClient;
-import org.apache.commons.lang.StringUtils;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -28,11 +29,11 @@ public class AllowListSyncServiceImpl implements AllowListSyncService {
     private ZkClient zkClient;
 
     @Override
-    public void syncAllowList(String namespace, String applicationName, List<AllowList> newAllowLists) {
+    public void syncAllowList(TenantCommonExt commonExt, String applicationName, List<AllowList> newAllowLists) {
         if (newAllowLists == null) {
             throw new RuntimeException("传入的数据为空");
         }
-        namespace = StringUtils.isBlank(namespace) ? Constants.DEFAULT_NAMESPACE : namespace;
+        String namespace = commonExt != null ? CommonUtil.getZkTenantAndEnvPath(ZkConfigPathConstants.APP,commonExt):Constants.DEFAULT_NAMESPACE;
         String path = "/" + namespace + ZkConfigPathConstants.ALLOW_LIST_PARENT_PATH + "/" + applicationName;
         // 空数组，我们认为是清空
         if (CollectionUtils.isEmpty(newAllowLists)) {

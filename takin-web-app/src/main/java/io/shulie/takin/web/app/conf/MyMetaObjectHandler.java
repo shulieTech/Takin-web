@@ -16,8 +16,8 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void insertFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, "customerId", Long.class, WebPluginUtils.getTenantId());
-        this.strictInsertFill(metaObject, "userId", Long.class, WebPluginUtils.getUserId());
+        this.strictInsertFill(metaObject, "customerId", Long.class, WebPluginUtils.traceTenantId());
+        this.strictInsertFill(metaObject, "userId", Long.class, WebPluginUtils.traceUserId());
     }
 
     @Override

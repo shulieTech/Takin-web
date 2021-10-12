@@ -103,7 +103,7 @@ public class ShadowTableServiceImpl extends AbstractDsService {
 
     private void syncInfo(Long applicationId, String applicationName) {
         //同步配置
-        configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), applicationId, null);
+        configSyncService.syncShadowDB(WebPluginUtils.fillTenantCommonExt(), applicationId, null);
         //修改应用状态
         applicationService.modifyAccessStatus(String.valueOf(applicationId),
             AppAccessTypeEnum.UNUPLOAD.getValue(), null);

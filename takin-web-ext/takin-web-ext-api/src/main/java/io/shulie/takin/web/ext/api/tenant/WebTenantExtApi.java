@@ -18,18 +18,43 @@ public interface WebTenantExtApi extends ExtensionPoint {
      * @param tenantId
      * @return
      */
-    TenantInfoExt getTenantInfo(String tenantId);
+    TenantInfoExt getTenantInfo(Long tenantId);
 
     /**
-     * 根据userappkey 获取 租户信息
+     * 根据 userAppKey  envCode 获取 租户信息
      * @param userAppKey
+     * @param envCode
      * @return
      */
-    TenantInfoExt getTenantInfoByUserAppKey(String userAppKey);
+    TenantInfoExt getTenantInfo(String userAppKey,String envCode);
 
     /**
      * 获取租户列表
      * @return
      */
     List<TenantInfoExt> getTenantInfoList();
+
+    /**
+     * 判断租户,默认存在
+     * @param userAppKey
+     * @param envCode
+     * @return
+     */
+     Boolean isExistTenant(String userAppKey,String envCode);
+
+    /**
+     * 获取默认环境
+     * @param userAppKey
+     * @param tenantCode
+     * @return
+     */
+    String getDefaultEnvCode(String userAppKey, String tenantCode);
+
+    /**
+     * 获取默认租户用户
+     * @param userAppKey
+     * @param tenantCode
+     * @return
+     */
+    Long getDefaultUserId(String userAppKey, String tenantCode);
 }

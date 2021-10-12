@@ -1,4 +1,4 @@
-# !/bin/bash
+#!/bin/bash
 
 # 远程分支
 BRANCH_ORIGIN_PROD="release/takin-web_release_prod"

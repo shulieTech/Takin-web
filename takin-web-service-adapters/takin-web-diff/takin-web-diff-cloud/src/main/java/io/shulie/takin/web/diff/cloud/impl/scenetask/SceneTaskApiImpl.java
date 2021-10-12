@@ -49,7 +49,7 @@ public class SceneTaskApiImpl implements SceneTaskApi {
 
     @Override
     public ResponseResult<SceneJobStateResp> checkJobStateStatus(SceneManageIdReq req) {
-        return cloudTaskApi.checkSceneJobSstatus(req);
+        return cloudTaskApi.checkSceneJobStatus(req);
     }
 
     @Override

@@ -15,7 +15,7 @@ import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
 import io.shulie.takin.web.biz.pojo.openapi.request.activity.ActivityCreateApiRequest;
 import io.shulie.takin.web.biz.pojo.openapi.response.activity.ActivityCreateApiResponse;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.LinkManageTableMapper;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * create: 2021-01-20
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_OPEN_API_URL + "/activities")
+@RequestMapping(ApiUrls.TAKIN_OPEN_API_URL + "/activities")
 public class ActivityOpenApi {
 
     @Resource

@@ -51,7 +51,7 @@ public class PerformanceAnalyzeJob implements SimpleJob {
                 // 根据环境 分线程
                 t.getEnvs().forEach(e ->
                     jobThreadPool.execute(() -> threadAnalyService.clearData(
-                        Integer.valueOf(second),new TenantCommonExt(t.getTenantId(),t.getUserAppKey(),e.getEnvCode()))));
+                        Integer.valueOf(second),new TenantCommonExt(t.getTenantId(),t.getTenantAppKey(),e.getEnvCode()))));
             });
 
         }

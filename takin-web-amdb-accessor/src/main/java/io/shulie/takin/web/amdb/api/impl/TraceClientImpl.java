@@ -60,11 +60,11 @@ public class TraceClientImpl implements TraceClient {
         // 默认
         dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
         dto.setEntranceList(this.getEntryListString(dto.getEntranceRuleDTOS()));
-        dto.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        dto.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
         dto.setEnvCode("envCode");
         String url = properties.getUrl().getAmdb() + ENTRY_TRACE_BY_TASK_ID_PATH;
         try {
-            AmdbResult<List<EntryTraceInfoDTO>> result = AmdbHelper.newInStance().url(url)
+            AmdbResult<List<EntryTraceInfoDTO>> result = AmdbHelper.builder().url(url)
                     .param(dto)
                     .eventName("通过taskId查询链路列表")
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
@@ -73,8 +73,7 @@ public class TraceClientImpl implements TraceClient {
             return PagingList.of(result.getData(), result.getTotal());
 
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),e);
         }
     }
 
@@ -92,12 +91,12 @@ public class TraceClientImpl implements TraceClient {
             dto.setEntranceList(this.getEntryListString(query.getEntranceRuleDTOS()));
             dto.setCurrentPage(query.getPageNum());
             dto.setPageSize(query.getPageSize());
-            dto.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+            dto.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
             dto.setEnvCode("envCode");
             dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
             //固定查询影子链路明细数据
             dto.setClusterTest(1);
-            AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.newInStance().url(url)
+            AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.builder().url(url)
                     .param(dto)
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
                     .eventName("查询链路列表")
@@ -115,8 +114,7 @@ public class TraceClientImpl implements TraceClient {
                 return PagingList.of(list, response.getTotal());
             }
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),e);
         }
         return PagingList.empty();
     }
@@ -125,15 +123,14 @@ public class TraceClientImpl implements TraceClient {
     public RpcStack getTraceDetailById(String traceId) {
         try {
             String url = properties.getUrl().getAmdb() + QUERY_TRACE_PATH.replace("@TraceId@", traceId);
-            url = url+"&userAppKey="+WebPluginUtils.getTenantUserAppKey()+"&envCode="+"envCode";
-            AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.newInStance().url(url)
+            url = url+"&userAppKey="+WebPluginUtils.fillTenantCommonExt()+"&envCode="+"envCode";
+            AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.builder().url(url)
                     .eventName("查询Trace调用栈明细")
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
                     .list(RpcBased.class);
             return ProtocolParserFactory.getFactory().parseRpcStackByRpcBase(traceId, amdbResponse.getData());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),e);
         }
     }
 
@@ -141,15 +138,14 @@ public class TraceClientImpl implements TraceClient {
     public List<RpcBased> getTraceBaseById(String traceId) {
         try {
             String url = properties.getUrl().getAmdb() + QUERY_TRACE_PATH.replace("@TraceId@", traceId);
-            url = url + "&userAppKey="+WebPluginUtils.getTenantUserAppKey()+"&envCode="+"envCode";
-            AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.newInStance().url(url)
+            url = url + "&userAppKey="+WebPluginUtils.fillTenantCommonExt()+"&envCode="+"envCode";
+            AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.builder().url(url)
                     .eventName("查询Trace调用栈明细")
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
                     .list(RpcBased.class);
             return amdbResponse.getData();
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),e);
         }
     }
 

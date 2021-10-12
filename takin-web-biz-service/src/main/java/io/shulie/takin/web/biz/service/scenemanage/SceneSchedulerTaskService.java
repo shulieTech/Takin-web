@@ -6,6 +6,7 @@ import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreate
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author mubai
@@ -27,6 +28,10 @@ public interface SceneSchedulerTaskService {
 
     List<SceneSchedulerTaskResponse> selectByExample(SceneSchedulerTaskQueryRequest request);
 
-    void executeSchedulerPressureTask();
+    /**
+     * 场景定时任务执行 按照租户隔离
+     * @param ext
+     */
+    void executeSchedulerPressureTask(TenantCommonExt ext);
 
 }

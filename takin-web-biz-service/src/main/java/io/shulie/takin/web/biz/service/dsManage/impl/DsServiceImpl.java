@@ -250,7 +250,7 @@ public class DsServiceImpl implements DsService {
         AppBusinessTableInfo query = new AppBusinessTableInfo();
         query.setUrl(info.getUrl());
         // 补充用户数据
-        UserExt user = WebPluginUtils.getUser();
+        UserExt user = WebPluginUtils.traceUser();
         query.setUserId(user.getId());
         Long count = tAppBusinessTableInfoMapper.selectCountByUserIdAndUrl(query);
         if (count == 1) {
@@ -268,7 +268,7 @@ public class DsServiceImpl implements DsService {
 
     @Override
     public Response queryPageBusiness(AppBusinessTableQuery query) {
-        UserExt user = WebPluginUtils.getUser();
+        UserExt user = WebPluginUtils.traceUser();
         if (1 == user.getRole()) {
             query.setUserId(user.getId());
         }

@@ -22,7 +22,6 @@ import io.shulie.takin.web.data.mapper.mysql.ApplicationPluginsConfigMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginsConfigVO;
-import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -63,7 +62,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         if (Objects.isNull(param) || Objects.isNull(param.getApplicationId())) {
             throw new TakinWebException(ExceptionCode.POD_NUM_EMPTY, "缺少参数");
         }
-        Long customerId = WebPluginUtils.getTenantId();
+        Long customerId = WebPluginUtils.traceTenantId();
         param.setCustomerId(customerId);
         IPage<ApplicationPluginsConfigEntity> listPage = applicationPluginsConfigDAO.findListPage(param);
         List<ApplicationPluginsConfigEntity> records = listPage.getRecords();
@@ -122,12 +121,9 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             entity.setModifierId(param.getUserId());
             entity.setCustomerId(param.getCustomerId());
         } else {
-            UserExt user = WebPluginUtils.getUser();
-            if (user != null) {
-                entity.setCreatorId(user.getId());
-                entity.setModifierId(user.getId());
-                entity.setCustomerId(user.getCustomerId());
-            }
+            entity.setCreatorId(WebPluginUtils.traceUserId());
+            entity.setModifierId(WebPluginUtils.traceUserId());
+            entity.setCustomerId(WebPluginUtils.traceTenantId());
         }
 
         Date now = new Date();
@@ -150,14 +146,13 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
 
         List<ApplicationPluginsConfigEntity> entitys = CopyUtils.copyFieldsList(params,
             ApplicationPluginsConfigEntity.class);
-        UserExt user = WebPluginUtils.getUser();
         Date now = new Date();
         entitys.forEach(entity -> {
             entity.setCreateTime(now);
             entity.setModifieTime(now);
-            entity.setCreatorId(user.getId());
-            entity.setModifierId(user.getId());
-            entity.setCustomerId(user.getCustomerId());
+            entity.setCreatorId(WebPluginUtils.traceUserId());
+            entity.setModifierId(WebPluginUtils.traceUserId());
+            entity.setCustomerId(WebPluginUtils.traceTenantId());
         });
 
         return applicationPluginsConfigDAO.updateBatchById(entitys);
@@ -176,15 +171,12 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         }
 
         ApplicationPluginsConfigEntity entity = CopyUtils.copyFields(param, ApplicationPluginsConfigEntity.class);
-        UserExt user = WebPluginUtils.getUser();
         Date now = new Date();
         entity.setCreateTime(now);
         entity.setModifieTime(now);
-        if (Objects.nonNull(user)) {
-            entity.setCreatorId(user.getId());
-            entity.setModifierId(user.getId());
-            entity.setCustomerId(user.getCustomerId());
-        }
+        entity.setCreatorId(WebPluginUtils.traceUserId());
+        entity.setModifierId(WebPluginUtils.traceUserId());
+        entity.setCustomerId(WebPluginUtils.traceTenantId());
         applicationPluginsConfigMapper.updateById(entity);
         return true;
     }

@@ -3,7 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.openapi;
 import java.util.List;
 
 import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2021/3/25 10:54 上午
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_OPEN_API_URL + "/application")
+@RequestMapping(ApiUrls.TAKIN_OPEN_API_URL + "/application")
 public class ApplicationOpenApi {
 
     @Autowired

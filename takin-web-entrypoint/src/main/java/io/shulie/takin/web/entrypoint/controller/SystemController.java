@@ -16,7 +16,7 @@ import io.shulie.takin.cloud.open.resp.common.CommonInfosResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.result.system.SystemInfoItemVo;
 import io.shulie.takin.web.data.result.system.SystemInfoVo;
@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "sys")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "sys")
 @Api(tags = "接口: 系统信息")
 public class SystemController {
 
@@ -138,9 +138,9 @@ public class SystemController {
                     for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
                         InetAddress inetAddress = enumIpAddr.nextElement();
                         if (!inetAddress.isLoopbackAddress()) {
-                            String ipaddress = inetAddress.getHostAddress().toString();
+                            String ipaddress = inetAddress.getHostAddress();
                             if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
-                                    && !ipaddress.contains("fe80")) {
+                                && !ipaddress.contains("fe80")) {
                                 ip = ipaddress;
                             }
                         }
@@ -173,12 +173,12 @@ public class SystemController {
             String webUrl = takinWebUrl.substring(0, takinWebUrl.lastIndexOf("/"));
             json = HttpClientUtil.sendGet(webUrl + "/tro/" + UI_VERSION_FILE);
 
-            if (StringUtil.isBlank(json)){
+            if (StringUtil.isBlank(json)) {
                 json = HttpClientUtil.sendGet(webUrl + "/" + UI_VERSION_FILE);
             }
         }
 
-        if (StringUtil.isNotBlank(json)){
+        if (StringUtil.isNotBlank(json)) {
             JSONObject parseObject = JSONObject.parseObject(json);
             String version = parseObject.getString("version");
             if (StringUtil.isNotBlank(version)) {

@@ -1,7 +1,9 @@
 package io.shulie.takin.web.diff.cloud.impl.report;
 
+import java.util.List;
+
 import io.shulie.takin.cloud.open.api.report.CloudReportApi;
-import io.shulie.takin.cloud.open.req.report.JtlDownloadReq;
+import io.shulie.takin.cloud.open.req.common.CloudCommonInfoWrapperReq;
 import io.shulie.takin.cloud.open.req.report.ReportDetailByIdReq;
 import io.shulie.takin.cloud.open.req.report.ReportDetailBySceneIdReq;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
@@ -20,6 +22,10 @@ public class ReportApiImpl implements ReportApi {
     @Autowired
     private CloudReportApi cloudReportApi;
 
+    @Override
+    public ResponseResult<List<Long>> queryListRunningReport(CloudCommonInfoWrapperReq req) {
+        return cloudReportApi.queryListRunningReport(req);
+    }
 
     @Override
     public ResponseResult<ReportDetailResp> getReportByReportId(ReportDetailByIdReq req) {

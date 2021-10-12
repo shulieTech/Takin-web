@@ -11,7 +11,12 @@ import java.util.stream.Collectors;
 
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.AppConstants;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,6 +33,19 @@ import org.springframework.util.StringUtils;
  */
 public class CommonUtil implements AppConstants {
 
+
+    /**
+     * 获得 zk 租户, 环境隔离后的路径
+     *
+     * @param path 节点路径
+     * @param commonExt 租户属性
+     * @return 租户, 环境隔离后的路径
+     */
+    public static String getZkTenantAndEnvPath(String path, TenantCommonExt commonExt) {
+        return generateRedisKeyWithSeparator(Separator.Separator1, commonExt.getTenantAppKey(), commonExt.getEnvCode(), path);
+    }
+
+
     /**
      * 获得 zk 租户, 环境隔离后的路径
      *
@@ -35,7 +53,8 @@ public class CommonUtil implements AppConstants {
      * @return 租户, 环境隔离后的路径
      */
     public static String getZkTenantAndEnvPath(String path) {
-        return String.format("%s/%s/%s", WebPluginUtils.getTenantUserAppKey(), WebPluginUtils.getEnvCode(), path);
+        return generateRedisKeyWithSeparator(Separator.Separator1, WebPluginUtils.fillTenantCommonExt(),
+            WebPluginUtils.traceEnvCode(), path);
     }
 
     /**
@@ -176,9 +195,30 @@ public class CommonUtil implements AppConstants {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * redis key
+     * @param keyPart
+     * @return
+     */
+    public static String generateRedisKey(String... keyPart) {
+        return generateRedisKeyWithSeparator(Separator.defautSeparator(), keyPart);
+    }
+
+    public static String generateRedisKeyWithSeparator(Separator separator, String... keyPart) {
+        if (separator == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "separator cannot be null!");
+        }
+        return StringUtil.join(separator.getValue(), keyPart);
+    }
+
     /* ---------------- 测试 -------------- */
 
     public static void main(String[] args) {
+        TenantCommonExt ext = new TenantCommonExt();
+        ext.setTenantAppKey("sasa");
+        ext.setEnvCode("asaa");
+        System.out.println(getZkTenantAndEnvPath("apps",ext));;
+
         // 生成一万个A, 转B
         long startAt = System.currentTimeMillis();
 

@@ -21,7 +21,7 @@ import org.apache.commons.collections4.MapUtils;
  * @version v1.0
  * 项目地址 : http://git.oschina.net/free/Mybatis_PageHelper
  * @ClassName: PageInfo
- * @2018年4月13日
+ * @date 2018年4月13日
  * @deprecated 请使用pagingList
  */
 @SuppressWarnings("all")
@@ -104,6 +104,7 @@ public class PageInfo<T> implements Serializable {
 
     /**
      * 从参数集合中获取页码
+     *
      * @param params
      * @return int
      * @Title: getPageNum
@@ -120,6 +121,7 @@ public class PageInfo<T> implements Serializable {
 
     /**
      * 从参数集合中获取每页条数
+     *
      * @param params
      * @return int
      * @Title: getPageSize

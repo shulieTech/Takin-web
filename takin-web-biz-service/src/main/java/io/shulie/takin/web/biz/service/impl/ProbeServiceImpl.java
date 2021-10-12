@@ -78,7 +78,7 @@ public class ProbeServiceImpl implements ProbeService, ProbeConstants, AppConsta
 
     @Override
     public CreateProbeOutput create(String probePath) {
-        String lockKey = String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.getTenantId(), probePath.hashCode());
+        String lockKey = String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.traceTenantId(), probePath.hashCode());
         this.isCreateError(!distributedLock.tryLockZeroWait(lockKey), TOO_FREQUENTLY);
 
         try {

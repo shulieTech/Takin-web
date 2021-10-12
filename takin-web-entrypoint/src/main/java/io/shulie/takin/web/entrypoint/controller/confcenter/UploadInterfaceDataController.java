@@ -6,7 +6,7 @@
 //import com.pamirs.takin.common.exception.TakinModuleException;
 //import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
 //import com.pamirs.takin.entity.domain.vo.TUploadNeedVo;
-//import io.shulie.takin.web.common.constant.APIUrls;
+//import io.shulie.takin.web.common.constant.ApiUrls;
 //import io.swagger.annotations.Api;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@
 // */
 //@Api(tags = "二级链路管理接口")
 //@RestController
-//@RequestMapping(APIUrls.takin_API_URL)
+//@RequestMapping(ApiUrls.takin_API_URL)
 //public class UploadInterfaceDataController {
 //
 //    private final Logger LOGGER = LoggerFactory.getLogger(UploadInterfaceDataController.class);
@@ -41,8 +41,8 @@
 //     * @param uploadNeedVo appName与数量
 //     * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
 //     */
-//    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_INTERFACE_NEED_UPLOAD_URL,
-//        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+//    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_INTERFACE_NEED_UPLOAD_URL,
+//        produces = MediaType.APPLICATION_JSON_VALUE)
 //    public ResponseEntity<Object> judgeNeedUpload(@RequestBody TUploadNeedVo uploadNeedVo) {
 //        try {
 //            return ResponseOk.create(uploadInterfaceService.executeNeedUploadInterface(uploadNeedVo));
@@ -62,8 +62,8 @@
 //     * @param TUploadInterfaceVo appName与接口信息
 //     * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
 //     */
-//    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_INTERFACE_UPLOAD_URL,
-//        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+//    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_INTERFACE_UPLOAD_URL,
+//        produces = MediaType.APPLICATION_JSON_VALUE)
 //    public ResponseEntity<Object> judgeNeedUpload(@RequestBody TUploadInterfaceVo TUploadInterfaceVo) {
 //        try {
 //            return ResponseOk.create(uploadInterfaceService.saveUploadInterfaceData(TUploadInterfaceVo));

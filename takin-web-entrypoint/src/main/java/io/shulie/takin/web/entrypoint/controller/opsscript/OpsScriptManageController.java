@@ -3,6 +3,8 @@ package io.shulie.takin.web.entrypoint.controller.opsscript;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import com.google.common.collect.Maps;
 import com.pamirs.takin.entity.dao.dict.TDictionaryDataMapper;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
@@ -12,7 +14,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.OpsScriptFileService;
 import io.shulie.takin.web.biz.service.OpsScriptManageService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -41,17 +43,17 @@ import org.springframework.web.multipart.MultipartFile;
  * @since 2021-06-16 10:41:43
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "opsScriptManage")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "opsScriptManage")
 @Api(tags = "运维脚本-接口")
 public class OpsScriptManageController {
 
-    @Autowired
+    @Resource(type = OpsScriptManageService.class)
     OpsScriptManageService opsScriptManageService;
 
-    @Autowired
+    @Resource(type = TDictionaryDataMapper.class)
     TDictionaryDataMapper dictionaryDataMapper;
 
-    @Autowired
+    @Resource(type = OpsScriptFileService.class)
     OpsScriptFileService opsScriptFileService;
 
     @ApiOperation("列表接口")

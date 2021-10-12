@@ -1,6 +1,6 @@
 package io.shulie.takin.web.app.aspect;
 
-import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -27,8 +27,8 @@ public class CloudApiAspect {
     public void doBefore(JoinPoint joinPoint) {
         Object[] params = joinPoint.getArgs();
         if (params != null && params.length == 1) {
-            if (params[0] instanceof CloudUserCommonRequestExt) {
-                CloudUserCommonRequestExt inParam = (CloudUserCommonRequestExt)params[0];
+            if (params[0] instanceof ContextExt) {
+                ContextExt inParam = (ContextExt)params[0];
                 WebPluginUtils.fillCloudUserData(inParam);
             }
         }

@@ -17,10 +17,12 @@ import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.SceneIdVO;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
 import io.shulie.takin.cloud.common.bean.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.open.req.common.CloudCommonInfoWrapperReq;
 import io.shulie.takin.cloud.open.req.report.ReportDetailByIdReq;
 import io.shulie.takin.cloud.open.req.report.ReportDetailBySceneIdReq;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
@@ -42,13 +44,13 @@ import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
@@ -82,9 +84,9 @@ public class ReportServiceImpl implements ReportService {
             if (CollectionUtils.isNotEmpty(userList)) {
                 List<Long> userIds = userList.stream().map(UserExt::getId).collect(Collectors.toList());
                 if (CollectionUtils.isEmpty(userIds)) {
-                    param.setUserIdStr(null);
+                    //param.setUserIdStr(null);
                 } else {
-                    param.setUserIdStr(StringUtils.join(userIds, ","));
+                    //param.setUserIdStr(StringUtils.join(userIds, ","));
                 }
             } else {
                 return WebResponse.success(Lists.newArrayList());
@@ -327,11 +329,16 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public WebResponse queryListRunningReport() {
-        WebRequest request = new WebRequest();
-        request.setRequestUrl(RemoteConstant.REPORT_RUNNINNG_LIST);
-        request.setHttpMethod(HttpMethod.GET);
-        return httpWebClient.request(request);
+    public List<Long> queryListRunningReport(TenantCommonExt ext) {
+        CloudCommonInfoWrapperReq req = new CloudCommonInfoWrapperReq();
+        req.setTenantId(ext.getTenantId());
+        req.setEnvCode(ext.getEnvCode());
+        ResponseResult<List<Long>> result = reportApi.queryListRunningReport(req);
+        if (result == null || !result.getSuccess()) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR,
+                Optional.ofNullable(result).map(ResponseResult::getError).map(JsonHelper::bean2Json).orElse("cloud查询异常"));
+        }
+        return result.getData();
     }
 
     @Override

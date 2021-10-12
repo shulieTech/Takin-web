@@ -114,8 +114,8 @@ public class DataSourceDAOImpl implements DataSourceDAO {
         if (StringUtils.isNotBlank(queryParam.getJdbcUrl())) {
             queryWrapper.eq(TakinDbresourceEntity::getJdbcUrl, queryParam.getJdbcUrl());
         }
-        if (WebPluginUtils.checkUserData() && WebPluginUtils.getTenantId() != null) {
-            queryWrapper.eq(TakinDbresourceEntity::getCustomerId, WebPluginUtils.getTenantId());
+        if (WebPluginUtils.checkUserData() && WebPluginUtils.traceTenantId() != null) {
+            queryWrapper.eq(TakinDbresourceEntity::getCustomerId, WebPluginUtils.traceTenantId());
         }
         queryWrapper.eq(TakinDbresourceEntity::getIsDeleted, 0);
         List<TakinDbresourceEntity> datasourceEntityList = datasourceMapper.selectList(queryWrapper);

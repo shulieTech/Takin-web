@@ -5,7 +5,7 @@ package com.pamirs.takin.common.constant;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月21日
+ * @date 2018年5月21日
  */
 public class ConfigConstants {
 

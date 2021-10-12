@@ -42,7 +42,6 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQuer
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
-import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
@@ -304,7 +303,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         query.setQueryTye("1");
 
         // 租户传参
-        query.setUserAppKey(input.getUserAppKey());
+        query.setUserAppKey(input.getTenantAppKey());
         query.setEnvCode(input.getEnvCode());
 
         // 直接取全部数据
@@ -581,7 +580,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
         //租户传参
         AppRemoteCallQueryInput input = new AppRemoteCallQueryInput();
-        input.setUserAppKey(userAppKey);
+        input.setTenantAppKey(userAppKey);
         input.setTenantId(tenantId);
         input.setEnvCode(envCode);
 

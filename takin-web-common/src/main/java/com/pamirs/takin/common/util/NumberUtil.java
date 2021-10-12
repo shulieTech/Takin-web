@@ -9,7 +9,7 @@ import org.apache.commons.lang3.math.NumberUtils;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月21日
+ * @date 2018年5月21日
  */
 public class NumberUtil {
 

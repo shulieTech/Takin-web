@@ -19,7 +19,7 @@ import org.apache.ibatis.annotations.Param;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月26日
+ * @date 2018年4月26日
  */
 @Mapper
 public interface TLinkMntDao {
@@ -136,7 +136,8 @@ public interface TLinkMntDao {
     /**
      * 说明: 根据二级链路id和选中的基础链路ids查询选中的基础链路信息
      *
-     * @param map 二级链路id和多个基础链路id
+     * @param secondLinkId    二级链路id
+     * @param baseLinkIdsList 多个基础链路id
      * @return 该二级链路下选中的基础链路信息
      * @author shulie
      * @date 2018/7/11 14:18
@@ -158,7 +159,6 @@ public interface TLinkMntDao {
      * 说明: 删除业务链路和技术链路关联关系
      *
      * @param
-     * @return
      * @author shulie
      * @date 2018/12/27 17:31
      */
@@ -226,12 +226,11 @@ public interface TLinkMntDao {
     void deleteSecondLinkRelationBasicLinkByBasicLinkIds(@Param("basicLinkIdLists") List<String> basicLinkIdLists);
 
     /**
+     * 根据基础链路id删除二级/基础链路关系
+     *
      * @param linkId 基础链路id
-     * @param
-     * @return
-     * @description 根据基础链路id删除二级/基础链路关系
      * @author shulie
-     * @create 2018/6/28 21:21
+     * @date 2018/6/28 21:21
      */
     void deleteSecondLinkRelationBasicLinkByBasicLinkId(@Param("basicLinkId") String linkId);
 

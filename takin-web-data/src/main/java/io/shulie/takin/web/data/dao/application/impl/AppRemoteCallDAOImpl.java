@@ -138,11 +138,11 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     private LambdaQueryWrapper<AppRemoteCallEntity> getAppRemoteCallEntityLambdaQueryWrapper(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
         if (WebPluginUtils.checkUserData()) {
-            if(WebPluginUtils.getTenantId() != null) {
-                lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.getTenantId());
+            if(WebPluginUtils.traceTenantId() != null) {
+                lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.traceTenantId());
             }
-            if(WebPluginUtils.getEnvCode() != null) {
-                lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.getEnvCode());
+            if(WebPluginUtils.traceEnvCode() != null) {
+                lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.traceEnvCode());
             }
 
         }
@@ -182,8 +182,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     public List<AppRemoteCallResult> selectByAppNameUnderCurrentUser(String appName) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
         if (WebPluginUtils.checkUserData()) {
-            lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.getTenantId());
-            lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.getEnvCode());
+            lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.traceTenantId());
+            lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.traceEnvCode());
         }
         lambdaQueryWrapper.eq(AppRemoteCallEntity::getAppName, appName);
         lambdaQueryWrapper.ne(AppRemoteCallEntity::getType, AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
@@ -229,8 +229,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         LambdaQueryWrapper<AppRemoteCallEntity> wrapper = this.getLambdaQueryWrapper()
             .in(AppRemoteCallEntity::getApplicationId, appIdList)
             .in(CollUtil.isNotEmpty(userIdList), AppRemoteCallEntity::getUserId, userIdList)
-            .eq( WebPluginUtils.getTenantId() != null, AppRemoteCallEntity::getTenantId, WebPluginUtils.getTenantId())
-            .eq( StringUtils.isNotBlank(WebPluginUtils.getEnvCode()), AppRemoteCallEntity::getEnvCode, WebPluginUtils.getEnvCode())
+            .eq( WebPluginUtils.traceTenantId() != null, AppRemoteCallEntity::getTenantId, WebPluginUtils.traceTenantId())
+            .eq( StringUtils.isNotBlank(WebPluginUtils.traceEnvCode()), AppRemoteCallEntity::getEnvCode, WebPluginUtils.traceEnvCode())
             ;
         List<AppRemoteCallEntity> appRemoteCallEntities = this.getBaseMapper().selectList(wrapper);
         List<AppRemoteCallEntity> updateAppRemoteCallEntityList = appRemoteCallEntities.stream().map(entity -> {

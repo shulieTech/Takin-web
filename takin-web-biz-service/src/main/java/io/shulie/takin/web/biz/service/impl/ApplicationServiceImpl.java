@@ -52,7 +52,6 @@ import com.pamirs.takin.entity.domain.vo.dsmanage.DataSource;
 import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.cloud.common.constants.Constants;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
@@ -81,6 +80,7 @@ import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.biz.utils.WhiteListUtil;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.ApplicationConstants;
 import io.shulie.takin.web.common.constant.GuardEnableConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
@@ -92,6 +92,7 @@ import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
@@ -245,28 +246,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ApplicationNodeService applicationNodeService;
-
-    //3.添加定时任务
-    //或直接指定时间间隔，例如：5秒
-    @Override
-    public void configureTasks() {
-        //针对每个用户进行检查
-        Map<String, Long> map = redisTemplate.opsForHash().entries(NEED_VERIFY_USER_MAP);
-        if (map.size() > 0) {
-            log.info("当前待执行用户数： => " + map.size());
-            map.forEach((key, value) -> {
-                if (System.currentTimeMillis() - value >= pradarSwitchProcessingTime * 1000) {
-                    // 操作完删除，保证只执行一次
-                    Long uid = Long.valueOf(key);
-                    String switchStatus = getUserSwitchStatusForAgent(uid);
-                    redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + uid, switchStatus);
-                    // agent接收的关闭信息后不再上报信息
-                    // reCalculateUserSwitch(Long.valueOf(key.toString()));
-                    redisTemplate.opsForHash().delete(NEED_VERIFY_USER_MAP, key);
-                }
-            });
-        }
-    }
 
     @Override
     public void configureTasks(TenantCommonExt ext) {
@@ -577,25 +556,29 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_PUSH_APPLICATION_STATUS_VALIDATE_ERROR,
                 "节点唯一key|应用名称 不能为空");
         }
-        UserExt user = WebPluginUtils.getUser();
+        UserExt user = WebPluginUtils.traceUser();
+        String userAppKey = WebPluginUtils.fillTenantCommonExt();
         if (WebPluginUtils.checkUserData() && user == null) {
             // todo 后续需要修改
-            return Response.fail("0000-0000-0000", "未获取到" + WebPluginUtils.getTenantUserAppKey() + "用户信息");
+            return Response.fail("0000-0000-0000", "未获取到" + userAppKey + "用户信息");
         }
 
         TApplicationMnt applicationMnt = this.queryTApplicationMntByName(param.getApplicationName());
 
-        if (applicationMnt == null){
-            return Response.fail("0000-0000-0000","查询不到应用【"+param.getApplicationName()+"】,请先上报应用！");
+        if (applicationMnt == null) {
+            return Response.fail("0000-0000-0000", "查询不到应用【" + param.getApplicationName() + "】,请先上报应用！");
         }
 
         if (param.getSwitchErrorMap() != null && !param.getSwitchErrorMap().isEmpty()) {
             //应用id+ agent id唯一键 作为节点信息
-            String key = applicationMnt.getApplicationId() + PRADAR_SEPERATE_FLAG + param.getAgentId();
+            String envCode = WebPluginUtils.traceEnvCode();
+            String key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, userAppKey, envCode,
+                applicationMnt.getApplicationId() + PRADAR_SEPERATE_FLAG + param.getAgentId());
             List<String> nodeUploadDataDTOList = redisTemplate.opsForList().range(key, 0, -1);
             if (CollectionUtils.isEmpty(nodeUploadDataDTOList)) {
                 //节点key信息
-                String nodeSetKey = applicationMnt.getApplicationId() + PRADARNODE_KEYSET;
+                String nodeSetKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, userAppKey, envCode,
+                    applicationMnt.getApplicationId() + PRADARNODE_KEYSET);
                 redisTemplate.opsForSet().add(nodeSetKey, key);
                 redisTemplate.expire(nodeSetKey, 1, TimeUnit.DAYS);
                 //节点异常信息列表
@@ -606,11 +589,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             }
             //3：应用异常
             applicationDAO.updateApplicationStatus(applicationMnt.getApplicationId(),
-                    AppAccessStatusEnum.EXCEPTION.getCode());
+                AppAccessStatusEnum.EXCEPTION.getCode());
         } else {
             // 应用正常
             applicationDAO.updateApplicationStatus(applicationMnt.getApplicationId(),
-                    AppAccessStatusEnum.NORMAL.getCode());
+                AppAccessStatusEnum.NORMAL.getCode());
         }
         return Response.success("上传应用状态信息成功");
     }
@@ -670,16 +653,17 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public void syncApplicationAccessStatus(Long tenantId,String userAppKey, String envCode) {
+    public void syncApplicationAccessStatus(Long tenantId, String userAppKey, String envCode) {
         long startTime = System.currentTimeMillis();
         try {
             //查询出所有待检测状态的应用
             List<TApplicationMnt> applicationMntList = tApplicationMntDao.getAllApplicationByStatusAndTenant(
-                Arrays.asList(0, 1, 2, 3),tenantId,envCode);
+                Arrays.asList(0, 1, 2, 3), tenantId, envCode);
             if (!CollectionUtils.isEmpty(applicationMntList)) {
                 List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName)
                     .collect(Collectors.toList());
-                List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames,userAppKey,envCode);
+                List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames,
+                    userAppKey, envCode);
                 if (!CollectionUtils.isEmpty(applicationResultList)) {
                     Set<Long> errorApplicationIdSet = Sets.newSet();
                     Set<Long> normalApplicationIdSet = Sets.newSet();
@@ -765,7 +749,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response<Integer> calculateUserSwitch(Long uid) {
         if (uid == null) {
-            UserExt user = WebPluginUtils.getUser();
+            UserExt user = WebPluginUtils.traceUser();
             if (user == null) {
                 return Response.fail(FALSE_CORE, "当前用户为空");
             }
@@ -778,7 +762,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public ApplicationSwitchStatusDTO agentGetUserSwitchInfo() {
         ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
-        result.setSwitchStatus(getUserSwitchStatusForAgent(WebPluginUtils.getTenantId()));
+        result.setSwitchStatus(getUserSwitchStatusForAgent(WebPluginUtils.traceTenantId()));
         return result;
     }
 
@@ -838,12 +822,14 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public String getUserSwitchStatusForVo() {
         Long uid = -1L;
-        if (WebPluginUtils.getUser() != null) {
-            uid = WebPluginUtils.getUser().getId();
+        if (WebPluginUtils.traceUser() != null) {
+            uid = WebPluginUtils.traceUser().getId();
         }
-        Object o = redisTemplate.opsForValue().get(PRADAR_SWITCH_STATUS_VO + uid);
+        String key = CommonUtil.generateRedisKey(PRADAR_SWITCH_STATUS_VO + uid,
+            WebPluginUtils.fillTenantCommonExt().toString(), WebPluginUtils.traceEnvCode());
+        Object o = redisTemplate.opsForValue().get(key);
         if (o == null) {
-            redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + uid, AppSwitchEnum.OPENED.getCode());
+            redisTemplate.opsForValue().set(key, AppSwitchEnum.OPENED.getCode());
             return AppSwitchEnum.OPENED.getCode();
         } else {
             return (String)o;
@@ -1585,7 +1571,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         // 对比
         return String.format("%s%s", importServerConfigResponse.getDataSourceBusiness().getMaster(),
-                importServerConfigResponse.getDataSourceBusiness().getNodes())
+            importServerConfigResponse.getDataSourceBusiness().getNodes())
             .equals(String.format("%s%s", originServerConfigResponse.getDataSourceBusiness().getMaster(),
                 importServerConfigResponse.getDataSourceBusiness().getNodes()));
     }
@@ -1977,7 +1963,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response<Integer> uploadMiddlewareStatus(Map<String, JarVersionVo> requestMap, String appName) {
         try {
-            UserExt userExt = WebPluginUtils.queryUserByKey();
+            UserExt userExt = WebPluginUtils.traceUser();
             AppMiddlewareQuery query = new AppMiddlewareQuery();
             TApplicationMnt tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
             if (null == tApplicationMnt) {
@@ -2130,7 +2116,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public TApplicationMnt queryTApplicationMntByName(String appName) {
         return tApplicationMntDao.queryApplicationInfoByNameAndTenant(appName,
-            WebPluginUtils.checkUserData() ? WebPluginUtils.getTenantId() : null);
+            WebPluginUtils.checkUserData() ? WebPluginUtils.traceTenantId() : null);
     }
 
     /**

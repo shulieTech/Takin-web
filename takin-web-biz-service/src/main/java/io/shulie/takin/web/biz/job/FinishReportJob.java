@@ -1,19 +1,21 @@
 package io.shulie.takin.web.biz.job;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import com.google.common.collect.Lists;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
-import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,32 +36,50 @@ public class FinishReportJob implements SimpleJob {
     @Autowired
     private ReportService reportService;
 
+
+    @Autowired
+    @Qualifier("jobThreadPool")
+    private ThreadPoolExecutor jobThreadPool;
+
+    @Autowired
+    @Qualifier("fastDebugThreadPool")
+    private ThreadPoolExecutor fastDebugThreadPool;
+
     @Override
     public void execute(ShardingContext shardingContext) {
+        List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         long start = System.currentTimeMillis();
-        List<Object> reportIds = Lists.newArrayList();
-        WebResponse runningResponse = reportService.queryListRunningReport();
-        if (runningResponse.getSuccess() == true && runningResponse.getData() != null) {
-            reportIds.addAll((List)runningResponse.getData());
-        }
-        log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
-        for (Object obj : reportIds) {
-            // 开始数据分片
-            long reportId = Long.parseLong(String.valueOf(obj));
-            if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                log.info("------Thread ID: {}, {},任务总片数: {}, 当前分片项: {},当前参数:{}, 当前任务名称: {},当前任务参数 {},reportId :{}",
-                    Thread.currentThread().getId(),
-                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                    shardingContext.getShardingTotalCount(),
-                    shardingContext.getShardingItem(),
-                    shardingContext.getShardingParameter(),
-                    shardingContext.getJobName(),
-                    shardingContext.getJobParameter(),
-                    reportId
-                );
-                reportTaskService.finishReport(reportId);
+        if(CollectionUtils.isEmpty(tenantInfoExts)) {
+            // 私有化 + 开源 根据 报告id进行分片
+            List<Long> reportIds =  reportTaskService.getRunningReport(null);
+            log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
+            for (Long reportId : reportIds) {
+                // 开始数据层分片
+                if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    fastDebugThreadPool.execute(() -> reportTaskService.finishReport(reportId));
+                }
+            }
+        }else {
+            // saas 根据租户进行分片
+            for (TenantInfoExt ext : tenantInfoExts) {
+                // 开始数据层分片
+                if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    // 根据环境 分线程
+                    ext.getEnvs().forEach(e ->
+                        jobThreadPool.execute(() ->  this.finishReport(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode()))));
+                }
             }
         }
         log.info("finishReport 执行时间:{}", System.currentTimeMillis() - start);
+    }
+
+    private void finishReport(TenantCommonExt ext) {
+        List<Long> reportIds = reportService.queryListRunningReport(ext);
+        log.info("获取租户【{}】【{}】正在压测中的报告:{}", ext.getTenantId(), ext.getEnvCode(), JsonHelper.bean2Json(reportIds));
+        for (Long reportId : reportIds) {
+            // 开始数据分片
+            fastDebugThreadPool.execute(() ->reportTaskService.finishReport(reportId));
+        }
+
     }
 }

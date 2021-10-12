@@ -8,7 +8,7 @@ import java.math.BigDecimal;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月17日
+ * @date 2018年5月17日
  * @since 2018/05/08
  */
 public class TBasicDetail implements Serializable {

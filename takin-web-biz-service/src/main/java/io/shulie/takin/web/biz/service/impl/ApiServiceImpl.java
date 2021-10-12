@@ -72,7 +72,7 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
         // 原来的文件名称
         String originalName = file.getOriginalFilename();
         String lockKey = String.format(LockKeyConstants.LOCK_UPLOAD_FILE,
-            WebPluginUtils.getTenantId(), originalName, file.getSize());
+            WebPluginUtils.traceTenantId(), originalName, file.getSize());
         AppCommonUtil.isCommonError(!distributedLock.tryLockZeroWait(lockKey), TOO_FREQUENTLY);
 
         // 保存的文件名称 时间戳-文件名

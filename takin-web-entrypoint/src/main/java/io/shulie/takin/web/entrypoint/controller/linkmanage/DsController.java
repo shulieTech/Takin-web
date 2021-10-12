@@ -21,7 +21,7 @@ import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -43,7 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "影子库表管理", value = "影子库表管理")
 public class DsController {
 
@@ -59,11 +59,10 @@ public class DsController {
     @Autowired
     private ApplicationService applicationService;
 
-
     /**
      * 添加影子库表配置
      *
-     * @return
+     * @return -
      */
     @ApiOperation("影子库表添加接口")
     @PostMapping("link/ds/manage")
@@ -84,7 +83,7 @@ public class DsController {
     /**
      * 添加影子库表配置
      *
-     * @return
+     * @return -
      */
     @ApiOperation("影子库表添加接口-老版本")
     @PostMapping("link/ds/manage/old")
@@ -106,7 +105,7 @@ public class DsController {
     /**
      * 初始化数据库加密配置
      *
-     * @return
+     * @return -
      */
     @ApiOperation("加密数据库数据源配置")
     @PostMapping("link/ds/manage/secure/init")
@@ -123,7 +122,7 @@ public class DsController {
     /**
      * 查询影子库表配置
      *
-     * @return
+     * @return -
      */
     @ApiOperation("查询影子库表配置")
     @GetMapping("link/ds/manage")
@@ -148,7 +147,7 @@ public class DsController {
     /**
      * 影子库表配置详情
      *
-     * @return
+     * @return -
      */
     @ApiOperation("影子库表配置详情-老版本")
     @GetMapping("link/ds/manage/detail/old")
@@ -163,7 +162,7 @@ public class DsController {
     /**
      * 修改影子库表配置
      *
-     * @return
+     * @return -
      */
     @ApiOperation("修改影子库表配置")
     @PutMapping("link/ds/manage")
@@ -184,7 +183,7 @@ public class DsController {
     /**
      * 修改影子库表配置
      *
-     * @return
+     * @return -
      */
     @ApiOperation("修改影子库表配置-老版本")
     @PutMapping("link/ds/manage/old")
@@ -205,7 +204,7 @@ public class DsController {
     /**
      * 启用禁用影子库表配置
      *
-     * @return
+     * @return -
      */
     @ApiOperation("启用禁用影子库表配置")
     @PutMapping("link/ds/enable")
@@ -233,7 +232,7 @@ public class DsController {
     /**
      * 删除影子库表配置
      *
-     * @return
+     * @return -
      */
     @ApiOperation("删除影子库表配置")
     @RequestMapping(value = "link/ds/manage", method = RequestMethod.DELETE)

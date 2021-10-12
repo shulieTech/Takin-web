@@ -27,7 +27,7 @@ import io.shulie.takin.web.biz.pojo.request.application.MiddlewareSummaryRequest
 import io.shulie.takin.web.biz.pojo.response.application.MiddlewareSummaryResponse;
 import io.shulie.takin.web.biz.service.application.MiddlewareSummaryService;
 import io.shulie.takin.web.biz.utils.PageUtils;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -51,7 +51,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author liqiyu
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "application/middlewareSummary")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "application/middlewareSummary")
 @Api(tags = "接口: 中间件汇总信息")
 public class MiddlewareSummaryController {
 
@@ -118,10 +118,10 @@ public class MiddlewareSummaryController {
             .map(item -> BeanUtil.copyProperties(item, MiddlewareSummaryResponse.class)).collect(
                 Collectors.toList());
         // 1.无权限模块：默认可编辑 2.有权限模块：管理员可编辑，子账号被授权可编辑
-        if(WebPluginUtils.getUser() == null) {
+        if(WebPluginUtils.traceUser() == null) {
             collect.parallelStream().forEach(item -> item.setCanEdit(Boolean.TRUE));
         } else {
-            boolean canEdit =  WebPluginUtils.validateSuperAdmin() || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.getUser().getId());
+            boolean canEdit =  WebPluginUtils.validateSuperAdmin() || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.traceUser().getId());
             collect.parallelStream().forEach(item -> item.setCanEdit(canEdit));
         }
 
@@ -151,7 +151,7 @@ public class MiddlewareSummaryController {
             OperationLogContextHolder.addVars("q", "");
         }
 
-        ApplicationMiddlewareStatusEnum byCode = null;
+        ApplicationMiddlewareStatusEnum byCode;
         if (null != status) {
             byCode = ApplicationMiddlewareStatusEnum.getByCode(status);
             Assert.isTrue(byCode != null, String.format("没有找到对应状态：%s", status));

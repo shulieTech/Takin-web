@@ -107,7 +107,7 @@ public class BlacklistServiceImpl implements BlacklistService {
         // 刷新agent数据
         TApplicationMnt tApplicationMnt = applicationMntDao.queryApplicationinfoById(applicationId);
         whiteListFileService.writeWhiteListFile();
-        configSyncService.syncAllowList(WebPluginUtils.getUserAppKey(tApplicationMnt.getUserId()), applicationId, tApplicationMnt.getApplicationName());
+        configSyncService.syncAllowList(WebPluginUtils.getTenantAppKey(tApplicationMnt.getUserId()), applicationId, tApplicationMnt.getApplicationName());
         //todo Agent改造点
         agentConfigCacheManager.evictRecallCalls("","",tApplicationMnt.getApplicationName());
     }
@@ -171,9 +171,9 @@ public class BlacklistServiceImpl implements BlacklistService {
     public List<BlacklistOutput> selectList(BlacklistSearchInput input) {
         BlacklistSearchParam param = new BlacklistSearchParam();
         BeanUtils.copyProperties(input, param);
-        UserExt user = WebPluginUtils.getUser();
+        UserExt user = WebPluginUtils.traceUser();
         if (user != null) {
-            param.setCustomerId(WebPluginUtils.getTenantId());
+            param.setCustomerId(WebPluginUtils.traceTenantId());
             param.setUserId(user.getId());
         }
         List<BlacklistResult> results = blackListDAO.selectList(param);

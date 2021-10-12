@@ -34,7 +34,7 @@ public class ApplicationApiDAOImpl implements ApplicationApiDAO {
         entity.setCreateTime(param.getCreateTime());
         entity.setUpdateTime(param.getUpdateTime());
         entity.setMethod(param.getRequestMethod());
-        entity.setCustomerId(param.getCustomerId());
+        entity.setTenantId(param.getTenantId());
         entity.setUserId(param.getUserId());
         return apiManageMapper.insert(entity);
     }
@@ -50,7 +50,7 @@ public class ApplicationApiDAOImpl implements ApplicationApiDAO {
         }
         LambdaQueryWrapper<ApplicationApiManageEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ApplicationApiManageEntity::getApplicationName, applicationDetailResult.getApplicationName());
-        queryWrapper.eq(ApplicationApiManageEntity::getCustomerId, applicationDetailResult.getCustomerId());
+        queryWrapper.eq(ApplicationApiManageEntity::getTenantId, applicationDetailResult.getTenantId());
         List<ApplicationApiManageEntity> apiManageEntityList = apiManageMapper.selectList(
             queryWrapper);
         if (CollectionUtils.isNotEmpty(apiManageEntityList)) {

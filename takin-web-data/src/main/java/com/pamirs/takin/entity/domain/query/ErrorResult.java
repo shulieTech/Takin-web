@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月17日
+ * @date 2018年5月17日
  */
 public class ErrorResult implements Serializable {
     //普通错误码

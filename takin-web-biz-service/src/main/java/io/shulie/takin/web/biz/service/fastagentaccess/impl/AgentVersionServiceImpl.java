@@ -115,7 +115,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     public Integer create(AgentVersionCreateRequest createRequest) {
         CreateAgentVersionParam createParam = new CreateAgentVersionParam();
         createParam.setOperator(
-            WebPluginUtils.getUser() == null ? LoginConstant.DEFAULT_OPERATOR : WebPluginUtils.getUser().getName());
+            WebPluginUtils.traceUser() == null ? LoginConstant.DEFAULT_OPERATOR : WebPluginUtils.traceUser().getName());
         BeanUtils.copyProperties(createRequest, createParam);
         // 处理大版本号 完整的版本号为 5.0.0.3，则对应的大版本为 5.0
         String[] items = createParam.getVersion().split("\\.");
@@ -252,9 +252,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     private String generatorDownLoadUrl(String projectName, String version, String urlPrefix) {
         // 获取一小时后的时间戳
         long expireDate = System.currentTimeMillis() + 60 * 60 * 1000;
-        String userAppKey = WebPluginUtils.getTenantUserAppKey();
-        String userId = WebPluginUtils.getUserId() == null ? "" : String.valueOf(WebPluginUtils.getUserId());
-        String envCode = WebPluginUtils.getEnvCode();
+        String userAppKey = WebPluginUtils.fillTenantCommonExt();
+        String userId = WebPluginUtils.traceUserId() == null ? "" : String.valueOf(WebPluginUtils.traceUserId());
+        String envCode = WebPluginUtils.traceEnvCode();
         String flag = AgentDownloadUrlVerifyUtil.generatorFlag(projectName, userAppKey, userId, version, envCode,
             expireDate);
         urlPrefix = urlPrefix.endsWith("/") ? urlPrefix.substring(0, urlPrefix.length() - 1) : urlPrefix;

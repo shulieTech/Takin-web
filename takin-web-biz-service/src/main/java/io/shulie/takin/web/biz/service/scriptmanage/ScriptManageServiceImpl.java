@@ -855,6 +855,15 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             throw new IllegalArgumentException("originalName 参数不能为空！");
         }
 
+        // 根据脚本id查询
+        List<ScriptManageDeployResult> scriptManageDeployList = scriptManageDAO.selectScriptManageDeployByScriptId(
+            takinScriptId);
+        if (CollectionUtils.isEmpty(scriptManageDeployList) || Objects.isNull(scriptManageDeployList.get(0).getId())) {
+            throw new IllegalArgumentException("查询tro-web脚本实例数据为空！");
+        }
+
+        // 获取版本号id
+        takinScriptId = scriptManageDeployList.get(0).getId();
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectFileIdsByScriptDeployId(takinScriptId);
         List<FileManageResult> fileManageResults;
         if (scriptFileRefResults == null) {
@@ -1157,6 +1166,12 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                     return PagingList.empty();
                 }
                 scriptManageDeployPageQueryParam.setScriptIds(scriptIds);
+            }
+
+            if (!Objects.isNull(scriptManageDeployPageQueryRequest.getScriptId())) {
+                List<Long> scriptDeployIds = new ArrayList<>();
+                scriptDeployIds.add(scriptManageDeployPageQueryRequest.getScriptId());
+                scriptManageDeployPageQueryParam.setScriptDeployIds(scriptDeployIds);
             }
         }
         scriptManageDeployPageQueryParam.setCurrent(scriptManageDeployPageQueryRequest.getCurrent());

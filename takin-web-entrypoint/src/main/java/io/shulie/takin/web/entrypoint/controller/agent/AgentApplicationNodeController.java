@@ -2,18 +2,18 @@ package io.shulie.takin.web.entrypoint.controller.agent;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
-import io.shulie.takin.web.biz.service.AgentService;
-import io.shulie.takin.web.common.constant.AgentUrls;
+import io.shulie.takin.web.biz.pojo.request.agent.GetFileRequest;
 import io.shulie.takin.web.biz.pojo.request.agent.PushOperateRequest;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResponse;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResultResponse;
+import io.shulie.takin.web.biz.service.AgentService;
+import io.shulie.takin.web.common.constant.AgentUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -62,9 +62,8 @@ public class AgentApplicationNodeController {
             dataType = "string", paramType = "query")
     })
     @GetMapping("file")
-    public void getFile(@RequestParam String appName, @RequestParam String agentId, HttpServletResponse response)
-        throws FileNotFoundException {
-        File file = agentService.getFile(appName, agentId);
+    public void getFile(GetFileRequest getFileRequest, HttpServletResponse response) {
+        File file = agentService.getFile(getFileRequest);
         if (file == null || !file.exists()) {
             return;
         }

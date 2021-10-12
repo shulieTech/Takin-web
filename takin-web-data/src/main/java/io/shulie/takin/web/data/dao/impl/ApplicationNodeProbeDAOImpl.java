@@ -1,6 +1,5 @@
 package io.shulie.takin.web.data.dao.impl;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
@@ -12,6 +11,7 @@ import io.shulie.takin.web.data.param.application.CreateApplicationNodeProbePara
 import io.shulie.takin.web.data.param.probe.UpdateOperateResultParam;
 import io.shulie.takin.web.data.result.application.ApplicationNodeProbeResult;
 import io.shulie.takin.web.data.util.MPUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,17 +31,13 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO, MPU
     @Override
     public ApplicationNodeProbeResult getByApplicationNameAndAgentId(String applicationName, String agentId) {
         ApplicationNodeProbeEntity applicationNodeProbeEntity =
-            applicationNodeProbeMapper.selectOne(this.getLimitOneLambdaQueryWrapper().select(ApplicationNodeProbeEntity::getId,
-                ApplicationNodeProbeEntity::getOperateId, ApplicationNodeProbeEntity::getOperate,
-                ApplicationNodeProbeEntity::getProbeId, ApplicationNodeProbeEntity::getOperateResult)
+            applicationNodeProbeMapper.selectOne(this.getCustomerLimitOneLambdaQueryWrapper()
+                .select(ApplicationNodeProbeEntity::getId,
+                    ApplicationNodeProbeEntity::getOperateId, ApplicationNodeProbeEntity::getOperate,
+                    ApplicationNodeProbeEntity::getProbeId, ApplicationNodeProbeEntity::getOperateResult)
                 .eq(ApplicationNodeProbeEntity::getApplicationName, applicationName)
                 .eq(ApplicationNodeProbeEntity::getAgentId, agentId));
-        if (applicationNodeProbeEntity == null) {
-            return null;
-        }
-        ApplicationNodeProbeResult applicationNodeProbeResult = new ApplicationNodeProbeResult();
-        BeanUtils.copyProperties(applicationNodeProbeEntity, applicationNodeProbeResult);
-        return applicationNodeProbeResult;
+        return CommonUtil.copyBeanPropertiesWithNull(applicationNodeProbeEntity, ApplicationNodeProbeResult.class);
     }
 
     @Override
@@ -67,11 +63,28 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO, MPU
                     ApplicationNodeProbeEntity::getAgentId, ApplicationNodeProbeEntity::getOperateResult)
                 .eq(ApplicationNodeProbeEntity::getApplicationName, applicationName)
                 .in(ApplicationNodeProbeEntity::getAgentId, agentIds));
-        if (applicationNodeProbeEntityList.isEmpty()) {
-            return Collections.emptyList();
-        }
-
         return CommonUtil.list2list(applicationNodeProbeEntityList, ApplicationNodeProbeResult.class);
+    }
+
+    @Override
+    public void delByAppNamesAndOperate(Long customerId, Integer operate, List<String> appNames) {
+        applicationNodeProbeMapper.delete(this.getCustomerLambdaQueryWrapper()
+            .eq(ApplicationNodeProbeEntity::getOperate, operate)
+            .in(CollectionUtils.isNotEmpty(appNames), ApplicationNodeProbeEntity::getApplicationName, appNames));
+    }
+
+    @Override
+    public ApplicationNodeProbeResult getByApplicationNameAndAgentIdAndMaxCustomerId(String applicationName,
+        String agentId, Long customerId) {
+        ApplicationNodeProbeEntity entity = applicationNodeProbeMapper.selectOne(this.getLimitOneLambdaQueryWrapper()
+            .select(ApplicationNodeProbeEntity::getId,
+            ApplicationNodeProbeEntity::getOperateId, ApplicationNodeProbeEntity::getOperate,
+            ApplicationNodeProbeEntity::getProbeId, ApplicationNodeProbeEntity::getOperateResult)
+            .eq(ApplicationNodeProbeEntity::getApplicationName, applicationName)
+            .eq(customerId != null, ApplicationNodeProbeEntity::getCustomerId, customerId)
+            .eq(ApplicationNodeProbeEntity::getAgentId, agentId)
+            .orderByDesc(customerId == null, ApplicationNodeProbeEntity::getCustomerId));
+        return CommonUtil.copyBeanPropertiesWithNull(entity, ApplicationNodeProbeResult.class);
     }
 
 }

@@ -557,7 +557,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 "节点唯一key|应用名称 不能为空");
         }
         UserExt user = WebPluginUtils.getUser();
-        String userAppKey = WebPluginUtils.getTenantUserAppKey();
+        String userAppKey = WebPluginUtils.getTenantAppKey();
         if (WebPluginUtils.checkUserData() && user == null) {
             // todo 后续需要修改
             return Response.fail("0000-0000-0000", "未获取到" + userAppKey + "用户信息");
@@ -826,7 +826,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             uid = WebPluginUtils.getUser().getId();
         }
         String key = CommonUtil.generateRedisKey(PRADAR_SWITCH_STATUS_VO + uid,
-            WebPluginUtils.getTenantUserAppKey().toString(), WebPluginUtils.getEnvCode());
+            WebPluginUtils.getTenantAppKey().toString(), WebPluginUtils.getEnvCode());
         Object o = redisTemplate.opsForValue().get(key);
         if (o == null) {
             redisTemplate.opsForValue().set(key, AppSwitchEnum.OPENED.getCode());

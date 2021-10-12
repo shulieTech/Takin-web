@@ -59,7 +59,7 @@ public class AgentCommandFactory {
         TakinWebCommandPacket takinPacket = getSendPacket(commandEnum, agentId, params);
         checkPacket(takinPacket);
         String key = String.format(agentKey, takinPacket.getAgentId(), takinPacket.getSend().getCommand(),
-            takinPacket.getSend().getModuleId(), WebPluginUtils.traceTenantId(),"envCode" , takinPacket.getId());
+            takinPacket.getSend().getModuleId(), WebPluginUtils.traceTenantId(),WebPluginUtils.traceEnvCode() , takinPacket.getId());
 
         ResponseFuture<CommandPacket> future = new ResponseFuture<>(
             takinPacket.getTimeoutMillis() == null ? 3000 : takinPacket.getTimeoutMillis());

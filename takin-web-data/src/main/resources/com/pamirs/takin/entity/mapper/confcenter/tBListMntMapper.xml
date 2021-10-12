@@ -109,5 +109,11 @@
                REDIS_KEY
         from t_black_list
         where use_yn = 1 and APPLICATION_ID = 0
+        <if test="tenantId != null">
+            and tenant_id=#{tenantId},
+        </if>
+        <if test="envCode != null">
+            and env_code=#{envCode},
+        </if>
     </select>
 </mapper>

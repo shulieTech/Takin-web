@@ -251,10 +251,12 @@ public interface TApplicationMntDao {
      * 返回id
      *
      * @param names
-     * @param userId
+     * @param tenantId
+     * @param envCode
      * @return
      */
-    List<String> queryIdsByNameAndTenant(@Param("names") List<String> names, @Param("userId") Long userId);
+    List<String> queryIdsByNameAndTenant(@Param("names") List<String> names,
+        @Param("tenantId") Long tenantId,@Param("envCode") String envCode);
 
     List<TApplicationMnt> getAllApplications();
 

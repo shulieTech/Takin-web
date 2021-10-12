@@ -100,7 +100,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                             manage.setUpdateTime(new Date());
                             manage.setRequestMethod(requestMethod);
                             manage.setApplicationId(applicationDetailResult.getApplicationId());
-                            manage.setCustomerId(applicationDetailResult.getCustomerId());
+                            manage.setTenantId(applicationDetailResult.getTenantId());
                             manage.setUserId(applicationDetailResult.getUserId());
                             manage.setIsAgentRegiste(1);
                             batch.add(manage);
@@ -115,7 +115,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                         manage.setRequestMethod(requestMethod);
                         manage.setUpdateTime(new Date());
                         manage.setApplicationId(applicationDetailResult.getApplicationId());
-                        manage.setCustomerId(applicationDetailResult.getCustomerId());
+                        manage.setTenantId(applicationDetailResult.getTenantId());
                         manage.setUserId(applicationDetailResult.getUserId());
                         manage.setIsAgentRegiste(1);
                         batch.add(manage);
@@ -139,7 +139,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                     manage.setUpdateTime(single.getUpdateTime());
                     manage.setCreateTime(single.getCreateTime());
                     manage.setApplicationId(single.getApplicationId());
-                    manage.setCustomerId(single.getCustomerId());
+                    manage.setTenantId(single.getTenantId());
                     manage.setUserId(single.getUserId());
                     manage.setIsAgentRegiste(single.getIsAgentRegiste());
                     manageMapper.insertSelective(manage);
@@ -248,7 +248,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
         createParam.setCreateTime(new Date());
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByCustomerIdAndName(vo.getApplicationName());
         //4.8.0.4以后入口规则的所属用户跟着应用走
-        createParam.setCustomerId(applicationDetailResult.getCustomerId());
+        createParam.setTenantId(applicationDetailResult.getTenantId());
         createParam.setUserId(applicationDetailResult.getUserId());
         applicationApiDAO.insert(createParam);
         return Response.success();

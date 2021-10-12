@@ -113,7 +113,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
             TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
         }
-        guardSyncService.syncGuard(userAppKey, applicationName, queryAndParseGuard(applicationId));
+        guardSyncService.syncGuard(commonExt, applicationName, queryAndParseGuard(applicationId));
     }
 
     private List<Guard> queryAndParseGuard(long applicationId) {
@@ -138,14 +138,14 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
 
     @Override
     public void syncClusterTestSwitch(TenantCommonExt commonExt) {
-        boolean clusterTestSwitch = configService.getClusterTestSwitch(userAppKey);
-        switchSyncService.turnClusterTestSwitch(userAppKey, clusterTestSwitch);
+        boolean clusterTestSwitch = configService.getClusterTestSwitch(commonExt);
+        switchSyncService.turnClusterTestSwitch(commonExt, clusterTestSwitch);
     }
 
     @Override
     public void syncAllowListSwitch(TenantCommonExt commonExt) {
-        boolean clusterTestSwitch = configService.getAllowListSwitch(userAppKey);
-        switchSyncService.turnAllowListSwitch(userAppKey, clusterTestSwitch);
+        boolean clusterTestSwitch = configService.getAllowListSwitch(commonExt);
+        switchSyncService.turnAllowListSwitch(commonExt, clusterTestSwitch);
 
     }
 
@@ -208,7 +208,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
             TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
         }
-        shadowJobSyncService.syncShadowJob(userAppKey, applicationName, queryAndParseShadowJob(applicationId));
+        shadowJobSyncService.syncShadowJob(commonExt, applicationName, queryAndParseShadowJob(applicationId));
     }
 
     private List<ShadowJob> queryAndParseShadowJob(long applicationId) {
@@ -258,7 +258,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
             TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
         }
-        shadowDbSyncService.syncShadowDataBase(userAppKey, applicationName, queryAndParseShadowDatabase(applicationId));
+        shadowDbSyncService.syncShadowDataBase(commonExt, applicationName, queryAndParseShadowDatabase(applicationId));
     }
 
     @Override
@@ -267,7 +267,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
             TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
         }
-        shadowConsumerSyncService.syncShadowConsumer(userAppKey, applicationName,
+        shadowConsumerSyncService.syncShadowConsumer(commonExt, applicationName,
             queryAndParseShadowConsumer(applicationId));
     }
 
@@ -346,11 +346,11 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
 
     @Override
     public void syncBlockList(TenantCommonExt commonExt) {
-        blockListSyncService.syncBlockList(userAppKey, BlockListType.CACHE, queryAndParseShadowDatabase());
+        blockListSyncService.syncBlockList(commonExt, BlockListType.CACHE, queryAndParseShadowDatabase(commonExt));
     }
 
-    private List<String> queryAndParseShadowDatabase() {
-        List<TBList> allEnabledBlockList = tbListMntDao.getAllEnabledBlockList();
+    private List<String> queryAndParseShadowDatabase(TenantCommonExt commonExt) {
+        List<TBList> allEnabledBlockList = tbListMntDao.getAllEnabledBlockList(commonExt.getTenantId(),commonExt.getEnvCode());
         if (CollectionUtils.isEmpty(allEnabledBlockList)) {
             return Lists.newArrayList();
         }

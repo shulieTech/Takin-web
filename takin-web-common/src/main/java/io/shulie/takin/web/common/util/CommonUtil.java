@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.pamirs.takin.common.constant.Constants;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.AppConstants;
@@ -34,6 +35,10 @@ import org.springframework.util.StringUtils;
  */
 public class CommonUtil implements AppConstants {
 
+    /**
+     * 应用配置标识
+     */
+    public static final String APP = "apps";
 
     /**
      * 获得 zk 租户, 环境隔离后的路径
@@ -46,6 +51,17 @@ public class CommonUtil implements AppConstants {
         return generateRedisKeyWithSeparator(Separator.Separator1, commonExt.getTenantAppKey(), commonExt.getEnvCode(), path);
     }
 
+    /**
+     * 获取NameSpace
+     * @param commonExt
+     * @return
+     */
+    public static String getZkNameSpace(TenantCommonExt commonExt) {
+        return commonExt != null ? CommonUtil.getZkTenantAndEnvPath(APP,commonExt): Constants.DEFAULT_NAMESPACE;
+    }
+
+
+
 
     /**
      * 获得 zk 租户, 环境隔离后的路径
@@ -54,7 +70,7 @@ public class CommonUtil implements AppConstants {
      * @return 租户, 环境隔离后的路径
      */
     public static String getZkTenantAndEnvPath(String path) {
-        return generateRedisKeyWithSeparator(Separator.Separator1, WebPluginUtils.fillTenantCommonExt(),
+        return generateRedisKeyWithSeparator(Separator.Separator1, WebPluginUtils.traceTenantAppKey(),
             WebPluginUtils.traceEnvCode(), path);
     }
 

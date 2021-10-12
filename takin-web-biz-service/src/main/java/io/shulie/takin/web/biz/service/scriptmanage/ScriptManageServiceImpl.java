@@ -227,7 +227,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             e.printStackTrace();
         }
         String[] cmds = {"curl", "-o", fileDir + "/" + fileName, "--create-dirs", "-OL", "-H",
-            "licenseKey:" + WebPluginUtils.fillTenantCommonExt(), url};
+            "licenseKey:" + WebPluginUtils.traceTenantCommonExt(), url};
         LinuxHelper.execCurl(cmds);
         return fileDir + "/" + fileName;
     }
@@ -782,7 +782,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         }
         // todo 临时方案
         String[] cmds = {"curl", "-o", fileDir + "/" + fileName, "--create-dirs", "-OL", "-H",
-            "licenseKey:" + WebPluginUtils.fillTenantCommonExt(), url};
+            "licenseKey:" + WebPluginUtils.traceTenantCommonExt(), url};
         LinuxHelper.execCurl(cmds);
         return fileDir + "/" + fileName;
     }

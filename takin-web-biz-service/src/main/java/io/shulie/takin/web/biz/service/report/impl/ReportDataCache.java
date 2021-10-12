@@ -106,7 +106,7 @@ public class ReportDataCache {
      * @return
      */
     private String getReportDetailKey(Long reportId) {
-        return String.format(REPORT_DETAIL_KEY, WebPluginUtils.traceTenantId(), "envCode" ,reportId);
+        return String.format(REPORT_DETAIL_KEY, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode() ,reportId);
     }
 
     /**
@@ -115,7 +115,7 @@ public class ReportDataCache {
      * @return
      */
     private String getReportMetricKey(Long reportId) {
-        return String.format(REPORT_METRIC_KEY,WebPluginUtils.traceTenantId() ,"envCode",reportId);
+        return String.format(REPORT_METRIC_KEY,WebPluginUtils.traceTenantId() ,WebPluginUtils.traceEnvCode(),reportId);
     }
 
     /**

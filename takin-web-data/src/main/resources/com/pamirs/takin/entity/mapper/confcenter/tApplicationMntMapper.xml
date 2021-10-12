@@ -480,8 +480,11 @@
         select APPLICATION_ID
         from t_application_mnt
         <where>
-            <if test="userId != null">
-                customer_id = #{userId}
+            <if test="tenantId != null">
+                tenant_id = #{tenantId}
+            </if>
+            <if test="envCode != null">
+                env_code = #{envCode}
             </if>
             <if test="names != null and names.size() != 0">
                 and application_name in

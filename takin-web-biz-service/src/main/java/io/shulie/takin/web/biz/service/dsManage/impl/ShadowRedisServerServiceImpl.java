@@ -105,14 +105,14 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         WebPluginUtils.fillUserData(createParam);
 
         //同步配置
-        configSyncService.syncShadowDB(WebPluginUtils.fillTenantCommonExt(), createParam.getApplicationId(), null);
+        configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), createParam.getApplicationId(), null);
 
         //修改应用状态
         applicationService.modifyAccessStatus(String.valueOf(createParam.getApplicationId()),
             AppAccessTypeEnum.UNUPLOAD.getValue(), null);
 
         //todo Agent改造点
-        agentConfigCacheManager.evictShadowServer("","envCode",applicationDetailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowServer("",WebPluginUtils.traceEnvCode(),applicationDetailResult.getApplicationName());
 
         // 新增配置
         createParam.setStatus(createRequest.getStatus());
@@ -136,10 +136,10 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         updateParam.setConfig(config);
         updateParam.setParseConfig(parseShadowServerConfig(config));
 
-        configSyncService.syncShadowDB(WebPluginUtils.fillTenantCommonExt(), dsResult.getApplicationId(),
+        configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
         //todo Agent改造点
-        agentConfigCacheManager.evictShadowServer("","envCode",dsResult.getApplicationName());
+        agentConfigCacheManager.evictShadowServer("",WebPluginUtils.traceEnvCode(),dsResult.getApplicationName());
 
         updateParam.setId(updateRequest.getId());
         updateParam.setStatus(updateRequest.getStatus());
@@ -182,10 +182,10 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         enableParam.setId(enableRequest.getId());
         enableParam.setStatus(enableRequest.getStatus());
         applicationDsDAO.enable(enableParam);
-        configSyncService.syncShadowDB(WebPluginUtils.fillTenantCommonExt(), dsResult.getApplicationId(),
+        configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
         //todo Agent改造点
-        agentConfigCacheManager.evictShadowServer("","envCode",dsResult.getApplicationName());
+        agentConfigCacheManager.evictShadowServer("",WebPluginUtils.traceEnvCode(),dsResult.getApplicationName());
 
         return Response.success();
     }
@@ -200,11 +200,11 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         deleteParam.setIdList(Collections.singletonList(dsDeleteRequest.getId()));
         applicationDsDAO.delete(deleteParam);
 
-        configSyncService.syncShadowDB(WebPluginUtils.fillTenantCommonExt(), dsResult.getApplicationId(),
+        configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
 
         //todo Agent改造点
-        agentConfigCacheManager.evictShadowServer("","envCode",dsResult.getApplicationName());
+        agentConfigCacheManager.evictShadowServer("",WebPluginUtils.traceEnvCode(),dsResult.getApplicationName());
         return Response.success();
     }
 

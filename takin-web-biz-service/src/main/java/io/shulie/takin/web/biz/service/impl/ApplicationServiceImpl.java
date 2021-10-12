@@ -562,8 +562,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 "节点唯一key|应用名称 不能为空");
         }
         UserExt user = WebPluginUtils.traceUser();
-        String userAppKey = WebPluginUtils.fillTenantCommonExt();
-        if (WebPluginUtils.checkUserData() && user == null) {
+        String userAppKey = WebPluginUtils.traceTenantAppKey();
+        if (WebPluginUtils.checkUserPlugin() && user == null) {
             // todo 后续需要修改
             return Response.fail("0000-0000-0000", "未获取到" + userAppKey + "用户信息");
         }
@@ -831,7 +831,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             uid = WebPluginUtils.traceUser().getId();
         }
         String key = CommonUtil.generateRedisKey(PRADAR_SWITCH_STATUS_VO + uid,
-            WebPluginUtils.fillTenantCommonExt().toString(), WebPluginUtils.traceEnvCode());
+            WebPluginUtils.traceTenantCommonExt().toString(), WebPluginUtils.traceEnvCode());
         Object o = redisTemplate.opsForValue().get(key);
         if (o == null) {
             redisTemplate.opsForValue().set(key, AppSwitchEnum.OPENED.getCode());
@@ -2149,7 +2149,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public TApplicationMnt queryTApplicationMntByName(String appName) {
         return tApplicationMntDao.queryApplicationInfoByNameAndTenant(appName,
-            WebPluginUtils.checkUserData() ? WebPluginUtils.traceTenantId() : null);
+            WebPluginUtils.checkUserPlugin() ? WebPluginUtils.traceTenantId() : null);
     }
 
     /**

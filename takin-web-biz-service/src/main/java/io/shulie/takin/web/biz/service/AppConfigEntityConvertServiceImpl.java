@@ -184,7 +184,7 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
             newParam.setUseYn(Integer.valueOf(arrayList.get(1)));
             newParam.setApplicationId(applicationId);
             if (result != null) {
-                newParam.setTenantId(result.getCustomerId());
+                newParam.setTenantId(result.getTenantId());
                 newParam.setUserId(result.getUserId());
             }
             params.add(newParam);
@@ -241,7 +241,7 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
             input.setMockReturnValue(arrayList.get(4).equals(Constants.NULL_SIGN) ? "" : arrayList.get(4));
             input.setApplicationId(applicationId);
             input.setAppName(applicationDetailResult.getApplicationName());
-            input.setTenantId(applicationDetailResult.getCustomerId());
+            input.setTenantId(applicationDetailResult.getTenantId());
             input.setUserId(applicationDetailResult.getUserId());
             input.setGmtCreate(new Date());
             String buildImportRemoteCallName = RemoteCallUtils.buildImportRemoteCallName(input.getInterfaceName(), input.getInterfaceType());

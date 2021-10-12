@@ -37,7 +37,7 @@ public class GlobalController {
     public Response<WhiteListSwitchDTO> getWhiteListSwitch() {
         WhiteListSwitchDTO switchDTO = new WhiteListSwitchDTO();
         switchDTO.setConfigCode(ConfigConstants.WHITE_LIST_SWITCH);
-        switchDTO.setSwitchFlagFix(configService.getAllowListSwitch(WebPluginUtils.fillTenantCommonExt()));
+        switchDTO.setSwitchFlagFix(configService.getAllowListSwitch(WebPluginUtils.traceTenantCommonExt()));
         return Response.success(switchDTO);
     }
 
@@ -56,7 +56,7 @@ public class GlobalController {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.OPEN);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION, BizOpConstants.OpTypes.OPEN);
 
-        configService.updateAllowListSwitch(WebPluginUtils.fillTenantCommonExt(), true);
+        configService.updateAllowListSwitch(WebPluginUtils.traceTenantCommonExt(), true);
         //todo Agent改造点
         agentConfigCacheManager.evictAllowListSwitch("","");
         return Response.success();
@@ -76,7 +76,7 @@ public class GlobalController {
     public Response closeWhiteListSwitch() {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CLOSE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION, BizOpConstants.OpTypes.CLOSE);
-        configService.updateAllowListSwitch(WebPluginUtils.fillTenantCommonExt(), false);
+        configService.updateAllowListSwitch(WebPluginUtils.traceTenantCommonExt(), false);
         //todo Agent改造点
         agentConfigCacheManager.evictAllowListSwitch("","");
         return Response.success();

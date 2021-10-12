@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.result.blacklist;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2021/4/6 2:25 下午
  */
 @Data
-public class BlacklistResult {
+public class BlacklistResult extends TenantCommonExt {
     /**
      * 主键id
      */
@@ -49,11 +50,6 @@ public class BlacklistResult {
      * 是否可用(0表示未启动,1表示启动,2表示启用未校验)
      */
     private Integer useYn;
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
     /**
      * 用户id

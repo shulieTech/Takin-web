@@ -171,7 +171,7 @@ public class WebPluginUtils {
      *
      * @return true/false
      */
-    public static Boolean checkUserData() {
+    public static Boolean checkUserPlugin() {
         if (userApi != null) {
             return Boolean.TRUE;
         }
@@ -290,6 +290,19 @@ public class WebPluginUtils {
     //********************************租户插件模块**********************************//
 
     /**
+     * 是否有租户插件
+     *
+     * @return true/false
+     */
+    public static Boolean checkTenantPlugin() {
+        if (tenantExtApi != null) {
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
+    }
+
+
+    /**
      * 前端 根据租户code 获取租户信息 目前给插件user-module使用
      * @param userAppKey
      * @param tenantCode
@@ -352,7 +365,7 @@ public class WebPluginUtils {
      */
 
     public static TenantCommonExt fillTenantCommonExt(Long tenantId,String envCode) {
-        if (Objects.nonNull(tenantExtApi)) {
+        if (Objects.nonNull(tenantExtApi) && tenantId != null) {
             TenantInfoExt tenantInfo = tenantExtApi.getTenantInfo(tenantId);
             if (tenantInfo != null) {
                 TenantCommonExt ext = new TenantCommonExt();
@@ -362,10 +375,23 @@ public class WebPluginUtils {
                 return ext;
             }
         }
-        // 返回默认值
-        //return TENANT_APP_KEY;
-        return null;
+        if(Objects.nonNull(userApi)) {
+            // 企业版
+            TenantInfoExt infoExt = userApi.getTenantInfoList().get(0);
+            TenantCommonExt ext = new TenantCommonExt();
+            ext.setEnvCode(envCode);
+            ext.setTenantAppKey(infoExt.getTenantAppKey());
+            ext.setTenantId(infoExt.getTenantId());
+            return ext;
+        }
+        // 开源版
+        TenantCommonExt ext = new TenantCommonExt();
+        ext.setEnvCode(ENV_CODE);
+        ext.setTenantAppKey(TENANT_APP_KEY);
+        ext.setTenantId(TENANT_ID);
+        return ext;
     }
+
     /**
      * 获取所有租户信息
      *
@@ -407,9 +433,6 @@ public class WebPluginUtils {
         target.setEnvCode(source.getEnvCode());
         target.setTenantId(source.getTenantId());
     }
-
-
-
 
     //********************************租户插件模块**********************************//
 
@@ -468,9 +491,9 @@ public class WebPluginUtils {
      *
      * @return tenantAppKey
      */
-    public static String fillTenantCommonExt() {
+    public static String traceTenantAppKey() {
         if (userApi != null) {
-            return userApi.traceTenantUserKey();
+            return userApi.traceTenantAppKey();
         }
         // 返回一个默认
         return TENANT_APP_KEY;
@@ -509,7 +532,7 @@ public class WebPluginUtils {
         TenantCommonExt ext = new TenantCommonExt();
         ext.setTenantId(traceTenantId());
         ext.setEnvCode(traceEnvCode());
-        ext.setTenantAppKey(fillTenantCommonExt());
+        ext.setTenantAppKey(traceTenantAppKey());
         return ext;
     }
     //********************************http线程上下文模块**********************************//

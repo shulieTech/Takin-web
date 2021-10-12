@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.shulie.takin.web.config.entity.AllowList;
 import io.shulie.takin.web.config.sync.api.AllowListSyncService;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class AllowListSyncServiceImpl implements AllowListSyncService {
 
     @Override
-    public void syncAllowList(String namespace, String applicationName, List<AllowList> allows) {
+    public void syncAllowList(TenantCommonExt commonExt, String applicationName, List<AllowList> allows) {
         // 不写redis，写入到文件
     }
 }

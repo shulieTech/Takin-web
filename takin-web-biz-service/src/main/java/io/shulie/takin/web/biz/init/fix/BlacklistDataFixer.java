@@ -54,7 +54,7 @@ public class BlacklistDataFixer {
                 noAppIdResult.forEach(result -> {
                     BlacklistCreateNewParam newParam = new BlacklistCreateNewParam();
                     newParam.setApplicationId(detailResult.getApplicationId());
-                    newParam.setTenantId(detailResult.getCustomerId());
+                    newParam.setTenantId(detailResult.getTenantId());
                     newParam.setType(BlacklistTypeEnum.REDIS.getType());
                     newParam.setUseYn(result.getUseYn());
                     newParam.setRedisKey(result.getRedisKey());

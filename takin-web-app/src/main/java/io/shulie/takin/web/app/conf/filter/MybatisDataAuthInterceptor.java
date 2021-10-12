@@ -60,7 +60,7 @@ public class MybatisDataAuthInterceptor implements Interceptor {
     public Object intercept(Invocation arg0) throws Throwable {
         MappedStatement mappedStatement = (MappedStatement)arg0.getArgs()[0];
         //如果没有权限拓展插件，则无需过滤数据权限
-        if (!WebPluginUtils.checkUserData()) {
+        if (!WebPluginUtils.checkUserPlugin()) {
             return arg0.proceed();
         }
         //仅拦截select 查询

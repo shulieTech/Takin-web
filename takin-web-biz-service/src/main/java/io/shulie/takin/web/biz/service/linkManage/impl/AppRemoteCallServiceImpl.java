@@ -52,6 +52,7 @@ import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
@@ -155,13 +156,13 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             AppRemoteCallUpdateParam param = new AppRemoteCallUpdateParam();
             BeanUtils.copyProperties(input, param);
 
-            param.setTenantId(detailResult.getCustomerId());
+            param.setTenantId(detailResult.getTenantId());
             param.setAppName(detailResult.getApplicationName());
             appRemoteCallDAO.update(param);
         } else {
             AppRemoteCallCreateParam param = new AppRemoteCallCreateParam();
             BeanUtils.copyProperties(input, param);
-            param.setTenantId(detailResult.getCustomerId());
+            param.setTenantId(detailResult.getTenantId());
             param.setAppName(detailResult.getApplicationName());
             appRemoteCallDAO.insert(param);
         }
@@ -237,7 +238,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         // 从mysql查出数据
         PagingList<AppRemoteCallListVO> dbPagingList = getDbPagingList(input, detailResult);
         // 根据应用的租户查询
-        input.setTenantId(detailResult.getCustomerId());
+        input.setTenantId(detailResult.getTenantId());
         if (dbPagingList.getList().size() < input.getPageSize()) {
             // amdb查询 页码是第一页
             input.setCurrent(input.getCurrent() - (int)(dbPagingList.getTotal() / input.getPageSize()) - 1);
@@ -503,7 +504,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     }
 
     private List<Blacklist> getBlackList() {
-        List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList();
+        TenantCommonExt commonExt = WebPluginUtils.traceTenantCommonExt();
+        List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList(commonExt.getTenantId(),commonExt.getEnvCode());
         if (CollectionUtils.isEmpty(tbLists)) {
             return Lists.newArrayList();
         }
@@ -519,7 +521,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         if (detailResult == null) {
             return Lists.newArrayList();
         }
-        List<BlacklistResult> results = blackListDAO.getAllEnabledBlockList(detailResult.getApplicationId());
+        List<BlacklistResult> results = blackListDAO.getAllEnabledBlockList(detailResult.getApplicationId(),WebPluginUtils.traceTenantCommonExt());
         AgentBlacklistVO vo = new AgentBlacklistVO();
         vo.setAppName(detailResult.getApplicationName());
         if (CollectionUtils.isNotEmpty(results)) {
@@ -629,7 +631,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 // todo 存在多个
                 ApplicationDetailResult result = results.get(0);
                 param.setApplicationId(result.getApplicationId());
-                param.setTenantId(result.getCustomerId());
+                param.setTenantId(result.getTenantId());
                 param.setAppName(result.getApplicationName());
                 param.setUserId(result.getUserId());
                 // 补充服务应用

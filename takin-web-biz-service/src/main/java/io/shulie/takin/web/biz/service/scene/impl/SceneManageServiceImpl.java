@@ -570,7 +570,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             SceneBusinessActivityRef ref = new SceneBusinessActivityRef();
             ref.setBusinessActivityId(data.getBusinessActivityId());
             ref.setBusinessActivityName(data.getBusinessActivityName());
-            List<String> ids = getAppIdsByNameAndUser(getAppsbyId(data.getBusinessActivityId()), null);
+            List<String> ids = getAppIdsByNameAndUser(getAppsbyId(data.getBusinessActivityId()));
             ref.setApplicationIds(convertListToString(ids));
             ref.setGoalValue(buildGoalValue(data));
             businessActivityList.add(ref);
@@ -687,11 +687,11 @@ public class SceneManageServiceImpl implements SceneManageService {
         return WebResponse.success(execList);
     }
 
-    private List<String> getAppIdsByNameAndUser(List<String> nameList, Long userId) {
+    private List<String> getAppIdsByNameAndUser(List<String> nameList) {
         if (CollectionUtils.isEmpty(nameList)) {
             return Collections.EMPTY_LIST;
         }
-        return tApplicationMntDao.queryIdsByNameAndTenant(nameList, userId);
+        return tApplicationMntDao.queryIdsByNameAndTenant(nameList, WebPluginUtils.traceTenantId(),WebPluginUtils.traceEnvCode());
     }
 
     private List<String> getAppsbyId(Long id) {

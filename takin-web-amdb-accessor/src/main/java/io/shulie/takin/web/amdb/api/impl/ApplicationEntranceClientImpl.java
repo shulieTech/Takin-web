@@ -55,7 +55,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             entranceQueryParam.setRpcType("");
         }
         entranceQueryParam.setAppName(applicationName);
-        entranceQueryParam.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+        entranceQueryParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
         entranceQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
             AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
@@ -87,8 +87,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         if (extend != null) {
             topologyQueryParam.setExtend(extend);
         }
-        topologyQueryParam.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
-        topologyQueryParam.setEnvCode("envCode");
+        topologyQueryParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
+        topologyQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
             //            String responseEntity = HttpClientUtil.sendGet(url, topologyQueryParam);
             //            if (StringUtils.isBlank(responseEntity)) {
@@ -141,8 +141,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             topologyQueryParam.setExtend(extend);
         }
         topologyQueryParam.setId(nodeId);
-        topologyQueryParam.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
-        topologyQueryParam.setEnvCode("envCode");
+        topologyQueryParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
+        topologyQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
             //            String responseEntity = HttpClientUtil.sendGet(url, topologyQueryParam);
             //            if (StringUtils.isBlank(responseEntity)) {
@@ -176,7 +176,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         ServiceQueryParam entranceQueryParam = new ServiceQueryParam();
         entranceQueryParam.setRpcType(RpcType.TYPE_MQ + "");
         entranceQueryParam.setAppName(applicationName);
-        entranceQueryParam.setUserAppKey(WebPluginUtils.fillTenantCommonExt());
+        entranceQueryParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
         entranceQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
             AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)

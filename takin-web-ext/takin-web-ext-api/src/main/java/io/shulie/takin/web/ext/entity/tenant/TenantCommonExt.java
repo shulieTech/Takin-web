@@ -23,7 +23,7 @@ public class TenantCommonExt extends PagingDevice {
     private Long tenantId;
 
     @ApiModelProperty(value = "租户code")
-    private String userAppKey;
+    private String tenantAppKey;
 
     @ApiModelProperty(value = "环境")
     private String envCode;

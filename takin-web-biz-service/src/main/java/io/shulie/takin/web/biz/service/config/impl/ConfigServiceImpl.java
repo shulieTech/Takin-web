@@ -35,7 +35,7 @@ public class ConfigServiceImpl implements ConfigService {
             return;
         }
         redisTemplate.opsForValue().set(SwitchKeyFactory.getClusterTestSwitchRedisKey(userAppKey), value);
-        configSyncService.syncClusterTestSwitch(WebPluginUtils.getTenantUserAppKey());
+        configSyncService.syncClusterTestSwitch(WebPluginUtils.getTenantAppKey());
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ConfigServiceImpl implements ConfigService {
         }
 
         redisTemplate.opsForValue().set(SwitchKeyFactory.getAllowListSwitchRedisKey(userAppKey), value);
-        configSyncService.syncAllowListSwitch(WebPluginUtils.getTenantUserAppKey());
+        configSyncService.syncAllowListSwitch(WebPluginUtils.getTenantAppKey());
     }
 
     @Override

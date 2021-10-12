@@ -177,7 +177,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
             AgentProjectConfigQueryParam projectConfigQueryParam = new AgentProjectConfigQueryParam();
             projectConfigQueryParam.setEnKey(detailResult.getEnKey());
             projectConfigQueryParam.setProjectName(updateRequest.getProjectName());
-            projectConfigQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+            projectConfigQueryParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
             AgentConfigDetailResult projectConfig = agentConfigDAO.findProjectConfig(projectConfigQueryParam);
 
             boolean checkSuccess = AgentConfigTypeEnum.GLOBAL.getVal().equals(detailResult.getType())
@@ -200,7 +200,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
                 createParam.setValueType(detailResult.getValueType());
                 createParam.setValueOption(detailResult.getValueOption());
                 createParam.setProjectName(updateRequest.getProjectName());
-                createParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+                createParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
                 agentConfigDAO.insert(createParam);
                 return;
             }
@@ -251,7 +251,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
 
         // 2、查询符合条件的应用配置
         if (StringUtils.isEmpty(queryBO.getUserAppKey())) {
-            queryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+            queryParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
         } else {
             queryParam.setUserAppKey(queryBO.getUserAppKey());
         }

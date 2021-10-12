@@ -118,7 +118,7 @@ public class WhiteListFileService {
         try {
             if (WebPluginUtils.checkUserData()) {
                 id = WebPluginUtils.getTenantId();
-                key = WebPluginUtils.getTenantUserAppKey();
+                key = WebPluginUtils.getTenantAppKey();
             }
             Map<String, Object> result = queryBlackWhiteList("", id);
             if (null != result && result.size() > 0) {

@@ -55,7 +55,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             entranceQueryParam.setRpcType("");
         }
         entranceQueryParam.setAppName(applicationName);
-        entranceQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        entranceQueryParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
         entranceQueryParam.setEnvCode("envCode");
         //entranceQueryParam.setFieldNames("appName,serviceName,methodName,middlewareName,rpcType");
         try {
@@ -101,7 +101,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         if (extend != null) {
             topologyQueryParam.setExtend(extend);
         }
-        topologyQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        topologyQueryParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
         topologyQueryParam.setEnvCode("envCode");
         try {
 //            String responseEntity = HttpClientUtil.sendGet(url, topologyQueryParam);
@@ -156,7 +156,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             topologyQueryParam.setExtend(extend);
         }
         topologyQueryParam.setId(nodeId);
-        topologyQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        topologyQueryParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
         topologyQueryParam.setEnvCode("envCode");
         try {
 //            String responseEntity = HttpClientUtil.sendGet(url, topologyQueryParam);
@@ -192,7 +192,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         ServiceQueryParam entranceQueryParam = new ServiceQueryParam();
         entranceQueryParam.setRpcType(RpcType.TYPE_MQ + "");
         entranceQueryParam.setAppName(applicationName);
-        entranceQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        entranceQueryParam.setUserAppKey(WebPluginUtils.getTenantAppKey());
         entranceQueryParam.setEnvCode("envCode");
         //entranceQueryParam.setFieldNames("appName,serviceName,methodName,middlewareName,rpcType");
         try {

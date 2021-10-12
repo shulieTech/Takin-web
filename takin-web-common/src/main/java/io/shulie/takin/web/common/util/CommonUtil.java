@@ -39,7 +39,7 @@ public class CommonUtil implements AppConstants {
      * @return 租户, 环境隔离后的路径
      */
     public static String getZkTenantAndEnvPath(String path) {
-        return generateRedisKeyWithSeparator(Separator.Separator1, WebPluginUtils.getTenantUserAppKey(),
+        return generateRedisKeyWithSeparator(Separator.Separator1, WebPluginUtils.getTenantAppKey(),
             WebPluginUtils.getEnvCode(), path);
     }
 

@@ -37,27 +37,27 @@ public class ConfigSynchronizer {
             return;
         } else {
             for (TApplicationMnt application : applications) {
-                configSyncService.syncGuard(WebPluginUtils.USER_APP_KEY, application.getApplicationId(),
+                configSyncService.syncGuard(WebPluginUtils.TENANT_APP_KEY, application.getApplicationId(),
                     application.getApplicationName());
                 sleep();
-                configSyncService.syncShadowDB(WebPluginUtils.USER_APP_KEY, application.getApplicationId(),
+                configSyncService.syncShadowDB(WebPluginUtils.TENANT_APP_KEY, application.getApplicationId(),
                     application.getApplicationName());
                 sleep();
-                configSyncService.syncAllowList(WebPluginUtils.USER_APP_KEY, application.getApplicationId(),
+                configSyncService.syncAllowList(WebPluginUtils.TENANT_APP_KEY, application.getApplicationId(),
                     application.getApplicationName());
                 sleep();
-                configSyncService.syncShadowJob(WebPluginUtils.USER_APP_KEY, application.getApplicationId(),
+                configSyncService.syncShadowJob(WebPluginUtils.TENANT_APP_KEY, application.getApplicationId(),
                     application.getApplicationName());
                 sleep();
-                configSyncService.syncShadowConsumer(WebPluginUtils.USER_APP_KEY, application.getApplicationId(),
+                configSyncService.syncShadowConsumer(WebPluginUtils.TENANT_APP_KEY, application.getApplicationId(),
                     application.getApplicationName());
             }
         }
-        configSyncService.syncClusterTestSwitch(WebPluginUtils.USER_APP_KEY);
+        configSyncService.syncClusterTestSwitch(WebPluginUtils.TENANT_APP_KEY);
         sleep();
-        configSyncService.syncAllowListSwitch(WebPluginUtils.getTenantUserAppKey());
+        configSyncService.syncAllowListSwitch(WebPluginUtils.getTenantAppKey());
         sleep();
-        configSyncService.syncBlockList(WebPluginUtils.getTenantUserAppKey());
+        configSyncService.syncBlockList(WebPluginUtils.getTenantAppKey());
         log.info("所有配置同步到配置中心成功");
     }
 

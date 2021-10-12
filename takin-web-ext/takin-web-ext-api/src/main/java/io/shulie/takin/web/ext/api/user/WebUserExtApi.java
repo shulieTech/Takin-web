@@ -9,12 +9,23 @@ import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 
 /**
  * @author hezhongqi
  * @date 2021/7/29 20:30
  */
 public interface WebUserExtApi extends ExtensionPoint {
+    //********************************http线程上下文模块**********************************//
+
+    /**
+     * 根据userId 获取用户信息
+     * @param userId
+     * @return
+     */
+    UserExt getUserExtByUserId(Long userId);
+
+    //********************************http线程上下文模块**********************************//
     /**
      * 填充用户数据 简单补充用户数据
      * 用于：
@@ -131,5 +142,13 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @return -
      */
     String getEnvCode();
+
     //********************************http线程上下文模块**********************************//
+
+
+    /**
+     * 获取企业版默认租户
+     * @return
+     */
+    List<TenantInfoExt> getTenantInfoList();
 }

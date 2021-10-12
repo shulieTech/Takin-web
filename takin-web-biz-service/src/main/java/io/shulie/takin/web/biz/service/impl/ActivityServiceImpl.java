@@ -298,9 +298,17 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setLinkId(oldActivity.getLinkId());
         activityDAO.updateActivity(updateParam);
 
-        notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(), request.getServiceName(),
-            request.getMethod(),
-            request.getRpcType(), request.getExtend());
+        // 非核心字段变动，不需要重建链路
+        if(StringUtil.equals(request.getApplicationName(), oldActivity.getApplicationName())
+            && StringUtil.equals(request.getServiceName(), oldActivity.getServiceName())
+            && StringUtil.equals(request.getMethod(), oldActivity.getMethod())
+            && StringUtil.equals(request.getRpcType(), oldActivity.getRpcType())
+            && StringUtil.equals(request.getExtend(), oldActivity.getExtend())) {
+            return;
+        }
+
+        notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(), oldActivity.getServiceName(),
+            oldActivity.getMethod(), oldActivity.getRpcType(), oldActivity.getExtend());
         notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
             request.getMethod(), request.getRpcType(), request.getExtend());
     }

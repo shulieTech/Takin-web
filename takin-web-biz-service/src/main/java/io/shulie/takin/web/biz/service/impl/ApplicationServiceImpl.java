@@ -103,6 +103,7 @@ import io.shulie.takin.web.common.vo.excel.LinkGuardExcelVO;
 import io.shulie.takin.web.common.vo.excel.ShadowConsumerExcelVO;
 import io.shulie.takin.web.common.vo.excel.ShadowJobExcelVO;
 import io.shulie.takin.web.common.vo.excel.WhiteListExcelVO;
+import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsManageDAO;
@@ -247,6 +248,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Autowired
     private ApplicationNodeService applicationNodeService;
 
+    @Autowired
+    private ApplicationNodeProbeDAO applicationNodeProbeDAO;
+
+    //3.添加定时任务
+    //或直接指定时间间隔，例如：5秒
     @Override
     public void configureTasks(TenantCommonExt ext) {
         //针对每个用户进行检查
@@ -434,8 +440,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         queryParam.setApplicationNames(Collections.singletonList(tApplicationMnt.getApplicationName()));
         PagingList<ApplicationNodeResult> applicationNodes = applicationNodeDAO.pageNodes(queryParam);
         List<ApplicationNodeResult> applicationNodeResultList = applicationNodes.getList();
-        ApplicationVo vo = this.appEntryToVo(tApplicationMnt, applicationResult,
-            applicationNodeResultList);
+        ApplicationVo vo = this.appEntryToVo(tApplicationMnt, applicationResult, applicationNodeResultList);
 
         // 异常探针状态再判断
         this.checkAccessStatus(vo);
@@ -1996,6 +2001,34 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
 
         return Response.success();
+    }
+
+    @Override
+    public void resumeAllAgent(List<String> appIds) {
+        try {
+            // 查询所有应用
+            List<TApplicationMnt> applicationList = tApplicationMntDao.queryApplicationList(null, appIds);
+            if (CollectionUtil.isEmpty(applicationList)) {
+                return;
+            }
+
+            List<String> appNames = applicationList.stream().map(TApplicationMnt :: getApplicationName).collect(Collectors.toList());
+            applicationNodeProbeDAO.delByAppNamesAndOperate(WebPluginUtils.getCustomerId(), ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
+        } catch (Exception e) {
+            log.error("一键恢复探针异常", e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_RESUME_AGENT_ERROR, e);
+        }
+    }
+
+    @Override
+    public ApplicationDetailResult getByApplicationIdWithCheck(Long applicationId) {
+        // 查询应用
+        ApplicationDetailResult application = applicationDAO.getApplicationById(applicationId);
+        // 判断
+        if (application == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR, "应用不存在!");
+        }
+        return application;
     }
 
     List<ApplicationVo> appEntryListToVoList(List<TApplicationMnt> tApplicationMnts) {

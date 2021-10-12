@@ -23,8 +23,6 @@ import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.ListHelper;
 import com.pamirs.takin.common.util.parse.UrlUtil;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
-import com.pamirs.takin.entity.dao.linkmanage.TBusinessLinkManageTableMapper;
-import com.pamirs.takin.entity.dao.linkmanage.TLinkManageTableMapper;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
@@ -53,6 +51,7 @@ import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneTagRefResponse;
@@ -420,6 +419,28 @@ public class SceneManageServiceImpl implements SceneManageService {
             Long pressureTestSecond = this.convertTime(timeVo.getTime(), timeVo.getUnit());
             if (scheduleInterval > pressureTestSecond) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "漏数验证时间间隔不能大于压测时长!");
+            }
+        }
+
+        //处理定时任务
+        if (dto.getIsScheduler() == null || !dto.getIsScheduler()) {
+            sceneSchedulerTaskService.deleteBySceneId(dto.getId());
+        } else {
+            SceneSchedulerTaskResponse dbData = sceneSchedulerTaskService.selectBySceneId(dto.getId());
+            if (dto.getExecuteTime() != null && dbData != null) {
+                Date executeTime = dbData.getExecuteTime();
+                if (dto.getExecuteTime().compareTo(executeTime) != 0) {
+                    SceneSchedulerTaskUpdateRequest updateParam = new SceneSchedulerTaskUpdateRequest();
+                    updateParam.setId(dbData.getId());
+                    updateParam.setExecuteTime(dto.getExecuteTime());
+                    sceneSchedulerTaskService.update(updateParam, true);
+                }
+            } else if (dbData == null) {
+                SceneSchedulerTaskCreateRequest createRequest = new SceneSchedulerTaskCreateRequest();
+                createRequest.setSceneId(dto.getId());
+                createRequest.setExecuteTime(dto.getExecuteTime());
+                createRequest.setUserId(WebPluginUtils.getUser().getId());
+                sceneSchedulerTaskService.insert(createRequest);
             }
         }
 

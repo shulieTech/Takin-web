@@ -1,16 +1,10 @@
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count INT;
-
-SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_application_node_probe' AND COLUMN_NAME = 'operate_id');
+SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = DATABASE() AND TABLE_NAME = 't_application_node_probe' AND COLUMN_NAME = 'operate_id');
 
 IF count = 0 THEN
 
@@ -19,9 +13,6 @@ ALTER TABLE `t_application_node_probe` ADD COLUMN `operate_id` bigint(20) UNSIGN
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;

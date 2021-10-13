@@ -1,0 +1,1 @@
+update `t_tro_resource` set `action` = '[2]' where `code` = 'appManage_appAccess';

@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 
 import com.github.pagehelper.util.StringUtil;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
+import com.pamirs.takin.entity.domain.vo.AppUnstallAgentVo;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.ApplicationService;
@@ -85,9 +86,7 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response<ApplicationVo> getApplicationInfoWithAuth(
-        @ApiParam(name = "id", value = "系统id") String id
-    ) {
+    public Response<ApplicationVo> getApplicationInfoWithAuth(@ApiParam(name = "id", value = "系统id") @RequestParam String id) {
         return applicationService.getApplicationInfo(id);
     }
 
@@ -199,4 +198,13 @@ public class ApplicationController {
         return applicationService.appDsConfigIsNewVersion();
     }
 
+    @PostMapping("/application/center/unstallAllAgent")
+    @ApiOperation("一键卸载探针")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
+    public void unstallAllAgent(@RequestBody AppUnstallAgentVo vo) {
+        applicationService.uninstallAllAgent(vo.getAppIds());
+    }
 }

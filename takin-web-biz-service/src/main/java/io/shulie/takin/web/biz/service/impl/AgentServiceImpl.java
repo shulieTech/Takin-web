@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AgentServiceImpl implements AgentService {
 
-    @Value("${agent.interactive.takin.web.url:http://127.0.0.1:10086/takin-web}")
+    @Value("${agent.interactive.takin.web.url:http://127.0.0.1:10008/takin-web}")
     private String takinWebUrl;
 
     @Autowired
@@ -43,9 +43,16 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     public AgentApplicationNodeProbeOperateResponse getOperateResponse(String applicationName, String agentId) {
-        // 根据应用名称, agentId 查出节点探针的操作记录
+        // 先查出该应用是否一键卸载, 如果是, 直接返回命令
         ApplicationNodeProbeResult applicationNodeProbeResult =
-            applicationNodeProbeDAO.getByApplicationNameAndAgentId(applicationName, agentId);
+            applicationNodeProbeDAO.getByApplicationNameAndAgentId(applicationName, ProbeConstants.ALL_AGENT_ID);
+        if (applicationNodeProbeResult == null) {
+            // 如果该应用没有一键卸载过, 继续单个节点的查询
+            // 根据应用名称, agentId 查出节点探针的操作记录
+            applicationNodeProbeResult =
+                applicationNodeProbeDAO.getByApplicationNameAndAgentId(applicationName, agentId);
+        }
+
         if (applicationNodeProbeResult == null) {
             return null;
         }

@@ -1,16 +1,10 @@
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count INT;
-
-SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_link_manage_table' AND COLUMN_NAME = 'features');
+SET count = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = DATABASE() AND TABLE_NAME = 't_link_manage_table' AND COLUMN_NAME = 'features');
 
 IF count = 0 THEN
 
@@ -19,21 +13,14 @@ alter table t_link_manage_table add column features text;
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
-
 
 -- 清除表开始
 DROP PROCEDURE IF EXISTS delete_table;
-
 DELIMITER $$
-
 CREATE PROCEDURE delete_table()
-
 BEGIN
 
 DECLARE count3 INT;
@@ -70,39 +57,17 @@ END IF;
 
 delete from t_tro_resource where `code` = 'systemFlow';
 
-
 END IF;
 
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL delete_table();
-
 DROP PROCEDURE IF EXISTS delete_table;
 -- 清除表结束
 
-
--- 更新数据开始
-DROP PROCEDURE IF EXISTS update_data;
-
-DELIMITER $$
-
-CREATE PROCEDURE update_data()
-
-BEGIN
-
-DECLARE count3 INT;
-
-SET count3 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-WHERE table_schema = DATABASE() AND TABLE_NAME = 't_tro_resource' AND COLUMN_NAME = 'value' AND COLUMN_NAME = 'code');
-
-
-IF count3 > 0 THEN
-
-
+BEGIN;
 UPDATE `t_tro_resource` SET `value` = '[\"/api/user/work/bench\"]' WHERE `code` = 'dashboard';
 UPDATE `t_tro_resource` SET `value` = '[\"/api/activities\"]' WHERE `code` = 'businessActivity';
 UPDATE `t_tro_resource` SET `value` = '[\"/api/link/scene/manage\"]' WHERE `code` = 'businessFlow';
@@ -121,15 +86,4 @@ UPDATE `t_tro_resource` SET `value` = '[\"/debugTool/linkDebug/detail\"]' WHERE 
 UPDATE `t_tro_resource` SET `value` = '[\"/api/settle/balance/list\"]' WHERE `code` = 'flowAccount';
 UPDATE `t_tro_resource` SET `value` = '[\"/api/scriptManage\"]' WHERE `code` = 'scriptManage';
 UPDATE `t_tro_resource` SET `value` = '[\"/api/shellManage\"]' WHERE `code` = 'shellManage';
-
-
-END IF;
-
-END $$
-
-DELIMITER ;
-
-CALL update_data();
-
-DROP PROCEDURE IF EXISTS update_data;
--- 更新数据结束
+COMMIT;

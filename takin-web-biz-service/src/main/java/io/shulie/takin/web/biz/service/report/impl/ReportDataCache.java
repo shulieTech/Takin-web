@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.report.impl;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.web.biz.service.report.ReportService;
-import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.util.RedisHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -119,29 +120,35 @@ public class ReportDataCache {
 
     /**
      * 查询all类型的所有压测指标数据
+     *
+     * @param reportId 报告id
      */
     private void queryAllMetricsData(Long reportId) {
-        ReportDetailDTO reportDetail = getReportDetailDTO(reportId);
+        ReportDetailDTO reportDetail = this.getReportDetailDTO(reportId);
         if (reportDetail == null) {
             return;
         }
-        WebResponse<List<HashMap>> response = reportService.queryMetrices(reportId, reportDetail.getSceneId(),
-                reportDetail.getCustomerId());
-        if (response == null || CollectionUtils.isEmpty(response.getData())) {
+
+        // 指标 map
+        List<Map<String, Object>> metricsList = reportService.listMetrics(reportId, reportDetail.getSceneId(), reportDetail.getCustomerId());
+
+        if (CollectionUtils.isEmpty(metricsList)) {
             log.error("ReportDataCache Cache Jmeter Metric is null");
             return;
         }
-        log.info("ReportDataCache Cache Jmeter Metrices Data Size={}, One Sample: {}", response.getData().size(),
-                JSONObject.toJSONString(response.getData().get(0)));
-        List<Metrices> metrices = Lists.newArrayList();
-        response.getData().forEach(data -> {
-            Metrices metric = new Metrices();
-            metric.setTime((Long) data.get("time"));
-            metric.setAvgTps((Double) data.get("avgTps"));
-            metrices.add(metric);
-        });
-        // 数据存redis list 格式
-        redisTemplate.opsForList().rightPushAll(getReportMetricKey(reportId), metrices);
+
+        log.info("ReportDataCache Cache Jmeter Metrics Data Size={}, One Sample: {}",
+            metricsList.size(), metricsList.get(0));
+
+        // 指标 redis key
+        String reportMetricKey = this.getReportMetricKey(reportId);
+        for (Map<String, Object> metrics : metricsList) {
+            // redis hash 结构存放指标, time 时间戳为 key, avgTps 为 value
+            if (metrics.get("time") == null) {
+                continue;
+            }
+            RedisHelper.hashPut(reportMetricKey, metrics.get("time").toString(), metrics.get("avgTps"));
+        }
     }
 
     /**
@@ -194,12 +201,31 @@ public class ReportDataCache {
         }
     }
 
-    public List<Metrices> getAllMetricsData(Long reportId) {
-        if (!redisTemplate.hasKey(getReportMetricKey(reportId)) ||
-                redisTemplate.opsForList().size(getReportMetricKey(reportId)) == 0) {
-            return Lists.newArrayList();
+    /**
+     * 根据 reportId 查询所有的指标
+     *
+     * @param reportId 报告id
+     * @return 指标列表
+     */
+    public List<Metrices> listAllMetricsData(Long reportId) {
+        String reportMetricKey = this.getReportMetricKey(reportId);
+        if (!RedisHelper.hasKey(reportMetricKey)) {
+            return Collections.emptyList();
         }
-        return redisTemplate.opsForList().range(getReportMetricKey(reportId), 0, -1);
+
+        // 根据 redis key, 获取整个 hash, key 是时间戳, value 是 avgTps
+        Map<Object, Object> metricsMap = RedisHelper.hashGetAll(reportMetricKey);
+        if (org.springframework.util.CollectionUtils.isEmpty(metricsMap)) {
+            return Collections.emptyList();
+        }
+
+        // 使用 json 转换一下
+        return metricsMap.entrySet().stream().map(entry -> {
+            Metrices metrices = new Metrices();
+            metrices.setTime(Long.valueOf(entry.getKey().toString()));
+            metrices.setAvgTps(Double.valueOf(entry.getValue().toString()));
+            return metrices;
+        }).collect(Collectors.toList());
     }
 
     /**

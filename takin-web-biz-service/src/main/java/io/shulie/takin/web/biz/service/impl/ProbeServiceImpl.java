@@ -72,11 +72,9 @@ public class ProbeServiceImpl implements ProbeService, ProbeConstants, AppConsta
     public PagingList<ProbeListOutput> pageProbe(PageBaseDTO pageDTO) {
         PagingList<ProbeListResult> resultPage = probeDAO.pageProbe(pageDTO);
         List<ProbeListResult> results = resultPage.getList();
-        if (CollectionUtil.isEmpty(results)) {
-            return PagingList.of(Lists.newArrayList(),resultPage.getTotal());
-        }
-
-        return PagingList.of(CommonUtil.list2list(results, ProbeListOutput.class), resultPage.getTotal());
+        return resultPage.getTotal() == 0 ? PagingList.empty()
+            : PagingList.of(CommonUtil.list2list(results, ProbeListOutput.class),
+                resultPage.getTotal());
     }
 
     @Override

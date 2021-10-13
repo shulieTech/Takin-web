@@ -191,4 +191,11 @@ public interface ApplicationService {
     String getApplicationNameByApplicationId(Long applicationId);
 
     TApplicationMnt queryTApplicationMntByName(String appName);
+
+    /**
+     * 一键卸载所有应用
+     */
+    void uninstallAllAgent(List<String> appIds);
+
+
 }

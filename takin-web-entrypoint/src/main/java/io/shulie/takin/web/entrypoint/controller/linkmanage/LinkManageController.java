@@ -162,7 +162,7 @@ public class LinkManageController {
     public Response<List<SystemProcessIdAndNameDto>> systemProcessFuzzSearch(
         @ApiParam(name = "systemProcessName", value = "系统流程名字") String systemProcessName) {
         try {
-            List<SystemProcessIdAndNameDto> dto = linkManageService.ggetAllSystemProcess(systemProcessName);
+            List<SystemProcessIdAndNameDto> dto = linkManageService.getAllSystemProcess(systemProcessName);
             return Response.success(dto);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

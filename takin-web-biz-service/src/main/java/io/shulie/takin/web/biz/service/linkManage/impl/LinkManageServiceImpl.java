@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -85,7 +84,6 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
@@ -107,6 +105,7 @@ import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.linkmange.TechLinkResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -760,7 +759,7 @@ public class LinkManageServiceImpl implements LinkManageService {
     }
 
     @Override
-    public List<SystemProcessIdAndNameDto> ggetAllSystemProcess(String systemProcessName) {
+    public List<SystemProcessIdAndNameDto> getAllSystemProcess(String systemProcessName) {
         List<SystemProcessIdAndNameDto> result = Lists.newArrayList();
         LinkManageQueryParam queryParam = new LinkManageQueryParam();
         WebPluginUtils.fillQueryParam(queryParam);

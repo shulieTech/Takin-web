@@ -69,7 +69,7 @@ public interface LinkManageService {
 
     List<MiddleWareEntity> getAllMiddleWareTypeList();
 
-    List<SystemProcessIdAndNameDto> ggetAllSystemProcess(String systemProcessName);
+    List<SystemProcessIdAndNameDto> getAllSystemProcess(String systemProcessName);
 
     List<SystemProcessIdAndNameDto> getAllSystemProcessCanrelateBusiness(String systemProcessName);
 

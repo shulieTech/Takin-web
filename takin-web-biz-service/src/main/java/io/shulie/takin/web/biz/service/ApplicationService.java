@@ -152,7 +152,12 @@ public interface ApplicationService {
 
     List<TApplicationMnt> getAllApplications();
 
-    List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList);
+    /**
+     * 根据租户查询 应用数据
+     * @param tenantCommonExt
+     * @return
+     */
+    List<TApplicationMnt> getApplicationsByTenantInfoExt(TenantCommonExt tenantCommonExt);
 
     String getIdByName(String applicationName);
 

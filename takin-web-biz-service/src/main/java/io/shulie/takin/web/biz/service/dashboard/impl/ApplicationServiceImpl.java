@@ -61,8 +61,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 System.currentTimeMillis());
             result.setSwitchStutus(voStatus);
         }
-        //todo agent改造点
-        agentConfigCacheManager.evictPressureSwitch("", "");
+        agentConfigCacheManager.evictPressureSwitch();
         return result;
     }
 

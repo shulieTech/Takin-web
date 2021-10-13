@@ -34,7 +34,7 @@ public class WebPluginUtils {
     /**
      * 默认 userAppkey 解决zk PATH 问题
      */
-    public static String DEFAULT_TENANT_APP_KEY = "takin";
+    public static String DEFAULT_TENANT_APP_KEY = "default";
     public static Long DEFAULT_TENANT_ID = 0L;
     public static String DEFAULT_ENV_CODE = "test";
     public static String DEFAULT_TENANT_CODE = "default";

@@ -534,13 +534,14 @@
 
     <select id="getApplicationsByTenants"
             resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
-        select application_id,
-        application_name
-        from t_application_mnt where
-        customer_id in
-        <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
-            #{userId}
-        </foreach>
+        select application_id,application_name
+        from t_application_mnt where 1=1
+        <if test="tenantId != null">
+            and tenant_id =  #{tenantId}
+        </if>
+        <if test="envCode != null">
+            and env_code =  #{envCode}
+        </if>
     </select>
 
     <select id="getIdByName" resultType="java.lang.String">

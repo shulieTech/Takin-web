@@ -207,7 +207,7 @@ public class ShadowEsServiceImpl extends AbstractDsService {
 
     private void clearCache(String applicationName) {
         //todo Agent改造点
-        agentConfigCacheManager.evictShadowEsServers("","",applicationName);
+        agentConfigCacheManager.evictShadowEsServers(applicationName);
     }
 
     private ApplicationDsResult getApplicationDsResult(Long id) {

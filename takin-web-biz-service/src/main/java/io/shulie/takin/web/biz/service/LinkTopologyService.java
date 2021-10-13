@@ -821,6 +821,7 @@ public class LinkTopologyService extends CommonService {
                     applicationEntranceTopologyEdgeResponse.setTarget(edge.getTargetId());
                     //EdgeTypeEnum edgeTypeEnum = EdgeTypeEnum.getEdgeTypeEnum(edge.getMiddlewareName());
                     //applicationEntranceTopologyEdgeResponse.setLabel(edgeTypeEnum.name());
+                    applicationEntranceTopologyEdgeResponse.setType(edge.getRpcType());
                     applicationEntranceTopologyEdgeResponse.setLabel(edge.getMiddlewareName());
                     //applicationEntranceTopologyEdgeResponse.setType(edgeTypeEnum.name());
                     applicationEntranceTopologyEdgeResponse.setInfo(convertEdgeInfo(edge, nodeMap));

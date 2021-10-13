@@ -106,7 +106,7 @@ public class ShadowKafkaServiceImpl extends AbstractDsService {
 
     private void clearCache(String applicationName) {
         //todo agent改造点
-        agentConfigCacheManager.evictShadowKafkaCluster("","",applicationName);
+        agentConfigCacheManager.evictShadowKafkaCluster(applicationName);
     }
 
     private void syncShadowKafka(Long applicationId, String o) {

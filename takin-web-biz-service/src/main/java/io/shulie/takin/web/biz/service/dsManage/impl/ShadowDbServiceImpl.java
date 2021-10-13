@@ -106,7 +106,6 @@ public class ShadowDbServiceImpl extends AbstractDsService {
         applicationService.modifyAccessStatus(String.valueOf(applicationId),
             AppAccessTypeEnum.UNUPLOAD.getValue(), null);
 
-        //todo Agent改造点
         agentConfigCacheManager.evictShadowDb(applicationName);
     }
 

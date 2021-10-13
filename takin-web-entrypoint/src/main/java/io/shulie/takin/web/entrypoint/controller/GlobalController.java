@@ -57,8 +57,7 @@ public class GlobalController {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION, BizOpConstants.OpTypes.OPEN);
 
         configService.updateAllowListSwitch(WebPluginUtils.traceTenantCommonExt(), true);
-        //todo Agent改造点
-        agentConfigCacheManager.evictAllowListSwitch("","");
+        agentConfigCacheManager.evictAllowListSwitch();
         return Response.success();
     }
 
@@ -77,8 +76,7 @@ public class GlobalController {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CLOSE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION, BizOpConstants.OpTypes.CLOSE);
         configService.updateAllowListSwitch(WebPluginUtils.traceTenantCommonExt(), false);
-        //todo Agent改造点
-        agentConfigCacheManager.evictAllowListSwitch("","");
+        agentConfigCacheManager.evictAllowListSwitch();
         return Response.success();
     }
 

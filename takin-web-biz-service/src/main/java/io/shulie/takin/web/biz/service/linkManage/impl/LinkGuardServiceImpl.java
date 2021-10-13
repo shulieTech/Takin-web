@@ -226,7 +226,6 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         entity.setIsEnable(target);
         tLinkGuardMapper.update(entity);
         configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), linkGuardEntity.getApplicationId(), null);
-        //todo Agent改造点
         agentConfigCacheManager.evictGuards(linkGuardEntity.getApplicationName());
         return Response.success();
     }

@@ -110,7 +110,6 @@ public class BlacklistServiceImpl implements BlacklistService {
         whiteListFileService.writeWhiteListFile();
         TenantCommonExt commonExt = WebPluginUtils.fillTenantCommonExt(tApplicationMnt.getTenantId(), tApplicationMnt.getEnvCode());
         configSyncService.syncAllowList(commonExt, applicationId, tApplicationMnt.getApplicationName());
-        //todo Agent改造点
         agentConfigCacheManager.evictRecallCalls(tApplicationMnt.getApplicationName());
     }
 

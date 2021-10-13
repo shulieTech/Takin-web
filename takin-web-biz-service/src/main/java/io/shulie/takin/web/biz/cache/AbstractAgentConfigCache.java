@@ -5,6 +5,7 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -25,23 +26,21 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
     }
 
     @Override
-    public T get(String userAppKey, String envCode, String namespace) {
-        T result = (T)redisTemplate.opsForValue().get(getCacheKey(userAppKey, envCode, namespace));
+    public T get(String namespace) {
+        T result = (T)redisTemplate.opsForValue().get(getCacheKey(namespace));
         if (result == null) {
-            result = queryValue(namespace, userAppKey, envCode);
-            redisTemplate.opsForValue().set(getCacheKey(userAppKey, envCode, namespace), result);
+            result = queryValue(namespace);
+            redisTemplate.opsForValue().set(getCacheKey(namespace), result);
         }
         return result;
     }
 
     /**
-     * @param userAppKey 租户标识
-     * @param envCode    环境编码
      * @param namespace
      */
     @Override
-    public void evict(String userAppKey, String envCode, String namespace) {
-        redisTemplate.delete(getCacheKey(userAppKey, envCode, namespace));
+    public void evict(String namespace) {
+        redisTemplate.delete(getCacheKey(namespace));
     }
 
     /**
@@ -60,13 +59,14 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
     }
 
     /**
-     * @param userAppKey 租户标识
-     * @param envCode    环境编码
      * @param namespace
      * @return
      */
-    private String getCacheKey(String userAppKey, String envCode, String namespace) {
-        return CommonUtil.generateRedisKey(cacheName, userAppKey, envCode, namespace);
+    private String getCacheKey(String namespace) {
+
+        return CommonUtil.generateRedisKey(cacheName,
+            WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(), namespace);
+
     }
 
     /**

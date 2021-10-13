@@ -25,7 +25,6 @@ public class AgentApplicationController {
     @Autowired
     private ApplicationMiddlewareService applicationMiddlewareService;
 
-    //todo agent改造点
     @ApiOperation("|_ 上报应用中间件")
     @PostMapping(AgentUrls.AGENT_PUSH_APPLICATION_MIDDLEWARE)
     public void pushMiddlewareList(@Validated @RequestBody PushMiddlewareRequest pushMiddlewareRequest) {

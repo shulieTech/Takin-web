@@ -30,9 +30,9 @@ public class AgentConfigQueryDTO extends PageBaseDTO {
      */
     private Boolean status;
     /**
-     * 租户的userAppKey
+     * 租户的tenantAppKey
      */
-    private String userAppKey;
+    private String tenantAppKey;
     /**
      * 环境编码
      */

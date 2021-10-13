@@ -23,16 +23,16 @@ public class PressureStatisticsApiImpl implements PressureStatisticsApi {
 
     @Override
     public PressurePieTotalResp getPressurePieTotal(PressureTotalReq req) {
-        return cloudPressureStatisticsApi.getPressurePieTotal(req).getData();
+        return cloudPressureStatisticsApi.getPressurePieTotal(req);
     }
 
     @Override
     public ReportTotalResp getReportTotal(PressureTotalReq req) {
-        return cloudPressureStatisticsApi.getReportTotal(req).getData();
+        return cloudPressureStatisticsApi.getReportTotal(req);
     }
 
     @Override
     public List<PressureListTotalResp> getPressureListTotal(PressureTotalReq req) {
-        return cloudPressureStatisticsApi.getPressureListTotal(req).getData();
+        return cloudPressureStatisticsApi.getPressureListTotal(req);
     }
 }

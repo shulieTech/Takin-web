@@ -602,6 +602,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         }
         // 获取本地远程调用 数据
         AppRemoteCallQueryParam queryParam = new AppRemoteCallQueryParam();
+        queryParam.setApplicationIds(apps.stream().map(ApplicationDetailResult::getApplicationId).collect(Collectors.toList()));
         List<AppRemoteCallResult> callResults = this.queryAsyncIfNecessary(queryParam);
         List<String> appNameRemoteCallIds = callResults.stream().map(result -> {
             // 应用名

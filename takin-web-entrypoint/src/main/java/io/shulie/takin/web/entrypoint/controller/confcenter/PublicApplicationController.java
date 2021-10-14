@@ -1,8 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.confcenter;
 
 import com.pamirs.takin.entity.domain.vo.application.UpdateAppNodeNumVO;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.swagger.annotations.Api;
@@ -29,11 +27,6 @@ public class PublicApplicationController {
 
     @PutMapping("/console/application/center/app/nodeNum")
     @ApiOperation("修改应用节点数")
-    @ModuleDef(
-        moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
-        subModuleName = BizOpConstants.SubModules.BASIC_INFO,
-        logMsgKey = BizOpConstants.Message.MESSAGE_BASIC_NODE_NUM_UPDATE
-    )
     public void modifyAppNodeNum(@Validated @RequestBody UpdateAppNodeNumVO vo) {
         applicationService.modifyAppNodeNum(vo.getData());
     }

@@ -392,8 +392,6 @@ public class ActivityServiceImpl implements ActivityService {
         return PagingList.of(responses, activityListResultPagingList.getTotal());
     }
 
-
-
     @Override
     public ActivityResponse getActivityById(Long activityId) {
         ActivityResult result = activityDAO.getActivityById(activityId);
@@ -446,7 +444,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setIsChange(result.getIsChange());
         activityResponse.setUserId(result.getUserId());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(Collections.singletonList(result.getUserId()));
-        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
+        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setActivityLevel(result.getActivityLevel());
         activityResponse.setIsCore(String.valueOf(result.getIsCore()));
@@ -493,7 +491,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setIsChange(result.getIsChange());
         activityResponse.setUserId(result.getUserId());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(Collections.singletonList(result.getUserId()));
-        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
+        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
         activityResponse.setExtend(result.getExtend());
         activityResponse.setMethod(result.getMethod());
         activityResponse.setRpcType(result.getRpcType());
@@ -579,13 +577,15 @@ public class ActivityServiceImpl implements ActivityService {
         }
         taskFlowDebugStartReq.setFeatures(req.getFeatures());
         taskFlowDebugStartReq.setLicense(WebPluginUtils.getTenantUserAppKey());
-        WebPluginUtils.fillCloudUserData(taskFlowDebugStartReq);
-        taskFlowDebugStartReq.setCreatorId(taskFlowDebugStartReq.getOperateId());
-        taskFlowDebugStartReq.setCreatorName(taskFlowDebugStartReq.getOperateName());
+        UserExt user = WebPluginUtils.getUser();
+        if (user != null) {
+            taskFlowDebugStartReq.setOperateId(user.getId());
+            taskFlowDebugStartReq.setOperateName(user.getName());
+        }
         log.info("流量验证参数：{}", taskFlowDebugStartReq.toString());
         ResponseResult<Long> longResponseResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
         log.info("流量验证发起结果：{}", longResponseResult.toString());
-        HttpAssert.isOk(longResponseResult,taskFlowDebugStartReq,"cloud开始流量验证任务");
+        HttpAssert.isOk(longResponseResult, taskFlowDebugStartReq, "cloud开始流量验证任务");
         response.setVerifiedFlag(false);
         response.setVerifyStatus(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFYING);
         //3.缓存任务ID并返回

@@ -14,6 +14,11 @@ public class APIUrls {
      */
     public static final String TAKIN_API_URL = "/api/";
 
+    /***
+     * 对外暴露api前缀
+     */
+    public static final String PUBLIC_TAKIN_API_URL = "/api/public/";
+
     public static final String TAKIN_OPEN_API_URL = "/open-api/v01/";
 
     /**

@@ -50,10 +50,10 @@ import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
@@ -71,6 +71,8 @@ import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -108,9 +110,6 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
-
-    @Value("${remote.call.auto.join.white: false}")
-    private boolean autoJoinWhiteFlag;
 
     @Value("${query.async.critica.value:20000}")
     private int criticaValue;
@@ -663,13 +662,16 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         return serverAppNamesMap;
     }
 
-    // 自动加入白名单 操作
-    public void autoJoinWhite(AppRemoteCallCreateParam param) {
+    /**
+     * 自动加入白名单 操作
+     *
+     * @param param 入参
+     */
+    private void autoJoinWhite(AppRemoteCallCreateParam param) {
         param.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
-        if (autoJoinWhiteFlag) {
-            if (StringUtils.isNotBlank(param.getServerAppName())) {
-                param.setType(AppRemoteCallConfigEnum.OPEN_WHITELIST.getType());
-            }
+        String autoJoinWhiteFlagString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_REMOTE_CALL_AUTO_JOIN_WHITE);
+        if (Boolean.parseBoolean(autoJoinWhiteFlagString) && StringUtils.isNotBlank(param.getServerAppName())) {
+            param.setType(AppRemoteCallConfigEnum.OPEN_WHITELIST.getType());
         }
     }
 

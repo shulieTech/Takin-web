@@ -110,7 +110,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             io.shulie.takin.web.biz.utils.LinuxHelper.executeLinuxCmdNotThrow("useradd " + deployUser);
         }
 
-        tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
+        tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
     }
 
     @Override

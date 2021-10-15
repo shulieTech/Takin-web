@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.job;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import cn.hutool.core.util.StrUtil;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
@@ -41,7 +40,7 @@ public class AppRemoteCallJob implements SimpleJob {
         if (CollectionUtils.isEmpty(tenantInfoExts)) {
             // 私有化 + 开源
             String remoteCallSyncString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_REMOTE_CALL_SYNC);
-            if (StrUtil.isNotBlank(remoteCallSyncString) && Boolean.parseBoolean(remoteCallSyncString)) {
+            if (Boolean.parseBoolean(remoteCallSyncString)) {
                 appRemoteCallService.syncAmdb();
             }
 
@@ -50,13 +49,12 @@ public class AppRemoteCallJob implements SimpleJob {
             tenantInfoExts.forEach(t -> {
                 // 根据环境 分线程
                 t.getEnvs().forEach(e -> {
-                        String remoteCallSyncString = ConfigServerHelper.getValueByKeyAndTenantAppKeyAndEnvCode(
-                            ConfigServerKeyEnum.TAKIN_REMOTE_CALL_SYNC.getNow(), t.getTenantAppKey(), e.getEnvCode());
-                        if (StrUtil.isNotBlank(remoteCallSyncString) && Boolean.parseBoolean(remoteCallSyncString)) {
-                            jobThreadPool.execute(() ->
-                                appRemoteCallService.syncAmdb(t.getTenantId(), t.getTenantAppKey(), e.getEnvCode()));
-                        }
-                    });
+                    WebPluginUtils.setTraceTenantContext(t.getTenantId(), t.getTenantAppKey(), e.getEnvCode());
+                    String remoteCallSyncString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_REMOTE_CALL_SYNC);
+                    if (Boolean.parseBoolean(remoteCallSyncString)) {
+                        jobThreadPool.execute(() -> appRemoteCallService.syncAmdb(t.getTenantId(), t.getTenantAppKey(), e.getEnvCode()));
+                    }
+                });
             });
 
         }

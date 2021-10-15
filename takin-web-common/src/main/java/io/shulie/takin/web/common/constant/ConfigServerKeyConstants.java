@@ -14,12 +14,10 @@ public interface ConfigServerKeyConstants {
     String TAKIN_LOGIN_DINGDING_PUSH_ENABLE = "takin.login.dingding.push.enable";
     String TAKIN_LOGIN_DINGDING_PUSH_URL = "takin.login.dingding.push.url";
     String TAKIN_REMOTE_CALL_SYNC = "takin.remote-call.sync";
-    String TAKIN_REMOTE_CALL_AUTO_JOIN_WHITE = "takin.remote.call.auto.join.white";
     String TAKIN_WHITE_LIST_NUMBER_LIMIT = "takin.white_list.number.limit";
     String TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK = "takin.white_list.duplicate.name.check";
     String TAKIN_WHITE_LIST_CONFIG_PATH = "takin.white_list.config.path";
     String TAKIN_REPORT_OPEN_TASK = "takin.report.open.task";
-    String TAKIN_CLOUD_URL = "takin.cloud.url";
 
     /**
      * zk 地址

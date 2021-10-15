@@ -50,7 +50,33 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 白名单文件
      */
     TAKIN_WHITE_LIST_CONFIG_PATH("spring.config.whiteListPath", "takin.white_list.config.path", NO),
+
+    /**
+     * 从 amdb 同步远程调用到 web
+     */
     TAKIN_REMOTE_CALL_SYNC("tro-web.remote-call.sync", "takin.remote-call.sync", YES),
+
+    /**
+     * 远程调用是否自动加入
+     */
+    TAKIN_REMOTE_CALL_AUTO_JOIN_WHITE("remote.call.auto.join.white", "takin.remote.call.auto.join.white", YES),
+
+    /**
+     * 压测数据报告收集相关 开关
+     */
+    TAKIN_REPORT_OPEN_TASK("open.report.task", "takin.report.open.task", YES),
+
+    /**
+     * cloud 域名
+     */
+    TAKIN_CLOUD_URL("takin.cloud.url", "takin.cloud.url", NO),
+
+    /**
+     * 上传文件保存路径
+     */
+    TAKIN_DATA_PATH("data.path", "takin.data.path", NO),
+
+
     ;
 
     /**

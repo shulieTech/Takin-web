@@ -470,6 +470,23 @@ public class WebPluginUtils {
 
     /**
      * 设置租户信息
+     *
+     * @param tenantId 租户 id
+     * @param tenantAppKey appKey
+     * @param envCode 环境
+     */
+    public static void setTraceTenantContext(Long tenantId, String tenantAppKey, String envCode) {
+        if (Objects.nonNull(userApi)) {
+            TenantCommonExt tenantCommonExt = new TenantCommonExt();
+            tenantCommonExt.setTenantId(tenantId);
+            tenantCommonExt.setTenantAppKey(tenantAppKey);
+            tenantCommonExt.setEnvCode(envCode);
+            userApi.setTraceTenantContext(tenantCommonExt);
+        }
+    }
+
+    /**
+     * 设置租户信息
      * @param commonExt
      */
     public static void setTraceTenantContext(TenantCommonExt commonExt) {

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,9 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "客户端下载地址接口")
 public class PradarClientUrlController {
 
-    @Value("${takin.cloud.url}")
-    private String cloudDomain;
-
     @Value("${remote.client.download.uri}")
     private String clientUri;
 
@@ -33,8 +32,9 @@ public class PradarClientUrlController {
      */
     @GetMapping("download")
     public Response generateDownloadClientUrl() {
+        String cloudDomain = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CLOUD_URL);
 
-        if (cloudDomain != null && clientUri != null) {
+        if (clientUri != null) {
             StringBuilder builder = new StringBuilder();
             builder.append(cloudDomain);
             builder.append(clientUri);
@@ -42,6 +42,7 @@ public class PradarClientUrlController {
             map.put("url", builder.toString());
             return Response.success(map);
         }
+
         return Response.fail("缺少配置客户端的下载路径");
     }
 

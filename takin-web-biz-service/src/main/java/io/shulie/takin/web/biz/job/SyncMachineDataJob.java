@@ -7,7 +7,6 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
@@ -34,8 +33,6 @@ import org.springframework.stereotype.Component;
 public class SyncMachineDataJob implements SimpleJob {
     @Autowired
     private ReportTaskService reportTaskService;
-    @Autowired
-    private ReportService reportService;
 
     @Value("${open.report.task: true}")
     private boolean openReportTask;

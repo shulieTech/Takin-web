@@ -581,17 +581,14 @@ public class ActivityServiceImpl implements ActivityService {
         //taskFlowDebugStartReq.setLicense(WebPluginUtils.getTenantUserAppKey());
         taskFlowDebugStartReq.setCreatorId(WebPluginUtils.traceUserId());
         log.info("流量验证参数：{}", taskFlowDebugStartReq);
-        ResponseResult<Long> longResponseResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
-        log.info("流量验证发起结果：{}", longResponseResult.toString());
-        response.setTaskStatus(longResponseResult.getSuccess());
-        if (!longResponseResult.getSuccess()) {
-            return response;
-        }
+        Long startResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
+        log.info("流量验证发起结果：{}", startResult.toString());
+        response.setTaskStatus(true);
         response.setVerifiedFlag(false);
         response.setVerifyStatus(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFYING);
         //3.缓存任务ID并返回
         redisClientUtils.setString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId,
-            String.valueOf(longResponseResult.getData()), BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY_EXPIRE,
+            String.valueOf(startResult), BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY_EXPIRE,
             TimeUnit.SECONDS);
         response.setScriptId(scriptId);
         return response;

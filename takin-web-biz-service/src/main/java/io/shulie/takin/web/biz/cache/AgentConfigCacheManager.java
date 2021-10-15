@@ -69,71 +69,71 @@ public class AgentConfigCacheManager {
     /**
      * 获得白名单开关的缓存结果
      */
-    public boolean getAllowListSwitch(String userAppKey,String envCode) {
-        return allowListSwitchConfigCache.get(userAppKey,envCode,null);
+    public boolean getAllowListSwitch() {
+        return allowListSwitchConfigCache.get(null);
     }
 
     /**
      * 开关缓存清空，下次查询时候重新加载
      */
-    public void evictAllowListSwitch(String userAppKey,String envCode) {
-        allowListSwitchConfigCache.evict(userAppKey,envCode,null);
+    public void evictAllowListSwitch() {
+        allowListSwitchConfigCache.evict(null);
     }
 
-    public List<TShadowJobConfig> getShadowJobs(String userAppKey,String envCode,String appName) {
-        return shadowJobConfigCache.get(userAppKey, envCode, appName);
+    public List<TShadowJobConfig> getShadowJobs(String appName) {
+        return shadowJobConfigCache.get(appName);
     }
 
-    public void evictShadowJobs(String userAppKey,String envCode,String appName) {
-        shadowJobConfigCache.evict(userAppKey, envCode, appName);
+    public void evictShadowJobs(String appName) {
+        shadowJobConfigCache.evict(appName);
     }
 
-    public List<ShadowServerConfigurationOutput> getShadowServer(String userAppKey,String envCode,String appName) {
-        return shadowServerConfigCache.get(userAppKey, envCode, appName);
+    public List<ShadowServerConfigurationOutput> getShadowServer(String appName) {
+        return shadowServerConfigCache.get(appName);
     }
 
-    public void evictShadowServer(String userAppKey,String envCode,String appName) {
-        shadowServerConfigCache.evict(userAppKey, envCode, appName);
+    public void evictShadowServer(String appName) {
+        shadowServerConfigCache.evict(appName);
     }
 
-    public List<DsAgentVO> getShadowDb(String userAppKey,String envCode,String appName) {
-        return shadowDbConfigCache.get(userAppKey, envCode, appName);
+    public List<DsAgentVO> getShadowDb(String appName) {
+        return shadowDbConfigCache.get(appName);
     }
 
-    public void evictShadowDb(String userAppKey,String envCode,String appName) {
+    public void evictShadowDb(String appName) {
 
-        shadowDbConfigCache.evict(userAppKey, envCode, appName);
+        shadowDbConfigCache.evict(appName);
     }
 
-    public List<LinkGuardVo> getGuards(String userAppKey,String envCode,String appName) {
-        return guardConfigCache.get(userAppKey, envCode, appName);
+    public List<LinkGuardVo> getGuards(String appName) {
+        return guardConfigCache.get(appName);
     }
 
-    public void evictGuards(String userAppKey,String envCode,String appName) {
-        guardConfigCache.evict(userAppKey, envCode, appName);
+    public void evictGuards(String appName) {
+        guardConfigCache.evict(appName);
     }
 
     /**
      * 远程调用
      */
-    public void evictRecallCalls(String userAppKey,String envCode,String appName) {
-        remoteCallConfigAgentCache.evict(userAppKey, envCode, appName);
+    public void evictRecallCalls(String appName) {
+        remoteCallConfigAgentCache.evict(appName);
     }
 
-    public ApplicationSwitchStatusDTO getPressureSwitch(String userAppKey,String envCode) {
-        return pressureSwitchConfigCache.get(userAppKey,envCode,null);
+    public ApplicationSwitchStatusDTO getPressureSwitch() {
+        return pressureSwitchConfigCache.get(null);
     }
 
-    public void evictPressureSwitch(String userAppKey,String envCode) {
-        pressureSwitchConfigCache.evict(userAppKey,envCode,null);
+    public void evictPressureSwitch() {
+        pressureSwitchConfigCache.evict(null);
     }
 
-    public List<ShadowConsumerVO> getShadowConsumer(String userAppKey,String envCode,String appName) {
-        return shadowConsumerConfigAgentCache.get(userAppKey, envCode, appName);
+    public List<ShadowConsumerVO> getShadowConsumer(String appName) {
+        return shadowConsumerConfigAgentCache.get(appName);
     }
 
-    public void evictShadowConsumer(String userAppKey,String envCode,String appName) {
-        shadowConsumerConfigAgentCache.evict(userAppKey, envCode, appName);
+    public void evictShadowConsumer(String appName) {
+        shadowConsumerConfigAgentCache.evict(appName);
     }
 
     /**
@@ -142,19 +142,8 @@ public class AgentConfigCacheManager {
      * @param appName 应用名称
      * @return
      */
-    public List<DsServerVO> getShadowEsServers(String userAppKey,String envCode,String appName) {
-        return shadowEsServerConfigAgentCache.get(userAppKey, envCode, appName);
-    }
-
-    /**
-     * 清空缓存，从新加载
-     *
-     * @param appName 应用名称
-     * @param userAppKey 租户标识
-     * @param envCode 环境编码
-     */
-    public void evictShadowEsServers(String userAppKey,String envCode,String appName) {
-        shadowEsServerConfigAgentCache.evict(userAppKey, envCode, appName);
+    public List<DsServerVO> getShadowEsServers(String appName) {
+        return shadowEsServerConfigAgentCache.get(appName);
     }
 
     /**
@@ -162,8 +151,17 @@ public class AgentConfigCacheManager {
      *
      * @param appName 应用名称
      */
-    public void evictShadowKafkaCluster(String userAppKey,String envCode,String appName) {
-        shadowKafkaClusterConfigAgentCache.evict(userAppKey, envCode, appName);
+    public void evictShadowEsServers(String appName) {
+        shadowEsServerConfigAgentCache.evict(appName);
+    }
+
+    /**
+     * 清空缓存，从新加载
+     *
+     * @param appName 应用名称
+     */
+    public void evictShadowKafkaCluster(String appName) {
+        shadowKafkaClusterConfigAgentCache.evict(appName);
     }
 
     /**
@@ -171,43 +169,39 @@ public class AgentConfigCacheManager {
      *
      * @return
      */
-    public List<DsServerVO> getShadowKafkaCluster(String userAppKey,String envCode,String appName) {
-        return shadowKafkaClusterConfigAgentCache.get(userAppKey, envCode, appName);
+    public List<DsServerVO> getShadowKafkaCluster(String appName) {
+        return shadowKafkaClusterConfigAgentCache.get(appName);
     }
 
     /**
      * 清空影子消费者配置业务逻辑
      *
      * @param applicationName 应用名称
-     * @param userAppKey 租户标识
-     * @param envCode 环境编码
      * @return
      */
-    public void evictShadowHbase(String userAppKey,String envCode,String applicationName) {
-        shadowHbaseConfigAgentCache.evict(userAppKey, envCode, applicationName);
+    public void evictShadowHbase(String applicationName) {
+        shadowHbaseConfigAgentCache.evict(applicationName);
     }
 
     /**
      * 获取影子消费者配置业务逻辑
-     * @param userAppKey 租户标识
-     * @param envCode 环境编码
+     *
      * @param applicationName 应用名称
      * @return
      */
-    public List<DsServerVO> getShadowHbase(String userAppKey,String envCode,String applicationName) {
-        List<DsServerVO> list = shadowHbaseConfigAgentCache.get(userAppKey, envCode, applicationName);
+    public List<DsServerVO> getShadowHbase(String applicationName) {
+        List<DsServerVO> list = shadowHbaseConfigAgentCache.get(applicationName);
         return CollectionUtils.isEmpty(list) ? Collections.emptyList() : list;
     }
 
     /**
      * 获取影子消费者配置业务逻辑
-     * @param envCode 环境编码
-     * @param userAppKey 租户标识
+     *
      * @param appName 应用名称
      * @return
      */
-    public AgentRemoteCallVO getRemoteCallConfig(String userAppKey,String envCode,String appName) {
-        return remoteCallConfigAgentCache.get(userAppKey, envCode, appName);
+    public AgentRemoteCallVO getRemoteCallConfig(String appName) {
+        return remoteCallConfigAgentCache.get(appName);
     }
 }
 

@@ -166,8 +166,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             param.setAppName(detailResult.getApplicationName());
             appRemoteCallDAO.insert(param);
         }
-        //todo Agent改造点
-        agentConfigCacheManager.evictRecallCalls("","",detailResult.getApplicationName());
+        agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
 
     }
 
@@ -304,7 +303,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         query.setQueryTye("1");
 
         // 租户传参
-        query.setUserAppKey(input.getTenantAppKey());
+        query.setTenantAppKey(input.getTenantAppKey());
         query.setEnvCode(input.getEnvCode());
 
         // 直接取全部数据

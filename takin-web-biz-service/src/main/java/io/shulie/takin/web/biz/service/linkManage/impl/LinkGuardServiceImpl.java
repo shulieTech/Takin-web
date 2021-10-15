@@ -96,7 +96,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         applicationService.modifyAccessStatus(vo.getApplicationId(), AppAccessTypeEnum.UNUPLOAD.getValue(), null);
         configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), Long.parseLong(vo.getApplicationId()), vo.getApplicationName());
         //todo agent改造点
-        agentConfigCacheManager.evictGuards("","",vo.getApplicationName());
+        agentConfigCacheManager.evictGuards(vo.getApplicationName());
         return Response.success();
     }
 
@@ -128,7 +128,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         // 原先是 用户基本的的key ，现在改成 租户级别的
         configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), Long.parseLong(applicationId), vo.getApplicationName());
         //todo agent改造点
-        agentConfigCacheManager.evictGuards("","",vo.getApplicationName());
+        agentConfigCacheManager.evictGuards(vo.getApplicationName());
         return Response.success();
     }
 
@@ -139,7 +139,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
             tLinkGuardMapper.deleteById(id);
             configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), linkGuardEntity.getApplicationId(), null);
             //todo agent改造点
-            agentConfigCacheManager.evictGuards("","",linkGuardEntity.getApplicationName());
+            agentConfigCacheManager.evictGuards(linkGuardEntity.getApplicationName());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Response.fail(FALSE_CORE, "删除挡板失败", null);
@@ -226,8 +226,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         entity.setIsEnable(target);
         tLinkGuardMapper.update(entity);
         configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), linkGuardEntity.getApplicationId(), null);
-        //todo Agent改造点
-        agentConfigCacheManager.evictGuards("","",linkGuardEntity.getApplicationName());
+        agentConfigCacheManager.evictGuards(linkGuardEntity.getApplicationName());
         return Response.success();
     }
 

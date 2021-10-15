@@ -33,9 +33,9 @@ public class ErrorLogQueryDTO extends PageBaseDTO {
     private String agentId;
 
     /**
-     * userAppKey
+     * tenantAppKey
      */
-    private String userAppKey;
+    private String tenantAppKey;
 
     /**
      * 环境编码

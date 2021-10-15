@@ -102,7 +102,7 @@ public class ApplicationNodeAgentDTO implements Serializable {
     /**
      * 租户标识
      */
-    private String userAppKey;
+    private String tenantAppKey;
 
     /**
      * 环境编码

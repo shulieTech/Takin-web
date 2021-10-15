@@ -70,7 +70,6 @@ public class AgentPushController {
     private TraceManageService traceManageService;
 
 
-    //todo agent改造点
     @ApiOperation("|_ agent注册api")
     @PostMapping(value = AgentUrls.REGISTER_URL)
     public Response registerApi(@RequestBody Map<String, List<String>> register) {
@@ -85,7 +84,6 @@ public class AgentPushController {
      * @return
      */
 
-    //todo agent改造点
     @PostMapping(value = AgentUrls.MIDDLE_STAUTS_URL)
     @ApiOperation("agent上传中间件列表状态")
     public Response uploadMiddlewareStatusAndRole(@RequestBody String requestJson,
@@ -100,7 +98,6 @@ public class AgentPushController {
         }
     }
 
-    //todo agent改造点
     @PostMapping(value = AgentUrls.APP_INSERT_URL)
     @ApiOperation("上传应用")
     public Response addApplication(@RequestBody ApplicationVo vo) {
@@ -115,7 +112,6 @@ public class AgentPushController {
      * @return
      */
 
-    //todo agent改造点
     @PostMapping(value = AgentUrls.UPLOAD_ACCESS_STATUS)
     @ApiOperation("上传应用状态")
     public Response uploadAccessStatus(@RequestBody NodeUploadDataDTO param) {
@@ -130,7 +126,6 @@ public class AgentPushController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      */
 
-    //todo agent改造点
     @PostMapping(value = AgentUrls.UPLOAD_APP_INFO,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> judgeNeedUpload(@RequestBody TUploadInterfaceVo tUploadInterfaceVo) {
@@ -148,7 +143,6 @@ public class AgentPushController {
      *
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      */
-    //todo agent改造点
     @PostMapping(value = AgentUrls.UPLOAD,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> judgeNeedUpload(@RequestBody TUploadNeedVo uploadNeedVo) {
@@ -159,7 +153,6 @@ public class AgentPushController {
         }
     }
 
-    //todo agent接口改造
     @ApiOperation(value = "影子JOB配置修改")
     @RequestMapping(value = AgentUrls.TAKIN_REPORT_ERROR_SHADOW_JOB_URL, method = {RequestMethod.PUT, RequestMethod.POST},
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -208,7 +201,6 @@ public class AgentPushController {
     /**
      * trace数据 方法追踪
      */
-    //todo  agent改造点
     @PostMapping(value = AgentUrls.PERFORMANCE_TRACE_URL)
     @ApiOperation(value = "agent上传trace信息")
     public void uploadTraceInfo(@RequestBody CommandPacket commandPacket) {

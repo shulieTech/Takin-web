@@ -55,7 +55,7 @@ public class AmdbManageServiceImpl implements AmdbManageService {
         ErrorLogQueryDTO queryDTO = new ErrorLogQueryDTO();
         BeanUtils.copyProperties(queryRequest, queryDTO);
         queryDTO.setAgentInfo(queryRequest.getKeyword());
-        //queryDTO.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+        //queryDTO.setTenantAppKey(WebPluginUtils.getTenantUserAppKey());
 
         if (StringUtils.isEmpty(queryRequest.getProjectName())) {
             List<String> appNameList = agentConfigService.getAllApplication("");

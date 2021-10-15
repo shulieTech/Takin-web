@@ -745,8 +745,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList) {
-        return tApplicationMntDao.getApplicationsByTenants(userIdList);
+    public List<TApplicationMnt> getApplicationsByTenantInfoExt(TenantCommonExt ext) {
+        return tApplicationMntDao.getApplicationsByTenants(ext.getTenantId(),ext.getEnvCode());
     }
 
     @Override

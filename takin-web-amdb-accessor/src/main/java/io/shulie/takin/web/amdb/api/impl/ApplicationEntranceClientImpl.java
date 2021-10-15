@@ -55,7 +55,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             entranceQueryParam.setRpcType("");
         }
         entranceQueryParam.setAppName(applicationName);
-        entranceQueryParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
+        entranceQueryParam.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         entranceQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
             AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
@@ -87,20 +87,9 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         if (extend != null) {
             topologyQueryParam.setExtend(extend);
         }
-        topologyQueryParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
+        topologyQueryParam.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         topologyQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
-            //            String responseEntity = HttpClientUtil.sendGet(url, topologyQueryParam);
-            //            if (StringUtils.isBlank(responseEntity)) {
-            //                log.error("前往amdb查询拓扑图信息返回异常,请求地址：{}，请求参数：{}", url, JSON.toJSONString(topologyQueryParam));
-            //                return null;
-            //            }
-            //            AmdbResult<LinkTopologyDTO> amdbResponse = JSONUtil.toBean(responseEntity,
-            //                new TypeReference<AmdbResult<LinkTopologyDTO>>() {}, true);
-            //            if (amdbResponse == null || !amdbResponse.getSuccess()) {
-            //                log.error("前往amdb查询拓扑图信息返回异常,请求地址：{}，请求参数：{}", url, JSON.toJSONString(topologyQueryParam));
-            //                return null;
-            //            }
             AmdbResult<LinkTopologyDTO> amdbResponse = AmdbHelper.builder().url(url)
                 .param(topologyQueryParam)
                 .eventName("查询拓扑图信息")
@@ -141,29 +130,14 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             topologyQueryParam.setExtend(extend);
         }
         topologyQueryParam.setId(nodeId);
-        topologyQueryParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
+        topologyQueryParam.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         topologyQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
-            //            String responseEntity = HttpClientUtil.sendGet(url, topologyQueryParam);
-            //            if (StringUtils.isBlank(responseEntity)) {
-            //                log.error("前往amdb更新未知应用返回异常,请求地址：{}，请求参数：{}", url, JSON.toJSONString(topologyQueryParam));
-            //                return null;
-            //            }
-            //
-            //            AmdbResult amdbResponse = JSONUtil.toBean(responseEntity,
-            //                new TypeReference<AmdbResult>() {}, true);
-            //
-            //            if (amdbResponse == null || !amdbResponse.getSuccess()) {
-            //                log.error("前往amdb更新未知应用返回异常,请求地址：{}，请求参数：{}", url, JSON.toJSONString(topologyQueryParam));
-            //                return null;
-            //            }
             AmdbResult<Object> amdbResponse = AmdbHelper.builder().url(url)
                 .param(topologyQueryParam)
                 .eventName("更新未知应用")
                 .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
                 .one(Object.class);
-
-
             return amdbResponse.getSuccess();
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR,e.getMessage(),e);
@@ -176,7 +150,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         ServiceQueryParam entranceQueryParam = new ServiceQueryParam();
         entranceQueryParam.setRpcType(RpcType.TYPE_MQ + "");
         entranceQueryParam.setAppName(applicationName);
-        entranceQueryParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
+        entranceQueryParam.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         entranceQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
             AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
@@ -184,7 +158,6 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
                 .eventName("查询MQ消费者")
                 .exception(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR)
                 .list(ServiceInfoDTO.class);
-
             return amdbResponse.getData();
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR,e.getMessage(),e);

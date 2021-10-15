@@ -34,9 +34,12 @@ public class WebPluginUtils {
     /**
      * 默认 userAppkey 解决zk PATH 问题
      */
-    public static String TENANT_APP_KEY = "takin";
-    public static Long TENANT_ID = -1L;
-    public static String ENV_CODE = "test";
+    public static String DEFAULT_TENANT_APP_KEY = "default";
+    public static Long DEFAULT_TENANT_ID = 0L;
+    public static String DEFAULT_ENV_CODE = "test";
+    public static String DEFAULT_TENANT_CODE = "default";
+
+
     public static Long USER_ID = -1L;
 
     private static WebUserExtApi userApi;
@@ -327,7 +330,7 @@ public class WebPluginUtils {
         if (tenantExtApi != null) {
             return tenantExtApi.getDefaultEnvCode(userAppKey,tenantCode);
         }
-        return ENV_CODE;
+        return DEFAULT_ENV_CODE;
     }
 
     /**
@@ -368,6 +371,7 @@ public class WebPluginUtils {
 
     public static TenantCommonExt fillTenantCommonExt(Long tenantId,String envCode) {
         if (Objects.nonNull(tenantExtApi) && tenantId != null) {
+            // saas
             TenantInfoExt tenantInfo = tenantExtApi.getTenantInfo(tenantId);
             if (tenantInfo != null) {
                 TenantCommonExt ext = new TenantCommonExt();
@@ -388,9 +392,9 @@ public class WebPluginUtils {
         }
         // 开源版
         TenantCommonExt ext = new TenantCommonExt();
-        ext.setEnvCode(ENV_CODE);
-        ext.setTenantAppKey(TENANT_APP_KEY);
-        ext.setTenantId(TENANT_ID);
+        ext.setEnvCode(DEFAULT_ENV_CODE);
+        ext.setTenantAppKey(DEFAULT_TENANT_APP_KEY);
+        ext.setTenantId(DEFAULT_TENANT_ID);
         return ext;
     }
 
@@ -444,10 +448,10 @@ public class WebPluginUtils {
             return userApi.getSystemInfo();
         }
         HashMap<String, String> dataMap = new LinkedHashMap<>();
-        dataMap.put("租户ID", TENANT_ID + "");
-        dataMap.put("租户user-app-key", TENANT_APP_KEY);
+        dataMap.put("租户ID", DEFAULT_TENANT_ID + "");
+        dataMap.put("租户user-app-key", DEFAULT_TENANT_APP_KEY);
         dataMap.put("用户ID", USER_ID + "");
-        dataMap.put("用户user-app-key", TENANT_APP_KEY);
+        dataMap.put("用户user-app-key", DEFAULT_TENANT_APP_KEY);
         return dataMap;
     }
 
@@ -463,6 +467,25 @@ public class WebPluginUtils {
     }
 
     //********************************http线程上下文模块**********************************//
+
+    /**
+     * 设置租户信息
+     * @param commonExt
+     */
+    public static void setTraceTenantContext(TenantCommonExt commonExt) {
+        if (Objects.nonNull(userApi)) {
+            userApi.setTraceTenantContext(commonExt);
+        }
+    }
+
+    /**
+     * 移除租户信息
+     */
+    public static void removeTraceContext() {
+        if (Objects.nonNull(userApi)) {
+            userApi.removeTraceContext();
+        }
+    }
 
     /**
      * 获取登录账号
@@ -485,7 +508,7 @@ public class WebPluginUtils {
         if (userApi != null) {
             return userApi.traceTenantId();
         }
-        return TENANT_ID;
+        return DEFAULT_TENANT_ID;
     }
 
     /**
@@ -498,7 +521,7 @@ public class WebPluginUtils {
             return userApi.traceTenantAppKey();
         }
         // 返回一个默认
-        return TENANT_APP_KEY;
+        return DEFAULT_TENANT_APP_KEY;
     }
     /**
      * 返回环境
@@ -509,7 +532,7 @@ public class WebPluginUtils {
         if (userApi != null) {
             return userApi.traceEnvCode();
         }
-        return ENV_CODE;
+        return DEFAULT_ENV_CODE;
     }
 
     /**
@@ -547,14 +570,14 @@ public class WebPluginUtils {
     private static List<TenantInfoExt> getDefaultTenantInfoList() {
         List<TenantInfoExt> exts = Lists.newArrayList();
         TenantInfoExt ext = new TenantInfoExt();
-        ext.setTenantId(TENANT_ID);
-        ext.setTenantAppKey(TENANT_APP_KEY);
-        ext.setTenantName(TENANT_APP_KEY);
-        ext.setTenantNick(TENANT_APP_KEY);
-        ext.setTenantCode(TENANT_APP_KEY);
+        ext.setTenantId(DEFAULT_TENANT_ID);
+        ext.setTenantAppKey(DEFAULT_TENANT_APP_KEY);
+        ext.setTenantName(DEFAULT_TENANT_APP_KEY);
+        ext.setTenantNick(DEFAULT_TENANT_APP_KEY);
+        ext.setTenantCode(DEFAULT_TENANT_APP_KEY);
         List<TenantEnv> envs =Lists.newArrayList();
         TenantInfoExt.TenantEnv env = new TenantInfoExt().new TenantEnv();
-        env.setEnvCode(ENV_CODE);
+        env.setEnvCode(DEFAULT_ENV_CODE);
         env.setEnvName("测试环境");
         ext.setEnvs(envs);
         exts.add(ext);

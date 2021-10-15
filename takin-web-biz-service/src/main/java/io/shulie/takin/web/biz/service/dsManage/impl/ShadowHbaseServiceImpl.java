@@ -97,7 +97,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         applicationService.modifyAccessStatus(String.valueOf(applicationId),
             AppAccessTypeEnum.UNUPLOAD.getValue(), null);
         //todo agent改造
-        agentConfigCacheManager.evictShadowHbase("","",applicationName);
+        agentConfigCacheManager.evictShadowHbase(applicationName);
     }
 
     private void syncShadowHbase(Long applicationId, String o) {

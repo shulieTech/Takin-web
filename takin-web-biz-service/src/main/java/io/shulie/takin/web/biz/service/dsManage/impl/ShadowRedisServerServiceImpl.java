@@ -111,8 +111,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         applicationService.modifyAccessStatus(String.valueOf(createParam.getApplicationId()),
             AppAccessTypeEnum.UNUPLOAD.getValue(), null);
 
-        //todo Agent改造点
-        agentConfigCacheManager.evictShadowServer("",WebPluginUtils.traceEnvCode(),applicationDetailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowServer(applicationDetailResult.getApplicationName());
 
         // 新增配置
         createParam.setStatus(createRequest.getStatus());
@@ -138,8 +137,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
 
         configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
-        //todo Agent改造点
-        agentConfigCacheManager.evictShadowServer("",WebPluginUtils.traceEnvCode(),dsResult.getApplicationName());
+        agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
 
         updateParam.setId(updateRequest.getId());
         updateParam.setStatus(updateRequest.getStatus());
@@ -184,8 +182,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         applicationDsDAO.enable(enableParam);
         configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
-        //todo Agent改造点
-        agentConfigCacheManager.evictShadowServer("",WebPluginUtils.traceEnvCode(),dsResult.getApplicationName());
+        agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
 
         return Response.success();
     }
@@ -203,8 +200,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), dsResult.getApplicationId(),
             dsResult.getApplicationName());
 
-        //todo Agent改造点
-        agentConfigCacheManager.evictShadowServer("",WebPluginUtils.traceEnvCode(),dsResult.getApplicationName());
+        agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
         return Response.success();
     }
 

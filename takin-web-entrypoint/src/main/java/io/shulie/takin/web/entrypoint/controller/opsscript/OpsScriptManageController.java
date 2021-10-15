@@ -18,6 +18,7 @@ import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.param.opsscript.OpsScriptParam;
 import io.shulie.takin.web.data.param.opsscript.OpsUploadFileParam;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptDetailVO;
@@ -50,8 +51,8 @@ public class OpsScriptManageController {
     @Resource(type = OpsScriptManageService.class)
     OpsScriptManageService opsScriptManageService;
 
-    @Resource(type = TDictionaryDataMapper.class)
-    TDictionaryDataMapper dictionaryDataMapper;
+    @Resource(type = DictionaryDataDAO.class)
+    DictionaryDataDAO dictionaryDataDao;
 
     @Resource(type = OpsScriptFileService.class)
     OpsScriptFileService opsScriptFileService;
@@ -83,10 +84,7 @@ public class OpsScriptManageController {
         needAuth = ActionTypeEnum.QUERY
     )
     public List<TDictionaryVo> getScriptType() {
-        HashMap<String, Object> param = Maps.newHashMap();
-        param.put("valueActive", "Y");
-        param.put("typeAlias", "OPS_SCRIPT_TYPE");
-        return dictionaryDataMapper.queryDictionaryList(param);
+        return dictionaryDataDao.getDictByCode("OPS_SCRIPT_TYPE");
     }
 
     @ApiOperation("保存运维脚本")

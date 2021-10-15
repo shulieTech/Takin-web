@@ -442,9 +442,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<ApplicationNodeResult> applicationNodeResultList = applicationNodes.getList();
         ApplicationVo vo = this.appEntryToVo(tApplicationMnt, applicationResult,
             applicationNodeResultList);
-
-        // 异常探针状态再判断
-        this.checkAccessStatus(vo);
         return Response.success(vo);
     }
 

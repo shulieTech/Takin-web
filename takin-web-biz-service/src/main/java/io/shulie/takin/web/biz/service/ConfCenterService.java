@@ -74,8 +74,10 @@ import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.biz.service.linkManage.impl.WhiteListFileService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
@@ -110,20 +112,21 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @Slf4j
 public class ConfCenterService extends CommonService {
-    /**
-     * session 令牌
-     */
-    public static final String CONST_CAS_ASSERTION = "_const_cas_assertion_";
+
+    private Integer number;
+
+    private String whiteListPath;
+
     @Autowired
     @Qualifier("modifyMonitorThreadPool")
     protected ThreadPoolExecutor modifyMonitorExecutor;
 
     @Autowired
     private WhiteListFileService whiteListFileService;
-    @Value("${spring.config.whiteListPath}")
-    private String whiteListPath;
+
     @Autowired
     private BlackListDAO blackListDAO;
+
     @Autowired
     private ApplicationDAO applicationDAO;
 
@@ -139,9 +142,6 @@ public class ConfCenterService extends CommonService {
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
 
-    @Value("${whitelist.number.limit:5}")
-    private Integer number;
-
     /**
      * 是否更新版本
      * true:更新
@@ -152,6 +152,12 @@ public class ConfCenterService extends CommonService {
 
     @Autowired
     private ApplicationService applicationService;
+
+    @PostConstruct
+    public void init() {
+        number = Integer.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT));
+        whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH);
+    }
 
     /**
      * 说明: 先校验该应用是否已经存在,不存在则进行添加,存在则返回提示信息

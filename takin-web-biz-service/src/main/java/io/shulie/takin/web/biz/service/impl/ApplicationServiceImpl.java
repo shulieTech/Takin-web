@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -87,12 +88,14 @@ import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.WhiteListConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
@@ -221,8 +224,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     /**
      * 是否开启校验白名单重名
      */
-    @Value("${whitelist.duplicate.name.check:false}")
-    private String isCheckDuplicateName;
+    private boolean isCheckDuplicateName;
 
     @Autowired
     private ShadowJobConfigDAO shadowJobConfigDAO;
@@ -250,6 +252,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ApplicationNodeProbeDAO applicationNodeProbeDAO;
+
+    @PostConstruct
+    public void init() {
+        isCheckDuplicateName = Boolean.parseBoolean(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK));
+    }
 
     //3.添加定时任务
     //或直接指定时间间隔，例如：5秒
@@ -1861,7 +1869,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     private String getIsGlobal(List<String> existWhite, String type, String interfaceName, Boolean isGlobal) {
-        if (Boolean.parseBoolean(isCheckDuplicateName)) {
+        if (isCheckDuplicateName) {
             if (WhitelistUtil.isDuplicate(existWhite, WhitelistUtil.buildWhiteId(type, interfaceName))) {
                 return BooleanEnum.getByValue(BooleanEnum.FALSE.getValue());
             } else {

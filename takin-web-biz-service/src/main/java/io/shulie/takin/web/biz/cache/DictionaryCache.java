@@ -47,9 +47,6 @@ public class DictionaryCache {
     @Resource
     private TDictionaryDataMapper tDictionaryDataMapper;
 
-    //@Autowired
-    //private TroResourceDAO troResourceDAO;
-
     public static EnumResult getObjectByParam(String key, Integer valueCode) {
         return getObjectByParam(key, String.valueOf(valueCode));
     }

@@ -65,7 +65,7 @@ public class ApplicationEntranceTopologyResponse {
     }
 
     @Data
-    public static abstract class AbstractTopologyNodeResponse {
+    public static class AbstractTopologyNodeResponse {
 
         @ApiModelProperty("节点id")
         protected String id;

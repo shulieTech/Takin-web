@@ -7,7 +7,6 @@ import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
 import io.shulie.takin.web.common.domain.WebResponse;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author qianshui
@@ -54,10 +53,9 @@ public interface ReportService {
 
     /**
      * 获取正在压测的报告id
-     * @param ext
      * @return
      */
-    List<Long> queryListRunningReport(TenantCommonExt ext);
+    List<Long> queryListRunningReport();
 
     WebResponse lockReport(Long reportId);
 

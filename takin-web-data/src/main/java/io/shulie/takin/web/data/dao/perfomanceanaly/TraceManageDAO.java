@@ -8,7 +8,6 @@ import io.shulie.takin.web.data.param.tracemanage.TraceManageDeployUpdateParam;
 import io.shulie.takin.web.data.param.tracemanage.TraceManageQueryParam;
 import io.shulie.takin.web.data.result.tracemanage.TraceManageDeployResult;
 import io.shulie.takin.web.data.result.tracemanage.TraceManageResult;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author zhaoyong
@@ -79,8 +78,7 @@ public interface TraceManageDAO {
     /**
      * 根据状态查询追踪实例
      * @param status
-     * @param ext
      * @return
      */
-    List<TraceManageDeployResult> queryTraceManageDeployByStatus(Integer status, TenantCommonExt ext);
+    List<TraceManageDeployResult> queryTraceManageDeployByStatus(Integer status);
 }

@@ -39,20 +39,24 @@ public class TraceManageJob implements SimpleJob {
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         if(CollectionUtils.isEmpty(tenantInfoExts)) {
             // 私有化 + 开源
-            collectData(null);
+            collectData();
         }else {
             // saas
-            tenantInfoExts.forEach(t -> {
+            tenantInfoExts.forEach(ext -> {
                 // 根据环境 分线程
-                t.getEnvs().forEach(e ->
-                    jobThreadPool.execute(() ->  collectData(new TenantCommonExt(t.getTenantId(),t.getTenantAppKey(),e.getEnvCode()))));
+                ext.getEnvs().forEach(e ->
+                    jobThreadPool.execute(() ->  {
+                        WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode()));
+                        collectData();
+                        WebPluginUtils.removeTraceContext();
+                    }));
             });
         }
     }
 
-    private void collectData(TenantCommonExt ext) {
+    private void collectData() {
         //获取正在采集中的数据
-        List<TraceManageDeployResult> traceManageDeployResults = traceManageDAO.queryTraceManageDeployByStatus(1,ext);
+        List<TraceManageDeployResult> traceManageDeployResults = traceManageDAO.queryTraceManageDeployByStatus(1);
         if(CollectionUtils.isEmpty(traceManageDeployResults)) {
             return;
         }
@@ -63,10 +67,9 @@ public class TraceManageJob implements SimpleJob {
                 traceManageDeployUpdateParam.setId(traceManageDeployResult.getId());
                 //设置为采集超时状态
                 traceManageDeployUpdateParam.setStatus(3);
-                if (ext != null) {
-                    traceManageDeployUpdateParam.setTenantId(ext.getTenantId());
-                    traceManageDeployUpdateParam.setEnvCode(ext.getEnvCode());
-                }
+                traceManageDeployUpdateParam.setTenantId(WebPluginUtils.traceTenantId());
+                traceManageDeployUpdateParam.setEnvCode(WebPluginUtils.traceEnvCode());
+
                 traceManageDAO.updateTraceManageDeployStatus(traceManageDeployUpdateParam,traceManageDeployResult.getStatus());
                 log.warn("方法采集超时，"+ JsonHelper.bean2Json(traceManageDeployResult));
             }

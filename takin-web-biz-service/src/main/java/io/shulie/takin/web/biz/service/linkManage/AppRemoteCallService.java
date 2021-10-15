@@ -86,14 +86,6 @@ public interface AppRemoteCallService {
     void syncAmdb();
 
     /**
-     * 同步amdb数据 租户
-     * @param tenantId
-     * @param userAppKey
-     * @param envCode
-     */
-    void syncAmdb(Long tenantId,String userAppKey,String envCode);
-
-    /**
      * 获取服务端应用
      *
      * @return

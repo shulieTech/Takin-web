@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import javax.annotation.PostConstruct;
+
 import com.google.common.collect.Sets;
 import io.shulie.takin.channel.ServerChannel;
 import io.shulie.takin.channel.bean.CommandPacket;
@@ -15,6 +17,8 @@ import io.shulie.takin.channel.bean.CommandRespType;
 import io.shulie.takin.channel.bean.CommandResponse;
 import io.shulie.takin.channel.bean.CommandSend;
 import io.shulie.takin.channel.bean.CommandStatus;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.future.ResponseFuture;
@@ -24,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -39,6 +42,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AgentCommandFactory {
 
+    private String takinWebUrl;
+
     @Autowired
     private ServerChannel serverChannel;
     @Autowired
@@ -51,11 +56,12 @@ public class AgentCommandFactory {
      */
     private final String agentKey = "%s:%s:%s:%s:%s:%s";
 
-    @Value("${agent.interactive.takin.web.url:http://127.0.0.1:10086/takin-web}")
-    private String takinWebUrl;
+    @PostConstruct
+    public void init() {
+        takinWebUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_TAKIN_WEB_URL);
+    }
 
-    public CommandResponse send(AgentCommandEnum commandEnum, String agentId, Map<String, Object> params)
-        throws Exception {
+    public CommandResponse send(AgentCommandEnum commandEnum, String agentId, Map<String, Object> params) {
         TakinWebCommandPacket takinPacket = getSendPacket(commandEnum, agentId, params);
         checkPacket(takinPacket);
         String key = String.format(agentKey, takinPacket.getAgentId(), takinPacket.getSend().getCommand(),

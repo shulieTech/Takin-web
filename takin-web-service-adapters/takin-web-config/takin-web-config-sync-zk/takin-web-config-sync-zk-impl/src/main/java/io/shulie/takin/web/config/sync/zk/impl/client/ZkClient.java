@@ -2,7 +2,9 @@ package io.shulie.takin.web.config.sync.zk.impl.client;
 
 import javax.annotation.PostConstruct;
 
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.config.sync.zk.constants.ZkConfigPathConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
@@ -20,7 +22,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ZkClient {
 
-    @Value("${takin.config.zk.addr}")
     private String zkAddr;
 
     @Value("${takin.config.zk.timeout: 3000}")
@@ -30,6 +31,7 @@ public class ZkClient {
 
     @PostConstruct
     public void init() {
+        zkAddr = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CONFIG_ZOOKEEPER_ADDRESS);
         client = CuratorFrameworkFactory
             .builder()
             .connectString(zkAddr)

@@ -46,6 +46,8 @@ public class WebPluginUtils {
 
     static PluginManager pluginManager;
 
+
+
     @Autowired
     public void setPluginManager(PluginManager pluginManager) {
         WebPluginUtils.pluginManager = pluginManager;

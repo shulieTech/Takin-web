@@ -2,16 +2,20 @@ package io.shulie.takin.web.biz.service.impl;
 
 import java.io.File;
 
+import javax.annotation.PostConstruct;
+
 import cn.hutool.core.util.StrUtil;
 import io.shulie.takin.web.biz.pojo.request.agent.GetFileRequest;
 import io.shulie.takin.web.biz.pojo.request.agent.PushOperateRequest;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResponse;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResultResponse;
 import io.shulie.takin.web.biz.service.AgentService;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.biz.utils.business.probe.ApplicationNodeProbeUtil;
 import io.shulie.takin.web.common.constant.AgentUrls;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.JsonUtil;
@@ -24,7 +28,6 @@ import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -35,7 +38,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class AgentServiceImpl implements AgentService {
 
-    @Value("${agent.interactive.takin.web.url:http://127.0.0.1:10008/takin-web}")
     private String takinWebUrl;
 
     @Autowired
@@ -43,6 +45,11 @@ public class AgentServiceImpl implements AgentService {
 
     @Autowired
     private ApplicationNodeProbeDAO applicationNodeProbeDAO;
+
+    @PostConstruct
+    public void init() {
+        takinWebUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_TAKIN_WEB_URL);
+    }
 
     @Override
     public AgentApplicationNodeProbeOperateResponse getOperateResponse(String applicationName, String agentId) {

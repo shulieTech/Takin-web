@@ -5,8 +5,9 @@ import javax.annotation.PostConstruct;
 import com.dangdang.ddframe.job.reg.base.CoordinatorRegistryCenter;
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperConfiguration;
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,13 +18,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CoordinatorRegistryCenterService {
 
-    @Value("${takin.config.zk.addr}")
     private String zkAddr;
 
     private CoordinatorRegistryCenter registryCenter;
 
     @PostConstruct
     public void init() {
+        zkAddr = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CONFIG_ZOOKEEPER_ADDRESS);
         registryCenter = new ZookeeperRegistryCenter(new ZookeeperConfiguration(zkAddr, "verify-job"));
         registryCenter.init();
     }

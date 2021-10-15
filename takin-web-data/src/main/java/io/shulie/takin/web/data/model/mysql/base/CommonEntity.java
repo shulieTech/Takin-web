@@ -1,12 +1,14 @@
 package io.shulie.takin.web.data.model.mysql.base;
 
 import java.io.Serializable;
+import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * 数据库映射共有类
@@ -14,9 +16,8 @@ import lombok.EqualsAndHashCode;
  * @author liuchuan
  * @date 2021/4/7 5:27 下午
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class BaseEntity extends TenantBaseEntity implements Serializable {
+public class CommonEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -32,5 +33,27 @@ public class BaseEntity extends TenantBaseEntity implements Serializable {
      */
     @TableLogic
     private Integer isDeleted;
+
+    /**
+     * 创建时间
+     */
+    private Date gmtCreate;
+
+    /**
+     * 更新时间
+     */
+    private Date gmtUpdate;
+
+    /**
+     * 租户id
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private Long tenantId;
+
+    /**
+     * 用户id
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private String envCode;
 
 }

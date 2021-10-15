@@ -17,11 +17,15 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
         this.strictInsertFill(metaObject, "customerId", Long.class, WebPluginUtils.traceTenantId());
+        this.strictInsertFill(metaObject, "tenantId", Long.class, WebPluginUtils.traceTenantId());
         this.strictInsertFill(metaObject, "userId", Long.class, WebPluginUtils.traceUserId());
+        this.strictInsertFill(metaObject, "tenantAppKey", String.class, WebPluginUtils.traceTenantAppKey());
+        this.strictInsertFill(metaObject, "envCode", String.class, WebPluginUtils.traceEnvCode());
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
 
     }
+
 }

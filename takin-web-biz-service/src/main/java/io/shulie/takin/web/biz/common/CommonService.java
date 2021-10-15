@@ -88,6 +88,7 @@ import io.shulie.takin.web.biz.service.TAlarmService;
 import io.shulie.takin.web.biz.service.TFirstLinkMntService;
 import io.shulie.takin.web.biz.service.TReportService;
 import io.shulie.takin.web.biz.service.TSecondLinkMntService;
+import io.shulie.takin.web.data.mapper.mysql.BaseConfigMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -240,6 +241,9 @@ public class CommonService {
     protected TLinkTopologyInfoDao tLinkTopologyInfoDao;
     @Value("${basePath}")
     private String basePath;
+
+    @Autowired
+    protected BaseConfigMapper baseConfigMapper;
 
     public String getBasePath() {
         return basePath;

@@ -3,6 +3,7 @@ package com.pamirs.takin.entity.domain.vo;
 import java.util.Date;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pamirs.takin.common.util.DateToStringFormatSerialize;
+import io.shulie.takin.web.data.common.BaseTenantBean;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -12,7 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  * @version 1.0
  * @create 2018/11/1 0001 17:32
  */
-public class TDictionaryVo {
+public class TDictionaryVo extends BaseTenantBean {
     /**
      * 字典ID
      */

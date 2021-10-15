@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.pamirs.takin.entity.domain.entity.TDictionaryData;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
+import io.shulie.takin.web.data.param.dictionary.DictionaryParam;
 import org.apache.ibatis.annotations.Param;
 
 public interface TDictionaryDataMapper {
@@ -74,10 +75,10 @@ public interface TDictionaryDataMapper {
     /**
      * 查询数据字典详情
      *
-     * @param tDictionaryId
+     * @param param
      * @return
      */
-    TDictionaryVo queryDictionaryDetail(@Param("tDictionaryId") String tDictionaryId);
+    TDictionaryVo queryDictionaryDetail(DictionaryParam param);
 
     /**
      * 删除数据字典

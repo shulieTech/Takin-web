@@ -49,4 +49,22 @@ public class BaseConfigEntity {
      */
     @TableField(value = "UPDATE_TIME")
     private LocalDateTime updateTime;
+
+    /**
+     * 租户ID
+     */
+    @TableField(value = "tenant_id")
+    private Long tenantId;
+
+    /**
+     * 用户ID
+     */
+    @TableField(value = "user_id")
+    private Long userId;
+
+    /**
+     * 环境编码
+     */
+    @TableField(value = "env_code")
+    private String envCode;
 }

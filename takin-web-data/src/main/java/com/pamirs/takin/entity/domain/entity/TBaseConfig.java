@@ -48,6 +48,51 @@ public class TBaseConfig extends BaseEntity {
     private Date updateTime;
 
     /**
+     * 租户ID
+     */
+    private Long tenantId;
+
+    /**
+     * 用户ID
+     */
+    private Long userId;
+
+    /**
+     * 环境编码
+     */
+    private String envCode;
+
+    @Override
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    @Override
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    @Override
+    public Long getUserId() {
+        return userId;
+    }
+
+    @Override
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    @Override
+    public String getEnvCode() {
+        return envCode;
+    }
+
+    @Override
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
+    }
+
+    /**
      * 全参数构造函数
      *
      * @param configCode

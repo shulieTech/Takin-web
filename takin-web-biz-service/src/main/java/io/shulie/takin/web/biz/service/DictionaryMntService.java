@@ -15,6 +15,9 @@ import com.pamirs.takin.entity.domain.entity.TDictionaryData;
 import com.pamirs.takin.entity.domain.entity.TDictionaryType;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.takin.web.biz.common.CommonService;
+import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
+import io.shulie.takin.web.data.param.dictionary.DictionaryParam;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +71,6 @@ public class DictionaryMntService extends CommonService {
         tDictionaryData.setValueOrder(Integer.valueOf(tDictionaryVo.getValueOrder()));
         tDictionaryData.setLanguage(tDictionaryVo.getLanguage());
         tDictionaryData.setActive(tDictionaryVo.getValueActive());
-
         tDictionaryData.setCreateUserCode(userName);
         tDictionaryData.setModifyUserCode(userName);
         tDictionaryDataMapper.insert(tDictionaryData);
@@ -92,6 +94,8 @@ public class DictionaryMntService extends CommonService {
      * @return
      */
     public PageInfo<TDictionaryVo> queryDictionaryList(Map<String, Object> paramMap) {
+        paramMap.put("tenant_id",WebPluginUtils.traceTenantId());
+        paramMap.put("env_code",WebPluginUtils.traceEnvCode());
         PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
         List<TDictionaryVo> dictionaryVoList = tDictionaryDataMapper.queryDictionaryList(paramMap);
 
@@ -105,7 +109,9 @@ public class DictionaryMntService extends CommonService {
      * @return
      */
     public TDictionaryVo queryDictionaryDetail(String tDictionaryId) {
-        return tDictionaryDataMapper.queryDictionaryDetail(tDictionaryId);
+        DictionaryParam param = new DictionaryParam();
+        param.setTDictionaryId(tDictionaryId);
+        return tDictionaryDataMapper.queryDictionaryDetail(param);
     }
 
     /**

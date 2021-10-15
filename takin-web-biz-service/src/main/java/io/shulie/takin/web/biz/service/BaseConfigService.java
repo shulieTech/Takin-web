@@ -25,10 +25,13 @@ public class BaseConfigService extends CommonService {
      * @return
      */
     public TBaseConfig queryByConfigCode(String configCode) {
+        return this.selectByPrimaryKey(configCode);;
+    }
+
+    public TBaseConfig selectByPrimaryKey(String configCode){
         QueryWrapper<BaseConfigEntity> wrapper = new QueryWrapper<>();
         wrapper.eq("env_code", WebPluginUtils.traceEnvCode());
         wrapper.eq("tenant_id", WebPluginUtils.traceTenantId());
-        wrapper.eq("user_id", WebPluginUtils.traceUserId());
         wrapper.eq("CONFIG_CODE",configCode);
         BaseConfigEntity configEntity = baseConfigMapper.selectOne(wrapper);
 
@@ -75,12 +78,11 @@ public class BaseConfigService extends CommonService {
         if (StringUtils.isEmpty(tBaseConfig.getConfigCode()) || StringUtils.isEmpty(tBaseConfig.getConfigValue())) {
             throw new TakinModuleException(TakinErrorEnum.API_TAKIN_CONFCENTER_ADD_BASE_CONFIG_EXCEPTION);
         }
-        TBaseConfig source = tbaseConfigDao.selectByPrimaryKey(tBaseConfig.getConfigCode());
+        TBaseConfig source = this.selectByPrimaryKey(tBaseConfig.getConfigCode());
         if (source != null) {
             throw new TakinModuleException(TakinErrorEnum.API_TAKIN_CONFCENTER_ADD_BASE_CONFIG_EXIST);
         }
         tBaseConfig.setEnvCode(WebPluginUtils.traceEnvCode());
-        tBaseConfig.setUserId(WebPluginUtils.traceUserId());
         tBaseConfig.setTenantId(WebPluginUtils.traceTenantId());
         tbaseConfigDao.insertSelective(tBaseConfig);
     }

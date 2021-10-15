@@ -31,7 +31,6 @@ import com.alibaba.fastjson.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
-import com.pamirs.takin.entity.dao.confcenter.TBaseConfigDao;
 import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
@@ -46,6 +45,7 @@ import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
+import io.shulie.takin.web.biz.service.BaseConfigService;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
@@ -98,7 +98,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     private DictionaryDataDAO dictionaryDataDAO;
 
     @Autowired
-    private TBaseConfigDao tBaseConfigDao;
+    private BaseConfigService baseConfigService;
 
     @Autowired
     private TBListMntDao tbListMntDao;
@@ -451,7 +451,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         List<SelectVO> vos = Arrays.stream(AppRemoteCallConfigEnum.values())
             .map(t -> new SelectVO(t.getConfigName(), String.valueOf(t.getType()))).collect(Collectors.toList());
 
-        TBaseConfig tBaseConfig = tBaseConfigDao.selectByPrimaryKey("REMOTE_CALL_ABLE_CONFIG");
+        TBaseConfig tBaseConfig = baseConfigService.selectByPrimaryKey("REMOTE_CALL_ABLE_CONFIG");
         if (tBaseConfig != null) {
             JSONObject jsonObject = JSONUtil.toBean(tBaseConfig.getConfigValue(), JSONObject.class);
             SelectVO selectVO = getSelectVO(interfaceType, voList);

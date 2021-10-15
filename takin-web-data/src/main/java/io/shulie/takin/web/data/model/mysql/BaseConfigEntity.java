@@ -57,12 +57,6 @@ public class BaseConfigEntity {
     private Long tenantId;
 
     /**
-     * 用户ID
-     */
-    @TableField(value = "user_id")
-    private Long userId;
-
-    /**
      * 环境编码
      */
     @TableField(value = "env_code")

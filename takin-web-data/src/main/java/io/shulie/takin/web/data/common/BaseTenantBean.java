@@ -23,6 +23,5 @@ public class BaseTenantBean {
     public BaseTenantBean(){
         this.envCode = WebPluginUtils.traceEnvCode();
         this.tenantId = WebPluginUtils.traceTenantId();
-        System.out.println("go!");
     }
 }

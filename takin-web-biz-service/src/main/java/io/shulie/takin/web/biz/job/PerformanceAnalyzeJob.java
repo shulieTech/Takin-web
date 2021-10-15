@@ -44,14 +44,18 @@ public class PerformanceAnalyzeJob implements SimpleJob {
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         if(CollectionUtils.isEmpty(tenantInfoExts)) {
             // 私有化 + 开源
-            threadAnalyService.clearData(Integer.valueOf(second),null);
+            threadAnalyService.clearData(Integer.valueOf(second));
         }else {
             // saas
-            tenantInfoExts.forEach(t -> {
+            tenantInfoExts.forEach(ext -> {
                 // 根据环境 分线程
-                t.getEnvs().forEach(e ->
-                    jobThreadPool.execute(() -> threadAnalyService.clearData(
-                        Integer.valueOf(second),new TenantCommonExt(t.getTenantId(),t.getTenantAppKey(),e.getEnvCode()))));
+                ext.getEnvs().forEach(e ->
+                    jobThreadPool.execute(() -> {
+                        WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode()));
+                        threadAnalyService.clearData(Integer.valueOf(second));
+                        WebPluginUtils.removeTraceContext();
+                    }));
+
             });
 
         }

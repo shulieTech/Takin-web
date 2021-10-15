@@ -44,7 +44,6 @@ import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -329,10 +328,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<Long> queryListRunningReport(TenantCommonExt ext) {
+    public List<Long> queryListRunningReport() {
         CloudCommonInfoWrapperReq req = new CloudCommonInfoWrapperReq();
-        req.setTenantId(ext.getTenantId());
-        req.setEnvCode(ext.getEnvCode());
         ResponseResult<List<Long>> result = reportApi.queryListRunningReport(req);
         if (result == null || !result.getSuccess()) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR,

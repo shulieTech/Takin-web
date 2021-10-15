@@ -9,7 +9,6 @@ import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunWithoutS
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author fanxx
@@ -20,7 +19,7 @@ public interface VerifyTaskService {
      * 定时任务 租户隔离
      * @param ext
      */
-    void showdownVerifyTask(TenantCommonExt ext);
+    void showdownVerifyTask();
 
     void start(LeakVerifyTaskStartRequest startRequest);
 

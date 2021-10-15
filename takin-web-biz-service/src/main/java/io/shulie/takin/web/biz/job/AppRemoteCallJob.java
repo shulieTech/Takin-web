@@ -7,6 +7,7 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -48,10 +49,13 @@ public class AppRemoteCallJob implements SimpleJob {
             appRemoteCallService.syncAmdb();
         }else {
             // saas
-            tenantInfoExts.forEach(t -> {
+            tenantInfoExts.forEach(ext -> {
                 // 根据环境 分线程
-                t.getEnvs().forEach(e ->
-                    jobThreadPool.execute(() -> appRemoteCallService.syncAmdb(t.getTenantId(),t.getTenantAppKey(),e.getEnvCode())));
+                ext.getEnvs().forEach(e -> {
+                    WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode()));
+                    jobThreadPool.execute(() -> appRemoteCallService.syncAmdb());
+                    WebPluginUtils.removeTraceContext();
+                });
             });
 
         }

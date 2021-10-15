@@ -7,6 +7,7 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -44,10 +45,14 @@ public class AppAccessStatusJob implements SimpleJob {
             applicationService.syncApplicationAccessStatus();
         }else {
             // saas
-            tenantInfoExts.forEach(t -> {
+            tenantInfoExts.forEach(ext -> {
                 // 根据环境 分线程
-                t.getEnvs().forEach(e ->
-                    jobThreadPool.execute(() ->applicationService.syncApplicationAccessStatus(t.getTenantId(),t.getTenantAppKey(),e.getEnvCode())));
+                ext.getEnvs().forEach(e ->
+                    jobThreadPool.execute(() -> {
+                        WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode()));
+                        applicationService.syncApplicationAccessStatus();
+                        WebPluginUtils.removeTraceContext();
+                    }));
             });
         }
     }

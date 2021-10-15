@@ -18,7 +18,6 @@ import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskInsertParam;
 import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskQueryParam;
 import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskUpdateParam;
 import io.shulie.takin.web.data.result.scenemanage.SceneSchedulerTaskResult;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -136,12 +135,12 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
     }
 
     @Override
-    public void executeSchedulerPressureTask(TenantCommonExt ext) {
+    public void executeSchedulerPressureTask() {
         SceneSchedulerTaskQueryRequest request = new SceneSchedulerTaskQueryRequest();
         Date previousSeconds = DateUtils.getPreviousNSecond(-67);
         String time = DateUtils.dateToString(previousSeconds, DateUtils.FORMATE_YMDHM);
         request.setEndTime(time);
-        WebPluginUtils.transferTenantParam(ext,request);
+        WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(),request);
         List<SceneSchedulerTaskResponse> responseList = this.selectByExample(request);
         if (CollectionUtils.isEmpty(responseList)) {
             return;
@@ -157,7 +156,7 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                 //执行
                 SceneActionParam startParam = new SceneActionParam();
                 startParam.setSceneId(scheduler.getSceneId());
-                WebPluginUtils.transferTenantParam(ext,startParam);
+                WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(),startParam);
                 new Thread(() -> {
                     try {
                         sceneTaskService.startTask(startParam);

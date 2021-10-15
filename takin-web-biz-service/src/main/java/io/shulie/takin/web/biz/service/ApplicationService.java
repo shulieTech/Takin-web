@@ -25,9 +25,8 @@ public interface ApplicationService {
 
     /**
      * 带租户
-     * @param ext
      */
-    void configureTasks(TenantCommonExt ext);
+    void configureTasks();
 
     List<ApplicationListResponse> getApplicationList(String appNames);
 
@@ -191,14 +190,6 @@ public interface ApplicationService {
      * 同步应用状态
      */
     void syncApplicationAccessStatus();
-
-    /**
-     * 根据租户 同步应用状态
-     * @param tenantId
-     * @param userAppKey
-     * @param envCode
-     */
-    void syncApplicationAccessStatus(Long tenantId,String userAppKey, String envCode);
 
     /**
      * 通过 applicationId 获得 applicationName

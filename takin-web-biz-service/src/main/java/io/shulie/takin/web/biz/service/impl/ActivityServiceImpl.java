@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
+
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
@@ -46,10 +48,12 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.http.HttpAssert;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
@@ -388,8 +392,6 @@ public class ActivityServiceImpl implements ActivityService {
         return PagingList.of(responses, activityListResultPagingList.getTotal());
     }
 
-
-
     @Override
     public ActivityResponse getActivityById(Long activityId) {
         ActivityResult result = activityDAO.getActivityById(activityId);
@@ -442,7 +444,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setIsChange(result.getIsChange());
         activityResponse.setUserId(result.getUserId());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(Collections.singletonList(result.getUserId()));
-        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
+        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setActivityLevel(result.getActivityLevel());
         activityResponse.setIsCore(String.valueOf(result.getIsCore()));
@@ -489,7 +491,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setIsChange(result.getIsChange());
         activityResponse.setUserId(result.getUserId());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(Collections.singletonList(result.getUserId()));
-        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
+        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
         activityResponse.setExtend(result.getExtend());
         activityResponse.setMethod(result.getMethod());
         activityResponse.setRpcType(result.getRpcType());
@@ -547,8 +549,10 @@ public class ActivityServiceImpl implements ActivityService {
         SceneManageWrapperReq req = new SceneManageWrapperReq();
         WebResponse webResponse = sceneManageService.buildSceneForFlowVerify(vo, req, null);
         if (!webResponse.getSuccess()) {
-            response.setTaskStatus(false);
-            return response;
+            ErrorInfo error = webResponse.getError();
+            String errorMsg = Objects.isNull(error) ? "" : error.getMsg();
+            log.error("buildSceneForFlowVerify 异常,错误信息={}", JSON.toJSONString(error));
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "构造场景数据出现异常！原因为" + errorMsg);
         }
         //2.发起流量
         TaskFlowDebugStartReq taskFlowDebugStartReq = new TaskFlowDebugStartReq();
@@ -573,14 +577,15 @@ public class ActivityServiceImpl implements ActivityService {
         }
         taskFlowDebugStartReq.setFeatures(req.getFeatures());
         taskFlowDebugStartReq.setLicense(WebPluginUtils.getTenantUserAppKey());
-        taskFlowDebugStartReq.setCreatorId(WebPluginUtils.getUserId());
+        UserExt user = WebPluginUtils.getUser();
+        if (user != null) {
+            taskFlowDebugStartReq.setOperateId(user.getId());
+            taskFlowDebugStartReq.setOperateName(user.getName());
+        }
         log.info("流量验证参数：{}", taskFlowDebugStartReq.toString());
         ResponseResult<Long> longResponseResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
         log.info("流量验证发起结果：{}", longResponseResult.toString());
-        response.setTaskStatus(longResponseResult.getSuccess());
-        if (!longResponseResult.getSuccess()) {
-            return response;
-        }
+        HttpAssert.isOk(longResponseResult, taskFlowDebugStartReq, "cloud开始流量验证任务");
         response.setVerifiedFlag(false);
         response.setVerifyStatus(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFYING);
         //3.缓存任务ID并返回

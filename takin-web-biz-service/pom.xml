@@ -5,7 +5,7 @@
     <parent>
         <artifactId>takin-web</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.0.1</version>
+        <version>takin-web-5.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -205,6 +205,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-cloud-open-api</artifactId>
             <scope>provided</scope>
@@ -239,10 +244,9 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
 

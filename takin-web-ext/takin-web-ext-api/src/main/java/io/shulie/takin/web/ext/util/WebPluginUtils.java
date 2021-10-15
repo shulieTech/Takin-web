@@ -1,11 +1,5 @@
 package io.shulie.takin.web.ext.util;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
@@ -21,6 +15,8 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.*;
 
 /**
  * @author by: hezhongqi
@@ -39,7 +35,7 @@ public class WebPluginUtils {
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
     private static WebUserAuthExtApi userAuthExtApi;
-    private static InspectionExtApi inspectionExtApi;
+    public static InspectionExtApi inspectionExtApi;
 
     static PluginManager pluginManager;
 
@@ -52,15 +48,6 @@ public class WebPluginUtils {
         inspectionExtApi = pluginManager.getExtension(InspectionExtApi.class);
     }
 
-    /**
-     * 判断e2e插件是否存在
-     */
-    public static Boolean checkE2ePlugin() {
-        if (Objects.nonNull(inspectionExtApi)) {
-           return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-    }
 
     /**
      * 补充 插入 更新 用户数据

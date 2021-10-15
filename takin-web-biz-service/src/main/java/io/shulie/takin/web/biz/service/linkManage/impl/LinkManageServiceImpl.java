@@ -993,6 +993,11 @@ public class LinkManageServiceImpl implements LinkManageService {
 
         //获取业务流程基本信息
         Scene scene = tSceneMapper.selectByPrimaryKey(Long.parseLong(id));
+        if (Objects.isNull(scene)) {
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
+                    id + "对应的业务流程不存在");
+        }
+
         dto.setId(String.valueOf(scene.getId()));
         dto.setIsCode(String.valueOf(scene.getIsCore()));
         dto.setLevel(scene.getSceneLevel());
@@ -1241,21 +1246,26 @@ public class LinkManageServiceImpl implements LinkManageService {
 
     @Override
     public List<BusinessActivityNameResponse> getBusinessActiveByFlowId(Long businessFlowId) {
-        List<BusinessActivityNameResponse> sceneBusinessActivityRefVoList = new ArrayList<>();
+        List<BusinessActivityNameResponse> sceneBusinessActivityRefVOS = new ArrayList<>();
         List<SceneLinkRelate> sceneLinkRelates = tSceneLinkRelateMapper.selectBySceneId(businessFlowId);
         if (CollectionUtils.isNotEmpty(sceneLinkRelates)) {
             List<Long> businessActivityIds = sceneLinkRelates.stream().map(o -> Long.valueOf(o.getBusinessLinkId()))
                 .collect(Collectors.toList());
             List<BusinessLinkManageTable> businessLinkManageTables = tBusinessLinkManageTableMapper
                 .selectBussinessLinkByIdList(businessActivityIds);
-            sceneBusinessActivityRefVoList = businessLinkManageTables.stream().map(businessLinkManageTable -> {
+            //因为businessLinkManageTables打乱了业务活动的顺序 所以使用businessActivityIds
+            sceneBusinessActivityRefVOS = businessActivityIds.stream().map(activityId -> {
                 BusinessActivityNameResponse businessActivityNameResponse = new BusinessActivityNameResponse();
-                businessActivityNameResponse.setBusinessActivityId(businessLinkManageTable.getLinkId());
-                businessActivityNameResponse.setBusinessActivityName(businessLinkManageTable.getLinkName());
+                businessActivityNameResponse.setBusinessActivityId(activityId);
+                BusinessLinkManageTable linkManageTable = businessLinkManageTables.stream().filter(
+                        link -> activityId.equals(link.getLinkId())).findFirst().orElse(null);
+                if(Objects.nonNull(linkManageTable)){
+                    businessActivityNameResponse.setBusinessActivityName(linkManageTable.getLinkName());
+                }
                 return businessActivityNameResponse;
             }).collect(Collectors.toList());
         }
-        return sceneBusinessActivityRefVoList;
+        return sceneBusinessActivityRefVOS;
     }
 }
 

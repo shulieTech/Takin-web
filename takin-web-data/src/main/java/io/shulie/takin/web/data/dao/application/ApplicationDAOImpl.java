@@ -15,19 +15,13 @@
 
 package io.shulie.takin.web.data.dao.application;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.excel.util.StringUtils;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
@@ -49,6 +43,12 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -86,26 +86,39 @@ public class ApplicationDAOImpl
         if (CollectionUtils.isEmpty(appNames)) {
             return Lists.newArrayList();
         }
+
+        // 候补List
         List<ApplicationResult> applicationResultList = Lists.newArrayList();
+        // wait to fill
         List<ApplicationDTO> applicationDtoTotalList = Lists.newArrayList();
+
         //分批从amdb获取应用数据
         int BATCH_SIZE = 100;
         List<String> pageAppNameList;
-        for (int from = 0, to = 0, size = appNames.size(); from < size; from = to) {
+
+        for (int from = 0, to = 0, size = appNames.size();
+             from < size;
+             from = to) {
+
             to = Math.min(from + BATCH_SIZE, size);
             pageAppNameList = appNames.subList(from, to);
+
             ApplicationQueryDTO queryDTO = new ApplicationQueryDTO();
             queryDTO.setAppNames(pageAppNameList);
             queryDTO.setFields(Lists.newArrayList("library,instanceInfo".split(",")));
             queryDTO.setPageSize(99999);
+
             PagingList<ApplicationDTO> applicationDtoPagingList = applicationClient.pageApplications(queryDTO);
+            // case1 notEmpty
             if (!applicationDtoPagingList.isEmpty()) {
                 List<ApplicationDTO> applicationDTOList = applicationDtoPagingList.getList();
                 applicationDtoTotalList.addAll(applicationDTOList);
             }
+
             if (CollectionUtils.isEmpty(applicationDtoTotalList)) {
                 return applicationResultList;
             }
+
         }
 
         return toAppResult(applicationResultList, applicationDtoTotalList);
@@ -113,15 +126,19 @@ public class ApplicationDAOImpl
 
     private List<ApplicationResult> toAppResult(List<ApplicationResult> applicationResultList,
         List<ApplicationDTO> applicationDtoTotalList) {
+
         List<String> appName = applicationDtoTotalList.stream().map(ApplicationDTO::getAppName).collect(
             Collectors.toList());
+
         LambdaQueryWrapper<ApplicationMntEntity> query = new LambdaQueryWrapper<>();
         query.in(ApplicationMntEntity::getApplicationName, appName);
         List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(query);
+
         /* key：应用名称，value：userId */
         Map<String, Long> appNameUserIdMap = Maps.newHashMap();
         /* key：应用名称，value：用户名称 */
         Map<String, String> appNameUserNameMap = Maps.newHashMap();
+
         if (!CollectionUtils.isEmpty(applicationMntEntities)) {
             applicationMntEntities.forEach(localApp -> {
                 appNameUserIdMap.computeIfAbsent(localApp.getApplicationName(), k -> localApp.getUserId());
@@ -135,7 +152,7 @@ public class ApplicationDAOImpl
                 Long v = entry.getValue();
                 String value = appNameUserNameMap.get(k);
                 if (value == null) {
-                    if(userExtMap.get(v) != null) {
+                    if (userExtMap.get(v) != null) {
                         appNameUserNameMap.put(k, userExtMap.get(v).getName());
                     }
                 }
@@ -152,6 +169,7 @@ public class ApplicationDAOImpl
             applicationResult.setManagerUserId(appNameUserIdMap.get(applicationDTO.getAppName()));
             applicationResult.setAppUpdateTime(applicationDTO.getAppUpdateTime());
             applicationResult.setAppSummary(applicationDTO.getAppSummary());
+
             LibraryDTO[] libraryDtoArray = applicationDTO.getLibrary();
             List<LibraryResult> libraryResultList = Lists.newArrayList();
             if (libraryDtoArray.length > 0) {
@@ -173,6 +191,7 @@ public class ApplicationDAOImpl
                 applicationResultList.add(applicationResult);
             }
         });
+
         return applicationResultList;
     }
 
@@ -206,7 +225,8 @@ public class ApplicationDAOImpl
         return getApplicationDetailResults(wrapper);
     }
 
-    private List<ApplicationDetailResult> getApplicationDetailResults(LambdaQueryWrapper<ApplicationMntEntity> wrapper) {
+    private List<ApplicationDetailResult> getApplicationDetailResults(
+        LambdaQueryWrapper<ApplicationMntEntity> wrapper) {
         List<ApplicationMntEntity> entityList = applicationMntMapper.selectList(wrapper);
         if (CollectionUtils.isEmpty(entityList)) {
             return Lists.newArrayList();
@@ -315,7 +335,8 @@ public class ApplicationDAOImpl
 
     @Override
     public List<ApplicationMntEntity> listByApplicationNamesAndCustomerId(List<String> applicationNames) {
-        LambdaQueryWrapper<ApplicationMntEntity> wrapper = this.getLambdaQueryWrapper().select(ApplicationMntEntity::getApplicationId,
+        LambdaQueryWrapper<ApplicationMntEntity> wrapper = this.getLambdaQueryWrapper().select(
+                ApplicationMntEntity::getApplicationId,
                 ApplicationMntEntity::getApplicationName, ApplicationMntEntity::getAccessStatus,
                 ApplicationMntEntity::getSwitchStatus, ApplicationMntEntity::getNodeNum)
             .in(ApplicationMntEntity::getApplicationName, applicationNames);
@@ -358,5 +379,10 @@ public class ApplicationDAOImpl
         wrapper.set(ApplicationMntEntity::getAccessStatus, status)
             .eq(ApplicationMntEntity::getApplicationId, applicationId);
         applicationMntMapper.update(null, wrapper);
+    }
+
+    @Override
+    public void batchUpdateAppNodeNum(List<NodeNumParam> paramList, Long customerId) {
+        applicationMntMapper.batchUpdateAppNodeNum(paramList, customerId);
     }
 }

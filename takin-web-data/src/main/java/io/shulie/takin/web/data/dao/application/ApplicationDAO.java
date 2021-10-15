@@ -17,6 +17,7 @@ package io.shulie.takin.web.data.dao.application;
 
 import java.util.List;
 
+import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
@@ -109,5 +110,13 @@ public interface ApplicationDAO {
      * 更新应用状态
      */
     void updateApplicationStatus(Long applicationId, Integer status);
+
+    /**
+     * 批量更新应用节点数
+     *
+     * @param paramList  参数集合
+     * @param customerId 租户id
+     */
+    void batchUpdateAppNodeNum(List<NodeNumParam> paramList, Long customerId);
 
 }

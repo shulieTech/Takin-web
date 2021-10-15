@@ -47,6 +47,7 @@ import com.pamirs.takin.entity.domain.query.LinkGuardQueryParam;
 import com.pamirs.takin.entity.domain.query.agent.AppMiddlewareQuery;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
+import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import com.pamirs.takin.entity.domain.vo.dsmanage.Configurations;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DataSource;
 import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
@@ -92,7 +93,6 @@ import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
@@ -134,6 +134,7 @@ import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.DocumentException;
 import org.mockito.internal.util.collections.Sets;
@@ -569,8 +570,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         TApplicationMnt applicationMnt = this.queryTApplicationMntByName(param.getApplicationName());
 
-        if (applicationMnt == null){
-            return Response.fail("0000-0000-0000","查询不到应用【"+param.getApplicationName()+"】,请先上报应用！");
+        if (applicationMnt == null) {
+            return Response.fail("0000-0000-0000", "查询不到应用【" + param.getApplicationName() + "】,请先上报应用！");
         }
 
         if (param.getSwitchErrorMap() != null && !param.getSwitchErrorMap().isEmpty()) {
@@ -590,11 +591,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             }
             //3：应用异常
             applicationDAO.updateApplicationStatus(applicationMnt.getApplicationId(),
-                    AppAccessStatusEnum.EXCEPTION.getCode());
+                AppAccessStatusEnum.EXCEPTION.getCode());
         } else {
             // 应用正常
             applicationDAO.updateApplicationStatus(applicationMnt.getApplicationId(),
-                    AppAccessStatusEnum.NORMAL.getCode());
+                AppAccessStatusEnum.NORMAL.getCode());
         }
         return Response.success("上传应用状态信息成功");
     }
@@ -1049,6 +1050,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_UNSTALL_AGENT_ERROR, e);
 
         }
+    }
+
+    @Override
+    public void modifyAppNodeNum(List<NodeNumParam> numParamList) {
+        applicationDAO.batchUpdateAppNodeNum(numParamList, WebPluginUtils.getCustomerId());
     }
 
     /**

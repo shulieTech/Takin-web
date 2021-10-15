@@ -1,16 +1,13 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 
+import com.pamirs.takin.common.redis.RedisKey;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
@@ -25,20 +22,17 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
+import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.*;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
@@ -70,6 +64,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
+import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * @author shiyajian
@@ -81,6 +78,8 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Autowired
     RedisClientUtils redisClientUtils;
+    @Autowired
+    private RedisTemplate redisTemplate;
     @Autowired
     private NotifyClient notifyClient;
     @Autowired
@@ -351,6 +350,9 @@ public class ActivityServiceImpl implements ActivityService {
         OperationLogContextHolder.addVars(Vars.APPLICATION_NAME, oldActivity.getApplicationName());
         OperationLogContextHolder.addVars(Vars.SERVICE_NAME, oldActivity.getServiceName());
         activityDAO.deleteActivity(activityId);
+        //记录业务活动删除事件
+        redisClientUtils.hmset(Vars.ACTIVITY_DELETE_EVENT,
+                String.valueOf(activityId), 0);
         // 正常业务活动
         if (oldActivity.getBusinessType().equals(BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
             notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(),
@@ -368,7 +370,9 @@ public class ActivityServiceImpl implements ActivityService {
         param.setCurrent(request.getCurrent());
         param.setPageSize(request.getPageSize());
         WebPluginUtils.fillQueryParam(param);
+
         PagingList<ActivityListResult> activityListResultPagingList = activityDAO.pageActivities(param);
+
         List<ActivityListResponse> responses = activityListResultPagingList.getList().stream()
             .map(result -> {
                 ActivityListResponse response = new ActivityListResponse();
@@ -389,7 +393,68 @@ public class ActivityServiceImpl implements ActivityService {
                 WebPluginUtils.fillQueryResponse(response);
                 return response;
             }).collect(Collectors.toList());
+
         return PagingList.of(responses, activityListResultPagingList.getTotal());
+    }
+
+    @Override
+    public ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request) {
+        ActivityResponse activity = getActivityById(request.getActivityId());
+
+        // 非正常业务活动时，直接返回
+        if (!activity.getBusinessType().equals(
+                BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
+            return activity;
+        }
+
+        // 正常业务活动时，才对 拓扑图处理
+        LocalDateTime startTime = request.getStartTime();
+        LocalDateTime endTime = request.getEndTime();
+        LocalDateTime allTotalCountStartDateTime = startTime;
+
+        if (null == startTime && null == endTime) {
+            /*
+            如果 起始时间 和 结束时间 为空，默认 查询5分钟的数据
+            总的 (TPS / RT)（最近5 min）
+            line : 成功率（最近5 min）
+            */
+            endTime = LocalDateTime.now().minusHours(8);
+            startTime = endTime.minusMinutes(5);
+
+            // line : 总调用量 startTime, 最近5 min
+//            allTotalCountStartDateTime = endTime.minusDays(1);
+            allTotalCountStartDateTime = startTime;
+        }
+
+        linkTopologyService.fillMetrics(
+                request.getActivityId(),
+                activity.getTopology(),
+                startTime, endTime,
+                allTotalCountStartDateTime,
+                request.getFlowTypeEnum());
+
+        return activity;
+    }
+
+    @Override
+    public ActivityResponse getActivityWithMetricsByIdForReport(Long activityId,
+                                                                LocalDateTime startDateTime,
+                                                                LocalDateTime endDateTime) {
+
+        ActivityResponse activity = getActivityById(activityId);
+
+        if (startDateTime == null || endDateTime == null) {
+            return activity;
+        }
+
+        linkTopologyService.fillMetrics(
+                activityId,
+                activity.getTopology(),
+                startDateTime, endDateTime,
+                //默认不区分流量类型，按照混合流量查询
+                startDateTime, FlowTypeEnum.BLEND);
+
+        return activity;
     }
 
     @Override
@@ -405,6 +470,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setType(result.getType());
 
         if (result.getBusinessType().equals(BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
+            // 正常业务活动
             activityResponse.setApplicationName(result.getApplicationName());
             activityResponse.setEntranceName(
                 ActivityUtil.serviceNameLabel(result.getServiceName(), result.getMethod()));
@@ -444,7 +510,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setIsChange(result.getIsChange());
         activityResponse.setUserId(result.getUserId());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(Collections.singletonList(result.getUserId()));
-        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
+        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setActivityLevel(result.getActivityLevel());
         activityResponse.setIsCore(String.valueOf(result.getIsCore()));
@@ -491,7 +557,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setIsChange(result.getIsChange());
         activityResponse.setUserId(result.getUserId());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(Collections.singletonList(result.getUserId()));
-        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
+        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
         activityResponse.setExtend(result.getExtend());
         activityResponse.setMethod(result.getMethod());
         activityResponse.setRpcType(result.getRpcType());
@@ -601,6 +667,7 @@ public class ActivityServiceImpl implements ActivityService {
         ActivityVerifyResponse response = new ActivityVerifyResponse();
         response.setActivityId(activityId);
         response.setVerifyStatus(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_UNVERIFIED);
+
         //1.从缓存获取taskId
         String reportId = redisClientUtils.getString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId);
         //2.根据taskId获取报告状态即任务状态
@@ -615,6 +682,33 @@ public class ActivityServiceImpl implements ActivityService {
             }
         }
         return response;
+    }
+
+    /**
+     * @param activityId 业务ID
+     * @param ownerApps   应用名称
+     * @param serviceName 服务名称
+     * @param state       开关状态
+     */
+    @Override
+    public void setActivityNodeState(long activityId, String ownerApps, String serviceName, boolean state) {
+        activityDAO.setActivityNodeServiceState(activityId, ownerApps, serviceName, state);
+        tryClearActivityCache(activityId);//SY:节点状态发生改变则清空缓存信息
+    }
+
+    private void tryClearActivityCache(long activityId) {
+        try {
+            String key = ActivityCacheAspect.REDIS_PREFIX_KEY + activityId + "::*";
+            Set keys = redisTemplate.keys(key);
+            keys.forEach(k->redisTemplate.delete(k));
+        }catch (Exception e){
+            //Ignore
+        }
+    }
+
+    @Override
+    public List<ActivityNodeState> getActivityNodeServiceState(long activityId) {
+        return activityDAO.getActivityNodeServiceState(activityId);
     }
 
     // TODO 变更逻辑后续看如何设计

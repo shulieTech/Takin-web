@@ -1,15 +1,6 @@
 package io.shulie.takin.web.data.dao.activity.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSON;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -22,10 +13,12 @@ import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import io.shulie.takin.web.common.util.JsonUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.mapper.mysql.ActivityNodeStateTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.LinkManageTableMapper;
+import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.LinkManageTableEntity;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
@@ -35,10 +28,18 @@ import io.shulie.takin.web.data.param.activity.ActivityUpdateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -53,6 +54,9 @@ public class ActivityDAOImpl implements ActivityDAO {
 
     @Resource
     private BusinessLinkManageTableMapper businessLinkManageTableMapper;
+
+    @Resource
+    private ActivityNodeStateTableMapper activityNodeStateTableMapper;
 
     @Override
     public List<Long> exists(ActivityExistsQueryParam param) {
@@ -157,6 +161,9 @@ public class ActivityDAOImpl implements ActivityDAO {
 
         // 业务活动
         if (ActivityUtil.isNormalBusiness(businessLinkManageTableEntity.getType())) {
+            // 正常业务活动
+
+            // 查询 业务链路 绑定的 技术链路
             String relatedTechLink = businessLinkManageTableEntity.getRelatedTechLink();
             LinkManageTableEntity linkManageTableEntity = linkManageTableMapper.selectById(relatedTechLink);
             if (linkManageTableEntity == null || linkManageTableEntity.getIsDeleted() == 1) {
@@ -187,7 +194,7 @@ public class ActivityDAOImpl implements ActivityDAO {
             result.setType(EntranceTypeEnum.getEnumByType(features.get(FeaturesConstants.SERVER_MIDDLEWARE_TYPE_KEY)));
 
         } else if (businessLinkManageTableEntity.getType().equals(BusinessTypeEnum.VIRTUAL_BUSINESS.getType())) {
-            // 虚拟业务
+            // 虚拟业务活动
             EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertVirtualEntrance(
                 businessLinkManageTableEntity.getEntrace());
             result.setVirtualEntrance(entranceJoinEntity.getVirtualEntrance());
@@ -313,17 +320,21 @@ public class ActivityDAOImpl implements ActivityDAO {
             lambdaQueryWrapper.in(BusinessLinkManageTableEntity::getUserId, param.getUserIdList());
         }
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
+
         Page<BusinessLinkManageTableEntity> tableEntityPage = businessLinkManageTableMapper
             .selectPage(page, lambdaQueryWrapper);
+
         if (CollectionUtils.isEmpty(tableEntityPage.getRecords())) {
             return PagingList.of(Lists.newArrayList(),tableEntityPage.getTotal());
         }
+
         List<String> techLinkIds = tableEntityPage.getRecords().stream().map(
             BusinessLinkManageTableEntity::getRelatedTechLink).collect(
             Collectors.toList());
         if (CollectionUtils.isEmpty(techLinkIds)) {
             return PagingList.empty();
         }
+
         List<Long> userIds = tableEntityPage.getRecords().stream().filter(f -> Objects.nonNull(f.getUserId())).map(
             BusinessLinkManageTableEntity::getUserId)
             .collect(Collectors.toList());
@@ -399,4 +410,32 @@ public class ActivityDAOImpl implements ActivityDAO {
         }).collect(Collectors.toList());
         return results;
     }
+
+    @Override
+    public void setActivityNodeServiceState(long activityId, String ownerApps, String serviceName, boolean state) {
+        ActivityNodeState activityNodeState = new ActivityNodeState();
+        String key = null;
+        try {
+            key = MD5Tool.getMD5(activityId + ownerApps + serviceName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        activityNodeState.setId(key);
+        activityNodeState.setActivityId(activityId);
+        activityNodeState.setOwnerApp(ownerApps);
+        activityNodeState.setServiceName(serviceName);
+        activityNodeState.setState(state);
+
+        //SY:如果限制节点下只允许一个服务为打开状态则先清空再新增
+//        activityNodeStateTableMapper.removeActivityNodeByActivityIdAndOwnerApp(activityNodeState);
+
+        //SY:保存节点状态-如果存在则更新状态字段
+        activityNodeStateTableMapper.setActivityNodeState(activityNodeState);
+    }
+
+    @Override
+    public List<ActivityNodeState> getActivityNodeServiceState(long activityId) {
+        return activityNodeStateTableMapper.getActivityNodes(activityId);
+    }
+
 }

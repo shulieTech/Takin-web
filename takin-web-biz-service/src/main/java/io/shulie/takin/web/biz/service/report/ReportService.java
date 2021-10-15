@@ -1,12 +1,13 @@
 package io.shulie.takin.web.biz.service.report;
 
-import java.util.List;
-import java.util.Map;
-
+import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
 import io.shulie.takin.web.common.domain.WebResponse;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author qianshui
@@ -19,10 +20,13 @@ public interface ReportService {
     WebResponse getReportByReportId(Long reportId);
 
     WebResponse queryReportTrend(ReportTrendQueryParam param);
+    WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery);
 
     WebResponse tempReportDetail(Long sceneId);
 
     WebResponse queryTempReportTrend(ReportTrendQueryParam param);
+    WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,
+                                                 ReportTraceQueryDTO queryDTO);
 
     WebResponse listWarn(WarnQueryParam param);
 

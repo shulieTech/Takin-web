@@ -11,7 +11,6 @@ import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.ConfigServerHelper;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -34,14 +33,17 @@ import org.springframework.stereotype.Component;
     description = "汇总应用 机器数 风险机器数")
 @Slf4j
 public class CalcApplicationSummaryJob implements SimpleJob {
+
     @Autowired
     private ReportTaskService reportTaskService;
+
     @Autowired
     private ReportService reportService;
 
     @Autowired
     @Qualifier("jobThreadPool")
     private ThreadPoolExecutor jobThreadPool;
+
     @Autowired
     @Qualifier("fastDebugThreadPool")
     private ThreadPoolExecutor fastDebugThreadPool;
@@ -57,7 +59,7 @@ public class CalcApplicationSummaryJob implements SimpleJob {
             }
 
             // 私有化 + 开源 根据 报告id进行分片
-            List<Long> reportIds =  reportTaskService.getRunningReport();
+            List<Long> reportIds = reportTaskService.getRunningReport();
             log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
             for (Long reportId : reportIds) {
                 // 开始数据层分片
@@ -79,8 +81,7 @@ public class CalcApplicationSummaryJob implements SimpleJob {
                             continue;
                         }
 
-                        jobThreadPool.execute(() -> this.calcApplicationSummary(
-                            new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode())));
+                        jobThreadPool.execute(this::calcApplicationSummary);
                     }
                 }
             }
@@ -91,10 +92,11 @@ public class CalcApplicationSummaryJob implements SimpleJob {
 
     private void calcApplicationSummary() {
         List<Long> reportIds = reportService.queryListRunningReport();
-        log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
+        log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),
+            JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据层分片
-            fastDebugThreadPool.execute(() ->reportTaskService.calcApplicationSummary(reportId));
+            fastDebugThreadPool.execute(() -> reportTaskService.calcApplicationSummary(reportId));
         }
     }
 

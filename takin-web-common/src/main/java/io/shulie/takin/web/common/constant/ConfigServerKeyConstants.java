@@ -24,8 +24,6 @@ public interface ConfigServerKeyConstants {
      */
     String TAKIN_CONFIG_ZK_ADDR = "takin.config.zk.addr";
     String TAKIN_REMOTE_CLIENT_DOWNLOAD_URI = "takin.remote.client.download.uri";
-    String TAKIN_SCRIPT_CHECK = "takin.script.check";
-    String TAKIN_LINK_FLOW_CHECK_ENABLE = "takin.link.flow.check.enable";
     String TAKIN_APPLICATION_NEW_AGENT = "takin.application.new-agent";
     String AGENT_INTERACTIVE_TAKIN_WEB_URL = "agent.interactive.takin.web.url";
     String AGENT_HTTP_UPDATE_VERSION = "agent.http.update.version";

@@ -76,6 +76,18 @@ public enum ConfigServerKeyEnum implements AppConstants {
      */
     TAKIN_DATA_PATH("data.path", "takin.data.path", NO),
 
+    /**
+     * 客户端下载地址
+     */
+    TAKIN_REMOTE_CLIENT_DOWNLOAD_URI("remote.client.download.uri", "takin.remote.client.download.uri", NO),
+
+    /**
+     * 是否进行脚本检查
+     */
+    TAKIN_SCRIPT_CHECK("script.check", "takin.script.check", YES),
+
+    TAKIN_LINK_FLOW_CHECK_ENABLE("link.flow.check.enable", "takin.link.flow.check.enable", YES),
+
 
     ;
 

@@ -48,9 +48,11 @@ import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
@@ -85,8 +87,6 @@ public class ActivityServiceImpl implements ActivityService {
     private LinkTopologyService linkTopologyService;
     @Autowired
     private ReportService reportService;
-    @Value("${link.flow.check.enable:false}")
-    private boolean enableLinkFlowCheck;
     @Autowired
     private CloudTaskApi cloudTaskApi;
     @Autowired
@@ -464,7 +464,8 @@ public class ActivityServiceImpl implements ActivityService {
             request.setExtend(activityResponse.getExtend());
             request.setServiceName(activityResponse.getServiceName());
             request.setType(activityResponse.getType());
-            activityResponse.setEnableLinkFlowCheck(enableLinkFlowCheck);
+            String enableLinkFlowCheckString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_LINK_FLOW_CHECK_ENABLE)
+            activityResponse.setEnableLinkFlowCheck(Boolean.parseBoolean(enableLinkFlowCheckString));
 
             // 拓扑图查询
             activityResponse.setTopology(linkTopologyService.getApplicationEntrancesTopology(request));

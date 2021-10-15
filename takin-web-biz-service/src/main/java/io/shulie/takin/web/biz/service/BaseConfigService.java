@@ -1,12 +1,16 @@
 package io.shulie.takin.web.biz.service;
 
+import java.util.Objects;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
 import io.shulie.takin.web.biz.common.CommonService;
-import io.shulie.takin.web.biz.utils.CopyUtils;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.model.mysql.BaseConfigEntity;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,19 +29,7 @@ public class BaseConfigService extends CommonService {
      * @return
      */
     public TBaseConfig queryByConfigCode(String configCode) {
-        return this.selectByPrimaryKey(configCode);;
-    }
-
-    public TBaseConfig selectByPrimaryKey(String configCode){
-        QueryWrapper<BaseConfigEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq("env_code", WebPluginUtils.traceEnvCode());
-        wrapper.eq("tenant_id", WebPluginUtils.traceTenantId());
-        wrapper.eq("CONFIG_CODE",configCode);
-        BaseConfigEntity configEntity = baseConfigMapper.selectOne(wrapper);
-
-        TBaseConfig baseConfig = new TBaseConfig();
-        BeanUtils.copyProperties(configEntity,baseConfig);
-        return baseConfig;
+        return this.selectByPrimaryKey(configCode);
     }
 
     public void checkExistAndInsert(String configCode) {
@@ -65,7 +57,7 @@ public class BaseConfigService extends CommonService {
             throw new TakinModuleException(
                 TakinErrorEnum.API_TAKIN_CONFCENTER_UPDATE_BASE_CONFIG_VALUE_TOO_LONG_EXCEPTION);
         }
-        tbaseConfigDao.updateByPrimaryKeySelective(tBaseConfig);
+        this.updateByPrimaryKeySelective(tBaseConfig);
 
     }
 
@@ -87,4 +79,33 @@ public class BaseConfigService extends CommonService {
         tbaseConfigDao.insertSelective(tBaseConfig);
     }
 
+    public TBaseConfig selectByPrimaryKey(String configCode){
+        QueryWrapper<BaseConfigEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("env_code", WebPluginUtils.traceEnvCode());
+        wrapper.eq("tenant_id", WebPluginUtils.traceTenantId());
+        wrapper.eq("CONFIG_CODE",configCode);
+        BaseConfigEntity configEntity = baseConfigMapper.selectOne(wrapper);
+
+        TBaseConfig baseConfig = new TBaseConfig();
+        BeanUtils.copyProperties(configEntity,baseConfig);
+        return baseConfig;
+    }
+
+    public int updateByPrimaryKeySelective(TBaseConfig tBaseConfig){
+        if (null == tBaseConfig.getConfigCode()){
+            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON,"主键不允许为空！");
+        }
+        BaseConfigEntity configEntity = new BaseConfigEntity();
+        BeanUtils.copyProperties(tBaseConfig,configEntity);
+        LambdaUpdateWrapper<BaseConfigEntity> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.set(!StringUtils.isEmpty(tBaseConfig.getConfigValue()),BaseConfigEntity::getConfigValue,tBaseConfig.getConfigValue());
+        wrapper.set(Objects.nonNull(tBaseConfig.getUpdateTime()),BaseConfigEntity::getUpdateTime,tBaseConfig.getUpdateTime());
+        wrapper.set(Objects.nonNull(tBaseConfig.getCreateTime()),BaseConfigEntity::getCreateTime,tBaseConfig.getCreateTime());
+        wrapper.set(Objects.nonNull(tBaseConfig.getUseYn()),BaseConfigEntity::getUseYn,tBaseConfig.getUseYn());
+        wrapper.set(StringUtils.isEmpty(tBaseConfig.getConfigDesc()),BaseConfigEntity::getConfigDesc,tBaseConfig.getConfigDesc());
+        wrapper.eq(BaseConfigEntity::getEnvCode, WebPluginUtils.traceEnvCode());
+        wrapper.eq(BaseConfigEntity::getTenantId, WebPluginUtils.traceTenantId());
+        wrapper.eq(BaseConfigEntity::getConfigCode,tBaseConfig.getConfigCode());
+        return baseConfigMapper.update(configEntity,wrapper);
+    }
 }

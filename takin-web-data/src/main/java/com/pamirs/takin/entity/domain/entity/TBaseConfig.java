@@ -53,11 +53,6 @@ public class TBaseConfig extends BaseEntity {
     private Long tenantId;
 
     /**
-     * 用户ID
-     */
-    private Long userId;
-
-    /**
      * 环境编码
      */
     private String envCode;
@@ -70,16 +65,6 @@ public class TBaseConfig extends BaseEntity {
     @Override
     public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
-    }
-
-    @Override
-    public Long getUserId() {
-        return userId;
-    }
-
-    @Override
-    public void setUserId(Long userId) {
-        this.userId = userId;
     }
 
     @Override

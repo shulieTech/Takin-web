@@ -467,6 +467,25 @@ public class WebPluginUtils {
     //********************************http线程上下文模块**********************************//
 
     /**
+     * 设置租户信息
+     * @param commonExt
+     */
+    public static void setTraceTenantContext(TenantCommonExt commonExt) {
+        if (Objects.nonNull(userApi)) {
+            userApi.setTraceTenantContext(commonExt);
+        }
+    }
+
+    /**
+     * 移除租户信息
+     */
+    public static void removeTraceContext() {
+        if (Objects.nonNull(userApi)) {
+            userApi.removeTraceContext();
+        }
+    }
+
+    /**
      * 获取登录账号
      *
      * @return 登录的用户信息

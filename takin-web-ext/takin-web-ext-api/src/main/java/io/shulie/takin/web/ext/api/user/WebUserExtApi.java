@@ -9,6 +9,7 @@ import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 
 /**
@@ -108,6 +109,19 @@ public interface WebUserExtApi extends ExtensionPoint {
 
 
     //********************************http线程上下文模块**********************************//
+
+    /**
+     * 设置租户信息
+     * @param commonExt
+     */
+    void setTraceTenantContext(TenantCommonExt commonExt);
+
+    /**
+     * 移除租户信息
+     */
+     void removeTraceContext();
+
+
     /**
      * 获取登录用户
      *

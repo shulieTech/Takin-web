@@ -53,7 +53,6 @@ import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.data.param.leakverify.LeakVerifyDetailCreateParam;
 import io.shulie.takin.web.data.param.leakverify.LeakVerifyResultCreateParam;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +89,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
     private CoordinatorRegistryCenterService registryCenterService;
 
     @Override
-    public void showdownVerifyTask(TenantCommonExt ext) {
+    public void showdownVerifyTask() {
         Map<Object, Object> serviceMap = redis.hmget(jobSchedulerRedisKey);
         if (!serviceMap.isEmpty()) {
             Set<Object> keySet = serviceMap.keySet();

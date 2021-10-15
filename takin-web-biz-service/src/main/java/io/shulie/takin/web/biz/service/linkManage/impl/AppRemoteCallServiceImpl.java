@@ -566,47 +566,6 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         }
     }
 
-    @Override
-    public void syncAmdb(Long tenantId, String userAppKey, String envCode) {
-        // 查询应用
-        ApplicationQueryParam queryParam = new ApplicationQueryParam();
-        queryParam.setTenantId(tenantId);
-        queryParam.setEnvCode(envCode);
-        List<ApplicationDetailResult> results = applicationDAO.getApplicationList(queryParam);
-        if (CollectionUtils.isEmpty(results)) {
-            return;
-        }
-        List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE",tenantId,envCode);
-
-        //租户传参
-        AppRemoteCallQueryInput input = new AppRemoteCallQueryInput();
-        input.setTenantAppKey(userAppKey);
-        input.setTenantId(tenantId);
-        input.setEnvCode(envCode);
-
-        int size = 50;
-        // size个轮询一次
-        if (results.size() > size) {
-            int i = 1;
-            boolean loop = true;
-            do {
-                List<ApplicationDetailResult> subList;
-                //批量处理
-                if (results.size() > i * size) {
-                    subList = results.subList((i - 1) * size, i * size);
-                } else {
-                    subList = results.subList((i - 1) * size, results.size());
-                    loop = false;
-                }
-                i++;
-                saveRemoteCall(subList, voList,input);
-            } while (loop);
-        } else {
-            saveRemoteCall(results, voList,input);
-        }
-
-    }
-
     private void saveRemoteCall(List<ApplicationDetailResult> apps, List<TDictionaryVo> voList, AppRemoteCallQueryInput input) {
         input.setStatus(0);
         input.setAppNames(apps.stream().map(ApplicationDetailResult::getApplicationName).collect(Collectors.toList()));

@@ -21,6 +21,7 @@ import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -78,13 +79,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private ThreadPoolExecutor fastDebugThreadPool;
 
     @Override
-    public List<Long> getRunningReport(TenantCommonExt ext) {
-        List<Long> reportIds = reportService.queryListRunningReport(ext);
-        if (ext != null) {
-            log.info("获取租户【{}】，环境【{}】的正在压测中的报告:{}", ext.getTenantId(),ext.getEnvCode(),JsonHelper.bean2Json(reportIds));
-        }else {
-            log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
-        }
+    public List<Long> getRunningReport() {
+        List<Long> reportIds = reportService.queryListRunningReport();
+        log.info("获取租户【{}】，环境【{}】的正在压测中的报告:{}",
+            WebPluginUtils.traceTenantId(),WebPluginUtils.traceEnvCode(),JsonHelper.bean2Json(reportIds));
         return reportIds;
     }
 

@@ -57,7 +57,7 @@ public class CalcApplicationSummaryJob implements SimpleJob {
             }
 
             // 私有化 + 开源 根据 报告id进行分片
-            List<Long> reportIds = reportTaskService.getRunningReport(null);
+            List<Long> reportIds =  reportTaskService.getRunningReport();
             log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
             for (Long reportId : reportIds) {
                 // 开始数据层分片
@@ -89,12 +89,12 @@ public class CalcApplicationSummaryJob implements SimpleJob {
         log.info("calcApplicationSummaryJob 执行时间:{}", System.currentTimeMillis() - start);
     }
 
-    private void calcApplicationSummary(TenantCommonExt ext) {
-        List<Long> reportIds = reportService.queryListRunningReport(ext);
-        log.info("获取租户【{}】【{}】正在压测中的报告:{}", ext.getTenantId(), ext.getEnvCode(), JsonHelper.bean2Json(reportIds));
+    private void calcApplicationSummary() {
+        List<Long> reportIds = reportService.queryListRunningReport();
+        log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据层分片
-            fastDebugThreadPool.execute(() -> reportTaskService.calcApplicationSummary(reportId));
+            fastDebugThreadPool.execute(() ->reportTaskService.calcApplicationSummary(reportId));
         }
     }
 

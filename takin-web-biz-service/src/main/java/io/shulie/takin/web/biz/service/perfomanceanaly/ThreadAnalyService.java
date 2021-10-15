@@ -9,7 +9,6 @@ import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ProcessBaseDataResp
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadCpuChartResponse;
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadCpuUseRateChartResponse;
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ThreadListResponse;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author qianshui
@@ -35,7 +34,6 @@ public interface ThreadAnalyService {
     /**
      * 清理性能分析数据 租户
      * @param time
-     * @param ext
      */
-    void clearData(Integer time, TenantCommonExt ext);
+    void clearData(Integer time);
 }

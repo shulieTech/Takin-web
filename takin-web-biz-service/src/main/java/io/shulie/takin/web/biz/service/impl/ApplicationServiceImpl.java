@@ -262,7 +262,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     //3.添加定时任务
     //或直接指定时间间隔，例如：5秒
     @Override
-    public void configureTasks(TenantCommonExt ext) {
+    public void configureTasks() {
         //针对每个用户进行检查
         Map<String, Long> map = redisTemplate.opsForHash().entries(NEED_VERIFY_USER_MAP);
         if (map.size() > 0) {
@@ -623,60 +623,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(
                     Collectors.toList());
                 List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames);
-                if (!CollectionUtils.isEmpty(applicationResultList)) {
-                    Set<Long> errorApplicationIdSet = Sets.newSet();
-                    Set<Long> normalApplicationIdSet = Sets.newSet();
-                    applicationMntList.forEach(applicationMnt -> {
-                        String appName = applicationMnt.getApplicationName();
-                        Optional<ApplicationResult> optional =
-                            applicationResultList.stream().filter(
-                                applicationResult -> applicationResult.getAppName().equals(appName)).findFirst();
-                        if (optional.isPresent()) {
-                            ApplicationResult applicationResult = optional.get();
-                            Boolean appIsException = applicationResult.getAppIsException();
-                            if (appIsException) {
-                                //异常
-                                if (applicationMnt.getAccessStatus() != 3) {
-                                    errorApplicationIdSet.add(applicationMnt.getApplicationId());
-                                }
-                            } else {
-                                //正常
-                                if (applicationMnt.getAccessStatus() != 0) {
-                                    normalApplicationIdSet.add(applicationMnt.getApplicationId());
-                                }
-                            }
-                        }
-                    });
-                    if (errorApplicationIdSet.size() > 0) {
-                        modifyAccessStatusWithoutAuth(new ArrayList<>(errorApplicationIdSet), 3);
-                    }
-                    if (normalApplicationIdSet.size() > 0) {
-                        modifyAccessStatusWithoutAuth(new ArrayList<>(normalApplicationIdSet), 0);
-                    }
-                }
-            } else {
-                log.debug("暂无待检测应用");
-            }
-        } catch (Exception e) {
-            log.error("执行定时同步应用状态异常", e);
-        } finally {
-            long endTime = System.currentTimeMillis();
-            log.info("执行定时同步应用状态完成，执行耗时：{}", (endTime - startTime));
-        }
-    }
-
-    @Override
-    public void syncApplicationAccessStatus(Long tenantId, String userAppKey, String envCode) {
-        long startTime = System.currentTimeMillis();
-        try {
-            //查询出所有待检测状态的应用
-            List<TApplicationMnt> applicationMntList = tApplicationMntDao.getAllApplicationByStatusAndTenant(
-                Arrays.asList(0, 1, 2, 3), tenantId, envCode);
-            if (!CollectionUtils.isEmpty(applicationMntList)) {
-                List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName)
-                    .collect(Collectors.toList());
-                List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames,
-                    userAppKey, envCode);
                 if (!CollectionUtils.isEmpty(applicationResultList)) {
                     Set<Long> errorApplicationIdSet = Sets.newSet();
                     Set<Long> normalApplicationIdSet = Sets.newSet();

@@ -268,15 +268,6 @@ public interface TApplicationMntDao {
      */
     List<TApplicationMnt> getAllApplicationByStatus(@Param("statusList") List<Integer> statusList);
 
-    /**
-     * 根据租户查询  定时任务用
-     *
-     * @param statusList
-     * @return
-     */
-    List<TApplicationMnt> getAllApplicationByStatusAndTenant(@Param("statusList") List<Integer> statusList,
-        @Param("tenantId") Long tenantId, @Param("envCode") String envCode);
-
     List<TApplicationMnt> getApplicationsByTenants(@Param("tenantId") Long tenantId, @Param("envCode") String envCode);
 
     String getIdByName(@Param("applicationName") String applicationName);

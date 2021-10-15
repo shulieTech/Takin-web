@@ -36,7 +36,6 @@ import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceBaseDataResult;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadCountResult;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadDataResult;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -237,7 +236,7 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
 
 
     @Override
-    public void clearData(Integer time, TenantCommonExt ext) {
+    public void clearData(Integer time) {
 
         String timeString = DateUtils.dateToString(DateUtils.getPreviousNSecond(time), DateUtils.FORMATE_YMDHMS);
 
@@ -247,11 +246,11 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
         while (true) {
             try {
                 if (!dataCleanComplete) {
-                    dataCleanComplete = performanceThreadDataDAO.clearData(timeString,ext);
+                    dataCleanComplete = performanceThreadDataDAO.clearData(timeString);
                 }
 
                 if (!stackDataCleanComplete) {
-                    stackDataCleanComplete = performanceThreadDataDAO.clearStackData(timeString,ext);
+                    stackDataCleanComplete = performanceThreadDataDAO.clearStackData(timeString);
                 }
 
                 if (dataCleanComplete && stackDataCleanComplete) {

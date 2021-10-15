@@ -473,5 +473,7 @@ public final class BizOpConstants {
          * 运维脚本名称
          */
         public static final String OPS_SCRIPT_NAME = "opsScriptName";
+
+        public static final String ACTIVITY_DELETE_EVENT = "activity_delete_event";
     }
 }

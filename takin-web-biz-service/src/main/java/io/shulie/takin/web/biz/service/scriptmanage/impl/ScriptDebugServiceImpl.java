@@ -27,12 +27,14 @@ import io.shulie.amdb.common.enums.RpcType;
 import io.shulie.takin.cloud.open.req.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneScriptRefOpen;
+import io.shulie.takin.cloud.open.req.scenemanage.ScriptAssetBalanceReq;
 import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskCheckReq;
 import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskStartReq;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStartResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStatusResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
@@ -89,6 +91,7 @@ import io.shulie.takin.web.data.param.scriptmanage.PageScriptDebugParam;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -97,6 +100,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * 脚本调试表(ScriptDebug)表服务实现类
@@ -162,6 +167,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
 
     @Autowired
     private LinkManageDAO linkManageDAO;
+
+    @Resource
+    PluginManager pluginManager;
 
     @Override
     public ScriptDebugResponse debug(ScriptDebugDoDebugRequest request) {
@@ -229,6 +237,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             scriptDebug = this.createScriptDebugAndGet(scriptDeployId, requestNum, concurrencyNum, cloudResponse, businessActivityIds);
             response.setScriptDebugId(scriptDebug.getId());
 
+            //回写调试记录ID到流量账户
+            callBackToWriteBalance(cloudResponse,scriptDebug.getId());
+
             log.info("调试 --> 异步启动循环查询启动成功, 压测完成!");
             fastDebugThreadPool.execute(this.checkPressureStatus(scriptDebug));
 
@@ -241,6 +252,13 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         } finally {
             distributedLock.unLockSafely(lockKey);
         }
+    }
+
+    private void callBackToWriteBalance(SceneTryRunTaskStartResp cloudResponse, Long scriptDebugId) {
+        ScriptAssetBalanceReq req = new ScriptAssetBalanceReq();
+        req.setScriptDebugId(scriptDebugId);
+        req.setCloudReportId(cloudResponse.getReportId());
+        sceneTaskApi.callBackToWriteBalance(req);
     }
 
     /**
@@ -964,29 +982,19 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @return 入参
      */
     private SceneTryRunTaskStartReq getDebugParams(ScriptManageDeployEntity scriptDeploy,
-//        List<BusinessLinkManageTableEntity> businessActivities, Integer requestNum, Integer concurrencyNum) {
-//        // cloud 调试请求参数拼接
-//        SceneTryRunTaskStartReq debugCloudRequest = new SceneTryRunTaskStartReq();
-//        // 脚本发布id
-//        Long scriptDeployId = scriptDeploy.getId();
-//        debugCloudRequest.setLoopsNum(requestNum);
-//        debugCloudRequest.setScriptDeployId(scriptDeployId);
-        List<BusinessLinkManageTableEntity> businessActivities, Integer requestNum, Integer concurrencyNum) {
+                                                   List<BusinessLinkManageTableEntity> businessActivities, Integer requestNum, Integer concurrencyNum) {
         // cloud 调试请求参数拼接
         SceneTryRunTaskStartReq debugCloudRequest = new SceneTryRunTaskStartReq();
         // 脚本发布id
         Long scriptDeployId = scriptDeploy.getId();
         debugCloudRequest.setLoopsNum(requestNum);
-        // 增加并发数
-        debugCloudRequest.setConcurrencyNum(concurrencyNum);
-        debugCloudRequest.setScriptId(scriptDeployId);
-        debugCloudRequest.setScriptType(scriptDeploy.getType());
-
+        debugCloudRequest.setScriptDeployId(scriptDeployId);
         // 增加并发数
         debugCloudRequest.setConcurrencyNum(concurrencyNum);
         debugCloudRequest.setScriptId(scriptDeploy.getScriptId());
         debugCloudRequest.setScriptType(scriptDeploy.getType());
-
+        debugCloudRequest.setScriptName(scriptDeploy.getName());
+        debugCloudRequest.setCreatorId(WebPluginUtils.getUserId());
         // 插件ids
         List<PluginConfigDetailResponse> pluginConfigs = ScriptManageUtil.listPluginConfigs(scriptDeploy.getFeature());
         if (CollectionUtils.isNotEmpty(pluginConfigs)) {

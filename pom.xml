@@ -40,7 +40,7 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
         <takin.web.version>takin-web-5.0.2</takin.web.version>
-        <takin.cloud.open.version>takin-cloud-open-5.0.0</takin.cloud.open.version>
+        <takin.cloud.open.version>takin-cloud-open-5.0.1</takin.cloud.open.version>
         <takin.cloud.version>takin-cloud-5.0.0</takin.cloud.version>
         <takin.common.version>common-1.7.4</takin.common.version>
         <command.channel>common-1.7.4</command.channel>
@@ -137,6 +137,12 @@
                 <version>1.9.6</version>
             </dependency>
 
+            <!-- https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator -->
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>7.0.1.Final</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>

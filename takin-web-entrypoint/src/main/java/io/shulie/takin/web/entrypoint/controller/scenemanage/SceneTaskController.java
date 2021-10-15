@@ -89,6 +89,7 @@ public class SceneTaskController {
             if (CollectionUtils.isNotEmpty(errorMsgList)) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, StringUtils.join(errorMsgList, Constants.SPLIT));
             }
+            param.setResourceName(sceneData.getPressureTestSceneName());
             WebResponse<StartResponse> startTaskResponse = sceneTaskService.startTask(param);
             if (!startTaskResponse.getSuccess()) {
                 OperationLogContextHolder.ignoreLog();

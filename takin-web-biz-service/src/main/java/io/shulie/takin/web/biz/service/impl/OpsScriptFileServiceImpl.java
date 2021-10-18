@@ -18,7 +18,7 @@ import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.data.dao.opsscript.OpsScriptFileDAO;
 import io.shulie.takin.web.data.model.mysql.OpsScriptFileEntity;
 import io.shulie.takin.web.data.param.opsscript.OpsUploadFileParam;

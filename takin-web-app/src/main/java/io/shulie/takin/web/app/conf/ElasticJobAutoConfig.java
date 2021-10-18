@@ -9,7 +9,7 @@ import io.shulie.takin.job.config.ElasticJobConfig;
 import io.shulie.takin.job.config.zk.ZkClientConfig;
 import io.shulie.takin.job.factory.SpringJobSchedulerFactory;
 import io.shulie.takin.job.parser.JobConfParser;
-import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

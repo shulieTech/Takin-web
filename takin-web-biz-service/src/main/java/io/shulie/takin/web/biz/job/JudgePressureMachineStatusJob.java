@@ -3,19 +3,20 @@ package io.shulie.takin.web.biz.job;
 import java.util.Date;
 import java.util.List;
 
-import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.PressureMachineResponse;
-import lombok.extern.slf4j.Slf4j;
-import com.pamirs.takin.common.util.DateUtils;
-import org.springframework.stereotype.Component;
-import io.shulie.takin.common.beans.page.PagingList;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import org.apache.commons.collections4.CollectionUtils;
+import com.pamirs.takin.common.util.DateUtils;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.annotation.Autowired;
-import io.shulie.takin.web.data.param.machine.PressureMachineQueryParam;
+import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.PressureMachineResponse;
 import io.shulie.takin.web.biz.service.perfomanceanaly.PressureMachineService;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.data.param.machine.PressureMachineQueryParam;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 无涯
@@ -29,9 +30,6 @@ public class JudgePressureMachineStatusJob implements SimpleJob {
 
     @Autowired
     private PressureMachineService pressureMachineService;
-
-    @Value("${pressure.machine.upload.interval.time:180000}")
-    private Long machineUploadIntervalTime;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -52,6 +50,8 @@ public class JudgePressureMachineStatusJob implements SimpleJob {
                 continue;
             }
             Date updateTime = DateUtils.strToDate(machine.getGmtUpdate(), null);
+            long machineUploadIntervalTime = Long.parseLong(
+                ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_PRESSURE_MACHINE_UPLOAD_INTERVAL_TIME));
             if (updateTime != null && System.currentTimeMillis() - updateTime.getTime() > machineUploadIntervalTime) {
                 //认为机器处于离线状态
                 pressureMachineService.updatePressureMachineStatus(machine.getId(), -1);

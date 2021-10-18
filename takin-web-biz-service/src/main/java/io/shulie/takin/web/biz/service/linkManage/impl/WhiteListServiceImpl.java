@@ -61,7 +61,7 @@ import io.shulie.takin.web.common.enums.whitelist.WhitelistTagEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.whitelist.WhiteListVO;
 import io.shulie.takin.web.common.vo.whitelist.WhitelistPartVO;

@@ -1,4 +1,4 @@
-package io.shulie.takin.web.app.conf;
+package io.shulie.takin.web.app.conf.redis;
 
 import java.util.Map;
 

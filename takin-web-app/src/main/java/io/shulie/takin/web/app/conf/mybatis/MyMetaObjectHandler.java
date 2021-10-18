@@ -1,4 +1,4 @@
-package io.shulie.takin.web.app.conf;
+package io.shulie.takin.web.app.conf.mybatis;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import io.shulie.takin.web.ext.util.WebPluginUtils;

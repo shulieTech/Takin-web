@@ -1,4 +1,4 @@
-package io.shulie.takin.web.app.conf;
+package io.shulie.takin.web.app.conf.redis;
 
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.Redisson;

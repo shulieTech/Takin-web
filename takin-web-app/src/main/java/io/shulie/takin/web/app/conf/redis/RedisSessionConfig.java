@@ -1,4 +1,4 @@
-package io.shulie.takin.web.app.conf;
+package io.shulie.takin.web.app.conf.redis;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

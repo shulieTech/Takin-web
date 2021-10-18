@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 public class CommandChannelConfig {
 
-    @Value("${takin.config.zk.addr}")
+    @Value("${takin.config.zk.addr:}")
     private String zkPath;
 
     @Bean

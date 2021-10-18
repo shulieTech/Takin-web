@@ -1,4 +1,4 @@
-package io.shulie.takin.web.app.conf;
+package io.shulie.takin.web.app.conf.mybatis;
 
 import java.lang.reflect.Field;
 import java.sql.Statement;

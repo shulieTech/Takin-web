@@ -42,7 +42,7 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
         <takin.web.version>takin-web-5.0.1-SNAPSHOT</takin.web.version>
-        <takin.cloud.open.version>takin-cloud-open-5.0.1-SNAPSHOT</takin.cloud.open.version>
+        <takin.cloud.sdk.version>takin-cloud-sdk-5.0.0-SNAPSHOT</takin.cloud.sdk.version>
         <takin.cloud.version>takin-cloud-5.0.1-SNAPSHOT</takin.cloud.version>
         <takin.common.version>common-1.7.4</takin.common.version>
         <command.channel>common-1.7.4</command.channel>
@@ -189,13 +189,8 @@
 
             <dependency>
                 <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-open-api</artifactId>
-                <version>${takin.cloud.open.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-open-client-starter</artifactId>
-                <version>${takin.cloud.open.version}</version>
+                <artifactId>takin-cloud-sdk</artifactId>
+                <version>${takin.cloud.sdk.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
@@ -246,17 +241,17 @@
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid.stater.version}</version>
             </dependency>
-<!--            <dependency>-->
-<!--                <groupId>org.quartz-scheduler</groupId>-->
-<!--                <artifactId>quartz</artifactId>-->
-<!--                <version>${quartz.version}</version>-->
-<!--                <exclusions>-->
-<!--                    <exclusion>-->
-<!--                        <groupId>org.apache.zookeeper</groupId>-->
-<!--                        <artifactId>zookeeper</artifactId>-->
-<!--                    </exclusion>-->
-<!--                </exclusions>-->
-<!--            </dependency>-->
+            <!--            <dependency>-->
+            <!--                <groupId>org.quartz-scheduler</groupId>-->
+            <!--                <artifactId>quartz</artifactId>-->
+            <!--                <version>${quartz.version}</version>-->
+            <!--                <exclusions>-->
+            <!--                    <exclusion>-->
+            <!--                        <groupId>org.apache.zookeeper</groupId>-->
+            <!--                        <artifactId>zookeeper</artifactId>-->
+            <!--                    </exclusion>-->
+            <!--                </exclusions>-->
+            <!--            </dependency>-->
             <dependency>
                 <groupId>com.dangdang</groupId>
                 <artifactId>elastic-job-lite-core</artifactId>
@@ -455,79 +450,79 @@
             <id>ossrh</id>
             <properties></properties>
             <build>
-               <plugins>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-resources-plugin</artifactId>
-                       <version>2.5</version>
-                       <configuration>
-                           <encoding>UTF-8</encoding>
-                       </configuration>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-scm-plugin</artifactId>
-                       <version>1.0</version>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-release-plugin</artifactId>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-javadoc-plugin</artifactId>
-                       <version>2.9.1</version>
-                       <executions>
-                           <execution>
-                               <id>attach-javadocs</id>
-                               <goals>
-                                   <goal>jar</goal>
-                               </goals>
-                               <configuration>
-                                   <additionalparam>-Xdoclint:none</additionalparam>
-                               </configuration>
-                           </execution>
-                       </executions>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-gpg-plugin</artifactId>
-                       <version>1.5</version>
-                       <executions>
-                           <execution>
-                               <id>sign-artifacts</id>
-                               <phase>verify</phase>
-                               <goals>
-                                   <goal>sign</goal>
-                               </goals>
-                           </execution>
-                       </executions>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.sonatype.plugins</groupId>
-                       <artifactId>nexus-staging-maven-plugin</artifactId>
-                       <version>1.6.7</version>
-                       <extensions>true</extensions>
-                       <configuration>
-                           <serverId>ossrh</serverId>
-                           <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                           <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                       </configuration>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-jar-plugin</artifactId>
-                       <version>2.2</version>
-                       <configuration>
-                           <archive>
-                               <manifestEntries>
-                                   <IsTinyProject>true</IsTinyProject>
-                               </manifestEntries>
-                           </archive>
-                       </configuration>
-                   </plugin>
-               </plugins>
-           </build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>2.5</version>
+                        <configuration>
+                            <encoding>UTF-8</encoding>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-scm-plugin</artifactId>
+                        <version>1.0</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.9.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>2.2</version>
+                        <configuration>
+                            <archive>
+                                <manifestEntries>
+                                    <IsTinyProject>true</IsTinyProject>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
     <distributionManagement>

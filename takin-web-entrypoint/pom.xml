@@ -83,7 +83,7 @@
 
         <dependency>
             <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-cloud-open-api</artifactId>
+            <artifactId>takin-cloud-sdk</artifactId>
             <scope>provided</scope>
         </dependency>
 

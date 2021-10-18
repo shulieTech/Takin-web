@@ -11,8 +11,8 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageQueryByIdsReq;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryByIdsReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.PressureMachineInput;

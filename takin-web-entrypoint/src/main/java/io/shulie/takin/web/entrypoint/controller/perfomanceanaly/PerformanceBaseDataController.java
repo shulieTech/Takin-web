@@ -8,7 +8,7 @@ import io.shulie.takin.web.biz.pojo.perfomanceanaly.PerformanceBaseDataReq;
 import io.shulie.takin.web.biz.service.perfomanceanaly.PerformanceBaseDataService;
 import io.shulie.takin.web.common.constant.AgentUrls;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

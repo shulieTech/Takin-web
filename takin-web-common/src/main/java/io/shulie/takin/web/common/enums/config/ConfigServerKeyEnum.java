@@ -120,6 +120,63 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 是否更新版本
      */
     AGENT_HTTP_UPDATE_VERSION("agent.http.update.version", "agent.http.update.version", YES),
+
+    /**
+     * 压测引擎上传时间间隔 单位毫秒
+     */
+    TAKIN_PRESSURE_MACHINE_UPLOAD_INTERVAL_TIME("pressure.machine.upload.interval.time",
+        "takin.pressure.machine.upload.interval.time", NO),
+
+    /**
+     * influxdb 性能数据的数据库
+     */
+    SPRING_PERFORMANCE_INFLUXDB_DATABASE("spring.performance.influxdb.database", "spring.performance.influxdb.database",
+        NO),
+
+    /**
+     * influxdb url
+     */
+    SPRING_INFLUXDB_URL("spring.influxdb.url", "spring.influxdb.url", NO),
+
+    /**
+     * influxdb 用户名称
+     */
+    SPRING_INFLUXDB_USER("spring.influxdb.user", "spring.influxdb.user", NO),
+
+    /**
+     * influxdb 数据库
+     */
+    SPRING_INFLUXDB_DATABASE("spring.influxdb.database", "spring.influxdb.database", NO),
+
+    /**
+     * influxdb 密码
+     */
+    SPRING_INFLUXDB_PASSWORD("spring.influxdb.password", "spring.influxdb.password", NO),
+
+    /**
+     * 脚本调试时, 允许的 rpc 类型
+     */
+    TAKIN_SCRIPT_DEBUG_RPC_TYPE("takin-web.script-debug.rpcType", "takin.script-debug.rpcType", NO),
+
+    /**
+     * 压测时, 调试时, 否检查应用
+     */
+    TAKIN_START_TASK_CHECK_APPLICATION("start.task.check.application", "takin.start.task.check.application", YES),
+
+    /**
+     * 统计时间, 单位 毫秒
+     */
+    TAKIN_RISK_COLLECT_TIME("risk.collect.time", "takin.risk.collect.time", NO),
+
+    /**
+     * 等待时间 单位秒
+     */
+    TAKIN_PRADAR_SWITCH_PROCESSING_WAIT_TIME("pradar.switch.processing.wait.time", "takin.pradar.switch.processing.wait.time", NO),
+
+    /**
+     * 租户 id
+     */
+    TAKIN_CUSTOMER_ID("customer.id", "takin.customer.id", NO),
     ;
 
     /**

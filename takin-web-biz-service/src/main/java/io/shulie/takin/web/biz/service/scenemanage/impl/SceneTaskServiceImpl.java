@@ -67,6 +67,7 @@ import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -75,6 +76,7 @@ import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.common.vo.scene.BaffleAppVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -85,7 +87,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -114,9 +115,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     @Autowired
     private TApplicationMntDao applicationMntDao;
-
-    @Value("${start.task.check.application: true}")
-    private boolean checkApplication;
 
     @Autowired
     private SceneTaskApi sceneTaskApi;
@@ -468,6 +466,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                 .map(Long::valueOf)).filter(data -> data > 0L).distinct().collect(Collectors.toList());
 
         // 应用相关检查
+        boolean checkApplication = Boolean.parseBoolean(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_START_TASK_CHECK_APPLICATION));
         if (!CollectionUtils.isEmpty(applicationIds) && checkApplication) {
             List<TApplicationMnt> applicationMntList = applicationMntDao.queryApplicationMntListByIds(applicationIds);
             // todo 临时方案，过滤挡板应用

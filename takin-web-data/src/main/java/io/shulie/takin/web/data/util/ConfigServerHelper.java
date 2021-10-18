@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.utils;
+package io.shulie.takin.web.data.util;
 
 import javax.annotation.PostConstruct;
 

@@ -1,11 +1,9 @@
 package io.shulie.takin.web.app.conf.mybatis;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 
 import com.google.common.collect.Lists;
-import io.shulie.takin.web.common.annocation.DataAuth;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
@@ -14,8 +12,6 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import org.apache.commons.collections4.CollectionUtils;
@@ -80,7 +76,7 @@ public class MybatisDataAuthInterceptor implements Interceptor {
         ExpressionList expressionList = new ExpressionList();
         //从本地线程获取 数据权限
         expressionList.setExpressions(getExpressionList(mappedStatement.getId()));
-        inExpression.setLeftExpression(new Column(new Table(action.tableAlias()), AUTH_COLUMN));
+        //inExpression.setLeftExpression(new Column(new Table(action.tableAlias()), AUTH_COLUMN));
         inExpression.setRightItemsList(expressionList);
         //原来的where + 本次的in
         plainSelect.setWhere(new AndExpression(plainSelect.getWhere(), inExpression));

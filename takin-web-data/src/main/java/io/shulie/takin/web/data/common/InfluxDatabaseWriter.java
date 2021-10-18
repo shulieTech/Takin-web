@@ -4,22 +4,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import org.slf4j.Logger;
-import org.influxdb.InfluxDB;
-import org.influxdb.dto.Point;
-import org.influxdb.dto.Query;
-import org.slf4j.LoggerFactory;
-import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.QueryResult;
 import io.shulie.takin.utils.json.JsonHelper;
-import org.springframework.stereotype.Component;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBFactory;
+import org.influxdb.dto.BatchPoints;
+import org.influxdb.dto.Point;
+import org.influxdb.dto.Query;
+import org.influxdb.dto.QueryResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="tangyuhan@shulie.io">yuhan.tang</a>
@@ -32,28 +35,14 @@ public class InfluxDatabaseWriter {
     private static final ThreadLocal<InfluxDB> CACHE = new InheritableThreadLocal<>();
 
     /**
-     * 连接地址
-     */
-    @Value("${spring.influxdb.url}")
-    private String influxdbUrl;
-
-    /**
-     * 用户名
-     */
-    @Value("${spring.influxdb.user}")
-    private String userName;
-
-    /**
-     * 密码
-     */
-    @Value("${spring.influxdb.password}")
-    private String password;
-
-    /**
      * 数据库库名
      */
-    @Value("${spring.performance.influxdb.database:performance}")
     private String database;
+
+    @PostConstruct
+    public void init() {
+        database = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.SPRING_PERFORMANCE_INFLUXDB_DATABASE);
+    }
 
     public static BatchPoints batchPoints(String sdatabase) {
         return BatchPoints.database(sdatabase)
@@ -62,6 +51,9 @@ public class InfluxDatabaseWriter {
 
     private InfluxDB createInfluxDatabase() {
         try {
+            String influxdbUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.SPRING_INFLUXDB_URL);
+            String userName = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.SPRING_INFLUXDB_USER);
+            String password = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.SPRING_INFLUXDB_PASSWORD);
             return InfluxDBFactory.connect(influxdbUrl, userName, password);
         } catch (Throwable e) {
             logger.error("influxdb init fail " + ExceptionUtils.getStackTrace(e));
@@ -158,13 +150,13 @@ public class InfluxDatabaseWriter {
                 Map<String, String> tags = serie.getTags();
 
                 // 封装查询结果
-                for (int i = 0; i < values.size(); ++i) {
+                for (List<Object> value : values) {
                     JSONObject jsonData = new JSONObject();
                     if (tags != null && tags.keySet().size() > 0) {
-                        tags.forEach((k, v) -> jsonData.put(k, v));
+                        tags.forEach(jsonData::put);
                     }
                     for (int j = 0; j < colums.size(); ++j) {
-                        jsonData.put(colums.get(j), values.get(i).get(j));
+                        jsonData.put(colums.get(j), value.get(j));
                     }
                     resultArr.add(jsonData);
                 }
@@ -192,7 +184,4 @@ public class InfluxDatabaseWriter {
         getInfluxDatabase().query(new Query(command, database));
     }
 
-    public String getInfluxdbUrl() {
-        return influxdbUrl;
-    }
 }

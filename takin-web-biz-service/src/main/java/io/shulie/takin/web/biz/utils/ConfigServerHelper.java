@@ -110,8 +110,8 @@ public class ConfigServerHelper {
      */
     private static String getValue(ConfigServerKeyEnum configServerKeyEnum, String key) {
         return configServerKeyEnum.getIsTenant() == AppConstants.NO
-            ? configServerDAO.getTenantEnvValueByKey(key)
-            : configServerDAO.getGlobalNotTenantValueByKey(key);
+            ? configServerDAO.getGlobalNotTenantValueByKey(key)
+            : configServerDAO.getTenantEnvValueByKey(key);
     }
 
     /**

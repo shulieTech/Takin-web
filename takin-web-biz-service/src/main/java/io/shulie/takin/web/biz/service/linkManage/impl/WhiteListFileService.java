@@ -84,15 +84,8 @@ public class WhiteListFileService {
     @Autowired
     private WhiteListService whiteListService;
 
-    /**
-     * 是否开启校验白名单重名
-     */
-    private boolean isCheckDuplicateName;
-
     @PostConstruct
     public void init() {
-        isCheckDuplicateName = Boolean.parseBoolean(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK));
         whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH);
 
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
@@ -172,6 +165,8 @@ public class WhiteListFileService {
         List<String> existWhite = Lists.newArrayList();
         Map<String, List<WhitelistResult>> whitelistMap;
 
+        boolean isCheckDuplicateName = Boolean.parseBoolean(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK));
         if (isCheckDuplicateName) {
             List<String> armdString = agentWhiteLists.stream().map(AgentWhiteList::getInterfaceName).collect(Collectors.toList());
             existWhite = whiteListService.getExistWhite(armdString, Lists.newArrayList());

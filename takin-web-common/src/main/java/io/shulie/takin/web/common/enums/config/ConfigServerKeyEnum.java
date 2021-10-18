@@ -115,6 +115,11 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 性能数据清空时间 单位秒, 几天之前的xxx
      */
     TAKIN_PERFORMANCE_CLEAR_SECOND("performance.clear.second", "takin.performance.clear.second", NO),
+
+    /**
+     * 是否更新版本
+     */
+    AGENT_HTTP_UPDATE_VERSION("agent.http.update.version", "agent.http.update.version", YES),
     ;
 
     /**

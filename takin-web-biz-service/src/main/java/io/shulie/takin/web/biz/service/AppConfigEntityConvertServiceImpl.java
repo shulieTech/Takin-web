@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.AppConfigSheetEnum;
@@ -15,8 +17,10 @@ import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.cloud.common.constants.Constants;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerCreateInput;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
@@ -46,8 +50,12 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
     @Autowired
     private AppRemoteCallDAO appRemoteCallDAO;
 
-    @Value("${whitelist.number.limit:5}")
     private Integer number;
+
+    @PostConstruct
+    public void init() {
+        number = Integer.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT));
+    }
 
     /**
      * 将数组转化为entity

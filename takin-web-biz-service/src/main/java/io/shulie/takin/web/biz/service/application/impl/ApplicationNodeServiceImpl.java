@@ -14,32 +14,33 @@ import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.http.DateUtil;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeAgentDTO;
+import io.shulie.takin.web.amdb.api.ApplicationClient;
+import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeProbeInfoDTO;
 import io.shulie.takin.web.biz.design.probe.AbstractApplicationNodeProbeState;
 import io.shulie.takin.web.biz.design.probe.ApplicationNodeProbeStateFactory;
-import io.shulie.takin.web.biz.utils.AgentZkClientUtil;
-import io.shulie.takin.web.biz.utils.business.probe.ApplicationNodeProbeUtil;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeDashBoardQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoardResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeResponse;
-import io.shulie.takin.web.amdb.api.ApplicationClient;
-import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
-import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeProbeInfoDTO;
-import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
+import io.shulie.takin.web.biz.utils.AgentZkClientUtil;
+import io.shulie.takin.web.biz.utils.business.probe.ApplicationNodeProbeUtil;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.probe.AmdbProbeStatusEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.pojo.dto.probe.ApplicationNodeProbeOperateDTO;
 import io.shulie.takin.web.common.pojo.dto.probe.MatchApplicationNodeProbeStateDTO;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
@@ -50,12 +51,12 @@ import io.shulie.takin.web.data.result.application.ApplicationNodeListResult;
 import io.shulie.takin.web.data.result.application.ApplicationNodeProbeResult;
 import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,9 +91,6 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
 
     @Autowired
     private AgentZkClientUtil agentZkClientUtil;
-
-    @Value("${agent.registered.path:/config/log/pradar/client/}")
-    private String agentRegisteredPath;
 
     @Override
     public PagingList<ApplicationNodeResponse> pageNodes(ApplicationNodeQueryRequest request) {
@@ -130,7 +128,7 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
 
         // 获得节点分页列表
         PagingList<ApplicationNodeListResult> applicationNodeResultPage =
-            this.getApplicationNodeListResultPage(request, applicationName, "");
+            this.getApplicationNodeListResultPage(request, applicationName);
 
         // 获得处理后的节点分页列表
         return this.getApplicationNodeResponseList(applicationName, applicationNodeResultPage);
@@ -212,14 +210,14 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
      * @return 应用节点分页列表
      */
     private PagingList<ApplicationNodeListResult> getApplicationNodeListResultPage(ApplicationNodeQueryRequest request,
-        String applicationName, String appNames) {
+        String applicationName) {
         // 拼接参数, 请求大数据
         QueryApplicationNodeParam queryApplicationNodeParam = new QueryApplicationNodeParam();
         queryApplicationNodeParam.setPageSize(request.getPageSize());
         queryApplicationNodeParam.setCurrent(request.getRealCurrent());
 
         queryApplicationNodeParam.setAppName(applicationName);
-        queryApplicationNodeParam.setAppNames(appNames);
+        queryApplicationNodeParam.setAppNames("");
         queryApplicationNodeParam.setIp(request.getIp());
 
         // 探针状态的转换
@@ -275,7 +273,8 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
 
     @Override
     public void deleteZkNode(String appName, String agentId) {
-        //
+        String agentRegisteredPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_REGISTERED_PATH);
+
         String path;
         if (agentRegisteredPath.endsWith("/")) {
             path = agentRegisteredPath + appName;
@@ -289,7 +288,6 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
             String zkString = agentZkClientUtil.getNode(path + "/172.17.0.1-14977");
             log.info(zkString);
         }
-
     }
 
     @Override
@@ -336,11 +334,8 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
     @Override
     public ApplicationNodeDashBoardResponse getApplicationNodeInfo(Long applicationId) {
         ApplicationDetailResult application = applicationDAO.getApplicationById(applicationId);
-        if (application == null) {
-            return new ApplicationNodeDashBoardResponse();
-        }
-
-        return this.getApplicationNodeDashBoardResponse(application.getApplicationName(), application.getNodeNum());
+        return application == null ? new ApplicationNodeDashBoardResponse()
+            : this.getApplicationNodeDashBoardResponse(application.getApplicationName(), application.getNodeNum());
     }
 
     @Override
@@ -384,14 +379,6 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
         return response;
     }
 
-    @Override
-    public PagingList<ApplicationNodeAgentDTO> getApplicationNodeListResultByApps(String appNames) {
-        // 拼接参数, 请求大数据
-        ApplicationNodeQueryDTO queryDTO = new ApplicationNodeQueryDTO();
-        queryDTO.setAppNames(appNames);
-        return applicationClient.pageApplicationNodeByAgent(queryDTO);
-    }
-
     @Transactional(rollbackFor = Throwable.class)
     @Override
     public void operateProbe(ApplicationNodeOperateProbeRequest request) {
@@ -408,13 +395,16 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
 
         if (log.isInfoEnabled()) {
             log.info("探针操作 --> 操作类型: {}", request.getOperateType());
+            log.info("探针操作 --> 查询应用信息");
+        }
+
+        // 同一租户下的应用判断
+        ApplicationDetailResult application = applicationService.getByApplicationIdWithCheck(request.getApplicationId());
+        if (!Objects.equals(application.getTenantId(), WebPluginUtils.traceTenantId())) {
+            throw this.getOperateProbeError("不能操作非同一个租户下的应用!");
         }
 
         try {
-            if (log.isInfoEnabled()) {
-                log.info("探针操作 --> 查询应用信息");
-            }
-
             // 获得应用名称
             String applicationName = request.getAppName();
             if (StringUtils.isBlank(applicationName)) {

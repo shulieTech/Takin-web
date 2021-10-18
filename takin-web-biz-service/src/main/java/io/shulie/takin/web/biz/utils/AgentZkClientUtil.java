@@ -2,6 +2,8 @@ package io.shulie.takin.web.biz.utils;
 
 import javax.annotation.PostConstruct;
 
+import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.CommonUtil;
@@ -21,7 +23,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public final class AgentZkClientUtil {
 
-    @Value("${takin.config.zk.addr}")
     private String zkAddr;
 
     @Value("${takin.config.zk.timeout: 3000}")
@@ -31,6 +32,7 @@ public final class AgentZkClientUtil {
 
     @PostConstruct
     public void init() {
+        zkAddr = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CONFIG_ZOOKEEPER_ADDRESS);
         client = CuratorFrameworkFactory
             .builder()
             .connectString(zkAddr)

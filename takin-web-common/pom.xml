@@ -25,6 +25,17 @@
     <artifactId>takin-web-common</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-data</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>fastjson</artifactId>
+                    <groupId>com.alibaba</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!--takin 公共包-->
         <dependency>
             <groupId>io.shulie.takin</groupId>

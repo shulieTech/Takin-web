@@ -9,6 +9,12 @@ package io.shulie.takin.web.common.constant;
 public interface AppConstants {
 
     /**
+     * 是否接入的新 agent
+     * 无配置则为 -1
+     */
+    int NEW_AGENT_NONE = -1;
+
+    /**
      * 不能为 null
      */
     String MUST_NOT_BE_NULL = " must not be null!";

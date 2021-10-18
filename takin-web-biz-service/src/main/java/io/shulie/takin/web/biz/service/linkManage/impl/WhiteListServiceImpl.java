@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -55,12 +56,12 @@ import io.shulie.takin.web.biz.pojo.request.whitelist.WhiteListDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.whitelist.WhiteListUpdateRequest;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.whitelist.WhitelistTagEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.whitelist.WhiteListVO;
 import io.shulie.takin.web.common.vo.whitelist.WhitelistPartVO;
@@ -83,12 +84,13 @@ import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -127,11 +129,16 @@ public class WhiteListServiceImpl implements WhiteListService {
     /**
      * 是否开启校验白名单重名
      */
-    @Value("${whitelist.duplicate.name.check:false}")
     private boolean isCheckDuplicateName;
 
-    @Value("${whitelist.number.limit:5}")
     private Integer number;
+
+    @PostConstruct
+    public void init() {
+        isCheckDuplicateName = Boolean.parseBoolean(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK));
+        number = Integer.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT));
+    }
 
     private Integer getInterfaceIntType(String interfaceType) {
         int type = -1;

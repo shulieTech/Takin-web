@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 数据库映射共有类
@@ -13,6 +14,7 @@ import lombok.Data;
  * @author liuchuan
  * @date 2021/4/7 5:27 下午
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class BaseEntity extends TenantBaseEntity implements Serializable {
 

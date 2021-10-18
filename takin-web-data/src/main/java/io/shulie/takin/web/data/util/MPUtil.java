@@ -34,7 +34,6 @@ public interface MPUtil<T> {
         return new Page<>(pageBaseDTO.getRealCurrent(), pageBaseDTO.getPageSize());
     }
 
-
     /**
      * 设置分页参数
      *
@@ -86,6 +85,24 @@ public interface MPUtil<T> {
     }
 
     /**
+     * 获得 query 包装类, 带有租户id
+     *
+     * @return query 普通包装类, 带有租户id
+     */
+    default QueryWrapper<T> getTenantQueryWrapper() {
+        return this.getQueryWrapper().eq("tenant_id", WebPluginUtils.traceTenantId());
+    }
+
+    /**
+     * 获得 query 包装类, 带有租户id, 环境
+     *
+     * @return query 普通包装类, 带有租户id
+     */
+    default QueryWrapper<T> getTenantEnvQueryWrapper() {
+        return this.getTenantQueryWrapper().eq("env_code", WebPluginUtils.traceEnvCode());
+    }
+
+    /**
      * 获得 query lambda 包装类
      *
      * @return query lambda 包装类
@@ -110,6 +127,42 @@ public interface MPUtil<T> {
      */
     default LambdaQueryWrapper<T> getCustomerLambdaQueryWrapper() {
         return this.getCustomerQueryWrapper().lambda();
+    }
+
+    /**
+     * 获得 query lambda 包装类, 带有租户id
+     *
+     * @return query lambda 包装类, 带有租户id
+     */
+    default LambdaQueryWrapper<T> getTenantLambdaQueryWrapper() {
+        return this.getTenantQueryWrapper().lambda();
+    }
+
+    /**
+     * 获得 query lambda 包装类, 带有租户id, limit 1 限制
+     *
+     * @return query lambda 包装类, 带有租户id
+     */
+    default LambdaQueryWrapper<T> getTenantLimitOneLambdaQueryWrapper() {
+        return this.getTenantQueryWrapper().lambda().last(LIMIT_ONE);
+    }
+
+    /**
+     * 获得 query lambda 包装类, 带有租户id, 环境
+     *
+     * @return query lambda 包装类, 带有租户id
+     */
+    default LambdaQueryWrapper<T> getTenantEnvLambdaQueryWrapper() {
+        return this.getTenantEnvQueryWrapper().lambda();
+    }
+
+    /**
+     * 获得 query lambda 包装类, 带有租户id, 环境limit 1 限制
+     *
+     * @return query lambda 包装类, 带有租户id
+     */
+    default LambdaQueryWrapper<T> getTenantEnvLimitOneLambdaQueryWrapper() {
+        return this.getTenantEnvQueryWrapper().lambda().last(LIMIT_ONE);
     }
 
     /**
@@ -181,6 +234,5 @@ public interface MPUtil<T> {
     static <T> LambdaUpdateWrapper<T> getLambdaUpdateWrapperStatic() {
         return new LambdaUpdateWrapper<>();
     }
-
 
 }

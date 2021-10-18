@@ -51,6 +51,7 @@ import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneTagRefResponse;
@@ -65,6 +66,7 @@ import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.script.FileTypeEnum;
 import io.shulie.takin.web.common.enums.script.ScriptTypeEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
@@ -74,6 +76,7 @@ import io.shulie.takin.web.common.http.HttpAssert;
 import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
@@ -84,8 +87,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
@@ -99,9 +100,6 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     @Autowired
     private HttpWebClient httpWebClient;
-
-    @Value("${script.check: true}")
-    private boolean scriptCheck;
 
     @Resource
     private TApplicationMntDao tApplicationMntDao;
@@ -126,9 +124,6 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     @Autowired
     private SceneTaskApi sceneTaskApi;
-
-    @Autowired
-    private RedisTemplate redisTemplate;
 
     @Override
     public ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req) {
@@ -421,6 +416,28 @@ public class SceneManageServiceImpl implements SceneManageService {
             }
         }
 
+        //处理定时任务
+        if (dto.getIsScheduler() == null || !dto.getIsScheduler()) {
+            sceneSchedulerTaskService.deleteBySceneId(dto.getId());
+        } else {
+            SceneSchedulerTaskResponse dbData = sceneSchedulerTaskService.selectBySceneId(dto.getId());
+            if (dto.getExecuteTime() != null && dbData != null) {
+                Date executeTime = dbData.getExecuteTime();
+                if (dto.getExecuteTime().compareTo(executeTime) != 0) {
+                    SceneSchedulerTaskUpdateRequest updateParam = new SceneSchedulerTaskUpdateRequest();
+                    updateParam.setId(dbData.getId());
+                    updateParam.setExecuteTime(dto.getExecuteTime());
+                    sceneSchedulerTaskService.update(updateParam, true);
+                }
+            } else if (dbData == null) {
+                SceneSchedulerTaskCreateRequest createRequest = new SceneSchedulerTaskCreateRequest();
+                createRequest.setSceneId(dto.getId());
+                createRequest.setExecuteTime(dto.getExecuteTime());
+                createRequest.setUserId(WebPluginUtils.traceUser().getId());
+                sceneSchedulerTaskService.insert(createRequest);
+            }
+        }
+
         SceneManageWrapperReq req = new SceneManageWrapperReq();
         this.sceneManageVo2Req(dto, req);
         dto.setUploadFile(this.sceneScriptRefOpenToVoList(req.getUploadFile()));
@@ -582,9 +599,12 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (scriptType == 1) {
             return new ScriptCheckDTO();
         }
-        if (!scriptCheck) {
+
+        String scriptCheckString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_CHECK);
+        if (!Boolean.parseBoolean(scriptCheckString)) {
             return new ScriptCheckDTO();
         }
+
         SceneScriptRefOpen sceneScriptRef = scriptList.get(0);
 
         ScriptCheckAndUpdateReq scriptCheckAndUpdateReq = new ScriptCheckAndUpdateReq();

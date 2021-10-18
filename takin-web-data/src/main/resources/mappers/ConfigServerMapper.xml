@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ConfigServerMapper">
+
+    <select id="selectTenantEnvValueListByKey" resultType="java.lang.String">
+        SELECT `value` FROM t_config_server WHERE is_deleted = 0 AND is_global = 0 AND is_tenant = 1
+                                              AND tenant_app_key = #{tenantAppKey} AND env_code = #{envCode} AND `key` = #{key}
+        UNION ALL
+        SELECT `value` FROM t_config_server WHERE is_deleted = 0 AND is_global = 1 AND is_tenant = 1 AND `key` = #{key}
+    </select>
+
+</mapper>

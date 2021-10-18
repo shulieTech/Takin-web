@@ -14,10 +14,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class MyMetaObjectHandler implements MetaObjectHandler {
 
+
+
     @Override
     public void insertFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, "customerId", Long.class, WebPluginUtils.traceTenantId());
-        this.strictInsertFill(metaObject, "userId", Long.class, WebPluginUtils.traceUserId());
+        this.strictInsertFill(metaObject, TenantField.FIELD_TENANT_ID, Long.class, WebPluginUtils.traceTenantId());
+        // 判断下 环境字段是否存在
+        if (metaObject.hasSetter(TenantField.FIELD_ENV_CODE)) {
+            this.strictInsertFill(metaObject, TenantField.FIELD_ENV_CODE, String.class, WebPluginUtils.traceEnvCode());
+        }
+        if (metaObject.hasSetter(TenantField.FIELD_USER_ID)) {
+            this.strictInsertFill(metaObject, TenantField.FIELD_USER_ID, Long.class, WebPluginUtils.traceUserId());
+        }
+
     }
 
     @Override

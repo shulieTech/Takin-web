@@ -2,6 +2,7 @@ package io.shulie.takin.web.app;
 
 import com.pamirs.takin.common.util.SpringContextUtil;
 import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.common.util.RedisHelper;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -32,6 +33,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ComponentScan(basePackages = {"com.pamirs.takin", "io.shulie.takin"},
     excludeFilters = @ComponentScan.Filter(type = FilterType.CUSTOM, value = {ApplicationFilter.class}))
 public class Application {
+
+    @Autowired
+    private RedisHelper redisHelper;
 
     @Autowired
     private ConfigServerHelper configServerHelper;

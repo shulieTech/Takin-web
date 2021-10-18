@@ -14,18 +14,14 @@ public interface ConfigServerKeyConstants {
     String TAKIN_LOGIN_DINGDING_PUSH_ENABLE = "takin.login.dingding.push.enable";
     String TAKIN_LOGIN_DINGDING_PUSH_URL = "takin.login.dingding.push.url";
     String TAKIN_REMOTE_CALL_SYNC = "takin.remote-call.sync";
-    String TAKIN_WHITE_LIST_NUMBER_LIMIT = "takin.white_list.number.limit";
-    String TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK = "takin.white_list.duplicate.name.check";
-    String TAKIN_WHITE_LIST_CONFIG_PATH = "takin.white_list.config.path";
     String TAKIN_REPORT_OPEN_TASK = "takin.report.open.task";
+
 
     /**
      * zk 地址
      */
     String TAKIN_REMOTE_CLIENT_DOWNLOAD_URI = "takin.remote.client.download.uri";
     String TAKIN_APPLICATION_NEW_AGENT = "takin.application.new-agent";
-    String AGENT_HTTP_UPDATE_VERSION = "agent.http.update.version";
-    String TAKIN_QUERY_ASYNC_CRITICA_VALUE = "takin.query.async.critica.value";
     String TAKIN_PRESSURE_MACHINE_UPLOAD_INTERVAL_TIME = "takin.pressure.machine.upload.interval.time";
     String SPRING_PERFORMANCE_INFLUXDB_DATABASE = "spring.performance.influxdb.database";
     String SPRING_INFLUXDB_URL = "spring.influxdb.url";

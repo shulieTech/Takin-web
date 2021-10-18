@@ -30,5 +30,19 @@
         <module>takin-web-config-sync-zk-common</module>
     </modules>
 
+    <dependencies>
+        <!--内部module 业务依赖-->
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-biz-service</artifactId>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.shulie.takin</groupId>
+                    <artifactId>takin-web-config-sync-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
 
 </project>

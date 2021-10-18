@@ -23,8 +23,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ZkClient {
 
-    private String zkAddr;
-
     @Value("${takin.config.zk.timeout: 3000}")
     private Integer timeout;
 
@@ -32,10 +30,9 @@ public class ZkClient {
 
     @PostConstruct
     public void init() {
-        zkAddr = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CONFIG_ZOOKEEPER_ADDRESS);
         client = CuratorFrameworkFactory
             .builder()
-            .connectString(zkAddr)
+            .connectString(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CONFIG_ZOOKEEPER_ADDRESS))
             .sessionTimeoutMs(timeout)
             .namespace(ZkConfigPathConstants.NAME_SPACE.substring(1))
             .retryPolicy(new ExponentialBackoffRetry(1000, 3))

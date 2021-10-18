@@ -1817,7 +1817,7 @@ public class ConfCenterService extends CommonService {
     public void updateAppAgentVersion(String appName, String agentVersion, String pradarVersion) throws
         TakinModuleException {
         // 是否执行
-        String isUpdateAgentVersionString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK);
+        String isUpdateAgentVersionString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_HTTP_UPDATE_VERSION);
         if (!Boolean.parseBoolean(isUpdateAgentVersionString)) {
             return;
         }

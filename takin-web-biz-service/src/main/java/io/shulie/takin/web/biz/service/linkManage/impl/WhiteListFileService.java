@@ -27,7 +27,7 @@ import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.query.whitelist.AgentWhiteList;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;

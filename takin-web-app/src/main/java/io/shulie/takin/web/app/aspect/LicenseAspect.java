@@ -5,7 +5,7 @@ import java.util.Objects;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.common.domain.WebRequest;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.ext.api.user.WebUserExtApi;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;

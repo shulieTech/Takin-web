@@ -1,10 +1,11 @@
-package io.shulie.takin.web.common.util;
+package io.shulie.takin.web.biz.utils;
 
 import javax.annotation.PostConstruct;
 
 import cn.hutool.core.util.StrUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.config.ConfigServerDAO;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;

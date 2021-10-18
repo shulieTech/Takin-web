@@ -10,7 +10,7 @@ import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;

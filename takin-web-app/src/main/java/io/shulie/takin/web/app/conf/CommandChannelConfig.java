@@ -4,7 +4,7 @@ import io.shulie.takin.channel.ServerChannel;
 import io.shulie.takin.channel.protocal.JsonChannelProtocol;
 import io.shulie.takin.channel.router.zk.DefaultServerChannel;
 import io.shulie.takin.channel.router.zk.ZkClientConfig;
-import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

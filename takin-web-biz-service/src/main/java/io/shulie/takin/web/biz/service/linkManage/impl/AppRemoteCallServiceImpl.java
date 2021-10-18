@@ -55,7 +55,7 @@ import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;

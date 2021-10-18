@@ -10,7 +10,7 @@ import io.shulie.takin.web.biz.pojo.request.agent.PushOperateRequest;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResponse;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResultResponse;
 import io.shulie.takin.web.biz.service.AgentService;
-import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.biz.utils.business.probe.ApplicationNodeProbeUtil;
 import io.shulie.takin.web.common.constant.AgentUrls;
 import io.shulie.takin.web.common.constant.AppConstants;

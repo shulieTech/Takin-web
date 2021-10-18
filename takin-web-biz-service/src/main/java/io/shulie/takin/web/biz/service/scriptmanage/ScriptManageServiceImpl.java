@@ -99,7 +99,7 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.vo.file.FileExtendVO;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
-import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.common.vo.script.ScriptDeployFinishDebugVO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;

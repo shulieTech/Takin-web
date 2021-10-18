@@ -1,7 +1,7 @@
 package io.shulie.takin.web.app;
 
 import com.pamirs.takin.common.util.SpringContextUtil;
-import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.utils;
 
 import javax.annotation.PostConstruct;
 
-import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;

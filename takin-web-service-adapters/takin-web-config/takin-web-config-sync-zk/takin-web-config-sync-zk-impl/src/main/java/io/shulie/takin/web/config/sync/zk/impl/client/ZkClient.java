@@ -2,9 +2,9 @@ package io.shulie.takin.web.config.sync.zk.impl.client;
 
 import javax.annotation.PostConstruct;
 
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
-import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.config.sync.zk.constants.ZkConfigPathConstants;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;

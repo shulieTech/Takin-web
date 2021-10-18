@@ -76,7 +76,7 @@ import io.shulie.takin.web.common.http.HttpAssert;
 import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
-import io.shulie.takin.web.common.util.ConfigServerHelper;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;

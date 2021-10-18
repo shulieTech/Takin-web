@@ -21,4 +21,9 @@ public interface TenantField {
      * 用户
      */
     String FIELD_USER_ID = "userId";
+
+    /**
+     * key
+     */
+    String FIELD_TENANT_APP_KEY = "tenantAppKey";
 }

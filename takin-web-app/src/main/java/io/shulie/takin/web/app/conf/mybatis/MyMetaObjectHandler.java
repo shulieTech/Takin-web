@@ -27,6 +27,15 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
             this.strictInsertFill(metaObject, TenantField.FIELD_USER_ID, Long.class, WebPluginUtils.traceUserId());
         }
 
+        if (metaObject.hasSetter(TenantField.FIELD_USER_ID)) {
+            this.strictInsertFill(metaObject, TenantField.FIELD_USER_ID, Long.class, WebPluginUtils.traceUserId());
+        }
+
+        if (metaObject.hasSetter(TenantField.FIELD_TENANT_APP_KEY)) {
+            this.strictInsertFill(metaObject, TenantField.FIELD_TENANT_APP_KEY, String.class, WebPluginUtils.traceTenantAppKey());
+        }
+
+
     }
 
     @Override

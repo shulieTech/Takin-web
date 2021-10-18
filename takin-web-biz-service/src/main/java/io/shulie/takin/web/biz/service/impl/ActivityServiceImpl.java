@@ -19,7 +19,6 @@ import io.shulie.takin.cloud.open.req.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneManageWrapperReq;
 import io.shulie.takin.cloud.open.req.scenetask.TaskFlowDebugStartReq;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
@@ -48,9 +47,11 @@ import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
@@ -63,7 +64,6 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,8 +85,6 @@ public class ActivityServiceImpl implements ActivityService {
     private LinkTopologyService linkTopologyService;
     @Autowired
     private ReportService reportService;
-    @Value("${link.flow.check.enable:false}")
-    private boolean enableLinkFlowCheck;
     @Autowired
     private CloudTaskApi cloudTaskApi;
     @Autowired
@@ -298,9 +296,17 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setLinkId(oldActivity.getLinkId());
         activityDAO.updateActivity(updateParam);
 
-        notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(), request.getServiceName(),
-            request.getMethod(),
-            request.getRpcType(), request.getExtend());
+        // 非核心字段变动，不需要重建链路
+        if(StringUtil.equals(request.getApplicationName(), oldActivity.getApplicationName())
+            && StringUtil.equals(request.getServiceName(), oldActivity.getServiceName())
+            && StringUtil.equals(request.getMethod(), oldActivity.getMethod())
+            && StringUtil.equals(request.getRpcType(), oldActivity.getRpcType())
+            && StringUtil.equals(request.getExtend(), oldActivity.getExtend())) {
+            return;
+        }
+
+        notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(), oldActivity.getServiceName(),
+            oldActivity.getMethod(), oldActivity.getRpcType(), oldActivity.getExtend());
         notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
             request.getMethod(), request.getRpcType(), request.getExtend());
     }
@@ -456,7 +462,8 @@ public class ActivityServiceImpl implements ActivityService {
             request.setExtend(activityResponse.getExtend());
             request.setServiceName(activityResponse.getServiceName());
             request.setType(activityResponse.getType());
-            activityResponse.setEnableLinkFlowCheck(enableLinkFlowCheck);
+            String enableLinkFlowCheckString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_LINK_FLOW_CHECK_ENABLE)
+            activityResponse.setEnableLinkFlowCheck(Boolean.parseBoolean(enableLinkFlowCheckString));
 
             // 拓扑图查询
             activityResponse.setTopology(linkTopologyService.getApplicationEntrancesTopology(request));

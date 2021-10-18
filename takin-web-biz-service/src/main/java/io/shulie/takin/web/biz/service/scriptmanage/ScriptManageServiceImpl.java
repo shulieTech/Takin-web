@@ -40,6 +40,7 @@ import com.pamirs.takin.entity.domain.entity.linkmanage.Scene;
 import com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate;
 import io.shulie.amdb.common.enums.RpcType;
 import io.shulie.takin.cloud.common.pojo.dto.scenemanage.UploadFileDTO;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.open.req.engine.EnginePluginDetailsWrapperReq;
 import io.shulie.takin.cloud.open.req.engine.EnginePluginFetchWrapperReq;
 import io.shulie.takin.cloud.open.req.filemanager.FileContentParamReq;
@@ -56,7 +57,6 @@ import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageListResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.ScriptCheckResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
 import io.shulie.takin.utils.string.StringUtil;
@@ -90,6 +90,7 @@ import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.common.constant.FileManageConstant;
 import io.shulie.takin.web.common.constant.ScriptManageConstant;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.script.FileTypeEnum;
 import io.shulie.takin.web.common.enums.script.ScriptManageDeployStatusEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
@@ -98,7 +99,7 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.vo.file.FileExtendVO;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.common.vo.script.ScriptDeployFinishDebugVO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
@@ -125,6 +126,7 @@ import io.shulie.takin.web.data.result.tagmanage.TagManageResult;
 import io.shulie.takin.web.diff.api.DiffFileApi;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -147,8 +149,6 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     private String tmpFilePath;
     @Value("${file.upload.script.path:/nfs/takin/script/}")
     private String scriptFilePath;
-    @Value("${script.check:true}")
-    private boolean scriptCheck;
 
     @Value("${file.upload.user.data.dir:/data/tmp}")
     private String fileDir;
@@ -371,9 +371,11 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     @Override
     public ScriptCheckDTO checkAndUpdateScript(String refType, String refValue, String scriptFileUploadPath) {
         ScriptCheckDTO dto = new ScriptCheckDTO();
-        if (!scriptCheck) {
+        String scriptCheckString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_CHECK);
+        if (!Boolean.parseBoolean(scriptCheckString)) {
             return dto;
         }
+
         ScriptCheckAndUpdateReq scriptCheckAndUpdateReq = new ScriptCheckAndUpdateReq();
         List<String> requestUrls = new ArrayList<>();
         scriptCheckAndUpdateReq.setRequest(requestUrls);
@@ -853,6 +855,15 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             throw new IllegalArgumentException("originalName 参数不能为空！");
         }
 
+        // 根据脚本id查询
+        List<ScriptManageDeployResult> scriptManageDeployList = scriptManageDAO.selectScriptManageDeployByScriptId(
+            takinScriptId);
+        if (CollectionUtils.isEmpty(scriptManageDeployList) || Objects.isNull(scriptManageDeployList.get(0).getId())) {
+            throw new IllegalArgumentException("查询tro-web脚本实例数据为空！");
+        }
+
+        // 获取版本号id
+        takinScriptId = scriptManageDeployList.get(0).getId();
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectFileIdsByScriptDeployId(takinScriptId);
         List<FileManageResult> fileManageResults;
         if (scriptFileRefResults == null) {
@@ -1155,6 +1166,12 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                     return PagingList.empty();
                 }
                 scriptManageDeployPageQueryParam.setScriptIds(scriptIds);
+            }
+
+            if (!Objects.isNull(scriptManageDeployPageQueryRequest.getScriptId())) {
+                List<Long> scriptDeployIds = new ArrayList<>();
+                scriptDeployIds.add(scriptManageDeployPageQueryRequest.getScriptId());
+                scriptManageDeployPageQueryParam.setScriptDeployIds(scriptDeployIds);
             }
         }
         scriptManageDeployPageQueryParam.setCurrent(scriptManageDeployPageQueryRequest.getCurrent());

@@ -9,14 +9,15 @@ import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,13 +33,12 @@ import org.springframework.stereotype.Component;
     description = "获取tps指标图")
 @Slf4j
 public class CalcTpsTargetJob implements SimpleJob {
+
     @Autowired
     private ReportTaskService reportTaskService;
+
     @Autowired
     private ReportService reportService;
-
-    @Value("${open.report.task: true}")
-    private boolean openReportTask;
 
     @Autowired
     @Qualifier("jobThreadPool")
@@ -50,33 +50,41 @@ public class CalcTpsTargetJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        if (!openReportTask) {
-            return;
-        }
         long start = System.currentTimeMillis();
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-        if(CollectionUtils.isEmpty(tenantInfoExts)) {
+        if (CollectionUtils.isEmpty(tenantInfoExts)) {
+            String openReportTaskString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK);
+            if (!Boolean.parseBoolean(openReportTaskString)) {
+                return;
+            }
+
             // 私有化 + 开源 根据 报告id进行分片
-            List<Long> reportIds =  reportTaskService.getRunningReport();
+            List<Long> reportIds = reportTaskService.getRunningReport();
             log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
             for (Long reportId : reportIds) {
                 // 开始数据层分片
                 if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    fastDebugThreadPool.execute(() ->reportTaskService.calcTpsTarget(reportId));
+                    fastDebugThreadPool.execute(() -> reportTaskService.calcTpsTarget(reportId));
                 }
             }
-        }else {
+        } else {
             // saas 根据租户进行分片
             for (TenantInfoExt ext : tenantInfoExts) {
                 // 开始数据层分片
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     // 根据环境 分线程
-                    ext.getEnvs().forEach(e ->
-                        jobThreadPool.execute(() ->  {
-                            WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode()));
+                    for (TenantEnv e : ext.getEnvs()) {
+                        WebPluginUtils.setTraceTenantContext(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode());
+                        String openReportTaskString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK);
+                        if (!Boolean.parseBoolean(openReportTaskString)) {
+                            continue;
+                        }
+
+                        jobThreadPool.execute(() -> {
                             this.calcTpsTarget();
                             WebPluginUtils.removeTraceContext();
-                        }));
+                        });
+                    }
                 }
             }
         }
@@ -84,11 +92,12 @@ public class CalcTpsTargetJob implements SimpleJob {
     }
 
     private void calcTpsTarget() {
-        List<Long> reportIds =  reportService.queryListRunningReport();
-        log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
+        List<Long> reportIds = reportService.queryListRunningReport();
+        log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),
+            JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据层分片
-            fastDebugThreadPool.execute(() ->reportTaskService.calcTpsTarget(reportId));
+            fastDebugThreadPool.execute(() -> reportTaskService.calcTpsTarget(reportId));
         }
     }
 }

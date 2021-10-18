@@ -6,6 +6,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import io.shulie.takin.web.common.common.Response;
+import com.pamirs.takin.entity.domain.vo.JarVersionVo;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import org.springframework.web.multipart.MultipartFile;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
@@ -206,5 +211,19 @@ public interface ApplicationService {
      */
     void uninstallAllAgent(List<String> appIds);
 
+    /**
+     * 一键恢复探针
+     * @param appIds
+     */
+    void resumeAllAgent(List<String> appIds);
+
+    /**
+     * 通过 applicationId 获得 应用
+     * 并判断是否存在
+     *
+     * @param applicationId 应用id
+     * @return 应用
+     */
+    ApplicationDetailResult getByApplicationIdWithCheck(Long applicationId);
 
 }

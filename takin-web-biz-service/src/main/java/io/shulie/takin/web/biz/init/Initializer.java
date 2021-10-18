@@ -62,7 +62,5 @@ public class Initializer implements InitializingBean {
         new Thread(() -> configService.init()).start();
         // 白名单数据迁移
         //new Thread(() -> remoteCallFixer.fix()).start();
-        // 校验是否有此用户，没有则创建。用于用户执行运维脚本
-        new Thread(() -> opsScriptManageService.init()).start();
     }
 }

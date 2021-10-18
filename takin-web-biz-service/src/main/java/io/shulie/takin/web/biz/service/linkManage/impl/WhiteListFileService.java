@@ -26,6 +26,8 @@ import com.pamirs.takin.entity.dao.confcenter.TWhiteListMntDao;
 import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.query.whitelist.AgentWhiteList;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -46,7 +48,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -58,7 +59,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class WhiteListFileService {
 
-    @Value("${spring.config.whiteListPath}")
     private String whiteListPath;
 
     @Autowired
@@ -87,11 +87,14 @@ public class WhiteListFileService {
     /**
      * 是否开启校验白名单重名
      */
-    @Value("${whitelist.duplicate.name.check:false}")
-    private String isCheckDuplicateName;
+    private boolean isCheckDuplicateName;
 
     @PostConstruct
     public void init() {
+        isCheckDuplicateName = Boolean.parseBoolean(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK));
+        whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH);
+
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
             0, 1,
             0, TimeUnit.MILLISECONDS,
@@ -166,11 +169,10 @@ public class WhiteListFileService {
         List<AgentWhiteList> agentWhiteLists = agentWhites.stream().distinct().collect(Collectors.toList());
         Map<String, Object> resultMap = Maps.newHashMapWithExpectedSize(30);
         // 获取所有白名单，是否有局部属性
-        boolean isCheckFlag = Boolean.parseBoolean(isCheckDuplicateName);
         List<String> existWhite = Lists.newArrayList();
         Map<String, List<WhitelistResult>> whitelistMap;
 
-        if (isCheckFlag) {
+        if (isCheckDuplicateName) {
             List<String> armdString = agentWhiteLists.stream().map(AgentWhiteList::getInterfaceName).collect(Collectors.toList());
             existWhite = whiteListService.getExistWhite(armdString, Lists.newArrayList());
             // todo 这里再获取一次，感觉很多余，但是不改上面的逻辑，所有这里数据再次从新获取，之后可以重构下
@@ -214,7 +216,7 @@ public class WhiteListFileService {
                 Map<String, Object> whiteItemNew = new HashMap<String, Object>();
                 whiteItemNew.put("TYPE", type);
                 whiteItemNew.put("INTERFACE_NAME", interfaceName);
-                if (isCheckFlag) {
+                if (isCheckDuplicateName) {
                     if (existWhite.stream().filter(e -> e.equals(id)).count() == 1) {
                         List<WhitelistResult> list = whitelistMap.get(id);
                         if (CollectionUtils.isNotEmpty(list)) {

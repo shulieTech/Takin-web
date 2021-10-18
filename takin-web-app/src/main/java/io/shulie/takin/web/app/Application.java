@@ -1,7 +1,9 @@
 package io.shulie.takin.web.app;
 
 import com.pamirs.takin.common.util.SpringContextUtil;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
@@ -30,6 +32,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ComponentScan(basePackages = {"com.pamirs.takin", "io.shulie.takin"},
     excludeFilters = @ComponentScan.Filter(type = FilterType.CUSTOM, value = {ApplicationFilter.class}))
 public class Application {
+
+    @Autowired
+    private ConfigServerHelper configServerHelper;
 
     public static void main(String[] args) {
         ApplicationContext applicationContext = new SpringApplicationBuilder().sources(Application.class).run(args);

@@ -9,7 +9,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.pamirs.takin.common.constant.Constants;
 import io.shulie.takin.utils.string.StringUtil;
@@ -33,6 +35,37 @@ import org.springframework.util.StringUtils;
  * @date 2021/6/3 4:43 下午
  */
 public class CommonUtil implements AppConstants {
+
+    /**
+     * 获得 zk 租户, 环境隔离后的路径
+     *
+     * @param path 节点路径, 前缀可以带 /, 也可以不带
+     * @return 租户, 环境隔离后的路径, /租户key/环境/xxx
+     */
+    public static String getZkTenantAndEnvPath(String path) {
+        return getZkPathPassTenantAppKeyAndEnvCode(WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(), path);
+    }
+
+    /**
+     * 传递 租户 key, 环境, zk 节点路径 来获得 zk 节点完整路径
+     *
+     * @param tenantAppKey 租户 key
+     * @param envCode      环境
+     * @param path         节点路径, 前缀可以带 /, 也可以不带
+     * @return zk 节点完整路径
+     */
+    public static String getZkPathPassTenantAppKeyAndEnvCode(String tenantAppKey, String envCode, String path) {
+        if (StrUtil.isBlank(path)) {
+            throw new IllegalArgumentException("zookeeper 的节点路径必须填写!");
+        }
+        String tenantAndEnv = String.format("/%s/%s", tenantAppKey, envCode);
+        // 传来的 path 开头是否带有 /
+        if (path.startsWith(Separator.Separator1.getValue())) {
+            return tenantAndEnv + path;
+        }
+
+        return String.format("%s/%s", tenantAndEnv, path);
+    }
 
     /**
      * 应用配置标识
@@ -59,18 +92,18 @@ public class CommonUtil implements AppConstants {
         return commonExt != null ? CommonUtil.getZkTenantAndEnvPath(APP,commonExt): Constants.DEFAULT_NAMESPACE;
     }
 
-
-
-
     /**
-     * 获得 zk 租户, 环境隔离后的路径
+     * 按照Bean对象属性创建对应的Class对象，并忽略某些属性
+     * 如果源头bean为null, 则吐出的也是null
      *
-     * @param path 节点路径
-     * @return 租户, 环境隔离后的路径
+     * @param <T>              对象类型
+     * @param source           源Bean对象
+     * @param tClass           目标Class
+     * @param ignoreProperties 不拷贝的的属性列表
+     * @return 目标对象
      */
-    public static String getZkTenantAndEnvPath(String path) {
-        return generateRedisKeyWithSeparator(Separator.Separator1, WebPluginUtils.traceTenantAppKey(),
-            WebPluginUtils.traceEnvCode(), path);
+    public static <T> T copyBeanPropertiesWithNull(Object source, Class<T> tClass, String... ignoreProperties) {
+        return source == null ? null : BeanUtil.copyProperties(source, tClass, ignoreProperties);
     }
 
     /**

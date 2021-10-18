@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -31,12 +33,13 @@ import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.opsscript.OpsScriptEnum;
 import io.shulie.takin.web.common.enums.opsscript.OpsScriptExecutionEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.biz.utils.ConfigServerHelper;
 import io.shulie.takin.web.data.dao.opsscript.OpsScriptBatchNoDAO;
 import io.shulie.takin.web.data.dao.opsscript.OpsScriptExecuteResultDAO;
 import io.shulie.takin.web.data.dao.opsscript.OpsScriptFileDAO;
@@ -52,10 +55,10 @@ import io.shulie.takin.web.data.result.opsscript.OpsScriptDetailVO;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptFileVO;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptVO;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -89,19 +92,26 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
     @Autowired
     private DistributedLock distributedLock;
 
-    @Value("${file.ops_script.path:${data.path}/ops_nfs_dir/}")
     private String tempPath;
 
-    @Value("${file.ops_script.deploy_user:appdeploy}")
     private String deployUser;
 
     @Autowired
     private OpsScriptFileService opsScriptFileService;
 
-    @Value("${file.ops_script.deploy_user_enable:false}")
-    private boolean deployUserEnable;
+    @PostConstruct
+    public void init() {
+        boolean deployUserEnable = Boolean.parseBoolean(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_DEPLOY_USER_ENABLE));
 
+        // 服务器是否添加执行脚本的用户
+        deployUser = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_DEPLOY_USER);
+        if (deployUserEnable) {
+            io.shulie.takin.web.biz.utils.LinuxHelper.executeLinuxCmdNotThrow("useradd " + deployUser);
+        }
 
+        tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
+    }
 
     @Override
     public PagingList<OpsScriptVO> page(OpsScriptParam param) {
@@ -569,10 +579,4 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         opsScriptManageDAO.update(manageWrapper);
     }
 
-    @Override
-    public void init() {
-        if (deployUserEnable) {
-            io.shulie.takin.web.biz.utils.LinuxHelper.executeLinuxCmdNotThrow("useradd " + deployUser);
-        }
-    }
 }

@@ -104,7 +104,7 @@ public class AgentVersionController {
     @ApiOperation("|_ 应用探针包下载（指令）")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "projectName", value = "应用名", required = true),
-        @ApiImplicitParam(name = "userAppKey", value = "用户key", required = true),
+        @ApiImplicitParam(name = "tenantAppKey", value = "用户key", required = true),
         @ApiImplicitParam(name = "userId", value = "用户id", required = true),
         @ApiImplicitParam(name = "version", value = "agent版本号", required = true),
         @ApiImplicitParam(name = "envCode", value = "环境标识", required = true),
@@ -112,17 +112,17 @@ public class AgentVersionController {
         @ApiImplicitParam(name = "flag", value = "验证标识", required = true),
     })
     @GetMapping("/project/download")
-    public void getProjectFile(@RequestParam String projectName, @RequestParam String userAppKey,
+    public void getProjectFile(@RequestParam String projectName, @RequestParam String tenantAppKey,
         @RequestParam String userId, @RequestParam String version, @RequestParam String envCode,
         @RequestParam Long expireDate, @RequestParam String flag, HttpServletResponse response) {
-        if (!AgentDownloadUrlVerifyUtil.checkFlag(projectName, userAppKey, userId, version, envCode, expireDate,
+        if (!AgentDownloadUrlVerifyUtil.checkFlag(projectName, tenantAppKey, userId, version, envCode, expireDate,
             flag)) {
             throw AppCommonUtil.getCommonError("非法请求");
         }
         if (expireDate < System.currentTimeMillis()) {
             throw AppCommonUtil.getCommonError("链接已过期");
         }
-        ResponseFileUtil.transfer(agentVersionService.getProjectFile(projectName, userAppKey, userId, version, envCode),
+        ResponseFileUtil.transfer(agentVersionService.getProjectFile(projectName, tenantAppKey, userId, version, envCode),
             true, null, false, response);
     }
 

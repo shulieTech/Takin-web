@@ -1,5 +1,8 @@
 package io.shulie.takin.web.app.conf.mybatis;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 /**
  * @author by: hezhongqi
  * @Package io.shulie.takin.web.app.conf.mybatis
@@ -7,23 +10,26 @@ package io.shulie.takin.web.app.conf.mybatis;
  * @Description: TODO
  * @Date: 2021/10/18 14:28
  */
-public interface TenantField {
+@AllArgsConstructor
+@Getter
+public enum TenantField {
     /**
      * 租户
      */
-    String FIELD_TENANT_ID = "tenantId";
+    FIELD_TENANT_ID("tenantId","tenant_Id"),
     /**
      * 环境
      */
-    String FIELD_ENV_CODE = "envCode";
+    FIELD_ENV_CODE("envCode","env_code"),
 
-    /**
-     * 用户
-     */
-    String FIELD_USER_ID = "userId";
-
+    FIELD_USER_ID("userId","user_Id"),
     /**
      * key
      */
-    String FIELD_TENANT_APP_KEY = "tenantAppKey";
+    FIELD_TENANT_APP_KEY("tenantAppKey","tenant_app_key"),
+    ;
+
+    private String fieldName;
+    private String columnName;
+
 }

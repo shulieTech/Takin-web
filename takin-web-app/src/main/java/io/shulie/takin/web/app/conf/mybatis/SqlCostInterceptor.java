@@ -54,8 +54,6 @@ public class SqlCostInterceptor implements Interceptor {
             // 格式化Sql语句，去除换行符，替换参数
             sql = formatSql(sql, parameterObject, parameterMappingList);
 
-            System.out.println("SQL：[" + sql + "]执行耗时[" + sqlCost + "ms]");
-
             LOGGER.info(String.format("执行的SQL语句为: %s,执行耗时为: %s ms", sql, sqlCost));
         }
     }

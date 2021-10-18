@@ -86,9 +86,35 @@ public enum ConfigServerKeyEnum implements AppConstants {
      */
     TAKIN_SCRIPT_CHECK("script.check", "takin.script.check", YES),
 
+    /**
+     * 是否开启流量验证
+     */
     TAKIN_LINK_FLOW_CHECK_ENABLE("link.flow.check.enable", "takin.link.flow.check.enable", YES),
 
+    /**
+     * 应用下的 新旧 agent 配置, 1 新, 0 旧, -1 无配置
+     */
+    TAKIN_APPLICATION_NEW_AGENT("takin-web.application.new-agent", "takin.application.new-agent", YES),
 
+    /**
+     * agent 注册地址
+     */
+    AGENT_REGISTERED_PATH("agent.registered.path", "agent.registered.path", NO),
+
+    /**
+     * 性能数据分析
+     */
+    PERFORMANCE_BASE_AGENT_FREQUENCY("performance.base.agent.frequency", "performance.base.agent.frequency", YES),
+
+    /**
+     * 暂不知
+     */
+    TAKIN_QUERY_ASYNC_CRITICA_VALUE("query.async.critica.value", "takin.query.async.critica.value", NO),
+
+    /**
+     * 性能数据清空时间 单位秒, 几天之前的xxx
+     */
+    TAKIN_PERFORMANCE_CLEAR_SECOND("performance.clear.second", "takin.performance.clear.second", NO),
     ;
 
     /**

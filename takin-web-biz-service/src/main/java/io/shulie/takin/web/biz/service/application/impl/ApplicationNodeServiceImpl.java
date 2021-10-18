@@ -33,12 +33,14 @@ import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.probe.AmdbProbeStatusEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.pojo.dto.probe.ApplicationNodeProbeOperateDTO;
 import io.shulie.takin.web.common.pojo.dto.probe.MatchApplicationNodeProbeStateDTO;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
@@ -55,7 +57,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,9 +91,6 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
 
     @Autowired
     private AgentZkClientUtil agentZkClientUtil;
-
-    @Value("${agent.registered.path:/config/log/pradar/client/}")
-    private String agentRegisteredPath;
 
     @Override
     public PagingList<ApplicationNodeResponse> pageNodes(ApplicationNodeQueryRequest request) {
@@ -275,7 +273,8 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
 
     @Override
     public void deleteZkNode(String appName, String agentId) {
-        //
+        String agentRegisteredPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_REGISTERED_PATH);
+
         String path;
         if (agentRegisteredPath.endsWith("/")) {
             path = agentRegisteredPath + appName;
@@ -289,7 +288,6 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
             String zkString = agentZkClientUtil.getNode(path + "/172.17.0.1-14977");
             log.info(zkString);
         }
-
     }
 
     @Override

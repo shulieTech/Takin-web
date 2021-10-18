@@ -96,7 +96,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -141,14 +140,6 @@ public class ConfCenterService extends CommonService {
 
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
-
-    /**
-     * 是否更新版本
-     * true:更新
-     * false 不更新
-     */
-    @Value("${agent.http.update.version:true}")
-    private Boolean isUpdateAgentVersion;
 
     @Autowired
     private ApplicationService applicationService;
@@ -1826,9 +1817,11 @@ public class ConfCenterService extends CommonService {
     public void updateAppAgentVersion(String appName, String agentVersion, String pradarVersion) throws
         TakinModuleException {
         // 是否执行
-        if (!isUpdateAgentVersion) {
+        String isUpdateAgentVersionString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK);
+        if (!Boolean.parseBoolean(isUpdateAgentVersionString)) {
             return;
         }
+
         if (StringUtils.isEmpty(appName)) {
             throw new TakinModuleException(TakinErrorEnum.CONFCENTER_UPDATE_APPLICATION_AGENT_VERSION_EXCEPTION);
         }

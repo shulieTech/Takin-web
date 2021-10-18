@@ -26,6 +26,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.json.JSONUtil;
@@ -79,7 +81,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -111,12 +112,15 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
 
-    @Value("${query.async.critica.value:20000}")
-    private int criticaValue;
+    private Integer criticaValue;
 
     @Autowired
     private ThreadPoolExecutor queryAsyncThreadPool;
 
+    @PostConstruct
+    public void init() {
+        criticaValue = Integer.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_QUERY_ASYNC_CRITICA_VALUE));
+    }
 
     private void checkInputData(AppRemoteCallUpdateInput input) {
         //if (input.getType().equals(AppRemoteCallConfigEnum.RETURN_MOCK.getType()) || input.getType().equals(

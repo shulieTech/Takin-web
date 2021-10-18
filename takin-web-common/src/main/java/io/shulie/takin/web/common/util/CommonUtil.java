@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.pamirs.takin.common.constant.Constants;
 import io.shulie.takin.utils.string.StringUtil;
@@ -36,6 +37,37 @@ import org.springframework.util.StringUtils;
 public class CommonUtil implements AppConstants {
 
     /**
+     * 获得 zk 租户, 环境隔离后的路径
+     *
+     * @param path 节点路径, 前缀可以带 /, 也可以不带
+     * @return 租户, 环境隔离后的路径, /租户key/环境/xxx
+     */
+    public static String getZkTenantAndEnvPath(String path) {
+        return getZkPathPassTenantAppKeyAndEnvCode(WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(), path);
+    }
+
+    /**
+     * 传递 租户 key, 环境, zk 节点路径 来获得 zk 节点完整路径
+     *
+     * @param tenantAppKey 租户 key
+     * @param envCode      环境
+     * @param path         节点路径, 前缀可以带 /, 也可以不带
+     * @return zk 节点完整路径
+     */
+    public static String getZkPathPassTenantAppKeyAndEnvCode(String tenantAppKey, String envCode, String path) {
+        if (StrUtil.isBlank(path)) {
+            throw new IllegalArgumentException("zookeeper 的节点路径必须填写!");
+        }
+        String tenantAndEnv = String.format("/%s/%s", tenantAppKey, envCode);
+        // 传来的 path 开头是否带有 /
+        if (path.startsWith(Separator.Separator1.getValue())) {
+            return tenantAndEnv + path;
+        }
+
+        return String.format("%s/%s", tenantAndEnv, path);
+    }
+
+    /**
      * 应用配置标识
      */
     public static final String APP = "apps";
@@ -58,20 +90,6 @@ public class CommonUtil implements AppConstants {
      */
     public static String getZkNameSpace(TenantCommonExt commonExt) {
         return commonExt != null ? CommonUtil.getZkTenantAndEnvPath(APP,commonExt): Constants.DEFAULT_NAMESPACE;
-    }
-
-
-
-
-    /**
-     * 获得 zk 租户, 环境隔离后的路径
-     *
-     * @param path 节点路径
-     * @return 租户, 环境隔离后的路径
-     */
-    public static String getZkTenantAndEnvPath(String path) {
-        return generateRedisKeyWithSeparator(Separator.Separator1, WebPluginUtils.traceTenantAppKey(),
-            WebPluginUtils.traceEnvCode(), path);
     }
 
     /**

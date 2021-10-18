@@ -25,7 +25,9 @@ import io.shulie.takin.web.biz.utils.AppCommonUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,13 +48,6 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
      */
     @Value("${data.path}")
     private String uploadPath;
-
-    /**
-     * 应用下的 新旧 agent 配置
-     * 1 新, 0 旧, null 无配置
-     */
-    @Value("${takin-web.application.new-agent: }")
-    private Integer newAgent;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -130,11 +125,13 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
      * @return 新旧 agent 响应
      */
     public IsNewAgentResponse getIsNewAgentResponseByConfig() {
-        if (newAgent == null) {
+        int newAgent = Integer.parseInt(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_APPLICATION_NEW_AGENT));
+        if (newAgent == NEW_AGENT_NONE) {
             return null;
         }
 
-        if (newAgent != AppConstants.YES && newAgent != AppConstants.NO) {
+        if (newAgent != YES && newAgent != NO) {
             return null;
         }
 
@@ -153,14 +150,14 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
         IsNewAgentResponse response = new IsNewAgentResponse();
         response.setAgentVersions(agentVersions);
         if (agentVersions.isEmpty()) {
-            response.setIsNew(AppConstants.YES);
+            response.setIsNew(YES);
         }
 
         // 判断是否有新版本
         for (String agentVersion : agentVersions) {
             // 只要有一个新版, 就是新版
             if (AppCommonUtil.isNewAgentVersion(agentVersion)) {
-                response.setIsNew(AppConstants.YES);
+                response.setIsNew(YES);
                 return response;
             }
         }

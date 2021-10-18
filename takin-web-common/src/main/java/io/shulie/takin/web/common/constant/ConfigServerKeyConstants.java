@@ -22,15 +22,10 @@ public interface ConfigServerKeyConstants {
     /**
      * zk 地址
      */
-    String TAKIN_CONFIG_ZK_ADDR = "takin.config.zk.addr";
     String TAKIN_REMOTE_CLIENT_DOWNLOAD_URI = "takin.remote.client.download.uri";
     String TAKIN_APPLICATION_NEW_AGENT = "takin.application.new-agent";
-    String AGENT_INTERACTIVE_TAKIN_WEB_URL = "agent.interactive.takin.web.url";
     String AGENT_HTTP_UPDATE_VERSION = "agent.http.update.version";
-    String AGENT_REGISTERED_PATH = "agent.registered.path";
-    String PERFORMANCE_BASE_AGENT_FREQUENCY_ = "performance.base.agent.frequency.";
     String TAKIN_QUERY_ASYNC_CRITICA_VALUE = "takin.query.async.critica.value";
-    String TAKIN_PERFORMANCE_CLEAR_SECOND = "takin.performance.clear.second";
     String TAKIN_PRESSURE_MACHINE_UPLOAD_INTERVAL_TIME = "takin.pressure.machine.upload.interval.time";
     String SPRING_PERFORMANCE_INFLUXDB_DATABASE = "spring.performance.influxdb.database";
     String SPRING_INFLUXDB_URL = "spring.influxdb.url";

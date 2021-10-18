@@ -95,7 +95,7 @@ import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
-import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
@@ -183,8 +183,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Autowired
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
-    @Value("${pradar.switch.processing.wait.time:61}")
-    private Integer pradarSwitchProcessingTime;
+
     @Autowired
     private ApplicationDAO applicationDAO;
 
@@ -267,8 +266,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         Map<String, Long> map = redisTemplate.opsForHash().entries(NEED_VERIFY_USER_MAP);
         if (map.size() > 0) {
             log.info("当前待执行用户数： => " + map.size());
+            long pradarSwitchProcessingTime = Long.parseLong(
+                ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_PRADAR_SWITCH_PROCESSING_WAIT_TIME));
             map.forEach((key, value) -> {
-                if (System.currentTimeMillis() - value >= pradarSwitchProcessingTime * 1000) {
+                if (System.currentTimeMillis() - value >= pradarSwitchProcessingTime * 1000L) {
                     // 操作完删除，保证只执行一次
                     Long uid = Long.valueOf(key);
                     String switchStatus = getUserSwitchStatusForAgent(uid);

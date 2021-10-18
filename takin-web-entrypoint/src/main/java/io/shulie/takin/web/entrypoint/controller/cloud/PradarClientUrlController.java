@@ -5,7 +5,7 @@ import java.util.Map;
 
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -17,7 +17,7 @@ import io.shulie.takin.channel.bean.CommandRespType;
 import io.shulie.takin.channel.bean.CommandResponse;
 import io.shulie.takin.channel.bean.CommandSend;
 import io.shulie.takin.channel.bean.CommandStatus;
-import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;

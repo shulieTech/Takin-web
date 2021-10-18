@@ -51,7 +51,7 @@ import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;

@@ -15,13 +15,4 @@ public interface DictionaryDataDAO {
      * @return
      */
     List<TDictionaryVo> getDictByCode(String code);
-
-    /**
-     * 根据key获取  根据租户获取数据
-     * @param code
-     * @param tenantId
-     * @param envCode
-     * @return
-     */
-    List<TDictionaryVo> getDictByCode(String code,Long tenantId,String envCode);
 }

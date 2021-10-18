@@ -37,6 +37,7 @@ import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.utils.LinkDataCalcUtil;
 import io.shulie.takin.web.biz.utils.VolumnUtil;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
 import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
@@ -51,6 +52,7 @@ import io.shulie.takin.web.data.result.baseserver.InfluxAvgResult;
 import io.shulie.takin.web.data.result.baseserver.LinkDetailResult;
 import io.shulie.takin.web.data.result.risk.BaseRiskResult;
 import io.shulie.takin.web.data.result.risk.LinkDataResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -76,8 +78,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
     private Double scale;
     @Value("${risk.max.norm.maxLoad:2}")
     private Integer maxLoad;
-    @Value("${risk.collect.time:300000}")
-    private Long riskTime;
+
     @Autowired
     private BaseServerDao baseServerDao;
     @Autowired
@@ -116,6 +117,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             startTime = DateUtil.parseSecondFormatter(dto.getStartTime()).getTime();
         }
         // 统计当前时间 前5分钟数据
+        int riskTime = Integer.parseInt(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_COLLECT_TIME));
         if (endTime - startTime >= riskTime) {
             startTime = endTime - riskTime;
         }

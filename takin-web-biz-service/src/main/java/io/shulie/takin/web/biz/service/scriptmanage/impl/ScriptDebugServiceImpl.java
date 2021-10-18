@@ -9,6 +9,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
@@ -34,7 +36,6 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStart
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStatusResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
@@ -68,6 +69,7 @@ import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.biz.utils.exception.ScriptDebugExceptionUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.script.CloudPressureStatus;
 import io.shulie.takin.web.common.enums.script.ScriptDebugFailedTypeEnum;
 import io.shulie.takin.web.common.enums.script.ScriptDebugStatusEnum;
@@ -90,6 +92,7 @@ import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import io.shulie.takin.web.data.param.scriptmanage.PageScriptDebugParam;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -98,10 +101,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 
 /**
  * 脚本调试表(ScriptDebug)表服务实现类
@@ -119,7 +119,6 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * 默认 kafka, 可以扩展 rocket mq 等..
      * 暂时这么设计
      */
-    @Value("${takin-web.script-debug.rpcType:KAFKA}")
     private String supportRpcType;
 
     @Autowired
@@ -168,8 +167,10 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     @Autowired
     private LinkManageDAO linkManageDAO;
 
-    @Resource
-    PluginManager pluginManager;
+    @PostConstruct
+    public void init() {
+        supportRpcType = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_DEBUG_RPC_TYPE);
+    }
 
     @Override
     public ScriptDebugResponse debug(ScriptDebugDoDebugRequest request) {

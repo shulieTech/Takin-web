@@ -22,21 +22,11 @@ public interface ConfigServerKeyConstants {
      */
     String TAKIN_REMOTE_CLIENT_DOWNLOAD_URI = "takin.remote.client.download.uri";
     String TAKIN_APPLICATION_NEW_AGENT = "takin.application.new-agent";
-    String TAKIN_PRESSURE_MACHINE_UPLOAD_INTERVAL_TIME = "takin.pressure.machine.upload.interval.time";
-    String SPRING_PERFORMANCE_INFLUXDB_DATABASE = "spring.performance.influxdb.database";
-    String SPRING_INFLUXDB_URL = "spring.influxdb.url";
-    String SPRING_INFLUXDB_DATABASE = "spring.influxdb.database";
-    String SPRING_INFLUXDB_USER = "spring.influxdb.user";
-    String SPRING_INFLUXDB_PASSWORD = "spring.influxdb.password";
     String TAKIN_SCRIPT_DEBUG_RPCTYPE = "takin.script-debug.rpcType";
-    String TAKIN_START_TASK_CHECK_APPLICATION = "takin.start.task.check.application";
-    String TAKIN_RISK_COLLECT_TIME = "takin.risk.collect.time";
-    String TAKIN_PRADAR_SWITCH_PROCESSING_WAIT_TIME = "takin.pradar.switch.processing.wait.time";
 
     /**
      * 租户 id
      */
-    String TAKIN_CUSTOMER_ID = "takin.customer.id";
     String TAKIN_RISK_MAX_NORM_SCALE = "takin.risk.max.norm.scale";
     String TAKIN_RISK_MAX_NORM_MAXLOAD = "takin.risk.max.norm.maxLoad";
     String TAKIN_BLACKLIST_DATA_FIX_ENABLE = "takin.blacklist.data.fix.enable";

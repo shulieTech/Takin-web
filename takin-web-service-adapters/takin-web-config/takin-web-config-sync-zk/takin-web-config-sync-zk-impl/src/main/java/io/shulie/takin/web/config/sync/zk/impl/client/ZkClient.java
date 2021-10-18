@@ -2,7 +2,7 @@ package io.shulie.takin.web.config.sync.zk.impl.client;
 
 import javax.annotation.PostConstruct;
 
-import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.config.sync.zk.constants.ZkConfigPathConstants;

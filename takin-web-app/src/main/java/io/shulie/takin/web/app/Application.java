@@ -1,7 +1,7 @@
 package io.shulie.takin.web.app;
 
 import com.pamirs.takin.common.util.SpringContextUtil;
-import io.shulie.takin.web.biz.utils.ConfigServerHelper;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.RedisHelper;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;

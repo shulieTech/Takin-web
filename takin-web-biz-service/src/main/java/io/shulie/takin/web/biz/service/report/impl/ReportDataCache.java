@@ -97,7 +97,7 @@ public class ReportDataCache {
      */
     private String getReportApplicationKey(Long reportId) {
 
-        return String.format(REPORT_APPLICATION_KEY,WebPluginUtils.traceTenantId() ,"encCode",reportId);
+        return String.format(REPORT_APPLICATION_KEY,WebPluginUtils.traceTenantId() ,WebPluginUtils.traceEnvCode(),reportId);
     }
 
     /**

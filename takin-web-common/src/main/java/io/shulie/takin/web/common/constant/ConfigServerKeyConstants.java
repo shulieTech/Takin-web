@@ -8,11 +8,7 @@ package io.shulie.takin.web.common.constant;
  */
 public interface ConfigServerKeyConstants {
 
-    String TAKIN_LICENSE = "takin.license";
-    String TAKIN_FAST_DEBUG_CALL_STACK_PATH = "takin.fast.debug.call.stack.path";
     String TAKIN_FAST_WATCH_TIME_SECOND = "takin.fast.watch.time.second";
-    String TAKIN_LOGIN_DINGDING_PUSH_ENABLE = "takin.login.dingding.push.enable";
-    String TAKIN_LOGIN_DINGDING_PUSH_URL = "takin.login.dingding.push.url";
     String TAKIN_REMOTE_CALL_SYNC = "takin.remote-call.sync";
     String TAKIN_REPORT_OPEN_TASK = "takin.report.open.task";
 

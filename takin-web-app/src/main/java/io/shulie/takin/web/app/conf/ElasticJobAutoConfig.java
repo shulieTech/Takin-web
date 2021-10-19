@@ -9,8 +9,6 @@ import io.shulie.takin.job.config.ElasticJobConfig;
 import io.shulie.takin.job.config.zk.ZkClientConfig;
 import io.shulie.takin.job.factory.SpringJobSchedulerFactory;
 import io.shulie.takin.job.parser.JobConfParser;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -28,12 +26,15 @@ public class ElasticJobAutoConfig {
     @Value("${env: prod}")
     private String env;
 
+    @Value("${takin.config.zk.addr}")
+    private String zkAddress;
+
     @Bean
     @ConditionalOnMissingBean(JobEventConfiguration.class)
     public SpringJobSchedulerFactory springJobSchedulerFactory(ElasticJobProperties elasticJobProperties,DataSource dataSource) {
         ElasticJobConfig elasticJobConfig = new ElasticJobConfig();
         ZkClientConfig zkClientConfig = new ZkClientConfig();
-        zkClientConfig.setZkServers(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CONFIG_ZOOKEEPER_ADDRESS));
+        zkClientConfig.setZkServers(zkAddress);
         zkClientConfig.setNamespace("takin-web-job-" + env);
         elasticJobConfig.setZkClientConfig(zkClientConfig);
         elasticJobConfig.setDataSource(dataSource);

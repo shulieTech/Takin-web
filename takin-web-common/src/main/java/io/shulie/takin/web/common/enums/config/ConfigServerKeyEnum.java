@@ -275,6 +275,31 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 启用插件前缀
      */
     TAKIN_PLUGIN_ENABLE_PLUGIN_PREFIX_PATH_PLUGIN_ID("enablePluginPrefixPathPluginId", "takin.plugin.enablePluginPrefixPathPluginId", NO),
+
+    /**
+     * license
+     */
+    TAKIN_LICENSE("takin.license", "takin.license", NO),
+
+    /**
+     * 调试工具调用栈保存路径
+     */
+    TAKIN_FAST_DEBUG_CALL_STACK_PATH("fast.debug.call.stack.path", "takin.fast.debug.call.stack.path", NO),
+
+    /**
+     * 调试工具调用栈监听时间, 单位秒
+     */
+    TAKIN_FAST_WATCH_TIME_SECOND("fast.debug.watch.time.second", "takin.fast.watch.time.second", NO),
+
+    /**
+     * 钉钉推送是否开启
+     */
+    TAKIN_LOGIN_DINGDING_PUSH_ENABLE("login.dingding.push.enable", "takin.login.dingding.push.enable", NO),
+
+    /**
+     * 钉钉推送 url
+     */
+    TAKIN_LOGIN_DINGDING_PUSH_URL("login.dingding.push.url", "takin.login.dingding.push.url", NO),
     ;
 
     /**

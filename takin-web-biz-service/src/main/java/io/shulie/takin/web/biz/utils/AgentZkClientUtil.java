@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public final class AgentZkClientUtil {
 
+    @Value("${takin.config.zk.addr}")
     private String zkAddr;
 
     @Value("${takin.config.zk.timeout: 3000}")
@@ -32,7 +33,6 @@ public final class AgentZkClientUtil {
 
     @PostConstruct
     public void init() {
-        zkAddr = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CONFIG_ZOOKEEPER_ADDRESS);
         client = CuratorFrameworkFactory
             .builder()
             .connectString(zkAddr)

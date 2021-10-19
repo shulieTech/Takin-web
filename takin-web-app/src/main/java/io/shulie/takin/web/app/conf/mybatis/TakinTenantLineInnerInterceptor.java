@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
@@ -298,21 +299,27 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         }
 
         if(tenantIdCondition == null && envCodeCondition == null && userIdCondition == null) {
-            return new AndExpression();
+            return null;
         }
-        AndExpression andExpression = new AndExpression();
-        if (userIdCondition != null) {
-            andExpression.withLeftExpression(userIdCondition);
-        }
-        if (envCodeCondition != null) {
-            andExpression.withLeftExpression(envCodeCondition);
-        }
-        // t_tro_user 只有 tenant_id
-        if(tenantIdCondition != null) {
-            andExpression.withLeftExpression(tenantIdCondition);
+        // 1 = 1
+        EqualsTo equalsTo = new EqualsTo(new LongValue(1),new LongValue(1));
+
+        AndExpression allAndExpression = null;
+        AndExpression tenantExpression = null;
+        if(tenantIdCondition != null && envCodeCondition != null) {
+            tenantExpression = new AndExpression(tenantIdCondition, envCodeCondition);
+        }else if(tenantIdCondition != null) {
+            // t_tro_user 只有 tenant_id
+            tenantExpression =  new AndExpression(equalsTo, tenantIdCondition);
         }
 
-        return andExpression;
+        if (userIdCondition != null) {
+            allAndExpression = new AndExpression(tenantExpression, userIdCondition);
+        }else {
+            // 没有 user_id
+            return tenantExpression;
+        }
+        return allAndExpression;
     }
 
     //private AndExpression buildTenantExpression(String tenantIdColumn, String envCodeColumn) {

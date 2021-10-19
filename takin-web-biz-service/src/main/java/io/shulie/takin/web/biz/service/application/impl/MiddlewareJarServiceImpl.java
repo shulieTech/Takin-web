@@ -213,7 +213,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                             lambda.eq(MiddlewareJarEntity::getStatus, SUPPORTED.getCode());
                             lambda.likeLeft(MiddlewareJarEntity::getVersion,
                                 versionSplit[0] + "." + versionSplit[1] + ".");
-                            final int count = this.count(queryWrapper);
+                            final long count = this.count(queryWrapper);
                             if (count != 0) {
                                 importExcelVO.addRemark(PREFIX_TWO_MATCH);
                             } else {
@@ -406,7 +406,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                             lambda.eq(MiddlewareJarEntity::getStatus, SUPPORTED.getCode());
                             lambda.likeLeft(MiddlewareJarEntity::getVersion,
                                 versionSplit[0] + "." + versionSplit[1] + ".");
-                            final int count = this.count(queryWrapper);
+                            final long count = this.count(queryWrapper);
                             if (count != 0) {
                                 importExcelVO.addRemark(PREFIX_TWO_MATCH);
                             } else {

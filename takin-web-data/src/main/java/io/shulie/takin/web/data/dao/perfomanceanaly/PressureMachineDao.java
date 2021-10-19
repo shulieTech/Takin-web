@@ -25,7 +25,7 @@ public interface PressureMachineDao {
      */
     PagingList<PressureMachineResult> queryByExample(PressureMachineQueryParam queryParam);
 
-    Integer getCountByIp (String ip);
+    Long getCountByIp (String ip);
 
     void update (PressureMachineUpdateParam param);
 

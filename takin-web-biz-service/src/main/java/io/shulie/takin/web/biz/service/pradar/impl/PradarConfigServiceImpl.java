@@ -127,7 +127,7 @@ public class PradarConfigServiceImpl implements PradarConfigService {
             }
             LambdaQueryWrapper<PradarZkConfigEntity> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(PradarZkConfigEntity::getZkPath, createRequest.getZkPath());
-            Integer count = pradarZkConfigMapper.selectCount(wrapper);
+            Long count = pradarZkConfigMapper.selectCount(wrapper);
             if (count > 0) {
                 throw new RuntimeException(String.format("保存失败，[key:%s] 已被使用", createRequest.getZkPath()));
             }

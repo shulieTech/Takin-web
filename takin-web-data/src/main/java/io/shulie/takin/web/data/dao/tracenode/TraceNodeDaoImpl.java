@@ -80,7 +80,7 @@ public class TraceNodeDaoImpl implements io.shulie.takin.web.data.dao.tracenode.
     }
 
     @Override
-    public Integer getNodeCount(String traceId, Long customerId) {
+    public Long getNodeCount(String traceId, Long customerId) {
         LambdaQueryWrapper<TraceNodeInfoEntity> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(traceId)) {
             wrapper.eq(TraceNodeInfoEntity::getTraceId, traceId);

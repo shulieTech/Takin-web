@@ -34,7 +34,7 @@ public interface TraceNodeDao {
      *
      * @return
      */
-    Integer getNodeCount(String traceId, Long customerId);
+    Long getNodeCount(String traceId, Long customerId);
 
     /**
      * 异常节点个数

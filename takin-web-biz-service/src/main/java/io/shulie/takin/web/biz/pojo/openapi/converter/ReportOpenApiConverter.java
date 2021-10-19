@@ -6,6 +6,7 @@ import com.pamirs.takin.entity.domain.dto.report.BusinessActivityDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
+import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.openapi.request.report.ReportQueryOpenApiReq;
 import io.shulie.takin.web.biz.pojo.openapi.request.report.ReportTrendQueryOpenApiReq;
 import io.shulie.takin.web.biz.pojo.openapi.request.report.WarnQueryOpenApiReq;
@@ -28,5 +29,5 @@ public interface ReportOpenApiConverter {
 
     WarnQueryParam ofWarnQueryParam(WarnQueryOpenApiReq warnQueryOpenApiReq);
 
-    List<BusinessActivityOpenApiResp> ofLsitBusinessActivityOpenApiResp(List<BusinessActivityDTO> data);
+    List<BusinessActivityOpenApiResp> ofLsitBusinessActivityOpenApiResp(List<ActivityResponse> data);
 }

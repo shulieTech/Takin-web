@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -26,11 +27,16 @@ import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDetailDTO;
 import com.pamirs.takin.entity.domain.entity.linkmanage.figure.RpcType;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageIdVO;
+import io.shulie.takin.cloud.sdk.impl.scene.manage.CloudSceneApiImpl;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneBusinessActivityRefResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
@@ -38,10 +44,7 @@ import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
-import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.PradarWebRequest;
-import io.shulie.takin.web.common.domain.WebResponse;
-import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
@@ -61,11 +64,9 @@ import org.springframework.stereotype.Service;
 public class ReportRealTimeServiceImpl implements ReportRealTimeService {
 
     @Resource
-    TBusinessLinkManageTableMapper tBusinessLinkManageTableMapper;
+    CloudSceneApiImpl cloudSceneApi;
     @Autowired
     private ReportService reportService;
-    @Autowired
-    private HttpWebClient httpWebClient;
     @Autowired
     private TraceClient traceClient;
 
@@ -77,8 +78,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
 
     @Override
     public PageInfo<ReportTraceDTO> getReportLinkList(Long reportId, Long sceneId, Long startTime,
-                                                      Integer type, int current,
-                                                      int pageSize) {
+        Integer type, int current,
+        int pageSize) {
         if (startTime == null) {
             return new PageInfo<>(Lists.newArrayList());
         }
@@ -89,25 +90,21 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             }
         }
         // 取延迟1分钟时间 前5分钟数据 因为 agent上报数据需要1分钟计算出来
-        return getReportTraceDtoList(reportId, sceneId, System.currentTimeMillis() - 6*60*1000L ,
-            System.currentTimeMillis() -1*60*1000L, type, current, pageSize);
+        return getReportTraceDtoList(reportId, sceneId, System.currentTimeMillis() - 6 * 60 * 1000L,
+            System.currentTimeMillis() - 1 * 60 * 1000L, type, current, pageSize);
     }
 
     @Override
     public PageInfo<ReportTraceDTO> getReportLinkListByReportId(Long reportId, Integer type, int current,
-                                                                int pageSize) {
-        ReportDetailDTO reportDetail = null;
-        WebResponse<HashMap> response = reportService.getReportByReportId(reportId);
-        if (response != null && response.getData() != null) {
-            reportDetail = JSON.parseObject(JSON.toJSONString(response.getData()), ReportDetailDTO.class);
-            log.info("Report Id={}, Status={}", reportId, reportDetail.getTaskStatus());
-        }
+        int pageSize) {
+        ReportDetailOutput response = reportService.getReportByReportId(reportId);
+        ReportDetailDTO reportDetail = BeanUtil.copyProperties(response, ReportDetailDTO.class);
         if (reportDetail == null || reportDetail.getStartTime() == null) {
             return new PageInfo<>(Lists.newArrayList());
         }
         long startTime = DateUtil.parseSecondFormatter(reportDetail.getStartTime()).getTime() - 5 * 60 * 1000L;
         // 如果reportDetail.getEndTime()为空，取值5min,考虑到取当前时间的话，后续可能会查太多数据
-        long endTime = reportDetail.getEndTime() != null ? (reportDetail.getEndTime().getTime() + 5 * 60 * 1000L)  : (startTime + 10 * 60 * 1000L);
+        long endTime = reportDetail.getEndTime() != null ? (reportDetail.getEndTime().getTime() + 5 * 60 * 1000L) : (startTime + 10 * 60 * 1000L);
         return getReportTraceDtoList(reportId, reportDetail.getSceneId(), startTime, endTime, type, current, pageSize);
     }
 
@@ -141,7 +138,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         BiMap<Integer, Integer> node = HashBiMap.create();
         AtomicInteger integer = new AtomicInteger(0);
         List<ReportTraceDetailDTO> dto = this.coverEntryList(0L, Lists.newArrayList(),
-                rpcStack.getRpcEntries(), vos, node, -1, integer);
+            rpcStack.getRpcEntries(), vos, node, -1, integer);
 
         List<ReportTraceDetailDTO> result = Lists.newArrayList();
         this.coverResult(dto, amdbReportTraceId, result);
@@ -166,8 +163,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         if (id == 0) {
             if (dtoList.get(0).getNextNodes() != null) {
                 dtoList.get(0).getNextNodes().forEach(dto ->
-                        dto.setNextNodes(dto.getNextNodes() != null
-                                && dto.getNextNodes().size() > 0 ? Lists.newArrayList() : null));
+                    dto.setNextNodes(dto.getNextNodes() != null
+                        && dto.getNextNodes().size() > 0 ? Lists.newArrayList() : null));
             }
             result.addAll(dtoList);
             return;
@@ -189,15 +186,15 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     }
 
     private List<ReportTraceDetailDTO> coverEntryList(long startTime, List<String> convertedEntriesList,
-                                                      List<RpcEntry> rpcEntries, List<ReportTraceDetailDTO> vos,
-                                                      BiMap<Integer, Integer> node, Integer id, AtomicInteger integer) {
+        List<RpcEntry> rpcEntries, List<ReportTraceDetailDTO> vos,
+        BiMap<Integer, Integer> node, Integer id, AtomicInteger integer) {
         if (CollectionUtils.isEmpty(rpcEntries)) {
             return null;
         }
         return rpcEntries.stream().map(rpcEntry -> {
             String convertedEntriesKey = rpcEntry.getAppName() + "|" + rpcEntry.getServiceName() + "|" +
-                    rpcEntry.getMethodName() + "|" + rpcEntry.getRpcType() + "|" + rpcEntry.getMiddlewareName() +
-                    "|" + rpcEntry.getRpcId();
+                rpcEntry.getMethodName() + "|" + rpcEntry.getRpcType() + "|" + rpcEntry.getMiddlewareName() +
+                "|" + rpcEntry.getRpcId();
             if (convertedEntriesList.contains(convertedEntriesKey)) {
                 return null;
             }
@@ -212,8 +209,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             long offset = 0L;
             for (RpcEntry entry : rpcEntries) {
                 String tempKey = entry.getAppName() + "|" + entry.getServiceName() + "|" +
-                        entry.getMethodName() + "|" + entry.getRpcType() + "|" + entry.getMiddlewareName() +
-                        "|" + entry.getRpcId();
+                    entry.getMethodName() + "|" + entry.getRpcType() + "|" + entry.getMiddlewareName() +
+                    "|" + entry.getRpcId();
                 if (tempKey.equals(convertedEntriesKey)) {
                     break;
                 }
@@ -246,9 +243,9 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             }
             vos.add(reportTraceDetailDTO);
             reportTraceDetailDTO.setNextNodes(
-                    coverEntryList(reportTraceDetailDTO.getOffsetStartTime(), convertedEntriesList,
-                            rpcEntry.getRpcEntries(), vos, node,
-                            reportTraceDetailDTO.getId(), integer));
+                coverEntryList(reportTraceDetailDTO.getOffsetStartTime(), convertedEntriesList,
+                    rpcEntry.getRpcEntries(), vos, node,
+                    reportTraceDetailDTO.getId(), integer));
             //rpcEntry = null;
             return reportTraceDetailDTO;
         }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -284,17 +281,12 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
 
     private PageInfo<ReportTraceDTO> getReportTraceDtoList(Long reportId, Long sceneId, Long startTime, Long endTime, Integer type, int current, int pageSize) {
         // 查询场景下的业务活动信息
-        SceneManageIdVO vo = new SceneManageIdVO();
-        vo.setId(sceneId);
-        vo.setRequestUrl(RemoteConstant.SCENE_MANAGE_DETAIL_URL);
-        vo.setHttpMethod(HttpMethod.GET);
-        WebResponse response = httpWebClient.request(vo);
-        Map<String, Object> dataMap = (Map<String, Object>) response.getData();
-        List<Map<String, Object>> mapList = (List<Map<String, Object>>) dataMap.get("businessActivityConfig");
-        List<Long> businessActivityIdList = Lists.newArrayList();
-        for (Map<String, Object> map : mapList) {
-            businessActivityIdList.add(Long.parseLong(String.valueOf(map.get("businessActivityId"))));
-        }
+        SceneManageWrapperResp response = cloudSceneApi.getSceneDetail(new SceneManageIdReq() {{
+            setId(sceneId);
+        }});
+        List<SceneBusinessActivityRefResp> businessActivityConfig = response.getBusinessActivityConfig();
+        List<Long> businessActivityIdList = businessActivityConfig.stream().
+            map(SceneBusinessActivityRefResp::getBusinessActivityId).collect(Collectors.toList());
 
         // entryList 获得
         List<EntranceRuleDTO> entranceList = this.getEntryListByBusinessActivityIds(businessActivityIdList);
@@ -329,7 +321,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
 
             // resultCode 判断, 赋值
             ScriptDebugRequestListResponse requestListStatusResponse = ScriptDebugUtil.getRequestListStatusResponse(
-                    traceInfo.getResultCode(), traceInfo.getAssertResult());
+                traceInfo.getResultCode(), traceInfo.getAssertResult());
 
             traceDTO.setResponseStatus(requestListStatusResponse.getResponseStatus());
             traceDTO.setResponseStatusDesc(requestListStatusResponse.getResponseStatusDesc());
@@ -349,7 +341,6 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
      * 业务活动ids, 获得 entryList
      *
      * @param businessActivityIds 业务活动ids
-     *
      * @return entryList
      */
     @Override

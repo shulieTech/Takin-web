@@ -10,9 +10,12 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -33,6 +36,7 @@ import com.pamirs.takin.entity.domain.vo.report.ScenePluginParam;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneTaskStartReq;
 import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTaskQueryTpsReq;
 import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTaskUpdateTpsReq;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
@@ -71,7 +75,6 @@ import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.common.vo.scene.BaffleAppVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -106,9 +109,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     @Autowired
     private DataSourceService dataSourceService;
-
-    @Autowired
-    private HttpWebClient httpWebClient;
 
     @Autowired
     private SceneManageService sceneManageService;
@@ -156,7 +156,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
      * @return 启动结果
      */
     @Override
-    public WebResponse<StartResponse> startTask(SceneActionParam param) {
+    public SceneActionResp startTask(SceneActionParam param) {
         SceneManageIdReq req = new SceneManageIdReq();
         BeanUtils.copyProperties(param, req);
         req.setId(param.getSceneId());
@@ -201,30 +201,25 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                     }}).collect(Collectors.toList()));
             }
         }
-        param.setCreatorId(WebPluginUtils.traceUserId());
-        param.setRequestUrl(RemoteConstant.SCENE_TASK_START_URL);
-        param.setHttpMethod(HttpMethod.POST);
         //封装
-        WebResponse response = null;
+
         //兼容老版本
         if (StringUtils.isEmpty(param.getContinueRead())) {
             param.setContinueRead("-1");
         }
         //新版本位点
         SceneActionParamNew paramNew = this.getNewParam(param);
-        response = httpWebClient.request(paramNew);
-
-        if (!response.getSuccess()) {
-            ErrorInfo errorInfo = response.getError();
-            String errorMsg = Objects.isNull(errorInfo) ? "" : errorInfo.getMsg();
-            log.error("takin-cloud启动压测场景返回错误，id={},错误信息：{}", param.getSceneId(), errorMsg);
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR,
-                getCloudMessage(errorInfo.getCode(), errorInfo.getMsg()));
+        SceneActionResp startResult;
+        try {
+            startResult = cloudTaskApi.start(BeanUtil.copyProperties(param, SceneTaskStartReq.class));
+        } catch (Exception e) {
+            log.error("takin-cloud启动压测场景返回错误，id={}", param.getSceneId(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, e);
         }
         // 缓存 报告id
-        cacheReportId(response, param);
+        cacheReportId(startResult, param);
 
-        return response;
+        return startResult;
     }
 
     /**
@@ -238,19 +233,12 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         return String.format("takin-cloud启动场景失败，异常代码【%s】,异常原因【%s】", code, errorMsg);
     }
 
-    private void cacheReportId(WebResponse request, SceneActionParam param) {
-        Object data = request.getData();
-        if (data == null) {
+    private void cacheReportId(SceneActionResp request, SceneActionParam param) {
+        if (request == null) {
             log.info("start scene response return data is  illegal！ sceneId:{}", param.getSceneId());
             return;
         }
-        String jsonString = JsonHelper.bean2Json(data);
-        JSONObject jsonObject = JSONObject.parseObject(jsonString);
-        if (!jsonObject.containsKey("data")) {
-            log.info("start scene response return data is  illegal！ sceneId:{}", param.getSceneId());
-            return;
-        }
-        Integer reportId = (Integer)jsonObject.get("data");
+        Long reportId = request.getData();
         redisTemplate.opsForValue().set(getCacheReportId(param.getSceneId()), reportId, 1L, TimeUnit.DAYS);
 
     }

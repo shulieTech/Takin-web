@@ -51,7 +51,7 @@ public interface LinkManageService {
      * @param sceneId 场景名集合
      * @return -
      */
-    Response deleteScene(String sceneId);
+    String deleteScene(String sceneId);
 
     /**
      * 场景查询接口

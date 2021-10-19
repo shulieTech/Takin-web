@@ -73,12 +73,12 @@ public class SummaryService {
 
         List<ReportApplicationSummary> applications = Lists.newArrayList();
         for (Map<String, Object> dataMap : dataList) {
-            String applicationName = (String) dataMap.get("application_name");
+            String applicationName = (String)dataMap.get("application_name");
             if (StringUtils.isBlank(applicationName)) {
                 continue;
             }
-            Integer totalCount = convertLong((Long) dataMap.get("count"));
-            Integer riskCount = convertBigDecimal((BigDecimal) dataMap.get("riskSum"));
+            Integer totalCount = convertLong((Long)dataMap.get("count"));
+            Integer riskCount = convertBigDecimal((BigDecimal)dataMap.get("riskSum"));
 
             ReportApplicationSummary application = new ReportApplicationSummary();
             application.setReportId(reportId);
@@ -96,29 +96,26 @@ public class SummaryService {
 
     public void calcReportSummay(Long reportId) {
         Integer bottleneckInterfaceCount = convertLong(
-                tReportBottleneckInterfaceMapper.selectCountByReportId(reportId));
+            tReportBottleneckInterfaceMapper.selectCountByReportId(reportId));
 
         Integer appCount = 0;
         Integer totalCount = 0;
         Integer riskCount = 0;
         Map<String, Object> countMap = tReportApplicationSummaryMapper.selectCountByReportId(reportId);
         if (MapUtils.isNotEmpty(countMap)) {
-            appCount = convertLong((Long) countMap.get("count"));
-            totalCount = convertBigDecimal((BigDecimal) countMap.get("totalSum"));
-            riskCount = convertBigDecimal((BigDecimal) countMap.get("riskSum"));
+            appCount = convertLong((Long)countMap.get("count"));
+            totalCount = convertBigDecimal((BigDecimal)countMap.get("totalSum"));
+            riskCount = convertBigDecimal((BigDecimal)countMap.get("riskSum"));
         }
 
         Integer warnCount = 0;
         Integer businessCount = 0;
         Integer passBusinessCount = 0;
-        WebResponse response = reportService.queryReportCount(reportId);
-        if (response != null && response.getData() != null) {
-            Map<String, Object> cloudMap = (Map<String, Object>) response.getData();
-            if (MapUtils.isNotEmpty(cloudMap)) {
-                warnCount = (Integer) cloudMap.get("warnCount");
-                businessCount = (Integer) cloudMap.get("count");
-                passBusinessCount = (Integer) cloudMap.get("passSum");
-            }
+        Map<String, Object> cloudMap = reportService.queryReportCount(reportId);
+        if (MapUtils.isNotEmpty(cloudMap)) {
+            warnCount = (Integer)cloudMap.get("warnCount");
+            businessCount = (Integer)cloudMap.get("count");
+            passBusinessCount = (Integer)cloudMap.get("passSum");
         }
         warnCount = warnCount != null ? warnCount : 0;
         businessCount = businessCount != null ? businessCount : 0;
@@ -162,7 +159,7 @@ public class SummaryService {
             //机器信息
             long startTime = System.currentTimeMillis();
             String searchAppIdSql = "select distinct(app_ip) as app_ip from app_base_data " +
-                    "where time>=" + minTime + "ms and time <= " + maxTime + "ms and app_name = '" + applicationName + "'";
+                "where time>=" + minTime + "ms and time <= " + maxTime + "ms and app_name = '" + applicationName + "'";
             Collection<BaseServerResult> appIds = influxDatabaseManager.query(BaseServerResult.class, searchAppIdSql);
             log.info("search appIds :{},cost time : {}", searchAppIdSql, System.currentTimeMillis() - startTime);
             if (CollectionUtils.isEmpty(appIds)) {
@@ -172,8 +169,8 @@ public class SummaryService {
             for (String host : hosts) {
                 long baseTime = System.currentTimeMillis();
                 String searchBaseSql = "select time, app_ip, cpu_rate, cpu_load, mem_rate, iowait, net_bandwidth_rate" +
-                        " from app_base_data where time>=" + minTime + "ms and time <= " + maxTime
-                        + "ms and app_name = '" + applicationName + "'" + " and app_ip = '" + host + "'";
+                    " from app_base_data where time>=" + minTime + "ms and time <= " + maxTime
+                    + "ms and app_name = '" + applicationName + "'" + " and app_ip = '" + host + "'";
                 Collection<BaseServerResult> bases = influxDatabaseManager.query(BaseServerResult.class, searchBaseSql);
                 log.info("search baseSql :{},cost time = {} ", searchBaseSql, System.currentTimeMillis() - baseTime);
                 TpsTargetArray array = calcTpsTarget(metrics, bases);
@@ -207,18 +204,18 @@ public class SummaryService {
                 }
                 if (currentIndex < j) {
                     double cpu = bases.subList(currentIndex, j).stream().filter(data -> data.getCpuRate() != null)
-                            .mapToDouble(BaseServerResult::getCpuRate).average().orElse(0D);
+                        .mapToDouble(BaseServerResult::getCpuRate).average().orElse(0D);
                     double loading = bases.subList(currentIndex, j).stream().filter(data -> data.getCpuLoad() != null)
-                            .mapToDouble(BaseServerResult::getCpuLoad).average().orElse(0D);
+                        .mapToDouble(BaseServerResult::getCpuLoad).average().orElse(0D);
                     double memory = bases.subList(currentIndex, j).stream().filter(data -> data.getMemRate() != null)
-                            .mapToDouble(BaseServerResult::getMemRate).average().orElse(0D);
+                        .mapToDouble(BaseServerResult::getMemRate).average().orElse(0D);
                     double io = bases.subList(currentIndex, j).stream().filter(data -> data.getIoWait() != null)
-                            .mapToDouble(BaseServerResult::getIoWait).average().orElse(0D);
+                        .mapToDouble(BaseServerResult::getIoWait).average().orElse(0D);
                     double mbps = bases.subList(currentIndex, j).stream().filter(
-                                    data -> data.getNetBandWidthRate() != null).mapToDouble(BaseServerResult::getNetBandWidthRate)
-                            .average().orElse(0D);
+                            data -> data.getNetBandWidthRate() != null).mapToDouble(BaseServerResult::getNetBandWidthRate)
+                        .average().orElse(0D);
 
-                    target.setCpu(new BigDecimal((int) cpu));
+                    target.setCpu(new BigDecimal((int)cpu));
                     target.setLoading(new BigDecimal(loading).setScale(2, RoundingMode.HALF_UP));
                     target.setMemory(new BigDecimal(memory).setScale(2, RoundingMode.HALF_UP));
                     target.setIo(new BigDecimal(io).setScale(2, RoundingMode.HALF_UP));

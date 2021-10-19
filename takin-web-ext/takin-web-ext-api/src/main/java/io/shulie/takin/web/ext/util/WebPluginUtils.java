@@ -40,7 +40,7 @@ public class WebPluginUtils {
     public static String DEFAULT_TENANT_CODE = "default";
 
 
-    public static Long USER_ID = -1L;
+    public static Long DEFAULT_USER_ID = -1L;
 
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
@@ -343,22 +343,38 @@ public class WebPluginUtils {
         if (tenantExtApi != null) {
             return tenantExtApi.getDefaultUserId(userAppKey,tenantCode);
         }
-        return USER_ID;
+        return DEFAULT_USER_ID;
     }
 
 
 
     /**
      * 前端 根据租户code 判断租户,默认存在 目前给插件user-module使用
-     * @param userAppKey
+     * @param tenantAppKey
      * @param tenantCode
      * @return
      */
-    public static Boolean isExistTenant(String userAppKey,String tenantCode) {
+    public static Boolean isExistTenant(String tenantAppKey,String tenantCode) {
         if (tenantExtApi != null) {
-            return tenantExtApi.isExistTenant(userAppKey,tenantCode);
+            return tenantExtApi.isExistTenant(tenantAppKey,tenantCode);
         }
-        return Boolean.TRUE;
+        if(userApi != null) {
+            // 只是带用户插件
+            if(StringUtils.isNotBlank(tenantCode)) {
+                return tenantCode.equals(DEFAULT_TENANT_APP_KEY);
+            }else {
+                List<TenantInfoExt> tenantInfoList = userApi.getTenantInfoList();
+                if (CollectionUtils.isEmpty(tenantInfoList)) {
+                    return Boolean.FALSE;
+                }
+                TenantInfoExt tenantInfoExt = tenantInfoList.get(0);
+                if (tenantAppKey.equals(tenantInfoExt.getTenantAppKey())) {
+                    return Boolean.TRUE;
+                }
+            }
+
+        }
+        return Boolean.FALSE;
     }
 
 
@@ -450,7 +466,7 @@ public class WebPluginUtils {
         HashMap<String, String> dataMap = new LinkedHashMap<>();
         dataMap.put("租户ID", DEFAULT_TENANT_ID + "");
         dataMap.put("租户user-app-key", DEFAULT_TENANT_APP_KEY);
-        dataMap.put("用户ID", USER_ID + "");
+        dataMap.put("用户ID", DEFAULT_USER_ID + "");
         dataMap.put("用户user-app-key", DEFAULT_TENANT_APP_KEY);
         return dataMap;
     }
@@ -563,7 +579,7 @@ public class WebPluginUtils {
                 return userApi.traceUser().getId();
             }
         }
-        return USER_ID;
+        return DEFAULT_USER_ID;
     }
 
     /**

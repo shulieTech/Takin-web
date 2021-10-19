@@ -7,6 +7,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -27,17 +28,29 @@ public class MyBatisPlusConfig {
         interceptor.addInnerInterceptor(new TakinTenantLineInnerInterceptor(new TakinTenantLineHandler() {
             @Override
             public Expression getEnvCode() {
-                return new StringValue(WebPluginUtils.traceEnvCode());
+                if (StringUtils.isNotBlank(WebPluginUtils.traceEnvCode())) {
+                    return new StringValue(WebPluginUtils.traceEnvCode());
+                }else {
+                    return new StringValue(WebPluginUtils.DEFAULT_ENV_CODE);
+                }
             }
 
             @Override
             public Expression getUserId() {
-                return new LongValue(WebPluginUtils.traceUserId());
+                if (WebPluginUtils.traceUserId() != null) {
+                    return new LongValue(WebPluginUtils.traceUserId());
+                }else {
+                    return new LongValue(WebPluginUtils.DEFAULT_USER_ID);
+                }
             }
 
             @Override
             public Expression getTenantId() {
-                return new LongValue(WebPluginUtils.traceTenantId());
+                if (WebPluginUtils.traceTenantId() != null) {
+                    return new LongValue(WebPluginUtils.traceTenantId());
+                }else {
+                    return new LongValue(WebPluginUtils.DEFAULT_TENANT_ID);
+                }
             }
 
             // 这是 default 方法,默认返回 false 表示所有表都需要拼多租户条件

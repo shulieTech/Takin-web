@@ -290,65 +290,33 @@
             <artifactId>jsqlparser</artifactId>
             <version>4.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-diff-cloud</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.pagehelper</groupId>
+                    <artifactId>pagehelper-spring-boot-autoconfigure</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-config-sync-zk-impl</artifactId>
+        </dependency>
     </dependencies>
 
     <profiles>
-        <!-- 通用的私有化部署 -->
-        <profile>
-            <id>standard-private</id>
-            <properties>
-                <profile.active>standard-private</profile.active>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-config-sync-zk-impl</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
         <!-- 通用的公有化部署 -->
         <profile>
             <id>standard-public</id>
             <properties>
                 <profile.active>standard-public</profile.active>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-diff-cloud</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>com.github.pagehelper</groupId>
-                            <artifactId>pagehelper-spring-boot-autoconfigure</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-config-sync-zk-impl</artifactId>
-                </dependency>
-            </dependencies>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-        </profile>
-
-        <!-- 通用容器化部署 -->
-        <profile>
-            <id>standard-share</id>
-            <properties>
-                <profile.active>share</profile.active>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-diff-cloud</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-config-sync-zk-impl</artifactId>
-                </dependency>
-            </dependencies>
         </profile>
     </profiles>
     <build>

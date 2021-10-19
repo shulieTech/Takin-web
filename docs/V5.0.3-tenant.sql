@@ -17,11 +17,15 @@ CREATE TABLE IF NOT EXISTS `t_tenant_info`
 
 
 
-
-
+-- 用户表
 alter table t_tro_user
     add column `tenant_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '租户id';
 alter table t_tro_user
+    add index `tenant_id` ( `tenant_id` );
+-- 部门表
+alter table t_tro_dept
+    add column `tenant_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '租户id';
+alter table t_tro_dept
     add index `tenant_id` ( `tenant_id` );
 
 ALTER TABLE `t_dictionary_data`

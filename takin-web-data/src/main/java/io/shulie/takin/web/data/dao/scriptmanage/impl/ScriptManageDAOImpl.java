@@ -97,7 +97,7 @@ public class ScriptManageDAOImpl
         scriptManageDeployMapper.deleteById(scriptDeployId);
         LambdaQueryWrapper<ScriptManageDeployEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ScriptManageDeployEntity::getScriptId, scriptManageDeployEntity.getScriptId());
-        Integer count = scriptManageDeployMapper.selectCount(wrapper);
+        Long count = scriptManageDeployMapper.selectCount(wrapper);
         if (count == 0) {
             scriptManageMapper.deleteById(scriptManageDeployEntity.getScriptId());
         }

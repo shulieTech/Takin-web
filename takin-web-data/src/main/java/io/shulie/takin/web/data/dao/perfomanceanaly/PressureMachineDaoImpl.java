@@ -39,7 +39,7 @@ public class PressureMachineDaoImpl implements PressureMachineDao {
     }
 
     @Override
-    public Integer getCountByIp(String ip) {
+    public Long getCountByIp(String ip) {
         LambdaQueryWrapper<PressureMachineEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PressureMachineEntity::getIp, ip);
         return pressureMachineMapper.selectCount(wrapper);

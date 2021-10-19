@@ -165,7 +165,7 @@
         from t_application_api_manage where IS_DELETED=0
     </select>
 
-    <select id="querySimple" resultMap="BaseResultMap">
+    <select id="querySimple" resultMap="BaseResultMap" parameterType="com.pamirs.takin.entity.domain.query.ApplicationApiParam">
         select APPLICATION_NAME, api, method
         from t_application_api_manage
         where method is not null

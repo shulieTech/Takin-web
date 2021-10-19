@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import javax.annotation.PostConstruct;
 
 import com.google.common.collect.Sets;
 import io.shulie.takin.channel.ServerChannel;
@@ -17,8 +16,6 @@ import io.shulie.takin.channel.bean.CommandRespType;
 import io.shulie.takin.channel.bean.CommandResponse;
 import io.shulie.takin.channel.bean.CommandSend;
 import io.shulie.takin.channel.bean.CommandStatus;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.future.ResponseFuture;
@@ -81,7 +78,7 @@ public class AgentCommandFactory {
             throw new TakinWebException(ExceptionCode.AGENT_REGISTER_ERROR, "agentId：" + takinPacket.getAgentId() + "未注册");
         }
 
-        CommandPacket result = null;
+        CommandPacket result;
         try {
             result = future.waitFor();
         } catch (InterruptedException e) {

@@ -59,7 +59,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -73,11 +72,6 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
     public static final String UNKNOW_HTTP = "未知(HTTP)";
     public static final String UNKNOW_RPC = "未知(RPC)";
     private static final Logger logger = LoggerFactory.getLogger(ProblemAnalysisServiceImpl.class);
-    private static final String real_time_database = "pradar";
-    @Value("${risk.max.norm.scale:80D}")
-    private Double scale;
-    @Value("${risk.max.norm.maxLoad:2}")
-    private Integer maxLoad;
 
     @Autowired
     private BaseServerDao baseServerDao;
@@ -117,7 +111,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             startTime = DateUtil.parseSecondFormatter(dto.getStartTime()).getTime();
         }
         // 统计当前时间 前5分钟数据
-        int riskTime = Integer.parseInt(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_COLLECT_TIME));
+        int riskTime = ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.TAKIN_RISK_COLLECT_TIME);
         if (endTime - startTime >= riskTime) {
             startTime = endTime - riskTime;
         }
@@ -750,6 +744,15 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                 .filter(sort -> sort.getTps() != null)
                 .filter(sort -> sort.getTps().compareTo(destTps.doubleValue()) < 0)
                 .collect(Collectors.toList());
+
+        // 最大 cpu 使用率
+        double scale = Double.parseDouble(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_SCALE));
+
+        // 最大 cpu load
+        int maxLoad = Integer.parseInt(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_MAX_LOAD));
+
         if (CollectionUtils.isNotEmpty(lessList)) {
             BaseRiskResult risk = new BaseRiskResult();
             risk.setAppIp(appIp);
@@ -849,15 +852,15 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 
                 StringBuilder stringBuilder = new StringBuilder();
                 // 计算cpu使用率平均值
-                Double cpuRate = midList.stream().filter(Objects::nonNull).mapToDouble(BaseServerResult::getCpuRate)
+                double cpuRate = midList.stream().filter(Objects::nonNull).mapToDouble(BaseServerResult::getCpuRate)
                         .average().orElse(0D);
-                Double cpuLoad = midList.stream().filter(Objects::nonNull).mapToDouble(BaseServerResult::getCpuLoad)
+                double cpuLoad = midList.stream().filter(Objects::nonNull).mapToDouble(BaseServerResult::getCpuLoad)
                         .average().orElse(0D);
-                Double cpuMemRate = midList.stream().filter(Objects::nonNull).mapToDouble(BaseServerResult::getMemRate)
+                double cpuMemRate = midList.stream().filter(Objects::nonNull).mapToDouble(BaseServerResult::getMemRate)
                         .average().orElse(0D);
-                Double ioWait = midList.stream().filter(Objects::nonNull).mapToDouble(BaseServerResult::getIoWait)
+                double ioWait = midList.stream().filter(Objects::nonNull).mapToDouble(BaseServerResult::getIoWait)
                         .average().orElse(0D);
-                Double netBandWidthRate = midList.stream().filter(Objects::nonNull).mapToDouble(
+                double netBandWidthRate = midList.stream().filter(Objects::nonNull).mapToDouble(
                                 BaseServerResult::getNetBandWidthRate).average()
                         .orElse(0D);
 

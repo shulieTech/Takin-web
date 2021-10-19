@@ -101,8 +101,8 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
 
     @PostConstruct
     public void init() {
-        boolean deployUserEnable = Boolean.parseBoolean(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_DEPLOY_USER_ENABLE));
+        boolean deployUserEnable = ConfigServerHelper.getBooleanValueByKey(
+            ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_DEPLOY_USER_ENABLE);
 
         // 服务器是否添加执行脚本的用户
         deployUser = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_DEPLOY_USER);

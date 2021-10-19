@@ -49,8 +49,7 @@ public class SyncMachineDataJob implements SimpleJob {
         long start = System.currentTimeMillis();
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         if (CollectionUtils.isEmpty(tenantInfoExts)) {
-            String openReportTaskString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK);
-            if (!Boolean.parseBoolean(openReportTaskString)) {
+            if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                 return;
             }
 
@@ -71,9 +70,7 @@ public class SyncMachineDataJob implements SimpleJob {
                     // 根据环境 分线程
                     for (TenantEnv e : ext.getEnvs()) {
                         WebPluginUtils.setTraceTenantContext(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode());
-                        String openReportTaskString = ConfigServerHelper.getValueByKey(
-                            ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK);
-                        if (!Boolean.parseBoolean(openReportTaskString)) {
+                        if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                             continue;
                         }
 

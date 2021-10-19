@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.entity.linkmanage.figure.RpcType;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.param.baseserver.BaseServerParam;
 import io.shulie.takin.web.data.param.baseserver.InfluxAvgParam;
@@ -19,13 +20,13 @@ import io.shulie.takin.web.data.result.baseserver.InfluxAvgResult;
 import io.shulie.takin.web.data.result.baseserver.LinkDetailResult;
 import io.shulie.takin.web.data.result.risk.BaseRiskResult;
 import io.shulie.takin.web.data.result.risk.LinkDataResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,11 +42,6 @@ public class BaseServerDaoImpl implements BaseServerDao {
     @Autowired
     private InfluxDatabaseManager influxDatabaseManager;
     private static final String REAL_TIME_DATABASE = "pradar";
-    @Value("${risk.max.norm.scale:80D}")
-    private Double scale;
-
-    @Value("${risk.max.norm.maxLoad:2}")
-    private Integer maxLoad;
 
     @Override
     public Collection<BaseServerResult> queryList(BaseServerParam param) {
@@ -248,6 +244,15 @@ public class BaseServerDaoImpl implements BaseServerDao {
             if (CollectionUtils.isEmpty(voList)) {
                 return;
             }
+
+            // 最大 cpu 使用率
+            double scale = Double.parseDouble(
+                ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_SCALE));
+
+            // 最大 cpu load
+            int maxLoad = Integer.parseInt(
+                ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_RISK_MAX_NORM_MAX_LOAD));
+
             voList.forEach(vo -> {
                 BaseRiskResult risk = new BaseRiskResult();
                 risk.setAppIp(vo.getTagAppIp());

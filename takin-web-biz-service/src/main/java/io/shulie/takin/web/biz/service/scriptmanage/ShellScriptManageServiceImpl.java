@@ -38,9 +38,9 @@ import io.shulie.takin.web.biz.pojo.output.tagmanage.TagManageOutput;
 import io.shulie.takin.web.biz.utils.LinuxHelper;
 import io.shulie.takin.web.common.constant.ScriptManageConstant;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
@@ -58,7 +58,9 @@ import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptTagRefResult;
 import io.shulie.takin.web.data.result.tagmanage.TagManageResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -82,10 +84,7 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
         new ThreadPoolExecutor(20, 20, 60L,
             TimeUnit.SECONDS, new ArrayBlockingQueue<>(10), nameThreadFactory,
             new ThreadPoolExecutor.CallerRunsPolicy());
-    @Value("${web.file.upload.script.path:/opt/takin/script}")
-    private String fileScriptPath;
-    @Value("${customer.id:0}")
-    private String customerId;
+
     @Autowired
     private ScriptManageDAO scriptManageDAO;
     @Autowired
@@ -141,9 +140,13 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
             e.printStackTrace();
         }
         fileManageCreateParam.setFileType(input.getFileType());
-        fileManageCreateParam.setCustomerId(Long.parseLong(customerId));
-        fileManageCreateParam.setUploadPath(fileScriptPath + "/shell/" + result.getScriptId() + "/"
-            + result.getScriptVersion() + "/" + fileName);
+
+        Long customerId= Long.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CUSTOMER_ID));
+        fileManageCreateParam.setCustomerId(customerId);
+        String uploadPath = String.format("%s/shell/%s/%s/%s",
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
+            result.getScriptId(), result.getScriptVersion(), fileName);
+        fileManageCreateParam.setUploadPath(uploadPath);
         fileManageCreateParam.setUploadTime(new Date());
         return fileManageCreateParam;
     }

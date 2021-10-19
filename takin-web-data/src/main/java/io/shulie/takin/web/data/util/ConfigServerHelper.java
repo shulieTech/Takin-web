@@ -69,6 +69,36 @@ public class ConfigServerHelper {
     }
 
     /**
+     * 布尔类型的配置值
+     *
+     * @param configServerKeyEnum 配置的枚举
+     * @return 配置值
+     */
+    public static boolean getBooleanValueByKey(ConfigServerKeyEnum configServerKeyEnum) {
+        return Boolean.parseBoolean(getValueByKey(configServerKeyEnum));
+    }
+
+    /**
+     * 基础数据 int 的配置值
+     *
+     * @param configServerKeyEnum 配置的枚举
+     * @return 配置值
+     */
+    public static int getIntegerValueByKey(ConfigServerKeyEnum configServerKeyEnum) {
+        return Integer.parseInt(getValueByKey(configServerKeyEnum));
+    }
+
+    /**
+     * 包装的 int 的配置值
+     *
+     * @param configServerKeyEnum 配置的枚举
+     * @return 配置值
+     */
+    public static Integer getWrapperIntegerValueByKey(ConfigServerKeyEnum configServerKeyEnum) {
+        return Integer.valueOf(getValueByKey(configServerKeyEnum));
+    }
+
+    /**
      * 根据配置的枚举, 配置 key 获取值
      *
      * @param configServerKeyEnum 配置的枚举

@@ -41,7 +41,7 @@ public class PerformanceBaseDataController {
             INTEGER.set(0);
         }
 
-        int frequency = Integer.parseInt(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.PERFORMANCE_BASE_AGENT_FREQUENCY));
+        int frequency = ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.PERFORMANCE_BASE_AGENT_FREQUENCY);
         if (INTEGER.getAndIncrement() % frequency == 0) {
             PerformanceBaseDataCreateInput input = PerformanceBaseReqConvert.INSTANCE.reqToInput(req);
             performanceBaseDataService.cache(input);

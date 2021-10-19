@@ -325,6 +325,12 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     private PagingList<AppRemoteCallListVO> getDbPagingList(AppRemoteCallQueryInput input, ApplicationDetailResult detailResult) {
         AppRemoteCallQueryParam param = new AppRemoteCallQueryParam();
         BeanUtils.copyProperties(input, param);
+        // 如果是超级管理员
+        if (!WebPluginUtils.validateSuperAdmin()) {
+            if (detailResult != null) {
+                param.setCustomerId(detailResult.getCustomerId());
+            }
+        }
         PagingList<AppRemoteCallResult> pagingList = appRemoteCallDAO.pagingList(param);
         if (CollectionUtils.isEmpty(pagingList.getList())) {
             return PagingList.of(Lists.newArrayList(),pagingList.getTotal());

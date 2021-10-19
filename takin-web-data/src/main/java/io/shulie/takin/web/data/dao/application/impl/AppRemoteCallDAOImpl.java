@@ -137,8 +137,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
 
     private LambdaQueryWrapper<AppRemoteCallEntity> getAppRemoteCallEntityLambdaQueryWrapper(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
-        if (WebPluginUtils.checkUserData() && WebPluginUtils.getCustomerId() != null) {
-            lambdaQueryWrapper.eq(AppRemoteCallEntity::getCustomerId, WebPluginUtils.getCustomerId());
+        if (param.getCustomerId() != null) {
+            lambdaQueryWrapper.eq(AppRemoteCallEntity::getCustomerId, param.getCustomerId());
         }
         if (CollectionUtils.isNotEmpty(param.getApplicationIds())) {
             lambdaQueryWrapper.in(AppRemoteCallEntity::getApplicationId, param.getApplicationIds());

@@ -40,8 +40,7 @@ public class AppRemoteCallJob implements SimpleJob {
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         if (CollectionUtils.isEmpty(tenantInfoExts)) {
             // 私有化 + 开源
-            String remoteCallSyncString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_REMOTE_CALL_SYNC);
-            if (Boolean.parseBoolean(remoteCallSyncString)) {
+            if (ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REMOTE_CALL_SYNC)) {
                 appRemoteCallService.syncAmdb();
             }
 

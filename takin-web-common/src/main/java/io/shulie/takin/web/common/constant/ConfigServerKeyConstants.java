@@ -25,19 +25,6 @@ public interface ConfigServerKeyConstants {
     String TAKIN_SCRIPT_DEBUG_RPCTYPE = "takin.script-debug.rpcType";
 
     /**
-     * 租户 id
-     */
-    String TAKIN_RISK_MAX_NORM_SCALE = "takin.risk.max.norm.scale";
-    String TAKIN_RISK_MAX_NORM_MAXLOAD = "takin.risk.max.norm.maxLoad";
-    String TAKIN_BLACKLIST_DATA_FIX_ENABLE = "takin.blacklist.data.fix.enable";
-    String TAKIN_LINK_FIX_ENABLE = "takin.link.fix.enable";
-    String TAKIN_FILE_UPLOAD_URL = "takin.file.upload.url";
-    String TAKIN_FILE_UPLOAD_USER_DATA_DIR = "takin.file.upload.user.data.dir";
-    String TAKIN_FILE_UPLOAD_TMP_PATH = "takin.file.upload.tmp.path";
-    String TAKIN_FILE_UPLOAD_SCRIPT_PATH = "takin.file.upload.script.path";
-    String TAKIN_FAST_DEBUG_UPLOAD_LOG_PATH = "takin.fast.debug.upload.log.path";
-
-    /**
      * 存储位置
      */
     String TAKIN_DATA_PATH = "takin.data.path";
@@ -47,7 +34,6 @@ public interface ConfigServerKeyConstants {
     /**
      * 运行模式
      */
-    String TAKIN_RUN_MODE = "takin.runMode";
     String TAKIN_PLUGINPATH = "takin.pluginPath";
     String TAKIN_PLUGINCONFIGFILEPATH = "takin.pluginConfigFilePath";
     String TAKIN_PLUGINPREFIXPATH = "takin.pluginPrefixPath";

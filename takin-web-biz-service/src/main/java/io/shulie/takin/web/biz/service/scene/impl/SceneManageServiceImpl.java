@@ -600,8 +600,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             return new ScriptCheckDTO();
         }
 
-        String scriptCheckString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_CHECK);
-        if (!Boolean.parseBoolean(scriptCheckString)) {
+        if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_CHECK)) {
             return new ScriptCheckDTO();
         }
 

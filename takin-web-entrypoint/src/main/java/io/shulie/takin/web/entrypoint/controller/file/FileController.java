@@ -3,28 +3,28 @@ package io.shulie.takin.web.entrypoint.controller.file;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
 import com.pamirs.takin.entity.domain.vo.file.FileDeleteVO;
 import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.common.vo.FileWrapperVO;
-import io.shulie.takin.web.diff.api.DiffFileApi;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,13 +48,10 @@ public class FileController {
     @Autowired
     private HttpWebClient httpWebClient;
 
-    @Value("${file.upload.user.data.dir:/data/tmp}")
-    private String fileDir;
-
     @PostMapping("/upload")
     @ApiOperation(value = "文件上传")
     public WebResponse upload(List<MultipartFile> file) {
-        if (file == null || file.size() == 0) {
+        if (CollectionUtil.isEmpty(file)) {
             return WebResponse.fail("上传文件不能为空");
         }
         FileWrapperVO wrapperVO = new FileWrapperVO();
@@ -100,10 +97,9 @@ public class FileController {
     }
 
     @ApiOperation("文件下载")
-    @GetMapping(value = "/downloadFileByPath")
+    @GetMapping("/downloadFileByPath")
     public void downloadFileByPath(@RequestParam("filePath") String filePath, HttpServletResponse response) {
         try {
-
             if (!filePathValidate(filePath)) {
                 log.warn("非法下载路径文件，禁止下载：{}", filePath);
                 return;
@@ -128,22 +124,11 @@ public class FileController {
      * 文件路径是否管理策略
      *
      * @param filePath 文件路径
-     * @return
+     * @return 是否是正确的
      */
     private boolean filePathValidate(String filePath) {
-        List<String> arrayList = init();
-        for (String s : arrayList) {
-            if (filePath.startsWith(s)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private List<String> init() {
-        List<String> arrayList = new ArrayList<>();
-        arrayList.add(fileDir);
-        return arrayList;
+        return filePath.startsWith(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR));
     }
 
 }

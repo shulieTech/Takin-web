@@ -135,9 +135,9 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     @PostConstruct
     public void init() {
-        isCheckDuplicateName = Boolean.parseBoolean(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK));
-        number = Integer.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT));
+        isCheckDuplicateName = ConfigServerHelper.getBooleanValueByKey(
+            ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK);
+        number = ConfigServerHelper.getWrapperIntegerValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT);
     }
 
     private Integer getInterfaceIntType(String interfaceType) {

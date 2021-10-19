@@ -53,7 +53,7 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
 
     @PostConstruct
     public void init() {
-        number = Integer.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT));
+        number = ConfigServerHelper.getWrapperIntegerValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT);
     }
 
     /**

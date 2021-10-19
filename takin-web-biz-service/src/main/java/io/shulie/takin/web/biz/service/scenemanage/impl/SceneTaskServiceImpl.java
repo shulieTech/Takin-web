@@ -466,8 +466,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                 .map(Long::valueOf)).filter(data -> data > 0L).distinct().collect(Collectors.toList());
 
         // 应用相关检查
-        boolean checkApplication = Boolean.parseBoolean(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_START_TASK_CHECK_APPLICATION));
+        boolean checkApplication = ConfigServerHelper.getBooleanValueByKey(
+            ConfigServerKeyEnum.TAKIN_START_TASK_CHECK_APPLICATION);
         if (!CollectionUtils.isEmpty(applicationIds) && checkApplication) {
             List<TApplicationMnt> applicationMntList = applicationMntDao.queryApplicationMntListByIds(applicationIds);
             // todo 临时方案，过滤挡板应用

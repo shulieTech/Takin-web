@@ -462,9 +462,8 @@ public class ActivityServiceImpl implements ActivityService {
             request.setExtend(activityResponse.getExtend());
             request.setServiceName(activityResponse.getServiceName());
             request.setType(activityResponse.getType());
-            String enableLinkFlowCheckString = ConfigServerHelper.getValueByKey(
-                ConfigServerKeyEnum.TAKIN_LINK_FLOW_CHECK_ENABLE);
-            activityResponse.setEnableLinkFlowCheck(Boolean.parseBoolean(enableLinkFlowCheckString));
+            activityResponse.setEnableLinkFlowCheck(ConfigServerHelper.getBooleanValueByKey(
+                ConfigServerKeyEnum.TAKIN_LINK_FLOW_CHECK_ENABLE));
 
             // 拓扑图查询
             activityResponse.setTopology(linkTopologyService.getApplicationEntrancesTopology(request));

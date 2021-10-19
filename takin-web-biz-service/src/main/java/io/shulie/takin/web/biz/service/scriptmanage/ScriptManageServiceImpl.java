@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
@@ -99,7 +100,6 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.vo.file.FileExtendVO;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.common.vo.script.ScriptDeployFinishDebugVO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
@@ -123,6 +123,7 @@ import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptTagRefResult;
 import io.shulie.takin.web.data.result.tagmanage.TagManageResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.DiffFileApi;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.entity.UserExt;
@@ -132,7 +133,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -143,14 +143,20 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class ScriptManageServiceImpl implements ScriptManageService {
 
-    @Value("${file.upload.url:}")
+    /**
+     * 文件上传到 cloud 的地址
+     * 就是 takin cloud 域名
+     */
     private String fileUploadUrl;
-    @Value("${file.upload.tmp.path:/tmp/takin/}")
-    private String tmpFilePath;
-    @Value("${file.upload.script.path:/nfs/takin/script/}")
-    private String scriptFilePath;
 
-    @Value("${file.upload.user.data.dir:/data/tmp}")
+    /**
+     * 文件上传临时路径
+     */
+    private String tmpFilePath;
+
+    /**
+     * 上传文件的路径
+     */
     private String fileDir;
 
     @Autowired
@@ -188,6 +194,13 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     @Autowired
     private ScriptDebugDAO scriptDebugDAO;
+
+    @PostConstruct
+    public void init() {
+        fileUploadUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_URL);
+        tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH);
+        fileDir = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR);
+    }
 
     @Override
     public String getZipFileUrl(Long scriptDeployId) {
@@ -371,8 +384,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     @Override
     public ScriptCheckDTO checkAndUpdateScript(String refType, String refValue, String scriptFileUploadPath) {
         ScriptCheckDTO dto = new ScriptCheckDTO();
-        String scriptCheckString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_CHECK);
-        if (!Boolean.parseBoolean(scriptCheckString)) {
+        if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_CHECK)) {
             return dto;
         }
 
@@ -1746,7 +1758,9 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      * @return 路径前缀
      */
     private String getTargetScriptPath(ScriptManageDeployResult scriptManageDeployResult) {
-        return scriptFilePath + "/" + scriptManageDeployResult.getScriptId() + "/"
-            + scriptManageDeployResult.getScriptVersion() + "/";
+        return String.format("%s/%s/%s/",
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
+            scriptManageDeployResult.getScriptId(), scriptManageDeployResult.getScriptVersion());
     }
+
 }

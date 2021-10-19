@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import javax.annotation.PostConstruct;
 
 import com.google.common.collect.Sets;
 import io.shulie.takin.channel.ServerChannel;
@@ -17,8 +16,6 @@ import io.shulie.takin.channel.bean.CommandRespType;
 import io.shulie.takin.channel.bean.CommandResponse;
 import io.shulie.takin.channel.bean.CommandSend;
 import io.shulie.takin.channel.bean.CommandStatus;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.future.ResponseFuture;
@@ -28,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -42,10 +40,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AgentCommandFactory {
 
+    @Value("${takin.web.url}")
     private String takinWebUrl;
 
     @Autowired
     private ServerChannel serverChannel;
+
     @Autowired
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
@@ -55,11 +55,6 @@ public class AgentCommandFactory {
      * agentId:command:moduleId:tenantId:envCode:id
      */
     private final String agentKey = "%s:%s:%s:%s:%s:%s";
-
-    @PostConstruct
-    public void init() {
-        takinWebUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_TAKIN_WEB_URL);
-    }
 
     public CommandResponse send(AgentCommandEnum commandEnum, String agentId, Map<String, Object> params) {
         TakinWebCommandPacket takinPacket = getSendPacket(commandEnum, agentId, params);
@@ -83,7 +78,7 @@ public class AgentCommandFactory {
             throw new TakinWebException(ExceptionCode.AGENT_REGISTER_ERROR, "agentId：" + takinPacket.getAgentId() + "未注册");
         }
 
-        CommandPacket result = null;
+        CommandPacket result;
         try {
             result = future.waitFor();
         } catch (InterruptedException e) {

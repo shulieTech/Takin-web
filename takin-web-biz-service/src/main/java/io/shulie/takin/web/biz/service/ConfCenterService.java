@@ -146,7 +146,7 @@ public class ConfCenterService extends CommonService {
 
     @PostConstruct
     public void init() {
-        number = Integer.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT));
+        number = ConfigServerHelper.getWrapperIntegerValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT);
         whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH);
     }
 
@@ -1817,8 +1817,7 @@ public class ConfCenterService extends CommonService {
     public void updateAppAgentVersion(String appName, String agentVersion, String pradarVersion) throws
         TakinModuleException {
         // 是否执行
-        String isUpdateAgentVersionString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_HTTP_UPDATE_VERSION);
-        if (!Boolean.parseBoolean(isUpdateAgentVersionString)) {
+        if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.AGENT_HTTP_UPDATE_VERSION)) {
             return;
         }
 

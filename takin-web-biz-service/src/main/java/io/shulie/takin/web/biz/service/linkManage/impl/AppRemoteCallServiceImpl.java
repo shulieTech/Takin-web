@@ -119,7 +119,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
     @PostConstruct
     public void init() {
-        criticaValue = Integer.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_QUERY_ASYNC_CRITICA_VALUE));
+        criticaValue = ConfigServerHelper.getWrapperIntegerValueByKey(
+            ConfigServerKeyEnum.TAKIN_QUERY_ASYNC_CRITICA_VALUE);
     }
 
     private void checkInputData(AppRemoteCallUpdateInput input) {
@@ -632,8 +633,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
      */
     private void autoJoinWhite(AppRemoteCallCreateParam param) {
         param.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
-        String autoJoinWhiteFlagString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_REMOTE_CALL_AUTO_JOIN_WHITE);
-        if (Boolean.parseBoolean(autoJoinWhiteFlagString) && StringUtils.isNotBlank(param.getServerAppName())) {
+        if (ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REMOTE_CALL_AUTO_JOIN_WHITE)
+            && StringUtils.isNotBlank(param.getServerAppName())) {
             param.setType(AppRemoteCallConfigEnum.OPEN_WHITELIST.getType());
         }
     }

@@ -5,10 +5,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.cloud.open.resp.statistics.ReportTotalResp;
+import io.shulie.takin.cloud.sdk.model.response.statistics.ReportTotalResp;
 import io.shulie.takin.web.biz.pojo.output.statistics.ReportTotalOutput;
-import io.shulie.takin.cloud.open.resp.statistics.PressurePieTotalResp;
-import io.shulie.takin.cloud.open.resp.statistics.PressureListTotalResp;
+import io.shulie.takin.cloud.sdk.model.response.statistics.PressurePieTotalResp;
+import io.shulie.takin.cloud.sdk.model.response.statistics.PressureListTotalResp;
 import io.shulie.takin.web.biz.pojo.output.statistics.PressurePieTotalOutput;
 import io.shulie.takin.web.biz.pojo.output.statistics.PressureListTotalOutput;
 import io.shulie.takin.web.biz.pojo.output.statistics.ScriptLabelListTotalOutput;

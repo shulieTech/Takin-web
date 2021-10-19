@@ -7,17 +7,19 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.cloud.common.bean.TimeBean;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author zhaoyong
  */
 @Data
 @ApiModel
+@EqualsAndHashCode(callSuper = true)
 public class SceneManageOpenApiResp extends UserCommonExt implements Serializable {
 
     @ApiModelProperty("压测场景ID")

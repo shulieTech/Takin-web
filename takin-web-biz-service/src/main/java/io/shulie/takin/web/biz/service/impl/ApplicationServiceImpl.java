@@ -254,8 +254,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @PostConstruct
     public void init() {
-        isCheckDuplicateName = Boolean.parseBoolean(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK));
+        isCheckDuplicateName = ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK);
     }
 
     //3.添加定时任务

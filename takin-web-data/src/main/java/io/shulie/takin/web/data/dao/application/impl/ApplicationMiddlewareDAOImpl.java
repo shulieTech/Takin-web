@@ -49,7 +49,7 @@ public class ApplicationMiddlewareDAOImpl implements ApplicationMiddlewareDAO, M
     }
 
     @Override
-    public Integer countByApplicationIdAndStatus(Long applicationId, Integer status) {
+    public Long countByApplicationIdAndStatus(Long applicationId, Integer status) {
         return applicationMiddlewareMapper.selectCount(this.getLambdaQueryWrapper()
             .eq(ApplicationMiddlewareEntity::getApplicationId, applicationId)
             .eq(status != null, ApplicationMiddlewareEntity::getStatus, status));

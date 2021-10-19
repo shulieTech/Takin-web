@@ -18,11 +18,6 @@ public enum ConfigServerKeyEnum implements AppConstants {
     TAKIN_CONFIG_ZOOKEEPER_ADDRESS("takin.config.zk.addr", "takin.config.zk.addr", NO),
 
     /**
-     * takin-web url 配置
-     */
-    AGENT_TAKIN_WEB_URL("agent.interactive.takin.web.url", "agent.interactive.takin.web.url", NO),
-
-    /**
      * ops 脚本路径 配置
      */
     TAKIN_FILE_OPS_SCRIPT_PATH("file.ops_script.path", "takin.file.ops_script.path", NO),
@@ -35,7 +30,8 @@ public enum ConfigServerKeyEnum implements AppConstants {
     /**
      * 是否执行添加linux用户的操作
      */
-    TAKIN_FILE_OPS_SCRIPT_DEPLOY_USER_ENABLE("file.ops_script.deploy_user_enable", "takin.file.ops_script.deploy_user_enable", NO),
+    TAKIN_FILE_OPS_SCRIPT_DEPLOY_USER_ENABLE("file.ops_script.deploy_user_enable",
+        "takin.file.ops_script.deploy_user_enable", NO),
 
     /**
      * 白名单长度校验
@@ -45,7 +41,8 @@ public enum ConfigServerKeyEnum implements AppConstants {
     /**
      * 是否开启白名单重名校验
      */
-    TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK("whitelist.duplicate.name.check", "takin.white_list.duplicate.name.check", YES),
+    TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK("whitelist.duplicate.name.check", "takin.white_list.duplicate.name.check",
+        YES),
     /**
      * 白名单文件
      */
@@ -134,26 +131,6 @@ public enum ConfigServerKeyEnum implements AppConstants {
         NO),
 
     /**
-     * influxdb url
-     */
-    SPRING_INFLUXDB_URL("spring.influxdb.url", "spring.influxdb.url", NO),
-
-    /**
-     * influxdb 用户名称
-     */
-    SPRING_INFLUXDB_USER("spring.influxdb.user", "spring.influxdb.user", NO),
-
-    /**
-     * influxdb 数据库
-     */
-    SPRING_INFLUXDB_DATABASE("spring.influxdb.database", "spring.influxdb.database", NO),
-
-    /**
-     * influxdb 密码
-     */
-    SPRING_INFLUXDB_PASSWORD("spring.influxdb.password", "spring.influxdb.password", NO),
-
-    /**
      * 脚本调试时, 允许的 rpc 类型
      */
     TAKIN_SCRIPT_DEBUG_RPC_TYPE("takin-web.script-debug.rpcType", "takin.script-debug.rpcType", NO),
@@ -171,12 +148,128 @@ public enum ConfigServerKeyEnum implements AppConstants {
     /**
      * 等待时间 单位秒
      */
-    TAKIN_PRADAR_SWITCH_PROCESSING_WAIT_TIME("pradar.switch.processing.wait.time", "takin.pradar.switch.processing.wait.time", NO),
+    TAKIN_PRADAR_SWITCH_PROCESSING_WAIT_TIME("pradar.switch.processing.wait.time",
+        "takin.pradar.switch.processing.wait.time", NO),
 
     /**
      * 租户 id
      */
     TAKIN_CUSTOMER_ID("customer.id", "takin.customer.id", NO),
+
+    /**
+     * 最大CPU使用率
+     */
+    TAKIN_RISK_MAX_NORM_SCALE("risk.max.norm.scale", "takin.risk.max.norm.scale", NO),
+
+    /**
+     * 最大CPU Load
+     */
+    TAKIN_RISK_MAX_NORM_MAX_LOAD("risk.max.norm.maxLoad", "takin.risk.max.norm.maxLoad", NO),
+
+    /**
+     * 黑名单修复
+     */
+    TAKIN_BLACKLIST_DATA_FIX_ENABLE("blacklist.data.fix.enable", "takin.blacklist.data.fix.enable", NO),
+
+    /**
+     * 修复旧的业务数据
+     */
+    TAKIN_LINK_FIX_ENABLE("link.fix.enable", "takin.link.fix.enable", NO),
+
+    /**
+     * 文件上传到 cloud 的地址
+     */
+    TAKIN_FILE_UPLOAD_URL("file.upload.url", "takin.file.upload.url", NO),
+
+    /**
+     * 文件上传地址
+     */
+    TAKIN_FILE_UPLOAD_USER_DATA_DIR("file.upload.user.data.dir", "takin.file.upload.user.data.dir", NO),
+
+    /**
+     * 文件上传临时路径
+     */
+    TAKIN_FILE_UPLOAD_TMP_PATH("file.upload.tmp.path", "takin.file.upload.tmp.path", NO),
+
+    /**
+     * 文件脚本上传路径
+     */
+    TAKIN_FILE_UPLOAD_SCRIPT_PATH("file.upload.script.path", "takin.file.upload.script.path", NO),
+
+    /**
+     * 基础路径
+     */
+    TAKIN_BASE_PATH("basePath", "takin.basePath", NO),
+
+    /**
+     * 插件 环境
+     */
+    TAKIN_PLUGIN_RUN_MODE("runMode", "takin.plugin.runMode", NO),
+
+    /**
+     * 插件路径
+     */
+    TAKIN_PLUGIN_PATH("pluginPath", "takin.plugin.path", NO),
+
+    /**
+     * plugin config file path
+     */
+    TAKIN_PLUGIN_CONFIG_FILE_PATH("pluginConfigFilePath", "takin.plugin.configFilePath", NO),
+
+    /**
+     * 版本
+     */
+    TAKIN_PLUGIN_VERSION("version", "takin.plugin.version", NO),
+
+    /**
+     * 路径前缀
+     */
+    TAKIN_PLUGIN_PREFIX_PATH("pluginPrefixPath", "takin.plugin.prefixPath", NO),
+
+    /**
+     * 排列的插件id, 字符串 json 数组
+     */
+    TAKIN_PLUGIN_SORT_PLUGIN_IDS("sortPluginIds", "takin.plugin.sortPluginIds", NO),
+
+    /**
+     * 禁用的插件, 字符串 json 数组
+     */
+    TAKIN_PLUGIN_DISABLE_PLUGIN_IDS("disablePluginIds", "takin.plugin.disablePluginIds", NO),
+
+    /**
+     * 启用的插件, 字符串 json 数组
+     */
+    TAKIN_PLUGIN_ENABLE_PLUGIN_IDS("enablePluginIds", "", NO),
+
+    /**
+     * 允许正确的版本
+     */
+    TAKIN_PLUGIN_EXACT_VERSION_ALLOWED("exactVersionAllowed", "takin.plugin.exactVersionAllowed", NO),
+
+    /**
+     * 启用插件前缀
+     */
+    TAKIN_PLUGIN_ENABLE_PLUGIN_PREFIX_PATH_PLUGIN_ID("enablePluginPrefixPathPluginId", "takin.plugin.enablePluginPrefixPathPluginId", NO),
+
+    /**
+     * 调试工具调用栈保存路径
+     */
+    TAKIN_FAST_DEBUG_CALL_STACK_PATH("fast.debug.call.stack.path", "takin.fast.debug.call.stack.path", NO),
+
+    /**
+     * 调试工具调用栈监听时间, 单位秒
+     */
+    TAKIN_FAST_WATCH_TIME_SECOND("fast.debug.watch.time.second", "takin.fast.watch.time.second", NO),
+
+    /**
+     * 钉钉推送是否开启
+     */
+    TAKIN_LOGIN_DING_DING_PUSH_ENABLE("login.dingding.push.enable", "takin.login.dingding.push.enable", NO),
+
+    /**
+     * 钉钉推送 url
+     */
+    TAKIN_LOGIN_DING_DING_PUSH_URL("login.dingding.push.url", "takin.login.dingding.push.url", NO),
     ;
 
     /**

@@ -8,19 +8,15 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
-import javax.annotation.PostConstruct;
-
 import com.alibaba.fastjson.JSONObject;
 
 import com.google.common.collect.Lists;
-import io.shulie.takin.cloud.open.req.common.CloudCommonInfoWrapperReq;
-import io.shulie.takin.cloud.open.resp.common.CommonInfosResp;
+import io.shulie.takin.cloud.sdk.model.request.common.CloudCommonInfoWrapperReq;
+import io.shulie.takin.cloud.sdk.model.response.common.CommonInfosResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.constant.ApiUrls;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.result.system.SystemInfoItemVo;
 import io.shulie.takin.web.data.result.system.SystemInfoVo;
 import io.shulie.takin.web.diff.api.common.CloudCommonApi;
@@ -52,6 +48,7 @@ public class SystemController {
     @Value("${takin.web.version}")
     private String takinWebVersion;
 
+    @Value("${takin.web.url}")
     private String takinWebUrl;
 
     @Autowired
@@ -59,11 +56,6 @@ public class SystemController {
 
     @Autowired
     private AmdbClientProperties properties;
-
-    @PostConstruct
-    public void init() {
-        takinWebUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_TAKIN_WEB_URL);
-    }
 
     @ApiOperation("系统信息")
     @GetMapping()

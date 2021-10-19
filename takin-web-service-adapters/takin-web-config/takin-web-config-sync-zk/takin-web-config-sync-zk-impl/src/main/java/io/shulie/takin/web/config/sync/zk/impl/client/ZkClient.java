@@ -2,8 +2,6 @@ package io.shulie.takin.web.config.sync.zk.impl.client;
 
 import javax.annotation.PostConstruct;
 
-import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.config.sync.zk.constants.ZkConfigPathConstants;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -23,6 +21,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class ZkClient {
 
+    @Value("${takin.config.zk.addr}")
+    private String zkAddr;
+
     @Value("${takin.config.zk.timeout: 3000}")
     private Integer timeout;
 
@@ -32,7 +33,7 @@ public class ZkClient {
     public void init() {
         client = CuratorFrameworkFactory
             .builder()
-            .connectString(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CONFIG_ZOOKEEPER_ADDRESS))
+            .connectString(zkAddr)
             .sessionTimeoutMs(timeout)
             .namespace(ZkConfigPathConstants.NAME_SPACE.substring(1))
             .retryPolicy(new ExponentialBackoffRetry(1000, 3))

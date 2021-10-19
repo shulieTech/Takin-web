@@ -62,20 +62,20 @@ public class MiddlewareSummaryController {
     @ApiOperation(("|_ 汇总信息"))
     @GetMapping("summary")
     public Object summary() {
-        final int totalNum = middlewareSummaryService.count();
+        final long totalNum = middlewareSummaryService.count();
         final QueryWrapper<MiddlewareSummaryEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(MiddlewareSummaryEntity::getStatus, MiddlewareJarStatusEnum.SUPPORTED.getCode());
-        final int supportedNum = middlewareSummaryService.count(queryWrapper);
+        final long supportedNum = middlewareSummaryService.count(queryWrapper);
         queryWrapper.clear();
         queryWrapper.lambda().eq(MiddlewareSummaryEntity::getStatus, MiddlewareJarStatusEnum.TO_BE_SUPPORTED.getCode());
-        final int notSupportedNum = middlewareSummaryService.count(queryWrapper);
+        final long notSupportedNum = middlewareSummaryService.count(queryWrapper);
         queryWrapper.clear();
         queryWrapper.lambda().eq(MiddlewareSummaryEntity::getStatus, MiddlewareJarStatusEnum.TO_BE_VERIFIED.getCode());
-        final int unknownNum = middlewareSummaryService.count(queryWrapper);
+        final long unknownNum = middlewareSummaryService.count(queryWrapper);
         queryWrapper.clear();
         queryWrapper.lambda().eq(MiddlewareSummaryEntity::getStatus, MiddlewareJarStatusEnum.NO_REQUIRED.getCode());
-        final int noRequiredNum = middlewareSummaryService.count(queryWrapper);
-        final HashMap<String, Integer> resultMap = new HashMap<>();
+        final long noRequiredNum = middlewareSummaryService.count(queryWrapper);
+        final HashMap<String, Long> resultMap = new HashMap<>();
         resultMap.put("totalNum", totalNum);
         resultMap.put("supportedNum", supportedNum);
         resultMap.put("notSupportedNum", notSupportedNum);

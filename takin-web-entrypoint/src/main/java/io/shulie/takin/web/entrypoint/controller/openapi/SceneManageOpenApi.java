@@ -3,8 +3,8 @@ package io.shulie.takin.web.entrypoint.controller.openapi;
 import java.util.List;
 
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageListResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;

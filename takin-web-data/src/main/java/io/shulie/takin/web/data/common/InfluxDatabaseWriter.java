@@ -4,14 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
+import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.influxdb.InfluxDB;
@@ -22,6 +19,7 @@ import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,14 +33,29 @@ public class InfluxDatabaseWriter {
     private static final ThreadLocal<InfluxDB> CACHE = new InheritableThreadLocal<>();
 
     /**
+     * 连接地址
+     */
+    @Value("${spring.influxdb.url}")
+    @Getter
+    private String influxdbUrl;
+
+    /**
+     * 用户名
+     */
+    @Value("${spring.influxdb.user}")
+    private String userName;
+
+    /**
+     * 密码
+     */
+    @Value("${spring.influxdb.password}")
+    private String password;
+
+    /**
      * 数据库库名
      */
+    @Value("${spring.performance.influxdb.database:performance}")
     private String database;
-
-    @PostConstruct
-    public void init() {
-        database = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.SPRING_PERFORMANCE_INFLUXDB_DATABASE);
-    }
 
     public static BatchPoints batchPoints(String sdatabase) {
         return BatchPoints.database(sdatabase)
@@ -51,9 +64,6 @@ public class InfluxDatabaseWriter {
 
     private InfluxDB createInfluxDatabase() {
         try {
-            String influxdbUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.SPRING_INFLUXDB_URL);
-            String userName = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.SPRING_INFLUXDB_USER);
-            String password = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.SPRING_INFLUXDB_PASSWORD);
             return InfluxDBFactory.connect(influxdbUrl, userName, password);
         } catch (Throwable e) {
             logger.error("influxdb init fail " + ExceptionUtils.getStackTrace(e));

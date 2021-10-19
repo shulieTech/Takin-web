@@ -35,19 +35,19 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.takin.cloud.common.bean.TimeBean;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneIpNumReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageQueryByIdsReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageQueryReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageWrapperReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneScriptRefOpen;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneStartPreCheckReq;
-import io.shulie.takin.cloud.open.req.scenemanage.ScriptCheckAndUpdateReq;
-import io.shulie.takin.cloud.open.req.scenetask.SceneStartCheckResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageListResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.ScriptCheckResp;
-import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneIpNumReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryByIdsReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneStartPreCheckReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptCheckAndUpdateReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneStartCheckResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
+import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
@@ -600,8 +600,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             return new ScriptCheckDTO();
         }
 
-        String scriptCheckString = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_CHECK);
-        if (!Boolean.parseBoolean(scriptCheckString)) {
+        if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_CHECK)) {
             return new ScriptCheckDTO();
         }
 

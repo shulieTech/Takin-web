@@ -13,8 +13,6 @@ import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
 import io.shulie.takin.web.biz.service.pradar.PradarConfigService;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.pradar.PradarZkConfigDAO;
@@ -40,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class PradarConfigServiceImpl implements PradarConfigService {
 
+    @Value("${takin.config.zk.addr}")
     private String zkAddr;
 
     @Value("${takin.config.zk.timeout: 3000}")
@@ -55,7 +54,6 @@ public class PradarConfigServiceImpl implements PradarConfigService {
 
     @PostConstruct
     public void init() {
-        zkAddr = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CONFIG_ZOOKEEPER_ADDRESS);
         client = CuratorFrameworkFactory
             .builder()
             .connectString(zkAddr)
@@ -127,7 +125,7 @@ public class PradarConfigServiceImpl implements PradarConfigService {
             }
             LambdaQueryWrapper<PradarZkConfigEntity> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(PradarZkConfigEntity::getZkPath, createRequest.getZkPath());
-            Integer count = pradarZkConfigMapper.selectCount(wrapper);
+            Long count = pradarZkConfigMapper.selectCount(wrapper);
             if (count > 0) {
                 throw new RuntimeException(String.format("保存失败，[key:%s] 已被使用", createRequest.getZkPath()));
             }

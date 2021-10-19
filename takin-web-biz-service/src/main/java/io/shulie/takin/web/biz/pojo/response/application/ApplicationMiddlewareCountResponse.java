@@ -15,7 +15,7 @@ public class ApplicationMiddlewareCountResponse {
 
     @Getter
     @ApiModelProperty("总数")
-    private Integer totalCount = 0;
+    private Long totalCount = 0L;
 
     @ApiModelProperty("已支持数")
     private Integer supportedCount;

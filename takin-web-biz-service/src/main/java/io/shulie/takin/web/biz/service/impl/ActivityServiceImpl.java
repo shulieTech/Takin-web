@@ -13,11 +13,11 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.cloud.open.api.scenetask.CloudTaskApi;
-import io.shulie.takin.cloud.open.req.engine.EnginePluginsRefOpen;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneBusinessActivityRefOpen;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageWrapperReq;
-import io.shulie.takin.cloud.open.req.scenetask.TaskFlowDebugStartReq;
+import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
+import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.TaskFlowDebugStartReq;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.NotifyClient;
@@ -462,9 +462,8 @@ public class ActivityServiceImpl implements ActivityService {
             request.setExtend(activityResponse.getExtend());
             request.setServiceName(activityResponse.getServiceName());
             request.setType(activityResponse.getType());
-            String enableLinkFlowCheckString = ConfigServerHelper.getValueByKey(
-                ConfigServerKeyEnum.TAKIN_LINK_FLOW_CHECK_ENABLE);
-            activityResponse.setEnableLinkFlowCheck(Boolean.parseBoolean(enableLinkFlowCheckString));
+            activityResponse.setEnableLinkFlowCheck(ConfigServerHelper.getBooleanValueByKey(
+                ConfigServerKeyEnum.TAKIN_LINK_FLOW_CHECK_ENABLE));
 
             // 拓扑图查询
             activityResponse.setTopology(linkTopologyService.getApplicationEntrancesTopology(request));

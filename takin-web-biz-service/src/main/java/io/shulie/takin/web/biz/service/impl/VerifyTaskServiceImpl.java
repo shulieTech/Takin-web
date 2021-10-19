@@ -24,9 +24,9 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDT
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import io.shulie.takin.cloud.common.bean.sla.SlaBean;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneActionResp;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;

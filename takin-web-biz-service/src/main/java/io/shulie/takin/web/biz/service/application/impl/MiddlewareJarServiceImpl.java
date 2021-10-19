@@ -56,7 +56,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -214,7 +213,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                             lambda.eq(MiddlewareJarEntity::getStatus, SUPPORTED.getCode());
                             lambda.likeLeft(MiddlewareJarEntity::getVersion,
                                 versionSplit[0] + "." + versionSplit[1] + ".");
-                            final int count = this.count(queryWrapper);
+                            final long count = this.count(queryWrapper);
                             if (count != 0) {
                                 importExcelVO.addRemark(PREFIX_TWO_MATCH);
                             } else {
@@ -407,7 +406,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                             lambda.eq(MiddlewareJarEntity::getStatus, SUPPORTED.getCode());
                             lambda.likeLeft(MiddlewareJarEntity::getVersion,
                                 versionSplit[0] + "." + versionSplit[1] + ".");
-                            final int count = this.count(queryWrapper);
+                            final long count = this.count(queryWrapper);
                             if (count != 0) {
                                 importExcelVO.addRemark(PREFIX_TWO_MATCH);
                             } else {

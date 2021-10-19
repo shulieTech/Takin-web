@@ -301,16 +301,17 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             return new AndExpression();
         }
         AndExpression andExpression = new AndExpression();
-        // t_tro_user 只有 tenant_id
-        if(tenantIdCondition != null) {
-            andExpression.withLeftExpression(tenantIdCondition);
+        if (userIdCondition != null) {
+            andExpression.withLeftExpression(userIdCondition);
         }
         if (envCodeCondition != null) {
             andExpression.withLeftExpression(envCodeCondition);
         }
-        if (userIdCondition != null) {
-            andExpression.withLeftExpression(userIdCondition);
+        // t_tro_user 只有 tenant_id
+        if(tenantIdCondition != null) {
+            andExpression.withLeftExpression(tenantIdCondition);
         }
+
         return andExpression;
     }
 

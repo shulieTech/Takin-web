@@ -18,11 +18,6 @@ public enum ConfigServerKeyEnum implements AppConstants {
     TAKIN_CONFIG_ZOOKEEPER_ADDRESS("takin.config.zk.addr", "takin.config.zk.addr", NO),
 
     /**
-     * takin-web url 配置
-     */
-    AGENT_TAKIN_WEB_URL("agent.interactive.takin.web.url", "agent.interactive.takin.web.url", NO),
-
-    /**
      * ops 脚本路径 配置
      */
     TAKIN_FILE_OPS_SCRIPT_PATH("file.ops_script.path", "takin.file.ops_script.path", NO),
@@ -134,26 +129,6 @@ public enum ConfigServerKeyEnum implements AppConstants {
      */
     SPRING_PERFORMANCE_INFLUXDB_DATABASE("spring.performance.influxdb.database", "spring.performance.influxdb.database",
         NO),
-
-    /**
-     * influxdb url
-     */
-    SPRING_INFLUXDB_URL("spring.influxdb.url", "spring.influxdb.url", NO),
-
-    /**
-     * influxdb 用户名称
-     */
-    SPRING_INFLUXDB_USER("spring.influxdb.user", "spring.influxdb.user", NO),
-
-    /**
-     * influxdb 数据库
-     */
-    SPRING_INFLUXDB_DATABASE("spring.influxdb.database", "spring.influxdb.database", NO),
-
-    /**
-     * influxdb 密码
-     */
-    SPRING_INFLUXDB_PASSWORD("spring.influxdb.password", "spring.influxdb.password", NO),
 
     /**
      * 脚本调试时, 允许的 rpc 类型

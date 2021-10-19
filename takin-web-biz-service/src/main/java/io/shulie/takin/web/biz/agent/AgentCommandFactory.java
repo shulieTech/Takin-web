@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -42,10 +43,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AgentCommandFactory {
 
+    @Value("${takin.web.url}")
     private String takinWebUrl;
 
     @Autowired
     private ServerChannel serverChannel;
+
     @Autowired
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
@@ -55,11 +58,6 @@ public class AgentCommandFactory {
      * agentId:command:moduleId:tenantId:envCode:id
      */
     private final String agentKey = "%s:%s:%s:%s:%s:%s";
-
-    @PostConstruct
-    public void init() {
-        takinWebUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.AGENT_TAKIN_WEB_URL);
-    }
 
     public CommandResponse send(AgentCommandEnum commandEnum, String agentId, Map<String, Object> params) {
         TakinWebCommandPacket takinPacket = getSendPacket(commandEnum, agentId, params);

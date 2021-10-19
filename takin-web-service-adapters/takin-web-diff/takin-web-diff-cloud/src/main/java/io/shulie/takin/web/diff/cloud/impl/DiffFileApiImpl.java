@@ -2,12 +2,12 @@ package io.shulie.takin.web.diff.cloud.impl;
 
 import java.util.Map;
 
-import io.shulie.takin.cloud.open.api.file.CloudFileApi;
-import io.shulie.takin.cloud.open.req.filemanager.FileContentParamReq;
-import io.shulie.takin.cloud.open.req.filemanager.FileCopyParamReq;
-import io.shulie.takin.cloud.open.req.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.cloud.open.req.filemanager.FileDeleteParamReq;
-import io.shulie.takin.cloud.open.req.filemanager.FileZipParamReq;
+import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileContentParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCopyParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileDeleteParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileZipParamReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.diff.api.DiffFileApi;

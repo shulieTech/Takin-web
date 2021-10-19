@@ -4,22 +4,22 @@ import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
 
-import io.shulie.takin.cloud.open.req.report.WarnCreateReq;
+import io.shulie.takin.cloud.sdk.model.request.report.WarnCreateReq;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.cloud.open.api.report.CloudReportApi;
+import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.cloud.open.api.scenetask.CloudTaskApi;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneActionResp;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneJobStateResp;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.open.req.scenetask.SceneStartCheckResp;
-import io.shulie.takin.cloud.open.req.report.UpdateReportConclusionReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneStartPreCheckReq;
-import io.shulie.takin.cloud.open.req.scenemanage.ScriptAssetBalanceReq;
-import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskCheckReq;
-import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskStartReq;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStartResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStatusResp;
+import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneJobStateResp;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneStartCheckResp;
+import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneStartPreCheckReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAssetBalanceReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskCheckReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskStartReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStartResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStatusResp;
 
 /**
  * @author qianshui

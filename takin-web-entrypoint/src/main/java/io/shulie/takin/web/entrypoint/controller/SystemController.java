@@ -13,8 +13,8 @@ import javax.annotation.PostConstruct;
 import com.alibaba.fastjson.JSONObject;
 
 import com.google.common.collect.Lists;
-import io.shulie.takin.cloud.open.req.common.CloudCommonInfoWrapperReq;
-import io.shulie.takin.cloud.open.resp.common.CommonInfosResp;
+import io.shulie.takin.cloud.sdk.model.request.common.CloudCommonInfoWrapperReq;
+import io.shulie.takin.cloud.sdk.model.response.common.CommonInfosResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;

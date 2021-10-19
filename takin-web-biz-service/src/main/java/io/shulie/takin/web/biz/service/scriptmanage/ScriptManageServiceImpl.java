@@ -40,7 +40,7 @@ import com.pamirs.takin.entity.domain.entity.linkmanage.BusinessLinkManageTable;
 import com.pamirs.takin.entity.domain.entity.linkmanage.Scene;
 import com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate;
 import io.shulie.amdb.common.enums.RpcType;
-import io.shulie.takin.cloud.common.pojo.dto.scenemanage.UploadFileDTO;
+import io.shulie.takin.cloud.sdk.model.common.UploadFileDTO;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginDetailsWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginFetchWrapperReq;

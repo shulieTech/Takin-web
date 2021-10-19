@@ -1,14 +1,15 @@
 package io.shulie.takin.web.data.dao.activity;
 
-import java.util.List;
-
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityUpdateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
+
+import java.util.List;
 
 /**
  * @author shiyajian
@@ -71,4 +72,8 @@ public interface ActivityDAO {
      * @return
      */
     List<ActivityListResult> getActivityList(ActivityQueryParam param);
+
+    void setActivityNodeServiceState(long activityId, String serviceName, String ownerApps, boolean state);
+
+    List<ActivityNodeState> getActivityNodeServiceState(long activityId);
 }

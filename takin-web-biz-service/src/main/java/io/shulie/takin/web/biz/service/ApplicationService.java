@@ -12,14 +12,20 @@ import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import org.springframework.web.multipart.MultipartFile;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
+import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.vo.JarVersionVo;
+import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import org.springframework.web.multipart.MultipartFile;
+import io.shulie.takin.web.common.common.Response;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -225,5 +231,11 @@ public interface ApplicationService {
      * @return 应用
      */
     ApplicationDetailResult getByApplicationIdWithCheck(Long applicationId);
+    /**
+     * 修改应用节点数
+     *
+     * @param numParamList 数据集合
+     */
+    void modifyAppNodeNum(List<NodeNumParam> numParamList);
 
 }

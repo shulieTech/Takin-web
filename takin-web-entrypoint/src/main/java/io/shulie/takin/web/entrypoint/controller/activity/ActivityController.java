@@ -1,20 +1,13 @@
 package io.shulie.takin.web.entrypoint.controller.activity;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.annotation.ActivityCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.*;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
@@ -25,15 +18,10 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindException;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * 业务活动
@@ -120,8 +108,24 @@ public class ActivityController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
         needAuth = ActionTypeEnum.QUERY
     )
-    public ActivityResponse getActivityById(@RequestParam Long id) {
-        return activityService.getActivityById(id);
+    @ActivityCache(expireTime = 10)
+    public ActivityResponse getActivityById(@Valid ActivityInfoQueryRequest request) {
+        return activityService.getActivityWithMetricsById(request);
+    }
+
+    @ApiOperation("|_ 业务活动节点服务开关")
+    @GetMapping("/setActivityNodeState")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
+            needAuth = ActionTypeEnum.UPDATE
+    )
+    public void setActivityNodeState(
+            @RequestParam(value = "activityId") long activityId,
+            @RequestParam(value = "ownerApps") @NotNull String ownerApps,
+            @RequestParam(value = "serviceName") @NotNull String serviceName,
+            @RequestParam(value = "state") boolean state) {
+
+        activityService.setActivityNodeState(activityId, ownerApps, serviceName, state);
     }
 
     @ApiOperation("发起业务活动流量验证请求")

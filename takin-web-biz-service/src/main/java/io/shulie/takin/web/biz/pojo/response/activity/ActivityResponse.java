@@ -17,12 +17,16 @@ public class ActivityResponse {
 
     private Long activityId;
 
+    // 业务活动名称
     private String activityName;
 
+    // 所属应用
     private String applicationName;
 
+    // 服务/入口
     private String entranceName;
 
+    // 服务类型
     private EntranceTypeEnum type;
 
     /**

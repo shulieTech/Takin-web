@@ -13,6 +13,7 @@ import lombok.Data;
 public class AppRemoteCallQueryParam extends UserCommonExt {
     private Integer type;
     private String interfaceName;
+    private Long customerId;
     private Integer status;
     private Long applicationId;
     private List<Long> applicationIds;

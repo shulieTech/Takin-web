@@ -94,6 +94,7 @@ import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -193,7 +194,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
 
             // 该脚本发布实例是否有未完成的调试
             ScriptDebugExceptionUtil.isDebugError(scriptDebugDAO.hasUnfinished(scriptDeployId),
-                    "该脚本有未完成的调试, 请等待调试结束再进行调试!");
+                "该脚本有未完成的调试, 请等待调试结束再进行调试!");
 
             // 根据脚本发布实例类型, 查询业务活动或者业务流程下的业务活动
             // 判断业务流程是否存在, 判断活动是否存在
@@ -203,7 +204,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             // 查出所有的业务活动
             // 根据业务活动ids, 获得业务活动
             List<BusinessLinkManageTableEntity> businessActivities =
-                    businessLinkManageDAO.listByIds(businessActivityIds);
+                businessLinkManageDAO.listByIds(businessActivityIds);
             ScriptDebugExceptionUtil.isDebugError(businessActivities.isEmpty(), "脚本对应的业务活动不存在!");
 
             // 检查应用相关, rpc 检查
@@ -219,7 +220,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             Integer requestNum = request.getRequestNum();
             Integer concurrencyNum = request.getConcurrencyNum();
             SceneTryRunTaskStartReq debugCloudRequest =
-                    this.getDebugParams(scriptDeploy, businessActivities, requestNum, concurrencyNum);
+                this.getDebugParams(scriptDeploy, businessActivities, requestNum, concurrencyNum);
 
             // 脚本检查
             log.info("调试 --> 脚本校验!");
@@ -228,18 +229,24 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 response.setErrorMessages(errorMessages);
                 return response;
             }
-
+            //填充当前用户信息为操作人
+            UserExt user = WebPluginUtils.getUser();
+            if (user != null) {
+                debugCloudRequest.setOperateId(user.getId());
+                debugCloudRequest.setOperateName(user.getName());
+            }
             // 启动调试
             SceneTryRunTaskStartResp cloudResponse = this.doDebug(debugCloudRequest);
 
             // 创建调试记录
             log.info("调试 --> 创建调试记录!");
             response = new ScriptDebugResponse();
-            scriptDebug = this.createScriptDebugAndGet(scriptDeployId, requestNum, concurrencyNum, cloudResponse, businessActivityIds);
+            scriptDebug = this.createScriptDebugAndGet(scriptDeployId, requestNum, concurrencyNum, cloudResponse,
+                businessActivityIds);
             response.setScriptDebugId(scriptDebug.getId());
 
             //回写调试记录ID到流量账户
-            callBackToWriteBalance(cloudResponse,scriptDebug.getId());
+            callBackToWriteBalance(cloudResponse, scriptDebug.getId());
 
             log.info("调试 --> 异步启动循环查询启动成功, 压测完成!");
             fastDebugThreadPool.execute(this.checkPressureStatus(scriptDebug));
@@ -315,7 +322,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
 
             // rpcType 判断
             ScriptDebugExceptionUtil.isDebugError(!this.checkBusinessActivityRpcType(businessActivity),
-                    String.format("脚本调试暂时支持 http, %s 的业务活动!", supportRpcType));
+                String.format("脚本调试暂时支持 http, %s 的业务活动!", supportRpcType));
 
             // 应用名称获得
             return ActivityUtil.covertEntrance(businessActivity.getEntrace()).getApplicationName();
@@ -395,16 +402,18 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     }
 
     @Override
-    public PagingList<ScriptDebugListResponse> pageFinishedByScriptDeployId(PageScriptDebugRequest pageScriptDebugRequest) {
+    public PagingList<ScriptDebugListResponse> pageFinishedByScriptDeployId(
+        PageScriptDebugRequest pageScriptDebugRequest) {
         // 脚本发布实例下的调试记录, 只查询完成的调试记录
         List<Integer> finishedStatusList = Arrays.asList(ScriptDebugStatusEnum.SUCCESS.getCode(),
-                ScriptDebugStatusEnum.FAILED.getCode());
+            ScriptDebugStatusEnum.FAILED.getCode());
 
         PageScriptDebugParam pageScriptDebugParam = new PageScriptDebugParam();
         BeanUtils.copyProperties(pageScriptDebugRequest, pageScriptDebugParam);
         pageScriptDebugParam.setScriptDeployId(pageScriptDebugRequest.getScriptDeployId());
         pageScriptDebugParam.setStatusList(finishedStatusList);
-        IPage<ScriptDebugEntity> scriptDebugPage = scriptDebugDAO.pageByScriptDeployIdAndStatusList(pageScriptDebugParam);
+        IPage<ScriptDebugEntity> scriptDebugPage = scriptDebugDAO.pageByScriptDeployIdAndStatusList(
+            pageScriptDebugParam);
         List<ScriptDebugEntity> records = scriptDebugPage.getRecords();
         if (records.isEmpty()) {
             return PagingList.of(Collections.emptyList(), scriptDebugPage.getTotal());
@@ -446,7 +455,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }
 
         // entryList
-        List<EntranceRuleDTO> entryList = this.getEntryList(scriptDebugEntity.getScriptDeployId(), request.getBusinessActivityId());
+        List<EntranceRuleDTO> entryList = this.getEntryList(scriptDebugEntity.getScriptDeployId(),
+            request.getBusinessActivityId());
         if (entryList.isEmpty()) {
             return PagingList.empty();
         }
@@ -484,7 +494,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
 
             // resultCode 判断, 赋值
             ScriptDebugRequestListResponse requestListStatusResponse = ScriptDebugUtil.getRequestListStatusResponse(
-                    dto.getResultCode(), dto.getAssertResult());
+                dto.getResultCode(), dto.getAssertResult());
 
             response.setResponseStatus(requestListStatusResponse.getResponseStatus());
             response.setResponseStatusDesc(requestListStatusResponse.getResponseStatusDesc());
@@ -611,7 +621,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 this.checkTimeout(newScriptDebug);
 
                 // 是否失败检查
-                ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDebug.getScriptDeployId());
+                ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(
+                    scriptDebug.getScriptDeployId());
                 if (scriptDeploy == null) {
                     newScriptDebug.setStatus(ScriptDebugStatusEnum.FAILED.getCode());
                     newScriptDebug.setRemark("脚本发布不存在!");
@@ -838,7 +849,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 long initTime = System.currentTimeMillis();
 
                 do {
-                    ResponseResult<SceneTryRunTaskStatusResp> response = sceneTaskApi.checkTryRunTaskStatus(checkRequest);
+                    ResponseResult<SceneTryRunTaskStatusResp> response = sceneTaskApi.checkTryRunTaskStatus(
+                        checkRequest);
                     log.info("调试 --> 检查压测状态 --> cloud 压测检查 --> 出参: {}!", JSONUtil.toJsonStr(response));
 
                     // 如果接口失败, 记录日志, 继续轮询
@@ -984,12 +996,17 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      */
     private SceneTryRunTaskStartReq getDebugParams(ScriptManageDeployEntity scriptDeploy,
                                                    List<BusinessLinkManageTableEntity> businessActivities, Integer requestNum, Integer concurrencyNum) {
+        List<BusinessLinkManageTableEntity> businessActivities, Integer requestNum, Integer concurrencyNum) {
         // cloud 调试请求参数拼接
         SceneTryRunTaskStartReq debugCloudRequest = new SceneTryRunTaskStartReq();
         // 脚本发布id
         Long scriptDeployId = scriptDeploy.getId();
         debugCloudRequest.setLoopsNum(requestNum);
         debugCloudRequest.setScriptDeployId(scriptDeployId);
+            // 增加并发数
+            sasadebugCloudRequest.setConcurrencyNum(concurrencyNum);
+            saadebugCloudRequest.setScriptId(scriptDeployId);
+            asasdebugCloudRequest.setScriptType(scriptDeploy.getType());
         // 增加并发数
         debugCloudRequest.setConcurrencyNum(concurrencyNum);
         debugCloudRequest.setScriptId(scriptDeploy.getScriptId());
@@ -1000,19 +1017,19 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         List<PluginConfigDetailResponse> pluginConfigs = ScriptManageUtil.listPluginConfigs(scriptDeploy.getFeature());
         if (CollectionUtils.isNotEmpty(pluginConfigs)) {
             List<Long> pluginIds = pluginConfigs.stream()
-                    .map(o -> Long.valueOf(o.getName()))
-                    .collect(Collectors.toList());
+                .map(o -> Long.valueOf(o.getName()))
+                .collect(Collectors.toList());
             debugCloudRequest.setEnginePluginIds(pluginIds);
             debugCloudRequest.setEnginePlugins(pluginConfigs.stream()
-                    .map(detail -> new EnginePluginsRefOpen() {{
-                        setPluginId(Long.parseLong(detail.getName()));
-                        setVersion(detail.getVersion());
-                    }}).collect(Collectors.toList()));
+                .map(detail -> new EnginePluginsRefOpen() {{
+                    setPluginId(Long.parseLong(detail.getName()));
+                    setVersion(detail.getVersion());
+                }}).collect(Collectors.toList()));
         }
 
         // 业务活动配置
         debugCloudRequest.setBusinessActivityConfig(
-                this.listBusinessActivityConfigList(scriptDeployId, businessActivities));
+            this.listBusinessActivityConfigList(scriptDeployId, businessActivities));
 
         // 上传文件
         debugCloudRequest.setUploadFile(this.listUploadPathList(scriptDeployId));
@@ -1044,7 +1061,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @return 业务活动配置列表
      */
     private List<SceneBusinessActivityRefOpen> listBusinessActivityConfigList(Long scriptDeployId,
-                                                                              List<BusinessLinkManageTableEntity> businessActivities) {
+        List<BusinessLinkManageTableEntity> businessActivities) {
         // vo
         List<SceneBusinessActivityRefVO> voList = businessActivities.stream().map(businessActivity -> {
             SceneBusinessActivityRefVO vo = new SceneBusinessActivityRefVO();
@@ -1084,7 +1101,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             ScriptDebugExceptionUtil.isDebugError(linkManageResult == null, "业务活动关联的技术链路不存在!");
             String features = linkManageResult.getFeatures();
             ScriptDebugExceptionUtil.isDebugError(StringUtils.isBlank(features),
-                    "业务活动关联的技术链路中没有 features 字段, 无法判断业务活动 mq 的类型!");
+                "业务活动关联的技术链路中没有 features 字段, 无法判断业务活动 mq 的类型!");
             LinkManageTableFeaturesVO featureObject = JsonUtil.json2bean(features, LinkManageTableFeaturesVO.class);
 
             // 配置的支持类型, 是否包含

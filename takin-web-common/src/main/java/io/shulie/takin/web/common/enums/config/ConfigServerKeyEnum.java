@@ -277,11 +277,6 @@ public enum ConfigServerKeyEnum implements AppConstants {
     TAKIN_PLUGIN_ENABLE_PLUGIN_PREFIX_PATH_PLUGIN_ID("enablePluginPrefixPathPluginId", "takin.plugin.enablePluginPrefixPathPluginId", NO),
 
     /**
-     * license
-     */
-    TAKIN_LICENSE("takin.license", "takin.license", NO),
-
-    /**
      * 调试工具调用栈保存路径
      */
     TAKIN_FAST_DEBUG_CALL_STACK_PATH("fast.debug.call.stack.path", "takin.fast.debug.call.stack.path", NO),
@@ -294,12 +289,12 @@ public enum ConfigServerKeyEnum implements AppConstants {
     /**
      * 钉钉推送是否开启
      */
-    TAKIN_LOGIN_DINGDING_PUSH_ENABLE("login.dingding.push.enable", "takin.login.dingding.push.enable", NO),
+    TAKIN_LOGIN_DING_DING_PUSH_ENABLE("login.dingding.push.enable", "takin.login.dingding.push.enable", NO),
 
     /**
      * 钉钉推送 url
      */
-    TAKIN_LOGIN_DINGDING_PUSH_URL("login.dingding.push.url", "takin.login.dingding.push.url", NO),
+    TAKIN_LOGIN_DING_DING_PUSH_URL("login.dingding.push.url", "takin.login.dingding.push.url", NO),
     ;
 
     /**

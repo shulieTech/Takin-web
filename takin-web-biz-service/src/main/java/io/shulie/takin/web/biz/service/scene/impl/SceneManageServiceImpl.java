@@ -34,7 +34,7 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
-import io.shulie.takin.cloud.common.bean.TimeBean;
+import io.shulie.takin.cloud.sdk.model.common.TimeBean;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneIpNumReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryByIdsReq;

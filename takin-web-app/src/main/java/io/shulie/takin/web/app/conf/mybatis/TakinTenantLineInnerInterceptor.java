@@ -50,17 +50,17 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     /**
      * 没有tenant_id 的表
      */
-    private List<String> tableWithoutTenantId = Lists.newArrayList("","");
+    private List<String> tableWithoutTenantId = Lists.newArrayList("t_dictionary_type","");
 
     /**
      * 没有env_code 的表
      */
-    private List<String> tableWithoutEnvCode = Lists.newArrayList("t_tro_user");
+    private List<String> tableWithoutEnvCode = Lists.newArrayList("t_tro_user","t_tro_dept","t_dictionary_type");
 
     /**
      * 没有user_id 的表
      */
-    private List<String> tableWithoutUserId = Lists.newArrayList("t_tro_user");
+    private List<String> tableWithoutUserId = Lists.newArrayList("t_tro_user","t_tro_dept","t_dictionary_type");
 
 
     private TakinTenantLineHandler tenantLineHandler;

@@ -4,6 +4,7 @@ import cn.hutool.core.util.BooleanUtil;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.attach.plugin.dynamic.Converter;
 import com.pamirs.attach.plugin.dynamic.Type;
+import com.pamirs.attach.plugin.dynamic.template.Template;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DataSource;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
@@ -26,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -73,7 +73,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
         if (DsTypeEnum.SHADOW_TABLE.getCode().equals(dsType)) {
             list.add(new ListStyle());
         } else {
-            List<String> attributeArray = Lists.newArrayList();
+            List<String> attributeArray;
             list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
             list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
             list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
@@ -151,7 +151,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
 
         List<ShadowDetailResponse.TableInfo> resultsConvert = results
                 .stream()
-                .map(x -> new ShadowDetailResponse.TableInfo(x.getBizDataBase(), x.getBizTable(), x.getManualTag(), x.getShadowTable(),x.getIsCheck()))
+                .map(x -> new ShadowDetailResponse.TableInfo(x.getBizDataBase(), x.getBizTable(), x.getManualTag(), x.getShadowTable(), x.getIsCheck()))
                 .collect(Collectors.toList());
 
         Map<String, ShadowDetailResponse.TableInfo> map = new HashMap<>();
@@ -177,7 +177,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
         Map<String, Object> convertMap = new HashMap<>();
         if (StringUtils.isBlank(str)) {
             Converter.TemplateConverter.TemplateEnum templateEnum = super.convert(connPoolName);
-            if(Objects.nonNull(templateEnum)){
+            if (Objects.nonNull(templateEnum)) {
                 List<String> attributeArray = this.getAttributeArray(templateEnum);
                 attributeArray.forEach(protect -> {
                     Map<String, Object> innerMap = new HashMap<>();
@@ -230,20 +230,20 @@ public class DbTemplateParser extends AbstractTemplateParser {
 
     private List<String> getAttributeArray(Converter.TemplateConverter.TemplateEnum templateEnum) {
         List<String> attributeArray = Lists.newArrayList();
-        ConnectpoolConfigTemplateDetailResult template = connectpoolConfigTemplateDAO.queryOne(templateEnum.getClass().getName());
-        if (Objects.isNull(template) || StringUtils.isBlank(template.getShadowdbAttribute())) {
-            Class clazz = templateEnum.getaClass();
-            Field[] f = clazz.getDeclaredFields();
-            for (Field field : f) {
-                if (Modifier.isProtected(field.getModifiers())) {
-                    attributeArray.add(field.getName());
+        try {
+            Object t = templateEnum.getaClass().newInstance();
+            if (Template.class.isAssignableFrom(t
+                    .getClass())) {
+                Template tem = (Template) t;
+                ConnectpoolConfigTemplateDetailResult template = connectpoolConfigTemplateDAO.queryOne(tem.getName());
+                if (Objects.nonNull(template) && StringUtils.isNotBlank(template.getShadowdbAttribute())) {
+                    String shadowdbAttribute = template.getShadowdbAttribute();
+                    attributeArray = Arrays.asList(shadowdbAttribute.split(","));
                 }
             }
-        } else {
-            String shadowdbAttribute = template.getShadowdbAttribute();
-            attributeArray = Arrays.asList(shadowdbAttribute.split(","));
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
         }
-
         return attributeArray;
     }
 

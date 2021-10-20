@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.dsManage.impl.v2;
 
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.pamirs.attach.plugin.dynamic.Converter;
 import io.shulie.takin.web.biz.convert.db.parser.RedisTemplateParser;
 import io.shulie.takin.web.biz.convert.db.parser.TemplateParser;
@@ -14,6 +15,8 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 /**
  * @Author: 南风
@@ -35,8 +38,8 @@ public class ShaDowCacheServiceImpl extends AbstractShaDowManageService {
      */
     @Override
     public void updateShadowProgramme(ApplicationDsUpdateInputV2 inputV2) {
-        ApplicationDsCacheManageEntity entity = this.buildEntity(inputV2,false);
-        cacheManageDAO.updateById(inputV2.getId(),entity);
+        ApplicationDsCacheManageEntity entity = this.buildEntity(inputV2, false);
+        cacheManageDAO.updateById(inputV2.getId(), entity);
     }
 
     /**
@@ -45,24 +48,45 @@ public class ShaDowCacheServiceImpl extends AbstractShaDowManageService {
      * @param inputV2
      */
     @Override
-    public void createShadowProgramme(ApplicationDsCreateInputV2 inputV2) {
+    public void createShadowProgramme(ApplicationDsCreateInputV2 inputV2, Boolean isJson) {
+        if (isJson) {
+            if(!JSONUtil.isJson(inputV2.getUrl())){
+                throw new IllegalArgumentException("业务集群数据格式必须是Json!");
+            }
+            JSONObject obj = JSONObject.parseObject(inputV2.getUrl());
+            if (Objects.isNull(obj)) {
+                throw new IllegalArgumentException("业务集群不能为空!");
+            }
+            switch (inputV2.getCacheType()) {
+                case "哨兵模式":
+                case "主从模式":
+                    if (Objects.isNull(obj.get("master")) || Objects.isNull(obj.get("nodes"))) {
+                        throw new IllegalArgumentException("业务集群格式不正确!");
+                    }
 
-        ApplicationDsCacheManageEntity entity = this.buildEntity(inputV2,true);
+                case "单机模式":
+                case "集群模式":
+                    if(Objects.isNull(obj.get("nodes"))){
+                        throw new IllegalArgumentException("业务集群格式不正确!");
+                    }
+            }
+        }
+        ApplicationDsCacheManageEntity entity = this.buildEntity(inputV2, true);
         entity.setId(null);//去除原id
         cacheManageDAO.saveOne(entity);
     }
 
-    private ApplicationDsCacheManageEntity buildEntity(ApplicationDsCreateInputV2 inputV2,Boolean isCreate){
-        if(!JSONUtil.isJson(inputV2.getExtInfo())){
-            throw new IllegalArgumentException("影子配置数据必须是Json!");
+    private ApplicationDsCacheManageEntity buildEntity(ApplicationDsCreateInputV2 inputV2, Boolean isCreate) {
+        if (!JSONUtil.isJson(inputV2.getExtInfo())) {
+            throw new IllegalArgumentException("影子配置数据格式必须是Json!");
         }
         WebPluginUtils.fillUserData(inputV2);
-        ApplicationDsCacheManageEntity entity = new  ApplicationDsCacheManageEntity();
+        ApplicationDsCacheManageEntity entity = new ApplicationDsCacheManageEntity();
         entity.setDsType(inputV2.getDsType());
         entity.setShaDowFileExtedn(inputV2.getExtInfo());
         entity.setCustomerId(inputV2.getCustomerId());
         entity.setUserId(inputV2.getUserId());
-        if(isCreate){
+        if (isCreate) {
             entity.setApplicationId(inputV2.getApplicationId());
             entity.setApplicationName(inputV2.getApplicationName());
             entity.setCacheName(inputV2.getConnectionPool());
@@ -79,5 +103,6 @@ public class ShaDowCacheServiceImpl extends AbstractShaDowManageService {
         }
         return entity;
     }
+
 
 }

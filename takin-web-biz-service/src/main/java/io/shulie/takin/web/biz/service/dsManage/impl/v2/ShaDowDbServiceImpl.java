@@ -66,7 +66,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createShadowProgramme(ApplicationDsCreateInputV2 inputV2) {
+    public void createShadowProgramme(ApplicationDsCreateInputV2 inputV2,Boolean isJson) {
         ApplicationDsDbManageEntity entity = this.buildEntity(inputV2,true);
         entity.setId(null); //去除原id
         dbManageDAO.saveOne(entity);

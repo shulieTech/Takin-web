@@ -380,11 +380,16 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
             return list;
         }
 
-
         list = results.stream().filter(
                 detail ->  detail.getDsType().equals(DsTypeEnum.SHADOW_REDIS_CLUSTER.getCode())
         ).map(detail -> {
-            SingleServerConfiguration bus = JSONObject.parseObject(detail.getFileExtedn(), SingleServerConfiguration.class);
+            SingleServerConfiguration bus;
+            if(StringUtils.isBlank(detail.getFileExtedn())){
+                bus = JSONObject.parseObject(detail.getColony(),SingleServerConfiguration.class);
+            }else{
+                 bus = JSONObject.parseObject(detail.getFileExtedn(), SingleServerConfiguration.class);
+            }
+
             String shaDowFileExtedn = detail.getShaDowFileExtedn();
             JSONObject jsonObject = JSON.parseObject(shaDowFileExtedn);
             String shadowConfig = jsonObject.getString("shadowConfig");

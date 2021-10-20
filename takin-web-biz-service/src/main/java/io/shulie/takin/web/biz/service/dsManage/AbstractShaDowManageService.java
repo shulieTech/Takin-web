@@ -19,6 +19,6 @@ public abstract class AbstractShaDowManageService {
      * 创建影子配置方案
      * @param inputV2
      */
-    public abstract void createShadowProgramme(ApplicationDsCreateInputV2 inputV2);
+    public abstract void createShadowProgramme(ApplicationDsCreateInputV2 inputV2,Boolean isJson);
 
 }

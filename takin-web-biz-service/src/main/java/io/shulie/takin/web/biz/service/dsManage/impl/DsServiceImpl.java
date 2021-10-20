@@ -596,7 +596,7 @@ public class DsServiceImpl implements DsService {
                 ApplicationDsDeleteParam deleteParam = new ApplicationDsDeleteParam();
                 deleteParam.setIdList(Collections.singletonList(updateRequestV2.getId()));
                 applicationDsDAO.delete(deleteParam);
-                service.createShadowProgramme(updateRequestV2);
+                service.createShadowProgramme(updateRequestV2,false);
             }
         }
         service.updateShadowProgramme(updateRequestV2);
@@ -650,7 +650,7 @@ public class DsServiceImpl implements DsService {
         }
         Integer code = MiddleWareTypeEnum.getEnumByValue(createRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
-        service.createShadowProgramme(createRequestV2);
+        service.createShadowProgramme(createRequestV2,true);
 
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());

@@ -16,7 +16,14 @@ CREATE TABLE IF NOT EXISTS `t_tenant_info`
     ) ENGINE = InnoDB
 
 
+----- 流川 -----
+----- 流川 -----
 
+----- 剑英 -----
+----- 剑英 -----
+
+----- 无涯 -----
+----- 无涯 -----
 -- 用户表
 alter table t_tro_user
     add column `tenant_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '租户id';

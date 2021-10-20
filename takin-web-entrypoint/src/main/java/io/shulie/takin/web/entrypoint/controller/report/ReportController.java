@@ -1,15 +1,21 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
+import java.util.List;
+
+import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
-import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
-import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
+import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
+import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
+import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
+import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.service.report.ReportService;
-import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -50,8 +56,6 @@ public class ReportController {
     @GetMapping("report/queryReportTrend")
     @ApiOperation("报告链路趋势")
     public TrendResponse queryReportTrend(TrendRequest reportTrendQuery) {
-    public WebResponse queryReportTrend(ReportTrendQueryParam reportTrendQuery) {
-//        return reportService.queryReportTrendWithTopology(reportTrendQuery);
         return reportService.queryReportTrend(reportTrendQuery);
     }
 
@@ -73,13 +77,6 @@ public class ReportController {
     @ApiOperation("实况报告链路趋势")
     public TrendResponse queryTempReportTrend(TrendRequest reportTrendQuery) {
         return reportService.queryTempReportTrend(reportTrendQuery);
-    }
-
-    @GetMapping("/report/queryTempReportTrendWithTopology")
-    @ApiOperation("实况报告链路趋势 拓扑图")
-    public WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,
-                                                        ReportTraceQueryDTO queryDTO) {
-        return reportService.queryTempReportTrendWithTopology(reportTrendQuery, queryDTO);
     }
 
     @GetMapping("/report/listWarn")

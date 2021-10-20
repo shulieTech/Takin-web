@@ -10,8 +10,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
@@ -53,7 +51,6 @@ import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.SqlTestRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.UpdateTpsRequest;
-import io.shulie.takin.web.biz.pojo.response.scene.StartResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ApplicationService;
@@ -68,9 +65,6 @@ import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
-import io.shulie.takin.web.common.constant.RemoteConstant;
-import io.shulie.takin.web.common.domain.ErrorInfo;
-import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -92,7 +86,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 /**
@@ -209,9 +202,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             param.setUserId(user.getId());
             param.setUserName(user.getName());
         }
-        param.setRequestUrl(RemoteConstant.SCENE_TASK_START_URL);
-        param.setHttpMethod(HttpMethod.POST);
-        //封装
 
         //兼容老版本
         if (StringUtils.isEmpty(param.getContinueRead())) {
@@ -221,7 +211,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         SceneActionParamNew paramNew = this.getNewParam(param);
         SceneActionResp startResult;
         try {
-            startResult = cloudTaskApi.start(BeanUtil.copyProperties(param, SceneTaskStartReq.class));
+            startResult = cloudTaskApi.start(BeanUtil.copyProperties(paramNew, SceneTaskStartReq.class));
         } catch (Exception e) {
             log.error("takin-cloud启动压测场景返回错误，id={}", param.getSceneId(), e);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, e);
@@ -256,31 +246,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private SceneActionParamNew getNewParam(SceneActionParam param) {
         SceneActionParamNew paramNew = CopyUtils.copyFields(param, SceneActionParamNew.class);
         try {
-            //            paramNew.setContinueRead(false);
-            //            if (!param.getContinueRead().equals("-1")) {
-            //                Object hasUnread = redisTemplate.opsForValue().get("hasUnread_" + param.getSceneId());
-            //                if (hasUnread == null) {
-            //                    throw ApiException.create(500, "缺少参数hasUnread！无法判断继续压测还是从头压测，请检查redis或者cloud返回的位点数据是否有问题，id=" + param.getSceneId());
-            //                }
-            //                if (param.getContinueRead().equals("1")) {
-            //                    paramNew.setContinueRead(Boolean.parseBoolean(hasUnread + ""));
-            //                } else {
-            //                    paramNew.setContinueRead(false);
-            //                }
-            //            }
-            //            paramNew.setContinueRead(false);
-            //            if (!param.getContinueRead().equals("-1")) {
-            //                Object hasUnread = redisTemplate.opsForValue().get("hasUnread_" + param.getSceneId());
-            //                if (hasUnread == null) {
-            //                    throw ApiException.create(500,
-            //                    "缺少参数hasUnread！无法判断继续压测还是从头压测，请检查redis或者cloud返回的位点数据是否有问题，id=" + param.getSceneId());
-            //                }
-            //                if (param.getContinueRead().equals("1")) {
-            //                    paramNew.setContinueRead(Boolean.parseBoolean(hasUnread + ""));
-            //                } else {
-            //                    paramNew.setContinueRead(false);
-            //                }
-            //            }
             paramNew.setContinueRead(param.getContinueRead().equals("1"));
         } catch (Exception e) {
             log.error("未知异常", e);

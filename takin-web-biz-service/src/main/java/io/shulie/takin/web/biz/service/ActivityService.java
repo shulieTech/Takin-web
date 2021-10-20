@@ -1,14 +1,20 @@
 package io.shulie.takin.web.biz.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.activity.*;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 业务活动
@@ -68,7 +74,9 @@ public interface ActivityService {
      * @return 详情
      */
     ActivityResponse getActivityById(Long activityId);
+
     ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request);
+
     ActivityResponse getActivityWithMetricsByIdForReport(Long activityId, LocalDateTime start, LocalDateTime end);
 
     ActivityResponse getActivityByIdWithoutTopology(Long id);

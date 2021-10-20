@@ -8,14 +8,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportIdVO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
@@ -39,11 +36,8 @@ import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
-import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
-import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.ErrorInfo;
@@ -52,14 +46,10 @@ import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.http.HttpAssert;
-import io.shulie.takin.web.common.http.HttpWebClient;
-import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
-import io.shulie.takin.web.data.result.baseserver.TraceMetricsResult;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -70,11 +60,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -93,17 +78,6 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private ActivityDAO activityDAO;
-
-    @Autowired
-    private ActivityService activityService;
-
-    @Autowired
-    private InfluxDatabaseManager influxDBManager;
-
-    private static String pradarDatabase = "pradar";
-
-    @Autowired
-    private ReportRealTimeService reportRealTimeService;
 
     @Override
     public List<ReportDTO> listReport(ReportQueryParam param) {
@@ -214,57 +188,6 @@ public class ReportServiceImpl implements ReportService {
         return cloudReportApi.trend(param);
     }
 
-    public WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery) {
-        // 获得 报告链路趋势
-        WebResponse<LinkedHashMap<String, Object>> webResponse = queryReportTrend(reportTrendQuery);
-        Long businessActivityId = reportTrendQuery.getBusinessActivityId();
-        if (businessActivityId.equals(0L)) { // 如果 活动ID 为0，则表示 全局趋势
-            return webResponse;
-        }
-
-        // 获取 `压测报告`的`请求流量明细`. 取最晚一条 traceId
-        PageInfo<ReportTraceDTO> reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
-                reportTrendQuery.getReportId(), null, 0, 1);
-        List<ReportTraceDTO> reportTraceDTOS = reportLinkListByReportId.getList();
-        if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-            return webResponse; // todo
-        }
-        String latestTraceIdStr = reportTraceDTOS.get(0).getTraceId();
-
-        // 取最早一条 traceId
-        int total = (int) reportLinkListByReportId.getTotal();
-        log.info("压测报告 report id = " + reportTrendQuery.getReportId() + " 总条数:" + total);
-        reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
-                reportTrendQuery.getReportId(), null, total, 1);
-        reportTraceDTOS = reportLinkListByReportId.getList();
-        if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-            return webResponse; // todo
-        }
-        String firstTraceId = reportTraceDTOS.get(0).getTraceId();
-
-        LinkedHashMap<String, Object> data = webResponse.getData();
-        return getWebResponse(webResponse, firstTraceId, latestTraceIdStr, businessActivityId, data);
-    }
-
-    private LocalDateTime queryDataTimeByTraceId(String traceId) {
-        String queryByTraceId =
-                "SELECT" +
-                        " time, totalTps" +
-                        " FROM trace_metrics" +
-                        " where" +
-                        " traceId = '" + traceId + "'";
-
-        Collection<TraceMetricsResult> results = influxDBManager.query(TraceMetricsResult.class, queryByTraceId, pradarDatabase);
-        ArrayList<TraceMetricsResult> queryByTraceIdList = new ArrayList<>(results);
-
-        LocalDateTime localDateTime = null;
-        if (queryByTraceIdList.size() != 0) {
-            TraceMetricsResult traceMetricsResult = queryByTraceIdList.get(0);
-            localDateTime = LocalDateTime.ofInstant(traceMetricsResult.getTime(), ZoneId.systemDefault());
-        }
-        return localDateTime;
-    }
-
     @Override
     public ReportDetailTempOutput tempReportDetail(Long sceneId) {
         ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
@@ -293,61 +216,6 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public TrendResponse queryTempReportTrend(TrendRequest param) {
         return cloudReportApi.tempTrend(param);
-    }
-
-    @Override
-    public WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam param, ReportTraceQueryDTO queryDTO) {
-        // 获得 实况报告链路趋势
-        WebResponse<LinkedHashMap<String, Object>> webResponse = queryTempReportTrend(param);
-        Long businessActivityId = param.getBusinessActivityId();
-        if (businessActivityId.equals(0L)) { // 如果 活动ID 为0，则表示 全局趋势
-            return webResponse;
-        }
-
-        // 获取 `压测实况`的`请求流量明细`. 取最晚一条 traceId
-        PageInfo<ReportTraceDTO> reportLinkListByReportId =
-                reportRealTimeService.getReportLinkList(queryDTO.getReportId(), queryDTO.getSceneId(), queryDTO.getStartTime(), queryDTO.getType(), 0, 1);
-        List<ReportTraceDTO> reportTraceDTOS = reportLinkListByReportId.getList();
-        if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-            return webResponse; // todo
-        }
-        String latestTraceIdStr = reportTraceDTOS.get(0).getTraceId();
-
-        // 取最早一条 traceId
-        int total = (int) reportLinkListByReportId.getTotal();
-        reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
-                queryDTO.getReportId(), null, total, 1);
-        reportTraceDTOS = reportLinkListByReportId.getList();
-        if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-            return webResponse; // todo
-        }
-        String firstTraceId = reportTraceDTOS.get(0).getTraceId();
-
-        LinkedHashMap<String, Object> data = webResponse.getData();
-        return getWebResponse(webResponse, firstTraceId, latestTraceIdStr, businessActivityId, data);
-    }
-
-    private WebResponse getWebResponse(WebResponse<LinkedHashMap<String, Object>> webResponse, String firstTraceId, String lastTraceId, Long businessActivityId, LinkedHashMap<String, Object> data) {
-        LocalDateTime now = LocalDateTime.now();
-
-        LocalDateTime startDateTime = queryDataTimeByTraceId(firstTraceId);
-        LocalDateTime endDateTime = queryDataTimeByTraceId(lastTraceId);
-
-        boolean isCompletion = false; // 报告是否完整入库
-        if (null != startDateTime && null != endDateTime) {
-            isCompletion = true;
-        }
-        startDateTime = startDateTime == null ? now : startDateTime;
-        endDateTime = endDateTime == null ? now : endDateTime;
-
-        // 查询 链路拓扑图
-        ActivityResponse activity = activityService
-                .getActivityWithMetricsByIdForReport(businessActivityId, startDateTime, endDateTime);
-        // 响应中 加入 链路拓扑图
-        data.put("activity", activity);
-        data.put("isCompletion", isCompletion);
-        webResponse.setData(data);
-        return webResponse;
     }
 
     @Override

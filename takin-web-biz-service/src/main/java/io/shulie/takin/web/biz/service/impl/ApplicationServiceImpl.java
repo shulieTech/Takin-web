@@ -53,6 +53,10 @@ import com.pamirs.takin.entity.domain.vo.dsmanage.DataSource;
 import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.cloud.common.constants.Constants;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.amdb.bean.common.AmdbResult;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationVisualInfoDTO;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
@@ -64,6 +68,7 @@ import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInpu
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoardResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
@@ -78,6 +83,7 @@ import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.utils.DsManageUtil;
+import io.shulie.takin.web.biz.utils.E2eExceptionConfigInfoUtil;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.biz.utils.WhiteListUtil;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
@@ -87,6 +93,7 @@ import io.shulie.takin.web.common.constant.GuardEnableConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.WhiteListConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
@@ -94,6 +101,7 @@ import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.JsonUtil;
+import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
 import io.shulie.takin.web.common.vo.excel.ApplicationRemoteCallConfigExcelVO;
@@ -114,11 +122,7 @@ import io.shulie.takin.web.data.dao.application.ShadowMqConsumerDAO;
 import io.shulie.takin.web.data.dao.application.WhiteListDAO;
 import io.shulie.takin.web.data.dao.application.WhitelistEffectiveAppDao;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
-import io.shulie.takin.web.data.model.mysql.ApplicationDsManageEntity;
-import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
-import io.shulie.takin.web.data.model.mysql.LinkGuardEntity;
-import io.shulie.takin.web.data.model.mysql.ShadowJobConfigEntity;
-import io.shulie.takin.web.data.model.mysql.ShadowMqConsumerEntity;
+import io.shulie.takin.web.data.model.mysql.*;
 import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
@@ -134,6 +138,9 @@ import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.e2e.E2eBaseStorageRequest;
+import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
+import io.shulie.takin.web.ext.util.E2ePluginUtils;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.DocumentException;
@@ -142,7 +149,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -250,6 +259,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ApplicationNodeService applicationNodeService;
+
+    @Autowired
+    private AmdbClientProperties properties;
 
     //3.添加定时任务
     //或直接指定时间间隔，例如：5秒
@@ -1052,6 +1064,88 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void modifyAppNodeNum(List<NodeNumParam> numParamList) {
         applicationDAO.batchUpdateAppNodeNum(numParamList, WebPluginUtils.getCustomerId());
+    }
+
+    /**
+     * 应用监控查询接口
+     *
+     * @param request 包含应用名称及服务名称
+     */
+    @Override
+    public void getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
+        //TODO 1.关注
+        List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(request.getApplicationName());
+        //TODO 2.根据应用名称查询大数据性能数据
+        List<String> attentionInterfaces = attentionList.stream().map(ApplicationAttentionListEntity::getInterfaceName).collect(Collectors.toList());
+        request.setAttentionList(attentionInterfaces);
+        doGetAppDataByAppName(request);
+        //TODO 3.查询健康度(卡慢、接口异常)
+        doGetHealthIndicator();
+    }
+
+    /**
+     * 关注服务
+     *
+     * @param request 应用名➕服务名➕是否关注
+     */
+    @Override
+    public void attendApplicationService(ApplicationVisualInfoQueryRequest request) throws Exception {
+        Map<String, String> param = new HashMap<>();
+        String applicationName = request.getApplicationName();
+        String interfaceName = request.getLabel();
+        param.put("appName", applicationName);
+        param.put("interfaceName", interfaceName);
+        param.put("isAttend", String.valueOf(request.getAttend()));
+        String key = MD5Tool.getMD5(applicationName + interfaceName);
+        param.put("id",key);
+        applicationDAO.attendApplicationService(param);
+    }
+
+    /**
+     * 关注列表
+     *
+     * @param applicationName
+     */
+    private List<ApplicationAttentionListEntity> doGetAttentionList(String applicationName) {
+        return applicationDAO.getAttentionList(applicationName);
+    }
+
+    /**
+     * 获取应用健康度数据
+     */
+    private void doGetHealthIndicator() {
+        //1.获取瓶颈配置
+        List<E2eExceptionConfigInfoExt> configInfoExtList = E2eExceptionConfigInfoUtil.getConfig();
+        //2.构造应用性能数据
+        //TODO 注入RT、成功率
+        E2eBaseStorageRequest baseStorageRequest = new E2eBaseStorageRequest();
+        //3.瓶颈计算
+        Map<Integer, Integer> computeResult = E2ePluginUtils.bottleneckCompute(baseStorageRequest, configInfoExtList);
+
+    }
+
+    /**
+     * 调用大数据获取性能数据
+     * @param applicationName 应用名称
+     * @param label 服务名称
+     * @param flowTypeEnum 流量类型
+     */
+    private void doGetAppDataByAppName(ApplicationVisualInfoQueryRequest request) {
+        //TODO 大数据接口未定义
+        String url = properties.getUrl().getAmdb() + "/amdb/db/api/metrics/metricsDetailes";
+        try {
+            AmdbResult<List<ApplicationVisualInfoDTO>> appDataResult = AmdbHelper.newInStance().httpMethod(HttpMethod.GET)
+                    .url(url)
+                    .param(request)
+                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                    .eventName("根据应用名称查询大数据性能数据")
+                    .list(ApplicationVisualInfoDTO.class);
+            //TODO 大数据待清洗
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+        }
     }
 
     /**

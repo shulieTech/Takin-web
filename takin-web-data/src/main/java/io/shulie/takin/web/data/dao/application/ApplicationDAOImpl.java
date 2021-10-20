@@ -28,7 +28,9 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.InstanceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.LibraryDTO;
+import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
+import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
@@ -63,6 +65,9 @@ public class ApplicationDAOImpl
 
     @Autowired
     private ApplicationMntMapper applicationMntMapper;
+
+    @Autowired
+    private ApplicationAttentionListMapper applicationAttentionListMapper;
 
     @Override
     public List<ApplicationDetailResult> getApplications(List<String> appNames) {
@@ -384,5 +389,15 @@ public class ApplicationDAOImpl
     @Override
     public void batchUpdateAppNodeNum(List<NodeNumParam> paramList, Long customerId) {
         applicationMntMapper.batchUpdateAppNodeNum(paramList, customerId);
+    }
+
+    @Override
+    public List<ApplicationAttentionListEntity> getAttentionList(String applicationName) {
+         return applicationAttentionListMapper.getAttentionList(applicationName);
+    }
+
+    @Override
+    public void attendApplicationService(Map<String, String> param) {
+        applicationAttentionListMapper.attendApplicationService(param);
     }
 }

@@ -24,7 +24,9 @@ public enum AppRemoteCallTypeEnum {
     /**
      * FEIGN
      */
-    FEIGN(2, "FEIGN");
+    FEIGN(2, "FEIGN"),
+
+    GRPC(3, "GRPC");
     private Integer type;
     private String desc;
 

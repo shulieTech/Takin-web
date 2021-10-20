@@ -16,19 +16,10 @@
 
 package io.shulie.takin.web.biz.service.linkManage.impl;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
-
-import com.alibaba.fastjson.JSONObject;
-
+import cn.hutool.core.collection.CollStreamUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TBaseConfigDao;
@@ -40,20 +31,25 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallTypeTemplateDTO;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
+import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutputV2;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallCreateV2Request;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;
+import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeTemplateEnum;
+import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeV2Enum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
@@ -61,7 +57,10 @@ import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO.Blacklist;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO.RemoteCall;
 import io.shulie.takin.web.common.vo.application.AppRemoteCallListVO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
+import io.shulie.takin.web.data.dao.application.AppRemoteCallTemplateMappingDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.application.HttpClientConfigTemplateDAO;
+import io.shulie.takin.web.data.dao.application.RpcConfigTemplateDAO;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
 import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.param.application.AppRemoteCallCreateParam;
@@ -69,8 +68,12 @@ import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
+import io.shulie.takin.web.data.result.application.AppRemoteCallTemplateMappingDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.data.result.application.HttpClientConfigTemplateDetailResult;
+import io.shulie.takin.web.data.result.application.RpcConfigTemplateDetailResult;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -79,6 +82,18 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 /**
  * @author 无涯
@@ -120,6 +135,15 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
     @Autowired
     private ThreadPoolExecutor queryAsyncThreadPool;
+
+    @Autowired
+    private HttpClientConfigTemplateDAO httpClientConfigTemplateDAO;
+
+    @Autowired
+    private RpcConfigTemplateDAO rpcConfigTemplateDAO;
+
+    @Autowired
+    private AppRemoteCallTemplateMappingDAO templateMappingDAO;
 
 
     private void checkInputData(AppRemoteCallUpdateInput input) {
@@ -286,6 +310,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             result.setTypeSelectVO(new SelectVO(callConfigEnum.getConfigName(), String.valueOf(callConfigEnum.getType())));
             // 支持类型
             result.setInterfaceTypeSelectVO(getSelectVO(result.getInterfaceType(), voList));
+            result.setCanRemove(result.getIsManual());
         });
         return PagingList.of(results.stream().sorted(Comparator.comparing(AppRemoteCallListVO::getSort)).collect(Collectors.toList()),
             dbPagingList.getTotal() + amdbPagingList.getTotal());
@@ -340,6 +365,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             AppRemoteCallListVO listVO = new AppRemoteCallListVO();
             BeanUtils.copyProperties(result, listVO);
             listVO.setSort(1);
+            listVO.setMockValue(result.getMockReturnValue());
+            AppRemoteCallTypeEnum anEnum = AppRemoteCallTypeEnum.getEnum(result.getInterfaceType());
+            listVO.setInterfaceChildType(StringUtils.defaultIfBlank(result.getInterfaceChildType(), anEnum.getDesc()));
             // 权限问题
             fillInPermissions(listVO, detailResult);
             return listVO;
@@ -705,6 +733,14 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 listVO.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
                 listVO.setSort(2);
                 listVO.setAppName(call.getAppName());
+                listVO.setIsManual(false);
+                listVO.setDefaultWhiteInfo(StringUtils.defaultIfBlank(call.getDefaultWhiteInfo(), ""));
+                AppRemoteCallTypeV2Enum enumByDesc = AppRemoteCallTypeV2Enum.getEnumByDesc(call.getMiddlewareDetail());
+                if(Objects.isNull(enumByDesc)){
+                    listVO.setInterfaceChildType(call.getMiddlewareName());
+                }else{
+                    listVO.setInterfaceChildType(call.getMiddlewareDetail());
+                }
                 // 权限问题
                 fillInPermissions(listVO, detailResult);
                 return listVO;
@@ -719,4 +755,169 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             outputs.size());
     }
 
+    @Override
+    public List<SelectVO> getConfigSelectV2(String interfaceType) {
+        ApplicationRemoteCallTypeTemplateDTO typeTemplateDTO = new ApplicationRemoteCallTypeTemplateDTO();
+        AppRemoteCallTemplateMappingDetailResult interfacetypeDetail = templateMappingDAO.getOneByInterfacetype(interfaceType);
+        if (Objects.isNull(interfacetypeDetail)) {
+            return Collections.emptyList();
+        }
+        if (AppRemoteCallTypeTemplateEnum.HTTP.getDesc().equals(interfacetypeDetail.getTemplate())) {
+            HttpClientConfigTemplateDetailResult template = httpClientConfigTemplateDAO.selectTemplate(interfaceType);
+            if (Objects.isNull(template)) {
+                return Collections.emptyList();
+            }
+            BeanUtils.copyProperties(template, typeTemplateDTO);
+        }
+        if (AppRemoteCallTypeTemplateEnum.RPC.getDesc().equals(interfacetypeDetail.getTemplate())) {
+            RpcConfigTemplateDetailResult template = rpcConfigTemplateDAO.selectTemplate(interfaceType);
+            if (Objects.isNull(template)) {
+                return Collections.emptyList();
+            }
+            BeanUtils.copyProperties(template, typeTemplateDTO);
+        }
+        return this.buildSelectVos(typeTemplateDTO);
+    }
+
+
+    private List<SelectVO> buildSelectVos(ApplicationRemoteCallTypeTemplateDTO dto) {
+        List<SelectVO> vos = Lists.newArrayList();
+        if (dto.getWhitelistEnable() == 1) {
+            vos.add(new SelectVO(AppRemoteCallConfigEnum.OPEN_WHITELIST.getConfigName(),
+                    AppRemoteCallConfigEnum.OPEN_WHITELIST.getType().toString()));
+        }
+
+        if (dto.getReturnMockEnable() == 1) {
+            vos.add(new SelectVO(AppRemoteCallConfigEnum.RETURN_MOCK.getConfigName(),
+                    AppRemoteCallConfigEnum.RETURN_MOCK.getType().toString()));
+        }
+
+        if (dto.getForwardMockEnable() == 1) {
+            vos.add(new SelectVO(AppRemoteCallConfigEnum.FORWARD_MOCK.getConfigName(),
+                    AppRemoteCallConfigEnum.FORWARD_MOCK.getType().toString()));
+        }
+        vos.add(new SelectVO(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getConfigName(),
+                AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType().toString()));
+        return vos;
+    }
+
+    /**
+     * 根据接口类型筛选数据
+     *
+     */
+    @Override
+    public List<SelectVO> getInterfaceTypeSelect() {
+        List<HttpClientConfigTemplateDetailResult> httpResultList = httpClientConfigTemplateDAO.selectList();
+        List<RpcConfigTemplateDetailResult> rpcResultList = rpcConfigTemplateDAO.selectList();
+        List<ApplicationRemoteCallTypeTemplateDTO> collect = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(httpResultList)) {
+            collect.addAll(httpResultList.stream()
+                    .map(httpTemplate -> Convert.convert(ApplicationRemoteCallTypeTemplateDTO.class, httpTemplate))
+                    .collect(Collectors.toList()));
+        }
+
+        if (CollectionUtils.isNotEmpty(rpcResultList)) {
+            collect.addAll(rpcResultList.stream()
+                    .map(rpcTemplate -> Convert.convert(ApplicationRemoteCallTypeTemplateDTO.class, rpcTemplate))
+                    .collect(Collectors.toList()));
+        }
+
+        if (CollectionUtils.isEmpty(collect)) {
+            return Collections.emptyList();
+        }
+        return collect.stream().
+                filter(templateDto -> !"HTTP".equals(templateDto.getEngName()))
+                .map(templateDto -> {
+                    String engName = templateDto.getEngName();
+                    return new SelectVO(engName, engName);
+                }).collect(Collectors.toList());
+    }
+
+
+    /**
+     * 获取服务端应用的接口
+     *
+     * @return
+     */
+    @Override
+    public Map<Long, List<AppRemoteCallResult>> getListGroupByAppId() {
+        List<AppRemoteCallResult> allRecord = appRemoteCallDAO.getAllRecord();
+        return CollStreamUtil.groupByKey(allRecord, AppRemoteCallResult::getApplicationId);
+    }
+
+    /**
+     * 根据id批量逻辑删除
+     *
+     * @param ids
+     */
+    @Override
+    public void batchLogicDelByIds(List<Long> ids) {
+        appRemoteCallDAO.batchLogicDelByIds(ids);
+    }
+
+    @Override
+    public void batchSave(List<AppRemoteCallResult> appRemoteCallResults) {
+        appRemoteCallDAO.batchSave(appRemoteCallResults);
+    }
+
+    @Override
+    public void create(AppRemoteCallCreateV2Request request) {
+        ApplicationDetailResult detailResult = applicationDAO.getApplicationById(request.getApplicationId());
+        if (detailResult == null) {
+            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "应用不存在");
+        }
+        // 补充插件内容
+        WebPluginUtils.fillUserData(request);
+        AppRemoteCallTypeV2Enum enumByDesc = AppRemoteCallTypeV2Enum.getEnumByDesc(request.getInterfaceType());
+        AppRemoteCallCreateParam param = new AppRemoteCallCreateParam();
+        BeanUtils.copyProperties(request, param);
+        param.setCustomerId(detailResult.getCustomerId());
+        param.setAppName(detailResult.getApplicationName());
+        param.setInterfaceType(enumByDesc.getType());
+        param.setInterfaceChildType(request.getInterfaceType());
+        param.setMockReturnValue(request.getMockValue());
+        param.setRemark(request.getRemark());
+        appRemoteCallDAO.insert(param);
+        agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
+    }
+
+    @Override
+    public void updateV2(AppRemoteCallUpdateV2Request request) {
+        ApplicationDetailResult detailResult = applicationDAO.getApplicationById(request.getApplicationId());
+        if (detailResult == null) {
+            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "应用不存在");
+        }
+        if (Objects.isNull(request.getId())) {
+            this.create(request);
+            return;
+        }
+        // 补充插件内容
+        WebPluginUtils.fillUserData(request);
+        getCallResult(request.getId());
+        AppRemoteCallUpdateParam param = new AppRemoteCallUpdateParam();
+        BeanUtils.copyProperties(request, param);
+        AppRemoteCallTypeV2Enum enumByDesc = AppRemoteCallTypeV2Enum.getEnumByDesc(request.getInterfaceType());
+        param.setCustomerId(detailResult.getCustomerId());
+        param.setAppName(detailResult.getApplicationName());
+        param.setInterfaceType(enumByDesc.getType());
+        param.setInterfaceChildType(request.getInterfaceType());
+        param.setMockReturnValue(request.getMockValue());
+        param.setRemark(request.getRemark());
+        appRemoteCallDAO.update(param);
+
+        agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
+
+    }
+
+    @Override
+    public AppRemoteCallOutputV2 getByIdV2(Long id) {
+        AppRemoteCallResult result = getCallResult(id);
+        AppRemoteCallOutputV2 output = new AppRemoteCallOutputV2();
+        BeanUtils.copyProperties(result, output);
+        output.setInterfaceType(result.getInterfaceChildType());
+        output.setMockValue(result.getMockReturnValue());
+        output.setRemark(result.getRemark());
+        output.setApplicationId(String.valueOf(result.getApplicationId()));
+        return output;
+    }
 }

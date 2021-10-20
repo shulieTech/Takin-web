@@ -1,21 +1,17 @@
 package io.shulie.takin.web.biz.service.dsManage.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Lists;
+import com.pamirs.attach.plugin.dynamic.Type;
+import com.pamirs.attach.plugin.dynamic.template.RedisTemplate;
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.entity.DsModelWithBLOBs;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
+import io.shulie.takin.web.biz.convert.db.parser.RedisTemplateParser;
 import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
@@ -23,15 +19,16 @@ import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowServerConfigurationOutput;
+import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.response.application.SingleServerConfiguration;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.dsManage.AbstractDsService;
 import io.shulie.takin.web.biz.utils.DsManageUtil;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDsCacheManageDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDAO;
 import io.shulie.takin.web.data.param.application.ApplicationDsCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsDeleteParam;
@@ -39,11 +36,20 @@ import io.shulie.takin.web.data.param.application.ApplicationDsEnableParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsUpdateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author HengYu
@@ -70,11 +76,17 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
 
+    @Autowired
+    private ApplicationDsCacheManageDAO cacheManageDAO;
+
+    @Autowired
+    private RedisTemplateParser redisTemplateParser;
+
 
     @Override
     public Response dsAdd(ApplicationDsCreateInput createRequest) {
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(
-            createRequest.getApplicationId());
+                createRequest.getApplicationId());
         Assert.notNull(applicationDetailResult, "应用不存在!");
 
         ApplicationDsQueryParam queryCurrentParam = new ApplicationDsQueryParam();
@@ -84,9 +96,9 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         List<Integer> dsTypeList = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(applicationDsResultList)) {
             dsTypeList = applicationDsResultList.stream().map(ApplicationDsResult::getDsType)
-                .map(String::valueOf).map(Integer::parseInt)
-                .distinct()
-                .collect(Collectors.toList());
+                    .map(String::valueOf).map(Integer::parseInt)
+                    .distinct()
+                    .collect(Collectors.toList());
         }
         ApplicationDsCreateParam createParam = new ApplicationDsCreateParam();
 
@@ -109,7 +121,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
 
         //修改应用状态
         applicationService.modifyAccessStatus(String.valueOf(createParam.getApplicationId()),
-            AppAccessTypeEnum.UNUPLOAD.getValue(), null);
+                AppAccessTypeEnum.UNUPLOAD.getValue(), null);
 
         agentConfigCacheManager.evictShadowServer(applicationDetailResult.getApplicationName());
 
@@ -136,7 +148,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         updateParam.setParseConfig(parseShadowServerConfig(config));
 
         configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), dsResult.getApplicationId(),
-            dsResult.getApplicationName());
+                dsResult.getApplicationName());
 
         agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
 
@@ -182,7 +194,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         enableParam.setStatus(enableRequest.getStatus());
         applicationDsDAO.enable(enableParam);
         configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), dsResult.getApplicationId(),
-            dsResult.getApplicationName());
+                dsResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
 
         return Response.success();
@@ -199,7 +211,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         applicationDsDAO.delete(deleteParam);
 
         configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), dsResult.getApplicationId(),
-            dsResult.getApplicationName());
+                dsResult.getApplicationName());
 
         agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
         return Response.success();
@@ -212,16 +224,18 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
             List<DsModelWithBLOBs> dsModels = applicationDsDAO.selectByAppIdForAgent(applicationMnt.getApplicationId());
             if (CollectionUtils.isNotEmpty(dsModels)) {
                 dsModels = dsModels.stream()
-                    .filter(
-                        dsModel -> dsModel.getDsType().equals(new Byte(String.valueOf(DsTypeEnum.SHADOW_REDIS_SERVER
-                            .getCode()))))
-                    .collect(Collectors.toList());
+                        .filter(
+                                dsModel -> dsModel.getDsType().equals(new Byte(String.valueOf(DsTypeEnum.SHADOW_REDIS_SERVER
+                                        .getCode()))))
+                        .collect(Collectors.toList());
             }
             for (DsModelWithBLOBs dsModel : dsModels) {
                 ShadowServerConfigurationOutput configurationResponse
-                    = JSON.parseObject(dsModel.getParseConfig(), ShadowServerConfigurationOutput.class);
+                        = JSON.parseObject(dsModel.getParseConfig(), ShadowServerConfigurationOutput.class);
                 responseList.add(configurationResponse);
             }
+            List<ShadowServerConfigurationOutput> newData = this.compatibleNewVersion(applicationMnt.getApplicationId());
+            responseList.addAll(newData);
         }
         return responseList;
     }
@@ -239,7 +253,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         // 没有, 说明能直接更新
         String safePasswordField;
         if (StringUtils.isBlank(json)
-            || !json.contains(safePasswordField = DsManageUtil.getSafePasswordFieldAboutJson())) {
+                || !json.contains(safePasswordField = DsManageUtil.getSafePasswordFieldAboutJson())) {
             return json;
         }
 
@@ -247,7 +261,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         // 需要替换原有的密码, 再进行更新
         // 解析
         ShadowServerConfigurationResponse response = JsonUtil.json2bean(originJson,
-            ShadowServerConfigurationResponse.class);
+                ShadowServerConfigurationResponse.class);
         String password = response.getDataSourceBusinessPerformanceTest().getPassword();
         String originPasswordField = DsManageUtil.getOriginPasswordFieldAboutJson(password);
         // 脱敏的更换成明文密码的, 为了更新
@@ -268,24 +282,24 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
     public ShadowServerConfigurationResponse parseJsonConfigurations(String jsonStr) {
         ShadowServerConfigurationResponse shadowServerConfigurationResponse = new ShadowServerConfigurationResponse();
         Object object = JSONObject.parse(jsonStr);
-        Object dataSourceBusinessObj = ((JSONObject)object).get("dataSourceBusiness");
+        Object dataSourceBusinessObj = ((JSONObject) object).get("dataSourceBusiness");
         SingleServerConfiguration dataSourceBusiness = new SingleServerConfiguration();
-        dataSourceBusiness.setNodes(String.valueOf(((JSONObject)dataSourceBusinessObj).get("nodes")));
-        Object tmpMaster = ((JSONObject)dataSourceBusinessObj).get("master");
+        dataSourceBusiness.setNodes(String.valueOf(((JSONObject) dataSourceBusinessObj).get("nodes")));
+        Object tmpMaster = ((JSONObject) dataSourceBusinessObj).get("master");
         if (tmpMaster != null) {
             dataSourceBusiness.setMaster(String.valueOf(tmpMaster));
         }
         shadowServerConfigurationResponse.setDataSourceBusiness(dataSourceBusiness);
 
-        Object dataSourceBusinessPerformanceTestObj = ((JSONObject)object).get("dataSourceBusinessPerformanceTest");
+        Object dataSourceBusinessPerformanceTestObj = ((JSONObject) object).get("dataSourceBusinessPerformanceTest");
         SingleServerConfiguration dataSourceBusinessPerformanceTest = new SingleServerConfiguration();
         dataSourceBusinessPerformanceTest.setNodes(
-            String.valueOf(((JSONObject)dataSourceBusinessPerformanceTestObj).get("nodes")));
+                String.valueOf(((JSONObject) dataSourceBusinessPerformanceTestObj).get("nodes")));
         dataSourceBusinessPerformanceTest.setDatabase(
-            String.valueOf(((JSONObject)dataSourceBusinessPerformanceTestObj).get("database")));
+                String.valueOf(((JSONObject) dataSourceBusinessPerformanceTestObj).get("database")));
         dataSourceBusinessPerformanceTest.setPassword(
-            String.valueOf(((JSONObject)dataSourceBusinessPerformanceTestObj).get("password")));
-        Object tmpTestMaster = ((JSONObject)dataSourceBusinessPerformanceTestObj).get("master");
+                String.valueOf(((JSONObject) dataSourceBusinessPerformanceTestObj).get("password")));
+        Object tmpTestMaster = ((JSONObject) dataSourceBusinessPerformanceTestObj).get("master");
         if (tmpTestMaster != null) {
             dataSourceBusinessPerformanceTest.setMaster(String.valueOf(tmpTestMaster));
         }
@@ -317,10 +331,79 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
 
         // tips: 这里不使用 对象转json, 是因为换行格式, 都没了
         String originPasswordField = DsManageUtil.getOriginPasswordFieldAboutJson(
-            dataSourceBusinessPerformanceTest.getPassword());
+                dataSourceBusinessPerformanceTest.getPassword());
         String newPasswordField = DsManageUtil.getSafePasswordFieldAboutJson();
         return json.replace(originPasswordField, newPasswordField);
     }
 
+
+    /**
+     * 老数据映射成新的结构
+     *
+     * @param recordId
+     * @return
+     */
+    @Override
+    public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
+        ApplicationDsResult dsResult = applicationDsDAO.queryByPrimaryKey(recordId);
+
+        if (Objects.isNull(dsResult)) {
+            return null;
+        }
+        // 替换
+        ShadowServerConfigurationResponse response = JsonUtil.json2bean(dsResult.getConfig(), ShadowServerConfigurationResponse.class);
+        // 转 json
+        SingleServerConfiguration bus = response.getDataSourceBusiness();
+        SingleServerConfiguration test = response.getDataSourceBusinessPerformanceTest();
+
+        ShadowDetailResponse shadowDetailResponse = new ShadowDetailResponse();
+        shadowDetailResponse.setId(dsResult.getId());
+        shadowDetailResponse.setApplicationId(String.valueOf(dsResult.getApplicationId()));
+        shadowDetailResponse.setMiddlewareType(Type.MiddleWareType.CACHE.value());
+        shadowDetailResponse.setDsType(DsTypeEnum.SHADOW_REDIS_CLUSTER.getCode());
+        String url = bus.getMaster() + "," + bus.getNodes();
+        shadowDetailResponse.setUrl(url);
+        shadowDetailResponse.setConnectionPool(RedisTemplate.Client.jedis.toString());
+        shadowDetailResponse.setCacheType("主从模式");
+        shadowDetailResponse.setShadowInfo(JSON.toJSONString(test));
+        return shadowDetailResponse;
+    }
+
+
+    private List<ShadowServerConfigurationOutput> compatibleNewVersion(Long applicationId) {
+        List<ShadowServerConfigurationOutput> list = new ArrayList<>();
+        ApplicationDsQueryParam param = new ApplicationDsQueryParam();
+        param.setApplicationId(applicationId);
+        param.setStatus(0);
+        List<ApplicationDsCacheManageDetailResult> results = cacheManageDAO.selectList(param);
+        if (results.isEmpty()) {
+            return list;
+        }
+
+
+        list = results.stream().filter(
+                detail ->  detail.getDsType().equals(DsTypeEnum.SHADOW_REDIS_CLUSTER.getCode())
+        ).map(detail -> {
+            SingleServerConfiguration bus = JSONObject.parseObject(detail.getFileExtedn(), SingleServerConfiguration.class);
+            String shaDowFileExtedn = detail.getShaDowFileExtedn();
+            JSONObject jsonObject = JSON.parseObject(shaDowFileExtedn);
+            String shadowConfig = jsonObject.getString("shadowConfig");
+            SingleServerConfiguration test = JSONObject.parseObject(shadowConfig, SingleServerConfiguration.class);
+            if(Objects.isNull(bus)){
+                Map<String, String> modelMap = redisTemplateParser.convertModel();
+                if(Objects.nonNull(modelMap)){
+                    test.setModel(modelMap.get(detail.getType()));
+                    test.setClient(detail.getCacheName());
+                }
+            }else{
+                test.setModel(bus.getModel());
+                test.setClient(bus.getClient());
+            }
+
+            return new ShadowServerConfigurationOutput(bus, test);
+        }).collect(Collectors.toList());
+
+        return list;
+    }
 }
 

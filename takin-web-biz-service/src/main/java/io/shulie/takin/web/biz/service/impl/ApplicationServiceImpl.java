@@ -103,6 +103,7 @@ import io.shulie.takin.web.common.vo.excel.LinkGuardExcelVO;
 import io.shulie.takin.web.common.vo.excel.ShadowConsumerExcelVO;
 import io.shulie.takin.web.common.vo.excel.ShadowJobExcelVO;
 import io.shulie.takin.web.common.vo.excel.WhiteListExcelVO;
+import io.shulie.takin.web.data.dao.application.AppAgentConfigReportDAO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsManageDAO;
@@ -126,6 +127,7 @@ import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
+import io.shulie.takin.web.data.result.application.AppAgentConfigReportDetailResult;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
@@ -166,6 +168,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private static final String PRADAR_SWITCH_STATUS = "PRADAR_SWITCH_STATUS_";
     private static final String PRADAR_SWITCH_STATUS_VO = "PRADAR_SWITCH_STATUS_VO_";
     private static final String PRADAR_SWITCH_ERROR_INFO_UID = "PRADAR_SWITCH_ERROR_INFO_";
+    private static final String PRADAR_SILENCE_SWITCH_STATUS_VO = "PRADAR_SILENCE_SWITCH_STATUS_";
+    private static final String PRADAR_SILENCE_SWITCH_STATUS = "PRADAR_SILENCE_SWITCH_STATUS_VO_";
     private static final List<String> CONFIGITEMLIST = Collections.singletonList("redis影子key有效期");
 
     @Autowired
@@ -250,6 +254,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ApplicationNodeService applicationNodeService;
+
+    @Autowired
+    private AppAgentConfigReportDAO reportDAO;
+
 
     //3.添加定时任务
     //或直接指定时间间隔，例如：5秒
@@ -2079,5 +2087,123 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             vo.setAccessStatus(ApplicationConstants.APPLICATION_ACCESS_STATUS_EXCEPTION);
         }
     }
+
+    /**
+     * 静默开关
+     *
+     * @param uid
+     * @param enable
+     * @return
+     */
+    @Override
+    public Response userAppSilenceSwitch(Long uid, Boolean enable) {
+        //全局开关只保留 开/关
+        if (enable == null) {
+            return Response.fail(FALSE_CORE, "开关状态不能为空", null);
+        }
+        if (uid == null) {
+            UserExt user = WebPluginUtils.getUser();
+            if (user == null) {
+                return Response.fail(FALSE_CORE, "当前用户为空", null);
+            }
+            uid = user.getCustomerId();
+        }
+
+        String realStatus = getUserSilenceSwitchFromRedis(uid);
+        ApplicationVo vo = new ApplicationVo();
+        String status;
+        String voStatus;
+        if (realStatus.equals(AppSwitchEnum.CLOSING.getCode()) || realStatus.equals(AppSwitchEnum.OPENING.getCode())) {
+            vo.setSwitchStutus(realStatus);
+            return Response.success(realStatus);
+        } else {
+            status = (enable ? AppSwitchEnum.OPENED : AppSwitchEnum.CLOSED).getCode();
+            voStatus = (enable ? AppSwitchEnum.OPENING : AppSwitchEnum.CLOSING).getCode();
+            //开关状态、开关开启、关闭的时间存放在redis
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + uid, status);
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS + uid, voStatus);
+        }
+        vo.setSwitchStutus(status);
+        return Response.success(vo);
+    }
+
+
+    /**
+     * 从redis获取用户静默开关状态，默认开启
+     *
+     * @param uid
+     * @return
+     */
+    private String getUserSilenceSwitchFromRedis(Long uid) {
+
+        if (uid == null) {
+            throw new RuntimeException("用户id不能为空");
+        }
+        Object statusObj = redisTemplate.opsForValue().get(PRADAR_SILENCE_SWITCH_STATUS_VO + uid);
+        if (statusObj == null) {
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + uid, AppSwitchEnum.OPENED.getCode());
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS + uid, AppSwitchEnum.OPENED.getCode());
+        } else {
+            return (String)statusObj;
+        }
+        return AppSwitchEnum.OPENED.getCode();
+    }
+
+    /**
+     * 获取静默开关状态
+     *
+     * @return
+     */
+    @Override
+    public Response userAppSilenceSwitchInfo() {
+        ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
+        UserExt user = WebPluginUtils.getUser();
+        if (user == null) {
+            String userAppKey = WebPluginUtils.getTenantUserAppKey();
+             user = WebPluginUtils.getUserByAppKey(userAppKey);
+        }
+        if (user == null) {
+            return Response.fail(FALSE_CORE);
+        }
+        //体验用户默认状态为开启
+        if (user.getRole() != null && user.getRole() == 1) {
+            result.setSwitchStatus(AppSwitchEnum.OPENED.getCode());
+        } else {
+            result.setSwitchStatus(getUserSilenceSwitchStatusForVo(user.getCustomerId()));
+        }
+
+        return Response.success(result);
+    }
+
+    @Override
+    public String getUserSilenceSwitchStatusForVo(Long uid) {
+        if (uid == null) {
+            return null;
+        }
+        Object o = redisTemplate.opsForValue().get(PRADAR_SILENCE_SWITCH_STATUS_VO + uid);
+        if (o == null) {
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + uid, AppSwitchEnum.OPENED.getCode());
+            return AppSwitchEnum.OPENED.getCode();
+        } else {
+            return (String)o;
+        }
+    }
+
+    @Override
+    public Response getApplicationReportConfigInfo(Integer type,String appName) {
+        List<AppAgentConfigReportDetailResult> results = reportDAO.listByBizType(type,appName);
+        //todo 现在只有一种配置 先这么写
+        String silenceSwitchStatus = getUserSilenceSwitchStatusForVo(WebPluginUtils.getCustomerId());
+        String configValue =  AppSwitchEnum.OPENED.getCode().equals(silenceSwitchStatus)?"true":"false";
+        List<AppAgentConfigReportDetailResult> filter = results.stream().filter(x -> configValue.equals(x.getConfigValue())).collect(Collectors.toList());
+        return Response.success(filter);
+    }
+
+    @Override
+    public Boolean silenceSwitchStatusIsTrue(Long uid, AppSwitchEnum appSwitchEnum) {
+        String status = this.getUserSilenceSwitchStatusForVo(WebPluginUtils.getCustomerId());
+        return appSwitchEnum.getCode().equals(status);
+    }
+
 
 }

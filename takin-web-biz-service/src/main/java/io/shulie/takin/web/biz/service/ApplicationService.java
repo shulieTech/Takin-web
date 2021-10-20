@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
@@ -204,5 +205,25 @@ public interface ApplicationService {
      * @param numParamList 数据集合
      */
     void modifyAppNodeNum(List<NodeNumParam> numParamList);
+
+    /**
+     * 编辑静默开关
+     *
+     * @return
+     */
+    Response userAppSilenceSwitch(Long uid, Boolean enable);
+
+
+    /**
+     * 获取静默开关状态
+     * @return
+     */
+    Response userAppSilenceSwitchInfo();
+
+    String getUserSilenceSwitchStatusForVo(Long uid);
+
+    Response getApplicationReportConfigInfo(Integer bizType,String appName);
+
+    Boolean silenceSwitchStatusIsTrue(Long uid, AppSwitchEnum appSwitchEnum);
 
 }

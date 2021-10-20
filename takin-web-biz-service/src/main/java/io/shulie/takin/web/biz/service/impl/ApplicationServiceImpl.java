@@ -1,16 +1,7 @@
 package io.shulie.takin.web.biz.service.impl;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -1141,11 +1132,47 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     .eventName("根据应用名称查询大数据性能数据")
                     .list(ApplicationVisualInfoDTO.class);
             //TODO 大数据待清洗
-
+            List<ApplicationVisualInfoDTO> data = appDataResult.getData();
+            List<String> attentionList = request.getAttentionList();
+            String orderBy = request.getOrderBy();
+            List<ApplicationVisualInfoDTO> infoDTOList = doSortAndPage(data, attentionList, orderBy);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
         }
+    }
+
+    private List<ApplicationVisualInfoDTO> doSortAndPage(List<ApplicationVisualInfoDTO> data, List<String> attentionList, String orderBy) {
+        String[] orderList = orderBy.split(" ");
+        if (orderList.length != 2) {
+            return null;
+        }
+        String orderName = orderList[0];
+        String orderType = orderList[1];
+        return data.stream().sorted((d1, d2) -> {
+            boolean b1 = attentionList.contains(d1.getLabel());
+            boolean b2 = attentionList.contains(d2.getLabel());
+            if ((b1 && b2) || (!b1 && !b2)) {
+                Number result = 0;
+                switch (orderName) {
+                    case "QPS":
+                        result = d1.getQueryPerSecond() - d2.getQueryPerSecond();
+                        break;
+                    case "TPS":
+                        result = d1.getTransactionsPerSecond() - d2.getTransactionsPerSecond();
+                        break;
+                    case "RT":
+                        result = (d1.getResponseTime() - d2.getTransactionsPerSecond());
+                        break;
+                    case "SUCCESSRATE":
+                        result = (d1.getSuccessRate() - d2.getSuccessRate());
+                }
+                int diff = result.doubleValue() > 0 ? 1 : -1;
+                return "asc".equals(orderType) ? diff : -diff;
+            } else {
+                return b1 ? -1 : 1;
+            }
+        }).collect(Collectors.toList());
     }
 
     /**

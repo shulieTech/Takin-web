@@ -13,7 +13,9 @@ import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.common.common.Response;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -205,4 +207,17 @@ public interface ApplicationService {
      */
     void modifyAppNodeNum(List<NodeNumParam> numParamList);
 
+    /**
+     * 应用监控查询接口
+     *
+     * @param request 包含应用名称及服务名称
+     */
+    Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request);
+
+    /**
+     * 关注服务
+     *
+     * @param request 应用名➕服务名➕是否关注
+     */
+    void attendApplicationService(ApplicationVisualInfoQueryRequest request) throws Exception;
 }

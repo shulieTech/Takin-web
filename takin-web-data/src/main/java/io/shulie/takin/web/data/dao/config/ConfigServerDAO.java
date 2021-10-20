@@ -1,5 +1,7 @@
 package io.shulie.takin.web.data.dao.config;
 
+import io.shulie.takin.web.data.result.config.ConfigServerDetailResult;
+
 /**
  * 配置表-服务的配置(ConfigServer)表数据库 dao 层
  *
@@ -35,6 +37,14 @@ public interface ConfigServerDAO {
      * @return 配置值
      */
     String getTenantEnvValueByKeyAndTenantAppKeyAndEnvCode(String key, String tenantAppKey, String envCode);
+
+    /**
+     * 通过配置 key, 获得配置对象
+     *
+     * @param key 配置 key
+     * @return 配置实例
+     */
+    ConfigServerDetailResult getTenantEnvConfigByKey(String key);
 
 }
 

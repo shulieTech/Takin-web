@@ -67,6 +67,17 @@ public class RedisHelper {
     }
 
     /**
+     * 根据 redis key, 删除某个 hashKey 及值
+     * 或者全部
+     *
+     * @param redisKey redis key
+     * @param hashKey hash key, 不传则删除整个 hash
+     */
+    public static void hashDelete(String redisKey, Object... hashKey) {
+        redisTemplate.opsForHash().delete(redisKey, hashKey);
+    }
+
+    /**
      * hash 结构, put
      * @param redisKey redis key
      * @param hashKey hash key

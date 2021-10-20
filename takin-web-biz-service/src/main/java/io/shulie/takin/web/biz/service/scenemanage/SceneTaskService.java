@@ -18,7 +18,7 @@ import io.shulie.takin.web.common.domain.WebResponse;
  */
 public interface SceneTaskService {
 
-    WebResponse<StartResponse> startTask(SceneActionParam param);
+    SceneActionResp startTask(SceneActionParam param);
 
     ResponseResult<String> stopTask(SceneActionParam param);
 

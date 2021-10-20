@@ -101,6 +101,10 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-common</artifactId>
+        </dependency>
 
 
     </dependencies>

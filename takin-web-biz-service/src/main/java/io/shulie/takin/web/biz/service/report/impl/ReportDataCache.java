@@ -15,6 +15,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportApplicationDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.risk.Metrices;
+import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -82,7 +83,7 @@ public class ReportDataCache {
         if (reportApplication.getReportDetail() != null) {
             redisTemplate.opsForValue().set(getReportDetailKey(reportId), reportApplication.getReportDetail());
             log.info("Report Id={}, Status={}，endTime = {}", reportId, reportApplication.getReportDetail().getTaskStatus(),
-                    reportApplication.getReportDetail().getEndTime());
+                reportApplication.getReportDetail().getEndTime());
         }
         if (CollectionUtils.isNotEmpty(reportApplication.getApplicationNames())) {
             redisTemplate.opsForSet().add(getReportApplicationKey(reportId), reportApplication.getApplicationNames().toArray());
@@ -97,7 +98,7 @@ public class ReportDataCache {
      */
     private String getReportApplicationKey(Long reportId) {
 
-        return String.format(REPORT_APPLICATION_KEY,WebPluginUtils.traceTenantId() ,WebPluginUtils.traceEnvCode(),reportId);
+        return String.format(REPORT_APPLICATION_KEY, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), reportId);
     }
 
     /**
@@ -106,7 +107,7 @@ public class ReportDataCache {
      * @return
      */
     private String getReportDetailKey(Long reportId) {
-        return String.format(REPORT_DETAIL_KEY, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode() ,reportId);
+        return String.format(REPORT_DETAIL_KEY, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), reportId);
     }
 
     /**
@@ -115,7 +116,7 @@ public class ReportDataCache {
      * @return
      */
     private String getReportMetricKey(Long reportId) {
-        return String.format(REPORT_METRIC_KEY,WebPluginUtils.traceTenantId() ,WebPluginUtils.traceEnvCode(),reportId);
+        return String.format(REPORT_METRIC_KEY, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), reportId);
     }
 
     /**
@@ -130,7 +131,7 @@ public class ReportDataCache {
         }
 
         // 指标 map
-        List<Map<String, Object>> metricsList = reportService.listMetrics(reportId, reportDetail.getSceneId(), reportDetail.getTenantId());
+        List<MetricesResponse> metricsList = reportService.queryMetrics(reportId, reportDetail.getSceneId(), reportDetail.getTenantId());
 
         if (CollectionUtils.isEmpty(metricsList)) {
             log.error("ReportDataCache Cache Jmeter Metric is null");
@@ -142,12 +143,12 @@ public class ReportDataCache {
 
         // 指标 redis key
         String reportMetricKey = this.getReportMetricKey(reportId);
-        for (Map<String, Object> metrics : metricsList) {
+        for (MetricesResponse metrics : metricsList) {
             // redis hash 结构存放指标, time 时间戳为 key, avgTps 为 value
-            if (metrics.get("time") == null) {
+            if (metrics.getTime() == null) {
                 continue;
             }
-            RedisHelper.hashPut(reportMetricKey, metrics.get("time").toString(), metrics.get("avgTps"));
+            RedisHelper.hashPut(reportMetricKey, metrics.getTime().toString(), metrics.getAvgTps());
         }
     }
 
@@ -161,7 +162,7 @@ public class ReportDataCache {
         if (!redisTemplate.hasKey(getReportDetailKey(reportId))) {
             return null;
         }
-        ReportDetailDTO reportDetail = (ReportDetailDTO) redisTemplate.opsForValue().get(getReportDetailKey(reportId));
+        ReportDetailDTO reportDetail = (ReportDetailDTO)redisTemplate.opsForValue().get(getReportDetailKey(reportId));
         if (reportDetail == null || reportDetail.getSceneId() == null) {
             // 确保数据完整性
             return null;
@@ -183,7 +184,7 @@ public class ReportDataCache {
         }
         Set<Long> appSet = Sets.newHashSet();
         reportDetail.getBusinessActivity().forEach(
-                data -> appSet.addAll(splitApplicationIds(data.getApplicationIds())));
+            data -> appSet.addAll(splitApplicationIds(data.getApplicationIds())));
         if (appSet.size() == 0) {
             log.error("报告中关联的应用为空");
             return;
@@ -194,7 +195,7 @@ public class ReportDataCache {
             return;
         }
         List<String> applications = appsList.stream().map(TApplicationMnt::getApplicationName)
-                .filter(StringUtils::isNoneBlank).distinct().collect(Collectors.toList());
+            .filter(StringUtils::isNoneBlank).distinct().collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(applications)) {
             redisTemplate.opsForSet().add(getReportApplicationKey(reportId), applications.toArray());
             log.info("Report Id={},报告中关联的应用有 applicationName={}", reportId, JSON.toJSONString(applications));

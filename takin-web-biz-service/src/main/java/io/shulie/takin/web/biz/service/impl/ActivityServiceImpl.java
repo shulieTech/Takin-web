@@ -309,7 +309,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityDAO.updateActivity(updateParam);
 
         // 非核心字段变动，不需要重建链路
-        if(StringUtil.equals(request.getApplicationName(), oldActivity.getApplicationName())
+        if (StringUtil.equals(request.getApplicationName(), oldActivity.getApplicationName())
             && StringUtil.equals(request.getServiceName(), oldActivity.getServiceName())
             && StringUtil.equals(request.getMethod(), oldActivity.getMethod())
             && StringUtil.equals(request.getRpcType(), oldActivity.getRpcType())
@@ -687,14 +687,11 @@ public class ActivityServiceImpl implements ActivityService {
         String reportId = redisClientUtils.getString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId);
         //2.根据taskId获取报告状态即任务状态
         if (!StringUtil.isBlank(reportId)) {
-            WebResponse webResponse = reportService.getReportByReportId(Long.valueOf(reportId));
-            if (Objects.nonNull(webResponse) && Objects.nonNull(webResponse.getData())) {
-                ReportDetailOutput reportDetailOutput = (ReportDetailOutput)webResponse.getData();
-                Integer verifyStatus = reportDetailOutput.getTaskStatus();
-                response.setVerifyStatus(verifyStatus);
-                response.setVerifiedFlag(
-                    verifyStatus.equals(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFIED));
-            }
+            ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(Long.valueOf(reportId));
+            Integer verifyStatus = reportDetailOutput.getTaskStatus();
+            response.setVerifyStatus(verifyStatus);
+            response.setVerifiedFlag(
+                verifyStatus.equals(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFIED));
         }
         return response;
     }

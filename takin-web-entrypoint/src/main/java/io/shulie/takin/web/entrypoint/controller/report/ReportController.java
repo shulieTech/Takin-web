@@ -36,19 +36,20 @@ public class ReportController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
         needAuth = ActionTypeEnum.QUERY
     )
-    public WebResponse listReport(ReportQueryParam reportQuery) {
+    public List<ReportDTO> listReport(ReportQueryParam reportQuery) {
         return reportService.listReport(reportQuery);
     }
 
     @GetMapping(value = "report/getReportByReportId")
     @ApiOperation("报告详情")
     @ApiImplicitParam(name = "reportId", value = "报告ID")
-    public WebResponse getReportByReportId(Long reportId) {
+    public ReportDetailOutput getReportByReportId(Long reportId) {
         return reportService.getReportByReportId(reportId);
     }
 
     @GetMapping("report/queryReportTrend")
     @ApiOperation("报告链路趋势")
+    public TrendResponse queryReportTrend(TrendRequest reportTrendQuery) {
     public WebResponse queryReportTrend(ReportTrendQueryParam reportTrendQuery) {
 //        return reportService.queryReportTrendWithTopology(reportTrendQuery);
         return reportService.queryReportTrend(reportTrendQuery);
@@ -64,13 +65,13 @@ public class ReportController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
         needAuth = ActionTypeEnum.START_STOP
     )
-    public WebResponse tempReportDetail(Long sceneId) {
+    public ReportDetailTempOutput tempReportDetail(Long sceneId) {
         return reportService.tempReportDetail(sceneId);
     }
 
     @GetMapping("/report/queryTempReportTrend")
     @ApiOperation("实况报告链路趋势")
-    public WebResponse queryTempReportTrend(ReportTrendQueryParam reportTrendQuery) {
+    public TrendResponse queryTempReportTrend(TrendRequest reportTrendQuery) {
         return reportService.queryTempReportTrend(reportTrendQuery);
     }
 
@@ -83,19 +84,19 @@ public class ReportController {
 
     @GetMapping("/report/listWarn")
     @ApiOperation("警告列表")
-    public WebResponse listWarn(WarnQueryParam param) {
+    public List<WarnDetailResponse> listWarn(WarnQueryReq param) {
         return reportService.listWarn(param);
     }
 
     @GetMapping("/report/queryReportActivityByReportId")
     @ApiOperation("报告的业务活动")
-    public WebResponse queryReportActivityByReportId(Long reportId) {
+    public List<ActivityResponse> queryReportActivityByReportId(Long reportId) {
         return reportService.queryReportActivityByReportId(reportId);
     }
 
     @GetMapping("/report/queryReportActivityBySceneId")
     @ApiOperation("报告的业务活动")
-    public WebResponse queryReportActivityBySceneId(Long sceneId) {
+    public List<ActivityResponse> queryReportActivityBySceneId(Long sceneId) {
         return reportService.queryReportActivityBySceneId(sceneId);
     }
 

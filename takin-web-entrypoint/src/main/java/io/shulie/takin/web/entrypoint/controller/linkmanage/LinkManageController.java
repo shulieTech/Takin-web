@@ -2,12 +2,12 @@ package io.shulie.takin.web.entrypoint.controller.linkmanage;
 
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 
 import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessActiveIdAndNameDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.DeleteVo;
 import com.pamirs.takin.entity.domain.dto.linkmanage.MiddleWareNameDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.SceneDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.SystemProcessIdAndNameDto;
@@ -19,6 +19,7 @@ import com.pamirs.takin.entity.domain.entity.linkmanage.statistics.StatisticsQue
 import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
@@ -57,7 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Deprecated
 public class LinkManageController {
 
-    @Autowired
+    @Resource
     private LinkManageService linkManageService;
 
     @RequestMapping(value = "/link/scene/manage", method = RequestMethod.DELETE)
@@ -71,14 +72,14 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.DELETE
     )
-    public Response deleteScene(@RequestBody DeleteVo deleteVo) {
+    public Response<String> deleteScene(@RequestBody SceneManageDeleteReq req) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
-        BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(deleteVo.getId());
+        BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(req.getId().toString());
         if (null == dto) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, "该业务流程不存在");
         }
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_PROCESS, dto.getBusinessProcessName());
-        return linkManageService.deleteScene(deleteVo.getId());
+        return Response.success(linkManageService.deleteScene(req.getId().toString()));
     }
 
     @GetMapping("/link/scene/manage")

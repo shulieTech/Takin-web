@@ -145,6 +145,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
                 lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.traceEnvCode());
             }
 
+        if (param.getCustomerId() != null) {
+            lambdaQueryWrapper.eq(AppRemoteCallEntity::getCustomerId, param.getCustomerId());
         }
         if (CollectionUtils.isNotEmpty(param.getApplicationIds())) {
             lambdaQueryWrapper.in(AppRemoteCallEntity::getApplicationId, param.getApplicationIds());
@@ -213,7 +215,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     @Override
     public Long getRecordCount(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = getAppRemoteCallEntityLambdaQueryWrapper(param);
-        return (long)this.count(lambdaQueryWrapper);
+        return this.count(lambdaQueryWrapper);
     }
 
     @Override

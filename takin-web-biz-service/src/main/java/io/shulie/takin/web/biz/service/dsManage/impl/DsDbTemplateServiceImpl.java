@@ -8,6 +8,7 @@ import io.shulie.takin.web.data.dao.application.CacheConfigTemplateDAO;
 import io.shulie.takin.web.data.dao.application.ConnectpoolConfigTemplateDAO;
 import io.shulie.takin.web.data.result.application.CacheConfigTemplateDetailResult;
 import io.shulie.takin.web.data.result.application.ConnectpoolConfigTemplateDetailResult;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,14 +37,32 @@ public class DsDbTemplateServiceImpl extends AbstractDsTemplateService {
         ConnectpoolConfigTemplateDetailResult result = connectpoolConfigTemplateDAO.queryOne(middlewareType, engName);
         List<SelectVO> vos  = Lists.newArrayList();
         if(result.getShadowtableEnable() == 1){
-            vos.add(new SelectVO(String.valueOf(DsTypeEnum.SHADOW_TABLE.getCode()),DsTypeEnum.SHADOW_TABLE.getDesc()));
+            vos.add(new SelectVO(DsTypeEnum.SHADOW_TABLE.getDesc(),String.valueOf(DsTypeEnum.SHADOW_TABLE.getCode())));
         }
         if(result.getShadowdbEnable() == 1){
-            vos.add(new SelectVO(String.valueOf(DsTypeEnum.SHADOW_DB.getCode()),DsTypeEnum.SHADOW_DB.getDesc()));
+            vos.add(new SelectVO(DsTypeEnum.SHADOW_DB.getDesc(),String.valueOf(DsTypeEnum.SHADOW_DB.getCode())));
         }
         if(result.getShadowdbwithshadowtableEnable() == 1){
-            vos.add(new SelectVO(String.valueOf(DsTypeEnum.SHADOW_REDIS_SERVER.getCode()),"影子库影子表"));
+            vos.add(new SelectVO("影子库影子表",String.valueOf(DsTypeEnum.SHADOW_REDIS_SERVER.getCode())));
         }
+        return vos;
+    }
+
+    /**
+     * 获取支持的版本
+     *
+     * @return
+     */
+    @Override
+    public List<SelectVO> queryDsSupperName() {
+        List<SelectVO> vos = Lists.newArrayList();
+        List<ConnectpoolConfigTemplateDetailResult> results = connectpoolConfigTemplateDAO.queryList();
+        if(CollectionUtils.isEmpty(results)){
+            return vos;
+        }
+        results.forEach(detail -> {
+            vos.add(new SelectVO(detail.getName(),detail.getName()));
+        });
         return vos;
     }
 }

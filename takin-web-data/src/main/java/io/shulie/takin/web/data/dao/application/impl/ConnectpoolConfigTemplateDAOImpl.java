@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.dao.application.impl;
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.pamirs.attach.plugin.dynamic.Type;
 import io.shulie.takin.web.data.dao.application.ConnectpoolConfigTemplateDAO;
 import io.shulie.takin.web.data.mapper.mysql.ConnectpoolConfigTemplateMapper;
 import io.shulie.takin.web.data.model.mysql.CacheConfigTemplateEntity;
@@ -39,6 +40,18 @@ public class ConnectpoolConfigTemplateDAOImpl  extends ServiceImpl<ConnectpoolCo
         return this.convertResult(entity);
     }
 
+    @Override
+    public ConnectpoolConfigTemplateDetailResult queryOne(String engName) {
+        return this.queryOne(Type.MiddleWareType.LINK_POOL.value(),engName);
+    }
+
+    @Override
+    public List<ConnectpoolConfigTemplateDetailResult> queryList() {
+        LambdaQueryWrapper<ConnectpoolConfigTemplateEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
+                .eq(ConnectpoolConfigTemplateEntity::getStatus,0)
+                .eq(ConnectpoolConfigTemplateEntity::getIsDeleted,0);
+        return this.convertResults(this.list(lambdaQueryWrapper));
+    }
 
     private List<ConnectpoolConfigTemplateDetailResult> convertResults(List<ConnectpoolConfigTemplateEntity> entities){
         if(CollectionUtils.isEmpty(entities)){

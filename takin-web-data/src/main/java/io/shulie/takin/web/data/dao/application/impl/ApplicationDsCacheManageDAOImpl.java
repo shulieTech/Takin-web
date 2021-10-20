@@ -6,11 +6,14 @@ import com.google.common.collect.Lists;
 import io.shulie.takin.web.data.dao.application.ApplicationDsCacheManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationDsCacheManageMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsCacheManageEntity;
+import io.shulie.takin.web.data.model.mysql.ApplicationDsDbManageEntity;
+import io.shulie.takin.web.data.model.mysql.ApplicationDsManageEntity;
+import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,12 +32,25 @@ public class ApplicationDsCacheManageDAOImpl  extends ServiceImpl<ApplicationDsC
 
 
     @Override
-    public List<ApplicationDsCacheManageDetailResult> selectList(Long appId) {
-        LambdaQueryWrapper<ApplicationDsCacheManageEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
-                .eq(ApplicationDsCacheManageEntity::getApplicationId,appId)
-                .eq(ApplicationDsCacheManageEntity::getIsDeleted,0)
-                .eq(ApplicationDsCacheManageEntity::getStatus,0);
-        List<ApplicationDsCacheManageEntity> list = this.list(lambdaQueryWrapper);
+    public List<ApplicationDsCacheManageDetailResult> selectList(ApplicationDsQueryParam param) {
+        LambdaQueryWrapper<ApplicationDsCacheManageEntity> queryWrapper = this.getLambdaQueryWrapper();
+        if (!Objects.isNull(param.getApplicationId())) {
+            queryWrapper.eq(ApplicationDsCacheManageEntity::getApplicationId, param.getApplicationId());
+        }
+        if (!Objects.isNull(param.getStatus())) {
+            queryWrapper.eq(ApplicationDsCacheManageEntity::getStatus, param.getStatus());
+        }
+        if (!Objects.isNull(param.getIsDeleted())) {
+            queryWrapper.eq(ApplicationDsCacheManageEntity::getIsDeleted, param.getIsDeleted());
+        }else{
+            queryWrapper.eq(ApplicationDsCacheManageEntity::getIsDeleted, 0);
+        }
+        if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
+            queryWrapper.in(ApplicationDsCacheManageEntity::getUserId, param.getUserIdList());
+        }
+        queryWrapper.orderByDesc(ApplicationDsCacheManageEntity::getGmtUpdate);
+
+        List<ApplicationDsCacheManageEntity> list = this.list(queryWrapper);
 
         return getApplicationDsCacheManageDetailResults(list);
     }
@@ -54,8 +70,19 @@ public class ApplicationDsCacheManageDAOImpl  extends ServiceImpl<ApplicationDsC
 
     @Override
     public void updateById(Long id, ApplicationDsCacheManageEntity entity) {
-        entity.setId(id);
-        this.updateById(entity);
+        LambdaQueryWrapper<ApplicationDsCacheManageEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
+        lambdaQueryWrapper.eq(ApplicationDsCacheManageEntity::getId,id);
+        this.update(entity,lambdaQueryWrapper);
+    }
+
+    @Override
+    public void saveOne(ApplicationDsCacheManageEntity entity) {
+        this.save(entity);
+    }
+
+    @Override
+    public void removeRecord(Long id) {
+        this.removeById(id);
     }
 
     private ApplicationDsCacheManageDetailResult getApplicationDsCacheManageDetailResult(ApplicationDsCacheManageEntity entity) {
@@ -71,7 +98,7 @@ public class ApplicationDsCacheManageDAOImpl  extends ServiceImpl<ApplicationDsC
         if (CollectionUtils.isEmpty(entities)) {
             return Lists.newArrayList();
         }
-        return entities.stream().map(entity -> this.getApplicationDsCacheManageDetailResult(entity)).collect(Collectors.toList());
+        return entities.stream().map(this::getApplicationDsCacheManageDetailResult).collect(Collectors.toList());
     }
 
     private ApplicationDsCacheManageEntity getApplicationDsCacheManageEntity(ApplicationDsCacheManageDetailResult result) {
@@ -87,7 +114,7 @@ public class ApplicationDsCacheManageDAOImpl  extends ServiceImpl<ApplicationDsC
         if (CollectionUtils.isEmpty(result)) {
             return Lists.newArrayList();
         }
-        return result.stream().map(detail -> this.getApplicationDsCacheManageEntity(detail)).collect(Collectors.toList());
+        return result.stream().map(this::getApplicationDsCacheManageEntity).collect(Collectors.toList());
     }
 }
 

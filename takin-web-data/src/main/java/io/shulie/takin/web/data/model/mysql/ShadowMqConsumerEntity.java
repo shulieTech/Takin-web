@@ -90,6 +90,12 @@ public class ShadowMqConsumerEntity {
     @TableField(value = "update_time")
     private Date updateTime;
 
+    /**
+     * 是否手动录入 0否，1手动
+     */
+    @TableField(value = "manual_tag")
+    private Integer manualTag;
+
     public static final String COL_ID = "id";
 
     public static final String COL_TOPIC = "topic";

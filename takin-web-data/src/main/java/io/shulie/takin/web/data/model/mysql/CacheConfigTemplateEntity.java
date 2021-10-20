@@ -6,7 +6,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 缓存配置模版表(CacheConfigTemplate)实体类
@@ -81,14 +80,5 @@ public class CacheConfigTemplateEntity extends NewBaseEntity implements Serializ
      */
     private Long userId;
 
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
 
 }

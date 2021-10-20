@@ -32,7 +32,7 @@ public class HttpClientConfigTemplateDAOImpl extends ServiceImpl<HttpClientConfi
     public HttpClientConfigTemplateDetailResult selectTemplate(String typeName) {
         LambdaQueryWrapper<HttpClientConfigTemplateEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
                 .eq(StringUtils.isNotBlank(typeName), HttpClientConfigTemplateEntity::getEngName, typeName)
-                .eq(HttpClientConfigTemplateEntity::getStatus, 1)
+                .eq(HttpClientConfigTemplateEntity::getStatus, 0)
                 .eq(HttpClientConfigTemplateEntity::getIsDeleted, 0);
 
         HttpClientConfigTemplateEntity entity = this.getOne(lambdaQueryWrapper);
@@ -42,7 +42,7 @@ public class HttpClientConfigTemplateDAOImpl extends ServiceImpl<HttpClientConfi
     @Override
     public List<HttpClientConfigTemplateDetailResult> selectList() {
         LambdaQueryWrapper<HttpClientConfigTemplateEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
-                .eq(HttpClientConfigTemplateEntity::getStatus, 1)
+                .eq(HttpClientConfigTemplateEntity::getStatus, 0)
                 .eq(HttpClientConfigTemplateEntity::getIsDeleted, 0);
         List<HttpClientConfigTemplateEntity> list = this.list(lambdaQueryWrapper);
         return this.getHttpClientConfigTemplateDetailResults(list);
@@ -52,7 +52,7 @@ public class HttpClientConfigTemplateDAOImpl extends ServiceImpl<HttpClientConfi
         if (CollectionUtils.isEmpty(entities)) {
             return Lists.newArrayList();
         }
-        return entities.stream().map(entity -> this.getHttpClientConfigTemplateDetailResult(entity)).collect(Collectors.toList());
+        return entities.stream().map(this::getHttpClientConfigTemplateDetailResult).collect(Collectors.toList());
     }
 
     private HttpClientConfigTemplateDetailResult getHttpClientConfigTemplateDetailResult(HttpClientConfigTemplateEntity entity) {

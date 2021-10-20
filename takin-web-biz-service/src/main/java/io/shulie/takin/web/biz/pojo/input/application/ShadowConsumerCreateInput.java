@@ -23,8 +23,15 @@ public class ShadowConsumerCreateInput {
     private Long applicationId;
 
     /**
+     * 老版本用
      * 是否可用
      */
     private Integer status;
+
+    /**
+     * 快速接入版本用
+     * 1 消费/ 0 不消费影子topic
+     */
+    private String shadowconsumerEnable;
 
 }

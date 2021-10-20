@@ -57,6 +57,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS + customerId, status);
             redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + customerId, voStatus);
             redisTemplate.opsForHash().put(NEED_VERIFY_USER_MAP, String.valueOf(customerId), System.currentTimeMillis());
+
             result.setSwitchStutus(voStatus);
         }
         agentConfigCacheManager.evictPressureSwitch();

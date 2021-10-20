@@ -1,12 +1,12 @@
 package io.shulie.takin.web.biz.convert.db.parser;
 
-import com.pamirs.attach.plugin.dynamic.template.AbstractTemplate;
-import com.pamirs.attach.plugin.dynamic.template.Template;
-import io.shulie.takin.web.amdb.bean.result.application.AppShadowDatabaseDTO;
+import com.pamirs.attach.plugin.dynamic.Converter;
+import io.shulie.takin.common.beans.component.SelectVO;
+import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
-import io.shulie.takin.web.data.model.mysql.NewBaseEntity;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: 南风
@@ -16,31 +16,28 @@ public interface TemplateParser {
 
 
     /**
-     * 返回对应的模板对象
+     * 将影子方案信息按对应模版解析
+     * @param dsType,protectArray
      * @return
      */
-    Class<?> getSupperClass();
-
-    /**
-     * 返回解析后的模板对象
-     * @param dto
-     * @param <T>
-     * @return
-     */
-    <T extends Template>T convertTemplate(AppShadowDatabaseDTO dto);
+    List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum);
 
 
     ShadowDetailResponse convertDetailByTemplate(Long recordId);
 
+
     /**
-     * 获取protect属性集合
-     * @param T
-     * @return
+     * 删除记录
+     * @param recordId
      */
-    List<String> getProtectArray(Class<? extends AbstractTemplate> T);
+     void deletedRecord(Long recordId);
 
+     void enable(Long recordId,Integer status);
 
+    List<SelectVO> queryCacheType();
 
+    Converter.TemplateConverter.TemplateEnum convert(String connPoolName);
 
+     Map<String, String> convertModel();
 
 }

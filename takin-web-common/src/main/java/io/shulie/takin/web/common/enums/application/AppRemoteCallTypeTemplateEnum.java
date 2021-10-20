@@ -16,11 +16,11 @@ public enum AppRemoteCallTypeTemplateEnum {
     /**
      * HTTP
      */
-    HTTP(0, "HTTP"),
+    HTTP(0, "http"),
     /**
      * RPC
      */
-    RPC(1, "RPC");
+    RPC(1, "rpc");
 
     private Integer type;
     private String desc;

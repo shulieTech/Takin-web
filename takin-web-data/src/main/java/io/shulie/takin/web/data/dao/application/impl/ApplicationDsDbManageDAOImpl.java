@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.dao.application.impl;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
@@ -7,6 +8,7 @@ import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationDsDbManageMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsCacheManageEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsDbManageEntity;
+import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
@@ -28,11 +30,24 @@ import java.util.stream.Collectors;
 public class ApplicationDsDbManageDAOImpl  extends ServiceImpl<ApplicationDsDbManageMapper, ApplicationDsDbManageEntity> implements ApplicationDsDbManageDAO, MPUtil<ApplicationDsDbManageEntity> {
 
     @Override
-    public List<ApplicationDsDbManageDetailResult> selectList(Long appId) {
-        LambdaQueryWrapper<ApplicationDsDbManageEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
-                .eq(ApplicationDsDbManageEntity::getApplicationId,appId)
-                .eq(ApplicationDsDbManageEntity::getIsDeleted,0)
-                .eq(ApplicationDsDbManageEntity::getStatus,0);
+    public List<ApplicationDsDbManageDetailResult> selectList(ApplicationDsQueryParam param) {
+        LambdaQueryWrapper<ApplicationDsDbManageEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
+        if (!Objects.isNull(param.getApplicationId())) {
+            lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getApplicationId, param.getApplicationId());
+        }
+        if (!Objects.isNull(param.getStatus())) {
+            lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getStatus, param.getStatus());
+        }
+        if (!Objects.isNull(param.getIsDeleted())) {
+            lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getIsDeleted, param.getIsDeleted());
+        }else{
+            lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getIsDeleted, 0);
+        }
+        if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
+            lambdaQueryWrapper.in(ApplicationDsDbManageEntity::getUserId, param.getUserIdList());
+        }
+        lambdaQueryWrapper.orderByDesc(ApplicationDsDbManageEntity::getGmtUpdate);
+
         List<ApplicationDsDbManageEntity> list = this.list(lambdaQueryWrapper);
 
         return getApplicationDsDbManageDetailResults(list);
@@ -51,8 +66,19 @@ public class ApplicationDsDbManageDAOImpl  extends ServiceImpl<ApplicationDsDbMa
 
     @Override
     public void updateById(Long id, ApplicationDsDbManageEntity entity) {
-        entity.setId(id);
-        this.updateById(entity);
+        LambdaQueryWrapper<ApplicationDsDbManageEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
+        lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getId,id);
+        this.update(entity,lambdaQueryWrapper);
+    }
+
+    @Override
+    public void removeRecord(Long id) {
+        this.removeById(id);
+    }
+
+    @Override
+    public void saveOne(ApplicationDsDbManageEntity entity) {
+        this.save(entity);
     }
 
     private ApplicationDsDbManageDetailResult getApplicationDsDbManageDetailResult(ApplicationDsDbManageEntity entity) {
@@ -68,7 +94,7 @@ public class ApplicationDsDbManageDAOImpl  extends ServiceImpl<ApplicationDsDbMa
         if (CollectionUtils.isEmpty(entities)) {
             return Lists.newArrayList();
         }
-        return entities.stream().map(entity -> this.getApplicationDsDbManageDetailResult(entity)).collect(Collectors.toList());
+        return entities.stream().map(this::getApplicationDsDbManageDetailResult).collect(Collectors.toList());
     }
 
     private ApplicationDsDbManageEntity getEntity(ApplicationDsDbManageDetailResult result) {

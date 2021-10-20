@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.dsManage;
 
+import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInputV2;
 
 /**
@@ -14,10 +15,10 @@ public abstract class AbstractShaDowManageService {
      */
     public abstract void updateShadowProgramme(ApplicationDsUpdateInputV2 inputV2);
 
-//    /**
-//     * 获取影子配置方案
-//     * @param <T>
-//     * @return
-//     */
-//    public abstract <T extends AbstractTemplate> T getShaDowProgrammeInfo();
+    /**
+     * 创建影子配置方案
+     * @param inputV2
+     */
+    public abstract void createShadowProgramme(ApplicationDsCreateInputV2 inputV2);
+
 }

@@ -11,29 +11,31 @@ import java.util.Arrays;
 @Getter
 public enum MiddleWareTypeEnum {
 
-        HTTP_CLIENT(9,"http-client"),
-        RPC(8,"RPC框架"),
-        DB(2,"存储客户端"),
-        LINK_POOL(0,"连接池"),
-        CACHE(1,"缓存"),
-        MQ(3,"消息队列"),
-        JOB(4,"定时任务"),
-        CONTAINER(5,"容器"),
-        OTHER(6,"其他"),
-        GATEWAY(7,"网关");
+    LINK_POOL(0, "连接池"),
+    CACHE(1, "缓存"),
+    DB(2, "存储"),
+    HBASE(3, "连接池"),
+    KAFKA(4, "消息队列"),
 
-        String value;
+    HTTP_CLIENT(9, "http-client"),
+    RPC(8, "RPC框架"),
+    JOB(10, "定时任务"),
+    CONTAINER(5, "容器"),
+    OTHER(6, "其他"),
+    GATEWAY(7, "网关");
 
-        Integer code;
+    String value;
 
-        private MiddleWareTypeEnum(Integer code,String value) {
-            this.value = value;
-            this.code = code;
-        }
+    Integer code;
 
-        public String value() {
-            return this.value;
-        }
+    private MiddleWareTypeEnum(Integer code, String value) {
+        this.value = value;
+        this.code = code;
+    }
+
+    public String value() {
+        return this.value;
+    }
 
     public static MiddleWareTypeEnum getEnumByValue(String value) {
         return Arrays.stream(values())

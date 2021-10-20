@@ -2,6 +2,8 @@ package io.shulie.takin.web.data.dao.application;
 
 import io.shulie.takin.web.data.result.application.CacheConfigTemplateDetailResult;
 
+import java.util.List;
+
 /**
  * 缓存配置模版表(CacheConfigTemplate)表数据库 dao 层
  *
@@ -11,5 +13,7 @@ import io.shulie.takin.web.data.result.application.CacheConfigTemplateDetailResu
 public interface CacheConfigTemplateDAO {
 
     CacheConfigTemplateDetailResult queryOne(String middlewareType, String engName);
+
+    List<CacheConfigTemplateDetailResult> queryList();
 }
 

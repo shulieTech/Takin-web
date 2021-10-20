@@ -6,7 +6,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 缓存影子库表配置表(ApplicationDsCacheManage)实体类
@@ -51,10 +50,8 @@ public class ApplicationDsCacheManageEntity extends NewBaseEntity implements Ser
      */
     private String pwd;
 
-    /**
-     * 缓存模式 0:主从 1:哨兵 2:集群
-     */
-    private Integer type;
+
+    private String type;
 
     /**
      * 方案类型 6:影子key 7:影子集群
@@ -96,15 +93,6 @@ public class ApplicationDsCacheManageEntity extends NewBaseEntity implements Ser
      */
     private Long userId;
 
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
 
     private String agentSourceType;
 

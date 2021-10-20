@@ -36,8 +36,15 @@ public class CacheConfigTemplateDAOImpl  extends ServiceImpl<CacheConfigTemplate
         return this.convertResult(entity);
     }
 
+    @Override
+    public List<CacheConfigTemplateDetailResult> queryList() {
+        LambdaQueryWrapper<CacheConfigTemplateEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
+                .eq(CacheConfigTemplateEntity::getStatus,0)
+                .eq(CacheConfigTemplateEntity::getIsDeleted,0);
+        return this.convertResults(this.list(lambdaQueryWrapper));
+    }
 
-    private List<CacheConfigTemplateDetailResult> convertResults( List<CacheConfigTemplateEntity> entities){
+    private List<CacheConfigTemplateDetailResult> convertResults(List<CacheConfigTemplateEntity> entities){
         if(CollectionUtils.isEmpty(entities)){
             return Collections.emptyList();
         }

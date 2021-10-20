@@ -32,7 +32,7 @@ public class RpcConfigTemplateDAOImpl extends ServiceImpl<RpcConfigTemplateMappe
     public RpcConfigTemplateDetailResult selectTemplate(String typeName) {
         LambdaQueryWrapper<RpcConfigTemplateEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
                 .eq(StringUtils.isNotBlank(typeName), RpcConfigTemplateEntity::getEngName, typeName)
-                .eq(RpcConfigTemplateEntity::getStatus, 1)
+                .eq(RpcConfigTemplateEntity::getStatus, 0)
                 .eq(RpcConfigTemplateEntity::getIsDeleted, 0);
 
         RpcConfigTemplateEntity entity = this.getOne(lambdaQueryWrapper);
@@ -42,7 +42,7 @@ public class RpcConfigTemplateDAOImpl extends ServiceImpl<RpcConfigTemplateMappe
     @Override
     public List<RpcConfigTemplateDetailResult> selectList() {
         LambdaQueryWrapper<RpcConfigTemplateEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
-                .eq(RpcConfigTemplateEntity::getStatus, 1)
+                .eq(RpcConfigTemplateEntity::getStatus, 0)
                 .eq(RpcConfigTemplateEntity::getIsDeleted, 0);
         List<RpcConfigTemplateEntity> list = list(lambdaQueryWrapper);
         return this.getRpcConfigTemplateDetailResults(list);
@@ -62,7 +62,7 @@ public class RpcConfigTemplateDAOImpl extends ServiceImpl<RpcConfigTemplateMappe
         if (CollectionUtils.isEmpty(entities)) {
             return Lists.newArrayList();
         }
-        return entities.stream().map(entity -> this.getRpcConfigTemplateDetailResult(entity)).collect(Collectors.toList());
+        return entities.stream().map(this::getRpcConfigTemplateDetailResult).collect(Collectors.toList());
     }
 }
 

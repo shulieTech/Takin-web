@@ -79,6 +79,13 @@ public class AppRemoteCallVO extends UserCommonExt {
      */
     private Boolean isManual;
 
+    /**
+     * 接口子类型
+     */
+    private String interfaceChildType;
+
+    private String remark;
+
     public AppRemoteCallVO() {}
 
     public AppRemoteCallVO(Date gmtCreate, Date gmtModified) {

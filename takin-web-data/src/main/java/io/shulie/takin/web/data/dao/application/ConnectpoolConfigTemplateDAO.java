@@ -2,6 +2,8 @@ package io.shulie.takin.web.data.dao.application;
 
 import io.shulie.takin.web.data.result.application.ConnectpoolConfigTemplateDetailResult;
 
+import java.util.List;
+
 /**
  * 连接池配置模版表(ConnectpoolConfigTemplate)表数据库 dao 层
  *
@@ -12,5 +14,8 @@ public interface ConnectpoolConfigTemplateDAO {
 
     ConnectpoolConfigTemplateDetailResult queryOne(String middlewareType, String engName);
 
+    List<ConnectpoolConfigTemplateDetailResult> queryList();
+
+    ConnectpoolConfigTemplateDetailResult queryOne(String engName);
 }
 

@@ -111,15 +111,6 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
      */
     private Long userId;
 
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
 
     private String agentSourceType;
 

@@ -18,4 +18,10 @@ public abstract class AbstractDsTemplateService {
      */
     public abstract  List<SelectVO> queryDsType(String middlewareType,String engName);
 
+    /**
+     * 获取中间件支持的版本
+     * @return
+     */
+    public abstract  List<SelectVO> queryDsSupperName();
+
 }

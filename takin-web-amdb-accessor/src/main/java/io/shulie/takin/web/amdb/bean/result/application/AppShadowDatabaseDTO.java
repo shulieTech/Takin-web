@@ -81,4 +81,10 @@ public class AppShadowDatabaseDTO implements Serializable {
      */
     @JsonProperty("bizDatabase")
     private String bizDatabase;
+
+    @JsonProperty("dbName")
+    private String dbName;
+
+    @JsonProperty("shadowDataSource")
+    private String shadowDataSource;
 }

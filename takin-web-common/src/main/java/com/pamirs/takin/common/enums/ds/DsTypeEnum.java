@@ -1,9 +1,10 @@
 package com.pamirs.takin.common.enums.ds;
 
-import java.util.Arrays;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.util.Arrays;
+
 
 /**
  * @author fanxx
@@ -25,7 +26,7 @@ public enum DsTypeEnum {
     /**
      * 影子server
      */
-    SHADOW_REDIS_SERVER(2, "影子server"),
+    SHADOW_REDIS_SERVER(2, "影子库影子表"),
 
     /**
      * ES影子server集群

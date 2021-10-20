@@ -72,4 +72,5 @@ public class ApplicationDsDetailOutput {
      * 最大数据库连接数
      */
     private String shadowDbMaxActive;
+
 }

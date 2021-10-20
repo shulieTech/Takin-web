@@ -3,12 +3,14 @@ package io.shulie.takin.web.common.enums.application;
 import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 
 /**
  * @author 南风
  * @date 2021/8/25 3:16 下午
+ * 新老版本接口类型枚举映射
  */
 @AllArgsConstructor
 @Getter
@@ -16,21 +18,34 @@ public enum AppRemoteCallTypeV2Enum {
     /**
      * HTTP
      */
-    HTTP(0, "http",AppRemoteCallTypeTemplateEnum.HTTP),
+    HTTP_3(0, "httpclient3",AppRemoteCallTypeEnum.HTTP),
+
+    HTTP_4(0, "httpclient4",AppRemoteCallTypeEnum.HTTP),
+
+    JDK_HTTP(0, "jdk-http",AppRemoteCallTypeEnum.HTTP),
+
+    ASYNC_HTTP(0, "async-httpclient",AppRemoteCallTypeEnum.HTTP),
+
+    GOOGLE_HTTP(0, "google-httpclient",AppRemoteCallTypeEnum.HTTP),
+
+    HTTP(0,"HTTP",AppRemoteCallTypeEnum.HTTP),
+
     /**
      * DUBBO
      */
-    DUBBO(1, "dubbo",AppRemoteCallTypeTemplateEnum.RPC),
+    DUBBO(1, "dubbo",AppRemoteCallTypeEnum.DUBBO),
 
     /**
      * FEIGN
      */
-    FEIGN(2, "feign",AppRemoteCallTypeTemplateEnum.RPC),
+    FEIGN(2, "feign",AppRemoteCallTypeEnum.FEIGN),
 
     /**
      * GRPC
      */
-    GRPC(3,"grpc",AppRemoteCallTypeTemplateEnum.RPC);
+    GRPC(3,"grpc",AppRemoteCallTypeEnum.GRPC);
+
+
 
     private Integer type;
     private String desc;
@@ -54,8 +69,15 @@ public enum AppRemoteCallTypeV2Enum {
     }
 
     public static AppRemoteCallTypeV2Enum getEnumByDesc(String desc) {
+        if(!DESC_INSTANCES.containsKey(desc)){
+            return null;
+        }
         return DESC_INSTANCES.get(desc);
     }
 
+    public static void main(String[] args) {
+        AppRemoteCallTypeV2Enum enumByDesc = getEnumByDesc("");
+        System.out.println(enumByDesc);
+    }
 
 }

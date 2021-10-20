@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.dao.application;
 
 import io.shulie.takin.web.data.model.mysql.ApplicationDsCacheManageEntity;
+import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 
 import java.util.List;
@@ -13,13 +14,17 @@ import java.util.List;
  */
 public interface ApplicationDsCacheManageDAO {
 
-    List<ApplicationDsCacheManageDetailResult> selectList(Long appId);
+    List<ApplicationDsCacheManageDetailResult> selectList(ApplicationDsQueryParam param);
 
     void batchSave(List<ApplicationDsCacheManageDetailResult> list);
 
     ApplicationDsCacheManageDetailResult selectOneById(Long id);
 
     void updateById(Long id, ApplicationDsCacheManageEntity entity);
+
+    void saveOne(ApplicationDsCacheManageEntity entity);
+
+    void removeRecord(Long id);
 
 }
 

@@ -36,6 +36,8 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.entity.UserCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
@@ -76,7 +78,7 @@ public class SceneTaskController {
         subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_START
     )
-    public WebResponse<StartResponse> start(@RequestBody SceneActionParam param) {
+    public WebResponse<SceneActionResp> start(@RequestBody SceneActionParam param) {
         try {
             ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(param.getSceneId());
             OperationLogContextHolder.operationType(BizOpConstants.OpTypes.START);
@@ -90,18 +92,12 @@ public class SceneTaskController {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, StringUtils.join(errorMsgList, Constants.SPLIT));
             }
             param.setResourceName(sceneData.getPressureTestSceneName());
-            WebResponse<StartResponse> startTaskResponse = sceneTaskService.startTask(param);
-            if (!startTaskResponse.getSuccess()) {
-                OperationLogContextHolder.ignoreLog();
-            }
-            if (startTaskResponse.getSuccess()) {
-                startCheckLeakTask(param, sceneData);
-            }
-            return startTaskResponse;
+            SceneActionResp startTaskResponse = sceneTaskService.startTask(param);
+            return WebResponse.success(startTaskResponse);
         } catch (TakinWebException ex) {
             // 解除 场景锁
             redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
-            StartResponse sceneStart = new StartResponse();
+            SceneActionResp sceneStart = new SceneActionResp();
             sceneStart.setMsg(Arrays.asList(StringUtils.split(ex.getMessage(), Constants.SPLIT)));
             return WebResponse.success(sceneStart);
         }

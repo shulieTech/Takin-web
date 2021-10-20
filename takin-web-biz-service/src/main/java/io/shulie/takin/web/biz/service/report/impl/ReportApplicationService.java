@@ -10,12 +10,14 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.report.ReportApplicationDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.domain.WebResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -41,11 +43,8 @@ public class ReportApplicationService {
     private TApplicationMntDao tApplicationMntDao;
 
     public ReportDetailDTO getDetail(Long reportId) {
-        WebResponse<HashMap> response = reportService.getReportByReportId(reportId);
-        if (response != null && response.getData() != null) {
-            return JSON.parseObject(JSON.toJSONString(response.getData()), ReportDetailDTO.class);
-        }
-        return new ReportDetailDTO();
+        ReportDetailOutput response = reportService.getReportByReportId(reportId);
+        return BeanUtil.copyProperties(response, ReportDetailDTO.class);
     }
 
     public ReportApplicationDTO getReportApplication(Long reportId) {

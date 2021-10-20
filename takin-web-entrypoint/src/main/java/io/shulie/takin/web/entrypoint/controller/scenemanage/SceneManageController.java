@@ -14,10 +14,10 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDT
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageIdVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -206,7 +206,7 @@ public class SceneManageController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
         needAuth = ActionTypeEnum.DELETE
     )
-    public WebResponse delete(@RequestBody @Valid SceneManageIdVO deleteVO) {
+    public WebResponse<String> delete(@RequestBody @Valid SceneManageDeleteReq deleteVO) {
         ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(deleteVO.getId());
         if (Objects.isNull(webResponse.getData())) {
             OperationLogContextHolder.ignoreLog();
@@ -217,11 +217,8 @@ public class SceneManageController {
             SceneManageWrapperDTO.class);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneData.getId()));
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
-        WebResponse deleteSceneResponse = sceneManageService.deleteScene(deleteVO);
-        if (!deleteSceneResponse.getSuccess()) {
-            OperationLogContextHolder.ignoreLog();
-        }
-        return deleteSceneResponse;
+        String deleteSceneResponse = sceneManageService.deleteScene(deleteVO);
+        return WebResponse.success(deleteSceneResponse);
     }
 
     @GetMapping("/detail")

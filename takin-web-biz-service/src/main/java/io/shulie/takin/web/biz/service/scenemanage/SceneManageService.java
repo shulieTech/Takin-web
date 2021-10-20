@@ -5,6 +5,7 @@ import java.util.List;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageIdVO;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
@@ -38,7 +39,7 @@ public interface SceneManageService {
      */
     WebResponse<String> updateScene(SceneManageWrapperVO vo);
 
-    WebResponse deleteScene(SceneManageIdVO vo);
+    String deleteScene(SceneManageDeleteReq vo);
 
     ResponseResult<SceneManageWrapperResp> detailScene(Long id);
 

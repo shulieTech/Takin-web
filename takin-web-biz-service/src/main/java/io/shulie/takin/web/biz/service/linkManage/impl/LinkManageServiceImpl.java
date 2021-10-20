@@ -489,7 +489,7 @@ public class LinkManageServiceImpl implements LinkManageService {
     }
 
     @Override
-    public Response deleteScene(String sceneId) {
+    public String deleteScene(String sceneId) {
         //手动控制事物,减小事物的范围
         if (null == sceneId) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "primary key cannot be null.");
@@ -516,12 +516,11 @@ public class LinkManageServiceImpl implements LinkManageService {
             enableBusinessActiveCanDelte(businessLinkIds);
 
             transactionManager.commit(status);
-            return Response.success();
+            return "删除成功";
         } catch (Exception e) {
             transactionManager.rollback(status);
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_DELETE_ERROR, "删除场景失败");
-        } finally {
         }
     }
 
@@ -991,6 +990,11 @@ public class LinkManageServiceImpl implements LinkManageService {
 
         //获取业务流程基本信息
         Scene scene = tSceneMapper.selectByPrimaryKey(Long.parseLong(id));
+        if (Objects.isNull(scene)) {
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
+                    id + "对应的业务流程不存在");
+        }
+
         dto.setId(String.valueOf(scene.getId()));
         dto.setIsCode(String.valueOf(scene.getIsCore()));
         dto.setLevel(scene.getSceneLevel());
@@ -1236,21 +1240,26 @@ public class LinkManageServiceImpl implements LinkManageService {
 
     @Override
     public List<BusinessActivityNameResponse> getBusinessActiveByFlowId(Long businessFlowId) {
-        List<BusinessActivityNameResponse> sceneBusinessActivityRefVoList = new ArrayList<>();
+        List<BusinessActivityNameResponse> sceneBusinessActivityRefVOS = new ArrayList<>();
         List<SceneLinkRelate> sceneLinkRelates = tSceneLinkRelateMapper.selectBySceneId(businessFlowId);
         if (CollectionUtils.isNotEmpty(sceneLinkRelates)) {
             List<Long> businessActivityIds = sceneLinkRelates.stream().map(o -> Long.valueOf(o.getBusinessLinkId()))
                 .collect(Collectors.toList());
             List<BusinessLinkManageTable> businessLinkManageTables = tBusinessLinkManageTableMapper
                 .selectBussinessLinkByIdList(businessActivityIds);
-            sceneBusinessActivityRefVoList = businessLinkManageTables.stream().map(businessLinkManageTable -> {
+            //因为businessLinkManageTables打乱了业务活动的顺序 所以使用businessActivityIds
+            sceneBusinessActivityRefVOS = businessActivityIds.stream().map(activityId -> {
                 BusinessActivityNameResponse businessActivityNameResponse = new BusinessActivityNameResponse();
-                businessActivityNameResponse.setBusinessActivityId(businessLinkManageTable.getLinkId());
-                businessActivityNameResponse.setBusinessActivityName(businessLinkManageTable.getLinkName());
+                businessActivityNameResponse.setBusinessActivityId(activityId);
+                BusinessLinkManageTable linkManageTable = businessLinkManageTables.stream().filter(
+                        link -> activityId.equals(link.getLinkId())).findFirst().orElse(null);
+                if(Objects.nonNull(linkManageTable)){
+                    businessActivityNameResponse.setBusinessActivityName(linkManageTable.getLinkName());
+                }
                 return businessActivityNameResponse;
             }).collect(Collectors.toList());
         }
-        return sceneBusinessActivityRefVoList;
+        return sceneBusinessActivityRefVOS;
     }
 }
 

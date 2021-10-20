@@ -1,39 +1,44 @@
 package io.shulie.takin.web.entrypoint.controller.file;
 
 import java.io.File;
+import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
-import cn.hutool.core.collection.CollectionUtil;
-import com.pamirs.takin.entity.domain.dto.file.FileDTO;
-import com.pamirs.takin.entity.domain.vo.file.FileDeleteVO;
-import io.shulie.takin.utils.file.FileManagerHelper;
-import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.common.constant.RemoteConstant;
-import io.shulie.takin.web.common.domain.WebResponse;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.common.http.HttpWebClient;
-import io.shulie.takin.web.common.util.FileUtil;
-import io.shulie.takin.web.common.vo.FileWrapperVO;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.bind.annotation.DeleteMapping;
+
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
+
+import com.pamirs.takin.entity.domain.dto.file.FileDTO;
+
+import io.shulie.takin.web.common.util.FileUtil;
+import io.shulie.takin.utils.file.FileManagerHelper;
+import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
+import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
+import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
+
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author qianshui
@@ -45,55 +50,43 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class FileController {
 
-    @Autowired
-    private HttpWebClient httpWebClient;
+    @Resource
+    private CloudFileApi cloudFileApi;
 
     @PostMapping("/upload")
     @ApiOperation(value = "文件上传")
-    public WebResponse upload(List<MultipartFile> file) {
-        if (CollectionUtil.isEmpty(file)) {
-            return WebResponse.fail("上传文件不能为空");
-        }
-        FileWrapperVO wrapperVO = new FileWrapperVO();
-        wrapperVO.setFile(FileUtil.convertMultipartFileList(file));
-        wrapperVO.setRequestUrl(RemoteConstant.FILE_UPLOAD_URL);
-        wrapperVO.setHttpMethod(HttpMethod.POST);
-        WebResponse webResponse = httpWebClient.requestFile(wrapperVO);
-        FileUtil.deleteTempFile(file);
-        return webResponse;
+    public List<UploadResponse> upload(List<MultipartFile> file) {
+        if (CollectionUtil.isEmpty(file)) {throw new RuntimeException("上传文件不能为空");}
+        return cloudFileApi.upload(new UploadRequest() {{
+            setFileList(FileUtil.convertMultipartFileList(file));
+        }});
     }
 
     @PostMapping("/attachment/upload")
     @ApiOperation(value = "文件上传")
-    public WebResponse uploadAttachment(List<MultipartFile> file) {
+    public WebResponse<List<FileDTO>> uploadAttachment(List<MultipartFile> file) {
         if (file == null || file.size() == 0) {
             return WebResponse.fail("上传文件不能为空");
         }
-        FileWrapperVO wrapperVO = new FileWrapperVO();
-        wrapperVO.setFile(FileUtil.convertMultipartFileList(file));
-        wrapperVO.setRequestUrl(RemoteConstant.FILE_UPLOAD_URL);
-        wrapperVO.setHttpMethod(HttpMethod.POST);
-        WebResponse webResponse = httpWebClient.requestFile(wrapperVO);
+        List<UploadResponse> response = cloudFileApi.upload(new UploadRequest() {{
+            setFileList(FileUtil.convertMultipartFileList(file));
+        }});
         FileUtil.deleteTempFile(file);
-        String jsonString = JsonHelper.bean2Json(webResponse.getData());
-        List<FileDTO> dtoList = JsonHelper.json2List(jsonString, FileDTO.class);
-        if (CollectionUtils.isNotEmpty(dtoList)) {
-            for (FileDTO fileDTO : dtoList) {
-                fileDTO.setFileType(2);
-            }
-        }
+        List<FileDTO> dtoList = response.stream()
+            .map(t -> BeanUtil.copyProperties(t, FileDTO.class))
+            .peek(t -> t.setFileType(2))
+            .collect(Collectors.toList());
         return WebResponse.success(dtoList);
     }
 
     @DeleteMapping
     @ApiOperation(value = "文件删除")
-    public WebResponse delete(@RequestBody FileDeleteVO vo) {
+    public WebResponse<?> delete(@RequestBody DeleteTempRequest vo) {
         if (vo.getUploadId() == null) {
             return WebResponse.fail("删除文件不能为空");
         }
-        vo.setRequestUrl(RemoteConstant.FILE_URL);
-        vo.setHttpMethod(HttpMethod.DELETE);
-        return httpWebClient.request(vo);
+        cloudFileApi.deleteTempFile(vo);
+        return WebResponse.success();
     }
 
     @ApiOperation("文件下载")

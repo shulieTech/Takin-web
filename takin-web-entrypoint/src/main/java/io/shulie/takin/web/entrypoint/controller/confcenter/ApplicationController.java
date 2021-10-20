@@ -1,38 +1,28 @@
 package io.shulie.takin.web.entrypoint.controller.confcenter;
 
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotNull;
-
 import com.github.pagehelper.util.StringUtil;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.AppUnstallAgentVo;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
+import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -206,5 +196,38 @@ public class ApplicationController {
     )
     public void unstallAllAgent(@RequestBody AppUnstallAgentVo vo) {
         applicationService.uninstallAllAgent(vo.getAppIds());
+    }
+
+    /**
+     * 应用监控查询接口
+     *
+     * @param request 包含应用名称及服务名称
+     */
+    @GetMapping("/application/center/app/monitorDetailes")
+    @ApiOperation("应用监控查询接口")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public void getApplicationVisualInfo(@Valid ApplicationVisualInfoQueryRequest request) {
+        applicationService.getApplicationVisualInfo(request);
+    }
+
+    /**
+     * 关注应用服务接口
+     *
+     * @param request 包含应用名称及服务名称
+     */
+    @GetMapping("/application/center/app/attendService")
+    @ApiOperation("关注应用服务接口")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public void attendApplicationService(@Valid ApplicationVisualInfoQueryRequest request) throws Exception {
+        if (null == request.getAttend()) {
+            return;
+        }
+        applicationService.attendApplicationService(request);
     }
 }

@@ -414,11 +414,11 @@ public class ActivityDAOImpl implements ActivityDAO {
     @Override
     public void setActivityNodeServiceState(long activityId, String ownerApps, String serviceName, boolean state) {
         ActivityNodeState activityNodeState = new ActivityNodeState();
-        String key = null;
+        String key;
         try {
             key = MD5Tool.getMD5(activityId + ownerApps + serviceName);
         } catch (Exception e) {
-            e.printStackTrace();
+            return;
         }
         activityNodeState.setId(key);
         activityNodeState.setActivityId(activityId);

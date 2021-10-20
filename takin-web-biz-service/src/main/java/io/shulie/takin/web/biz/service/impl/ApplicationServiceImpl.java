@@ -1090,12 +1090,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      */
     @Override
     public void attendApplicationService(ApplicationVisualInfoQueryRequest request) throws Exception {
-        Map<String, String> param = new HashMap<>();
+        Map param = new HashMap<>();
         String applicationName = request.getApplicationName();
         String interfaceName = request.getLabel();
         param.put("appName", applicationName);
         param.put("interfaceName", interfaceName);
-        param.put("isAttend", String.valueOf(request.getAttend()));
+        param.put("isAttend", Boolean.parseBoolean(String.valueOf(request.getAttend())));
         String key = MD5Tool.getMD5(applicationName + interfaceName);
         param.put("id",key);
         applicationDAO.attendApplicationService(param);

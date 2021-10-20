@@ -218,13 +218,13 @@ public class ApplicationController {
      *
      * @param request 包含应用名称及服务名称
      */
-    @GetMapping("/application/center/app/attendService")
+    @PostMapping("/application/center/app/attendService")
     @ApiOperation("关注应用服务接口")
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-            needAuth = ActionTypeEnum.QUERY
+            needAuth = ActionTypeEnum.CREATE
     )
-    public void attendApplicationService(@Valid ApplicationVisualInfoQueryRequest request) throws Exception {
+    public void attendApplicationService(@RequestBody ApplicationVisualInfoQueryRequest request) throws Exception {
         if (null == request.getAttend()) {
             return;
         }

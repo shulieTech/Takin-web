@@ -16,8 +16,10 @@
     </select>
 
     <insert id="attendApplicationService" parameterType="java.util.Map">
-        INSERT INTO t_application_focus (id, app_name, interface_name, focus) VALUES (#{id}, #{appName}, #{interfaceName}, #{isAttend})
-
+        INSERT INTO t_application_focus (id, app_name, interface_name, focus)
+        VALUES (#{id}, #{appName}, #{interfaceName}, #{isAttend})
+        ON DUPLICATE KEY
+        UPDATE focus = #{isAttend}
     </insert>
 
 </mapper>

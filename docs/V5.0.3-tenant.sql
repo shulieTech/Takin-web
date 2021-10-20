@@ -28,6 +28,13 @@ alter table t_tro_dept
 alter table t_tro_dept
     add index `tenant_id` ( `tenant_id` );
 
+
+alter table t_tro_user_dept_relation
+    add column `tenant_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '租户id';
+
+alter table t_tro_user_dept_relation
+    add index `tenant_id` ( `tenant_id` );
+
 ALTER TABLE `t_dictionary_data`
     ADD COLUMN `tenant_id` bigint(20) NOT NULL COMMENT '租户ID' AFTER `VERSION_NO`,
 ADD COLUMN `env_code` varchar(20) NOT NULL COMMENT '环境变量' AFTER `tenant_id`,

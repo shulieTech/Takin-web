@@ -1,5 +1,11 @@
 package io.shulie.takin.web.ext.util;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
@@ -19,8 +25,6 @@ import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.*;
 
 /**
  * @author by: hezhongqi
@@ -309,13 +313,28 @@ public class WebPluginUtils {
 
     /**
      * 前端 根据租户code 获取租户信息 目前给插件user-module使用
-     * @param userAppKey
+     * @param tenantAppKey
      * @param tenantCode
      * @return
      */
-    public static TenantInfoExt getTenantInfo(String userAppKey,String tenantCode) {
+    public static TenantInfoExt getTenantInfo(String tenantAppKey,String tenantCode) {
         if (tenantExtApi != null) {
-            return tenantExtApi.getTenantInfo(userAppKey,tenantCode);
+            return tenantExtApi.getTenantInfo(tenantAppKey,tenantCode);
+        }
+        if(userApi != null) {
+            // 只是带用户插件
+            List<TenantInfoExt> tenantInfoList = userApi.getTenantInfoList();
+            if (CollectionUtils.isEmpty(tenantInfoList)) {
+                return null;
+            }
+            TenantInfoExt tenantInfoExt = tenantInfoList.get(0);
+            if (StringUtils.isNotBlank(tenantAppKey) && tenantAppKey.equals(tenantInfoExt.getTenantAppKey())) {
+                return tenantInfoExt;
+            }
+            if(StringUtils.isNotBlank(tenantCode) && tenantCode.equals(tenantInfoExt.getTenantCode())) {
+                return tenantInfoExt;
+            }
+            return null;
         }
         return null;
     }
@@ -609,7 +628,7 @@ public class WebPluginUtils {
         ext.setTenantNick(DEFAULT_TENANT_APP_KEY);
         ext.setTenantCode(DEFAULT_TENANT_APP_KEY);
         List<TenantEnv> envs =Lists.newArrayList();
-        TenantInfoExt.TenantEnv env = new TenantInfoExt().new TenantEnv();
+        TenantInfoExt.TenantEnv env = new TenantEnv();
         env.setEnvCode(DEFAULT_ENV_CODE);
         env.setEnvName("测试环境");
         ext.setEnvs(envs);

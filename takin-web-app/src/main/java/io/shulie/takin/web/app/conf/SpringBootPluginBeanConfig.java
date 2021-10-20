@@ -13,7 +13,6 @@ import io.shulie.takin.plugin.framework.extension.spring.SpringBasicBeanExtensio
 import io.shulie.takin.plugin.framework.extension.spring.SpringInitExtension;
 import io.shulie.takin.plugin.framework.extension.spring.SpringLogbackExtension;
 import io.shulie.takin.plugin.framework.extension.spring.SpringMybatisPlusExtension;
-import io.shulie.takin.plugin.framework.extension.spring.SwaggerExtension;
 import io.shulie.takin.plugin.framework.extension.springboot.SpringAutoConfigExtension;
 import io.shulie.takin.plugin.framework.extension.springboot.SpringBootInitExtension;
 import io.shulie.takin.plugin.framework.extension.springmvc.SpringMvcExtension;
@@ -32,8 +31,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConfigurationProperties(prefix = "takin.plugin")
-@Order(Ordered.LOWEST_PRECEDENCE)
 public class SpringBootPluginBeanConfig {
+
     /**
      * running mode
      * dev env: development、dev
@@ -118,6 +117,7 @@ public class SpringBootPluginBeanConfig {
 
 
     @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public PluginManager pluginManager(@Autowired IConfiguration configuration) {
         PluginManager pluginManager = new AutoPluginManager(configuration);
         pluginManager.addApplicationExtension(new SpringInitExtension());
@@ -128,8 +128,9 @@ public class SpringBootPluginBeanConfig {
         pluginManager.addApplicationExtension(new SpringAutoConfigExtension());
         pluginManager.addApplicationExtension(new SpringMybatisPlusExtension());
         pluginManager.addApplicationExtension(new SpringMvcExtension());
-        pluginManager.addApplicationExtension(new SwaggerExtension());
+        //pluginManager.addApplicationExtension(new SwaggerExtension());
         return pluginManager;
     }
+
 
 }

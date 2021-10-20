@@ -6,15 +6,16 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import io.shulie.takin.web.common.common.Response;
-import com.pamirs.takin.entity.domain.vo.JarVersionVo;
-import org.springframework.web.multipart.MultipartFile;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
-import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.vo.JarVersionVo;
+import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.common.common.Response;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -191,4 +192,17 @@ public interface ApplicationService {
     String getApplicationNameByApplicationId(Long applicationId);
 
     TApplicationMnt queryTApplicationMntByName(String appName);
+
+    /**
+     * 一键卸载所有应用
+     */
+    void uninstallAllAgent(List<String> appIds);
+
+    /**
+     * 修改应用节点数
+     *
+     * @param numParamList 数据集合
+     */
+    void modifyAppNodeNum(List<NodeNumParam> numParamList);
+
 }

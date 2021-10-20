@@ -27,6 +27,7 @@ import io.shulie.takin.web.biz.service.OpsScriptFileService;
 import io.shulie.takin.web.biz.service.OpsScriptManageService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.biz.utils.FileUtils;
+import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
@@ -104,6 +105,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
 
     @Override
     public PagingList<OpsScriptVO> page(OpsScriptParam param) {
+        PageUtils.clearPageHelper();
         List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
         LambdaQueryWrapper<OpsScriptManageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(!CollectionUtils.isEmpty(userIdList), OpsScriptManageEntity::getUserId, userIdList);
@@ -137,6 +139,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
                 vo.setLastExecuteTime(timeMap.get(record.getId() + ""));
                 vo.setLastModefyTime(DateUtil.format(record.getGmtUpdate(), DatePattern.NORM_DATETIME_PATTERN));
                 vo.setUserName(WebPluginUtils.getUserName(record.getUserId(),userMap));
+                vo.setUserId(record.getUserId());
                 WebPluginUtils.fillQueryResponse(vo);
                 opsScriptVOList.add(vo);
             }

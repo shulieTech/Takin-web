@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * @date 2021/6/15 5:50 下午
  */
 @Component
-@ElasticSchedulerJob(jobName = "performanceAnalyzeJob", cron = "0 */10 * * * ?", description = "性能分析-每天执行一次，清理7天之前的统计数据")
+@ElasticSchedulerJob(jobName = "performanceAnalyzeJob", cron = "0 0 5 * * ?", description = "性能分析-每天早晨5点执行一次，mysql 清理 5 天, 之前的统计数据")
 @Slf4j
 public class PerformanceAnalyzeJob implements SimpleJob {
 

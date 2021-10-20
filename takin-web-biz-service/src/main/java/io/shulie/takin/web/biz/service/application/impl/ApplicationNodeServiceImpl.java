@@ -10,9 +10,11 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.http.DateUtil;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeAgentDTO;
 import io.shulie.takin.web.biz.design.probe.AbstractApplicationNodeProbeState;
 import io.shulie.takin.web.biz.design.probe.ApplicationNodeProbeStateFactory;
 import io.shulie.takin.web.biz.utils.AgentZkClientUtil;
@@ -106,8 +108,8 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
         queryParam.setApplicationNames(Collections.singletonList(applicationVo.getApplicationName()));
         queryParam.setIp(request.getIp());
         PagingList<ApplicationNodeResult> applicationNodes = applicationNodeDAO.pageNodes(queryParam);
-        if (applicationNodes.isEmpty()) {
-            return PagingList.empty();
+        if (CollectionUtils.isEmpty(applicationNodes.getList())) {
+            return PagingList.of(Lists.newArrayList(),applicationNodes.getTotal());
         }
         List<ApplicationNodeResponse> responseNodes = applicationNodes.getList().stream()
             .map(instance -> {
@@ -128,7 +130,7 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
 
         // 获得节点分页列表
         PagingList<ApplicationNodeListResult> applicationNodeResultPage =
-            this.getApplicationNodeListResultPage(request, applicationName);
+            this.getApplicationNodeListResultPage(request, applicationName, "");
 
         // 获得处理后的节点分页列表
         return this.getApplicationNodeResponseList(applicationName, applicationNodeResultPage);
@@ -210,13 +212,14 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
      * @return 应用节点分页列表
      */
     private PagingList<ApplicationNodeListResult> getApplicationNodeListResultPage(ApplicationNodeQueryRequest request,
-        String applicationName) {
+        String applicationName, String appNames) {
         // 拼接参数, 请求大数据
         QueryApplicationNodeParam queryApplicationNodeParam = new QueryApplicationNodeParam();
         queryApplicationNodeParam.setPageSize(request.getPageSize());
         queryApplicationNodeParam.setCurrent(request.getRealCurrent());
 
         queryApplicationNodeParam.setAppName(applicationName);
+        queryApplicationNodeParam.setAppNames(appNames);
         queryApplicationNodeParam.setIp(request.getIp());
 
         // 探针状态的转换
@@ -337,18 +340,24 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
             return new ApplicationNodeDashBoardResponse();
         }
 
-        ApplicationNodeDashBoardResponse response = new ApplicationNodeDashBoardResponse();
-        // 总数
-        response.setNodeTotalCount(application.getNodeNum());
+        return this.getApplicationNodeDashBoardResponse(application.getApplicationName(), application.getNodeNum());
+    }
 
+    @Override
+    public ApplicationNodeDashBoardResponse getApplicationNodeDashBoardResponse(String applicationName,
+        Integer nodeNum) {
         ApplicationNodeQueryDTO applicationNodeQueryDTO = new ApplicationNodeQueryDTO();
-        applicationNodeQueryDTO.setAppName(application.getApplicationName());
+        applicationNodeQueryDTO.setAppName(applicationName);
         applicationNodeQueryDTO.setProbeStatus(AmdbProbeStatusEnum.INSTALLED.getCode());
         ApplicationNodeProbeInfoDTO applicationNodeProbeInfo =
             applicationClient.getApplicationNodeProbeInfo(applicationNodeQueryDTO);
 
         // 提示信息
         List<String> messages = new ArrayList<>(3);
+
+        ApplicationNodeDashBoardResponse response = new ApplicationNodeDashBoardResponse();
+        // 总数
+        response.setNodeTotalCount(nodeNum);
 
         if (applicationNodeProbeInfo != null) {
             // 在线
@@ -375,6 +384,14 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
         return response;
     }
 
+    @Override
+    public PagingList<ApplicationNodeAgentDTO> getApplicationNodeListResultByApps(String appNames) {
+        // 拼接参数, 请求大数据
+        ApplicationNodeQueryDTO queryDTO = new ApplicationNodeQueryDTO();
+        queryDTO.setAppNames(appNames);
+        return applicationClient.pageApplicationNodeByAgent(queryDTO);
+    }
+
     @Transactional(rollbackFor = Throwable.class)
     @Override
     public void operateProbe(ApplicationNodeOperateProbeRequest request) {
@@ -389,18 +406,37 @@ public class ApplicationNodeServiceImpl implements ApplicationNodeService, Probe
             request.getApplicationId(), request.getAgentId());
         this.isOperateProbeError(!distributedLock.tryLockSecondsTimeUnit(lockKey, 0L, 30L), TOO_FREQUENTLY);
 
-        log.info("探针操作 --> 操作类型: {}", request.getOperateType());
+        if (log.isInfoEnabled()) {
+            log.info("探针操作 --> 操作类型: {}", request.getOperateType());
+        }
 
         try {
-            log.info("探针操作 --> 查询应用信息");
+            if (log.isInfoEnabled()) {
+                log.info("探针操作 --> 查询应用信息");
+            }
+
             // 获得应用名称
-            String applicationName = applicationService.getApplicationNameByApplicationId(request.getApplicationId());
+            String applicationName = request.getAppName();
+            if (StringUtils.isBlank(applicationName)) {
+                applicationName = applicationService.getApplicationNameByApplicationId(request.getApplicationId());
+            }
 
-            // 获得应用节点
-            ApplicationNodeListResult node = this.getApplicationNode(applicationName, request.getAgentId());
+            // 先查出该应用是否一键卸载, 如果是, 直接返回命令
+            ApplicationNodeProbeResult applicationNodeProbeResult =
+                applicationNodeProbeDAO.getByApplicationNameAndAgentId(applicationName, ALL_AGENT_ID);
+            if (applicationNodeProbeResult != null) {
+                throw new UnsupportedOperationException("该应用一键卸载后, 不能再进行其他命令操作!");
+            }
 
-            // 操作
-            this.operate(request, applicationName, node.getProbeStatus());
+            // 应用级别批量删除
+            Integer probeStatus = AmdbProbeStatusEnum.INSTALLED.getCode();
+            if (!ALL_AGENT_ID.equals(request.getAgentId())) {
+                // 获得应用节点
+                ApplicationNodeListResult node = this.getApplicationNode(applicationName, request.getAgentId());
+                probeStatus = node.getProbeStatus();
+            }
+
+            this.operate(request, applicationName, probeStatus);
         } finally {
             distributedLock.unLockSafely(lockKey);
         }

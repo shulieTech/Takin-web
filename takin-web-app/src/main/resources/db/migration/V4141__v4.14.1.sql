@@ -1,10 +1,7 @@
 -- 修改字段开始
 DROP PROCEDURE IF EXISTS change_field;
-
 DELIMITER $$
-
 CREATE PROCEDURE change_field()
-
 BEGIN
 
 DECLARE count1 INT;
@@ -19,11 +16,8 @@ ALTER TABLE `t_whitelist_effective_app` ADD COLUMN `type` VARCHAR(20) NULL DEFAU
 END IF;
 
 END $$
-
 DELIMITER ;
-
 CALL change_field();
-
 DROP PROCEDURE IF EXISTS change_field;
 -- 修改字段结束
 

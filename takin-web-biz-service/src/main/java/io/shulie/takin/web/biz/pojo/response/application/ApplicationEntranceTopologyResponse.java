@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.pojo.response.application;
 import java.util.List;
 import java.util.Set;
 
+import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
 import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -31,6 +32,7 @@ public class ApplicationEntranceTopologyResponse {
         MQ("mq"),
         DB("db"),
         OSS("oss"),
+        SEARCH("search"),
         OUTER("outer"),
         UNKNOWN("unknown"),
         VIRTUAL("virtual");
@@ -63,7 +65,7 @@ public class ApplicationEntranceTopologyResponse {
     }
 
     @Data
-    public static abstract class AbstractTopologyNodeResponse {
+    public static class AbstractTopologyNodeResponse {
 
         @ApiModelProperty("节点id")
         protected String id;
@@ -82,48 +84,70 @@ public class ApplicationEntranceTopologyResponse {
 
         @ApiModelProperty("节点信息")
         private List<NodeDetailDatasourceInfo> nodes;
+
+        // <<<<< 节点中 某个服务的 4 个性能指标
+            @ApiModelProperty("服务总调用量")
+            private Double serviceAllTotalCount;
+
+            @ApiModelProperty("服务总成功率")
+            private Double serviceAllSuccessRate;
+
+            @ApiModelProperty("服务总Tps")
+            private Double serviceAllTotalTps;
+
+            @ApiModelProperty("服务Rt")
+            private Double serviceRt;
+        // >>>>> 节点中 某个服务的 4 个性能指标
+
+        // TopologyAppNodeResponse
+        private String manager;
+        private List<AppProviderInfo> providerService;
+        private List<AppCallInfo> callService;
+
+        // TopologyDbNodeResponse
+        private List<DbInfo> db;
+
+        // TopologyMqNodeResponse
+        private List<MqInfo> mq;
+
+        // TopologyOssNodeResponse
+        private List<OssInfo> oss;
     }
 
     @Data
     public static class TopologyAppNodeResponse extends AbstractTopologyNodeResponse {
-        private String manager;
-        private List<AppProviderInfo> providerService;
-        private List<AppCallInfo> callService;
     }
 
     @Data
-    public static class TopologyDbNodeResponse extends AbstractTopologyNodeResponse {
-        private List<DbInfo> db;
+    public static class TopologyDbNodeResponse extends TopologyAppNodeResponse {
     }
 
     @Data
-    public static class TopologyCacheNodeResponse extends AbstractTopologyNodeResponse {
+    public static class TopologyCacheNodeResponse extends TopologyAppNodeResponse {
     }
 
     @Data
-    public static class TopologyUnknownNodeResponse extends AbstractTopologyNodeResponse {
-        private List<AppProviderInfo> providerService;
+    public static class TopologyUnknownNodeResponse extends TopologyAppNodeResponse {
     }
 
     @Data
-    public static class TopologyOtherNodeResponse extends AbstractTopologyNodeResponse {
-        private List<AppProviderInfo> providerService;
+    public static class TopologyOtherNodeResponse extends TopologyAppNodeResponse {
     }
 
     @Data
-    public static class TopologyVirtualNodeResponse extends AbstractTopologyNodeResponse {
-        private List<AppProviderInfo> providerService;
+    public static class TopologyVirtualNodeResponse extends TopologyAppNodeResponse {
     }
 
     @Data
-    public static class TopologyMqNodeResponse extends AbstractTopologyNodeResponse {
-        private List<AppProviderInfo> providerService;
-        private List<MqInfo> mq;
+    public static class TopologyMqNodeResponse extends TopologyAppNodeResponse {
     }
 
     @Data
-    public static class TopologyOssNodeResponse extends AbstractTopologyNodeResponse {
-        private List<OssInfo> oss;
+    public static class TopologySearchNodeResponse extends TopologyAppNodeResponse {
+    }
+
+    @Data
+    public static class TopologyOssNodeResponse extends TopologyAppNodeResponse {
     }
 
     @Data
@@ -133,14 +157,71 @@ public class ApplicationEntranceTopologyResponse {
 
     @Data
     public static class AppProviderInfo {
+        // MiddlewareName
         private String label;
-        private List<AppProviderDatasourceInfo> dataSource;
+        private List<AppProvider> dataSource;
     }
 
     @Data
-    public static class AppProviderDatasourceInfo {
+    public static class AppProvider {
+        List<LinkEdgeDTO> containEdgeList;
+        List<AppProvider> containRealAppProvider;
+
+        // 所属应用
+        private String ownerApps;
+        // 调用服务 的中间件类型
+        private String middlewareName;
+        // 服务名称
         private String serviceName;
+        // 上游应用
         private String beforeApps;
+        // 服务开关状态(true 打开 | false 关闭)
+        private Boolean switchState;
+
+
+        // 边 id
+        private String eagleId;
+        // 源节点ID
+        private String source;
+        // 目标节点ID
+        private String target;
+
+        // 边 rpcType
+        private String rpcType;
+
+    // <<<<< 节点中 某个服务的 4 个性能指标
+        // 1) 总调用量
+        private Double serviceAllTotalCount;
+
+        // 2) 总成功率
+        private Double serviceAllSuccessRate;
+            // 总成功调用次数
+            private Double allSuccessCount;
+            // 总成功率 瓶颈类型(-1 没有瓶颈 | 1 一般瓶颈 | 2 严重瓶颈)
+            private int allSuccessRateBottleneckType;
+            // 总成功率 瓶颈详情 id
+            private Long successRateBottleneckId;
+
+        // 3) 总Tps
+        private Double serviceAllTotalTps;
+
+        // 4) 前端显示 RT
+        private Double serviceRt;
+            // 平均RT
+            private Double serviceAvgRt;
+            // 总调用Rt
+            private Double allTotalRt;
+                // 总Rt 瓶颈类型(-1 没有瓶颈 | 1 一般卡慢 | 2 严重卡慢)
+                private int allTotalRtBottleneckType;
+                // 总Rt 瓶颈详情 id
+                private Long rtBottleneckId;
+            // 最大RT
+            private Double serviceAllMaxRt;
+                // 总Rt sql 瓶颈类型(-1 没有瓶颈 | 1 一般卡慢 | 2 严重卡慢)
+                private int allSqlTotalRtBottleneckType;
+                // 总Rt sql 瓶颈详情 id
+                private Long rtSqlBottleneckId;
+    // >>>>> 节点中 某个服务的 4 个性能指标
     }
 
     @Data
@@ -196,6 +277,12 @@ public class ApplicationEntranceTopologyResponse {
 
         @ApiModelProperty("id")
         private String id;
+
+        @ApiModelProperty("总调用量")
+        private Double allTotalCount;
+
+        @ApiModelProperty("主干")
+        private boolean isMain;
     }
 
     @Data

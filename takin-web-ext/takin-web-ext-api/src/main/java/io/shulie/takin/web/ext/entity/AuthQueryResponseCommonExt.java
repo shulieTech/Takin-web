@@ -20,7 +20,7 @@ public class AuthQueryResponseCommonExt extends UserCommonExt {
     @ApiModelProperty(name = "canEnableDisable", value = "是否启用禁用")
     private Boolean canEnableDisable = true;
 
-    @ApiModelProperty(name = "canEnableDisable", value = "是否可启动停止")
+    @ApiModelProperty(name = "canStartStop", value = "是否可启动停止")
     private Boolean canStartStop = true;
 
     @ApiModelProperty(value = "当前用户是否有下载权限")

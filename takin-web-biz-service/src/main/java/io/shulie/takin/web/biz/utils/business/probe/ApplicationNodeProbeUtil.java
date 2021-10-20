@@ -203,4 +203,15 @@ public class ApplicationNodeProbeUtil implements ProbeConstants {
         return AmdbProbeStatusEnum.INSTALLING.getCode().equals(amdbProbeState);
     }
 
+    /**
+     * agent 所有的失败状态
+     * 安装, 卸载 失败
+     *
+     * @param amdbProbeState amdb 状态
+     * @return 是否是
+     */
+    public static boolean isAmdbFailed(Integer amdbProbeState) {
+        return isAmdbInstallFailed(amdbProbeState) || isAmdbUninstallFailed(amdbProbeState);
+    }
+
 }

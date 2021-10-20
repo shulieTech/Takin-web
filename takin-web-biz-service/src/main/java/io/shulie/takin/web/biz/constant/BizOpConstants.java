@@ -104,6 +104,11 @@ public final class BizOpConstants {
 
         // 白名单列表
         public static final String APPWHITELIST = "appWhiteList";
+
+        // 探针快速接入
+        public static final String AGENT_CONFIG = "admins_simulationConfig";
+        public static final String AGENT_VERSION= "admins_admin";
+        public static final String NEW_PROJECT_ACCESS= "appManage_appAccess";
     }
 
     public static class OpTypes {
@@ -156,6 +161,7 @@ public final class BizOpConstants {
         public static final String MESSAGE_BASIC_INFO_CREATE = "message.basic_info.create";
         public static final String MESSAGE_BASIC_INFO_DELETE = "message.basic_info.delete";
         public static final String MESSAGE_BASIC_INFO_UPDATE = "message.basic_info.update";
+        public static final String MESSAGE_BASIC_NODE_NUM_UPDATE = "message.basic_node_num.update";
 
         /**
          * 影子库表
@@ -467,5 +473,7 @@ public final class BizOpConstants {
          * 运维脚本名称
          */
         public static final String OPS_SCRIPT_NAME = "opsScriptName";
+
+        public static final String ACTIVITY_DELETE_EVENT = "activity_delete_event";
     }
 }

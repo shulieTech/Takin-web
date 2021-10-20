@@ -1,9 +1,13 @@
 package io.shulie.takin.web.biz.service.report;
 
+import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
 import io.shulie.takin.web.common.domain.WebResponse;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author qianshui
@@ -16,10 +20,13 @@ public interface ReportService {
     WebResponse getReportByReportId(Long reportId);
 
     WebResponse queryReportTrend(ReportTrendQueryParam param);
+    WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery);
 
     WebResponse tempReportDetail(Long sceneId);
 
     WebResponse queryTempReportTrend(ReportTrendQueryParam param);
+    WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,
+                                                 ReportTraceQueryDTO queryDTO);
 
     WebResponse listWarn(WarnQueryParam param);
 
@@ -30,6 +37,19 @@ public interface ReportService {
     WebResponse querySummaryList(Long reportId);
 
     WebResponse queryMetrices(Long reportId, Long sceneId, Long customerId);
+
+    /**
+     * 获取指标列表
+     * time
+     * avgTps
+     * 两个 key
+     *
+     * @param reportId 报告 id
+     * @param sceneId 场景 id
+     * @param customerId 租户 id
+     * @return 指标列表
+     */
+    List<Map<String, Object>> listMetrics(Long reportId, Long sceneId, Long customerId);
 
     WebResponse queryReportCount(Long reportId);
 

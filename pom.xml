@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-2.0.1</version>
+    <version>takin-web-5.0.1</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -39,17 +39,18 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-2.0.1</takin.web.version>
-        <takin.cloud.version>takin-cloud-2.0.1</takin.cloud.version>
-        <takin.common.version>common-1.7.3</takin.common.version>
-        <command.channel>common-1.7.3</command.channel>
+        <takin.web.version>takin-web-5.0.1</takin.web.version>
+        <takin.cloud.open.version>takin-cloud-open-5.0.1</takin.cloud.open.version>
+        <takin.cloud.version>takin-cloud-5.0.1</takin.cloud.version>
+        <takin.common.version>common-1.7.4</takin.common.version>
+        <command.channel>common-1.7.4</command.channel>
         <pardar.log.protocol.version>2.0.4.2</pardar.log.protocol.version>
         <instrument.core.version>1.0.0</instrument.core.version>
 
         <!-- 3rd libs version -->
         <springfox.version>2.8.0</springfox.version>
         <commons-lang3.version>3.5</commons-lang3.version>
-        <spring.boot.version>2.1.5.RELEASE</spring.boot.version>
+        <spring.boot.version>2.3.0.RELEASE</spring.boot.version>
         <mysql-jdbc.version>5.1.25</mysql-jdbc.version>
         <druid.version>1.1.22</druid.version>
         <common-pools2.version>2.3</common-pools2.version>
@@ -66,11 +67,6 @@
         <freemarker.version>2.3.30</freemarker.version>
         <mybatis.version>3.5.5</mybatis.version>
         <druid.stater.version>1.1.22</druid.stater.version>
-        <spring.swagger.version>2.9.2</spring.swagger.version>
-        <swagger.ui.version>1.9.6</swagger.ui.version>
-        <swagger.version>1.5.22</swagger.version>
-
-
 
         <simulator.agent.api.version>5.0.0</simulator.agent.api.version>
         <flyway.version>5.2.4</flyway.version>
@@ -95,9 +91,63 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-common-command-channel</artifactId>
-                <version>${command.channel}</version>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>20.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-spring-webmvc</artifactId>
+                <version>2.10.5</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger-ui</artifactId>
+                <version>2.10.5</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger2</artifactId>
+                <version>2.10.5</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.swagger</groupId>
+                        <artifactId>swagger-annotations</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.swagger</groupId>
+                        <artifactId>swagger-models</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>1.5.21</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-models</artifactId>
+                <version>1.5.21</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>swagger-bootstrap-ui</artifactId>
+                <version>1.9.6</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator -->
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>7.0.1.Final</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-spring-boot-starter</artifactId>
+                <version>2.0.6</version>
             </dependency>
 
             <dependency>
@@ -134,20 +184,27 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+
             <dependency>
                 <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-bom</artifactId>
-                <version>${takin.cloud.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.shulie.takin</groupId>
-                        <artifactId>takin-common-bom</artifactId>
-                    </exclusion>
-                </exclusions>
+                <artifactId>takin-cloud-open-api</artifactId>
+                <version>${takin.cloud.open.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-open-client-starter</artifactId>
+                <version>${takin.cloud.open.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-ext</artifactId>
+                <version>${takin.cloud.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-cloud-common</artifactId>
+                <version>${takin.cloud.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-common-bom</artifactId>
@@ -159,26 +216,45 @@
                         <groupId>io.shulie.takin</groupId>
                         <artifactId>takin-common-mybatis</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>io.springfox</groupId>
+                        <artifactId>springfox-swagger2</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.github.xiaoymin</groupId>
+                        <artifactId>swagger-bootstrap-ui</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.swagger</groupId>
+                        <artifactId>swagger-annotations</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
+
+            <!--后续直接写在 takin-common-bom-->
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-common-command-channel</artifactId>
+                <version>${command.channel}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid.stater.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.quartz-scheduler</groupId>
-                <artifactId>quartz</artifactId>
-                <version>${quartz.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.zookeeper</groupId>
-                        <artifactId>zookeeper</artifactId>
-                    </exclusion>
-                </exclusions>
-
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.quartz-scheduler</groupId>-->
+<!--                <artifactId>quartz</artifactId>-->
+<!--                <version>${quartz.version}</version>-->
+<!--                <exclusions>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>org.apache.zookeeper</groupId>-->
+<!--                        <artifactId>zookeeper</artifactId>-->
+<!--                    </exclusion>-->
+<!--                </exclusions>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>com.dangdang</groupId>
                 <artifactId>elastic-job-lite-core</artifactId>
@@ -275,11 +351,7 @@
                 <artifactId>mapstruct-jdk8</artifactId>
                 <version>${mapstruct.version}</version>
             </dependency>
-            <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-annotations</artifactId>
-                <version>${swagger.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.influxdb</groupId>
                 <artifactId>influxdb-java</artifactId>
@@ -295,7 +367,7 @@
             <dependency>
                 <groupId>io.shulie.amdb</groupId>
                 <artifactId>amdb-common</artifactId>
-                <version>1.0.2</version>
+                <version>1.0.2.1</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.mapstruct</groupId>
@@ -324,21 +396,9 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>com.github.xiaoymin</groupId>
-                <artifactId>knife4j-spring-boot-starter</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger2</artifactId>
-                <version>${spring.swagger.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.xiaoymin</groupId>
-                <artifactId>swagger-bootstrap-ui</artifactId>
-                <version>${swagger.ui.version}</version>
-            </dependency>
+
+
+
             <dependency>
                 <groupId>io.shulie.instrument.simulator</groupId>
                 <artifactId>simulator-agent-api</artifactId>
@@ -383,12 +443,90 @@
     <profiles>
         <!-- 默认 -->
         <profile>
-            <id>default</id>
-            <properties>
-            </properties>
+            <id>rdc</id>
+            <properties></properties>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+        </profile>
+        <profile>
+            <!--远程仓库-->
+            <id>ossrh</id>
+            <properties></properties>
+            <build>
+               <plugins>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-resources-plugin</artifactId>
+                       <version>2.5</version>
+                       <configuration>
+                           <encoding>UTF-8</encoding>
+                       </configuration>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-scm-plugin</artifactId>
+                       <version>1.0</version>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-release-plugin</artifactId>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-javadoc-plugin</artifactId>
+                       <version>2.9.1</version>
+                       <executions>
+                           <execution>
+                               <id>attach-javadocs</id>
+                               <goals>
+                                   <goal>jar</goal>
+                               </goals>
+                               <configuration>
+                                   <additionalparam>-Xdoclint:none</additionalparam>
+                               </configuration>
+                           </execution>
+                       </executions>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-gpg-plugin</artifactId>
+                       <version>1.5</version>
+                       <executions>
+                           <execution>
+                               <id>sign-artifacts</id>
+                               <phase>verify</phase>
+                               <goals>
+                                   <goal>sign</goal>
+                               </goals>
+                           </execution>
+                       </executions>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.sonatype.plugins</groupId>
+                       <artifactId>nexus-staging-maven-plugin</artifactId>
+                       <version>1.6.7</version>
+                       <extensions>true</extensions>
+                       <configuration>
+                           <serverId>ossrh</serverId>
+                           <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                           <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                       </configuration>
+                   </plugin>
+                   <plugin>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-jar-plugin</artifactId>
+                       <version>2.2</version>
+                       <configuration>
+                           <archive>
+                               <manifestEntries>
+                                   <IsTinyProject>true</IsTinyProject>
+                               </manifestEntries>
+                           </archive>
+                       </configuration>
+                   </plugin>
+               </plugins>
+           </build>
         </profile>
     </profiles>
     <distributionManagement>
@@ -411,23 +549,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.5</version>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-scm-plugin</artifactId>
-                <version>1.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>2.1.2</version>
                 <executions>
@@ -439,36 +560,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-gpg-plugin</artifactId>-->
-<!--                <version>1.5</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>sign-artifacts</id>-->
-<!--                        <phase>verify</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>sign</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
         </plugins>
         <pluginManagement>
             <plugins>
@@ -481,42 +572,6 @@
                         <source>1.8</source>
                         <target>1.8</target>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>2.1</version>
-                    <configuration>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-                        <mavenExecutorId>forked-path</mavenExecutorId>
-                        <useReleaseProfile>false</useReleaseProfile>
-                        <arguments>-Pnexus-release -Dmaven.test.skip=true</arguments>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.2</version>
-                    <configuration>
-                        <archive>
-                            <manifestEntries>
-                                <IsTinyProject>true</IsTinyProject>
-                            </manifestEntries>
-                        </archive>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.1.0</version>
-                    <executions>
-                        <execution>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>shade</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

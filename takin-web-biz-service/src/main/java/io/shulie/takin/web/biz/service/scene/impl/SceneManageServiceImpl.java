@@ -624,9 +624,11 @@ public class SceneManageServiceImpl implements SceneManageService {
         });
 
         ResponseResult<ScriptCheckResp> scriptCheckResp = sceneManageApi.checkAndUpdateScript(scriptCheckAndUpdateReq);
-        if (scriptCheckResp == null) {
+        if (scriptCheckResp == null || !scriptCheckResp.getSuccess()) {
             log.error("cloud检查并更新脚本出错：{}", sceneScriptRef.getUploadPath());
-            dto.setErrmsg("cloud检查并更新脚本出错：" + sceneScriptRef.getUploadPath());
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("cloud检查并更新【%s】脚本异常,异常内容【%s】",sceneScriptRef.getUploadPath(),scriptCheckResp.getError().getMsg()));
+            dto.setErrmsg("|");
             return dto;
         }
         if (scriptCheckResp.getData() != null && CollectionUtils.isNotEmpty(scriptCheckResp.getData().getErrorMsg())) {
@@ -762,7 +764,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 if (resultData != null) {
                     ScenePositionPointResponse response = new ScenePositionPointResponse();
                     //false = 没有csv文件或位点均为0
-                    Boolean hasUnread = resultData.getHasUnread();
+//                    Boolean hasUnread = resultData.getHasUnread();
                     List<SceneStartCheckResp.FileReadInfo> infos = resultData.getFileReadInfos();
                     if (Objects.nonNull(infos)){
                         infos.stream().forEach(t -> {
@@ -772,7 +774,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                             list.add(response);
                         });
                     }
-                    redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
+//                    redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
                 }
             }
         }

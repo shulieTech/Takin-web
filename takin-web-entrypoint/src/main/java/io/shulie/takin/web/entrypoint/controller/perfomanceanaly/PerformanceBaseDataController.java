@@ -30,10 +30,9 @@ public class PerformanceBaseDataController {
 
     @Value("${performance.base.agent.frequency:1}")
     private String frequency;
+
     @Autowired
     private PerformanceBaseDataService performanceBaseDataService;
-    @Autowired
-    private ThreadAnalyService threadAnalyService;
 
     private static AtomicInteger integer = new AtomicInteger();
 
@@ -47,17 +46,6 @@ public class PerformanceBaseDataController {
             PerformanceBaseDataCreateInput input = PerformanceBaseReqConvert.INSTANCE.reqToInput(req);
             performanceBaseDataService.cache(input);
         }
-    }
-
-    /**
-     * 秒级别
-     */
-    @GetMapping("/clear")
-    @ApiOperation(value = "清理数据接口")
-    public String clear(@RequestParam("second") Integer second) {
-        performanceBaseDataService.clearData(Integer.valueOf(second));
-        threadAnalyService.clearData(Integer.valueOf(second));
-        return "清理成功";
     }
 
 }

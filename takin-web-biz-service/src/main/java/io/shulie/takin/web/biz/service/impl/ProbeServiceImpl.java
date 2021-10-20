@@ -17,6 +17,7 @@ import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
+import com.google.common.collect.Lists;
 import com.shulie.instrument.simulator.agent.api.AgentFileResolver;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.output.probe.CreateProbeOutput;
@@ -71,11 +72,9 @@ public class ProbeServiceImpl implements ProbeService, ProbeConstants, AppConsta
     public PagingList<ProbeListOutput> pageProbe(PageBaseDTO pageDTO) {
         PagingList<ProbeListResult> resultPage = probeDAO.pageProbe(pageDTO);
         List<ProbeListResult> results = resultPage.getList();
-        if (CollectionUtil.isEmpty(results)) {
-            return PagingList.empty();
-        }
-
-        return PagingList.of(CommonUtil.list2list(results, ProbeListOutput.class), resultPage.getTotal());
+        return resultPage.getTotal() == 0 ? PagingList.empty()
+            : PagingList.of(CommonUtil.list2list(results, ProbeListOutput.class),
+                resultPage.getTotal());
     }
 
     @Override

@@ -36,6 +36,8 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.entity.UserCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
@@ -89,6 +91,7 @@ public class SceneTaskController {
             if (CollectionUtils.isNotEmpty(errorMsgList)) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, StringUtils.join(errorMsgList, Constants.SPLIT));
             }
+            param.setResourceName(sceneData.getPressureTestSceneName());
             WebResponse<StartResponse> startTaskResponse = sceneTaskService.startTask(param);
             if (!startTaskResponse.getSuccess()) {
                 OperationLogContextHolder.ignoreLog();

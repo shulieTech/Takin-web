@@ -31,8 +31,10 @@ public interface TraceClient {
 
     /**
      * 根据 traceId 查询Trace的调用栈
+     * times[0]=startTime yyyy-MM-dd HH:mm:ss
+     * times[1]=endTime yyyy-MM-dd HH:mm:ss
      */
-    RpcStack getTraceDetailById(String traceId);
+    RpcStack getTraceDetailById(String traceId, String... times);
 
     /**
      * 根据traceID 查询base

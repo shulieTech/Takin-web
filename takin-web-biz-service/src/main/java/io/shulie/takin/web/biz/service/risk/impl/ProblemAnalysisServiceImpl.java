@@ -201,6 +201,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                 }
             });
             if (CollectionUtils.isNotEmpty(insertList)) {
+                // machineTpsTargetConfig 指标信息不更新
                 insertList.forEach(reportMachineMapper::insertOrUpdate);
             }
         }
@@ -646,7 +647,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             return results;
         }
         // 1、调取云上的tps和cpu
-        List<Metrices> metrices = reportDataCache.getAllMetricsData(reportId);
+        List<Metrices> metrices = reportDataCache.listAllMetricsData(reportId);
         if (CollectionUtils.isEmpty(metrices)) {
             logger.error("metrices is null,{}", reportId);
             return results;

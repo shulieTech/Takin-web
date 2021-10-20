@@ -25,7 +25,12 @@ public enum ApplicationNodeProbeStatusEnum implements ProbeConstants {
 
     UPGRADING(11, "升级中"),
 
-    UNINSTALLING(21, "卸载中");
+    UNINSTALLING(21, "卸载中"),
+
+    INSTALL_FAILED(31, "安装失败"),
+
+    UNINSTALL_FAILED(41, "卸载失败")
+    ;
 
     private final Integer code;
 

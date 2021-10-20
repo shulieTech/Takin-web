@@ -1,5 +1,7 @@
 package io.shulie.takin.web.app.aspect;
 
+import java.util.Objects;
+
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.common.domain.WebRequest;
 import io.shulie.takin.web.ext.api.user.WebUserExtApi;
@@ -40,7 +42,7 @@ public class LicenseAspect {
                 WebRequest inParam = (WebRequest)params[0];
                 inParam.setRequestUrl(remoteUrl + inParam.getRequestUrl());
                 WebUserExtApi userExtApi = pluginManager.getExtension(WebUserExtApi.class);
-                if (java.util.Objects.isNull(userExtApi)) {
+                if (Objects.isNull(userExtApi)) {
                     return;
                 }
                 userExtApi.fillCloudUserData(inParam);

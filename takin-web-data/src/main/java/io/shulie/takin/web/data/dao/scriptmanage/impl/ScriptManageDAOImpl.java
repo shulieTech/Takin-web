@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 
@@ -136,7 +137,7 @@ public class ScriptManageDAOImpl
         Page<ScriptManageDeployEntity> scriptManageDeployEntityPage = scriptManageDeployMapper.selectPage(page,
             wrapper);
         if (CollectionUtils.isEmpty(scriptManageDeployEntityPage.getRecords())) {
-            return PagingList.empty();
+            return PagingList.of(Lists.newArrayList(),scriptManageDeployEntityPage.getTotal());
         }
         List<ScriptManageDeployResult> scriptManageDeployResults = scriptManageDeployEntityPage.getRecords().stream()
             .map(scriptManageDeployEntity -> {
@@ -295,8 +296,11 @@ public class ScriptManageDAOImpl
             wrapper.in(ScriptManageEntity::getUserId, param.getUserIdList());
         }
         Page<ScriptManageEntity> scriptManageEntityPage = scriptManageMapper.selectPage(page, wrapper);
-        if (scriptManageEntityPage == null || CollectionUtils.isEmpty(scriptManageEntityPage.getRecords())) {
+        if (scriptManageEntityPage == null) {
             return PagingList.empty();
+        }
+        if (scriptManageEntityPage.getRecords().isEmpty()) {
+            return PagingList.of(Lists.newArrayList(),scriptManageEntityPage.getTotal());
         }
         Map<Long, List<ScriptManageDeployResult>> longListMap = scriptManageDeployResults.stream().collect(
             Collectors.groupingBy(ScriptManageDeployResult::getScriptId));
@@ -438,8 +442,11 @@ public class ScriptManageDAOImpl
         wrapper.orderByDesc(ScriptExecuteResultEntity::getGmtCreate);
         Page<ScriptExecuteResultEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
         Page<ScriptExecuteResultEntity> pageList = scriptExecuteResultMapper.selectPage(page, wrapper);
-        if (pageList == null || CollectionUtils.isEmpty(pageList.getRecords())) {
+        if (pageList == null) {
             return PagingList.empty();
+        }
+        if( pageList.getRecords().isEmpty()) {
+            return PagingList.of(Lists.newArrayList(),pageList.getTotal());
         }
         List<ScriptExecuteResultEntity> list = pageList.getRecords();
         List<ScriptExecuteResult> results = list.stream().map(entity -> {

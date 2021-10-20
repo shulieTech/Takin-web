@@ -8,11 +8,12 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
-import io.shulie.takin.cloud.common.utils.DateUtil;
+import com.pamirs.takin.common.util.http.DateUtil;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceAnalyzeRequest;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceCommonRequest;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.ThreadCpuUseRateRequest;
@@ -189,7 +190,7 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
         ReportTimeResponse timeResponse = reportDetailService.getReportTime(reportId);
         PerformanceBaseQueryParam baseParam = new PerformanceBaseQueryParam();
         baseParam.setStartTime(timeResponse.getStartTime());
-        baseParam.setEndTime(timeResponse.getEndTime() != null ? timeResponse.getEndTime() : DateUtil.formatTime(System.currentTimeMillis()));
+        baseParam.setEndTime(timeResponse.getEndTime() != null ? timeResponse.getEndTime() : DateUtils.getNowDateStr());
         String[] splits = StringUtils.split(request.getProcessName(), "|");
         baseParam.setAppIp(splits[0]);
         baseParam.setAgentId(splits[1]);
@@ -237,7 +238,30 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
     @Override
     public void clearData(Integer time) {
         Date nSecond = DateUtils.getPreviousNSecond(time);
-        performanceThreadDataDAO.clearData(DateUtils.dateToString(nSecond, DateUtils.FORMATE_YMDHMS));
+        String timeString = DateUtils.dateToString(nSecond, DateUtils.FORMATE_YMDHMS);
+
+        boolean dataCleanComplete = false;
+        boolean stackDataCleanComplete = false;
+
+        while (true) {
+            try {
+                if (!dataCleanComplete) {
+                    dataCleanComplete = performanceThreadDataDAO.clearData(timeString);
+                }
+
+                if (!stackDataCleanComplete) {
+                    stackDataCleanComplete = performanceThreadDataDAO.clearStackData(timeString);
+                }
+
+                if (dataCleanComplete && stackDataCleanComplete) {
+                    break;
+                }
+
+                TimeUnit.SECONDS.sleep(15);
+            } catch (InterruptedException e) {
+                log.error("定时清理错误 --> 错误信息: {}", e.getMessage(), e);
+            }
+        }
     }
 
     private long formatTimestamp(String datetime) {

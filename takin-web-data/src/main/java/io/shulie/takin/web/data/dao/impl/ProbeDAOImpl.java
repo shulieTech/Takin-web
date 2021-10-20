@@ -2,8 +2,10 @@ package io.shulie.takin.web.data.dao.impl;
 
 import java.util.List;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
+import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.shulie.takin.web.common.util.CommonUtil;
@@ -33,16 +35,13 @@ public class ProbeDAOImpl implements ProbeDAO, MPUtil<ProbeEntity> {
 
     @Override
     public PagingList<ProbeListResult> pageProbe(PageBaseDTO pageDTO) {
-        Page<ProbeEntity> probeEntityPage = probeMapper.selectPage(this.setPage(pageDTO),
+        IPage<ProbeEntity> probeEntityPage = probeMapper.selectPage(this.setPage(pageDTO),
             this.getCustomerLambdaQueryWrapper().select(ProbeEntity::getId, ProbeEntity::getVersion)
                 .orderByDesc(ProbeEntity::getGmtUpdate));
 
-        List<ProbeEntity> records = probeEntityPage.getRecords();
-        if (records.isEmpty()) {
-            return PagingList.empty();
-        }
-
-        return PagingList.of(CommonUtil.list2list(records, ProbeListResult.class), probeEntityPage.getTotal());
+        return probeEntityPage.getTotal() == 0 ? PagingList.empty()
+            : PagingList.of(CommonUtil.list2list(probeEntityPage.getRecords(), ProbeListResult.class),
+                probeEntityPage.getTotal());
     }
 
     @Override

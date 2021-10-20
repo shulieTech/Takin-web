@@ -67,8 +67,8 @@ public class MybatisDataAuthInterceptor implements Interceptor {
         if (!SqlCommandType.SELECT.equals(mappedStatement.getSqlCommandType())) {
             return arg0.proceed();
         }
-        ////仅拦截console
-        if (WebPluginUtils.checkUserData() && WebPluginUtils.getTenantUserAppKey() != null) {
+        ////仅拦截console 不拦截agent登录方式
+        if (WebPluginUtils.getUser() != null && WebPluginUtils.getUser().getLoginChannel() == 1) {
             return arg0.proceed();
         }
         ////仅拦截非系统管理员
@@ -79,8 +79,18 @@ public class MybatisDataAuthInterceptor implements Interceptor {
         if (allowAll()) {
             return arg0.proceed();
         }
-        Class<?> classType = Class.forName(
-            mappedStatement.getId().substring(0, mappedStatement.getId().lastIndexOf(".")));
+        Class<?> classType = null;
+        String className = mappedStatement.getId().substring(0, mappedStatement.getId().lastIndexOf("."));
+        try {
+            // 主工程
+            classType = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            // 插件工程
+            classType = WebPluginUtils.getClassByName(className);
+        }
+        if(classType == null) {
+            return arg0.proceed();
+        }
         String methodName = mappedStatement.getId().substring(mappedStatement.getId().lastIndexOf(".") + 1);
         for (Method method : classType.getDeclaredMethods()) {
             //不带注解，方法不匹配

@@ -35,4 +35,10 @@ public class ReportQueryParam extends WebRequest implements Serializable {
     @ApiModelProperty(value = "压测结束时间")
     private String endTime;
 
+    /**
+     * 前端传
+     */
+    @ApiModelProperty(value = "负责人姓名")
+    private String userName;
+
 }

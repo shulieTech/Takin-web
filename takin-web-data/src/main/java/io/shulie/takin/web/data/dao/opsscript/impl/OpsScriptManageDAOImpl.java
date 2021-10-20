@@ -37,8 +37,7 @@ public class OpsScriptManageDAOImpl
             wrapper.eq(OpsScriptManageEntity::getScriptType, param.getScriptType());
         }
 
-        return this.page(setPage(param.getCurrent() + 1, param.getPageSize()),
-                wrapper);
+        return this.page(setPage(param.getCurrent() + 1, param.getPageSize()), wrapper);
     }
 
     @Override

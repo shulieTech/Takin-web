@@ -19,6 +19,7 @@ import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
@@ -50,8 +51,6 @@ public class WebPluginUtils {
     private static WebTenantExtApi tenantExtApi;
 
     static PluginManager pluginManager;
-
-
 
     @Autowired
     public void setPluginManager(PluginManager pluginManager) {
@@ -451,6 +450,44 @@ public class WebPluginUtils {
         return getDefaultTenantInfoList();
     }
 
+    /**
+     * 根据租户code 查询租户数据
+     * @param tenantCode
+     * @return
+     */
+    public static List<TenantInfoExt> getTenantInfoListByTenantCode(String tenantCode) {
+        if (Objects.nonNull(tenantExtApi)) {
+            return tenantExtApi.getTenantInfoListByTenantCode(tenantCode);
+        }
+        // 默认一个租户
+        if(Objects.nonNull(userApi)) {
+            // 企业版
+            return userApi.getTenantInfoList();
+        }
+        // 开源版本
+        return getDefaultTenantInfoList();
+    }
+
+    /**
+     * 切换租户
+     * @param ext
+     */
+    public static void switchTenant(SwitchTenantExt ext) {
+        if(Objects.nonNull(userApi)) {
+            userApi.switchTenant(ext);
+        }
+    }
+
+    /**
+     * 切换环境
+     * @param ext
+     */
+    public static void switchEnv(SwitchTenantExt ext) {
+        if(Objects.nonNull(userApi)) {
+            userApi.switchEnv(ext);
+        }
+    }
+
 
     /**
      * 租户参数传递
@@ -627,12 +664,21 @@ public class WebPluginUtils {
         ext.setTenantName(DEFAULT_TENANT_APP_KEY);
         ext.setTenantNick(DEFAULT_TENANT_APP_KEY);
         ext.setTenantCode(DEFAULT_TENANT_APP_KEY);
+        ext.setEnvs(getDefaultTenantEnvList());
+        exts.add(ext);
+        return exts;
+    }
+
+    /**
+     * 获取默认租户 环境
+     * @return
+     */
+    private static List<TenantEnv> getDefaultTenantEnvList() {
         List<TenantEnv> envs =Lists.newArrayList();
         TenantInfoExt.TenantEnv env = new TenantEnv();
         env.setEnvCode(DEFAULT_ENV_CODE);
         env.setEnvName("测试环境");
-        ext.setEnvs(envs);
-        exts.add(ext);
-        return exts;
+        envs.add(env);
+        return envs;
     }
 }

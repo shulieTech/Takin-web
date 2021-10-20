@@ -51,5 +51,10 @@ public class TenantInfoExt {
          * 环境名
          */
         private String envName;
+
+        /**
+         * 描述
+         */
+        private String desc;
     }
 }

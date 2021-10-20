@@ -9,7 +9,6 @@ import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.report.ReportService;
-import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

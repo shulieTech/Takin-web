@@ -79,7 +79,6 @@ import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -203,12 +202,12 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                     }}).collect(Collectors.toList()));
             }
         }
-        param.setCreatorId(WebPluginUtils.traceUserId());
+        param.setUserId(WebPluginUtils.traceUserId());
         //填充操作人信息
-        UserExt user = WebPluginUtils.getUser();
+        UserExt user = WebPluginUtils.traceUser();
         if (user != null) {
-            param.setOperateId(user.getId());
-            param.setOperateName(user.getName());
+            param.setUserId(user.getId());
+            param.setUserName(user.getName());
         }
         param.setRequestUrl(RemoteConstant.SCENE_TASK_START_URL);
         param.setHttpMethod(HttpMethod.POST);

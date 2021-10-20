@@ -230,10 +230,10 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 return response;
             }
             //填充当前用户信息为操作人
-            UserExt user = WebPluginUtils.getUser();
+            UserExt user = WebPluginUtils.traceUser();
             if (user != null) {
-                debugCloudRequest.setOperateId(user.getId());
-                debugCloudRequest.setOperateName(user.getName());
+                debugCloudRequest.setUserId(user.getId());
+                debugCloudRequest.setUserName(user.getName());
             }
             // 启动调试
             SceneTryRunTaskStartResp cloudResponse = this.doDebug(debugCloudRequest);
@@ -996,23 +996,18 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      */
     private SceneTryRunTaskStartReq getDebugParams(ScriptManageDeployEntity scriptDeploy,
                                                    List<BusinessLinkManageTableEntity> businessActivities, Integer requestNum, Integer concurrencyNum) {
-        List<BusinessLinkManageTableEntity> businessActivities, Integer requestNum, Integer concurrencyNum) {
         // cloud 调试请求参数拼接
         SceneTryRunTaskStartReq debugCloudRequest = new SceneTryRunTaskStartReq();
         // 脚本发布id
         Long scriptDeployId = scriptDeploy.getId();
         debugCloudRequest.setLoopsNum(requestNum);
         debugCloudRequest.setScriptDeployId(scriptDeployId);
-            // 增加并发数
-            sasadebugCloudRequest.setConcurrencyNum(concurrencyNum);
-            saadebugCloudRequest.setScriptId(scriptDeployId);
-            asasdebugCloudRequest.setScriptType(scriptDeploy.getType());
         // 增加并发数
         debugCloudRequest.setConcurrencyNum(concurrencyNum);
-        debugCloudRequest.setScriptId(scriptDeploy.getScriptId());
+        debugCloudRequest.setScriptId(scriptDeployId);
         debugCloudRequest.setScriptType(scriptDeploy.getType());
         debugCloudRequest.setScriptName(scriptDeploy.getName());
-        debugCloudRequest.setCreatorId(WebPluginUtils.traceUserId());
+        debugCloudRequest.setUserId(WebPluginUtils.traceUserId());
         // 插件ids
         List<PluginConfigDetailResponse> pluginConfigs = ScriptManageUtil.listPluginConfigs(scriptDeploy.getFeature());
         if (CollectionUtils.isNotEmpty(pluginConfigs)) {

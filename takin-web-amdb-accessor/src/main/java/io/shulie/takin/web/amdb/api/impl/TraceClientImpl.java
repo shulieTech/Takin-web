@@ -124,11 +124,10 @@ public class TraceClientImpl implements TraceClient {
         try {
             String url = properties.getUrl().getAmdb() + QUERY_TRACE_PATH.replace("@TraceId@", traceId);
             url = url+"&userAppKey="+WebPluginUtils.traceTenantAppKey()+"&envCode="+WebPluginUtils.traceEnvCode();
-            AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.builder().url(url)
             if (times.length == 2) {
                 url += "&startTime=" + times[0] + "&endTime=" + times[1];
             }
-            AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.newInStance().url(url)
+            AmdbResult<List<RpcBased>> amdbResponse = AmdbHelper.builder().url(url)
                     .eventName("查询Trace调用栈明细")
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
                     .list(RpcBased.class);

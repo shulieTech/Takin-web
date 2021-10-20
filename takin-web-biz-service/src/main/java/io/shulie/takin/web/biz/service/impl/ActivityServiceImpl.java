@@ -1,13 +1,18 @@
 package io.shulie.takin.web.biz.service.impl;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 
-import com.pamirs.takin.common.redis.RedisKey;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
@@ -26,12 +31,17 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.request.activity.*;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
@@ -44,29 +54,28 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.http.HttpAssert;
 import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityUpdateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
-import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
-import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * @author shiyajian
@@ -649,18 +658,11 @@ public class ActivityServiceImpl implements ActivityService {
             ).collect(Collectors.toList()));
         }
         taskFlowDebugStartReq.setFeatures(req.getFeatures());
-        taskFlowDebugStartReq.setLicense(WebPluginUtils.getTenantUserAppKey());
-        UserExt user = WebPluginUtils.getUser();
+        UserExt user = WebPluginUtils.traceUser();
         if (user != null) {
-            taskFlowDebugStartReq.setOperateId(user.getId());
-            taskFlowDebugStartReq.setOperateName(user.getName());
+            taskFlowDebugStartReq.setUserId(user.getId());
+            taskFlowDebugStartReq.setUserName(user.getName());
         }
-        log.info("流量验证参数：{}", taskFlowDebugStartReq.toString());
-        ResponseResult<Long> longResponseResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
-        log.info("流量验证发起结果：{}", longResponseResult.toString());
-        HttpAssert.isOk(longResponseResult, taskFlowDebugStartReq, "cloud开始流量验证任务");
-        //taskFlowDebugStartReq.setLicense(WebPluginUtils.getTenantUserAppKey());
-        taskFlowDebugStartReq.setCreatorId(WebPluginUtils.traceUserId());
         log.info("流量验证参数：{}", taskFlowDebugStartReq);
         Long startResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
         log.info("流量验证发起结果：{}", startResult.toString());

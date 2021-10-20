@@ -96,7 +96,6 @@ import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
@@ -138,9 +137,9 @@ import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.DocumentException;
@@ -454,8 +453,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         // 异常探针状态再判断
         this.checkAccessStatus(vo);
-        ApplicationVo vo = this.appEntryToVo(tApplicationMnt, applicationResult,
-            applicationNodeResultList);
         return Response.success(vo);
     }
 
@@ -1071,7 +1068,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public void modifyAppNodeNum(List<NodeNumParam> numParamList) {
-        applicationDAO.batchUpdateAppNodeNum(numParamList, WebPluginUtils.getCustomerId());
+        applicationDAO.batchUpdateAppNodeNum(numParamList, WebPluginUtils.traceTenantId());
     }
 
     /**

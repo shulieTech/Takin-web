@@ -1,13 +1,40 @@
 package io.shulie.takin.web.biz.service;
 
-import cn.hutool.core.util.StrUtil;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.alibaba.fastjson.JSON;
+
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.MiddlewareType;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.MD5Util;
-import io.shulie.amdb.common.dto.link.topology.*;
+import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
+import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
+import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoBaseDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForCacheDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForDBDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForMQDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForOSSDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForSearchDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -18,7 +45,27 @@ import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeDTO;
 import io.shulie.takin.web.biz.common.CommonService;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.*;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppCallDatasourceInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppCallInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppProvider;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppProviderInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.ApplicationEntranceTopologyEdgeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.DbInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.ExceptionListResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.MqInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.NodeDetailDatasourceInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.NodeTypeResponseEnum;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.OssInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyAppNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyCacheNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyDbNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyMqNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyOssNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyOtherNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologySearchNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyUnknownNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyVirtualNodeResponse;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.activity.info.RpcTypeEnum;
@@ -39,16 +86,6 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -202,8 +239,8 @@ public class LinkTopologyService extends CommonService {
 
         // 查询 瓶颈阈值 配置
         List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
-        if (WebPluginUtils.checkUserData() && E2ePluginUtils.checkE2ePlugin()) {
-            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.getCustomerId());
+        if (WebPluginUtils.checkUserPlugin() && E2ePluginUtils.checkE2ePlugin()) {
+            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId());
         }
         // 查询 该业务活动 的所有开关状态
         List<ActivityNodeState> dbActivityNodeServiceState = activityService.getActivityNodeServiceState(activityId);
@@ -635,7 +672,9 @@ public class LinkTopologyService extends CommonService {
         }
 
         // 连线集合 为空，说明没有下游了
-        if (edgeListOfNode.size() == 0) return;
+        if (edgeListOfNode.size() == 0) {
+            return;
+        }
 
         // 找出 连线集合中 总调用量 最大的一条
         // 如果下游 调用量 均为 0， 则其中一条为主干

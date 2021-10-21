@@ -91,7 +91,6 @@
         on duplicate key update machine_base_config=#{machineBaseConfig,jdbcType=VARCHAR},
                                 agent_id=#{agentId,jdbcType=VARCHAR},
                                 risk_value=#{riskValue,jdbcType=DECIMAL},
-                                risk_flag=#{riskFlag,jdbcType=TINYINT},
                                 risk_content=#{riskContent,jdbcType=VARCHAR}
     </insert>
 

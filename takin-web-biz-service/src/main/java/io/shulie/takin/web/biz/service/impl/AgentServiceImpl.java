@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.impl;
 import java.io.File;
 
 import cn.hutool.core.util.StrUtil;
+import io.shulie.takin.web.biz.pojo.request.agent.GetFileRequest;
 import io.shulie.takin.web.biz.pojo.request.agent.PushOperateRequest;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResponse;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResultResponse;
@@ -41,6 +42,9 @@ public class AgentServiceImpl implements AgentService {
     @Autowired
     private ApplicationNodeProbeDAO applicationNodeProbeDAO;
 
+    @Autowired
+    private TroUserDAO troUserDAO;
+
     @Override
     public AgentApplicationNodeProbeOperateResponse getOperateResponse(String applicationName, String agentId) {
         // 先查出该应用是否一键卸载, 如果是, 直接返回命令
@@ -67,10 +71,8 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Override
-    public File getFile(String applicationName, String agentId) {
-        // 根据应用名称, agentId 查出节点探针的操作记录
-        ApplicationNodeProbeResult applicationNodeProbeResult =
-            applicationNodeProbeDAO.getByApplicationNameAndAgentId(applicationName, agentId);
+    public File getFile(GetFileRequest getFileRequest) {
+        ApplicationNodeProbeResult applicationNodeProbeResult = this.getApplicationNodeProbeByUserAppKey(getFileRequest);
         this.isGetFileError(applicationNodeProbeResult == null, "操作记录不存在!");
 
         // 根据操作类型, 获取文件
@@ -95,7 +97,10 @@ public class AgentServiceImpl implements AgentService {
         ApplicationNodeProbeResult applicationNodeProbeResult =
             applicationNodeProbeDAO.getByApplicationNameAndAgentId(appName, agentId);
 
-        log.info("探针操作结果上报 --> 查询操作记录!");
+        if (log.isInfoEnabled()) {
+            log.info("探针操作结果上报 --> 查询操作记录!");
+        }
+
         AgentApplicationNodeProbeOperateResultResponse response = new AgentApplicationNodeProbeOperateResultResponse();
         if (applicationNodeProbeResult == null) {
             response.setBusinessCode(99);
@@ -103,7 +108,10 @@ public class AgentServiceImpl implements AgentService {
             return response;
         }
 
-        log.info("探针操作结果上报 --> 更新操作记录!");
+        if (log.isInfoEnabled()) {
+            log.info("探针操作结果上报 --> 更新操作记录!");
+        }
+
         // 比对操作结果, 如果是一样, 且是成功, 就不往下了
         Integer operateResult = pushOperateRequest.getOperateResult();
         if (operateResult.equals(applicationNodeProbeResult.getOperateResult())
@@ -156,6 +164,33 @@ public class AgentServiceImpl implements AgentService {
         if (condition) {
             throw new TakinWebException(ExceptionCode.AGENT_APPLICATION_NODE_PROBE_GET_FILE_ERROR, message);
         }
+    }
+
+    /**
+     * 兼容以前
+     * 根据 userAppKey 获取相应的探针操作命令
+     *
+     * @param getFileRequest 获取操作请求
+     * @return 节点探针的操作记录
+     */
+    private ApplicationNodeProbeResult getApplicationNodeProbeByUserAppKey(GetFileRequest getFileRequest) {
+        // 判断是否有 userAppKey, 如果没有, 就保持和以前一样
+        String applicationName = getFileRequest.getAppName();
+        String agentId = getFileRequest.getAgentId();
+
+        String userAppKey = getFileRequest.getUserAppKey();
+        if (StrUtil.isBlank(userAppKey)) {
+            // 因为此接口 controller 没有做登录拦截, 所以可能没有 customer_id, 所以 customer_id 倒序查找第一个
+            // 可能有一个问题就是 admin 操作, 其他租户没操作, 导致探针包不一样
+            // 根据应用名称, agentId 查出节点探针的操作记录, customer_id 倒序查找第一个
+            return applicationNodeProbeDAO.getByApplicationNameAndAgentIdAndMaxCustomerId(applicationName, agentId, null);
+        }
+
+        // 根据 userAppKey 查出用户
+        // 然后根据用户的 customerId 去查询操作
+        UserDetailResult user = troUserDAO.getByKey(userAppKey);
+        this.isGetFileError(user == null, "userAppKey 对应的用户不存在!");
+        return applicationNodeProbeDAO.getByApplicationNameAndAgentIdAndMaxCustomerId(applicationName, agentId, user.getCustomerId());
     }
 
 }

@@ -237,14 +237,10 @@ public class WebPluginUtils {
         return Lists.newArrayList();
     }
 
-    public static UserExt queryUserFromCache() {
-        //if (StringUtils.isBlank(TakinRestContext.getTenantUserKey())) {
-        //    OperationLogContextHolder.ignoreLog();
-        //    log.error("tenantUserKey为空，应用注册失败");
-        //} else {
-        //
-        //}
-        ///UserCacheResult allUserCache.getCachedUserByKey(TakinRestContext.getTenantUserKey());
+    public static UserExt queryUserFromCache(String userAppKey) {
+        if (userApi != null) {
+            return userApi.queryUserFromCache(userAppKey);
+        }
         return null;
     }
 

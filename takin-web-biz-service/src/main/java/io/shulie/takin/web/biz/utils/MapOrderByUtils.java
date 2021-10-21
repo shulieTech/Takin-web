@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.utils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
@@ -19,8 +20,9 @@ public class MapOrderByUtils {
      */
     public static <K extends Comparable<? super K>, V> Map<K, V> orderByKey(Map<K, V> map, boolean isDesc) {
         if (map == null || map.isEmpty()) {
-            return null;
+            return new HashMap<>(1);
         }
+
         Map<K, V> result = Maps.newLinkedHashMap();
         if (isDesc) {
             map.entrySet().stream().sorted(Map.Entry.<K, V>comparingByKey().reversed())

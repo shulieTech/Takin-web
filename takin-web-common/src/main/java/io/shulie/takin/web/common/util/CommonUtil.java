@@ -9,10 +9,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,13 +29,17 @@ import org.springframework.util.StringUtils;
 public class CommonUtil implements AppConstants {
 
     /**
-     * 获得 zk 租户, 环境隔离后的路径
+     * 按照Bean对象属性创建对应的Class对象，并忽略某些属性
+     * 如果源头bean为null, 则吐出的也是null
      *
-     * @param path 节点路径
-     * @return 租户, 环境隔离后的路径
+     * @param <T>              对象类型
+     * @param source           源Bean对象
+     * @param tClass           目标Class
+     * @param ignoreProperties 不拷贝的的属性列表
+     * @return 目标对象
      */
-    public static String getZkTenantAndEnvPath(String path) {
-        return String.format("%s/%s/%s", WebPluginUtils.getTenantUserAppKey(), WebPluginUtils.getEnvCode(), path);
+    public static <T> T copyBeanPropertiesWithNull(Object source, Class<T> tClass, String... ignoreProperties) {
+        return source == null ? null : BeanUtil.copyProperties(source, tClass, ignoreProperties);
     }
 
     /**
@@ -83,7 +87,7 @@ public class CommonUtil implements AppConstants {
      * 根据租户id区分文件夹
      *
      * @param uploadPath 上传的文件夹
-     * @param folder     分类目录
+     * @param folder 分类目录
      * @return 文件所在文件夹的绝对路径
      */
     public static String getAbsoluteUploadPath(String uploadPath, String folder) {
@@ -97,7 +101,7 @@ public class CommonUtil implements AppConstants {
      * /data/path/probe/20210610/
      *
      * @param uploadPath 上传的文件路径
-     * @param folder     分类目录
+     * @param folder 分类目录
      * @return 上传文件的临时路径
      */
     public static String getUploadPath(String uploadPath, String folder) {
@@ -139,9 +143,9 @@ public class CommonUtil implements AppConstants {
      * 数据越多, 此方法愈快一些,
      * stream 方法加了 try/catch 是一部分原因, newInstance 可能也是一部分原因
      *
-     * @param sourceList  源list
+     * @param sourceList 源list
      * @param targetClazz 目标对象类对象
-     * @param <T>         要转换的类
+     * @param <T> 要转换的类
      * @return 另一个对象的list
      */
     public static <T> List<T> list2list(List<?> sourceList, Class<T> targetClazz) {
@@ -159,9 +163,9 @@ public class CommonUtil implements AppConstants {
      *
      * 100000 数据, 花费时间 1622712560395
      *
-     * @param sourceList  源list
+     * @param sourceList 源list
      * @param targetClazz 目标对象类对象
-     * @param <T>         要转换的类
+     * @param <T> 要转换的类
      * @return 另一个对象的list
      */
     public static <T> List<T> list2listByStream(List<?> sourceList, Class<T> targetClazz) {

@@ -6,16 +6,16 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
+import io.shulie.takin.web.common.common.Response;
+import com.pamirs.takin.entity.domain.vo.JarVersionVo;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import org.springframework.web.multipart.MultipartFile;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import com.pamirs.takin.entity.domain.vo.JarVersionVo;
+import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -24,12 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ApplicationService {
 
     void configureTasks();
-
-    /**
-     * 带租户
-     * @param ext
-     */
-    void configureTasks(TenantCommonExt ext);
 
     List<ApplicationListResponse> getApplicationList(String appNames);
 
@@ -190,14 +184,6 @@ public interface ApplicationService {
     void syncApplicationAccessStatus();
 
     /**
-     * 根据租户 同步应用状态
-     * @param tenantId
-     * @param userAppKey
-     * @param envCode
-     */
-    void syncApplicationAccessStatus(Long tenantId,String userAppKey, String envCode);
-
-    /**
      * 通过 applicationId 获得 applicationName
      *
      * @param applicationId 应用id
@@ -212,5 +198,19 @@ public interface ApplicationService {
      */
     void uninstallAllAgent(List<String> appIds);
 
+    /**
+     * 一键恢复探针
+     * @param appIds
+     */
+    void resumeAllAgent(List<String> appIds);
+
+    /**
+     * 通过 applicationId 获得 应用
+     * 并判断是否存在
+     *
+     * @param applicationId 应用id
+     * @return 应用
+     */
+    ApplicationDetailResult getByApplicationIdWithCheck(Long applicationId);
 
 }

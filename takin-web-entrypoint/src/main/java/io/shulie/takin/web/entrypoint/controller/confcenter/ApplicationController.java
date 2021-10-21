@@ -207,4 +207,15 @@ public class ApplicationController {
     public void unstallAllAgent(@RequestBody AppUnstallAgentVo vo) {
         applicationService.uninstallAllAgent(vo.getAppIds());
     }
+
+    @PostMapping("/application/center/resumeAllAgent")
+    @ApiOperation("一键恢复探针")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
+    public void resumeAllAgent(@RequestBody AppUnstallAgentVo vo) {
+        applicationService.resumeAllAgent(vo.getAppIds());
+    }
+
 }

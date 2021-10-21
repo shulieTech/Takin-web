@@ -102,6 +102,7 @@ import io.shulie.takin.web.common.vo.excel.LinkGuardExcelVO;
 import io.shulie.takin.web.common.vo.excel.ShadowConsumerExcelVO;
 import io.shulie.takin.web.common.vo.excel.ShadowJobExcelVO;
 import io.shulie.takin.web.common.vo.excel.WhiteListExcelVO;
+import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsManageDAO;
@@ -133,7 +134,6 @@ import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.DocumentException;
@@ -186,6 +186,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Autowired
     private ApplicationNodeDAO applicationNodeDAO;
     @Autowired
+    private AgentConfigCacheManager agentConfigCacheManager;
+    @Autowired
     private WhiteListService whiteListService;
     @Autowired
     private ShadowJobConfigService shadowJobConfigService;
@@ -209,6 +211,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private LinkGuardDAO linkGuardDAO;
+
+    @Value("${fast.debug.upload.log.path:/data/app/config/}")
+    private String configPath;
 
     @Value("${application.ds.config.is.new.version: false}")
     private Boolean isNewVersion;
@@ -246,30 +251,13 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Autowired
     private ApplicationNodeService applicationNodeService;
 
+    @Autowired
+    private ApplicationNodeProbeDAO applicationNodeProbeDAO;
+
     //3.添加定时任务
     //或直接指定时间间隔，例如：5秒
     @Override
     public void configureTasks() {
-        //针对每个用户进行检查
-        Map<String, Long> map = redisTemplate.opsForHash().entries(NEED_VERIFY_USER_MAP);
-        if (map.size() > 0) {
-            log.info("当前待执行用户数： => " + map.size());
-            map.forEach((key, value) -> {
-                if (System.currentTimeMillis() - value >= pradarSwitchProcessingTime * 1000) {
-                    // 操作完删除，保证只执行一次
-                    Long uid = Long.valueOf(key);
-                    String switchStatus = getUserSwitchStatusForAgent(uid);
-                    redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + uid, switchStatus);
-                    // agent接收的关闭信息后不再上报信息
-                    // reCalculateUserSwitch(Long.valueOf(key.toString()));
-                    redisTemplate.opsForHash().delete(NEED_VERIFY_USER_MAP, key);
-                }
-            });
-        }
-    }
-
-    @Override
-    public void configureTasks(TenantCommonExt ext) {
         //针对每个用户进行检查
         Map<String, Long> map = redisTemplate.opsForHash().entries(NEED_VERIFY_USER_MAP);
         if (map.size() > 0) {
@@ -455,8 +443,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         queryParam.setApplicationNames(Collections.singletonList(tApplicationMnt.getApplicationName()));
         PagingList<ApplicationNodeResult> applicationNodes = applicationNodeDAO.pageNodes(queryParam);
         List<ApplicationNodeResult> applicationNodeResultList = applicationNodes.getList();
-        ApplicationVo vo = this.appEntryToVo(tApplicationMnt, applicationResult,
-            applicationNodeResultList);
+        ApplicationVo vo = this.appEntryToVo(tApplicationMnt, applicationResult, applicationNodeResultList);
 
         // 异常探针状态再判断
         this.checkAccessStatus(vo);
@@ -670,59 +657,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public void syncApplicationAccessStatus(Long tenantId,String userAppKey, String envCode) {
-        long startTime = System.currentTimeMillis();
-        try {
-            //查询出所有待检测状态的应用
-            List<TApplicationMnt> applicationMntList = tApplicationMntDao.getAllApplicationByStatusAndTenant(
-                Arrays.asList(0, 1, 2, 3),tenantId,envCode);
-            if (!CollectionUtils.isEmpty(applicationMntList)) {
-                List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName)
-                    .collect(Collectors.toList());
-                List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames,userAppKey,envCode);
-                if (!CollectionUtils.isEmpty(applicationResultList)) {
-                    Set<Long> errorApplicationIdSet = Sets.newSet();
-                    Set<Long> normalApplicationIdSet = Sets.newSet();
-                    applicationMntList.forEach(applicationMnt -> {
-                        String appName = applicationMnt.getApplicationName();
-                        Optional<ApplicationResult> optional =
-                            applicationResultList.stream().filter(
-                                applicationResult -> applicationResult.getAppName().equals(appName)).findFirst();
-                        if (optional.isPresent()) {
-                            ApplicationResult applicationResult = optional.get();
-                            Boolean appIsException = applicationResult.getAppIsException();
-                            if (appIsException) {
-                                //异常
-                                if (applicationMnt.getAccessStatus() != 3) {
-                                    errorApplicationIdSet.add(applicationMnt.getApplicationId());
-                                }
-                            } else {
-                                //正常
-                                if (applicationMnt.getAccessStatus() != 0) {
-                                    normalApplicationIdSet.add(applicationMnt.getApplicationId());
-                                }
-                            }
-                        }
-                    });
-                    if (errorApplicationIdSet.size() > 0) {
-                        modifyAccessStatusWithoutAuth(new ArrayList<>(errorApplicationIdSet), 3);
-                    }
-                    if (normalApplicationIdSet.size() > 0) {
-                        modifyAccessStatusWithoutAuth(new ArrayList<>(normalApplicationIdSet), 0);
-                    }
-                }
-            } else {
-                log.debug("暂无待检测应用");
-            }
-        } catch (Exception e) {
-            log.error("执行定时同步应用状态异常", e);
-        } finally {
-            long endTime = System.currentTimeMillis();
-            log.info("执行定时同步应用状态完成，执行耗时：{}", (endTime - startTime));
-        }
-    }
-
-    @Override
     public void modifyAccessStatus(String applicationId, Integer accessStatus, String exceptionInfo) {
         //只更新两个字段
         if (StringUtil.isNotEmpty(applicationId) && accessStatus != null) {
@@ -778,7 +712,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public ApplicationSwitchStatusDTO agentGetUserSwitchInfo() {
         ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
-        result.setSwitchStatus(getUserSwitchStatusForAgent(WebPluginUtils.getTenantId()));
+        result.setSwitchStatus(getUserSwitchStatusForAgent(WebPluginUtils.getCustomerId()));
         return result;
     }
 
@@ -2012,6 +1946,34 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return Response.success();
     }
 
+    @Override
+    public void resumeAllAgent(List<String> appIds) {
+        try {
+            // 查询所有应用
+            List<TApplicationMnt> applicationList = tApplicationMntDao.queryApplicationList(null, appIds);
+            if (CollectionUtil.isEmpty(applicationList)) {
+                return;
+            }
+
+            List<String> appNames = applicationList.stream().map(TApplicationMnt :: getApplicationName).collect(Collectors.toList());
+            applicationNodeProbeDAO.delByAppNamesAndOperate(WebPluginUtils.getCustomerId(), ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
+        } catch (Exception e) {
+            log.error("一键恢复探针异常", e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_RESUME_AGENT_ERROR, e);
+        }
+    }
+
+    @Override
+    public ApplicationDetailResult getByApplicationIdWithCheck(Long applicationId) {
+        // 查询应用
+        ApplicationDetailResult application = applicationDAO.getApplicationById(applicationId);
+        // 判断
+        if (application == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR, "应用不存在!");
+        }
+        return application;
+    }
+
     List<ApplicationVo> appEntryListToVoList(List<TApplicationMnt> tApplicationMnts) {
         List<ApplicationVo> voList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(tApplicationMnts)) {
@@ -2130,7 +2092,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public TApplicationMnt queryTApplicationMntByName(String appName) {
         return tApplicationMntDao.queryApplicationInfoByNameAndTenant(appName,
-            WebPluginUtils.checkUserData() ? WebPluginUtils.getTenantId() : null);
+            WebPluginUtils.checkUserData() ? WebPluginUtils.getCustomerId() : null);
     }
 
     /**

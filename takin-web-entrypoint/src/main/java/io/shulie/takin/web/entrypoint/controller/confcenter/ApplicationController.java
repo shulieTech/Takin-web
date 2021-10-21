@@ -10,14 +10,14 @@ import com.github.pagehelper.util.StringUtil;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.AppUnstallAgentVo;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -207,4 +207,15 @@ public class ApplicationController {
     public void unstallAllAgent(@RequestBody AppUnstallAgentVo vo) {
         applicationService.uninstallAllAgent(vo.getAppIds());
     }
+
+    @PostMapping("/application/center/resumeAllAgent")
+    @ApiOperation("一键恢复探针")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
+    public void resumeAllAgent(@RequestBody AppUnstallAgentVo vo) {
+        applicationService.resumeAllAgent(vo.getAppIds());
+    }
+
 }

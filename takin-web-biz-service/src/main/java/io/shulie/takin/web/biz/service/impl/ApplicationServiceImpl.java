@@ -255,6 +255,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Autowired
     private ApplicationNodeProbeDAO applicationNodeProbeDAO;
 
+    @Override
+    public List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList) {
+        return tApplicationMntDao.getApplicationsByTenants(userIdList);
+    }
+
     //3.添加定时任务
     //或直接指定时间间隔，例如：5秒
     @Override

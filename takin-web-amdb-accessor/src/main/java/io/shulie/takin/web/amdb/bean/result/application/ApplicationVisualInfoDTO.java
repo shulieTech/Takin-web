@@ -3,6 +3,7 @@ package io.shulie.takin.web.amdb.bean.result.application;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Map;
 
 @Data
 public class ApplicationVisualInfoDTO implements Serializable {
@@ -41,4 +42,12 @@ public class ApplicationVisualInfoDTO implements Serializable {
      * 关联业务活动名称
      */
     private String[] activeList;
+    /**
+     * 关联业务活动名称
+     */
+    private Map activeIdAndName;
+    /**
+     * 是否关注
+     */
+    private boolean isAttend;
 }

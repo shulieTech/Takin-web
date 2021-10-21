@@ -70,10 +70,12 @@ import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.excel.*;
+import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.*;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
 import io.shulie.takin.web.data.model.mysql.*;
@@ -225,6 +227,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private AmdbClientProperties properties;
+
+    @Autowired
+    private ActivityDAO activityDAO;
 
     //3.添加定时任务
     //或直接指定时间间隔，例如：5秒
@@ -1035,15 +1040,21 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      * @param request 包含应用名称及服务名称
      */
     @Override
-    public void getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
+    public List<ApplicationVisualInfoDTO> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
         //TODO 1.关注
         List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(request.getAppName());
         //TODO 2.根据应用名称查询大数据性能数据
         List<String> attentionInterfaces = attentionList.stream().map(ApplicationAttentionListEntity::getInterfaceName).collect(Collectors.toList());
         request.setAttentionList(attentionInterfaces);
-        doGetAppDataByAppName(request);
+        List<ApplicationVisualInfoDTO> infoDTOList = doGetAppDataByAppName(request);
+        //TODO 2.1补充关联业务活动ID
+        doConvertActivityId(infoDTOList);
         //TODO 3.查询健康度(卡慢、接口异常)
         doGetHealthIndicator();
+        return infoDTOList;
+    }
+
+    private void doConvertActivityId(List<ApplicationVisualInfoDTO> infoDTOList) {
     }
 
     /**
@@ -1110,14 +1121,14 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             String orderBy = request.getOrderBy();
             int current = request.getCurrent();
             int pageSize = request.getPageSize();
-            return doSortAndPage(data, attentionList, orderBy, pageSize, current);
+            return doSortAndPageAndConvertActivityId(data, attentionList, orderBy, pageSize, current);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
         }
     }
 
-    private List<ApplicationVisualInfoDTO> doSortAndPage(List<ApplicationVisualInfoDTO> data, List<String> attentionList, String orderBy, int pageSize, int current) {
+    private List<ApplicationVisualInfoDTO> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoDTO> data, List<String> attentionList, String orderBy, int pageSize, int current) {
         if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current - 1)) ;
         String[] orderList = orderBy.split(" ");
         if (orderList.length != 2) {
@@ -1128,6 +1139,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<ApplicationVisualInfoDTO> visualInfoDTOList = data.stream().sorted((d1, d2) -> {
             boolean b1 = attentionList.contains(d1.getServiceAndMethod());
             boolean b2 = attentionList.contains(d2.getServiceAndMethod());
+            d1.setAttend(b1);
+            d2.setAttend(b2);
             if ((b1 && b2) || (!b1 && !b2)) {
                 Number result = 0;
                 switch (orderName) {
@@ -1148,6 +1161,17 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             } else {
                 return b1 ? -1 : 1;
             }
+        }).map(dto -> {
+            String[] activeList = dto.getActiveList();
+            Map<String, String> activityResult = new HashMap<>();
+            for (String active : activeList) {
+                String[] split = active.split("#");
+                String appName = split[0];
+                String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
+                activityResult.putAll(activityDAO.findActivityIdByServiceName(appName, entrance));
+            }
+            dto.setActiveIdAndName(activityResult);
+            return dto;
         }).collect(Collectors.toList());
         List<ApplicationVisualInfoDTO> infoDTOPageList = new ArrayList<>();
         for (int i = current - 1; i < pageSize; i++) {

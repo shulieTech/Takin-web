@@ -11,7 +11,7 @@
         <result column="focus" jdbcType="TINYINT" property="focus"/>
     </resultMap>
 
-    <select id="getAttentionList" parameterType="java.lang.String">
+    <select id="getAttentionList" parameterType="java.lang.String" resultMap="BaseResultMap">
         SELECT app_name,interface_name,focus FROM t_application_focus WHERE app_name = #{applicationName} AND focus = 1;
     </select>
 

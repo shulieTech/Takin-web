@@ -2,6 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.tenant;
 
 import java.util.List;
 
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Date: 2021/10/20 15:58
  */
 @RestController
-@RequestMapping("/api/tenant")
+@RequestMapping(ApiUrls.TAKIN_API_URL +"tenant")
 @Api(tags = "租户接口")
 public class TenantController {
 
@@ -32,13 +33,13 @@ public class TenantController {
         return WebPluginUtils.getTenantInfoListByTenantCode(tenantCode);
     }
 
-    @PutMapping
+    @PutMapping("/switch")
     @ApiOperation("切换租户")
     public void switchTenant(@RequestBody SwitchTenantExt ext) {
         WebPluginUtils.switchTenant(ext);
     }
 
-    @PutMapping
+    @PutMapping("/env/switch")
     @ApiOperation("切换环境")
     public void switchEnv(@RequestBody SwitchTenantExt ext) {
         WebPluginUtils.switchEnv(ext);

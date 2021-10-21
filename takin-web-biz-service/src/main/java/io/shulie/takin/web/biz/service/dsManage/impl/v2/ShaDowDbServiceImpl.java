@@ -86,6 +86,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
         entity.setUrl(inputV2.getUrl());
         entity.setUserName(inputV2.getUsername());
         entity.setConnPoolName(inputV2.getConnectionPool());
+        entity.setStatus(0);
         String extInfo = inputV2.getExtInfo();
         if(DsTypeEnum.SHADOW_TABLE.getCode().equals(inputV2.getDsType())){
             extInfo = JSONObject.parseObject(inputV2.getExtInfo()).get("shaDowTaleInfo").toString();

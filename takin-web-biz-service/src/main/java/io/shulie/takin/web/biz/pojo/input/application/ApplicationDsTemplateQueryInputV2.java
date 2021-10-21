@@ -32,5 +32,8 @@ public class ApplicationDsTemplateQueryInputV2 {
     @ApiModelProperty(value = "cacheType",name = "缓存模式")
     private String cacheType;
 
+    @ApiModelProperty(value = "connectionPool",name = "中间件名称")
+    private String connectionPool;
+
 
 }

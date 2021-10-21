@@ -86,6 +86,7 @@ public class ShaDowCacheServiceImpl extends AbstractShaDowManageService {
         entity.setShaDowFileExtedn(inputV2.getExtInfo());
         entity.setCustomerId(inputV2.getCustomerId());
         entity.setUserId(inputV2.getUserId());
+        entity.setStatus(0);
         if (isCreate) {
             entity.setApplicationId(inputV2.getApplicationId());
             entity.setApplicationName(inputV2.getApplicationName());

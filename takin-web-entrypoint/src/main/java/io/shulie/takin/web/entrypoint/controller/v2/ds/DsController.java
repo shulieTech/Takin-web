@@ -102,7 +102,7 @@ public class DsController {
     )
     public Response  dsQueryConfigTemplate(@RequestBody @Validated ApplicationDsTemplateQueryInputV2 inputV2) {
         return dsService.dsQueryConfigTemplate(inputV2.getAgentSourceType(),
-                inputV2.getDsType(),inputV2.getIsNewData(),inputV2.getCacheType());
+                inputV2.getDsType(),inputV2.getIsNewData(),inputV2.getCacheType(),inputV2.getConnectionPool());
     }
 
 

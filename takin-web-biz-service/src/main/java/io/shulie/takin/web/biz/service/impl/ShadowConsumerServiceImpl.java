@@ -196,7 +196,6 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                     response.setEnabled(e.getStatus() == ShadowConsumerConstants.ENABLE);
                     response.setGmtCreate(e.getCreateTime());
                     response.setGmtUpdate(e.getUpdateTime());
-                    response.setCanEdit(false);
                     response.setCanRemove(false);
                     response.setCanEnableDisable(false);
                     response.setIsManual(false);

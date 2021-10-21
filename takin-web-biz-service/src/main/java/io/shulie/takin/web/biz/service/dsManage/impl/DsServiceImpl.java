@@ -32,6 +32,7 @@ import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.convert.db.parser.AbstractTemplateParser;
 import io.shulie.takin.web.biz.convert.db.parser.DbTemplateParser;
 import io.shulie.takin.web.biz.convert.db.parser.RedisTemplateParser;
+import io.shulie.takin.web.biz.convert.db.parser.TemplateParser;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
@@ -69,6 +70,7 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -156,6 +158,8 @@ public class DsServiceImpl implements DsService {
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
 
+    @Autowired
+    private TemplateParser templateParser;
 
 
     @PostConstruct
@@ -441,7 +445,7 @@ public class DsServiceImpl implements DsService {
         queryParam.setApplicationId(applicationId);
         queryParam.setIsDeleted(0);
         WebPluginUtils.fillQueryParam(queryParam);
-        this.filterAndSave(shadowDataBaseInfos, applicationId,queryParam);
+        this.filterAndSave(shadowDataBaseInfos, applicationId, queryParam);
         //这里为了拿到id,先存后查
         List<ApplicationDsCacheManageDetailResult> caches = dsCacheManageDAO.selectList(queryParam);
         List<ApplicationDsDbManageDetailResult> dbs = dsDbManageDAO.selectList(queryParam);
@@ -502,28 +506,28 @@ public class DsServiceImpl implements DsService {
         List<ApplicationDsCacheManageDetailResult> saveCaches = Lists.newArrayList();
         List<ApplicationDsDbManageDetailResult> saveDbs = Lists.newArrayList();
 
-        if(CollectionUtils.isNotEmpty(amdbByDbs)){
+        if (CollectionUtils.isNotEmpty(amdbByDbs)) {
 
             Map<String, AppShadowDatabaseDTO> amdbDbMap = amdbByDbs
                     .stream()
                     .collect(Collectors.toMap(AppShadowDatabaseDTO::getDataSource, Function.identity(), (key1, key2) -> key2));
 
             Map<String, ApplicationDsResult> dbOldMap = new HashMap<>();
-            if(CollectionUtils.isNotEmpty(dbOlds)){
+            if (CollectionUtils.isNotEmpty(dbOlds)) {
                 dbOldMap = dbOlds
                         .stream()
                         .collect(Collectors.toMap(ApplicationDsResult::getUrl, Function.identity(), (key1, key2) -> key2));
             }
             Map<String, ApplicationDsDbManageDetailResult> dbMap = new HashMap<>();
-            if(CollectionUtils.isNotEmpty(dbs)){
+            if (CollectionUtils.isNotEmpty(dbs)) {
                 dbMap = dbs
                         .stream()
                         .collect(Collectors.toMap(ApplicationDsDbManageDetailResult::getUrl, Function.identity(), (key1, key2) -> key2));
             }
 
 
-            for(String k:amdbDbMap.keySet()){
-                if(!dbOldMap.containsKey(k) && !dbMap.containsKey(k)){
+            for (String k : amdbDbMap.keySet()) {
+                if (!dbOldMap.containsKey(k) && !dbMap.containsKey(k)) {
                     ApplicationDsDbManageDetailResult dbDetail = this.buildDbDetail(amdbDbMap.get(k), applicationId);
                     saveDbs.add(dbDetail);
                 }
@@ -531,7 +535,7 @@ public class DsServiceImpl implements DsService {
         }
 
 
-        if(CollectionUtils.isNotEmpty(amdbByCaches)){
+        if (CollectionUtils.isNotEmpty(amdbByCaches)) {
 
 
             Map<String, AppShadowDatabaseDTO> amdbCacheMap = amdbByCaches
@@ -540,20 +544,20 @@ public class DsServiceImpl implements DsService {
 
             Map<String, ApplicationDsResult> cacheOldMap = new HashMap<>();
             Map<String, ApplicationDsCacheManageDetailResult> cacheMap = new HashMap<>();
-            if(CollectionUtils.isNotEmpty(cacheOlds)){
+            if (CollectionUtils.isNotEmpty(cacheOlds)) {
                 cacheOldMap = cacheOlds
                         .stream()
                         .collect(Collectors.toMap(ApplicationDsResult::getUrl, Function.identity(), (key1, key2) -> key2));
             }
-            if(CollectionUtils.isNotEmpty(caches)){
+            if (CollectionUtils.isNotEmpty(caches)) {
                 cacheMap = caches
                         .stream()
                         .collect(Collectors.toMap(ApplicationDsCacheManageDetailResult::getColony, Function.identity(), (key1, key2) -> key2));
             }
 
 
-            for(String k:amdbCacheMap.keySet()){
-                if(!cacheOldMap.containsKey(k) && !cacheMap.containsKey(k)){
+            for (String k : amdbCacheMap.keySet()) {
+                if (!cacheOldMap.containsKey(k) && !cacheMap.containsKey(k)) {
                     ApplicationDsCacheManageDetailResult cacheDetail = this.buildCacheDetail(amdbCacheMap.get(k), applicationId);
                     saveCaches.add(cacheDetail);
                 }
@@ -589,14 +593,14 @@ public class DsServiceImpl implements DsService {
         Integer code = MiddleWareTypeEnum.getEnumByValue(updateRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
 
-        if(!updateRequestV2.getIsNewData()){
+        if (!updateRequestV2.getIsNewData()) {
             //针对老版本数据,先删除原表数据,新表重新保存
             ApplicationDsResult dsResult = applicationDsDAO.queryByPrimaryKey(updateRequestV2.getId());
-            if(Objects.nonNull(dsResult)){
+            if (Objects.nonNull(dsResult)) {
                 ApplicationDsDeleteParam deleteParam = new ApplicationDsDeleteParam();
                 deleteParam.setIdList(Collections.singletonList(updateRequestV2.getId()));
                 applicationDsDAO.delete(deleteParam);
-                service.createShadowProgramme(updateRequestV2,false);
+                service.createShadowProgramme(updateRequestV2, false);
             }
         }
         service.updateShadowProgramme(updateRequestV2);
@@ -607,14 +611,20 @@ public class DsServiceImpl implements DsService {
     }
 
     @Override
-    public Response dsQueryConfigTemplate(String agentSourceType, Integer dsType,Boolean isNewData,String cacheType) {
-        Converter.TemplateConverter.TemplateEnum templateEnum = Converter.TemplateConverter.ofKey(agentSourceType);
-        Type type =templateEnum.getType();
+    public Response dsQueryConfigTemplate(String agentSourceType, Integer dsType, Boolean isNewData, String cacheType, String connectionPool) {
+        Converter.TemplateConverter.TemplateEnum templateEnum;
+        if (Strings.isNotBlank(cacheType)) {
+            templateEnum = templateParser.convert(connectionPool);
+        } else {
+            templateEnum = Converter.TemplateConverter.ofKey(agentSourceType);
+        }
+
+        Type type = templateEnum.getType();
         if (!templateParserMap.containsKey(type)) {
             return Response.success();
         }
         AbstractTemplateParser templateParser = templateParserMap.get(type);
-        return Response.success(templateParser.convertShadowMsgWithTemplate(dsType,isNewData,cacheType,templateEnum));
+        return Response.success(templateParser.convertShadowMsgWithTemplate(dsType, isNewData, cacheType, templateEnum));
     }
 
     /**
@@ -626,11 +636,11 @@ public class DsServiceImpl implements DsService {
      * @return
      */
     @Override
-    public Response dsDeleteV2(Long id, String middlewareType,Boolean isNewData,Long applicationId) {
+    public Response dsDeleteV2(Long id, String middlewareType, Boolean isNewData, Long applicationId) {
         ApplicationDetailResult detailResult = applicationDAO.getApplicationById(applicationId);
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
-        if(Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)){
+        if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
             //删除老数据
             ApplicationDsDeleteParam deleteParam = new ApplicationDsDeleteParam();
             deleteParam.setIdList(Collections.singletonList(id));
@@ -650,7 +660,7 @@ public class DsServiceImpl implements DsService {
         }
         Integer code = MiddleWareTypeEnum.getEnumByValue(createRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
-        service.createShadowProgramme(createRequestV2,true);
+        service.createShadowProgramme(createRequestV2, true);
 
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
@@ -693,6 +703,7 @@ public class DsServiceImpl implements DsService {
         detailResult.setAgentSourceType(amdbData.getType());
         detailResult.setShaDowUrl(amdbData.getShadowDataSource());
         detailResult.setSource(0);
+        detailResult.setStatus(1);
         return detailResult;
     }
 
@@ -709,6 +720,7 @@ public class DsServiceImpl implements DsService {
         detailResult.setConfigJson(JSON.toJSONString(amdbData));
         detailResult.setAgentSourceType(amdbData.getType());
         detailResult.setSource(0);
+        detailResult.setStatus(1);
         return detailResult;
     }
 
@@ -783,12 +795,12 @@ public class DsServiceImpl implements DsService {
         return v2Response;
     }
 
-    private List<DsAgentVO> compatibleNewVersion(Long applicationId,String appName){
+    private List<DsAgentVO> compatibleNewVersion(Long applicationId, String appName) {
         ApplicationDsQueryParam param = new ApplicationDsQueryParam();
         param.setApplicationId(applicationId);
         param.setStatus(0);
         List<ApplicationDsDbManageDetailResult> detailResults = dsDbManageDAO.selectList(param);
-        if(CollectionUtils.isEmpty(detailResults)){
+        if (CollectionUtils.isEmpty(detailResults)) {
             return Collections.emptyList();
         }
         detailResults = detailResults.stream()
@@ -814,8 +826,8 @@ public class DsServiceImpl implements DsService {
                 configurations.setDatasourceMediator(new DatasourceMediator("dataSourceBusiness", "dataSourcePerformanceTest"));
                 DataSource dataSourceBusiness = new DataSource();
                 dataSourceBusiness.setId("dataSourceBusiness");
-                dataSourceBusiness.setUrl(Objects.isNull(parameter)?detail.getUrl():parameter.getString("url"));
-                dataSourceBusiness.setUsername(Objects.isNull(parameter)?detail.getUserName():parameter.getString("username"));
+                dataSourceBusiness.setUrl(Objects.isNull(parameter) ? detail.getUrl() : parameter.getString("url"));
+                dataSourceBusiness.setUsername(Objects.isNull(parameter) ? detail.getUserName() : parameter.getString("username"));
 
                 DataSource dataSourcePerformanceTest = this.buildShadowMsg(shadowConfigMap);
                 dataSourcePerformanceTest.setId("dataSourcePerformanceTest");
@@ -836,27 +848,27 @@ public class DsServiceImpl implements DsService {
     }
 
 
-    private Map<String,String> matchShadowDb(String shadowStr){
-        Map<String,String> matchMap = new HashMap<>();
+    private Map<String, String> matchShadowDb(String shadowStr) {
+        Map<String, String> matchMap = new HashMap<>();
         Map shadowMap = JSONObject.parseObject(shadowStr, Map.class);
-        matchMap.put("username",String.valueOf(shadowMap.get("shadowUserName")));
-        matchMap.put("url",String.valueOf(shadowMap.get("shadowUrl")));
-        matchMap.put("password",String.valueOf(shadowMap.get("shadowPwd")));
+        matchMap.put("username", String.valueOf(shadowMap.get("shadowUserName")));
+        matchMap.put("url", String.valueOf(shadowMap.get("shadowUrl")));
+        matchMap.put("password", String.valueOf(shadowMap.get("shadowPwd")));
 
         shadowMap.remove("shadowUserName");
         shadowMap.remove("shadowUrl");
         shadowMap.remove("shadowPwd");
         shadowMap.remove("applicationName");
 
-        shadowMap.forEach((k,v) -> {
+        shadowMap.forEach((k, v) -> {
             Map map = JSONObject.parseObject(String.valueOf(v), Map.class);
-            matchMap.put(String.valueOf(k),String.valueOf(map.get("value")));
+            matchMap.put(String.valueOf(k), String.valueOf(map.get("value")));
         });
         return matchMap;
     }
 
-    private String matchShadowTable(String shadowStr){
-        List<ShadowDetailResponse.TableInfo> tableInfos = JSONArray.parseArray(shadowStr,ShadowDetailResponse.TableInfo.class);
+    private String matchShadowTable(String shadowStr) {
+        List<ShadowDetailResponse.TableInfo> tableInfos = JSONArray.parseArray(shadowStr, ShadowDetailResponse.TableInfo.class);
         List<String> tableNames = tableInfos
                 .stream()
                 .filter(ShadowDetailResponse.TableInfo::getIsCheck)
@@ -866,10 +878,10 @@ public class DsServiceImpl implements DsService {
     }
 
 
-    private DataSource buildShadowMsg(Map<String,String> matchShadow){
+    private DataSource buildShadowMsg(Map<String, String> matchShadow) {
         DataSource dataSourcePerformanceTest = new DataSource();
         try {
-            org.apache.commons.beanutils.BeanUtils.populate(dataSourcePerformanceTest,matchShadow);
+            org.apache.commons.beanutils.BeanUtils.populate(dataSourcePerformanceTest, matchShadow);
             dataSourcePerformanceTest.setExtra(matchShadow);
         } catch (Exception e) {
             e.printStackTrace();
@@ -882,7 +894,7 @@ public class DsServiceImpl implements DsService {
         ApplicationDetailResult result = applicationDAO.getApplicationById(applicationId);
         agentConfigCacheManager.evictShadowDb(result.getApplicationName());
         agentConfigCacheManager.evictShadowServer(result.getApplicationName());
-        if(Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)){
+        if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
             //更新老数据
             ApplicationDsEnableParam enableParam = new ApplicationDsEnableParam();
             enableParam.setId(id);
@@ -891,7 +903,7 @@ public class DsServiceImpl implements DsService {
             return Response.success();
         }
         AbstractTemplateParser templateParser = templateParserMap.get(Type.MiddleWareType.ofKey(middlewareType));
-        templateParser.enable(id,status);
+        templateParser.enable(id, status);
         return Response.success();
     }
 }

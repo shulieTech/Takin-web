@@ -1037,7 +1037,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
         //TODO 1.关注
-        List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(request.getApplicationName());
+        List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(request.getAppName());
         //TODO 2.根据应用名称查询大数据性能数据
         List<String> attentionInterfaces = attentionList.stream().map(ApplicationAttentionListEntity::getInterfaceName).collect(Collectors.toList());
         request.setAttentionList(attentionInterfaces);
@@ -1054,7 +1054,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void attendApplicationService(ApplicationVisualInfoQueryRequest request) throws Exception {
         Map param = new HashMap<>();
-        String applicationName = request.getApplicationName();
+        String applicationName = request.getAppName();
         String interfaceName = request.getLabel();
         param.put("appName", applicationName);
         param.put("interfaceName", interfaceName);

@@ -325,6 +325,7 @@ public class LinkTopologyService extends CommonService {
                             queryMetricsFromDb(startMilli, endMilli, realSeconds, metricsType, eagleId);
 
                     appProviderFromDb.setBeforeApps(linkEdgeDTO.getServerAppName());
+                    appProviderFromDb.setOwnerApps(appProvider.getOwnerApps());
                     appProviderFromDb.setEagleId(eagleId);
                     appProviderFromDb.setSource(linkEdgeDTO.getSourceId());
                     appProviderFromDb.setTarget(linkEdgeDTO.getTargetId());
@@ -415,7 +416,7 @@ public class LinkTopologyService extends CommonService {
         baseStorageParam.setRt(appProvider.getServiceAvgRt()); // 预设
         baseStorageParam.setEdgeId(appProvider.getEagleId());
         baseStorageParam.setStartTime(DateUtils.convertLocalDateTimeToUDate(startDateTime.plusHours(8)));
-        baseStorageParam.setServiceName(appProvider.getServiceName());
+        baseStorageParam.setServiceName(appProvider.getOwnerApps() + "#" + appProvider.getServiceName());
         baseStorageParam.setRpcType(appProvider.getRpcType());
         baseStorageParam.setActivityId(activityId);
 

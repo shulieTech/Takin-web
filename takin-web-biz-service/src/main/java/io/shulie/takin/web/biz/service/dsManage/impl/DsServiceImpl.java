@@ -158,9 +158,6 @@ public class DsServiceImpl implements DsService {
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
 
-    @Autowired
-    private TemplateParser templateParser;
-
 
     @PostConstruct
     public void init() {
@@ -613,13 +610,21 @@ public class DsServiceImpl implements DsService {
     @Override
     public Response dsQueryConfigTemplate(String agentSourceType, Integer dsType, Boolean isNewData, String cacheType, String connectionPool) {
         Converter.TemplateConverter.TemplateEnum templateEnum;
-        if (Strings.isNotBlank(cacheType)) {
-            templateEnum = templateParser.convert(connectionPool);
+        if (Strings.isNotBlank(connectionPool)) {
+            templateEnum = redisTemplateParser.convert(connectionPool);
+            if(Objects.isNull(templateEnum)){
+                templateEnum = dbTemplateParser.convert(connectionPool);
+            }
         } else {
             templateEnum = Converter.TemplateConverter.ofKey(agentSourceType);
         }
+        Type type ;
+        if(Objects.isNull(templateEnum)){
+            type = Type.MiddleWareType.LINK_POOL;
+        }else{
+            type = templateEnum.getType();
+        }
 
-        Type type = templateEnum.getType();
         if (!templateParserMap.containsKey(type)) {
             return Response.success();
         }

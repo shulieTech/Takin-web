@@ -535,7 +535,6 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         ApplicationRemoteCallQueryDTO serverAppNameQuery = new ApplicationRemoteCallQueryDTO();
         serverAppNameQuery.setUpAppName(upNames);
         serverAppNameQuery.setQueryTye("0");
-        serverAppNameQuery.setQueryTye("0");
         PagingList<ApplicationRemoteCallDTO> serverAppNamePage = applicationClient.listApplicationRemoteCalls(serverAppNameQuery);
         List<ApplicationRemoteCallDTO> serverAppNames = serverAppNamePage.getList();
         Map<String, List<ApplicationRemoteCallDTO>> serverAppNamesMap = serverAppNames.stream()
@@ -622,6 +621,14 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             listVO.setInterfaceType(getInterfaceType(call.getMiddlewareName(), voList));
             listVO.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
             listVO.setAppName(call.getAppName());
+            listVO.setIsManual(false);
+            listVO.setDefaultWhiteInfo(StringUtils.defaultIfBlank(call.getDefaultWhiteInfo(), ""));
+            AppRemoteCallTypeV2Enum enumByDesc = AppRemoteCallTypeV2Enum.getEnumByDesc(call.getMiddlewareDetail());
+            if(Objects.isNull(enumByDesc)){
+                listVO.setInterfaceChildType(call.getMiddlewareName());
+            }else{
+                listVO.setInterfaceChildType(call.getMiddlewareDetail());
+            }
             return listVO;
         }).collect(Collectors.toList());
     }
@@ -866,9 +873,16 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         if (detailResult == null) {
             throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "应用不存在");
         }
+
         // 补充插件内容
         WebPluginUtils.fillUserData(request);
         AppRemoteCallTypeV2Enum enumByDesc = AppRemoteCallTypeV2Enum.getEnumByDesc(request.getInterfaceType());
+
+        AppRemoteCallResult result = appRemoteCallDAO.queryOne(detailResult.getApplicationName(), enumByDesc.getType(), request.getInterfaceName());
+        if(Objects.nonNull(result)){
+            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "相同接口已经存在");
+        }
+
         AppRemoteCallCreateParam param = new AppRemoteCallCreateParam();
         BeanUtils.copyProperties(request, param);
         param.setCustomerId(detailResult.getCustomerId());

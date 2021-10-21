@@ -116,5 +116,15 @@ public class ApplicationDsCacheManageDAOImpl  extends ServiceImpl<ApplicationDsC
         }
         return result.stream().map(this::getApplicationDsCacheManageEntity).collect(Collectors.toList());
     }
+
+    @Override
+    public ApplicationDsCacheManageDetailResult getOne(String appName, String url, String cacheName) {
+        LambdaQueryWrapper<ApplicationDsCacheManageEntity> lambda = this.getLambdaQueryWrapper();
+        lambda.eq(ApplicationDsCacheManageEntity::getApplicationName,appName)
+                .eq(ApplicationDsCacheManageEntity::getIsDeleted,0)
+                .eq(ApplicationDsCacheManageEntity::getCacheName,cacheName)
+                .eq(ApplicationDsCacheManageEntity::getColony,url);
+        return getApplicationDsCacheManageDetailResult(this.getOne(lambda));
+    }
 }
 

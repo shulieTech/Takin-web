@@ -231,6 +231,9 @@ public class DbTemplateParser extends AbstractTemplateParser {
     private List<String> getAttributeArray(Converter.TemplateConverter.TemplateEnum templateEnum) {
         List<String> attributeArray = Lists.newArrayList();
         try {
+            if(Objects.isNull(templateEnum)){
+                return  attributeArray;
+            }
             Object t = templateEnum.getaClass().newInstance();
             if (Template.class.isAssignableFrom(t
                     .getClass())) {

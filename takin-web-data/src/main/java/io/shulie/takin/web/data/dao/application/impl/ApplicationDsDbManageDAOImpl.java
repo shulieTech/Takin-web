@@ -112,5 +112,16 @@ public class ApplicationDsDbManageDAOImpl  extends ServiceImpl<ApplicationDsDbMa
         }
         return results.stream().map(result -> this.getEntity(result)).collect(Collectors.toList());
     }
+
+    @Override
+    public ApplicationDsDbManageDetailResult selectOne(String appName, String url, String userName,String connPoolName) {
+        LambdaQueryWrapper<ApplicationDsDbManageEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper();
+        lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getApplicationName,appName)
+                .eq(ApplicationDsDbManageEntity::getUrl,url)
+                .eq(ApplicationDsDbManageEntity::getUserName,userName)
+                .eq(ApplicationDsDbManageEntity::getConnPoolName,connPoolName)
+                .eq(ApplicationDsDbManageEntity::getIsDeleted,0);
+        return getApplicationDsDbManageDetailResult(this.getOne(lambdaQueryWrapper));
+    }
 }
 

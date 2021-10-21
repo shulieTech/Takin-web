@@ -28,6 +28,8 @@ public interface ApplicationDsDbManageDAO {
 
     void removeRecord(Long id);
 
+    ApplicationDsDbManageDetailResult selectOne(String appName,String url,String userName,String connPoolName);
+
 
 }
 

@@ -9,8 +9,11 @@ import io.shulie.takin.web.biz.convert.db.parser.TemplateParser;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInputV2;
 import io.shulie.takin.web.biz.service.dsManage.AbstractShaDowManageService;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationDsCacheManageDAO;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsCacheManageEntity;
+import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +52,11 @@ public class ShaDowCacheServiceImpl extends AbstractShaDowManageService {
      */
     @Override
     public void createShadowProgramme(ApplicationDsCreateInputV2 inputV2, Boolean isJson) {
+        ApplicationDsCacheManageDetailResult result = cacheManageDAO.getOne(inputV2.getApplicationName(),
+                inputV2.getUrl(), inputV2.getConnectionPool());
+        if(Objects.nonNull(result)){
+            throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_CREATE_ERROR,"业务数据源已存在");
+        }
         if (isJson) {
             if(!JSONUtil.isJson(inputV2.getUrl())){
                 throw new IllegalArgumentException("业务集群数据格式必须是Json!");

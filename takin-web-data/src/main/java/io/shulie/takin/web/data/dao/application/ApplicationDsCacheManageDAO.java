@@ -26,5 +26,7 @@ public interface ApplicationDsCacheManageDAO {
 
     void removeRecord(Long id);
 
+    ApplicationDsCacheManageDetailResult getOne(String appName,String url,String cacheName);
+
 }
 

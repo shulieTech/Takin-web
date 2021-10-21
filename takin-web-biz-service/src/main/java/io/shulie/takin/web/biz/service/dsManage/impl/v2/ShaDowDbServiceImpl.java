@@ -9,6 +9,8 @@ import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInputV2;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
 import io.shulie.takin.web.biz.service.dsManage.AbstractShaDowManageService;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbTableDAO;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsDbManageEntity;
@@ -67,6 +69,12 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createShadowProgramme(ApplicationDsCreateInputV2 inputV2,Boolean isJson) {
+        //去重校验
+        ApplicationDsDbManageDetailResult result = dbManageDAO.selectOne(inputV2.getApplicationName(),
+                inputV2.getUrl(), inputV2.getUserName(),inputV2.getConnectionPool());
+        if(Objects.nonNull(result)){
+            throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_CREATE_ERROR,"业务数据源已存在");
+        }
         ApplicationDsDbManageEntity entity = this.buildEntity(inputV2,true);
         entity.setId(null); //去除原id
         dbManageDAO.saveOne(entity);

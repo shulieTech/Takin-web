@@ -132,4 +132,6 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
      * @return
      */
     List<AppRemoteCallResult> getAllRecord();
+
+    AppRemoteCallResult queryOne(String appName,Integer interfaceType,String interfaceName);
 }

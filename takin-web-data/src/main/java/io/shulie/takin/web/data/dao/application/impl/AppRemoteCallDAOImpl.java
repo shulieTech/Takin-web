@@ -292,4 +292,18 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         return getAppRemoteCallResults(appRemoteCallEntities);
     }
 
+
+    @Override
+    public AppRemoteCallResult queryOne(String appName, Integer interfaceType, String interfaceName) {
+        LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
+                .eq(AppRemoteCallEntity::getIsDeleted,0)
+                .eq(AppRemoteCallEntity::getAppName,appName)
+                .eq(AppRemoteCallEntity::getInterfaceType,interfaceType)
+                .eq(AppRemoteCallEntity::getInterfaceName,interfaceName);
+        AppRemoteCallEntity entity = this.getOne(lambdaQueryWrapper);
+        if(Objects.isNull(entity)){
+            return null;
+        }
+        return Convert.convert(AppRemoteCallResult.class,entity);
+    }
 }

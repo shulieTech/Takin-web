@@ -34,7 +34,7 @@ import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.cloud.common.constants.Constants;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
-import io.shulie.takin.web.amdb.bean.result.application.ApplicationVisualInfoDTO;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
@@ -42,8 +42,10 @@ import io.shulie.takin.web.biz.pojo.input.application.*;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoardResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
@@ -54,7 +56,6 @@ import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.utils.DsManageUtil;
-import io.shulie.takin.web.biz.utils.E2eExceptionConfigInfoUtil;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.biz.utils.WhiteListUtil;
 import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
@@ -64,6 +65,7 @@ import io.shulie.takin.web.common.constant.GuardEnableConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.WhiteListConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
@@ -94,9 +96,6 @@ import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.entity.e2e.E2eBaseStorageRequest;
-import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
-import io.shulie.takin.web.ext.util.E2ePluginUtils;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.DocumentException;
@@ -118,6 +117,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -227,6 +227,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private AmdbClientProperties properties;
+
+    @Autowired
+    private ActivityService activityService;
 
     @Autowired
     private ActivityDAO activityDAO;
@@ -1040,21 +1043,21 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      * @param request 包含应用名称及服务名称
      */
     @Override
-    public List<ApplicationVisualInfoDTO> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
+    public List<ApplicationVisualInfoResponse> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
         //TODO 1.关注
         List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(request.getAppName());
         //TODO 2.根据应用名称查询大数据性能数据
         List<String> attentionInterfaces = attentionList.stream().map(ApplicationAttentionListEntity::getInterfaceName).collect(Collectors.toList());
         request.setAttentionList(attentionInterfaces);
-        List<ApplicationVisualInfoDTO> infoDTOList = doGetAppDataByAppName(request);
+        List<ApplicationVisualInfoResponse> infoDTOList = doGetAppDataByAppName(request);
         //TODO 2.1补充关联业务活动ID
         doConvertActivityId(infoDTOList);
         //TODO 3.查询健康度(卡慢、接口异常)
-        doGetHealthIndicator();
+        doGetHealthIndicator(infoDTOList,request);
         return infoDTOList;
     }
 
-    private void doConvertActivityId(List<ApplicationVisualInfoDTO> infoDTOList) {
+    private void doConvertActivityId(List<ApplicationVisualInfoResponse> infoDTOList) {
     }
 
     /**
@@ -1086,16 +1089,23 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     /**
      * 获取应用健康度数据
+     *
+     * @param infoDTOList
+     * @param request
      */
-    private void doGetHealthIndicator() {
-        //1.获取瓶颈配置
-        List<E2eExceptionConfigInfoExt> configInfoExtList = E2eExceptionConfigInfoUtil.getConfig();
-        //2.构造应用性能数据
-        //TODO 注入RT、成功率
-        E2eBaseStorageRequest baseStorageRequest = new E2eBaseStorageRequest();
-        //3.瓶颈计算
-        Map<Integer, Integer> computeResult = E2ePluginUtils.bottleneckCompute(baseStorageRequest, configInfoExtList);
-
+    private void doGetHealthIndicator(List<ApplicationVisualInfoResponse> infoDTOList, ApplicationVisualInfoQueryRequest request) {
+        infoDTOList.stream().forEach(dto -> {
+            String appName = dto.getAppName();
+            String serviceAndMethod = dto.getServiceAndMethod();
+            int clusterTest = request.getClusterTest();
+            FlowTypeEnum flowTypeEnum = FlowTypeEnum.getByType(clusterTest);
+            LocalDateTime startTime = request.getStartTime();
+            LocalDateTime endTime = request.getEndTime();
+            Map<String, String> activeMap = dto.getActiveIdAndName();
+            List<ActivityInfoQueryRequest> activityList = activeMap.keySet().stream().map(id -> new ActivityInfoQueryRequest(Long.parseLong(id), flowTypeEnum, startTime, endTime)).collect(Collectors.toList());
+            ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(activityList, appName, serviceAndMethod);
+            dto.setResponse(response);
+        });
     }
 
     /**
@@ -1105,18 +1115,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      * @param label           服务名称
      * @param flowTypeEnum    流量类型
      */
-    private List<ApplicationVisualInfoDTO> doGetAppDataByAppName(ApplicationVisualInfoQueryRequest request) {
+    private List<ApplicationVisualInfoResponse> doGetAppDataByAppName(ApplicationVisualInfoQueryRequest request) {
         //TODO 大数据接口未定义
         String url = properties.getUrl().getAmdb() + "/amdb/db/api/metrics/metricsDetailes";
         try {
-            AmdbResult<List<ApplicationVisualInfoDTO>> appDataResult = AmdbHelper.newInStance().httpMethod(HttpMethod.POST)
+            AmdbResult<List<ApplicationVisualInfoResponse>> appDataResult = AmdbHelper.newInStance().httpMethod(HttpMethod.POST)
                     .url(url)
                     .param(request)
                     .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
                     .eventName("根据应用名称查询大数据性能数据")
-                    .list(ApplicationVisualInfoDTO.class);
+                    .list(ApplicationVisualInfoResponse.class);
             //TODO 大数据待清洗
-            List<ApplicationVisualInfoDTO> data = appDataResult.getData();
+            List<ApplicationVisualInfoResponse> data = appDataResult.getData();
             List<String> attentionList = request.getAttentionList();
             String orderBy = request.getOrderBy();
             int current = request.getCurrent();
@@ -1128,7 +1138,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
     }
 
-    private List<ApplicationVisualInfoDTO> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoDTO> data, List<String> attentionList, String orderBy, int pageSize, int current) {
+    private List<ApplicationVisualInfoResponse> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current) {
         if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current - 1)) ;
         String[] orderList = orderBy.split(" ");
         if (orderList.length != 2) {
@@ -1136,7 +1146,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
         String orderName = orderList[0];
         String orderType = orderList[1];
-        List<ApplicationVisualInfoDTO> visualInfoDTOList = data.stream().sorted((d1, d2) -> {
+        List<ApplicationVisualInfoResponse> visualInfoDTOList = data.stream().sorted((d1, d2) -> {
             boolean b1 = attentionList.contains(d1.getServiceAndMethod());
             boolean b2 = attentionList.contains(d2.getServiceAndMethod());
             d1.setAttend(b1);
@@ -1173,7 +1183,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             dto.setActiveIdAndName(activityResult);
             return dto;
         }).collect(Collectors.toList());
-        List<ApplicationVisualInfoDTO> infoDTOPageList = new ArrayList<>();
+        List<ApplicationVisualInfoResponse> infoDTOPageList = new ArrayList<>();
         for (int i = current - 1; i < pageSize; i++) {
             infoDTOPageList.add(visualInfoDTOList.get(i));
         }

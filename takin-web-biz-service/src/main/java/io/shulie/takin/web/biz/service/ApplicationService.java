@@ -13,7 +13,7 @@ import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
-import io.shulie.takin.web.amdb.bean.result.application.ApplicationVisualInfoDTO;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.common.common.Response;
@@ -212,7 +212,7 @@ public interface ApplicationService {
      *
      * @param request 包含应用名称及服务名称
      */
-    List<ApplicationVisualInfoDTO> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request);
+    List<ApplicationVisualInfoResponse> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request);
 
     /**
      * 关注服务

@@ -7,7 +7,7 @@ import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.amdb.bean.result.application.ApplicationVisualInfoDTO;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.biz.service.ApplicationService;
@@ -210,7 +210,7 @@ public class ApplicationController {
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
             needAuth = ActionTypeEnum.QUERY
     )
-    public List<ApplicationVisualInfoDTO> getApplicationVisualInfo(@Valid ApplicationVisualInfoQueryRequest request) {
+    public List<ApplicationVisualInfoResponse> getApplicationVisualInfo(@Valid ApplicationVisualInfoQueryRequest request) {
         return applicationService.getApplicationVisualInfo(request);
     }
 

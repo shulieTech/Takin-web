@@ -378,16 +378,4 @@ public class WebPluginUtils {
         }
     }
 
-    /**
-     * 返回租户id
-     * 租户依赖于用户
-     * @return 租户主键
-     */
-    public static Long traceTenantId() {
-        if (userApi != null) {
-            return userApi.traceTenantId();
-        }
-        return DEFAULT_TENANT_ID;
-    }
-
 }

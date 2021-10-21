@@ -1955,7 +1955,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             }
 
             List<String> appNames = applicationList.stream().map(TApplicationMnt :: getApplicationName).collect(Collectors.toList());
-            applicationNodeProbeDAO.delByAppNamesAndOperate(WebPluginUtils.traceTenantId(), ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
+            applicationNodeProbeDAO.delByAppNamesAndOperate(WebPluginUtils.getCustomerId(), ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
         } catch (Exception e) {
             log.error("一键恢复探针异常", e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_RESUME_AGENT_ERROR, e);

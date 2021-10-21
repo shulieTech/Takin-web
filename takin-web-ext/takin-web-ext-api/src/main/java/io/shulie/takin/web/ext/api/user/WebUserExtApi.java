@@ -9,6 +9,7 @@ import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 
@@ -162,4 +163,16 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @return
      */
     UserExt queryUserFromCache(String userAppKey);
+
+    /**
+     * 切换租户
+     * @param ext
+     */
+    void switchTenant(SwitchTenantExt ext);
+
+    /**
+     * 切换环境
+     * @param ext
+     */
+    void switchEnv(SwitchTenantExt ext);
 }

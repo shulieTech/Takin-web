@@ -16,29 +16,29 @@ public class ApplicationVisualInfoDTO implements Serializable {
     /**
      * 服务名称
      */
-    private String label;
+    private String serviceAndMethod;
     /**
      * 请求量
      */
-    private int queryPerSecond;
+    private int requestCount;
     /**
      * TPS
      */
-    private int transactionsPerSecond;
+    private int tps;
     /**
      * 响应时间
      */
-    private double responseTime;
+    private double responseConsuming;
     /**
      * 成功率
      */
-    private double successRate;
+    private double successRatio;
     /**
      * 中间件类型
      */
-    private String middlewareType;
+    private String middlewareName;
     /**
      * 关联业务活动名称
      */
-    private String[] labels;
+    private String[] activeList;
 }

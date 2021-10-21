@@ -20,15 +20,15 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableScheduling
 @EnableTransactionManagement
 @MapperScan({
-    "com.pamirs.takin.*.dao",
-    "io.shulie.takin.web.data.mapper.mysql",
-    "io.shulie.takin.web.data.dao.statistics",
-    "io.shulie.takin.web.data.convert.*"
+        "com.pamirs.takin.*.dao",
+        "io.shulie.takin.web.data.mapper.mysql",
+        "io.shulie.takin.web.data.dao.statistics",
+        "io.shulie.takin.web.data.convert.*"
 })
 @EnableAspectJAutoProxy
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.pamirs.takin", "io.shulie.takin"},
-    excludeFilters = @ComponentScan.Filter(type = FilterType.CUSTOM, value = {ApplicationFilter.class}))
+        excludeFilters = @ComponentScan.Filter(type = FilterType.CUSTOM, value = {ApplicationFilter.class}))
 public class Application {
 
     public static void main(String[] args) {

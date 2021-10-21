@@ -438,4 +438,9 @@ public class ActivityDAOImpl implements ActivityDAO {
         return activityNodeStateTableMapper.getActivityNodes(activityId);
     }
 
+    @Override
+    public Map<String,String> findActivityIdByServiceName(String appName, String entrance) {
+        return activityNodeStateTableMapper.findActivityIdByServiceName(appName,entrance);
+    }
+
 }

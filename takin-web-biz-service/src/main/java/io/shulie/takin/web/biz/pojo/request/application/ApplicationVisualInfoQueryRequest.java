@@ -17,10 +17,10 @@ public class ApplicationVisualInfoQueryRequest extends PagingDevice {
      * 应用名称
      */
     @ApiModelProperty("应用名称")
-    private String applicationName;
+    private String appName;
 
     @ApiModelProperty("流量类型(BLEND混合-1、PRESSURE_MEASUREMENT压测1、BUSINESS业务0)")
-    private int flowTypeEnum;
+    private int clusterTest;
 
     @ApiModelProperty("开始时间")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

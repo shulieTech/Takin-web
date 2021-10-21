@@ -15,6 +15,7 @@ import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -23,6 +24,9 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface ApplicationService {
 
+    /**
+     * 带租户
+     */
     void configureTasks();
 
     List<ApplicationListResponse> getApplicationList(String appNames);
@@ -148,8 +152,6 @@ public interface ApplicationService {
 
     List<TApplicationMnt> getAllApplications();
 
-    List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList);
-
     String getIdByName(String applicationName);
 
     String getUserSwitchStatusForVo();
@@ -198,6 +200,20 @@ public interface ApplicationService {
      */
     void uninstallAllAgent(List<String> appIds);
 
+    /**
+     * 一键恢复探针
+     * @param appIds
+     */
+    void resumeAllAgent(List<String> appIds);
+
+    /**
+     * 通过 applicationId 获得 应用
+     * 并判断是否存在
+     *
+     * @param applicationId 应用id
+     * @return 应用
+     */
+    ApplicationDetailResult getByApplicationIdWithCheck(Long applicationId);
     /**
      * 修改应用节点数
      *

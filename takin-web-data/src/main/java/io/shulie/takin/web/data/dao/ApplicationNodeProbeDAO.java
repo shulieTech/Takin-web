@@ -48,5 +48,26 @@ public interface ApplicationNodeProbeDAO {
      */
     List<ApplicationNodeProbeResult> listByApplicationNameAndAgentIds(String applicationName, List<String> agentIds);
 
+    /**
+     * 根据appnames和操作id删除
+     * @param customerId
+     * @param operate
+     * @param appNames
+     */
+    void delByAppNamesAndOperate(Long customerId, Integer operate, List<String> appNames);
+
+    /**
+     * 通过拿到最大的 customerId 的操作
+     * 因为这个接口没有做拦截, 所以先这么操作
+     * admin 的是 1, 比他大的就是那个租户的操作
+     *
+     * @param applicationName 应用名称
+     * @param agentId agentId
+     * @param customerId  租户 id
+     * @return 探针操作记录
+     */
+    ApplicationNodeProbeResult getByApplicationNameAndAgentIdAndMaxCustomerId(String applicationName, String agentId,
+        Long customerId);
+
 }
 

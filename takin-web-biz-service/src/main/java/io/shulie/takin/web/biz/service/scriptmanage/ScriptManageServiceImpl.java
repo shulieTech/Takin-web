@@ -141,6 +141,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class ScriptManageServiceImpl implements ScriptManageService {
 
+    @Value("${takin.license}")
+    private String takinLicense;
+
     @Value("${file.upload.url:}")
     private String fileUploadUrl;
     @Value("${file.upload.tmp.path:/tmp/takin/}")
@@ -227,7 +230,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             e.printStackTrace();
         }
         String[] cmds = {"curl", "-o", fileDir + "/" + fileName,"--create-dirs", "-OL", "-H",
-            "licenseKey:" + WebPluginUtils.getTenantUserAppKey(), url};
+            "licenseKey:" + takinLicense, url};
         LinuxHelper.execCurl(cmds);
         return fileDir + "/" + fileName;
     }

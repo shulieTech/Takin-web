@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface ApplicationService {
 
+    List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList);
+
     /**
      * 带租户
      */

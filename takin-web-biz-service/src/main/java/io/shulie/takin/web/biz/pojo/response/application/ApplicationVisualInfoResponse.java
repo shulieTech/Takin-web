@@ -1,12 +1,13 @@
-package io.shulie.takin.web.amdb.bean.result.application;
+package io.shulie.takin.web.biz.pojo.response.application;
 
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Map;
 
 @Data
-public class ApplicationVisualInfoDTO implements Serializable {
+public class ApplicationVisualInfoResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -50,4 +51,8 @@ public class ApplicationVisualInfoDTO implements Serializable {
      * 是否关注
      */
     private boolean isAttend;
+    /**
+     * 健康检查结果
+     */
+    private ActivityBottleneckResponse response;
 }

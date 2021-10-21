@@ -14,4 +14,13 @@ public enum FlowTypeEnum {
 
     private String code;
     private int type;
+
+    public static FlowTypeEnum getByType(int clusterTest) {
+        for (FlowTypeEnum value : FlowTypeEnum.values()) {
+            if (clusterTest == value.type) {
+                return value;
+            }
+        }
+        return null;
+    }
 }

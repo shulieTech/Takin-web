@@ -368,6 +368,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             listVO.setMockValue(result.getMockReturnValue());
             AppRemoteCallTypeEnum anEnum = AppRemoteCallTypeEnum.getEnum(result.getInterfaceType());
             listVO.setInterfaceChildType(StringUtils.defaultIfBlank(result.getInterfaceChildType(), anEnum.getDesc()));
+            //跟大数据做兼容，convert对应大数据的rpcType
+            listVO.setInterfaceType(anEnum.getConvert());
             // 权限问题
             fillInPermissions(listVO, detailResult);
             return listVO;

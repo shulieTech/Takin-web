@@ -28,7 +28,7 @@
         DELETE FROM t_activity_node_service_state WHERE activity_id = #{activityId} AND owner_app = #{ownerApp}
     </delete>
 
-    <select id="findActivityIdByServiceName" resultType="java.util.Map">
+    <select id="findActivityIdByServiceName" resultType="java.util.List">
         SELECT blmt.LINK_ID AS linkId,blmt.LINK_NAME AS linkName
         FROM t_business_link_manage_table blmt
         INNER JOIN t_link_manage_table lmt

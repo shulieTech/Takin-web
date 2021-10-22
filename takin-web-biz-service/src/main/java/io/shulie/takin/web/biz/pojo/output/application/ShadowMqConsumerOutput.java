@@ -5,6 +5,8 @@ import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * @author by: hezhongqi
@@ -13,7 +15,9 @@ import lombok.Data;
  * @Description: TODO
  * @Date: 2021/8/10 16:50
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
+@ToString(callSuper = true)
 public class ShadowMqConsumerOutput extends UserCommonExt {
     /**
      * 主键id

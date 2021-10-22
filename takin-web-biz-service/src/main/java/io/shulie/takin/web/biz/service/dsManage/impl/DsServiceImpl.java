@@ -507,19 +507,19 @@ public class DsServiceImpl implements DsService {
 
             Map<String, AppShadowDatabaseDTO> amdbDbMap = amdbByDbs
                     .stream()
-                    .collect(Collectors.toMap(AppShadowDatabaseDTO::getDataSource, Function.identity(), (key1, key2) -> key2));
+                    .collect(Collectors.toMap(AppShadowDatabaseDTO::getFilterStr, Function.identity(), (key1, key2) -> key2));
 
             Map<String, ApplicationDsResult> dbOldMap = new HashMap<>();
             if (CollectionUtils.isNotEmpty(dbOlds)) {
                 dbOldMap = dbOlds
                         .stream()
-                        .collect(Collectors.toMap(ApplicationDsResult::getUrl, Function.identity(), (key1, key2) -> key2));
+                        .collect(Collectors.toMap(ApplicationDsResult::getFilterStr, Function.identity(), (key1, key2) -> key2));
             }
             Map<String, ApplicationDsDbManageDetailResult> dbMap = new HashMap<>();
             if (CollectionUtils.isNotEmpty(dbs)) {
                 dbMap = dbs
                         .stream()
-                        .collect(Collectors.toMap(ApplicationDsDbManageDetailResult::getUrl, Function.identity(), (key1, key2) -> key2));
+                        .collect(Collectors.toMap(ApplicationDsDbManageDetailResult::getFilterStr, Function.identity(), (key1, key2) -> key2));
             }
 
 
@@ -537,19 +537,19 @@ public class DsServiceImpl implements DsService {
 
             Map<String, AppShadowDatabaseDTO> amdbCacheMap = amdbByCaches
                     .stream()
-                    .collect(Collectors.toMap(AppShadowDatabaseDTO::getDataSource, Function.identity(), (key1, key2) -> key2));
+                    .collect(Collectors.toMap(AppShadowDatabaseDTO::getFilterStr, Function.identity(), (key1, key2) -> key2));
 
             Map<String, ApplicationDsResult> cacheOldMap = new HashMap<>();
             Map<String, ApplicationDsCacheManageDetailResult> cacheMap = new HashMap<>();
             if (CollectionUtils.isNotEmpty(cacheOlds)) {
                 cacheOldMap = cacheOlds
                         .stream()
-                        .collect(Collectors.toMap(ApplicationDsResult::getUrl, Function.identity(), (key1, key2) -> key2));
+                        .collect(Collectors.toMap(ApplicationDsResult::getFilterStr, Function.identity(), (key1, key2) -> key2));
             }
             if (CollectionUtils.isNotEmpty(caches)) {
                 cacheMap = caches
                         .stream()
-                        .collect(Collectors.toMap(ApplicationDsCacheManageDetailResult::getColony, Function.identity(), (key1, key2) -> key2));
+                        .collect(Collectors.toMap(ApplicationDsCacheManageDetailResult::getFilterStr, Function.identity(), (key1, key2) -> key2));
             }
 
 

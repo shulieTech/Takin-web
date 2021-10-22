@@ -87,4 +87,11 @@ public class AppShadowDatabaseDTO implements Serializable {
 
     @JsonProperty("shadowDataSource")
     private String shadowDataSource;
+
+
+
+    public String getFilterStr(){
+        return this.getDataSource()+"@@"+this.getTableUser()+"@@"+this.getType();
+    }
+
 }

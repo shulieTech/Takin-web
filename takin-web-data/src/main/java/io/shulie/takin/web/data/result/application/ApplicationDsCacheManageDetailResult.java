@@ -16,4 +16,8 @@ import io.shulie.takin.web.data.model.mysql.ApplicationDsCacheManageEntity;
 @ToString(callSuper = true)
 public class ApplicationDsCacheManageDetailResult extends ApplicationDsCacheManageEntity {
 
+    public String getFilterStr(){
+        return this.getColony()+"@@"+this.getUserName()+"@@"+this.getAgentSourceType();
+    }
+
 }

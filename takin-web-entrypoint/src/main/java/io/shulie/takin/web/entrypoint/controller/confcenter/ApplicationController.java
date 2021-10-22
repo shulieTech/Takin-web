@@ -210,7 +210,7 @@ public class ApplicationController {
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
             needAuth = ActionTypeEnum.QUERY
     )
-    public List<ApplicationVisualInfoResponse> getApplicationVisualInfo(@Valid ApplicationVisualInfoQueryRequest request) {
+    public Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(@Valid ApplicationVisualInfoQueryRequest request) {
         return applicationService.getApplicationVisualInfo(request);
     }
 

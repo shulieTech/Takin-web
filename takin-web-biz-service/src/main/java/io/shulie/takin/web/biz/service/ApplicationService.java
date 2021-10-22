@@ -212,7 +212,7 @@ public interface ApplicationService {
      *
      * @param request 包含应用名称及服务名称
      */
-    List<ApplicationVisualInfoResponse> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request);
+    Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request);
 
     /**
      * 关注服务

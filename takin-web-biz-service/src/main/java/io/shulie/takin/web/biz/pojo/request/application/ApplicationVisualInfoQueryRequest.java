@@ -51,7 +51,7 @@ public class ApplicationVisualInfoQueryRequest extends PagingDevice {
      * eg:TPS desc
      */
     @ApiModelProperty("排序字段")
-    private String orderBy;
+    private String orderBy = "TPS desc";
 
     /**
      * 关注列表

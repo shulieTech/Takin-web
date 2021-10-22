@@ -1153,7 +1153,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current) {
-        if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current - 1)) {
+        if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current)) {
             return null;
         }
         String[] orderList = orderBy.split(" ");
@@ -1204,7 +1204,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return dto;
         }).collect(Collectors.toList());
         List<ApplicationVisualInfoResponse> infoDTOPageList = new ArrayList<>();
-        for (int i = (current - 1) * pageSize; i < current * pageSize && i < visualInfoDTOList.size(); i++) {
+        for (int i = current * pageSize; i < (current + 1) * pageSize && i < visualInfoDTOList.size(); i++) {
             infoDTOPageList.add(visualInfoDTOList.get(i));
         }
         Map result = new HashMap<>();

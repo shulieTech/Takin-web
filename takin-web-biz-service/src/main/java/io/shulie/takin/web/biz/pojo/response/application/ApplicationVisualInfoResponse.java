@@ -54,5 +54,5 @@ public class ApplicationVisualInfoResponse implements Serializable {
     /**
      * 健康检查结果
      */
-    private ActivityBottleneckResponse activityBottleneckResult;
+    private ActivityBottleneckResponse response;
 }

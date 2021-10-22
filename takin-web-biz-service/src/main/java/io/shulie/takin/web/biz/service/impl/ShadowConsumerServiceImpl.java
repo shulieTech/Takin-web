@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.impl;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.BooleanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -152,7 +153,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getDeleted, ShadowConsumerConstants.LIVED);
         List<ShadowMqConsumerEntity> dbResult = shadowMqConsumerMapper.selectList(lambdaQueryWrapper);
         List<ShadowMqConsumerOutput> amdbResult = Lists.newArrayList();
-        if (request.getEnabled() == null) {
+        if (request.getEnabled() == null || BooleanUtil.isFalse(request.getEnabled())) {
             amdbResult = queryAmdbDefaultEntrances(request, application.getApplicationName());
         }
         totalResult = mergeResult(amdbResult, dbResult);

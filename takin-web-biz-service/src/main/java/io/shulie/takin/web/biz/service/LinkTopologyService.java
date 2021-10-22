@@ -325,7 +325,6 @@ public class LinkTopologyService extends CommonService {
                             queryMetricsFromDb(startMilli, endMilli, realSeconds, metricsType, eagleId);
 
                     appProviderFromDb.setBeforeApps(appProvider.getBeforeAppsMap().get(linkEdgeDTO.getSourceId()));
-                    appProvider.setBeforeAppsMap(null);
                     appProviderFromDb.setOwnerApps(appProvider.getOwnerApps());
                     appProviderFromDb.setEagleId(eagleId);
                     appProviderFromDb.setSource(linkEdgeDTO.getSourceId());
@@ -352,6 +351,7 @@ public class LinkTopologyService extends CommonService {
                 fillNodeServiceMetrics(appProvider);
 
                 allAppProviderServiceList.add(appProvider);
+                appProvider.setBeforeAppsMap(null);
             }
         }
 

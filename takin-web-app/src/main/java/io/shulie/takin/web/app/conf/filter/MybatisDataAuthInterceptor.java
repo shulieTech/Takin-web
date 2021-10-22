@@ -2,8 +2,11 @@ package io.shulie.takin.web.app.conf.filter;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
+import com.baomidou.mybatisplus.core.conditions.AbstractWrapper;
 import com.google.common.collect.Lists;
 import io.shulie.takin.web.common.annocation.DataAuth;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -22,6 +25,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.plugin.Interceptor;
@@ -56,6 +60,8 @@ public class MybatisDataAuthInterceptor implements Interceptor {
 
     private static final String BOUND_SQL = "sqlSource.boundSql.sql";
 
+    private static final String[] specialStr = new String[] {"[", "]", "*", "?", "%", "_"};
+
     @Override
     public Object intercept(Invocation arg0) throws Throwable {
         MappedStatement mappedStatement = (MappedStatement)arg0.getArgs()[0];
@@ -65,6 +71,7 @@ public class MybatisDataAuthInterceptor implements Interceptor {
         }
         //仅拦截select 查询
         if (!SqlCommandType.SELECT.equals(mappedStatement.getSqlCommandType())) {
+            handleLikeSql(mappedStatement, arg0);
             return arg0.proceed();
         }
         ////仅拦截console 不拦截agent登录方式
@@ -122,6 +129,32 @@ public class MybatisDataAuthInterceptor implements Interceptor {
             arg0.getArgs()[0] = newMappedStatement;
         }
         return arg0.proceed();
+    }
+
+    private void handleLikeSql(MappedStatement mappedStatement, Invocation arg0) {
+        BoundSql boundSql1 = mappedStatement.getBoundSql(arg0.getArgs()[1]);
+        String sql = boundSql1.getSql();
+        List<String> list = Lists.newArrayList();
+        Map<String, Object> params = (Map<String, Object>)boundSql1.getParameterObject();
+        for (ParameterMapping mapping : boundSql1.getParameterMappings()) {
+            final String property = mapping.getProperty();
+            list.add(property);
+        }
+        for (String key : list) {
+            if (key.contains("ew.paramNameValuePairs.") && sql.toLowerCase(Locale.ROOT).contains(" like ?")) {
+                Map parameters = ((AbstractWrapper)params.get("ew")).getParamNameValuePairs();
+                String[] keyArr = key.split("\\.");
+                String key2 = keyArr[2];
+                Object o = parameters.get(key2);
+                for (int i = 0; i < specialStr.length; i++) {
+                    String str = specialStr[i];
+                    if (o instanceof String && (((String)o).contains(str) || ((String)o).contains(str))) {
+                        o = ((String)o).replace(str, "\\" + str + "");
+                    }
+                }
+                parameters.put(key2, o);
+            }
+        }
     }
 
     @Override

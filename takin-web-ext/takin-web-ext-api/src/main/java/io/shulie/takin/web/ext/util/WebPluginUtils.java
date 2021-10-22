@@ -1,5 +1,11 @@
 package io.shulie.takin.web.ext.util;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
@@ -16,8 +22,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
-
 /**
  * @author by: hezhongqi
  * @ClassName: CustomUtil
@@ -31,6 +35,8 @@ public class WebPluginUtils {
     public static String USER_APP_KEY = "takin";
     public static Long CUSTOMER_ID = -1L;
     public static Long USER_ID = -1L;
+
+    public static Long DEFAULT_TENANT_ID = 0L;
 
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;

@@ -3,12 +3,16 @@ package io.shulie.takin.web.ext.entity;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * @author fanxx
  * @date 2021/8/2 3:10 下午
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
+@ToString(callSuper = true)
 public class AuthQueryResponseCommonExt extends UserCommonExt {
 
     @ApiModelProperty(name = "canEdit", value = "是否可编辑")

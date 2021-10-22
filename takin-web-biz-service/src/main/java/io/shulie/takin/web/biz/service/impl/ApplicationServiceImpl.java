@@ -1114,7 +1114,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             Map<String, String> activeMap = dto.getActiveIdAndName();
             List<ActivityInfoQueryRequest> activityList = activeMap.keySet().stream().map(id -> new ActivityInfoQueryRequest(Long.parseLong(id), flowTypeEnum, startTime, endTime)).collect(Collectors.toList());
             ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(activityList, appName, serviceAndMethod);
-            dto.setResponse(response);
+            dto.setActivityBottleneckResult(response);
         });
     }
 

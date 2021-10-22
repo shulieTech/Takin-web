@@ -218,4 +218,58 @@ public class ApplicationController {
         applicationService.resumeAllAgent(vo.getAppIds());
     }
 
+
+    @ApiOperation("编辑静默开关接口")
+    @PutMapping("/application/center/app/switch/silence")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.CONFIG_CENTER,
+            subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
+            logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
+            needAuth = ActionTypeEnum.ENABLE_DISABLE
+    )
+    public Response UpdateAppSilenceSwitch(
+            @RequestBody ApplicationVo vo) {
+        if (vo == null || vo.getSilenceEnable()== null) {
+            return Response.fail(FALSE_CODE, "silenceEnable 不能为空");
+        }
+        OperationLogContextHolder.operationType(
+                vo.getSilenceEnable() ? BizOpConstants.OpTypes.OPEN : BizOpConstants.OpTypes.CLOSE);
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION,
+                vo.getSilenceEnable() ? BizOpConstants.OpTypes.OPEN : BizOpConstants.OpTypes.CLOSE);
+        return applicationService.userAppSilenceSwitch(null, vo.getSilenceEnable());
+    }
+
+    @ApiOperation("获取静默开关状态接口")
+    @GetMapping("/application/center/app/switch/silence")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.CONFIG_CENTER,
+            subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
+            logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
+            needAuth = ActionTypeEnum.ENABLE_DISABLE
+    )
+    public Response AppSilenceSwitch() {
+        return applicationService.userAppSilenceSwitchInfo();
+    }
+
+    @ApiOperation("按租户查询上报数据接口")
+    @GetMapping("/application/center/app/report/config/info")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.CONFIG_CENTER,
+            subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
+            logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
+            needAuth = ActionTypeEnum.ENABLE_DISABLE
+    )
+    public Response AppConfigReportInfo(@ApiParam(name = "bizType", value = "业务类型") @NotNull Integer bizType,
+                                        @ApiParam(name = "appName", value = "应用名称") String appName) {
+        return applicationService.getApplicationReportConfigInfo(bizType,appName);
+    }
 }

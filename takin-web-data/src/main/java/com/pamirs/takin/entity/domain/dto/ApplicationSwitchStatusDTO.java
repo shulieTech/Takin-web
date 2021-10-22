@@ -56,4 +56,14 @@ public class ApplicationSwitchStatusDTO implements Serializable {
      */
     private Integer accessStatus;
 
+    /**
+     * OPENED("已开启",0),
+     * OPENING("开启中",1),
+     * OPEN_FAILING("开启异常",2),
+     * CLOSED("已关闭",3),
+     * CLOSING("关闭中",4),
+     * CLOSE_FAILING("关闭异常",5)
+     */
+    private String silenceSwitchOn;
+
 }

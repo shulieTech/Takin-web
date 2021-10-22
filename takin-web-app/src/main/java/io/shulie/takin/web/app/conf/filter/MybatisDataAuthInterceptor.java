@@ -95,13 +95,13 @@ public class MybatisDataAuthInterceptor implements Interceptor {
             // 插件工程
             classType = WebPluginUtils.getClassByName(className);
         }
-        if(classType == null) {
+        if (classType == null) {
             return arg0.proceed();
         }
         String methodName = mappedStatement.getId().substring(mappedStatement.getId().lastIndexOf(".") + 1);
         for (Method method : classType.getDeclaredMethods()) {
             //不带注解，方法不匹配
-            System.out.println(method+"===>"+ method.isAnnotationPresent(DataAuth.class));
+            System.out.println(method + "===>" + method.isAnnotationPresent(DataAuth.class));
             if (!method.isAnnotationPresent(DataAuth.class)
                 || !methodName.equals(method.getName())) {
                 continue;
@@ -132,11 +132,11 @@ public class MybatisDataAuthInterceptor implements Interceptor {
     }
 
     private void handleLikeSql(MappedStatement mappedStatement, Invocation arg0) {
-        BoundSql boundSql1 = mappedStatement.getBoundSql(arg0.getArgs()[1]);
-        String sql = boundSql1.getSql();
+        BoundSql boundSql = mappedStatement.getBoundSql(arg0.getArgs()[1]);
+        String sql = boundSql.getSql();
         List<String> list = Lists.newArrayList();
-        Map<String, Object> params = (Map<String, Object>)boundSql1.getParameterObject();
-        for (ParameterMapping mapping : boundSql1.getParameterMappings()) {
+        Map<String, Object> params = (Map<String, Object>)boundSql.getParameterObject();
+        for (ParameterMapping mapping : boundSql.getParameterMappings()) {
             final String property = mapping.getProperty();
             list.add(property);
         }
@@ -146,13 +146,14 @@ public class MybatisDataAuthInterceptor implements Interceptor {
                 String[] keyArr = key.split("\\.");
                 String key2 = keyArr[2];
                 Object o = parameters.get(key2);
-                for (int i = 0; i < specialStr.length; i++) {
-                    String str = specialStr[i];
-                    if (o instanceof String && (((String)o).contains(str) || ((String)o).contains(str))) {
-                        o = ((String)o).replace(str, "\\" + str + "");
+                if (o instanceof String) {
+                    for (String specialString : specialStr) {
+                        if ((((String)o).contains(specialString) || ((String)o).contains(specialString))) {
+                            o = ((String)o).replace(specialString, "\\" + specialString);
+                        }
+                        parameters.put(key2, o);
                     }
                 }
-                parameters.put(key2, o);
             }
         }
     }

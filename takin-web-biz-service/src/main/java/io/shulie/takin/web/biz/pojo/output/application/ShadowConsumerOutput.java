@@ -38,4 +38,14 @@ public class ShadowConsumerOutput extends AuthQueryResponseCommonExt {
     private Integer deleted;
 
     private String feature;
+
+    /**
+     * 是否是手动录入的
+     */
+    private Boolean isManual;
+
+    /**
+     * 1 消费/ 0 不消费影子topic
+     */
+    private String shadowconsumerEnable;
 }

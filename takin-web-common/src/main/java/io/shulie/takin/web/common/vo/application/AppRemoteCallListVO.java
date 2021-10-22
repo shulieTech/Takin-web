@@ -11,7 +11,7 @@ import lombok.Data;
  * @date 2021/5/29 12:35 上午
  */
 @Data
-public class AppRemoteCallListVO extends AppRemoteCallVO {
+public class  AppRemoteCallListVO extends AppRemoteCallVO {
     @ApiModelProperty(name = "id", value = "数据库id")
     private Long id;
     /**
@@ -57,4 +57,15 @@ public class AppRemoteCallListVO extends AppRemoteCallVO {
      * 排序用
      */
     private Integer sort;
+
+
+    /**
+     * 默认是白名单时显示原因
+     */
+    @ApiModelProperty(name = "defaultWhiteInfo", value = "默认白名单信息")
+    private String defaultWhiteInfo;
+
+
+    @ApiModelProperty(name = "mockValue", value = "mock内容")
+    private String mockValue;
 }

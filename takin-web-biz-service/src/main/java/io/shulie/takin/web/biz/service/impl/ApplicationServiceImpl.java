@@ -1094,6 +1094,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      * @param request
      */
     private void doGetHealthIndicator(List<ApplicationVisualInfoResponse> infoDTOList, ApplicationVisualInfoQueryRequest request) {
+        if (CollectionUtils.isEmpty(infoDTOList)) {
+            return;
+        }
         infoDTOList.stream().forEach(dto -> {
             String appName = dto.getAppName();
             String serviceAndMethod = dto.getServiceAndMethod();
@@ -1104,7 +1107,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             Map<String, String> activeMap = dto.getActiveIdAndName();
             List<ActivityInfoQueryRequest> activityList = activeMap.keySet().stream().map(id -> new ActivityInfoQueryRequest(Long.parseLong(id), flowTypeEnum, startTime, endTime)).collect(Collectors.toList());
             ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(activityList, appName, serviceAndMethod);
-            dto.setResponse(response);
+            dto.setActivityBottleneckResult(response);
         });
     }
 
@@ -1139,7 +1142,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     private List<ApplicationVisualInfoResponse> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current) {
-        if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current - 1)) ;
+        if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current - 1)) {
+            return null;
+        }
         String[] orderList = orderBy.split(" ");
         if (orderList.length != 2) {
             return null;

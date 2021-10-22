@@ -1050,18 +1050,22 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<String> attentionInterfaces = attentionList.stream().map(ApplicationAttentionListEntity::getInterfaceName).collect(Collectors.toList());
         request.setAttentionList(attentionInterfaces);
         Map<List<ApplicationVisualInfoResponse>, Integer> infoResponseMap = doGetAppDataByAppName(request);
-        Map.Entry<List<ApplicationVisualInfoResponse>, Integer> infoEntry = null;
-        for (Map.Entry<List<ApplicationVisualInfoResponse>, Integer> ApplicationVisualInfoEntry : infoResponseMap.entrySet()) {
-            infoEntry = ApplicationVisualInfoEntry;
-            break;
+        List<ApplicationVisualInfoResponse> infoDTOList = new ArrayList<>();
+        Integer total = 0;
+        if (null != infoResponseMap) {
+            Map.Entry<List<ApplicationVisualInfoResponse>, Integer> infoEntry = null;
+            for (Map.Entry<List<ApplicationVisualInfoResponse>, Integer> ApplicationVisualInfoEntry : infoResponseMap.entrySet()) {
+                infoEntry = ApplicationVisualInfoEntry;
+                break;
+            }
+            infoDTOList = infoEntry.getKey();
+            total = infoEntry.getValue();
+            //TODO 2.1补充关联业务活动ID
+            doConvertActivityId(infoDTOList);
+            //TODO 3.查询健康度(卡慢、接口异常)
+            doGetHealthIndicator(infoDTOList, request);
         }
-        List<ApplicationVisualInfoResponse> infoDTOList = infoEntry.getKey();
-        Integer total = infoEntry.getValue();
-        //TODO 2.1补充关联业务活动ID
-        doConvertActivityId(infoDTOList);
-        //TODO 3.查询健康度(卡慢、接口异常)
-        doGetHealthIndicator(infoDTOList,request);
-        return Response.success(infoDTOList,total);
+        return Response.success(infoDTOList, total);
     }
 
     private void doConvertActivityId(List<ApplicationVisualInfoResponse> infoDTOList) {

@@ -25,6 +25,16 @@ public class ApplicationEntranceTopologyResponse {
     @ApiModelProperty("边")
     private List<ApplicationEntranceTopologyEdgeResponse> edges;
 
+    // 一般瓶颈 [false 没有瓶颈 | true 有一般瓶颈]
+    boolean hasL1Bottleneck = false;
+    // 一般瓶颈数量
+    int l1bottleneckNum = 0;
+
+    // 严重瓶颈 [false 没有瓶颈 | true 有严重瓶颈]
+    boolean hasL2Bottleneck = false;
+    // 严重瓶颈数量
+    int l2bottleneckNum = 0;
+
     private List<ExceptionListResponse> exceptions;
 
     public enum NodeTypeResponseEnum {

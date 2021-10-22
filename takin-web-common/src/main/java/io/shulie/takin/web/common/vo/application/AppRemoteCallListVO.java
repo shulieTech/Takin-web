@@ -68,4 +68,6 @@ public class  AppRemoteCallListVO extends AppRemoteCallVO {
 
     @ApiModelProperty(name = "mockValue", value = "mock内容")
     private String mockValue;
+
+    private String filterStr;
 }

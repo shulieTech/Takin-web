@@ -400,7 +400,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    @ActivityCache
+
     public ActivityBottleneckResponse getBottleneckByActivityList(List<ActivityInfoQueryRequest> activityList, String appName, String serviceName) {
         ActivityBottleneckResponse activityBottleneckResponse = new ActivityBottleneckResponse();
 

@@ -1,5 +1,6 @@
 package io.shulie.takin.web.ext.entity.tenant;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -12,19 +13,13 @@ import lombok.Data;
 @Data
 public class SwitchTenantExt {
     /**
-     * source 租户code
-     */
-    private String sourceTenantCode;
-    /**
      * 目标 租户code
      */
+    @ApiModelProperty("target tenant code")
     private String targetTenantCode;
-    /**
-     * source 环境code
-     */
-    private String sourceEnvCode;
     /**
      * 目标 环境code
      */
+    @ApiModelProperty("target env code")
     private String targetEnvCode;
 }

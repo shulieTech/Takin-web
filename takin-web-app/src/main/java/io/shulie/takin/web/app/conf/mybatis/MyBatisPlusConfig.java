@@ -35,14 +35,14 @@ public class MyBatisPlusConfig {
                 }
             }
 
-            @Override
-            public Expression getUserId() {
-                if (WebPluginUtils.traceUserId() != null) {
-                    return new LongValue(WebPluginUtils.traceUserId());
-                }else {
-                    return new LongValue(WebPluginUtils.DEFAULT_USER_ID);
-                }
-            }
+            //@Override
+            //public Expression getUserId() {
+            //    if (WebPluginUtils.traceUserId() != null) {
+            //        return new LongValue(WebPluginUtils.traceUserId());
+            //    }else {
+            //        return new LongValue(WebPluginUtils.DEFAULT_USER_ID);
+            //    }
+            //}
 
             @Override
             public Expression getTenantId() {

@@ -1195,7 +1195,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 String[] split = active.split("#");
                 String appName = split[0];
                 String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
-                activityResult.putAll(activityDAO.findActivityIdByServiceName(appName, entrance));
+                Map<String, String> serviceName = activityDAO.findActivityIdByServiceName(appName, entrance);
+                if (!CollectionUtils.isEmpty(serviceName)){
+                    activityResult.put(serviceName.get("linkId"), serviceName.get("linkName"));
+                }
             }
             dto.setActiveIdAndName(activityResult);
             return dto;
@@ -1207,6 +1210,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         Map result = new HashMap<>();
         result.put(visualInfoDTOList, total);
         return result;
+    }
+
+    public static void main(String[] args) {
+        ArrayList<Object> list = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            list.add(i);
+        }
+        int current = 2,pageSize = 10;
+        ArrayList<Object> list1 = new ArrayList<>();
+        for (int i = current - 1; i < pageSize && i < list.size(); i++) {
+            list1.add(list.get(i));
+        }
     }
 
     /**

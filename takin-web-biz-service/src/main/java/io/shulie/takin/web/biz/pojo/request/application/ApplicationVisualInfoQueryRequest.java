@@ -7,12 +7,12 @@ import lombok.Data;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Data
 @ApiModel("应用监控查询对象")
 public class ApplicationVisualInfoQueryRequest extends PagingDevice {
-    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
      * 应用名称
      */
@@ -29,10 +29,10 @@ public class ApplicationVisualInfoQueryRequest extends PagingDevice {
     private LocalDateTime endTimeDate = LocalDateTime.now();
 
     @ApiModelProperty("开始时间")
-    private String startTime = sdf.format(startTimeDate);
+    private String startTime = startTimeDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
     @ApiModelProperty("结束时间")
-    private String endTime = sdf.format(endTimeDate);
+    private String endTime = endTimeDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
     /**
      * 服务名称

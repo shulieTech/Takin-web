@@ -324,13 +324,15 @@ public class LinkTopologyService extends CommonService {
                     AppProvider appProviderFromDb =
                             queryMetricsFromDb(startMilli, endMilli, realSeconds, metricsType, eagleId);
 
-                    appProviderFromDb.setBeforeApps(linkEdgeDTO.getServerAppName());
+                    appProviderFromDb.setBeforeApps(appProvider.getBeforeAppsMap().get(linkEdgeDTO.getSourceId()));
+                    appProvider.setBeforeAppsMap(null);
                     appProviderFromDb.setOwnerApps(appProvider.getOwnerApps());
                     appProviderFromDb.setEagleId(eagleId);
                     appProviderFromDb.setSource(linkEdgeDTO.getSourceId());
                     appProviderFromDb.setTarget(linkEdgeDTO.getTargetId());
                     appProviderFromDb.setRpcType(linkEdgeDTO.getRpcType());
                     appProviderFromDb.setServiceName(appProvider.getServiceName());
+                    appProviderFromDb.setMiddlewareName(appProvider.getMiddlewareName());
 
                     // 瓶颈类型 init
                     int rateBottleneckType = -1; // 瓶颈类型(-1 没有瓶颈)
@@ -990,8 +992,22 @@ public class LinkTopologyService extends CommonService {
             appProvider.setContainEdgeList(new ArrayList<>(item.getValue()));
 
             if (CollectionUtils.isNotEmpty(item.getValue())) {
+                HashMap<String, String> sourceIdToNodeName = new HashMap<>();
+                appProvider.setBeforeAppsMap(sourceIdToNodeName);
+
                 // 设置上游应用(逗号分割的列表)
-                appProvider.setBeforeApps(item.getValue().stream()
+                List<String> keyList = item.getValue().stream()
+                        .filter(Objects::nonNull)
+                        .map(LinkEdgeDTO::getSourceId)
+                        .collect(Collectors.toList());
+
+                for (String id : keyList) {
+                    LinkNodeDTO linkNodeDTO = nodeMap.get(id);
+                    String nodeName = linkNodeDTO.getNodeName();
+                    sourceIdToNodeName.put(id, nodeName);
+                }
+
+                String collect = item.getValue().stream()
                         .filter(Objects::nonNull)
                         .map(LinkEdgeDTO::getSourceId)
                         .filter(StrUtil::isNotBlank)
@@ -999,8 +1015,9 @@ public class LinkTopologyService extends CommonService {
                         .filter(Objects::nonNull)
                         .map(LinkNodeDTO::getNodeName)
                         .filter(StrUtil::isNotBlank)
-                        .collect(Collectors.joining(","))
-                );
+                        .collect(Collectors.joining(","));
+
+                appProvider.setBeforeApps(collect);
             }
 
             return appProvider;

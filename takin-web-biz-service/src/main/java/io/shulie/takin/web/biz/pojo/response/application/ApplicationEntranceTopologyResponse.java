@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.response.application;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -175,6 +176,7 @@ public class ApplicationEntranceTopologyResponse {
         private String serviceName;
         // 上游应用
         private String beforeApps;
+        private HashMap<String, String> beforeAppsMap;
         // 服务开关状态(true 打开 | false 关闭)
         private Boolean switchState;
 

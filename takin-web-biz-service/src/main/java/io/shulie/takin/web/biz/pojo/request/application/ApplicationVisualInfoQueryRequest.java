@@ -1,11 +1,9 @@
 package io.shulie.takin.web.biz.pojo.request.application;
 
 import io.shulie.takin.common.beans.page.PagingDevice;
-import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -25,10 +23,16 @@ public class ApplicationVisualInfoQueryRequest extends PagingDevice {
     private int clusterTest;
 
     @ApiModelProperty("开始时间")
-    private String startTime = sdf.format(LocalDateTime.now().minusMinutes(5));
+    private LocalDateTime startTimeDate = LocalDateTime.now().minusMinutes(5);
 
     @ApiModelProperty("结束时间")
-    private String endTime = sdf.format(LocalDateTime.now());
+    private LocalDateTime endTimeDate = LocalDateTime.now();
+
+    @ApiModelProperty("开始时间")
+    private String startTime = sdf.format(startTimeDate);
+
+    @ApiModelProperty("结束时间")
+    private String endTime = sdf.format(endTimeDate);
 
     /**
      * 服务名称

@@ -1113,8 +1113,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             String serviceAndMethod = dto.getServiceAndMethod();
             int clusterTest = request.getClusterTest();
             FlowTypeEnum flowTypeEnum = FlowTypeEnum.getByType(clusterTest);
-            LocalDateTime startTime = request.getStartTime();
-            LocalDateTime endTime = request.getEndTime();
+            LocalDateTime startTime = request.getStartTimeDate();
+            LocalDateTime endTime = request.getEndTimeDate();
             Map<String, String> activeMap = dto.getActiveIdAndName();
             List<ActivityInfoQueryRequest> activityList = activeMap.keySet().stream().map(id -> new ActivityInfoQueryRequest(Long.parseLong(id), flowTypeEnum, startTime, endTime)).collect(Collectors.toList());
             ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(activityList, appName, serviceAndMethod);

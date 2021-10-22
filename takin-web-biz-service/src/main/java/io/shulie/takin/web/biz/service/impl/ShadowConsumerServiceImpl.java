@@ -131,7 +131,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         ApplicationDetailResult application = applicationDAO.getApplicationById(request.getApplicationId());
         if (application == null) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR,
-                String.format("应用id:%s对应的应用不存在", request.getApplicationId()));
+                    String.format("应用id:%s对应的应用不存在", request.getApplicationId()));
         }
         LambdaQueryWrapper<ShadowMqConsumerEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(request.getTopicGroup())) {
@@ -142,7 +142,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         }
         if (request.getEnabled() != null) {
             lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus,
-                request.getEnabled() ? ShadowConsumerConstants.ENABLE : ShadowConsumerConstants.DISABLE);
+                    request.getEnabled() ? ShadowConsumerConstants.ENABLE : ShadowConsumerConstants.DISABLE);
         }
         if (CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
             lambdaQueryWrapper.in(ShadowMqConsumerEntity::getUserId, WebPluginUtils.getQueryAllowUserIdList());
@@ -161,71 +161,71 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
     }
 
     private List<ShadowConsumerOutput> filterResult(ShadowConsumerQueryInput request,
-        List<ShadowConsumerOutput> totalResult) {
+                                                    List<ShadowConsumerOutput> totalResult) {
         if (request.getEnabled() != null) {
             if (request.getEnabled()) {
                 totalResult = totalResult.stream().filter(ShadowConsumerOutput::getEnabled).collect(
-                    Collectors.toList());
+                        Collectors.toList());
             } else {
                 totalResult = totalResult.stream().filter(e -> !e.getEnabled()).collect(Collectors.toList());
             }
         }
         if (StringUtils.isNotBlank(request.getTopicGroup())) {
             totalResult = totalResult.stream().filter(e -> e.getTopicGroup().contains(request.getTopicGroup())).collect(
-                Collectors.toList());
+                    Collectors.toList());
         }
         if (request.getType() != null) {
             totalResult = totalResult.stream().filter(e -> e.getType() == request.getType()).collect(
-                Collectors.toList());
+                    Collectors.toList());
         }
         return totalResult;
     }
 
     private List<ShadowConsumerOutput> mergeResult(List<ShadowMqConsumerOutput> amdbResult,
-        List<ShadowMqConsumerEntity> dbResult) {
+                                                   List<ShadowMqConsumerEntity> dbResult) {
         Map<String, ShadowConsumerOutput> amdbMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(amdbResult)) {
             amdbMap = amdbResult.stream()
-                .filter(item -> ShadowMqConsumerType.getByName(item.getType()) != null)
-                .map(e -> {
-                    ShadowConsumerOutput response = new ShadowConsumerOutput();
-                    response.setUnionId(
-                        MD5Util.getMD5(e.getApplicationName() + "#" + e.getTopicGroup() + "#" + e.getType()));
-                    response.setType(ShadowMqConsumerType.of(e.getType()));
-                    response.setTopicGroup(e.getTopicGroup());
-                    response.setEnabled(e.getStatus() == ShadowConsumerConstants.ENABLE);
-                    response.setGmtCreate(e.getCreateTime());
-                    response.setGmtUpdate(e.getUpdateTime());
-                    response.setCanRemove(false);
-                    response.setCanEnableDisable(false);
-                    response.setIsManual(false);
-                    response.setShadowconsumerEnable(String.valueOf(e.getStatus()));
-                    return response;
-                })
-                .collect(Collectors.toMap(ShadowConsumerOutput::getUnionId, e -> e, (oV, nV) -> nV));
+                    .filter(item -> ShadowMqConsumerType.getByName(item.getType()) != null)
+                    .map(e -> {
+                        ShadowConsumerOutput response = new ShadowConsumerOutput();
+                        response.setUnionId(
+                                MD5Util.getMD5(e.getApplicationName() + "#" + e.getTopicGroup() + "#" + e.getType()));
+                        response.setType(ShadowMqConsumerType.of(e.getType()));
+                        response.setTopicGroup(e.getTopicGroup());
+                        response.setEnabled(e.getStatus() == ShadowConsumerConstants.ENABLE);
+                        response.setGmtCreate(e.getCreateTime());
+                        response.setGmtUpdate(e.getUpdateTime());
+                        response.setCanRemove(false);
+                        response.setCanEnableDisable(false);
+                        response.setIsManual(false);
+                        response.setShadowconsumerEnable(String.valueOf(e.getStatus()));
+                        return response;
+                    })
+                    .collect(Collectors.toMap(ShadowConsumerOutput::getUnionId, e -> e, (oV, nV) -> nV));
         }
         Map<String, ShadowConsumerOutput> dbMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(dbResult)) {
             dbMap = dbResult.stream()
-                .filter(item -> ShadowMqConsumerType.getByName(item.getType()) != null)
-                .map(e -> {
-                    ShadowConsumerOutput response = new ShadowConsumerOutput();
-                    response.setId(e.getId());
-                    response.setUnionId(
-                        MD5Util.getMD5(e.getApplicationName() + "#" + e.getTopicGroup() + "#" + e.getType()));
-                    response.setType(ShadowMqConsumerType.of(e.getType()));
-                    response.setTopicGroup(e.getTopicGroup());
-                    response.setEnabled(e.getStatus() == ShadowConsumerConstants.ENABLE);
-                    response.setGmtCreate(e.getCreateTime());
-                    response.setGmtUpdate(e.getUpdateTime());
-                    response.setUserId(e.getUserId());
-                    response.setIsManual(e.getManualTag() == 1);
-                    response.setCanRemove(response.getIsManual());
-                    response.setShadowconsumerEnable(String.valueOf(e.getStatus()));
-                    WebPluginUtils.fillQueryResponse(response);
-                    return response;
-                })
-                .collect(Collectors.toMap(ShadowConsumerOutput::getUnionId, e -> e, (oV, nV) -> nV));
+                    .filter(item -> ShadowMqConsumerType.getByName(item.getType()) != null)
+                    .map(e -> {
+                        ShadowConsumerOutput response = new ShadowConsumerOutput();
+                        response.setId(e.getId());
+                        response.setUnionId(
+                                MD5Util.getMD5(e.getApplicationName() + "#" + e.getTopicGroup() + "#" + e.getType()));
+                        response.setType(ShadowMqConsumerType.of(e.getType()));
+                        response.setTopicGroup(e.getTopicGroup());
+                        response.setEnabled(e.getStatus() == ShadowConsumerConstants.ENABLE);
+                        response.setGmtCreate(e.getCreateTime());
+                        response.setGmtUpdate(e.getUpdateTime());
+                        response.setUserId(e.getUserId());
+                        response.setIsManual(e.getManualTag() == 1);
+                        response.setCanRemove(response.getIsManual());
+                        response.setShadowconsumerEnable(String.valueOf(e.getStatus()));
+                        WebPluginUtils.fillQueryResponse(response);
+                        return response;
+                    })
+                    .collect(Collectors.toMap(ShadowConsumerOutput::getUnionId, e -> e, (oV, nV) -> nV));
         }
         // 在amdb自动梳理的基础上，补充数据库里面的记录，有的话用数据的记录
         for (Entry<String, ShadowConsumerOutput> dbEntry : dbMap.entrySet()) {
@@ -240,33 +240,38 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
     }
 
     private List<ShadowMqConsumerOutput> queryAmdbDefaultEntrances(ShadowConsumerQueryInput request,
-        String applicationName) {
+                                                                   String applicationName) {
         List<ServiceInfoDTO> mqTopicGroups = applicationEntranceClient.getMqTopicGroups(applicationName);
         if (CollectionUtils.isEmpty(mqTopicGroups)) {
             return Lists.newArrayList();
         }
+        if (Objects.nonNull(request.getType())) {
+            mqTopicGroups = mqTopicGroups.stream()
+                    .filter(dto -> dto.getMiddlewareName().equals(request.getType().name()))
+                    .collect(Collectors.toList());
+
+        }
         return mqTopicGroups.stream()
-                .filter(dto -> Objects.nonNull(request.getType())
-                        && dto.getMiddlewareName().equals(request.getType().name()))
                 .map(mqTopicGroup -> {
-            ShadowMqConsumerOutput shadowMqConsumerOutput = new ShadowMqConsumerOutput();
-            shadowMqConsumerOutput.setTopicGroup(
-                mqTopicGroup.getServiceName() + "#" + mqTopicGroup.getMethodName());
-            shadowMqConsumerOutput.setType(
-                MiddlewareTypeGroupEnum.getMiddlewareGroupType(mqTopicGroup.getMiddlewareName()).getType());
-            shadowMqConsumerOutput.setApplicationId(request.getApplicationId());
-            shadowMqConsumerOutput.setApplicationName(applicationName);
-            shadowMqConsumerOutput.setStatus(ShadowConsumerConstants.DISABLE);
-            shadowMqConsumerOutput.setDeleted(ShadowConsumerConstants.LIVED);
-            // 补充数据
-            WebPluginUtils.fillUserData(shadowMqConsumerOutput);
-            return shadowMqConsumerOutput;
-        }).collect(Collectors.toList());
+                    ShadowMqConsumerOutput shadowMqConsumerOutput = new ShadowMqConsumerOutput();
+                    shadowMqConsumerOutput.setTopicGroup(
+                            mqTopicGroup.getServiceName() + "#" + mqTopicGroup.getMethodName());
+                    shadowMqConsumerOutput.setType(
+                            MiddlewareTypeGroupEnum.getMiddlewareGroupType(mqTopicGroup.getMiddlewareName()).getType());
+                    shadowMqConsumerOutput.setApplicationId(request.getApplicationId());
+                    shadowMqConsumerOutput.setApplicationName(applicationName);
+                    shadowMqConsumerOutput.setStatus(ShadowConsumerConstants.DISABLE);
+                    shadowMqConsumerOutput.setDeleted(ShadowConsumerConstants.LIVED);
+                    // 补充数据
+                    WebPluginUtils.fillUserData(shadowMqConsumerOutput);
+                    return shadowMqConsumerOutput;
+                }).collect(Collectors.toList());
+
     }
 
     private PagingList<ShadowConsumerOutput> splitPage(
-        ShadowConsumerQueryInput request,
-        List<ShadowConsumerOutput> responses) {
+            ShadowConsumerQueryInput request,
+            List<ShadowConsumerOutput> responses) {
         responses.sort((o1, o2) -> {
             if (o1.getGmtCreate() != null && o2.getGmtCreate() != null) {
                 int firstSort = -o1.getGmtCreate().compareTo(o2.getGmtCreate());
@@ -299,10 +304,10 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             throw new RuntimeException(String.format("应用id:%s对应的应用不存在", request.getApplicationId()));
         }
         List<ShadowMqConsumerEntity> exists = getExists(request.getTopicGroup(), request.getApplicationId(),
-            request.getType());
+                request.getType());
         if (CollectionUtils.isNotEmpty(exists)) {
             throw new RuntimeException(
-                String.format("类型为[%s]，对应的[%s]已存在", request.getType().name(), request.getTopicGroup()));
+                    String.format("类型为[%s]，对应的[%s]已存在", request.getType().name(), request.getTopicGroup()));
         }
         OperationLogContextHolder.operationType(OpTypes.CREATE);
         OperationLogContextHolder.addVars(Vars.CONSUMER_TYPE, request.getType().name());
@@ -335,12 +340,12 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             throw new RuntimeException(String.format("应用id:%s对应的应用不存在", request.getApplicationId()));
         }
         List<ShadowMqConsumerEntity> exists = getExists(request.getTopicGroup(), request.getApplicationId(),
-            request.getType());
+                request.getType());
         // 同名的自己不算
         exists = exists.stream().filter(item -> !item.getId().equals(request.getId())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(exists)) {
             throw new RuntimeException(
-                String.format("类型为[%s]，对应的[%s]已存在", request.getType().name(), request.getTopicGroup()));
+                    String.format("类型为[%s]，对应的[%s]已存在", request.getType().name(), request.getTopicGroup()));
         }
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
         OperationLogContextHolder.addVars(Vars.CONSUMER_TYPE, request.getType().name());
@@ -417,12 +422,12 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         } else {
             OperationLogContextHolder.operationType(OpTypes.DISABLE);
             List<Long> ids = requests.getRequests().stream().map(ShadowConsumerOperateInput::getId).collect(
-                Collectors.toList());
+                    Collectors.toList());
             LambdaQueryWrapper<ShadowMqConsumerEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.in(ShadowMqConsumerEntity::getId, ids);
             lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getDeleted, ShadowConsumerConstants.LIVED);
             List<ShadowMqConsumerEntity> shadowMqConsumerEntities = shadowMqConsumerMapper.selectList(
-                lambdaQueryWrapper);
+                    lambdaQueryWrapper);
             if (CollectionUtils.isNotEmpty(shadowMqConsumerEntities)) {
                 for (ShadowMqConsumerEntity shadowMqConsumerEntity : shadowMqConsumerEntities) {
                     ShadowMqConsumerEntity updateEntity = new ShadowMqConsumerEntity();
@@ -446,14 +451,14 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             return Lists.newArrayList();
         }
         Map<String, List<ShadowMqConsumerEntity>> collect = entities.stream()
-            .filter(t -> {
-                if (StringUtils.isNotBlank(t.getTopicGroup())) {
-                    String[] topicGroup = t.getTopicGroup().trim().split("#");
-                    return topicGroup.length == 2;
-                } else {
-                    return false;
-                }
-            }).collect(Collectors.groupingBy(ShadowMqConsumerEntity::getType));
+                .filter(t -> {
+                    if (StringUtils.isNotBlank(t.getTopicGroup())) {
+                        String[] topicGroup = t.getTopicGroup().trim().split("#");
+                        return topicGroup.length == 2;
+                    } else {
+                        return false;
+                    }
+                }).collect(Collectors.groupingBy(ShadowMqConsumerEntity::getType));
         if (MapUtils.isEmpty(collect)) {
             return Lists.newArrayList();
         }
@@ -490,7 +495,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         LambdaQueryWrapper<ShadowMqConsumerEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ShadowMqConsumerEntity::getApplicationId, request.getApplicationId());
         List<ShadowMqConsumerEntity> shadowMqConsumerEntityList = shadowMqConsumerMapper.selectList(
-            queryWrapper);
+                queryWrapper);
         if (CollectionUtils.isNotEmpty(shadowMqConsumerEntityList)) {
             for (ShadowMqConsumerEntity entity : shadowMqConsumerEntityList) {
                 entity.setUserId(request.getUserId());
@@ -539,7 +544,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
     @Transactional(rollbackFor = Throwable.class)
     public void updateMqConsumersV2(ShadowConsumerUpdateInput request) {
         if (Objects.isNull(request.getId())) {
-            this.createMqConsumersV2(request,false);
+            this.createMqConsumersV2(request, false);
         } else {
             if (!request.getTopicGroup().contains("#")) {
                 throw new RuntimeException("请求参数不正确，Group和Topic以#号拼接");
@@ -575,7 +580,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void createMqConsumersV2(ShadowConsumerCreateInput request,Boolean ManualTag) {
+    public void createMqConsumersV2(ShadowConsumerCreateInput request, Boolean ManualTag) {
         if (!request.getTopicGroup().contains("#")) {
             throw new RuntimeException("请求参数不正确，Group和Topic以#号拼接");
         }
@@ -604,7 +609,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
 
         Integer status = StringUtils.isBlank(request.getShadowconsumerEnable()) ? ShadowConsumerConstants.DISABLE : Integer.parseInt(request.getShadowconsumerEnable());
         shadowMqConsumerEntity.setStatus(status);
-        shadowMqConsumerEntity.setManualTag(ManualTag?1:0);
+        shadowMqConsumerEntity.setManualTag(ManualTag ? 1 : 0);
         shadowMqConsumerEntity.setDeleted(ShadowConsumerConstants.LIVED);
         shadowMqConsumerMapper.insert(shadowMqConsumerEntity);
         agentConfigCacheManager.evictShadowConsumer(application.getApplicationName());
@@ -624,6 +629,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         }
         if (request.getType() != null) {
             lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getType, request.getType());
+            queryInput.setType(ShadowMqConsumerType.getByName(request.getType()));
         }
         if (StringUtils.isNotBlank(request.getShadowconsumerEnable())) {
             lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus, request.getShadowconsumerEnable());

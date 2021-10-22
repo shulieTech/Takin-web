@@ -16,4 +16,9 @@ import io.shulie.takin.web.data.model.mysql.ApplicationDsDbManageEntity;
 @ToString(callSuper = true)
 public class ApplicationDsDbManageDetailResult extends ApplicationDsDbManageEntity {
 
+
+    public String getFilterStr(){
+        return this.getUrl()+"@@"+this.getUserName()+"@@"+this.getAgentSourceType();
+    }
+
 }

@@ -391,33 +391,35 @@ public class LinkTopologyService extends CommonService {
         // 严重瓶颈数量
         int L2bottleneckNum = 0;
 
-        for (AppProvider appProvider : allAppProviderServiceList) {
-            if (RpcTypeEnum.APP.getValue().equals(appProvider.getRpcType())) {
-                if ((appProvider.getAllTotalRtBottleneckType() == 1)) {
-                    hasL1Bottleneck = true;
-                    L1bottleneckNum++;
-                } else if ((appProvider.getAllTotalRtBottleneckType() == 2)) {
-                    hasL2Bottleneck = true;
-                    L2bottleneckNum++;
+        for (AppProvider provider : allAppProviderServiceList) {
+            for (AppProvider appProvider : provider.getContainRealAppProvider()) {
+                if (RpcTypeEnum.APP.getValue().equals(appProvider.getRpcType())) {
+                    if ((appProvider.getAllTotalRtBottleneckType() == 1)) {
+                        hasL1Bottleneck = true;
+                        L1bottleneckNum++;
+                    } else if ((appProvider.getAllTotalRtBottleneckType() == 2)) {
+                        hasL2Bottleneck = true;
+                        L2bottleneckNum++;
+                    }
+                } else if (RpcTypeEnum.DB.getValue().equals(appProvider.getRpcType())) {
+                    if ((appProvider.getAllSqlTotalRtBottleneckType() == 1)) {
+                        hasL1Bottleneck = true;
+                        L1bottleneckNum++;
+                    } else if ((appProvider.getAllSqlTotalRtBottleneckType() == 2)) {
+                        hasL2Bottleneck = true;
+                        L2bottleneckNum++;
+                    }
                 }
-            } else if (RpcTypeEnum.DB.getValue().equals(appProvider.getRpcType())) {
-                if ((appProvider.getAllSqlTotalRtBottleneckType() == 1)) {
-                    hasL1Bottleneck = true;
-                    L1bottleneckNum++;
-                } else if ((appProvider.getAllSqlTotalRtBottleneckType() == 2)) {
-                    hasL2Bottleneck = true;
-                    L2bottleneckNum++;
-                }
-            }
 
-            if (RpcTypeEnum.APP.getValue().equals(appProvider.getRpcType()) ||
-                    RpcTypeEnum.DB.getValue().equals(appProvider.getRpcType())) {
-                if ((appProvider.getAllSuccessRateBottleneckType() == 1)) {
-                    hasL1Bottleneck = true;
-                    L1bottleneckNum++;
-                } else if ((appProvider.getAllSuccessRateBottleneckType() == 2)) {
-                    hasL2Bottleneck = true;
-                    L2bottleneckNum++;
+                if (RpcTypeEnum.APP.getValue().equals(appProvider.getRpcType()) ||
+                        RpcTypeEnum.DB.getValue().equals(appProvider.getRpcType())) {
+                    if ((appProvider.getAllSuccessRateBottleneckType() == 1)) {
+                        hasL1Bottleneck = true;
+                        L1bottleneckNum++;
+                    } else if ((appProvider.getAllSuccessRateBottleneckType() == 2)) {
+                        hasL2Bottleneck = true;
+                        L2bottleneckNum++;
+                    }
                 }
             }
         }

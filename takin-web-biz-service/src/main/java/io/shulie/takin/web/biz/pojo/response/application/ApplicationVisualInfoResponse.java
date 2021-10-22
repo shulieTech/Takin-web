@@ -4,6 +4,7 @@ import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse
 import lombok.Data;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.Map;
 
 @Data
@@ -26,7 +27,7 @@ public class ApplicationVisualInfoResponse implements Serializable {
     /**
      * TPS
      */
-    private int tps;
+    private double tps;
     /**
      * 响应时间
      */
@@ -55,4 +56,18 @@ public class ApplicationVisualInfoResponse implements Serializable {
      * 健康检查结果
      */
     private ActivityBottleneckResponse response;
+
+    private static final DecimalFormat df = new DecimalFormat("#.##");
+
+    public double getTps() {
+        return Double.parseDouble(df.format(tps));
+    }
+
+    public double getResponseConsuming() {
+        return Double.parseDouble(df.format(responseConsuming));
+    }
+
+    public double getSuccessRatio() {
+        return Double.parseDouble(df.format(successRatio));
+    }
 }

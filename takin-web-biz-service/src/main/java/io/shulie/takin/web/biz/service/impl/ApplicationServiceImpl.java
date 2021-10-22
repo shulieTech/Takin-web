@@ -1200,12 +1200,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             dto.setActiveIdAndName(activityResult);
             return dto;
         }).collect(Collectors.toList());
-        List<ApplicationVisualInfoResponse> infoDTOPageList = new ArrayList<>();
-        for (int i = current - 1; i < pageSize; i++) {
-            infoDTOPageList.add(visualInfoDTOList.get(i));
-        }
+//        List<ApplicationVisualInfoResponse> infoDTOPageList = new ArrayList<>();
+//        for (int i = current - 1; i < pageSize && i < visualInfoDTOList.size(); i++) {
+//            infoDTOPageList.add(visualInfoDTOList.get(i));
+//        }
         Map result = new HashMap<>();
-        result.put(infoDTOPageList, total);
+        result.put(visualInfoDTOList, total);
         return result;
     }
 

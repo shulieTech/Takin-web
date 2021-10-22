@@ -1162,8 +1162,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<ApplicationVisualInfoResponse> visualInfoDTOList = data.stream().sorted((d1, d2) -> {
             boolean b1 = attentionList.contains(d1.getServiceAndMethod());
             boolean b2 = attentionList.contains(d2.getServiceAndMethod());
-            d1.setAttend(b1);
-            d2.setAttend(b2);
             if ((b1 && b2) || (!b1 && !b2)) {
                 Number result = 0;
                 switch (orderName) {
@@ -1185,6 +1183,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 return b1 ? -1 : 1;
             }
         }).map(dto -> {
+            dto.setAttend(attentionList.contains(dto.getServiceAndMethod()));
             String[] activeList = dto.getActiveList();
             Map<String, String> activityResult = new HashMap<>();
             for (String active : activeList) {

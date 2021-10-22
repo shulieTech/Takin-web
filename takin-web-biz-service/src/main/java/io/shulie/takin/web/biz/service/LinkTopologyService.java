@@ -221,6 +221,8 @@ public class LinkTopologyService extends CommonService {
 
                 // 设置 拓扑图中节点上显示哪一个服务性能指标
                 setTopologyNodeServiceMetrics(node, appProviderInfos);
+                // 设置业务活动层级的瓶颈
+                setTopologyLevelBottleneck(topologyResponse);
             }
 
             if (node.getRoot()) {
@@ -248,6 +250,19 @@ public class LinkTopologyService extends CommonService {
         }
         int loopCounter = 0;
         setMainEdge(reduceEdges, rootNode.getId(), loopCounter);
+    }
+
+    private void setTopologyLevelBottleneck(ApplicationEntranceTopologyResponse topologyResponse) {
+        for (AbstractTopologyNodeResponse node : topologyResponse.getNodes()) {
+            if (node.isHasL1Bottleneck()) {
+                topologyResponse.setHasL1Bottleneck(true);
+                topologyResponse.setL1bottleneckNum(node.getL1bottleneckNum() + topologyResponse.getL1bottleneckNum());
+            }
+            if (node.isHasL2Bottleneck()) {
+                topologyResponse.setHasL2Bottleneck(true);
+                topologyResponse.setL2bottleneckNum(node.getL2bottleneckNum() + topologyResponse.getL2bottleneckNum());
+            }
+        }
     }
 
     private double getAllServiceAllTotalCount(
@@ -355,12 +370,62 @@ public class LinkTopologyService extends CommonService {
             }
         }
 
-        // 查询 并 设置 节点服务 开关状态
         if (!allAppProviderServiceList.isEmpty()) {
+            // 查询 并 设置 节点服务 开关状态
             setNodeServiceState(activityId, node, dbActivityNodeServiceState, allAppProviderServiceList);
+            // 设置 节点层次的瓶颈数据
+            setNodeBottleneck(node, allAppProviderServiceList);
         }
 
         return providerService;
+    }
+
+    private void setNodeBottleneck(TopologyAppNodeResponse node, List<AppProvider> allAppProviderServiceList) {
+        // 一般瓶颈 [false 没有瓶颈 | true 有一般瓶颈]
+        boolean hasL1Bottleneck = false;
+        // 一般瓶颈数量
+        int L1bottleneckNum = 0;
+
+        // 严重瓶颈 [false 没有瓶颈 | true 有严重瓶颈]
+        boolean hasL2Bottleneck = false;
+        // 严重瓶颈数量
+        int L2bottleneckNum = 0;
+
+        for (AppProvider appProvider : allAppProviderServiceList) {
+            if (RpcTypeEnum.APP.getValue().equals(appProvider.getRpcType())) {
+                if ((appProvider.getAllTotalRtBottleneckType() == 1)) {
+                    hasL1Bottleneck = true;
+                    L1bottleneckNum++;
+                } else if ((appProvider.getAllTotalRtBottleneckType() == 2)) {
+                    hasL2Bottleneck = true;
+                    L2bottleneckNum++;
+                }
+            } else if (RpcTypeEnum.DB.getValue().equals(appProvider.getRpcType())) {
+                if ((appProvider.getAllSqlTotalRtBottleneckType() == 1)) {
+                    hasL1Bottleneck = true;
+                    L1bottleneckNum++;
+                } else if ((appProvider.getAllSqlTotalRtBottleneckType() == 2)) {
+                    hasL2Bottleneck = true;
+                    L2bottleneckNum++;
+                }
+            }
+
+            if (RpcTypeEnum.APP.getValue().equals(appProvider.getRpcType()) ||
+                    RpcTypeEnum.DB.getValue().equals(appProvider.getRpcType())) {
+                if ((appProvider.getAllSuccessRateBottleneckType() == 1)) {
+                    hasL1Bottleneck = true;
+                    L1bottleneckNum++;
+                } else if ((appProvider.getAllSuccessRateBottleneckType() == 2)) {
+                    hasL2Bottleneck = true;
+                    L2bottleneckNum++;
+                }
+            }
+        }
+
+        node.setHasL1Bottleneck(hasL1Bottleneck);
+        node.setL1bottleneckNum(L1bottleneckNum);
+        node.setHasL2Bottleneck(hasL2Bottleneck);
+        node.setL2bottleneckNum(L2bottleneckNum);
     }
 
     private void fillNodeServiceMetrics(AppProvider appProvider) {

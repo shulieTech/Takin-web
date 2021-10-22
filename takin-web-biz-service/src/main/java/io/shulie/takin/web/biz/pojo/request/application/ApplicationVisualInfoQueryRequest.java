@@ -7,12 +7,14 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @ApiModel("应用监控查询对象")
 public class ApplicationVisualInfoQueryRequest extends PagingDevice {
+    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
      * 应用名称
      */
@@ -23,12 +25,10 @@ public class ApplicationVisualInfoQueryRequest extends PagingDevice {
     private int clusterTest;
 
     @ApiModelProperty("开始时间")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime startTime = LocalDateTime.now().minusMinutes(5);
+    private String startTime = sdf.format(LocalDateTime.now().minusMinutes(5));
 
     @ApiModelProperty("结束时间")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime endTime = LocalDateTime.now();
+    private String endTime = sdf.format(LocalDateTime.now());
 
     /**
      * 服务名称

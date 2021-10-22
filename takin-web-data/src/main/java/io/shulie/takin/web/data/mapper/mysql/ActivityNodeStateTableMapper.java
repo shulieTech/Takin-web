@@ -14,5 +14,5 @@ public interface ActivityNodeStateTableMapper extends BaseMapper<ActivityNodeSta
 
     void removeActivityNodeByActivityIdAndOwnerApp(ActivityNodeState activityNodeState);
 
-    Map<String,String> findActivityIdByServiceName(@Param(value = "appName") String appName, @Param(value = "entrance") String entrance);
+    List<Map<String,String>> findActivityIdByServiceName(@Param(value = "appName") String appName, @Param(value = "entrance") String entrance);
 }

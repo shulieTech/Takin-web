@@ -439,7 +439,7 @@ public class ActivityDAOImpl implements ActivityDAO {
     }
 
     @Override
-    public Map<String,String> findActivityIdByServiceName(String appName, String entrance) {
+    public List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance) {
         return activityNodeStateTableMapper.findActivityIdByServiceName(appName,entrance);
     }
 

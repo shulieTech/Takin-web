@@ -78,5 +78,5 @@ public interface ActivityDAO {
 
     List<ActivityNodeState> getActivityNodeServiceState(long activityId);
 
-    Map<String,String> findActivityIdByServiceName(String appName, String entrance);
+    List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance);
 }

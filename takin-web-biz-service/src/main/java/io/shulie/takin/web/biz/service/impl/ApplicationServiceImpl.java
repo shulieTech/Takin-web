@@ -1196,9 +1196,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     String[] split = active.split("#");
                     String appName = split[0];
                     String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
-                    Map<String, String> serviceName = activityDAO.findActivityIdByServiceName(appName, entrance);
-                    if (!CollectionUtils.isEmpty(serviceName)) {
-                        activityResult.put(String.valueOf(serviceName.get("linkId")), serviceName.get("linkName"));
+                    List<Map<String, String>> daoActivityIdByServiceName = activityDAO.findActivityIdByServiceName(appName, entrance);
+                    if (!CollectionUtils.isEmpty(daoActivityIdByServiceName)) {
+                        daoActivityIdByServiceName.stream().forEach(serviceName -> activityResult.put(String.valueOf(serviceName.get("linkId")), serviceName.get("linkName")));
                     }
                 }
             }

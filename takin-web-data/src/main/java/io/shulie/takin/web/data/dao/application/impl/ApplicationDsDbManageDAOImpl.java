@@ -1,15 +1,12 @@
 package io.shulie.takin.web.data.dao.application.impl;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationDsDbManageMapper;
-import io.shulie.takin.web.data.model.mysql.ApplicationDsCacheManageEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsDbManageEntity;
 import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
-import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;

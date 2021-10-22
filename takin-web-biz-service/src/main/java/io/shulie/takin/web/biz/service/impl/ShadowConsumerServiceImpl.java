@@ -245,7 +245,10 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         if (CollectionUtils.isEmpty(mqTopicGroups)) {
             return Lists.newArrayList();
         }
-        return mqTopicGroups.stream().map(mqTopicGroup -> {
+        return mqTopicGroups.stream()
+                .filter(dto -> Objects.nonNull(request.getType())
+                        && dto.getMiddlewareName().equals(request.getType().name()))
+                .map(mqTopicGroup -> {
             ShadowMqConsumerOutput shadowMqConsumerOutput = new ShadowMqConsumerOutput();
             shadowMqConsumerOutput.setTopicGroup(
                 mqTopicGroup.getServiceName() + "#" + mqTopicGroup.getMethodName());

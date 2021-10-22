@@ -439,8 +439,9 @@ public class ActivityDAOImpl implements ActivityDAO {
     }
 
     @Override
-    public Map<String,String> findActivityIdByServiceName(String appName, String entrance) {
-        return activityNodeStateTableMapper.findActivityIdByServiceName(appName,entrance);
+    public List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance) {
+        Long customerId = WebPluginUtils.getCustomerId();
+        return activityNodeStateTableMapper.findActivityIdByServiceName(customerId,appName,entrance);
     }
 
 }

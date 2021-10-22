@@ -1043,18 +1043,25 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      * @param request 包含应用名称及服务名称
      */
     @Override
-    public List<ApplicationVisualInfoResponse> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
+    public Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
         //TODO 1.关注
         List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(request.getAppName());
         //TODO 2.根据应用名称查询大数据性能数据
         List<String> attentionInterfaces = attentionList.stream().map(ApplicationAttentionListEntity::getInterfaceName).collect(Collectors.toList());
         request.setAttentionList(attentionInterfaces);
-        List<ApplicationVisualInfoResponse> infoDTOList = doGetAppDataByAppName(request);
+        Map<List<ApplicationVisualInfoResponse>, Integer> infoResponseMap = doGetAppDataByAppName(request);
+        Map.Entry<List<ApplicationVisualInfoResponse>, Integer> infoEntry = null;
+        for (Map.Entry<List<ApplicationVisualInfoResponse>, Integer> ApplicationVisualInfoEntry : infoResponseMap.entrySet()) {
+            infoEntry = ApplicationVisualInfoEntry;
+            break;
+        }
+        List<ApplicationVisualInfoResponse> infoDTOList = infoEntry.getKey();
+        Integer total = infoEntry.getValue();
         //TODO 2.1补充关联业务活动ID
         doConvertActivityId(infoDTOList);
         //TODO 3.查询健康度(卡慢、接口异常)
         doGetHealthIndicator(infoDTOList,request);
-        return infoDTOList;
+        return Response.success(infoDTOList,total);
     }
 
     private void doConvertActivityId(List<ApplicationVisualInfoResponse> infoDTOList) {
@@ -1094,6 +1101,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      * @param request
      */
     private void doGetHealthIndicator(List<ApplicationVisualInfoResponse> infoDTOList, ApplicationVisualInfoQueryRequest request) {
+        if (CollectionUtils.isEmpty(infoDTOList)) {
+            return;
+        }
         infoDTOList.stream().forEach(dto -> {
             String appName = dto.getAppName();
             String serviceAndMethod = dto.getServiceAndMethod();
@@ -1115,7 +1125,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      * @param label           服务名称
      * @param flowTypeEnum    流量类型
      */
-    private List<ApplicationVisualInfoResponse> doGetAppDataByAppName(ApplicationVisualInfoQueryRequest request) {
+    private Map<List<ApplicationVisualInfoResponse>,Integer> doGetAppDataByAppName(ApplicationVisualInfoQueryRequest request) {
         //TODO 大数据接口未定义
         String url = properties.getUrl().getAmdb() + "/amdb/db/api/metrics/metricsDetailes";
         try {
@@ -1138,12 +1148,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
     }
 
-    private List<ApplicationVisualInfoResponse> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current) {
-        if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current - 1)) ;
+    private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current) {
+        if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current - 1)) {
+            return null;
+        }
         String[] orderList = orderBy.split(" ");
         if (orderList.length != 2) {
             return null;
         }
+        int total = data.size();
         String orderName = orderList[0];
         String orderType = orderList[1];
         List<ApplicationVisualInfoResponse> visualInfoDTOList = data.stream().sorted((d1, d2) -> {
@@ -1187,7 +1200,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         for (int i = current - 1; i < pageSize; i++) {
             infoDTOPageList.add(visualInfoDTOList.get(i));
         }
-        return infoDTOPageList;
+        Map result = new HashMap<>();
+        result.put(infoDTOPageList, total);
+        return result;
     }
 
     /**

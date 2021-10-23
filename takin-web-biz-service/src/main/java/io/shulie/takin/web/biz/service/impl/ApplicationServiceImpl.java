@@ -1212,7 +1212,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
 
         Map result = new HashMap<>();
-        result.put(visualInfoDTOList, total);
+        result.put(infoDTOPageList, total);
         return result;
     }
 

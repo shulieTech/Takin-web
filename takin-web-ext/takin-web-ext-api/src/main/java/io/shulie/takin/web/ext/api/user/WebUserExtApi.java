@@ -167,8 +167,9 @@ public interface WebUserExtApi extends ExtensionPoint {
     /**
      * 切换租户
      * @param ext
+     * @return  TenantInfoExt
      */
-    void switchTenant(SwitchTenantExt ext);
+    TenantInfoExt switchTenant(SwitchTenantExt ext);
 
     /**
      * 切换环境

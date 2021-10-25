@@ -56,5 +56,10 @@ public class TenantInfoExt {
          * 描述
          */
         private String desc;
+
+        /**
+         * 是否默认
+         */
+        private Boolean isDefault;
     }
 }

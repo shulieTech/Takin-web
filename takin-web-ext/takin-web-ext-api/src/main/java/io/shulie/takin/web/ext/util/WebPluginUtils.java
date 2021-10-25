@@ -471,11 +471,13 @@ public class WebPluginUtils {
     /**
      * 切换租户
      * @param ext
+     * @return  TenantInfoExt
      */
-    public static void switchTenant(SwitchTenantExt ext) {
+    public static TenantInfoExt switchTenant(SwitchTenantExt ext) {
         if(Objects.nonNull(userApi)) {
-            userApi.switchTenant(ext);
+           return userApi.switchTenant(ext);
         }
+        return getDefaultTenantInfoList().get(0);
     }
 
     /**
@@ -678,6 +680,8 @@ public class WebPluginUtils {
         TenantInfoExt.TenantEnv env = new TenantEnv();
         env.setEnvCode(DEFAULT_ENV_CODE);
         env.setEnvName("测试环境");
+        env.setDesc("无插件");
+        env.setIsDefault(Boolean.TRUE);
         envs.add(env);
         return envs;
     }

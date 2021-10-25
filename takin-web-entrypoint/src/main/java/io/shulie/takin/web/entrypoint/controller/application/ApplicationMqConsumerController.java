@@ -15,6 +15,7 @@ import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
 import io.shulie.takin.web.biz.pojo.request.application.ShadowConsumerDeleteRequest;
+import io.shulie.takin.web.common.constant.APIUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/consumers")
-@Api(tags = "ApplicationMqConsumerController", value = "影子消费者")
+@Api(tags = "接口:影子消费者管理", value = "影子消费者")
 public class ApplicationMqConsumerController {
 
     @Autowired

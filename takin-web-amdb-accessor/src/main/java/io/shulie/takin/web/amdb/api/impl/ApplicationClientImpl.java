@@ -16,7 +16,10 @@
 package io.shulie.takin.web.amdb.api.impl;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
@@ -43,6 +46,8 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.fastagentaccess.ErrorLogQueryDTO;
+import io.shulie.takin.web.amdb.bean.result.application.AppShadowDatabaseDTO;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationBizTableDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationErrorDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationInterfaceDTO;
@@ -101,6 +106,16 @@ public class ApplicationClientImpl implements ApplicationClient {
      * 节点, 探针, 统计信息
      */
     private static final String APPLICATION_NODE_PROBE_INFO = "/amdb/db/api/appInstanceStatus/queryInstanceSumInfo";
+
+    /**
+     * 影子库表查询
+     */
+    private static final String APPLICATION_SHADOW_DATABASE_PATH = "/amdb/db/api/app/selectShadowDatabases";
+
+    /**
+     * 影子库表查询
+     */
+    private static final String APPLICATION_BUS_DATABASE_PATH = "/amdb/db/api/app/selectShadowBizTables";
 
     /**
      * 异常日志查询api
@@ -456,5 +471,67 @@ public class ApplicationClientImpl implements ApplicationClient {
             log.error("前往amdb查询agent概况信息报错", e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
         }
+    }
+
+
+
+
+    /**
+     * 影子库表查询
+     *
+     * @param appName
+     * @return
+     */
+    @Override
+    public List<AppShadowDatabaseDTO> getApplicationShadowDataBaseInfo(String appName) {
+        return this.getApplicationShadowDataBaseInfo(appName,"");
+    }
+
+
+    /**
+     * 影子库表查询
+     *
+     * @param appName
+     * @param dataSource
+     * @return
+     */
+    @Override
+    public List<AppShadowDatabaseDTO> getApplicationShadowDataBaseInfo(String appName, String dataSource) {
+        String url = properties.getUrl().getAmdb() + APPLICATION_SHADOW_DATABASE_PATH;
+        Map<String, Object> paramMap =  new HashMap<>();
+        paramMap.put("appName",appName);
+        paramMap.put("pageSize",Integer.MAX_VALUE);
+        paramMap.put("dataSource",dataSource);
+        AmdbResult<List<AppShadowDatabaseDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.GET)
+                .url(url)
+                .param(paramMap)
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .eventName("查询影子库表信息")
+                .list(AppShadowDatabaseDTO.class);
+        List<AppShadowDatabaseDTO> data = amdbResponse.getData();
+        return data;
+    }
+
+    /**
+     * 业务数据库表查询
+     *
+     * @param appName
+     * @return
+     */
+    @Override
+    public List<ApplicationBizTableDTO> getApplicationTable(String appName, String dataSource, String userName) {
+        String url = properties.getUrl().getAmdb() + APPLICATION_BUS_DATABASE_PATH;
+        Map<String,String> paramMap =  new HashMap<>();
+        paramMap.put("appName",appName);
+        paramMap.put("dataSource",dataSource);
+        paramMap.put("tableUser",userName);
+        AmdbResult<List<ApplicationBizTableDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.GET)
+                .url(url)
+                .param(paramMap)
+                .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                .eventName("查询业务库表信息")
+                .list(ApplicationBizTableDTO.class);
+        List<ApplicationBizTableDTO> data = amdbResponse.getData();
+        return data;
     }
 }

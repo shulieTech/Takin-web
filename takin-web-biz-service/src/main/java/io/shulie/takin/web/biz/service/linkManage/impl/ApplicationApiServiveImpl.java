@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -8,9 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.collection.CollStreamUtil;
+import cn.hutool.core.convert.Convert;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.dao.apimanage.TApplicationApiManageMapper;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
@@ -272,5 +276,17 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
             }
         }
         return Response.success(dto);
+    }
+
+    @Override
+    public Map<Long,List<ApplicationApiManageVO>> selectListGroupByAppId(){
+        List<ApplicationApiManage> apiManageList = manageMapper.query();
+        if(CollectionUtils.isEmpty(apiManageList)){
+            return Collections.EMPTY_MAP;
+        }
+        List<ApplicationApiManageVO> voList = apiManageList.stream()
+                .map(apiManage -> Convert.convert(ApplicationApiManageVO.class, apiManage))
+                .collect(Collectors.toList());
+        return CollStreamUtil.groupByKey(voList, ApplicationApiManageVO::getApplicationId);
     }
 }

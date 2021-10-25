@@ -414,11 +414,11 @@ public class ActivityDAOImpl implements ActivityDAO {
     @Override
     public void setActivityNodeServiceState(long activityId, String ownerApps, String serviceName, boolean state) {
         ActivityNodeState activityNodeState = new ActivityNodeState();
-        String key = null;
+        String key;
         try {
             key = MD5Tool.getMD5(activityId + ownerApps + serviceName);
         } catch (Exception e) {
-            e.printStackTrace();
+            return;
         }
         activityNodeState.setId(key);
         activityNodeState.setActivityId(activityId);
@@ -436,6 +436,12 @@ public class ActivityDAOImpl implements ActivityDAO {
     @Override
     public List<ActivityNodeState> getActivityNodeServiceState(long activityId) {
         return activityNodeStateTableMapper.getActivityNodes(activityId);
+    }
+
+    @Override
+    public List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance) {
+        Long customerId = WebPluginUtils.getCustomerId();
+        return activityNodeStateTableMapper.findActivityIdByServiceName(customerId,appName,entrance);
     }
 
 }

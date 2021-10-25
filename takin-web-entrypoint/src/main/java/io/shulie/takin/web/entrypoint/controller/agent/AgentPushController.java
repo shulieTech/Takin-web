@@ -21,6 +21,7 @@ import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.ConfCenterService;
 import io.shulie.takin.web.biz.service.UploadInterfaceService;
 import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
+import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
 import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.utils.XmlUtil;
@@ -30,6 +31,7 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -68,6 +71,9 @@ public class AgentPushController {
 
     @Autowired
     private TraceManageService traceManageService;
+
+    @Autowired
+    private ReportDetailService reportDetailService;
 
     @ApiOperation("|_ agent注册api")
     @PostMapping(value = AgentUrls.REGISTER_URL)
@@ -202,5 +208,16 @@ public class AgentPushController {
     public void uploadTraceInfo(@RequestBody CommandPacket commandPacket) {
         log.info("agent上传trace信息，入参为:{}", JsonHelper.bean2Json(commandPacket));
         traceManageService.uploadTraceInfo(commandPacket);
+    }
+
+    /**
+     * 配置数据上报
+     * @param inputParam
+     */
+    @PostMapping(value = AgentUrls.AGENT_PUSH_APPLICATION_CONFIG)
+    @ApiOperation(value = "agent上传配置信息")
+    public void uploadConfigInfo(@Validated @RequestBody ConfigReportInputParam inputParam) {
+        log.info("agent上传配置信息，入参为:{}", JsonHelper.bean2Json(inputParam));
+        reportDetailService.uploadConfigInfo(inputParam);
     }
 }

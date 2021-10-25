@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.perfomanceanaly;
 
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
+import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
 
 /**
  * @author qianshui
@@ -9,4 +10,10 @@ import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
 public interface ReportDetailService {
 
     ReportTimeResponse getReportTime(Long reportId);
+
+    /**
+     * agent上报配置信息
+     * @param inputParam
+     */
+    void uploadConfigInfo(ConfigReportInputParam inputParam);
 }

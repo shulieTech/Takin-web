@@ -35,8 +35,8 @@ public class TenantController {
 
     @PutMapping("/switch")
     @ApiOperation("切换租户")
-    public void switchTenant(@RequestBody SwitchTenantExt ext) {
-        WebPluginUtils.switchTenant(ext);
+    public TenantInfoExt switchTenant(@RequestBody SwitchTenantExt ext) {
+       return WebPluginUtils.switchTenant(ext);
     }
 
     @PutMapping("/env/switch")

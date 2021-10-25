@@ -2,6 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.application;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,6 +19,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntrancesRes
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
+import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +48,9 @@ public class ApplicationEntranceController {
 
     @Autowired
     private LinkTopologyService linkTopologyService;
+
+    @Autowired
+    private ActivityDAO activityDAO;
     //
     //@Autowired
     //private ApplicationClient applicationClient;
@@ -141,6 +146,43 @@ public class ApplicationEntranceController {
                             ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
                                     item.getAppName(), item.getRpcType(), item.getExtend()));
                     return applicationEntrancesResponse;
+                }).collect(Collectors.toList());
+    }
+
+    @GetMapping("/allByActivity")
+    @ApiOperation("获取应用下所有入口服务列表")
+    public List<ApplicationEntrancesResponse> getApplicationAllEntrancesByActivity(String appName) {
+        if(StringUtils.isBlank(appName)){
+            log.error("应用名称不能为空");
+            return Collections.emptyList();
+        }
+        List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
+                appName, "");
+        if (CollectionUtils.isEmpty(applicationEntrances)) {
+            return Lists.newArrayList();
+        }
+        return applicationEntrances.stream()
+                .filter(item -> !item.getServiceName().startsWith("PT_"))
+                .map(item -> {
+                    ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
+                    applicationEntrancesResponse.setMethod(item.getMethodName());
+                    applicationEntrancesResponse.setRpcType(item.getRpcType());
+                    applicationEntrancesResponse.setExtend(item.getExtend());
+                    applicationEntrancesResponse.setServiceName(item.getServiceName());
+                    applicationEntrancesResponse.setLabel(
+                            ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
+                    applicationEntrancesResponse.setValue(
+                            ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
+                                    item.getAppName(), item.getRpcType(), item.getExtend()));
+                    return applicationEntrancesResponse;
+                }).filter(item -> {
+                    String entrance = ActivityUtil.buildEntrance(appName, item.getMethod(), item.getServiceName(), item.getRpcType());
+                    List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
+                    if (!CollectionUtils.isEmpty(serviceList)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }).collect(Collectors.toList());
     }
 

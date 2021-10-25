@@ -866,8 +866,12 @@ public class DsServiceImpl implements DsService {
         shadowMap.remove("applicationName");
 
         shadowMap.forEach((k, v) -> {
+            String value = null;
             Map map = JSONObject.parseObject(String.valueOf(v), Map.class);
-            matchMap.put(String.valueOf(k), String.valueOf(map.get("value")));
+            if(map.get("tag") == "2"){
+               value = String.valueOf(map.get("context"));
+            }
+            matchMap.put(String.valueOf(k), value);
         });
         return matchMap;
     }

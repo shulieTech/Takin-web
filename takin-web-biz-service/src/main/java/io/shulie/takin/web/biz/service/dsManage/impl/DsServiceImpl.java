@@ -619,7 +619,7 @@ public class DsServiceImpl implements DsService {
             templateEnum = Converter.TemplateConverter.ofKey(agentSourceType);
         }
         Type type ;
-        if(Objects.isNull(templateEnum)){
+        if(Objects.isNull(templateEnum) || Converter.TemplateConverter.TemplateEnum._default.equals(templateEnum)){
             type = Type.MiddleWareType.LINK_POOL;
         }else{
             type = templateEnum.getType();

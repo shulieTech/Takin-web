@@ -5,8 +5,6 @@ import java.util.Map;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
-import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
-import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
 import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
 import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
 import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
@@ -16,7 +14,6 @@ import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
-import io.shulie.takin.web.common.domain.WebResponse;
 
 /**
  * @author qianshui

@@ -128,7 +128,7 @@ public class ConfigServerHelper {
      *
      * @return redis key
      */
-    private static String getConfigServerRedisKey(String tenantAppKey, String envCode) {
+    public static String getConfigServerRedisKey(String tenantAppKey, String envCode) {
         return String.format(CONFIG_SERVER_KEY, tenantAppKey, envCode);
     }
 

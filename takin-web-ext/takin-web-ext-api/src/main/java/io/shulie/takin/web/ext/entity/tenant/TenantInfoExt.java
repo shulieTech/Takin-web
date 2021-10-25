@@ -42,7 +42,7 @@ public class TenantInfoExt {
 
     @Data
     @NoArgsConstructor
-    public class TenantEnv {
+    public static class TenantEnv {
         /**
          * 环境代码
          */
@@ -51,5 +51,15 @@ public class TenantInfoExt {
          * 环境名
          */
         private String envName;
+
+        /**
+         * 描述
+         */
+        private String desc;
+
+        /**
+         * 是否默认
+         */
+        private Boolean isDefault;
     }
 }

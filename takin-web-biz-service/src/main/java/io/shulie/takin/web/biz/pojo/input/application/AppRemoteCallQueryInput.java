@@ -16,5 +16,4 @@ public class AppRemoteCallQueryInput extends UserCommonExt {
     private Integer status;
     private Long applicationId;
     private List<String> appNames;
-    private Boolean isAll = false;
 }

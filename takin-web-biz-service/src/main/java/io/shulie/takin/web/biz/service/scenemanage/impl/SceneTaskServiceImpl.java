@@ -10,8 +10,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
@@ -53,7 +51,6 @@ import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.SqlTestRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.UpdateTpsRequest;
-import io.shulie.takin.web.biz.pojo.response.scene.StartResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ApplicationService;
@@ -68,9 +65,6 @@ import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
-import io.shulie.takin.web.common.constant.RemoteConstant;
-import io.shulie.takin.web.common.domain.ErrorInfo;
-import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -82,6 +76,7 @@ import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -91,7 +86,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 /**
@@ -201,7 +195,13 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                     }}).collect(Collectors.toList()));
             }
         }
-        //封装
+        param.setUserId(WebPluginUtils.traceUserId());
+        //填充操作人信息
+        UserExt user = WebPluginUtils.traceUser();
+        if (user != null) {
+            param.setUserId(user.getId());
+            param.setUserName(user.getName());
+        }
 
         //兼容老版本
         if (StringUtils.isEmpty(param.getContinueRead())) {
@@ -211,7 +211,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         SceneActionParamNew paramNew = this.getNewParam(param);
         SceneActionResp startResult;
         try {
-            startResult = cloudTaskApi.start(BeanUtil.copyProperties(param, SceneTaskStartReq.class));
+            startResult = cloudTaskApi.start(BeanUtil.copyProperties(paramNew, SceneTaskStartReq.class));
         } catch (Exception e) {
             log.error("takin-cloud启动压测场景返回错误，id={}", param.getSceneId(), e);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, e);
@@ -246,18 +246,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private SceneActionParamNew getNewParam(SceneActionParam param) {
         SceneActionParamNew paramNew = CopyUtils.copyFields(param, SceneActionParamNew.class);
         try {
-            //            paramNew.setContinueRead(false);
-            //            if (!param.getContinueRead().equals("-1")) {
-            //                Object hasUnread = redisTemplate.opsForValue().get("hasUnread_" + param.getSceneId());
-            //                if (hasUnread == null) {
-            //                    throw ApiException.create(500, "缺少参数hasUnread！无法判断继续压测还是从头压测，请检查redis或者cloud返回的位点数据是否有问题，id=" + param.getSceneId());
-            //                }
-            //                if (param.getContinueRead().equals("1")) {
-            //                    paramNew.setContinueRead(Boolean.parseBoolean(hasUnread + ""));
-            //                } else {
-            //                    paramNew.setContinueRead(false);
-            //                }
-            //            }
             paramNew.setContinueRead(param.getContinueRead().equals("1"));
         } catch (Exception e) {
             log.error("未知异常", e);
@@ -429,7 +417,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         List<SceneBusinessActivityRefDTO> sceneBusinessActivityRefList = sceneData.getBusinessActivityConfig();
         if (CollectionUtils.isEmpty(sceneBusinessActivityRefList)) {
             log.error("[{}]场景没有配置业务活动", sceneData.getId());
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_VALIDATE_ERROR, "启动压测失败，没有配置业务活动，场景ID为" + sceneData.getId());
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_VALIDATE_ERROR,
+                "启动压测失败，没有配置业务活动，场景ID为" + sceneData.getId());
         }
 
         // 业务活动相关检查
@@ -464,7 +453,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                 try {
                     List<BaffleAppVO> baffleAppVos = JsonHelper.json2List(config.getConfigValue(), BaffleAppVO.class);
                     List<String> appNames = Optional
-                        .of(baffleAppVos.stream().filter(appVO -> sceneData.getId() != null && sceneData.getId().equals(appVO.getSceneId()))
+                        .of(baffleAppVos.stream()
+                            .filter(appVO -> sceneData.getId() != null && sceneData.getId().equals(appVO.getSceneId()))
                             .collect(Collectors.toList()))
                         .map(t -> t.get(0)).map(BaffleAppVO::getAppName).orElse(Lists.newArrayList());
                     List<Long> appIds = Lists.newArrayList();
@@ -477,16 +467,19 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                         }
                         return true;
                     }).collect(Collectors.toList());
-                    List<Long> tempAppIds = applicationIds.stream().filter(id -> !appIds.contains(id)).collect(Collectors.toList());
+                    List<Long> tempAppIds = applicationIds.stream().filter(id -> !appIds.contains(id)).collect(
+                        Collectors.toList());
                     applicationMntList = tempApps;
                     applicationIds = tempAppIds;
                 } catch (Exception e) {
-                    log.error("场景挡板配置转化异常：配置项：{},配置项内容:{}", ConfigConstants.SCENE_BAFFLE_APP_CONFIG, config.getConfigValue());
+                    log.error("场景挡板配置转化异常：配置项：{},配置项内容:{}", ConfigConstants.SCENE_BAFFLE_APP_CONFIG,
+                        config.getConfigValue());
                 }
             }
             if (CollectionUtils.isEmpty(applicationMntList) || applicationMntList.size() != applicationIds.size()) {
                 log.error("启动压测失败, 没有找到关联的应用信息，场景ID：{}", sceneData.getId());
-                throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_VALIDATE_ERROR, "启动压测失败, 没有找到关联的应用信息，场景ID：" + sceneData.getId());
+                throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_VALIDATE_ERROR,
+                    "启动压测失败, 没有找到关联的应用信息，场景ID：" + sceneData.getId());
             }
 
             // 检查应用相关
@@ -527,10 +520,12 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     @Override
     public String checkApplicationCorrelation(List<TApplicationMnt> applicationMntList) {
         // 查询下 应用节点信息 节点不一致 也需要返回异常
-        List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(Collectors.toList());
+        List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(
+            Collectors.toList());
         // 从大数据里查出数据 todo 目前大数据不区分客户，所以有可能存在不准确问题
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames);
-        Map<String, List<ApplicationResult>> listMap = applicationResultList.stream().collect(Collectors.groupingBy(ApplicationResult::getAppName));
+        Map<String, List<ApplicationResult>> listMap = applicationResultList.stream().collect(
+            Collectors.groupingBy(ApplicationResult::getAppName));
 
         List<String> applicationNameList = applicationMntList.stream().map(application -> {
             boolean statusError = false;
@@ -548,7 +543,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             //判断节点数是否异常
             Integer totalNodeCount = application.getNodeNum();
             List<ApplicationResult> results = listMap.get(application.getApplicationName());
-            if (CollectionUtils.isEmpty(results) || !totalNodeCount.equals(results.get(0).getInstanceInfo().getInstanceOnlineAmount())) {
+            if (CollectionUtils.isEmpty(results) || !totalNodeCount.equals(results.get(0).getInstanceInfo()
+                .getInstanceOnlineAmount())) {
                 log.error("应用[{}]在线节点数与节点总数不一致", application.getApplicationName());
                 statusError = true;
             }

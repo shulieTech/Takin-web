@@ -57,4 +57,11 @@ public interface WebTenantExtApi extends ExtensionPoint {
      * @return
      */
     Long getDefaultUserId(String userAppKey, String tenantCode);
+
+    /**
+     * 根据租户code 获取租户列表
+     * @param tenantCode
+     * @return
+     */
+    List<TenantInfoExt> getTenantInfoListByTenantCode(String tenantCode);
 }

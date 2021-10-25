@@ -34,9 +34,15 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
     excludeFilters = @ComponentScan.Filter(type = FilterType.CUSTOM, value = {ApplicationFilter.class}))
 public class Application {
 
+    /**
+     * 这里引用, 提前实例化
+     */
     @Autowired
     private RedisHelper redisHelper;
 
+    /**
+     * 这里引用, 提前实例化
+     */
     @Autowired
     private ConfigServerHelper configServerHelper;
 

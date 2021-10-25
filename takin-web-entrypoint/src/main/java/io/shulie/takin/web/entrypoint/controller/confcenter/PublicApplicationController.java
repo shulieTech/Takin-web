@@ -2,7 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.confcenter;
 
 import com.pamirs.takin.entity.domain.vo.application.UpdateAppNodeNumVO;
 import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Date 2021/10/14 10:39 上午
  */
 @RestController
-@RequestMapping(APIUrls.PUBLIC_TAKIN_API_URL)
+@RequestMapping(ApiUrls.PUBLIC_TAKIN_API_URL)
 @Api(tags = "接口: 应用管理中心（外部调用）", value = "应用管理中心（外部调用）")
 public class PublicApplicationController {
 

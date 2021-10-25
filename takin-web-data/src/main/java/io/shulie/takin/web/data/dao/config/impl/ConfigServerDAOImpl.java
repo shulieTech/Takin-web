@@ -6,6 +6,7 @@ import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.data.dao.config.ConfigServerDAO;
 import io.shulie.takin.web.data.mapper.mysql.ConfigServerMapper;
 import io.shulie.takin.web.data.model.mysql.ConfigServerEntity;
+import io.shulie.takin.web.data.result.config.ConfigServerDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +26,8 @@ public class ConfigServerDAOImpl implements ConfigServerDAO, MPUtil<ConfigServer
 
     @Override
     public String getTenantEnvValueByKey(String key) {
-        List<String> valueList = configServerMapper.selectTenantEnvValueListByKey(key, WebPluginUtils.traceTenantAppKey(),
-            WebPluginUtils.traceEnvCode());
-        return valueList.isEmpty() ? null : valueList.get(0);
+        ConfigServerDetailResult tenantEnvConfig = this.getTenantEnvConfigByKey(key);
+        return tenantEnvConfig == null ? null : tenantEnvConfig.getValue();
     }
 
     @Override
@@ -40,7 +40,15 @@ public class ConfigServerDAOImpl implements ConfigServerDAO, MPUtil<ConfigServer
 
     @Override
     public String getTenantEnvValueByKeyAndTenantAppKeyAndEnvCode(String key, String tenantAppKey, String envCode) {
-        List<String> valueList = configServerMapper.selectTenantEnvValueListByKey(key, tenantAppKey, envCode);
+        List<ConfigServerDetailResult> valueList = configServerMapper.selectTenantEnvListByKey(key,
+            WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode());
+        return valueList.isEmpty() ? null : valueList.get(0).getValue();
+    }
+
+    @Override
+    public ConfigServerDetailResult getTenantEnvConfigByKey(String key) {
+        List<ConfigServerDetailResult> valueList = configServerMapper.selectTenantEnvListByKey(key,
+            WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode());
         return valueList.isEmpty() ? null : valueList.get(0);
     }
 

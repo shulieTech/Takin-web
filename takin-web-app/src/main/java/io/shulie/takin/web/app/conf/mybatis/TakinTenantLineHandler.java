@@ -27,18 +27,18 @@ public interface TakinTenantLineHandler extends TenantLineHandler {
     }
 
 
-    /**
-     * 用户id
-     * @return
-     */
-    Expression getUserId();
-
-    /**
-     * 用户字段
-     * @return
-     */
-    default String getUserIdColumn() {
-        return TenantField.FIELD_USER_ID.getColumnName();
-    }
+    ///**
+    // * 用户id
+    // * @return
+    // */
+    //Expression getUserId();
+    //
+    ///**
+    // * 用户字段
+    // * @return
+    // */
+    //default String getUserIdColumn() {
+    //    return TenantField.FIELD_USER_ID.getColumnName();
+    //}
 
 }

@@ -12,12 +12,14 @@ import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.ext.api.auth.WebDataAuthExtApi;
 import io.shulie.takin.web.ext.api.auth.WebUserAuthExtApi;
+import io.shulie.takin.web.ext.api.e2e.InspectionExtApi;
 import io.shulie.takin.web.ext.api.tenant.WebTenantExtApi;
 import io.shulie.takin.web.ext.api.user.WebUserExtApi;
 import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
@@ -45,11 +47,10 @@ public class WebPluginUtils {
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
     private static WebUserAuthExtApi userAuthExtApi;
+    public static InspectionExtApi inspectionExtApi;
     private static WebTenantExtApi tenantExtApi;
 
     static PluginManager pluginManager;
-
-
 
     @Autowired
     public void setPluginManager(PluginManager pluginManager) {
@@ -57,6 +58,7 @@ public class WebPluginUtils {
         userApi = pluginManager.getExtension(WebUserExtApi.class);
         dataAuthApi = pluginManager.getExtension(WebDataAuthExtApi.class);
         userAuthExtApi = pluginManager.getExtension(WebUserAuthExtApi.class);
+        inspectionExtApi = pluginManager.getExtension(InspectionExtApi.class);
         tenantExtApi = pluginManager.getExtension(WebTenantExtApi.class);
     }
 
@@ -73,6 +75,7 @@ public class WebPluginUtils {
         }
         return null;
     }
+
 
     /**
      * 补充 插入 更新 用户数据
@@ -309,13 +312,28 @@ public class WebPluginUtils {
 
     /**
      * 前端 根据租户code 获取租户信息 目前给插件user-module使用
-     * @param userAppKey
+     * @param tenantAppKey
      * @param tenantCode
      * @return
      */
-    public static TenantInfoExt getTenantInfo(String userAppKey,String tenantCode) {
+    public static TenantInfoExt getTenantInfo(String tenantAppKey,String tenantCode) {
         if (tenantExtApi != null) {
-            return tenantExtApi.getTenantInfo(userAppKey,tenantCode);
+            return tenantExtApi.getTenantInfo(tenantAppKey,tenantCode);
+        }
+        if(userApi != null) {
+            // 只是带用户插件
+            List<TenantInfoExt> tenantInfoList = userApi.getTenantInfoList();
+            if (CollectionUtils.isEmpty(tenantInfoList)) {
+                return null;
+            }
+            TenantInfoExt tenantInfoExt = tenantInfoList.get(0);
+            if (StringUtils.isNotBlank(tenantAppKey) && tenantAppKey.equals(tenantInfoExt.getTenantAppKey())) {
+                return tenantInfoExt;
+            }
+            if(StringUtils.isNotBlank(tenantCode) && tenantCode.equals(tenantInfoExt.getTenantCode())) {
+                return tenantInfoExt;
+            }
+            return null;
         }
         return null;
     }
@@ -430,6 +448,46 @@ public class WebPluginUtils {
         }
         // 开源版本
         return getDefaultTenantInfoList();
+    }
+
+    /**
+     * 根据租户code 查询租户数据
+     * @param tenantCode
+     * @return
+     */
+    public static List<TenantInfoExt> getTenantInfoListByTenantCode(String tenantCode) {
+        if (Objects.nonNull(tenantExtApi)) {
+            return tenantExtApi.getTenantInfoListByTenantCode(tenantCode);
+        }
+        // 默认一个租户
+        if(Objects.nonNull(userApi)) {
+            // 企业版
+            return userApi.getTenantInfoList();
+        }
+        // 开源版本
+        return getDefaultTenantInfoList();
+    }
+
+    /**
+     * 切换租户
+     * @param ext
+     * @return  TenantInfoExt
+     */
+    public static TenantInfoExt switchTenant(SwitchTenantExt ext) {
+        if(Objects.nonNull(userApi)) {
+           return userApi.switchTenant(ext);
+        }
+        return getDefaultTenantInfoList().get(0);
+    }
+
+    /**
+     * 切换环境
+     * @param ext
+     */
+    public static void switchEnv(SwitchTenantExt ext) {
+        if(Objects.nonNull(userApi)) {
+            userApi.switchEnv(ext);
+        }
     }
 
 
@@ -608,12 +666,23 @@ public class WebPluginUtils {
         ext.setTenantName(DEFAULT_TENANT_APP_KEY);
         ext.setTenantNick(DEFAULT_TENANT_APP_KEY);
         ext.setTenantCode(DEFAULT_TENANT_APP_KEY);
-        List<TenantEnv> envs =Lists.newArrayList();
-        TenantInfoExt.TenantEnv env = new TenantInfoExt().new TenantEnv();
-        env.setEnvCode(DEFAULT_ENV_CODE);
-        env.setEnvName("测试环境");
-        ext.setEnvs(envs);
+        ext.setEnvs(getDefaultTenantEnvList());
         exts.add(ext);
         return exts;
+    }
+
+    /**
+     * 获取默认租户 环境
+     * @return
+     */
+    private static List<TenantEnv> getDefaultTenantEnvList() {
+        List<TenantEnv> envs =Lists.newArrayList();
+        TenantInfoExt.TenantEnv env = new TenantEnv();
+        env.setEnvCode(DEFAULT_ENV_CODE);
+        env.setEnvName("测试环境");
+        env.setDesc("无插件");
+        env.setIsDefault(Boolean.TRUE);
+        envs.add(env);
+        return envs;
     }
 }

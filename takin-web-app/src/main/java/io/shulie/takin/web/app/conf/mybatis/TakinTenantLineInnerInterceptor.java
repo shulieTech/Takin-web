@@ -55,7 +55,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     /**
      * 没有env_code 的表
      */
-    private List<String> tableWithoutEnvCode = Lists.newArrayList("t_tro_user","t_tro_dept","t_dictionary_type");
+    private List<String> tableWithoutEnvCode = Lists.newArrayList("t_tro_user","t_tro_dept","t_dictionary_type","t_tro_user_dept_relation");
 
     /**
      * 没有user_id 的表
@@ -66,6 +66,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     private TakinTenantLineHandler tenantLineHandler;
 
     public TakinTenantLineInnerInterceptor(TakinTenantLineHandler takinTenantLineHandler) {
+        super.setTenantLineHandler(takinTenantLineHandler);
         this.tenantLineHandler = takinTenantLineHandler;
     }
 
@@ -291,20 +292,20 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             envCodeCondition.setRightExpression(tenantLineHandler.getEnvCode());
         }
 
-        EqualsTo userIdCondition = null;
-        if(!tableWithoutUserId.contains(table.getName())) {
-            userIdCondition = new EqualsTo();
-            userIdCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getUserIdColumn()));
-            userIdCondition.setRightExpression(tenantLineHandler.getUserId());
-        }
+        //EqualsTo userIdCondition = null;
+        //if(!tableWithoutUserId.contains(table.getName())) {
+        //    userIdCondition = new EqualsTo();
+        //    userIdCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getUserIdColumn()));
+        //    userIdCondition.setRightExpression(tenantLineHandler.getUserId());
+        //}
 
-        if(tenantIdCondition == null && envCodeCondition == null && userIdCondition == null) {
+        if(tenantIdCondition == null && envCodeCondition == null) {
             return null;
         }
         // 1 = 1
         EqualsTo equalsTo = new EqualsTo(new LongValue(1),new LongValue(1));
 
-        AndExpression allAndExpression = null;
+        //AndExpression allAndExpression = null;
         AndExpression tenantExpression = null;
         if(tenantIdCondition != null && envCodeCondition != null) {
             tenantExpression = new AndExpression(tenantIdCondition, envCodeCondition);
@@ -313,13 +314,13 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             tenantExpression =  new AndExpression(equalsTo, tenantIdCondition);
         }
 
-        if (userIdCondition != null) {
-            allAndExpression = new AndExpression(tenantExpression, userIdCondition);
-        }else {
-            // 没有 user_id
-            return tenantExpression;
-        }
-        return allAndExpression;
+        //if (userIdCondition != null) {
+        //    allAndExpression = new AndExpression(tenantExpression, userIdCondition);
+        //}else {
+        //    // 没有 user_id
+        //    return tenantExpression;
+        //}
+        return tenantExpression;
     }
 
     //private AndExpression buildTenantExpression(String tenantIdColumn, String envCodeColumn) {

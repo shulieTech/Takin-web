@@ -13,6 +13,7 @@ import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.common.constant.AppConstants;
@@ -150,6 +151,35 @@ public class TraceClientImpl implements TraceClient {
         }
     }
 
+    // todo 等待amdb 方法实现
+    @Override
+    public PagingList<EntryTraceInfoDTO> listTraceLog(TraceLogQueryDTO query) {
+        String url = properties.getUrl().getAmdb() + ENTRY_TRACE_PATH;
+        try {
+            AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.newInStance().url(url)
+                .param(query)
+                .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
+                .eventName("查询链路列表")
+                .list(EntryTraceInfoDTO.class);
+            List<EntryTraceInfoDTO> list = response.getData();
+            if (CollectionUtil.isNotEmpty(list)) {
+                list.forEach(entry -> {
+                    entry.setEntry(entry.getServiceName());
+                    entry.setMethod(entry.getMethodName());
+                    entry.setProcessTime(entry.getCost());
+                    entry.setId("0");
+                    entry.setEndTime(entry.getEndTime());
+                    entry.setStatus(entry.getResultCode());
+                });
+                return PagingList.of(list, response.getTotal());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+        }
+        return PagingList.empty();
+    }
+
     /**
      * entryList 转换一下
      *
@@ -174,5 +204,6 @@ public class TraceClientImpl implements TraceClient {
 
         }).collect(Collectors.joining(AppConstants.COMMA));
     }
+
 
 }

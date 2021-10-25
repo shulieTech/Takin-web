@@ -41,6 +41,7 @@ import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.PradarWebRequest;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.trace.TraceNodeLogTypeEnum;
 import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
@@ -239,6 +240,15 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
                 reportTraceDetailDTO.setNodeIp(rpcEntry.getServerIp());
             }
             reportTraceDetailDTO.setResponse(rpcEntry.getResponse());
+
+            // by wuya 20211025
+            reportTraceDetailDTO.setMethodName(rpcEntry.getMethodName());
+            reportTraceDetailDTO.setLogType(rpcEntry.getLogType());
+            reportTraceDetailDTO.setLogTypeName(TraceNodeLogTypeEnum.judgeTraceNodeLogType(rpcEntry.getLogType()).getDesc());
+            reportTraceDetailDTO.setAsync(rpcEntry.isAsync());
+            reportTraceDetailDTO.setMiddlewareName(rpcEntry.getMiddlewareName());
+
+
             reportTraceDetailDTO.setNodeSuccess(true);
             if (!reportTraceDetailDTO.getSucceeded()) {
                 // 向上递归

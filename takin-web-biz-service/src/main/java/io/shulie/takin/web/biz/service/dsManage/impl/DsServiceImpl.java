@@ -868,7 +868,7 @@ public class DsServiceImpl implements DsService {
         shadowMap.forEach((k, v) -> {
             String value = null;
             Map map = JSONObject.parseObject(String.valueOf(v), Map.class);
-            if(map.get("tag") == "2"){
+            if(Objects.equals("2",String.valueOf(map.get("tag")))){
                value = String.valueOf(map.get("context"));
             }
             matchMap.put(String.valueOf(k), value);

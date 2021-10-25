@@ -49,7 +49,7 @@ public class AppRemoteCallJob implements SimpleJob {
             tenantInfoExts.forEach(ext -> {
                 // 根据环境 分线程
                 ext.getEnvs().forEach(e -> {
-                    WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode()));
+                    WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),ext.getTenantCode()));
                     jobThreadPool.execute(() -> appRemoteCallService.syncAmdb());
                     WebPluginUtils.removeTraceContext();
                 });

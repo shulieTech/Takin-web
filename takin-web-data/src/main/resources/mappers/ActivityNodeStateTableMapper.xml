@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ActivityNodeStateTableMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.ActivityNodeState">
+        <!--@mbg.generated-->
+        <!--@Table t_application_api_manage-->
+        <id column="ID" jdbcType="BIGINT" property="id"/>
+        <result column="activity_id" jdbcType="BIGINT" property="activityId"/>
+        <result column="service_name" jdbcType="VARCHAR" property="serviceName"/>
+        <result column="owner_app" jdbcType="VARCHAR" property="ownerApp"/>
+        <result column="state" jdbcType="TINYINT" property="state"/>
+    </resultMap>
+
+    <insert id="setActivityNodeState" parameterType="io.shulie.takin.web.data.model.mysql.ActivityNodeState">
+        INSERT INTO t_activity_node_service_state (id,activity_id,service_name,owner_app,state)
+        VALUES (#{id},#{activityId},#{serviceName},#{ownerApp},#{state})
+        ON DUPLICATE KEY
+        UPDATE state = #{state}
+    </insert>
+
+    <select id="getActivityNodes" resultMap="BaseResultMap" parameterType="long">
+        SELECT activity_id,service_name,owner_app,state
+        FROM t_activity_node_service_state
+        WHERE activity_id = #{activityId};
+    </select>
+
+    <delete id="removeActivityNodeByActivityIdAndOwnerApp" parameterType="io.shulie.takin.web.data.model.mysql.ActivityNodeState">
+        DELETE FROM t_activity_node_service_state WHERE activity_id = #{activityId} AND owner_app = #{ownerApp}
+    </delete>
+</mapper>

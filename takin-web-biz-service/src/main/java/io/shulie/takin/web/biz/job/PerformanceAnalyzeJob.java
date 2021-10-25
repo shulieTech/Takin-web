@@ -50,7 +50,8 @@ public class PerformanceAnalyzeJob implements SimpleJob {
                 ext.getEnvs().forEach(e ->
                     jobThreadPool.execute(() -> {
                         WebPluginUtils.setTraceTenantContext(
-                            new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode()));
+                            new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                ext.getTenantCode()));
                         threadAnalyService.clearData(second);
                         WebPluginUtils.removeTraceContext();
                     }));

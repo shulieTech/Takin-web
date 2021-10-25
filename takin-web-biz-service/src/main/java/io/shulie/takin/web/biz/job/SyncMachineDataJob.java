@@ -69,7 +69,7 @@ public class SyncMachineDataJob implements SimpleJob {
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     // 根据环境 分线程
                     for (TenantEnv e : ext.getEnvs()) {
-                        WebPluginUtils.setTraceTenantContext(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode());
+                        WebPluginUtils.setTraceTenantContext(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),ext.getTenantCode());
                         if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                             continue;
                         }

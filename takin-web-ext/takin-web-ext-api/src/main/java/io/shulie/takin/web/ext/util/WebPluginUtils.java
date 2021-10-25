@@ -422,6 +422,7 @@ public class WebPluginUtils {
             ext.setEnvCode(envCode);
             ext.setTenantAppKey(infoExt.getTenantAppKey());
             ext.setTenantId(infoExt.getTenantId());
+            ext.setTenantCode(infoExt.getTenantCode());
             return ext;
         }
         // 开源版
@@ -429,6 +430,7 @@ public class WebPluginUtils {
         ext.setEnvCode(DEFAULT_ENV_CODE);
         ext.setTenantAppKey(DEFAULT_TENANT_APP_KEY);
         ext.setTenantId(DEFAULT_TENANT_ID);
+        ext.setTenantCode(DEFAULT_TENANT_CODE);
         return ext;
     }
 
@@ -549,12 +551,13 @@ public class WebPluginUtils {
      * @param tenantAppKey appKey
      * @param envCode 环境
      */
-    public static void setTraceTenantContext(Long tenantId, String tenantAppKey, String envCode) {
+    public static void setTraceTenantContext(Long tenantId, String tenantAppKey, String envCode,String tenantCode) {
         if (Objects.nonNull(userApi)) {
             TenantCommonExt tenantCommonExt = new TenantCommonExt();
             tenantCommonExt.setTenantId(tenantId);
             tenantCommonExt.setTenantAppKey(tenantAppKey);
             tenantCommonExt.setEnvCode(envCode);
+            tenantCommonExt.setTenantCode(tenantCode);
             userApi.setTraceTenantContext(tenantCommonExt);
         }
     }

@@ -1,28 +1,8 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.github.pagehelper.util.StringUtil;
@@ -53,25 +33,23 @@ import com.pamirs.takin.entity.domain.vo.dsmanage.DataSource;
 import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.cloud.common.constants.Constants;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.amdb.bean.common.AmdbResult;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
-import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
-import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerCreateInput;
-import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerQueryInput;
-import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerUpdateInput;
+import io.shulie.takin.web.biz.pojo.input.application.*;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoardResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
-import io.shulie.takin.web.biz.service.AppConfigEntityConvertService;
-import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
-import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.biz.service.ConfCenterService;
-import io.shulie.takin.web.biz.service.ShadowConsumerService;
+import io.shulie.takin.web.biz.service.*;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
@@ -87,39 +65,23 @@ import io.shulie.takin.web.common.constant.GuardEnableConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.WhiteListConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.JsonUtil;
+import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
-import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
-import io.shulie.takin.web.common.vo.excel.ApplicationRemoteCallConfigExcelVO;
-import io.shulie.takin.web.common.vo.excel.BlacklistExcelVO;
-import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
-import io.shulie.takin.web.common.vo.excel.LinkGuardExcelVO;
-import io.shulie.takin.web.common.vo.excel.ShadowConsumerExcelVO;
-import io.shulie.takin.web.common.vo.excel.ShadowJobExcelVO;
-import io.shulie.takin.web.common.vo.excel.WhiteListExcelVO;
+import io.shulie.takin.web.common.vo.excel.*;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
-import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationDsManageDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
-import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
-import io.shulie.takin.web.data.dao.application.ShadowJobConfigDAO;
-import io.shulie.takin.web.data.dao.application.ShadowMqConsumerDAO;
-import io.shulie.takin.web.data.dao.application.WhiteListDAO;
-import io.shulie.takin.web.data.dao.application.WhitelistEffectiveAppDao;
+import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.dao.application.*;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
-import io.shulie.takin.web.data.model.mysql.ApplicationDsManageEntity;
-import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
-import io.shulie.takin.web.data.model.mysql.LinkGuardEntity;
-import io.shulie.takin.web.data.model.mysql.ShadowJobConfigEntity;
-import io.shulie.takin.web.data.model.mysql.ShadowMqConsumerEntity;
+import io.shulie.takin.web.data.model.mysql.*;
 import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
@@ -127,10 +89,7 @@ import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
-import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
-import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.data.result.application.*;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
@@ -143,12 +102,24 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author mubai<chengjiacai.shulie.io>
@@ -167,6 +138,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private static final String PRADAR_SWITCH_STATUS = "PRADAR_SWITCH_STATUS_";
     private static final String PRADAR_SWITCH_STATUS_VO = "PRADAR_SWITCH_STATUS_VO_";
     private static final String PRADAR_SWITCH_ERROR_INFO_UID = "PRADAR_SWITCH_ERROR_INFO_";
+    private static final String PRADAR_SILENCE_SWITCH_STATUS_VO = "PRADAR_SILENCE_SWITCH_STATUS_";
+    private static final String PRADAR_SILENCE_SWITCH_STATUS = "PRADAR_SILENCE_SWITCH_STATUS_VO_";
     private static final List<String> CONFIGITEMLIST = Collections.singletonList("redis影子key有效期");
 
     @Autowired
@@ -255,10 +228,25 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Autowired
     private ApplicationNodeProbeDAO applicationNodeProbeDAO;
 
+    @Autowired
+    private AppAgentConfigReportDAO reportDAO;
+
+
+    @Autowired
+    private AmdbClientProperties properties;
+
+    @Autowired
+    private ActivityService activityService;
+
+    @Autowired
+    private ActivityDAO activityDAO;
+
+
     @Override
     public List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList) {
         return tApplicationMntDao.getApplicationsByTenants(userIdList);
     }
+
 
     //3.添加定时任务
     //或直接指定时间间隔，例如：5秒
@@ -1056,6 +1044,176 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void modifyAppNodeNum(List<NodeNumParam> numParamList) {
         applicationDAO.batchUpdateAppNodeNum(numParamList, WebPluginUtils.getCustomerId());
+    }
+
+    /**
+     * 应用监控查询接口
+     *
+     * @param request 包含应用名称及服务名称
+     */
+    @Override
+    public Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
+        //TODO 1.关注
+        List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(request.getAppName());
+        //TODO 2.根据应用名称查询大数据性能数据
+        List<String> attentionInterfaces = attentionList.stream().map(ApplicationAttentionListEntity::getInterfaceName).collect(Collectors.toList());
+        request.setAttentionList(attentionInterfaces);
+        Map<List<ApplicationVisualInfoResponse>, Integer> infoResponseMap = doGetAppDataByAppName(request);
+        List<ApplicationVisualInfoResponse> infoDTOList = new ArrayList<>();
+        Integer total = 0;
+        if (null != infoResponseMap) {
+            Map.Entry<List<ApplicationVisualInfoResponse>, Integer> infoEntry = null;
+            for (Map.Entry<List<ApplicationVisualInfoResponse>, Integer> ApplicationVisualInfoEntry : infoResponseMap.entrySet()) {
+                infoEntry = ApplicationVisualInfoEntry;
+                break;
+            }
+            infoDTOList = infoEntry.getKey();
+            total = infoEntry.getValue();
+            //TODO 2.1补充关联业务活动ID
+            //TODO 3.查询健康度(卡慢、接口异常)
+            doGetHealthIndicator(infoDTOList, request);
+        }
+        return Response.success(infoDTOList, total);
+    }
+
+    /**
+     * 关注服务
+     *
+     * @param request 应用名➕服务名➕是否关注
+     */
+    @Override
+    public void attendApplicationService(ApplicationVisualInfoQueryRequest request) throws Exception {
+        Map param = new HashMap<>();
+        String applicationName = request.getAppName();
+        String interfaceName = request.getLabel();
+        param.put("appName", applicationName);
+        param.put("interfaceName", interfaceName);
+        param.put("isAttend", Boolean.parseBoolean(String.valueOf(request.getAttend())));
+        String key = MD5Tool.getMD5(applicationName + interfaceName);
+        param.put("id", key);
+        applicationDAO.attendApplicationService(param);
+    }
+
+    /**
+     * 关注列表
+     *
+     * @param applicationName
+     */
+    private List<ApplicationAttentionListEntity> doGetAttentionList(String applicationName) {
+        return applicationDAO.getAttentionList(applicationName);
+    }
+
+    /**
+     * 获取应用健康度数据
+     *
+     * @param infoDTOList
+     * @param request
+     */
+    private void doGetHealthIndicator(List<ApplicationVisualInfoResponse> infoDTOList, ApplicationVisualInfoQueryRequest request) {
+        if (CollectionUtils.isEmpty(infoDTOList)) {
+            return;
+        }
+        infoDTOList.stream().forEach(dto -> {
+            String appName = dto.getAppName();
+            String serviceAndMethod = dto.getServiceAndMethod();
+            int clusterTest = request.getClusterTest();
+            FlowTypeEnum flowTypeEnum = FlowTypeEnum.getByType(clusterTest);
+            LocalDateTime startTime = request.getStartTimeDate();
+            LocalDateTime endTime = request.getEndTimeDate();
+            Map<String, String> activeMap = dto.getActiveIdAndName();
+            List<ActivityInfoQueryRequest> activityList = activeMap.keySet().stream().map(id -> new ActivityInfoQueryRequest(Long.parseLong(id), flowTypeEnum, startTime, endTime)).collect(Collectors.toList());
+            ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(activityList, appName, serviceAndMethod);
+            dto.setResponse(response);
+        });
+    }
+
+    /**
+     * 调用大数据获取性能数据
+     */
+    private Map<List<ApplicationVisualInfoResponse>, Integer> doGetAppDataByAppName(ApplicationVisualInfoQueryRequest request) {
+        //TODO 大数据接口未定义
+        String url = properties.getUrl().getAmdb() + "/amdb/db/api/metrics/metricsDetailes";
+        try {
+            AmdbResult<List<ApplicationVisualInfoResponse>> appDataResult = AmdbHelper.newInStance().httpMethod(HttpMethod.POST)
+                    .url(url)
+                    .param(request)
+                    .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
+                    .eventName("根据应用名称查询大数据性能数据")
+                    .list(ApplicationVisualInfoResponse.class);
+            //TODO 大数据待清洗
+            List<ApplicationVisualInfoResponse> data = appDataResult.getData();
+            List<String> attentionList = request.getAttentionList();
+            String orderBy = request.getOrderBy();
+            int current = request.getCurrent();
+            int pageSize = request.getPageSize();
+            return doSortAndPageAndConvertActivityId(data, attentionList, orderBy, pageSize, current);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
+        }
+    }
+
+    private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current) {
+        if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current)) {
+            return null;
+        }
+        String[] orderList = orderBy.split(" ");
+        if (orderList.length != 2) {
+            return null;
+        }
+        int total = data.size();
+        String orderName = orderList[0];
+        String orderType = orderList[1];
+        List<ApplicationVisualInfoResponse> visualInfoDTOList = data.stream().sorted((d1, d2) -> {
+            boolean b1 = attentionList.contains(d1.getServiceAndMethod());
+            boolean b2 = attentionList.contains(d2.getServiceAndMethod());
+            if ((b1 && b2) || (!b1 && !b2)) {
+                Number result = 0;
+                switch (orderName) {
+                    case "QPS":
+                        result = d1.getRequestCount() - d2.getRequestCount();
+                        break;
+                    case "TPS":
+                        result = d1.getTps() - d2.getTps();
+                        break;
+                    case "RT":
+                        result = d1.getResponseConsuming() - d2.getResponseConsuming();
+                        break;
+                    case "SUCCESSRATE":
+                        result = d1.getSuccessRatio() - d2.getSuccessRatio();
+                }
+                int diff = result.doubleValue() > 0 ? 1 : -1;
+                return "asc".equals(orderType) ? diff : -diff;
+            } else {
+                return b1 ? -1 : 1;
+            }
+        }).map(dto -> {
+            dto.setAttend(attentionList.contains(dto.getServiceAndMethod()));
+            String[] activeList = dto.getActiveList();
+            Map<String, String> activityResult = new HashMap<>();
+            if (activeList != null) {
+                for (String active : activeList) {
+                    String[] split = active.split("#");
+                    String appName = split[0];
+                    String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
+                    List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
+                    if (!CollectionUtils.isEmpty(serviceList)) {
+                        serviceList.stream().forEach(serviceName -> activityResult.put(String.valueOf(serviceName.get("linkId")), serviceName.get("linkName")));
+                    }
+                }
+            }
+            dto.setActiveIdAndName(activityResult);
+            return dto;
+        }).collect(Collectors.toList());
+
+        List<ApplicationVisualInfoResponse> infoDTOPageList = new ArrayList<>();
+        for (int i = current * pageSize; i < (current + 1) * pageSize && i < visualInfoDTOList.size(); i++) {
+            infoDTOPageList.add(visualInfoDTOList.get(i));
+        }
+
+        Map result = new HashMap<>();
+        result.put(infoDTOPageList, total);
+        return result;
     }
 
     /**
@@ -2111,5 +2269,123 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             vo.setAccessStatus(ApplicationConstants.APPLICATION_ACCESS_STATUS_EXCEPTION);
         }
     }
+
+    /**
+     * 静默开关
+     *
+     * @param uid
+     * @param enable
+     * @return
+     */
+    @Override
+    public Response userAppSilenceSwitch(Long uid, Boolean enable) {
+        //全局开关只保留 开/关
+        if (enable == null) {
+            return Response.fail(FALSE_CORE, "开关状态不能为空", null);
+        }
+        if (uid == null) {
+            UserExt user = WebPluginUtils.getUser();
+            if (user == null) {
+                return Response.fail(FALSE_CORE, "当前用户为空", null);
+            }
+            uid = user.getCustomerId();
+        }
+
+        String realStatus = getUserSilenceSwitchFromRedis(uid);
+        ApplicationVo vo = new ApplicationVo();
+        String status;
+        String voStatus;
+        if (realStatus.equals(AppSwitchEnum.CLOSING.getCode()) || realStatus.equals(AppSwitchEnum.OPENING.getCode())) {
+            vo.setSwitchStutus(realStatus);
+            return Response.success(realStatus);
+        } else {
+            status = (enable ? AppSwitchEnum.OPENED : AppSwitchEnum.CLOSED).getCode();
+            voStatus = (enable ? AppSwitchEnum.OPENING : AppSwitchEnum.CLOSING).getCode();
+            //开关状态、开关开启、关闭的时间存放在redis
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + uid, status);
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS + uid, voStatus);
+        }
+        vo.setSwitchStutus(status);
+        return Response.success(vo);
+    }
+
+
+    /**
+     * 从redis获取用户静默开关状态，默认开启
+     *
+     * @param uid
+     * @return
+     */
+    private String getUserSilenceSwitchFromRedis(Long uid) {
+
+        if (uid == null) {
+            throw new RuntimeException("用户id不能为空");
+        }
+        Object statusObj = redisTemplate.opsForValue().get(PRADAR_SILENCE_SWITCH_STATUS_VO + uid);
+        if (statusObj == null) {
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + uid, AppSwitchEnum.OPENED.getCode());
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS + uid, AppSwitchEnum.OPENED.getCode());
+        } else {
+            return (String)statusObj;
+        }
+        return AppSwitchEnum.OPENED.getCode();
+    }
+
+    /**
+     * 获取静默开关状态
+     *
+     * @return
+     */
+    @Override
+    public Response userAppSilenceSwitchInfo() {
+        ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
+        UserExt user = WebPluginUtils.getUser();
+        if (user == null) {
+            String userAppKey = WebPluginUtils.getTenantUserAppKey();
+             user = WebPluginUtils.getUserByAppKey(userAppKey);
+        }
+        if (user == null) {
+            return Response.fail(FALSE_CORE);
+        }
+        //体验用户默认状态为开启
+        if (user.getRole() != null && user.getRole() == 1) {
+            result.setSwitchStatus(AppSwitchEnum.OPENED.getCode());
+        } else {
+            result.setSwitchStatus(getUserSilenceSwitchStatusForVo(user.getCustomerId()));
+        }
+
+        return Response.success(result);
+    }
+
+    @Override
+    public String getUserSilenceSwitchStatusForVo(Long uid) {
+        if (uid == null) {
+            return null;
+        }
+        Object o = redisTemplate.opsForValue().get(PRADAR_SILENCE_SWITCH_STATUS_VO + uid);
+        if (o == null) {
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + uid, AppSwitchEnum.OPENED.getCode());
+            return AppSwitchEnum.OPENED.getCode();
+        } else {
+            return (String)o;
+        }
+    }
+
+    @Override
+    public Response getApplicationReportConfigInfo(Integer type,String appName) {
+        List<AppAgentConfigReportDetailResult> results = reportDAO.listByBizType(type,appName);
+        //todo 现在只有一种配置 先这么写
+        String silenceSwitchStatus = getUserSilenceSwitchStatusForVo(WebPluginUtils.getCustomerId());
+        String configValue =  AppSwitchEnum.OPENED.getCode().equals(silenceSwitchStatus)?"true":"false";
+        List<AppAgentConfigReportDetailResult> filter = results.stream().filter(x -> configValue.equals(x.getConfigValue())).collect(Collectors.toList());
+        return Response.success(filter);
+    }
+
+    @Override
+    public Boolean silenceSwitchStatusIsTrue(Long uid, AppSwitchEnum appSwitchEnum) {
+        String status = this.getUserSilenceSwitchStatusForVo(WebPluginUtils.getCustomerId());
+        return appSwitchEnum.getCode().equals(status);
+    }
+
 
 }

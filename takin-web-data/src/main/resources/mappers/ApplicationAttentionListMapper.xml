@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_application_api_manage-->
+        <id column="ID" jdbcType="BIGINT" property="id"/>
+        <result column="activity_id" jdbcType="BIGINT" property="activityId"/>
+        <result column="app_name" jdbcType="VARCHAR" property="applicationName"/>
+        <result column="interface_name" jdbcType="VARCHAR" property="interfaceName"/>
+        <result column="focus" jdbcType="TINYINT" property="focus"/>
+    </resultMap>
+
+    <select id="getAttentionList" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT app_name,interface_name,focus FROM t_application_focus WHERE app_name = #{applicationName} AND focus = 1;
+    </select>
+
+    <insert id="attendApplicationService" parameterType="java.util.Map">
+        INSERT INTO t_application_focus (id, app_name, interface_name, focus)
+        VALUES (#{id}, #{appName}, #{interfaceName}, #{isAttend})
+        ON DUPLICATE KEY
+        UPDATE focus = #{isAttend}
+    </insert>
+
+</mapper>

@@ -10,6 +10,7 @@ import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author shiyajian
@@ -76,4 +77,6 @@ public interface ActivityDAO {
     void setActivityNodeServiceState(long activityId, String serviceName, String ownerApps, boolean state);
 
     List<ActivityNodeState> getActivityNodeServiceState(long activityId);
+
+    List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance);
 }

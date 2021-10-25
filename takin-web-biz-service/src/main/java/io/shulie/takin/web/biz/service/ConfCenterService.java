@@ -115,8 +115,6 @@ public class ConfCenterService extends CommonService {
 
     private Integer number;
 
-    private String whiteListPath;
-
     @Autowired
     @Qualifier("modifyMonitorThreadPool")
     protected ThreadPoolExecutor modifyMonitorExecutor;
@@ -148,7 +146,6 @@ public class ConfCenterService extends CommonService {
     @PostConstruct
     public void init() {
         number = ConfigServerHelper.getWrapperIntegerValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT);
-        whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH)+WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue();
     }
 
     /**
@@ -410,8 +407,6 @@ public class ConfCenterService extends CommonService {
         return list;
     }
 
-    //    private static final String whiteListPath = "/opt/takin/conf/takin-remote/api/confcenter/wbmnt/query/";
-
     /**
      * 说明: 根据应用id更新应用信息
      *
@@ -506,6 +501,7 @@ public class ConfCenterService extends CommonService {
 
     private void writeWhiteListFile() {
         try {
+            String whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH)+WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue();
             Map<String, List<Map<String, Object>>> result = queryBlackWhiteList("");
             if (null != result && result.size() > 0) {
                 File file = new File(whiteListPath);
@@ -694,7 +690,7 @@ public class ConfCenterService extends CommonService {
         param.setUpdateTime(new Date());
         blackListDAO.insert(param);
         configSyncService.syncBlockList(WebPluginUtils.traceTenantCommonExt());
-        whiteListFileService.writeWhiteListFile(WebPluginUtils.traceTenantCommonExt());
+        whiteListFileService.writeWhiteListFile();
     }
 
     /**

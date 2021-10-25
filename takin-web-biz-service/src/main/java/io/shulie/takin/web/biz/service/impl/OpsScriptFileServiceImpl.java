@@ -41,13 +41,6 @@ public class OpsScriptFileServiceImpl implements OpsScriptFileService {
     @Autowired
     private OpsScriptFileDAO opsScriptFileDAO;
 
-    private String tempPath;
-
-    @PostConstruct
-    public void init() {
-        tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue() + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
-    }
-
     @Override
     public List<OpsScriptFileVO> upload(List<MultipartFile> file, Integer fileType) {
         return uploadFile(file, fileType);
@@ -55,6 +48,7 @@ public class OpsScriptFileServiceImpl implements OpsScriptFileService {
 
     @Override
     public Boolean delete(String uploadId) {
+        String tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue() + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
         if (uploadId != null) {
             String targetDir = tempPath + SceneManageConstant.FILE_SPLIT + uploadId;
             LinuxHelper.executeLinuxCmd("rm -rf " + targetDir);
@@ -93,6 +87,7 @@ public class OpsScriptFileServiceImpl implements OpsScriptFileService {
     }
 
     private List<OpsScriptFileVO> uploadFile(List<MultipartFile> files, Integer fileType) {
+        String tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue() + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
         List<OpsScriptFileVO> fileVOList = Lists.newArrayList();
         for (MultipartFile mf : files) {
             String uploadId = UUID.randomUUID().toString();

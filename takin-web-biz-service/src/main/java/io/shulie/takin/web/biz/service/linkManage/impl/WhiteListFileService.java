@@ -60,8 +60,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class WhiteListFileService {
 
-    private String whiteListPath;
-
     @Autowired
     private TBListMntDao tbListMntDao;
 
@@ -87,9 +85,6 @@ public class WhiteListFileService {
 
     @PostConstruct
     public void init() {
-        whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH)
-            + WebPluginUtils.traceTenantCode() + Separator.Separator1.getValue();
-
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
             0, 1,
             0, TimeUnit.MILLISECONDS,
@@ -117,7 +112,11 @@ public class WhiteListFileService {
 
     public void writeWhiteListFile(TenantCommonExt ext) {
         try {
-            ext = WebPluginUtils.traceTenantCommonExt();
+            if (ext == null){
+                ext = WebPluginUtils.traceTenantCommonExt();
+            }
+            String whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH)
+                + WebPluginUtils.traceTenantCode() + Separator.Separator1.getValue();
             Map<String, Object> result = queryBlackWhiteList("", ext);
             if (null != result && result.size() > 0) {
                 File file = new File(whiteListPath);

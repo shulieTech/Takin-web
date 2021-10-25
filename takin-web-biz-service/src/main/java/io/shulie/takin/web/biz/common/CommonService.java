@@ -128,7 +128,6 @@ public class CommonService {
 
     public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    @Getter
     private String basePath;
 
     @Autowired
@@ -250,9 +249,8 @@ public class CommonService {
     @Autowired
     protected BaseConfigMapper baseConfigMapper;
 
-    @PostConstruct
-    public void setConfig() {
-        basePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_BASE_PATH)+ WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue();
+    public String getBasePath() {
+        return ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_BASE_PATH)+ WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue();
     }
 
     /**

@@ -194,7 +194,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         try {
 
             //探针总开关关闭状态禁止启动压测
-            ScriptDebugExceptionUtil.isDebugError(applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.getCustomerId(), AppSwitchEnum.CLOSED),
+            ScriptDebugExceptionUtil.isDebugError(applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.traceTenantId(), AppSwitchEnum.CLOSED),
                     "脚本调试失败，探针总开关已关闭");
             // 脚本发布实例是否存在
             ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDeployId);

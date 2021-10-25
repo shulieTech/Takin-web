@@ -19,7 +19,6 @@ import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQue
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -157,14 +156,6 @@ public interface ApplicationService {
     void modifyAccessStatusWithoutAuth(List<Long> applicationIds, Integer accessStatus);
 
     List<TApplicationMnt> getAllApplications();
-
-
-    /**
-     * 根据租户查询 应用数据
-     * @param tenantCommonExt
-     * @return
-     */
-    List<TApplicationMnt> getApplicationsByTenantInfoExt(TenantCommonExt tenantCommonExt);
 
     String getIdByName(String applicationName);
 

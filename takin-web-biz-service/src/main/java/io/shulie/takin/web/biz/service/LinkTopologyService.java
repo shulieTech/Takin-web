@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -313,7 +314,9 @@ public class LinkTopologyService extends CommonService {
             if (edge.getTarget().equals(node.getId())) {
                 // 获取 节点 所有服务
                 List<AppProviderInfo> providerService = node.getProviderService();
-                if (providerService == null) continue;
+                if (providerService == null) {
+                    continue;
+                }
 
                 for (AppProviderInfo appProviderInfo : providerService) {
                     for (AppProvider appProvider : appProviderInfo.getDataSource()) {

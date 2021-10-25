@@ -268,7 +268,7 @@ public interface TApplicationMntDao {
      */
     List<TApplicationMnt> getAllApplicationByStatus(@Param("statusList") List<Integer> statusList);
 
-    List<TApplicationMnt> getApplicationsByTenants(@Param("tenantId") Long tenantId, @Param("envCode") String envCode);
+    List<TApplicationMnt> getApplicationsByUserIdList(@Param("userIdList") List<Long> userIdList);
 
     String getIdByName(@Param("applicationName") String applicationName);
 

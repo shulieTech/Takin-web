@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,7 +25,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.github.pagehelper.util.StringUtil;
@@ -57,9 +57,12 @@ import io.shulie.takin.cloud.common.constants.Constants;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
-import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.biz.pojo.input.application.*;
+import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
+import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
+import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerCreateInput;
+import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerQueryInput;
+import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerUpdateInput;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
@@ -71,7 +74,12 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoar
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
-import io.shulie.takin.web.biz.service.*;
+import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.AppConfigEntityConvertService;
+import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
+import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.biz.service.ConfCenterService;
+import io.shulie.takin.web.biz.service.ShadowConsumerService;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
@@ -101,12 +109,34 @@ import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
-import io.shulie.takin.web.common.vo.excel.*;
+import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
+import io.shulie.takin.web.common.vo.excel.ApplicationRemoteCallConfigExcelVO;
+import io.shulie.takin.web.common.vo.excel.BlacklistExcelVO;
+import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
+import io.shulie.takin.web.common.vo.excel.LinkGuardExcelVO;
+import io.shulie.takin.web.common.vo.excel.ShadowConsumerExcelVO;
+import io.shulie.takin.web.common.vo.excel.ShadowJobExcelVO;
+import io.shulie.takin.web.common.vo.excel.WhiteListExcelVO;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
-import io.shulie.takin.web.data.dao.application.*;
+import io.shulie.takin.web.data.dao.application.AppAgentConfigReportDAO;
+import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDsManageDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
+import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
+import io.shulie.takin.web.data.dao.application.ShadowJobConfigDAO;
+import io.shulie.takin.web.data.dao.application.ShadowMqConsumerDAO;
+import io.shulie.takin.web.data.dao.application.WhiteListDAO;
+import io.shulie.takin.web.data.dao.application.WhitelistEffectiveAppDao;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
-import io.shulie.takin.web.data.model.mysql.*;
+import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
+import io.shulie.takin.web.data.model.mysql.ApplicationDsManageEntity;
+import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
+import io.shulie.takin.web.data.model.mysql.LinkGuardEntity;
+import io.shulie.takin.web.data.model.mysql.ShadowJobConfigEntity;
+import io.shulie.takin.web.data.model.mysql.ShadowMqConsumerEntity;
 import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
@@ -114,13 +144,16 @@ import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
-import io.shulie.takin.web.data.result.application.*;
+import io.shulie.takin.web.data.result.application.AppAgentConfigReportDetailResult;
+import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
+import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.DocumentException;
@@ -137,16 +170,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author mubai<chengjiacai.shulie.io>
@@ -268,7 +291,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList) {
-        return tApplicationMntDao.getApplicationsByTenants(userIdList);
+        return tApplicationMntDao.getApplicationsByUserIdList(userIdList);
     }
 
 
@@ -705,10 +728,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return tApplicationMntDao.getAllApplications();
     }
 
-    @Override
-    public List<TApplicationMnt> getApplicationsByTenantInfoExt(TenantCommonExt ext) {
-        return tApplicationMntDao.getApplicationsByTenants(ext.getTenantId(),ext.getEnvCode());
-    }
 
     @Override
     public String getIdByName(String applicationName) {

@@ -44,6 +44,8 @@ public class WebPluginUtils {
 
     public static Long DEFAULT_USER_ID = -1L;
 
+    public static Long DEFAULT_TENANT_ID = 0L;
+
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
     private static WebUserAuthExtApi userAuthExtApi;

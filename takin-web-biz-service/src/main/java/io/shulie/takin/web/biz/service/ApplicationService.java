@@ -26,6 +26,7 @@ import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.web.multipart.MultipartFile;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -33,6 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
  * @date 2020-03-16 15:23
  */
 public interface ApplicationService {
+
+    List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList);
 
     /**
      * 带租户

@@ -88,9 +88,11 @@ import io.shulie.takin.web.biz.service.TAlarmService;
 import io.shulie.takin.web.biz.service.TFirstLinkMntService;
 import io.shulie.takin.web.biz.service.TReportService;
 import io.shulie.takin.web.biz.service.TSecondLinkMntService;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.mapper.mysql.BaseConfigMapper;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -249,8 +251,8 @@ public class CommonService {
     protected BaseConfigMapper baseConfigMapper;
 
     @PostConstruct
-    public void init2() {
-        basePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_BASE_PATH);
+    public void setConfig() {
+        basePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_BASE_PATH)+ WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue();
     }
 
     /**

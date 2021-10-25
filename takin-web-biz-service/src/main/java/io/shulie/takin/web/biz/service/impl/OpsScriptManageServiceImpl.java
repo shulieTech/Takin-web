@@ -30,6 +30,7 @@ import io.shulie.takin.web.biz.service.OpsScriptManageService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.biz.utils.PageUtils;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
@@ -110,7 +111,9 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             io.shulie.takin.web.biz.utils.LinuxHelper.executeLinuxCmdNotThrow("useradd " + deployUser);
         }
 
-        tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
+        tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + WebPluginUtils
+            .traceTenantCode() + Separator.Separator1.getValue() +
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
     }
 
     @Override
@@ -133,11 +136,13 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             if (CollectionUtils.isEmpty(resultList)) {
                 resultList = Lists.newArrayList();
             }
-            List<Long> userIds = records.stream().map(OpsScriptManageEntity::getUserId).distinct().collect(Collectors.toList());
+            List<Long> userIds = records.stream().map(OpsScriptManageEntity::getUserId).distinct().collect(
+                Collectors.toList());
             Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
 
             Map<String, String> timeMap = resultList.stream().collect(
-                Collectors.toMap(t -> t.getOpsScriptId() + "", t -> DateUtil.format(t.getExecuteTime(), DatePattern.NORM_DATETIME_PATTERN)));
+                Collectors.toMap(t -> t.getOpsScriptId() + "",
+                    t -> DateUtil.format(t.getExecuteTime(), DatePattern.NORM_DATETIME_PATTERN)));
             for (OpsScriptManageEntity record : records) {
                 OpsScriptVO vo = new OpsScriptVO();
                 vo.setName(record.getName());
@@ -148,7 +153,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
                 vo.setStatusName(OpsScriptExecutionEnum.getNameByStatus(record.getStatus()));
                 vo.setLastExecuteTime(timeMap.get(record.getId() + ""));
                 vo.setLastModefyTime(DateUtil.format(record.getGmtUpdate(), DatePattern.NORM_DATETIME_PATTERN));
-                vo.setUserName(WebPluginUtils.getUserName(record.getUserId(),userMap));
+                vo.setUserName(WebPluginUtils.getUserName(record.getUserId(), userMap));
                 vo.setUserId(record.getUserId());
                 WebPluginUtils.fillQueryResponse(vo);
                 opsScriptVOList.add(vo);
@@ -195,7 +200,8 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         //上传主要文件
         OpsScriptFileParam scriptFileParam = fileParamList.get(0);
         log.info("生成的文件uploadId为{}", scriptFileParam.getUploadId());
-        this.saveLocalFile(tempPath + scriptFileParam.getUploadId() + "/" + scriptFileParam.getFileName(), this.getContent(scriptFileParam));
+        this.saveLocalFile(tempPath + scriptFileParam.getUploadId() + "/" + scriptFileParam.getFileName(),
+            this.getContent(scriptFileParam));
 
         //上传附件
         if (!CollectionUtils.isEmpty(param.getAttachmentManageUpdateRequests())) {
@@ -267,14 +273,17 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             log.info("生成的文件uploadId为{}", scriptFileParam.getUploadId());
             FileManagerHelper.deleteFiles(Lists.newArrayList(scriptFileParam.getFilePath()));
             //上传主要文件
-            this.saveLocalFile(tempPath + scriptFileParam.getUploadId() + "/" + scriptFileParam.getFileName(), this.getContent(scriptFileParam));
+            this.saveLocalFile(tempPath + scriptFileParam.getUploadId() + "/" + scriptFileParam.getFileName(),
+                this.getContent(scriptFileParam));
         }
         //上传附件
         List<OpsScriptFileParam> attachmentManageUpdateRequests = param.getAttachmentManageUpdateRequests();
-        List<String> pathsFromPage = attachmentManageUpdateRequests.stream().filter(t -> StringUtil.isNotBlank(t.getFilePath())).map(
+        List<String> pathsFromPage = attachmentManageUpdateRequests.stream().filter(
+            t -> StringUtil.isNotBlank(t.getFilePath())).map(
             t -> t.getFilePath()).collect(Collectors.toList());
         //需要删除的附件
-        List<String> deletePath = fileList.stream().filter(t -> t.getFileType().equals(2) && !pathsFromPage.contains(t.getFilePath())).map(
+        List<String> deletePath = fileList.stream().filter(
+            t -> t.getFileType().equals(2) && !pathsFromPage.contains(t.getFilePath())).map(
             t -> t.getFilePath()).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(deletePath)) {
             FileManagerHelper.deleteFiles(deletePath);
@@ -363,7 +372,8 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             fileVOList.add(fileVO);
         });
         detailVO.setFiles(fileVOList.stream().filter(t -> t.getFileType().equals(1)).collect(Collectors.toList()));
-        detailVO.setAttachmentfiles(fileVOList.stream().filter(t -> t.getFileType().equals(2)).collect(Collectors.toList()));
+        detailVO.setAttachmentfiles(
+            fileVOList.stream().filter(t -> t.getFileType().equals(2)).collect(Collectors.toList()));
         detailVO.setId(entity.getId() + "");
         detailVO.setName(entity.getName());
         detailVO.setScriptType(entity.getScriptType());
@@ -421,7 +431,8 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "此脚本实例找不到文件，无法执行！");
         }
         if (!new File(one.getFilePath()).exists()) {
-            throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "脚本文件【" + one.getFilePath() + "】不存在，无法执行！");
+            throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR,
+                "脚本文件【" + one.getFilePath() + "】不存在，无法执行！");
         }
 
         String lockKey = "";
@@ -558,7 +569,8 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         if (Objects.isNull(id)) {
             throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "ID不能为空！");
         }
-        OpsScriptExecuteResultEntity one = opsScriptExecuteResultDAO.lambdaQuery().eq(OpsScriptExecuteResultEntity::getOpsScriptId, id).eq(
+        OpsScriptExecuteResultEntity one = opsScriptExecuteResultDAO.lambdaQuery().eq(
+            OpsScriptExecuteResultEntity::getOpsScriptId, id).eq(
             OpsScriptExecuteResultEntity::getIsDeleted, 0).one();
         if (Objects.isNull(one)) {
             return "";
@@ -566,7 +578,8 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         File file = new File(one.getLogFilePath());
         if (!file.exists()) {
             log.error("文件【{}】不存在！", one.getLogFilePath());
-            throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "文件【" + one.getLogFilePath() + "】不存在！");
+            throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR,
+                "文件【" + one.getLogFilePath() + "】不存在！");
         }
         String logContent = FileUtils.readTextFileContent(file);
         return logContent;

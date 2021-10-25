@@ -10,6 +10,8 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import io.shulie.takin.web.common.common.Separator;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -121,7 +123,7 @@ public class FileController {
      */
     private boolean filePathValidate(String filePath) {
         return filePath.startsWith(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR));
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR)+ WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue());
     }
 
 }

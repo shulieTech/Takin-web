@@ -480,8 +480,6 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         }
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
 
-        AppRemoteCallQueryInput input = new AppRemoteCallQueryInput();
-
         int size = 50;
         // size个轮询一次
         if (results.size() > size) {

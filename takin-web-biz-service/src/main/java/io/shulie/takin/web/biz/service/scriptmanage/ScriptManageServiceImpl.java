@@ -86,6 +86,7 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.WebPartResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
 import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.biz.utils.exception.ScriptManageExceptionUtil;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.common.constant.FileManageConstant;
@@ -201,8 +202,10 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     @PostConstruct
     public void init() {
         fileUploadUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_URL);
-        tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH);
-        fileDir = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR);
+        tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH) + WebPluginUtils
+            .traceTenantCode() + Separator.Separator1.getValue();
+        fileDir = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR) + WebPluginUtils
+            .traceTenantCode() + Separator.Separator1.getValue();
     }
 
     @Override
@@ -265,7 +268,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         List<ScriptManageResult> scriptManageResults = scriptManageDAO.selectScriptManageByName(
             scriptManageDeployCreateRequest.getName());
         if (CollectionUtils.isNotEmpty(scriptManageResults)) {
-            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本名称重复！重复脚本ID=" + scriptManageResults.get(0).getId());
+            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR,
+                "脚本名称重复！重复脚本ID=" + scriptManageResults.get(0).getId());
         }
         uploadCreateScriptFile(scriptManageDeployCreateRequest.getFileManageCreateRequests());
         List<FileManageCreateRequest> scriptFile = scriptManageDeployCreateRequest.getFileManageCreateRequests()
@@ -385,19 +389,18 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                 String tempFile = tmpFilePath + "/" + fileManageUpdateRequest.getUploadId() + "/"
                     + fileManageUpdateRequest.getFileName();
 
-                if (fileManageUpdateRequest.getId() == null){
-                    log.warn("有新的脚本文件【{}】",fileManageUpdateRequest.getDownloadUrl());
+                if (fileManageUpdateRequest.getId() == null) {
+                    log.warn("有新的脚本文件【{}】", fileManageUpdateRequest.getDownloadUrl());
                     FileCopyParamReq paramReq = new FileCopyParamReq();
                     paramReq.setTargetPath(tmpFilePath + "/" + fileManageUpdateRequest.getUploadId() + "/");
                     paramReq.setSourcePaths(Lists.newArrayList(fileManageUpdateRequest.getDownloadUrl()));
                     fileApi.copyFile(paramReq);
-                }else {
+                } else {
                     FileCreateByStringParamReq fileCreateByStringParamReq = new FileCreateByStringParamReq();
                     fileCreateByStringParamReq.setFileContent(fileManageUpdateRequest.getScriptContent());
                     fileCreateByStringParamReq.setFilePath(tempFile);
                     fileApi.createFileByPathAndString(fileCreateByStringParamReq);
                 }
-
 
             }
         }
@@ -620,8 +623,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                 && !StringUtil.isBlank(o.getUploadId())).map(
             o -> tmpFilePath + "/" + o.getUploadId() + "/" + o.getFileName()).collect(Collectors.toList());
         List<Long> existFileIds = scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream().filter(
-                o -> o.getIsDeleted() == 0
-                    && StringUtil.isBlank(o.getUploadId()) && o.getId() != null).map(FileManageUpdateRequest::getId)
+            o -> o.getIsDeleted() == 0
+                && StringUtil.isBlank(o.getUploadId()) && o.getId() != null).map(FileManageUpdateRequest::getId)
             .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(existFileIds)) {
             List<FileManageResult> fileManageResults = fileManageDAO.selectFileManageByIds(existFileIds);
@@ -1025,7 +1028,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                 }
                 if (stringObjectMap != null && stringObjectMap.get("isOrderSplit") != null && !StringUtils.isBlank(
                     stringObjectMap.get("isOrderSplit").toString())) {
-                    fileManageUpdateRequest.setIsOrderSplit(Integer.valueOf(stringObjectMap.get("isOrderSplit").toString()));
+                    fileManageUpdateRequest.setIsOrderSplit(
+                        Integer.valueOf(stringObjectMap.get("isOrderSplit").toString()));
                 }
             }
             fileManageUpdateRequest.setIsDeleted(fileManageResult.getIsDeleted());
@@ -1038,7 +1042,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     @Override
     public List<SupportJmeterPluginNameResponse> getSupportJmeterPluginNameList(
-            SupportJmeterPluginNameRequest nameRequest) {
+        SupportJmeterPluginNameRequest nameRequest) {
         List<SupportJmeterPluginNameResponse> nameResponseList = Lists.newArrayList();
         String refType = nameRequest.getRelatedType();
         String refValue = nameRequest.getRelatedId();
@@ -1052,7 +1056,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         List<String> typeList;
         BusinessLinkResult linkResult = businessActivityList.get(0);
         Integer linkResultType = linkResult.getType();
-        if (ScriptManageConstant.BUSINESS_ACTIVITY_REF_TYPE.equals(refType) && linkResultType != null && linkResultType.equals(BusinessTypeEnum.VIRTUAL_BUSINESS.getType())) {
+        if (ScriptManageConstant.BUSINESS_ACTIVITY_REF_TYPE.equals(refType) && linkResultType != null && linkResultType
+            .equals(BusinessTypeEnum.VIRTUAL_BUSINESS.getType())) {
             typeList = Lists.newArrayList(linkResult.getServerMiddlewareType());
             if (CollectionUtils.isEmpty(typeList)) {
                 log.error("虚拟业务活动，未查询到类型信息:[businessActivityList:{}]", JSON.toJSONString(businessActivityList));
@@ -1061,12 +1066,12 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         } else {
             //获取所有系统流程id
             List<Long> businessLinkIdList = businessActivityList.stream().map(BusinessLinkResult::getLinkId).collect(
-                    Collectors.toList());
+                Collectors.toList());
             List<BusinessLinkResult> businessLinkResultList = businessLinkManageDAO.getListByIds(businessLinkIdList);
             List<Long> techLinkIdList = businessLinkResultList.stream()
-                    .map(BusinessLinkResult::getRelatedTechLink)
-                    .map(Long::parseLong)
-                    .collect(Collectors.toList());
+                .map(BusinessLinkResult::getRelatedTechLink)
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
             //获取所有系统流程入口类型
             LinkManageQueryParam queryParam = new LinkManageQueryParam();
             queryParam.setLinkIdList(techLinkIdList);
@@ -1076,12 +1081,12 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                 return nameResponseList;
             }
             typeList = linkManageResultList.stream()
-                    .map(LinkManageResult::getFeatures)
-                    .map(features -> JSON.parseObject(features, Map.class))
-                    .map(featuresObj -> featuresObj.get(FeaturesConstants.SERVER_MIDDLEWARE_TYPE_KEY))
-                    .map(String::valueOf)
-                    .distinct()
-                    .collect(Collectors.toList());
+                .map(LinkManageResult::getFeatures)
+                .map(features -> JSON.parseObject(features, Map.class))
+                .map(featuresObj -> featuresObj.get(FeaturesConstants.SERVER_MIDDLEWARE_TYPE_KEY))
+                .map(String::valueOf)
+                .distinct()
+                .collect(Collectors.toList());
             if (CollectionUtils.isEmpty(typeList)) {
                 log.error("未查询到类型信息:[techLinkIdList:{}]", JSON.toJSONString(techLinkIdList));
                 return nameResponseList;
@@ -1090,7 +1095,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         EnginePluginFetchWrapperReq fetchWrapperReq = new EnginePluginFetchWrapperReq();
         fetchWrapperReq.setPluginTypes(typeList);
         ResponseResult<Map<String, List<EnginePluginSimpleInfoResp>>> responseResult
-                = sceneManageApi.listEnginePlugins(fetchWrapperReq);
+            = sceneManageApi.listEnginePlugins(fetchWrapperReq);
         Map<String, List<EnginePluginSimpleInfoResp>> dataMap = responseResult.getData();
         if (Objects.isNull(responseResult) || dataMap.isEmpty()) {
             log.error("未查询到插件信息:[typeList:{}]", JSON.toJSONString(typeList));
@@ -1117,7 +1122,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         }).collect(Collectors.toList());
         //脚本管理-新增-关联业务  防止后端返回的singlePluginRenderResponseList为空 造成页面跳转到空白页
         nameResponseList = nameResponseList.stream().filter(
-                t -> CollectionUtil.isNotEmpty(t.getSinglePluginRenderResponseList())).collect(Collectors.toList());
+            t -> CollectionUtil.isNotEmpty(t.getSinglePluginRenderResponseList())).collect(Collectors.toList());
         return nameResponseList;
     }
 
@@ -1235,7 +1240,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             .pageQueryRecentScriptManageDeploy(
                 scriptManageDeployPageQueryParam);
         if (CollectionUtils.isEmpty(scriptManageDeployResults.getList())) {
-            return PagingList.of(Lists.newArrayList(),scriptManageDeployResults.getTotal());
+            return PagingList.of(Lists.newArrayList(), scriptManageDeployResults.getTotal());
         }
         //用户ids
         List<Long> userIds = scriptManageDeployResults.getList().stream()
@@ -1664,7 +1669,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                     }
                     if (stringObjectMap != null && stringObjectMap.get("isOrderSplit") != null && !StringUtil.isBlank(
                         stringObjectMap.get("isOrderSplit").toString())) {
-                        fileManageResponse.setIsOrderSplit(Integer.valueOf(stringObjectMap.get("isOrderSplit").toString()));
+                        fileManageResponse.setIsOrderSplit(
+                            Integer.valueOf(stringObjectMap.get("isOrderSplit").toString()));
                     }
                     fileManageResponse.setIsBigFile(0);
                     if (stringObjectMap != null && stringObjectMap.get("isBigFile") != null && !StringUtil.isBlank(
@@ -1804,7 +1810,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      */
     private String getTargetScriptPath(ScriptManageDeployResult scriptManageDeployResult) {
         return String.format("%s/%s/%s/",
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH)+WebPluginUtils.traceTenantCode()+Separator.Separator1.getValue(),
             scriptManageDeployResult.getScriptId(), scriptManageDeployResult.getScriptVersion());
     }
 

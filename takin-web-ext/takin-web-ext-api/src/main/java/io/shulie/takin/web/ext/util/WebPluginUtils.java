@@ -641,6 +641,21 @@ public class WebPluginUtils {
     }
 
     /**
+     * TODO by wy
+     * 返回租户code
+     * @return
+     */
+    public static String traceTenantCode() {
+        //if (userApi != null) {
+        //    if (userApi.traceUser() != null) {
+        //        return userApi.traceUser().getId();
+        //    }
+        //}
+        return DEFAULT_TENANT_CODE;
+    }
+
+    /**
+     * TODO by wy
      * 组装 http 租户参数
      * @return
      */
@@ -649,6 +664,7 @@ public class WebPluginUtils {
         ext.setTenantId(traceTenantId());
         ext.setEnvCode(traceEnvCode());
         ext.setTenantAppKey(traceTenantAppKey());
+        ext.setTenantCode(traceTenantCode());
         return ext;
     }
     //********************************http线程上下文模块**********************************//

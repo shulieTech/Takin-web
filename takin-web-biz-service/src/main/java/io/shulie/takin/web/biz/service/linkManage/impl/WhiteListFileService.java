@@ -26,6 +26,7 @@ import com.pamirs.takin.entity.dao.confcenter.TWhiteListMntDao;
 import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.query.whitelist.AgentWhiteList;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
@@ -86,7 +87,8 @@ public class WhiteListFileService {
 
     @PostConstruct
     public void init() {
-        whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH);
+        whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH)
+            + WebPluginUtils.traceTenantCode() + Separator.Separator1.getValue();
 
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
             0, 1,
@@ -116,7 +118,7 @@ public class WhiteListFileService {
     public void writeWhiteListFile(TenantCommonExt ext) {
         try {
             ext = WebPluginUtils.traceTenantCommonExt();
-            Map<String, Object> result = queryBlackWhiteList("",ext);
+            Map<String, Object> result = queryBlackWhiteList("", ext);
             if (null != result && result.size() > 0) {
                 File file = new File(whiteListPath);
                 if (!file.exists()) {
@@ -168,14 +170,16 @@ public class WhiteListFileService {
         boolean isCheckDuplicateName = Boolean.parseBoolean(
             ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK));
         if (isCheckDuplicateName) {
-            List<String> armdString = agentWhiteLists.stream().map(AgentWhiteList::getInterfaceName).collect(Collectors.toList());
+            List<String> armdString = agentWhiteLists.stream().map(AgentWhiteList::getInterfaceName).collect(
+                Collectors.toList());
             existWhite = whiteListService.getExistWhite(armdString, Lists.newArrayList());
             // todo 这里再获取一次，感觉很多余，但是不改上面的逻辑，所有这里数据再次从新获取，之后可以重构下
             WhitelistSearchParam param = new WhitelistSearchParam();
             param.setTenantId(ext.getTenantId());
             param.setUseYn(1);
             List<WhitelistResult> results = whiteListDAO.getList(param);
-            whitelistMap = results.stream().collect(Collectors.groupingBy(e -> e.getInterfaceName() + "@@" + e.getType()));
+            whitelistMap = results.stream().collect(
+                Collectors.groupingBy(e -> e.getInterfaceName() + "@@" + e.getType()));
         } else {
             // 获取所有白名单，是否有全局属性
             WhitelistSearchParam param = new WhitelistSearchParam();
@@ -233,7 +237,8 @@ public class WhiteListFileService {
                 //生效应用
                 List<WhitelistEffectiveAppResult> appLists = appResultsMap.get(id);
                 whiteItemNew.put("appNames", CollectionUtils.isNotEmpty(appLists) ?
-                    appLists.stream().map(WhitelistEffectiveAppResult::getEffectiveAppName).distinct().collect(Collectors.toList())
+                    appLists.stream().map(WhitelistEffectiveAppResult::getEffectiveAppName).distinct()
+                        .collect(Collectors.toList())
                     : Lists.newArrayList());
                 wListsResult.add(whiteItemNew);
             }
@@ -250,7 +255,8 @@ public class WhiteListFileService {
     }
 
     private List<Map<String, Object>> getBlackList(TenantCommonExt tenantCommonExt) {
-        List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList(tenantCommonExt.getTenantId(),tenantCommonExt.getEnvCode());
+        List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList(tenantCommonExt.getTenantId(),
+            tenantCommonExt.getEnvCode());
         if (CollectionUtils.isEmpty(tbLists)) {
             return Lists.newArrayList();
         }
@@ -262,7 +268,7 @@ public class WhiteListFileService {
     }
 
     private List<AgentBlacklistVO> getNewBlackList(TenantCommonExt tenantCommonExt) {
-        List<BlacklistResult> results = blackListDAO.getAllEnabledBlockList(null,tenantCommonExt);
+        List<BlacklistResult> results = blackListDAO.getAllEnabledBlockList(null, tenantCommonExt);
         ApplicationQueryParam param = new ApplicationQueryParam();
         if (CollectionUtils.isEmpty(results)) {
             return Lists.newArrayList();
@@ -297,9 +303,8 @@ public class WhiteListFileService {
 
     private List<AgentWhiteList> agentListWhitelist(TenantCommonExt ext) {
 
-
         List<String> list = applicationMntDao.queryIdsByNameAndTenant(Lists.newArrayList(),
-            ext != null ? ext.getTenantId():null,ext != null ?ext.getEnvCode():null);
+            ext != null ? ext.getTenantId() : null, ext != null ? ext.getEnvCode() : null);
         if (CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }

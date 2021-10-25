@@ -36,6 +36,7 @@ import io.shulie.takin.web.biz.pojo.output.scriptmanage.shell.ShellScriptManageE
 import io.shulie.takin.web.biz.pojo.output.scriptmanage.shell.ShellScriptManageOutput;
 import io.shulie.takin.web.biz.pojo.output.tagmanage.TagManageOutput;
 import io.shulie.takin.web.biz.utils.LinuxHelper;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.ScriptManageConstant;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
@@ -137,14 +138,15 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
         try {
             fileManageCreateParam.setFileSize(input.getContent().getBytes("utf-8").length / 1024 / 1024 + "M");
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            log.error("不支持的字符集编码", e);
         }
         fileManageCreateParam.setFileType(input.getFileType());
 
-        Long customerId= Long.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CUSTOMER_ID));
+        Long customerId = Long.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CUSTOMER_ID));
         fileManageCreateParam.setCustomerId(customerId);
         String uploadPath = String.format("%s/shell/%s/%s/%s",
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH) + WebPluginUtils
+                .traceTenantCode() + Separator.Separator1.getValue(),
             result.getScriptId(), result.getScriptVersion(), fileName);
         fileManageCreateParam.setUploadPath(uploadPath);
         fileManageCreateParam.setUploadTime(new Date());
@@ -157,7 +159,8 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
         if (!isStop(input.getScriptDeployId())) {
             throw new TakinWebException(ExceptionCode.SCRIPT_MANAGE_UPDATE_VALID_ERROR, "脚本正在运行中！");
         }
-        ScriptManageDeployResult oldDeployResult = scriptManageDAO.selectScriptManageDeployById(input.getScriptDeployId());
+        ScriptManageDeployResult oldDeployResult = scriptManageDAO.selectScriptManageDeployById(
+            input.getScriptDeployId());
         // 这里是否更新版本 根据描述 和 脚本内容版本
         // 获取老版本数据input
         Boolean updateFlag = isUpdate(input, oldDeployResult);
@@ -171,9 +174,11 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
             BeanUtils.copyProperties(input, createParam);
             createParam.setStatus(0);
             // 版本应该获取最新的，然后+1
-            List<ScriptManageDeployResult> history = scriptManageDAO.selectScriptManageDeployByScriptId(oldDeployResult.getScriptId());
+            List<ScriptManageDeployResult> history = scriptManageDAO.selectScriptManageDeployByScriptId(
+                oldDeployResult.getScriptId());
             // 排序
-            Integer scriptVersion = history.stream().max(Comparator.comparing(ScriptManageDeployResult::getScriptVersion)).get().getScriptVersion();
+            Integer scriptVersion = history.stream().max(
+                Comparator.comparing(ScriptManageDeployResult::getScriptVersion)).get().getScriptVersion();
             createParam.setScriptVersion(scriptVersion + 1);
             //更新脚本状态，将脚本实例更新为历史状态
             scriptManageDAO.updateScriptVersion(oldDeployResult.getScriptId(), scriptVersion + 1);
@@ -248,7 +253,8 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
     public void deleteScriptManage(Long scriptId) {
         // 正在运行中，脚本不能删除
         ScriptManageResult scriptManageResult = scriptManageDAO.selectScriptManageById(scriptId);
-        ScriptManageDeployResult deployResult = scriptManageDAO.selectScriptManageDeployByVersion(scriptManageResult.getId(),
+        ScriptManageDeployResult deployResult = scriptManageDAO.selectScriptManageDeployByVersion(
+            scriptManageResult.getId(),
             scriptManageResult.getScriptVersion());
         if (!isStop(deployResult.getId())) {
             throw new TakinWebException(ExceptionCode.SCRIPT_MANAGE_DELETE_VALID_ERROR, "脚本正在运行中！");
@@ -348,7 +354,7 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
         PagingList<ScriptManageDeployResult> scriptManageDeployResults = scriptManageDAO
             .pageQueryRecentScriptManageDeploy(queryParam);
         if (CollectionUtils.isEmpty(scriptManageDeployResults.getList())) {
-            return PagingList.of(Lists.newArrayList(),scriptManageDeployResults.getTotal());
+            return PagingList.of(Lists.newArrayList(), scriptManageDeployResults.getTotal());
         }
         //用户ids
         List<Long> userIds = scriptManageDeployResults.getList().stream().filter(data -> null != data.getUserId()).map(
@@ -452,7 +458,8 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
         }
         ShellScriptManageExecuteOutput output = new ShellScriptManageExecuteOutput();
 
-        List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectFileIdsByScriptDeployId(scriptManageDeployId);
+        List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDAO.selectFileIdsByScriptDeployId(
+            scriptManageDeployId);
         List<String> data = Lists.newArrayList();
 
         if (CollectionUtils.isEmpty(scriptFileRefResults)) {
@@ -462,7 +469,8 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
             output.setMessage(data);
             return output;
         }
-        List<Long> fileIds = scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(Collectors.toList());
+        List<Long> fileIds = scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(
+            Collectors.toList());
         List<FileManageResult> fileManageResults = fileManageDAO.selectFileManageByIds(fileIds);
 
         if (CollectionUtils.isNotEmpty(fileManageResults)) {
@@ -492,7 +500,8 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
                         redisClientUtils.hmset(ScriptManageConstant.SHELL_EXECUTE_KEY, map);
                     }
                 );
-                ShellScriptManageExecuteOutput temp = (ShellScriptManageExecuteOutput)redisClientUtils.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY,
+                ShellScriptManageExecuteOutput temp = (ShellScriptManageExecuteOutput)redisClientUtils.hmget(
+                    ScriptManageConstant.SHELL_EXECUTE_KEY,
                     String.valueOf(scriptManageDeployId));
                 // 执行完先存下redis;
                 temp.setIsStop(true);
@@ -503,7 +512,8 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
                 //进行落库
                 ScriptExecuteResultCreateParam param = new ScriptExecuteResultCreateParam();
                 // 获取版本
-                ScriptManageDeployResult deployResult = scriptManageDAO.selectScriptManageDeployById(scriptManageDeployId);
+                ScriptManageDeployResult deployResult = scriptManageDAO.selectScriptManageDeployById(
+                    scriptManageDeployId);
                 param.setScriptVersion(deployResult.getScriptVersion());
                 param.setScriptId(deployResult.getScriptId());
                 param.setSuccess(state == 0 ? true : false);
@@ -526,8 +536,10 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
     }
 
     private Boolean isStop(Long scriptManageDeployId) {
-        if (redisClientUtils.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY, String.valueOf(scriptManageDeployId)) != null) {
-            ShellScriptManageExecuteOutput output = (ShellScriptManageExecuteOutput)redisClientUtils.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY,
+        if (redisClientUtils.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY, String.valueOf(scriptManageDeployId))
+            != null) {
+            ShellScriptManageExecuteOutput output = (ShellScriptManageExecuteOutput)redisClientUtils.hmget(
+                ScriptManageConstant.SHELL_EXECUTE_KEY,
                 String.valueOf(scriptManageDeployId));
             return output.getIsStop();
         }
@@ -552,7 +564,8 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
     public PagingList<ScriptExecuteOutput> getExecuteResult(ShellExecuteInput input) {
 
         if ("0".equals(input.getType())) {
-            ShellScriptManageExecuteOutput output = (ShellScriptManageExecuteOutput)redisClientUtils.hmget(ScriptManageConstant.SHELL_EXECUTE_KEY,
+            ShellScriptManageExecuteOutput output = (ShellScriptManageExecuteOutput)redisClientUtils.hmget(
+                ScriptManageConstant.SHELL_EXECUTE_KEY,
                 String.valueOf(input.getScriptDeployId()));
             List<ScriptExecuteOutput> outputs = Lists.newArrayList();
             if (output != null) {
@@ -560,13 +573,15 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
                 executeOutput.setSuccess(output.getSuccess());
                 executeOutput.setIsStop(output.getIsStop());
                 executeOutput.setResult(
-                    output.getMessage() != null && output.getMessage().size() > 0 ? output.getMessage().get(output.getMessage().size() - 1) : "");
+                    output.getMessage() != null && output.getMessage().size() > 0 ? output.getMessage()
+                        .get(output.getMessage().size() - 1) : "");
                 outputs.add(executeOutput);
             }
             return PagingList.of(outputs, outputs.size());
 
         } else {
-            ScriptManageDeployResult deployResult = scriptManageDAO.selectScriptManageDeployById(input.getScriptDeployId());
+            ScriptManageDeployResult deployResult = scriptManageDAO.selectScriptManageDeployById(
+                input.getScriptDeployId());
             ShellExecuteParam param = new ShellExecuteParam();
             BeanUtils.copyProperties(input, param);
             param.setScriptId(deployResult.getScriptId());

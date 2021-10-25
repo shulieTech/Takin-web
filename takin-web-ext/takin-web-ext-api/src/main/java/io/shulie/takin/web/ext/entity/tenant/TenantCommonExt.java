@@ -22,11 +22,12 @@ public class TenantCommonExt extends PagingDevice {
     @ApiModelProperty(value = "租户ID")
     private Long tenantId;
 
-    @ApiModelProperty(value = "租户code")
+    @ApiModelProperty(value = "租户AppKey")
     private String tenantAppKey;
 
     @ApiModelProperty(value = "环境")
     private String envCode;
 
-
+    @ApiModelProperty(value = "租户code")
+    private String tenantCode;
 }

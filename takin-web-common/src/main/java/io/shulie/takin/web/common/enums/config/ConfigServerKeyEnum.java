@@ -104,7 +104,7 @@ public enum ConfigServerKeyEnum implements AppConstants {
     PERFORMANCE_BASE_AGENT_FREQUENCY("performance.base.agent.frequency", "performance.base.agent.frequency", YES),
 
     /**
-     * 暂不知
+     * 查询分片的 标准值
      */
     TAKIN_QUERY_ASYNC_CRITICA_VALUE("query.async.critica.value", "takin.query.async.critica.value", NO),
 

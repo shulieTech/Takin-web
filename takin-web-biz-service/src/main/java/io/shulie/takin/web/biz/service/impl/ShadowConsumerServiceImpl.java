@@ -646,7 +646,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         if (Objects.nonNull(request.getShadowconsumerEnable())) {
             queryInput.setEnabled(Objects.equals(request.getShadowconsumerEnable(), "1"));
         }
-        if (StringUtils.isBlank(request.getShadowconsumerEnable())) {
+        if (StringUtils.isBlank(request.getShadowconsumerEnable()) || Objects.equals(request.getShadowconsumerEnable(), "0")) {
             amdbResult = queryAmdbDefaultEntrances(queryInput, application.getApplicationName());
         }
         totalResult = mergeResult(amdbResult, dbResult);

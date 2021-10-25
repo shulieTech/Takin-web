@@ -65,13 +65,12 @@ public class MybatisDataAuthInterceptor implements Interceptor {
     @Override
     public Object intercept(Invocation arg0) throws Throwable {
         MappedStatement mappedStatement = (MappedStatement)arg0.getArgs()[0];
+        //全局拦截select 查询
+        if (SqlCommandType.SELECT.equals(mappedStatement.getSqlCommandType())) {
+            handleLikeSql(mappedStatement, arg0);
+        }
         //如果没有权限拓展插件，则无需过滤数据权限
         if (!WebPluginUtils.checkUserData()) {
-            return arg0.proceed();
-        }
-        //仅拦截select 查询
-        if (!SqlCommandType.SELECT.equals(mappedStatement.getSqlCommandType())) {
-            handleLikeSql(mappedStatement, arg0);
             return arg0.proceed();
         }
         ////仅拦截console 不拦截agent登录方式
@@ -101,7 +100,7 @@ public class MybatisDataAuthInterceptor implements Interceptor {
         String methodName = mappedStatement.getId().substring(mappedStatement.getId().lastIndexOf(".") + 1);
         for (Method method : classType.getDeclaredMethods()) {
             //不带注解，方法不匹配
-            System.out.println(method + "===>" + method.isAnnotationPresent(DataAuth.class));
+            log.info(method + "===>" + method.isAnnotationPresent(DataAuth.class));
             if (!method.isAnnotationPresent(DataAuth.class)
                 || !methodName.equals(method.getName())) {
                 continue;

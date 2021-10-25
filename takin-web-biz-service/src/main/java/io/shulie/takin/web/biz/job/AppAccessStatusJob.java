@@ -49,7 +49,8 @@ public class AppAccessStatusJob implements SimpleJob {
                 // 根据环境 分线程
                 ext.getEnvs().forEach(e ->
                     jobThreadPool.execute(() -> {
-                        WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode()));
+                        WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),
+                            ext.getTenantCode()));
                         applicationService.syncApplicationAccessStatus();
                         WebPluginUtils.removeTraceContext();
                     }));

@@ -6,12 +6,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import io.shulie.takin.web.common.common.Response;
-import com.pamirs.takin.entity.domain.vo.JarVersionVo;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import org.springframework.web.multipart.MultipartFile;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
@@ -19,17 +13,13 @@ import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import org.springframework.web.multipart.MultipartFile;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -168,7 +158,6 @@ public interface ApplicationService {
 
     List<TApplicationMnt> getAllApplications();
 
-    List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList);
 
     /**
      * 根据租户查询 应用数据

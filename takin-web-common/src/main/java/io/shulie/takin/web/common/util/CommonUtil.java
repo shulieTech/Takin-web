@@ -36,19 +36,7 @@ import org.springframework.util.StringUtils;
  */
 public class CommonUtil implements AppConstants {
 
-    /**
-     * 按照Bean对象属性创建对应的Class对象，并忽略某些属性
-     * 如果源头bean为null, 则吐出的也是null
-     *
-     * @param <T>              对象类型
-     * @param source           源Bean对象
-     * @param tClass           目标Class
-     * @param ignoreProperties 不拷贝的的属性列表
-     * @return 目标对象
-     */
-    public static <T> T copyBeanPropertiesWithNull(Object source, Class<T> tClass, String... ignoreProperties) {
-        return source == null ? null : BeanUtil.copyProperties(source, tClass, ignoreProperties);
-    }
+
 
     /**
      * 获得 zk 租户, 环境隔离后的路径

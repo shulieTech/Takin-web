@@ -35,7 +35,7 @@
         ON blmt.RELATED_TECH_LINK = lmt.LINK_ID
         WHERE blmt.ENTRACE LIKE #{entrance}
         AND lmt.APPLICATION_NAME = #{appName}
-        AND blmt.CUSTOMER_ID = #{customerId}
+        AND blmt.TENANT_ID = #{tenantId}
         AND blmt.IS_DELETED = 0
     </select>
 </mapper>

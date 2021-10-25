@@ -1,6 +1,15 @@
 package io.shulie.takin.web.data.dao.activity.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -33,13 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -440,8 +442,8 @@ public class ActivityDAOImpl implements ActivityDAO {
 
     @Override
     public List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance) {
-        Long customerId = WebPluginUtils.getCustomerId();
-        return activityNodeStateTableMapper.findActivityIdByServiceName(customerId,appName,entrance);
+        Long tenantId = WebPluginUtils.traceTenantId();
+        return activityNodeStateTableMapper.findActivityIdByServiceName(tenantId,appName,entrance);
     }
 
 }

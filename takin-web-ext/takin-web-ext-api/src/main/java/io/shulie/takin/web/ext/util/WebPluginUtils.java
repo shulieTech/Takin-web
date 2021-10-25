@@ -138,23 +138,23 @@ public class WebPluginUtils {
         return Lists.newArrayList();
     }
 
-    /**
-     * 根据userAppKey查询用户
-     *
-     * @param userAppKey userAppKey
-     * @return UserExt对象
-     */
-    public static UserExt getUserByAppKey(String userAppKey) {
-        if (StringUtils.isBlank(userAppKey)) {
-            return null;
-        }
-        //for (UserExt ext : selectAllUser()) {
-        //    //if (userAppKey.equals(ext.getKey())) {
-        //    //    return ext;
-        //    //}
-        //}
-        return null;
-    }
+    ///**
+    // * 根据userAppKey查询用户
+    // *
+    // * @param userAppKey userAppKey
+    // * @return UserExt对象
+    // */
+    //public static UserExt getUserByAppKey(String userAppKey) {
+    //    if (StringUtils.isBlank(userAppKey)) {
+    //        return null;
+    //    }
+    //    //for (UserExt ext : selectAllUser()) {
+    //    //    //if (userAppKey.equals(ext.getKey())) {
+    //    //    //    return ext;
+    //    //    //}
+    //    //}
+    //    return null;
+    //}
 
 
 

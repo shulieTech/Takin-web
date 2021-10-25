@@ -151,10 +151,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
      */
     @Override
     public SceneActionResp startTask(SceneActionParam param) {
-    public WebResponse<StartResponse> startTask(SceneActionParam param) {
-
         //探针总开关关闭状态禁止启动压测
-        if(applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.getCustomerId(),AppSwitchEnum.CLOSED)){
+        if(applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.traceTenantId(),AppSwitchEnum.CLOSED)){
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_VALIDATE_ERROR, "启动压测场景失败，探针总开关已关闭");
         }
 

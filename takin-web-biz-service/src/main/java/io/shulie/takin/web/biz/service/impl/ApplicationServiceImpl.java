@@ -248,9 +248,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Autowired
     private ApplicationNodeProbeDAO applicationNodeProbeDAO;
 
-    @PostConstruct
-    public void init() {
-        isCheckDuplicateName = ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK);
     @Autowired
     private AppAgentConfigReportDAO reportDAO;
 
@@ -264,6 +261,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Autowired
     private ActivityDAO activityDAO;
 
+    @PostConstruct
+    public void init() {
+        isCheckDuplicateName = ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_DUPLICATE_NAME_CHECK);
+    }
 
     @Override
     public List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList) {
@@ -1172,7 +1173,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         //TODO 大数据接口未定义
         String url = properties.getUrl().getAmdb() + "/amdb/db/api/metrics/metricsDetailes";
         try {
-            AmdbResult<List<ApplicationVisualInfoResponse>> appDataResult = AmdbHelper.newInStance().httpMethod(HttpMethod.POST)
+            AmdbResult<List<ApplicationVisualInfoResponse>> appDataResult = AmdbHelper.builder().httpMethod(HttpMethod.POST)
                     .url(url)
                     .param(request)
                     .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
@@ -2322,11 +2323,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return Response.fail(FALSE_CORE, "开关状态不能为空", null);
         }
         if (uid == null) {
-            UserExt user = WebPluginUtils.getUser();
+            UserExt user = WebPluginUtils.traceUser();
             if (user == null) {
                 return Response.fail(FALSE_CORE, "当前用户为空", null);
             }
-            uid = user.getCustomerId();
+            uid = WebPluginUtils.traceTenantId();
         }
 
         String realStatus = getUserSilenceSwitchFromRedis(uid);
@@ -2377,11 +2378,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response userAppSilenceSwitchInfo() {
         ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
-        UserExt user = WebPluginUtils.getUser();
-        if (user == null) {
-            String userAppKey = WebPluginUtils.getTenantUserAppKey();
-             user = WebPluginUtils.getUserByAppKey(userAppKey);
-        }
+        UserExt user = WebPluginUtils.traceUser();
         if (user == null) {
             return Response.fail(FALSE_CORE);
         }
@@ -2389,7 +2386,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (user.getRole() != null && user.getRole() == 1) {
             result.setSwitchStatus(AppSwitchEnum.OPENED.getCode());
         } else {
-            result.setSwitchStatus(getUserSilenceSwitchStatusForVo(user.getCustomerId()));
+            result.setSwitchStatus(getUserSilenceSwitchStatusForVo(WebPluginUtils.traceUserId()));
         }
 
         return Response.success(result);
@@ -2413,7 +2410,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Response getApplicationReportConfigInfo(Integer type,String appName) {
         List<AppAgentConfigReportDetailResult> results = reportDAO.listByBizType(type,appName);
         //todo 现在只有一种配置 先这么写
-        String silenceSwitchStatus = getUserSilenceSwitchStatusForVo(WebPluginUtils.getCustomerId());
+        String silenceSwitchStatus = getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId());
         String configValue =  AppSwitchEnum.OPENED.getCode().equals(silenceSwitchStatus)?"true":"false";
         List<AppAgentConfigReportDetailResult> filter = results.stream().filter(x -> configValue.equals(x.getConfigValue())).collect(Collectors.toList());
         return Response.success(filter);
@@ -2421,7 +2418,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public Boolean silenceSwitchStatusIsTrue(Long uid, AppSwitchEnum appSwitchEnum) {
-        String status = this.getUserSilenceSwitchStatusForVo(WebPluginUtils.getCustomerId());
+        String status = this.getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId());
         return appSwitchEnum.getCode().equals(status);
     }
 

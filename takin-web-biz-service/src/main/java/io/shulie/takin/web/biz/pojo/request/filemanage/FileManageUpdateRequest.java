@@ -55,4 +55,14 @@ public class FileManageUpdateRequest implements Serializable {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date uploadTime;
+
+    /**
+     * 大文件标识
+     */
+    private Integer isBigFile;
+
+    /**
+     * 新上传的文件的下载路径
+     */
+    private String downloadUrl;
 }

@@ -65,4 +65,7 @@ public class FileManageResponse implements Serializable {
      */
     @ApiModelProperty(value = "数据已被删除，新版本不新增进去")
     private Integer isDeleted;
+
+    @ApiModelProperty(value = "是否是大文件")
+    private Integer isBigFile;
 }

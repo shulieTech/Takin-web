@@ -16,6 +16,12 @@ public class ScriptManageDeployPageQueryRequest extends PagingDevice {
     private static final long serialVersionUID = 4907165876058485892L;
 
     /**
+     * 脚本id/版本id
+     */
+    @JsonProperty("scriptId")
+    private Long scriptId;
+
+    /**
      * 脚本名称
      */
     @JsonProperty("scriptName")

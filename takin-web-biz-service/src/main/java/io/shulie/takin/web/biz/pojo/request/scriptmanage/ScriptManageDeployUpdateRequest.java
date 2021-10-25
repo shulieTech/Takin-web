@@ -60,4 +60,9 @@ public class ScriptManageDeployUpdateRequest implements Serializable {
      */
     @JsonProperty("pluginConfigs")
     private List<PluginConfigUpdateRequest> pluginConfigUpdateRequests;
+
+    /**
+     * 是否覆盖大文件
+     */
+    private Integer ifCoverBigFile;
 }

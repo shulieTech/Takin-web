@@ -66,6 +66,7 @@ public class ScriptManageUtil {
             extend.put(SceneManageConstant.DATA_COUNT, file.getDataCount());
             extend.put(SceneManageConstant.IS_SPLIT, file.getIsSplit());
             extend.put(SceneManageConstant.IS_ORDER_SPLIT, file.getIsOrderSplit());
+            extend.put(SceneManageConstant.IS_BIG_FILE,file.getIsBigFile());
             ref.setFileExtend(JsonUtil.bean2Json(extend));
 
             ref.setIsDeleted(file.getIsDeleted());

@@ -12,6 +12,7 @@ import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import org.springframework.web.multipart.MultipartFile;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
+import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
@@ -21,7 +22,9 @@ import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.web.multipart.MultipartFile;
@@ -165,6 +168,8 @@ public interface ApplicationService {
 
     List<TApplicationMnt> getAllApplications();
 
+    List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList);
+
     /**
      * 根据租户查询 应用数据
      * @param tenantCommonExt
@@ -240,5 +245,39 @@ public interface ApplicationService {
      * @param numParamList 数据集合
      */
     void modifyAppNodeNum(List<NodeNumParam> numParamList);
+
+    /**
+     * 编辑静默开关
+     *
+     * @return
+     */
+    Response userAppSilenceSwitch(Long uid, Boolean enable);
+
+
+    /**
+     * 获取静默开关状态
+     * @return
+     */
+    Response userAppSilenceSwitchInfo();
+
+    String getUserSilenceSwitchStatusForVo(Long uid);
+
+    Response getApplicationReportConfigInfo(Integer bizType,String appName);
+
+    Boolean silenceSwitchStatusIsTrue(Long uid, AppSwitchEnum appSwitchEnum);
+
+    /**
+     * 应用监控查询接口
+     *
+     * @param request 包含应用名称及服务名称
+     */
+    Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request);
+
+    /**
+     * 关注服务
+     *
+     * @param request 应用名➕服务名➕是否关注
+     */
+    void attendApplicationService(ApplicationVisualInfoQueryRequest request) throws Exception;
 
 }

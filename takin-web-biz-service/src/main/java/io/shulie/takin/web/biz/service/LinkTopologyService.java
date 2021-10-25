@@ -258,6 +258,8 @@ public class LinkTopologyService extends CommonService {
 
                 // 设置 拓扑图中节点上显示哪一个服务性能指标
                 setTopologyNodeServiceMetrics(node, appProviderInfos);
+                // 设置业务活动层级的瓶颈
+                setTopologyLevelBottleneck(topologyResponse);
             }
 
             if (node.getRoot()) {
@@ -285,6 +287,19 @@ public class LinkTopologyService extends CommonService {
         }
         int loopCounter = 0;
         setMainEdge(reduceEdges, rootNode.getId(), loopCounter);
+    }
+
+    private void setTopologyLevelBottleneck(ApplicationEntranceTopologyResponse topologyResponse) {
+        for (AbstractTopologyNodeResponse node : topologyResponse.getNodes()) {
+            if (node.isHasL1Bottleneck()) {
+                topologyResponse.setHasL1Bottleneck(true);
+                topologyResponse.setL1bottleneckNum(node.getL1bottleneckNum() + topologyResponse.getL1bottleneckNum());
+            }
+            if (node.isHasL2Bottleneck()) {
+                topologyResponse.setHasL2Bottleneck(true);
+                topologyResponse.setL2bottleneckNum(node.getL2bottleneckNum() + topologyResponse.getL2bottleneckNum());
+            }
+        }
     }
 
     private double getAllServiceAllTotalCount(
@@ -349,7 +364,7 @@ public class LinkTopologyService extends CommonService {
         // 节点 所有有服务，包含 不同的中间件，不同的serviceMethod
         List<AppProvider> allAppProviderServiceList = new ArrayList<>();
 
-        List<AppProviderInfo> providerService = node.getProviderService();//SY:在之前节点扩展是插入的对外服务
+        List<AppProviderInfo> providerService = node.getProviderService();
         for (AppProviderInfo appProviderInfo : providerService) {
 
             for (AppProvider appProvider : appProviderInfo.getDataSource()) {
@@ -361,70 +376,127 @@ public class LinkTopologyService extends CommonService {
                     AppProvider appProviderFromDb =
                             queryMetricsFromDb(startMilli, endMilli, realSeconds, metricsType, eagleId);
 
+                    appProviderFromDb.setBeforeApps(appProvider.getBeforeAppsMap().get(linkEdgeDTO.getSourceId()));
+                    appProviderFromDb.setOwnerApps(appProvider.getOwnerApps());
                     appProviderFromDb.setEagleId(eagleId);
                     appProviderFromDb.setSource(linkEdgeDTO.getSourceId());
                     appProviderFromDb.setTarget(linkEdgeDTO.getTargetId());
                     appProviderFromDb.setRpcType(linkEdgeDTO.getRpcType());
+                    appProviderFromDb.setServiceName(appProvider.getServiceName());
+                    appProviderFromDb.setMiddlewareName(appProvider.getMiddlewareName());
+
+                    // 瓶颈类型 init
+                    int rateBottleneckType = -1; // 瓶颈类型(-1 没有瓶颈)
+                    appProviderFromDb.setAllSuccessRateBottleneckType(rateBottleneckType);
+                    appProviderFromDb.setAllTotalRtBottleneckType(rateBottleneckType);
+                    appProviderFromDb.setAllSqlTotalRtBottleneckType(rateBottleneckType);
+
+                    if (!appProviderFromDb.getServiceAllTotalCount().equals(INIT)) { // 如果不是初始值，再计算瓶颈
+                        //SY:瓶颈计算+落库
+                        computeBottleneck(startDateTime, activityId, bottleneckConfig, appProviderFromDb);
+                    }
+
                     appProvider.getContainRealAppProvider().add(appProviderFromDb);
                 }
 
                 // 计算出每条真实边的指标后，再计算平均指标，用来对节点的某一服务赋值
-                // init
-                Double serviceAllTotalCount = INIT;
-                Double allSuccessCount = INIT; // 总成功调用次数
-                Double serviceAllTotalTps = INIT;
-                Double allTotalRt = INIT;
-                Double serviceAllMaxRt = INIT;
-
-                // 将同一服务 的多条调用线上 的指标平均
-                for (AppProvider realPro : appProvider.getContainRealAppProvider()) {
-                    serviceAllTotalCount = bigDecimalAdd(serviceAllTotalCount, realPro.getServiceAllTotalCount());
-                    allSuccessCount = bigDecimalAdd(allSuccessCount, realPro.getAllSuccessCount());
-                    serviceAllTotalTps = bigDecimalAdd(serviceAllTotalTps, realPro.getServiceAllTotalTps());
-
-                    allTotalRt = bigDecimalAdd(allTotalRt, realPro.getAllTotalRt());
-                    serviceAllMaxRt = Math.max(serviceAllMaxRt, realPro.getServiceAllMaxRt());
-                }
-
-                // 节点中 某个服务的 4 类性能指标
-                appProvider.setServiceAllTotalCount(serviceAllTotalCount);
-                // 成功率（入口1+入口2+入口3 成功次数）/（入口1+入口2+入口3 总次数）
-                appProvider.setAllSuccessCount(allSuccessCount);
-                appProvider.setServiceAllSuccessRate(bigDecimalDivide(appProvider.getAllSuccessCount(), serviceAllTotalCount));
-                // tps 入口1+入口2+入口3 tps
-                appProvider.setServiceAllTotalTps(serviceAllTotalTps);
-                // rt （入口1+入口2+入口3 总耗时） /（入口1+入口2+入口3 总次数）
-                appProvider.setAllTotalRt(allTotalRt);
-                appProvider.setServiceAvgRt(bigDecimalDivide(appProvider.getAllTotalRt(), serviceAllTotalCount));
-                appProvider.setServiceAllMaxRt(serviceAllMaxRt);
-
-                appProvider.setServiceRt(appProvider.getServiceAvgRt());
-
-                // 拿子集中的第一个元素赋值
-                appProvider.setEagleId(appProvider.getContainRealAppProvider().get(0).getEagleId());
-                appProvider.setRpcType(appProvider.getContainRealAppProvider().get(0).getRpcType());
-
-                // 瓶颈类型 init
-                int rateBottleneckType = -1; // 瓶颈类型(-1 没有瓶颈)
-                appProvider.setAllSuccessRateBottleneckType(rateBottleneckType);
-                appProvider.setAllTotalRtBottleneckType(rateBottleneckType);
-                appProvider.setAllSqlTotalRtBottleneckType(rateBottleneckType);
-
-                if (!appProvider.getServiceAllTotalCount().equals(INIT)) { // 如果不是初始值，再计算瓶颈
-                    //SY:瓶颈计算+落库
-                    computeBottleneck(startDateTime, activityId, bottleneckConfig, appProvider);
-                }
+                fillNodeServiceMetrics(appProvider);
 
                 allAppProviderServiceList.add(appProvider);
+                appProvider.setBeforeAppsMap(null);
             }
         }
 
-        // 查询 并 设置 节点服务 开关状态
         if (!allAppProviderServiceList.isEmpty()) {
+            // 查询 并 设置 节点服务 开关状态
             setNodeServiceState(activityId, node, dbActivityNodeServiceState, allAppProviderServiceList);
+            // 设置 节点层次的瓶颈数据
+            setNodeBottleneck(node, allAppProviderServiceList);
         }
 
         return providerService;
+    }
+
+    private void setNodeBottleneck(TopologyAppNodeResponse node, List<AppProvider> allAppProviderServiceList) {
+        // 一般瓶颈 [false 没有瓶颈 | true 有一般瓶颈]
+        boolean hasL1Bottleneck = false;
+        // 一般瓶颈数量
+        int L1bottleneckNum = 0;
+
+        // 严重瓶颈 [false 没有瓶颈 | true 有严重瓶颈]
+        boolean hasL2Bottleneck = false;
+        // 严重瓶颈数量
+        int L2bottleneckNum = 0;
+
+        for (AppProvider provider : allAppProviderServiceList) {
+            for (AppProvider appProvider : provider.getContainRealAppProvider()) {
+                if (RpcTypeEnum.APP.getValue().equals(appProvider.getRpcType())) {
+                    if ((appProvider.getAllTotalRtBottleneckType() == 1)) {
+                        hasL1Bottleneck = true;
+                        L1bottleneckNum++;
+                    } else if ((appProvider.getAllTotalRtBottleneckType() == 2)) {
+                        hasL2Bottleneck = true;
+                        L2bottleneckNum++;
+                    }
+                } else if (RpcTypeEnum.DB.getValue().equals(appProvider.getRpcType())) {
+                    if ((appProvider.getAllSqlTotalRtBottleneckType() == 1)) {
+                        hasL1Bottleneck = true;
+                        L1bottleneckNum++;
+                    } else if ((appProvider.getAllSqlTotalRtBottleneckType() == 2)) {
+                        hasL2Bottleneck = true;
+                        L2bottleneckNum++;
+                    }
+                }
+
+                if (RpcTypeEnum.APP.getValue().equals(appProvider.getRpcType()) ||
+                        RpcTypeEnum.DB.getValue().equals(appProvider.getRpcType())) {
+                    if ((appProvider.getAllSuccessRateBottleneckType() == 1)) {
+                        hasL1Bottleneck = true;
+                        L1bottleneckNum++;
+                    } else if ((appProvider.getAllSuccessRateBottleneckType() == 2)) {
+                        hasL2Bottleneck = true;
+                        L2bottleneckNum++;
+                    }
+                }
+            }
+        }
+
+        node.setHasL1Bottleneck(hasL1Bottleneck);
+        node.setL1bottleneckNum(L1bottleneckNum);
+        node.setHasL2Bottleneck(hasL2Bottleneck);
+        node.setL2bottleneckNum(L2bottleneckNum);
+    }
+
+    private void fillNodeServiceMetrics(AppProvider appProvider) {
+        // init
+        Double serviceAllTotalCount = INIT;
+        Double allSuccessCount = INIT; // 总成功调用次数
+        Double serviceAllTotalTps = INIT;
+        Double allTotalRt = INIT;
+        Double serviceAllMaxRt = INIT;
+
+        // 将同一服务 的多条调用线上 的指标平均
+        for (AppProvider realPro : appProvider.getContainRealAppProvider()) {
+            serviceAllTotalCount = bigDecimalAdd(serviceAllTotalCount, realPro.getServiceAllTotalCount());
+            allSuccessCount = bigDecimalAdd(allSuccessCount, realPro.getAllSuccessCount());
+            serviceAllTotalTps = bigDecimalAdd(serviceAllTotalTps, realPro.getServiceAllTotalTps());
+
+            allTotalRt = bigDecimalAdd(allTotalRt, realPro.getAllTotalRt());
+            serviceAllMaxRt = Math.max(serviceAllMaxRt, realPro.getServiceAllMaxRt());
+        }
+
+        // 节点中 某个服务的 4 类性能指标
+        appProvider.setServiceAllTotalCount(serviceAllTotalCount);
+        // 成功率（入口1+入口2+入口3 成功次数）/（入口1+入口2+入口3 总次数）
+        appProvider.setAllSuccessCount(allSuccessCount);
+        appProvider.setServiceAllSuccessRate(bigDecimalDivide(appProvider.getAllSuccessCount(), serviceAllTotalCount));
+        // tps 入口1+入口2+入口3 tps
+        appProvider.setServiceAllTotalTps(serviceAllTotalTps);
+        // rt （入口1+入口2+入口3 总耗时） /（入口1+入口2+入口3 总次数）
+        appProvider.setAllTotalRt(allTotalRt);
+        appProvider.setServiceAvgRt(bigDecimalDivide(appProvider.getAllTotalRt(), serviceAllTotalCount));
+        appProvider.setServiceRt(appProvider.getServiceAvgRt());
+        appProvider.setServiceAllMaxRt(serviceAllMaxRt);
     }
 
     private void computeBottleneck(
@@ -450,7 +522,7 @@ public class LinkTopologyService extends CommonService {
         baseStorageParam.setRt(appProvider.getServiceAvgRt()); // 预设
         baseStorageParam.setEdgeId(appProvider.getEagleId());
         baseStorageParam.setStartTime(DateUtils.convertLocalDateTimeToUDate(startDateTime.plusHours(8)));
-        baseStorageParam.setServiceName(appProvider.getServiceName());
+        baseStorageParam.setServiceName(appProvider.getOwnerApps() + "#" + appProvider.getServiceName());
         baseStorageParam.setRpcType(appProvider.getRpcType());
         baseStorageParam.setActivityId(activityId);
 
@@ -591,6 +663,7 @@ public class LinkTopologyService extends CommonService {
             // 平均 Rt    总调用Rt / 总调用次数    SUM(totalRt) / SUM(totalCount)
             double avgRt = bigDecimalDivide(appProvider.getAllTotalRt(), allTotalCount);
             appProvider.setServiceAvgRt(avgRt);
+            appProvider.setServiceRt(appProvider.getServiceAvgRt());
             // 最大 Rt    MAX(maxRt)
             double allMaxRt = traceMetricsResult.getAllMaxRt();
             appProvider.setServiceAllMaxRt(allMaxRt);
@@ -1025,8 +1098,22 @@ public class LinkTopologyService extends CommonService {
             appProvider.setContainEdgeList(new ArrayList<>(item.getValue()));
 
             if (CollectionUtils.isNotEmpty(item.getValue())) {
+                HashMap<String, String> sourceIdToNodeName = new HashMap<>();
+                appProvider.setBeforeAppsMap(sourceIdToNodeName);
+
                 // 设置上游应用(逗号分割的列表)
-                appProvider.setBeforeApps(item.getValue().stream()
+                List<String> keyList = item.getValue().stream()
+                        .filter(Objects::nonNull)
+                        .map(LinkEdgeDTO::getSourceId)
+                        .collect(Collectors.toList());
+
+                for (String id : keyList) {
+                    LinkNodeDTO linkNodeDTO = nodeMap.get(id);
+                    String nodeName = linkNodeDTO.getNodeName();
+                    sourceIdToNodeName.put(id, nodeName);
+                }
+
+                String collect = item.getValue().stream()
                         .filter(Objects::nonNull)
                         .map(LinkEdgeDTO::getSourceId)
                         .filter(StrUtil::isNotBlank)
@@ -1034,8 +1121,9 @@ public class LinkTopologyService extends CommonService {
                         .filter(Objects::nonNull)
                         .map(LinkNodeDTO::getNodeName)
                         .filter(StrUtil::isNotBlank)
-                        .collect(Collectors.joining(","))
-                );
+                        .collect(Collectors.joining(","));
+
+                appProvider.setBeforeApps(collect);
             }
 
             return appProvider;

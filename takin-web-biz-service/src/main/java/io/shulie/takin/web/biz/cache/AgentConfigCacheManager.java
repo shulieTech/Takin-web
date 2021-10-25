@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.cache;
 import java.util.Collections;
 import java.util.List;
 
+import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.entity.simplify.TShadowJobConfig;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DsAgentVO;
@@ -21,7 +22,9 @@ import io.shulie.takin.web.biz.cache.agentimpl.ShadowJobConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.ShadowKafkaClusterConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.ShadowServerConfigAgentCache;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowServerConfigurationOutput;
+import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -65,6 +68,9 @@ public class AgentConfigCacheManager {
 
     @Autowired
     private ShadowHbaseConfigAgentCache shadowHbaseConfigAgentCache;
+
+    @Autowired
+    private ApplicationService applicationService;
 
     /**
      * 获得白名单开关的缓存结果
@@ -121,7 +127,12 @@ public class AgentConfigCacheManager {
     }
 
     public ApplicationSwitchStatusDTO getPressureSwitch() {
-        return pressureSwitchConfigCache.get(null);
+        ApplicationSwitchStatusDTO applicationSwitchStatusDTO = pressureSwitchConfigCache.get(null);
+        String silenceSwitch = applicationService.getUserSilenceSwitchStatusForVo(WebPluginUtils.getUser().getCustomerId());
+        String silenceSwitchOn = AppSwitchEnum.OPENED.getCode().equals(silenceSwitch) ?
+                AppSwitchEnum.CLOSED.getCode() : AppSwitchEnum.OPENED.getCode();
+        applicationSwitchStatusDTO.setSilenceSwitchOn(silenceSwitchOn);
+        return applicationSwitchStatusDTO;
     }
 
     public void evictPressureSwitch() {

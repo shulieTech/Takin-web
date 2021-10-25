@@ -330,6 +330,8 @@ public class SwaggerConfig {
             .paths(getRegex("/api/(application/center/app/config|datasource|fastdebug/debug/callStack/node/locate|"
                 + "fastdebug/debug/callStack/exception|link/ds/manage|application/plugins/config|opsScriptManage|sys|"
                 + "pradar/switch).*"))
+                        + "fastdebug/debug/callStack/exception|link/ds/manage|application/plugins/config|opsScriptManage|sys|"
+                        + "pradar/switch|application/center/app).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

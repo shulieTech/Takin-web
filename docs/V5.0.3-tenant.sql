@@ -20,6 +20,255 @@ CREATE TABLE IF NOT EXISTS `t_tenant_info`
 ----- 流川 -----
 
 ----- 剑英 -----
+ALTER TABLE `t_application_ds_manage`
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code',
+ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE `t_application_focus`
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code',
+ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE `t_application_middleware`
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 0 COMMENT '租户id',
+ADD COLUMN `env_code`  varchar(20) NOT NULL COMMENT '环境变量' AFTER `tenant_id`;
+ALTER TABLE `t_application_mnt`
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 0 COMMENT '租户id',
+ADD COLUMN `env_code`  varchar(20) NOT NULL COMMENT '环境变量' AFTER `tenant_id`;
+ALTER TABLE 't_application_node_probe'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_application_plugins_config'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_base_config'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_black_list'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_business_link_manage_table'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_data_build'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_datasource_tag_ref'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_dictionary_data'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_dictionary_type'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_exception_info'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_fast_debug_config_info'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_fast_debug_exception'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_fast_debug_machine_performance'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_fast_debug_result'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_fast_debug_stack_info'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_file_manage'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_leakcheck_config'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_leakcheck_config_detail'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_leakverify_detail'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_leakverify_result'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_link_detection'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_link_guard'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_link_manage_table'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_link_mnt'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_link_service_mnt'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_link_topology_info'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_login_record'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_middleware_info'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_middleware_jar'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_middleware_jar_copy1'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_middleware_link_relate'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_middleware_summary'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_middleware_summary_copy1'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_migration_history'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_operation_log'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_ops_script_batch_no'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_ops_script_execute_result'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_ops_script_file'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_ops_script_manage'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_performance_base_data'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_performance_criteria_config'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_performance_thread_data'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_performance_thread_stack_data'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE 't_pessure_test_task_activity_config'
+    ADD COLUMN `env_code` bigint(20) NULL DEFAULT NULL COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+
+
+ALTER TABLE `t_application_ds_manage`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_application_mnt`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_application_focus`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_application_middleware`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_application_node_probe`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_application_plugins_config`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_base_config`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_black_list`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_business_link_manage_table`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_data_build`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_datasource_tag_ref`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_dictionary_data`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_dictionary_type`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_exception_info`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_fast_debug_config_info`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_fast_debug_exception`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_fast_debug_machine_performance`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_fast_debug_result`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_fast_debug_stack_info`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_file_manage`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_leakcheck_config`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_leakcheck_config_detail`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_leakverify_detail`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_leakverify_result`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_detection`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_guard`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_manage_table`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_mnt`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_service_mnt`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_topology_info`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_login_record`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_middleware_info`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_middleware_jar`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_middleware_jar_copy1`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_middleware_link_relate`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_middleware_summary`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_middleware_summary_copy1`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_migration_history`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_operation_log`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_ops_script_batch_no`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_ops_script_execute_result`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_ops_script_file`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_ops_script_manage`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_performance_base_data`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_performance_criteria_config`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_performance_thread_data`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_performance_thread_stack_data`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_pessure_test_task_activity_config`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+
+ALTER TABLE `t_application_ds_manage`
+    MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
+ALTER TABLE `t_application_mnt`
+    MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
+ALTER TABLE `t_application_middleware`
+    MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 ----- 剑英 -----
 
 ----- 无涯 -----

@@ -13,9 +13,11 @@ CREATE TABLE IF NOT EXISTS `t_tenant_info`
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_key` (`key`) USING BTREE,
     UNIQUE KEY `unique_code` (`code`) USING BTREE
-    ) ENGINE = InnoDB
+    ) ENGINE = InnoDB;
+INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`) VALUES (1, 'test', '测试环境');
+INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`) VALUES (1, 'prod', '生产环境');
 
-INSERT INTO `trodb`.`t_tenant_info`(`key`, `name`, `nick`, `code`, `config`) VALUES ('5b06060a-17cb-4588-bb71-edd7f65035af', '默认租户', '默认租户', 'shulie', '');
+INSERT INTO `t_tenant_info`(`key`, `name`, `nick`, `code`, `config`) VALUES ('5b06060a-17cb-4588-bb71-edd7f65035af', '默认租户', '默认租户', 'shulie', '');
 ----- 流川 -----
 -- tenant_id
 ALTER TABLE e_patrol_activity_assert ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
@@ -801,3 +803,5 @@ alter table t_whitelist_effective_app
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 ----- 无涯 -----
+
+

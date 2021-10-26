@@ -644,16 +644,14 @@ public class WebPluginUtils {
     }
 
     /**
-     * TODO by wy
+     *
      * 返回租户code
      * @return
      */
     public static String traceTenantCode() {
-        //if (userApi != null) {
-        //    if (userApi.traceUser() != null) {
-        //        return userApi.traceUser().getId();
-        //    }
-        //}
+        if (userApi != null) {
+            return userApi.traceTenantCode();
+        }
         return DEFAULT_TENANT_CODE;
     }
 

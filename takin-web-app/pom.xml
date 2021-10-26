@@ -325,7 +325,7 @@
         </profile>
     </profiles>
     <build>
-        <finalName>takin-web_${profile.active}_${project.version}</finalName>
+        <finalName>${project.version}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

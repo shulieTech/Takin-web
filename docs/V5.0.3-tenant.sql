@@ -415,6 +415,10 @@ ALTER TABLE `t_application_mnt`
     MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 ALTER TABLE `t_application_middleware`
     MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
+
+CREATE VIEW APPLICATION_VIEW AS
+SELECT APPLICATION_ID,APPLICATION_NAME,tenant_id AS TENANT_ID,env_code as ENV_CODE FROM t_application_mnt;
+
 ----- 剑英 -----
 
 ----- 无涯 -----

@@ -259,7 +259,6 @@ public class DbTemplateParser extends AbstractTemplateParser {
         fieldMap.remove("id");
         fieldMap.remove("url");
         fieldMap.remove("username");
-        fieldMap.remove("schema");
         fieldMap.remove("password");
         fieldMap.remove("driverClassName");
 

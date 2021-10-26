@@ -6,6 +6,7 @@ package io.shulie.takin.web.biz.convert.db.parser.style;
  */
 public abstract class AbstractStyleTemplate implements StyleTemplate{
 
+
     public AbstractStyleTemplate() {
     }
 }

@@ -38,7 +38,7 @@ public enum AppRemoteCallTypeV2Enum {
     /**
      * DUBBO
      */
-    DUBBO_OLD(1, "BUBBO",AppRemoteCallTypeEnum.DUBBO),
+    DUBBO_OLD(1, "DUBBO",AppRemoteCallTypeEnum.DUBBO),
 
     /**
      * FEIGN

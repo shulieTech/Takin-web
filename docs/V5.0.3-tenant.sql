@@ -14,6 +14,22 @@ CREATE TABLE IF NOT EXISTS `t_tenant_info`
     UNIQUE KEY `unique_key` (`key`) USING BTREE,
     UNIQUE KEY `unique_code` (`code`) USING BTREE
     ) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `t_tenant_env_ref`
+(
+    `id`             bigint(20)     NOT NULL AUTO_INCREMENT,
+    `tenant_id`    bigint(20)     NOT NULL COMMENT '租户id',
+    `env_code`       varchar(512)   NOT NULL COMMENT '环境代码，测试环境：test,生产环境：prod',
+    `env_name`       varchar(1024)  NOT NULL COMMENT '环境名称',
+    `desc`           varchar(1024)  NOT NULL COMMENT '描述',
+    `is_default`     tinyint(1)     NOT NULL DEFAULT '0' COMMENT '是否默认',
+    `is_deleted`     tinyint(1)     NOT NULL DEFAULT '0' COMMENT '0: 正常 1： 删除',
+    `gmt_create`     datetime       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `gmt_update`     datetime       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `unique_id_code` (`id`,`env_code`) USING BTREE,
+    ) ENGINE = InnoDB
+
 INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`) VALUES (1, 'test', '测试环境');
 INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`) VALUES (1, 'prod', '生产环境');
 

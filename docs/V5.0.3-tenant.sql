@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_env_ref`
     ) ENGINE = InnoDB;
 
 INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`is_default`) VALUES (1, 'test', '测试环境',1);
-INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`is_default`) VALUES (1, 'prod', '生产环境',1);
+INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`desc`,`is_default`) VALUES (1, 'prod', '生产环境','当前环境为生产环境，请谨慎操作',0);
 
 INSERT INTO `t_tenant_info`(`key`, `name`, `nick`, `code`, `config`) VALUES ('5b06060a-17cb-4588-bb71-edd7f65035af', 'default', 'default', 'default', '');
 ----- 流川 -----

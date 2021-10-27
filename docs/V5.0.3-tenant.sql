@@ -437,6 +437,12 @@ ALTER TABLE `t_application_middleware`
 
 CREATE VIEW APPLICATION_VIEW AS
 SELECT APPLICATION_ID,APPLICATION_NAME,tenant_id AS TENANT_ID,env_code as ENV_CODE FROM t_application_mnt;
+
+---系统信息的权限问题
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (510, NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, NULL, NULL, '2021-01-14 11:19:50',
+        '2021-01-14 11:19:50', 0);
 ----- 剑英 -----
 
 ----- 无涯 -----

@@ -67,6 +67,7 @@ import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInpu
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationAttentionParam;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
@@ -1112,7 +1113,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
         //TODO 1.关注
-        List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(request.getAppName());
+         ApplicationAttentionParam param = new ApplicationAttentionParam();
+        param.setApplicationName(request.getAppName());
+        param.setFocus(1);
+        param.setTenantId(WebPluginUtils.traceTenantId());
+        List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(param);
         //TODO 2.根据应用名称查询大数据性能数据
         List<String> attentionInterfaces = attentionList.stream().map(ApplicationAttentionListEntity::getInterfaceName).collect(Collectors.toList());
         request.setAttentionList(attentionInterfaces);
@@ -1155,10 +1160,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     /**
      * 关注列表
      *
-     * @param applicationName
+     * @param param
      */
-    private List<ApplicationAttentionListEntity> doGetAttentionList(String applicationName) {
-        return applicationDAO.getAttentionList(applicationName);
+    private List<ApplicationAttentionListEntity> doGetAttentionList(ApplicationAttentionParam param) {
+        return applicationDAO.getAttentionList(param);
     }
 
     /**

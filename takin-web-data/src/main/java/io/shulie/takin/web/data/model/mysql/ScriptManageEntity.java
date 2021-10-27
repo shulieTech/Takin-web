@@ -23,6 +23,12 @@ public class ScriptManageEntity {
     private String name;
 
     /**
+     * 脚本管理 - 版本
+     */
+    @TableField(value = "m_version")
+    private Integer mVersion;
+
+    /**
      * 创建时间
      */
     @TableField(value = "gmt_create")

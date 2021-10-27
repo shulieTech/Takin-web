@@ -34,6 +34,12 @@ public class FileManageEntity {
     private String fileExt;
 
     /**
+     * 文件MD5
+     */
+    @TableField(value = "md5")
+    private String md5;
+
+    /**
      * 文件类型：0-脚本文件 1-数据文件 2-脚本jar文件 3-jmeter ext jar
      */
     @TableField(value = "file_type")
@@ -53,7 +59,7 @@ public class FileManageEntity {
     /**
      * 客户id（当前登录用户对应的admin的id，数据隔离使用）
      */
-    @TableField(value = "customer_id" ,fill = FieldFill.INSERT)
+    @TableField(value = "customer_id", fill = FieldFill.INSERT)
     private Long customerId;
 
     /**

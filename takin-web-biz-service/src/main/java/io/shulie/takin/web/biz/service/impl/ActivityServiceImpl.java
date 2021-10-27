@@ -1,13 +1,18 @@
 package io.shulie.takin.web.biz.service.impl;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 
-import com.pamirs.takin.common.redis.RedisKey;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
@@ -22,19 +27,24 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
-import io.shulie.takin.web.biz.annotation.ActivityCache;
 import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.request.activity.*;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
@@ -47,13 +57,14 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.http.HttpAssert;
 import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
@@ -61,15 +72,14 @@ import io.shulie.takin.web.data.param.activity.ActivityUpdateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
-import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
-import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * @author shiyajian
@@ -400,58 +410,64 @@ public class ActivityServiceImpl implements ActivityService {
         return PagingList.of(responses, activityListResultPagingList.getTotal());
     }
 
+    // todo
     @Override
-
-    public ActivityBottleneckResponse getBottleneckByActivityList(List<ActivityInfoQueryRequest> activityList, String appName, String serviceName) {
-        ActivityBottleneckResponse activityBottleneckResponse = new ActivityBottleneckResponse();
-        // -1 没有瓶颈
-        int init = -1;
-        activityBottleneckResponse.setAllTotalRtBottleneckType(init);
-        activityBottleneckResponse.setAllSuccessRateBottleneckType(init);
-        activityBottleneckResponse.setAllSqlTotalRtBottleneckType(init);
-
-        for (ActivityInfoQueryRequest activityInfo : activityList) {
-            activityInfo.setStartTime(null);
-            activityInfo.setEndTime(null);
-            // 获取 拓扑图
-            ActivityResponse activityWithMetricsById = getActivityWithMetricsById(activityInfo);
-            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityWithMetricsById.getTopology().getNodes()) {
-                if (node.getLabel().equals(appName)) {
-                    if (node.getProviderService() != null) {
-                        for (ApplicationEntranceTopologyResponse.AppProviderInfo appProviderInfo : node.getProviderService()) {
-                            for (ApplicationEntranceTopologyResponse.AppProvider appProvider : appProviderInfo.getDataSource()) {
-                                for (ApplicationEntranceTopologyResponse.AppProvider provider : appProvider.getContainRealAppProvider()) {
-                                    if (provider.getServiceName().equals(serviceName)) {
-                                        // 有 Rt 瓶颈
-                                        if ((provider.getAllTotalRtBottleneckType() != -1)) {
-                                            activityBottleneckResponse.setAllTotalRtBottleneckType(provider.getAllTotalRtBottleneckType());
-                                            activityBottleneckResponse.setRtBottleneckId(provider.getRtBottleneckId());
-                                        }
-                                        // 成功率 瓶颈
-                                        if ((provider.getAllSuccessRateBottleneckType() != -1)) {
-                                            activityBottleneckResponse.setAllSuccessRateBottleneckType(provider.getAllSuccessRateBottleneckType());
-                                            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getRtBottleneckId());
-                                        }
-                                        // 慢 sql 瓶颈
-                                        if ((provider.getAllSqlTotalRtBottleneckType() != -1)) {
-                                            activityBottleneckResponse.setAllSqlTotalRtBottleneckType(provider.getAllSqlTotalRtBottleneckType());
-                                            activityBottleneckResponse.setRtSqlBottleneckId(provider.getRtSqlBottleneckId());
-                                        }
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-                }
-
-            }
-        }
-        return activityBottleneckResponse;
+    public ActivityBottleneckResponse getBottleneckByActivityList(ApplicationVisualInfoResponse applicationVisualInfoResponse,
+        LocalDateTime startTime, LocalDateTime endTime) {
+        return null;
     }
+
+    //@Override
+    //public ActivityBottleneckResponse getBottleneckByActivityList(List<ActivityInfoQueryRequest> activityList, String appName, String serviceName) {
+    //    ActivityBottleneckResponse activityBottleneckResponse = new ActivityBottleneckResponse();
+    //    // -1 没有瓶颈
+    //    int init = -1;
+    //    activityBottleneckResponse.setAllTotalRtBottleneckType(init);
+    //    activityBottleneckResponse.setAllSuccessRateBottleneckType(init);
+    //    activityBottleneckResponse.setAllSqlTotalRtBottleneckType(init);
+    //
+    //    for (ActivityInfoQueryRequest activityInfo : activityList) {
+    //        activityInfo.setStartTime(null);
+    //        activityInfo.setEndTime(null);
+    //        // 获取 拓扑图
+    //        ActivityResponse activityWithMetricsById = getActivityWithMetricsById(activityInfo);
+    //        for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityWithMetricsById.getTopology().getNodes()) {
+    //            if (node.getLabel().equals(appName)) {
+    //                if (node.getProviderService() != null) {
+    //                    for (ApplicationEntranceTopologyResponse.AppProviderInfo appProviderInfo : node.getProviderService()) {
+    //                        for (ApplicationEntranceTopologyResponse.AppProvider appProvider : appProviderInfo.getDataSource()) {
+    //                            for (ApplicationEntranceTopologyResponse.AppProvider provider : appProvider.getContainRealAppProvider()) {
+    //                                if (provider.getServiceName().equals(serviceName)) {
+    //                                    // 有 Rt 瓶颈
+    //                                    if ((provider.getAllTotalRtBottleneckType() != -1)) {
+    //                                        activityBottleneckResponse.setAllTotalRtBottleneckType(provider.getAllTotalRtBottleneckType());
+    //                                        activityBottleneckResponse.setRtBottleneckId(provider.getRtBottleneckId());
+    //                                    }
+    //                                    // 成功率 瓶颈
+    //                                    if ((provider.getAllSuccessRateBottleneckType() != -1)) {
+    //                                        activityBottleneckResponse.setAllSuccessRateBottleneckType(provider.getAllSuccessRateBottleneckType());
+    //                                        activityBottleneckResponse.setSuccessRateBottleneckId(provider.getRtBottleneckId());
+    //                                    }
+    //                                    // 慢 sql 瓶颈
+    //                                    if ((provider.getAllSqlTotalRtBottleneckType() != -1)) {
+    //                                        activityBottleneckResponse.setAllSqlTotalRtBottleneckType(provider.getAllSqlTotalRtBottleneckType());
+    //                                        activityBottleneckResponse.setRtSqlBottleneckId(provider.getRtSqlBottleneckId());
+    //                                    }
+    //                                }
+    //
+    //                            }
+    //
+    //                        }
+    //
+    //                    }
+    //
+    //                }
+    //            }
+    //
+    //        }
+    //    }
+    //    return activityBottleneckResponse;
+    //}
 
     @Override
     public ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request) {

@@ -20,6 +20,8 @@ import com.google.common.collect.Lists;
 import com.pamirs.pradar.log.parser.trace.RpcEntry;
 import com.pamirs.pradar.log.parser.trace.RpcStack;
 import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
+import com.pamirs.pradar.log.parser.utils.TraceIdUtil;
+import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.dao.linkmanage.TBusinessLinkManageTableMapper;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
@@ -118,7 +120,12 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         PradarWebRequest pradarRequest = new PradarWebRequest();
         pradarRequest.setHttpMethod(HttpMethod.GET);
         pradarRequest.setTraceId(traceId);
-        RpcStack rpcStack = traceClient.getTraceDetailById(traceId);
+        // 时间解析 查询前后30分钟
+        Long time = TraceIdUtil.getTraceIdTime(traceId);
+
+        RpcStack rpcStack = traceClient.getTraceDetailById(traceId,
+            DateUtils.dateToString(new Date(time - 1000*60*30),DateUtils.FORMATE_YMDHMS),
+            DateUtils.dateToString(new Date(time + 1000*60*30),DateUtils.FORMATE_YMDHMS));
 
         // 构造响应出参
         ReportLinkDetailResponse response = new ReportLinkDetailResponse();

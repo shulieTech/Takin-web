@@ -26,4 +26,6 @@ public class ApplicationDsUpdateInputV2 extends ApplicationDsCreateInputV2{
     @ApiModelProperty(name = "记录id", value = "id",required =true)
     private Long id;
 
+
+
 }

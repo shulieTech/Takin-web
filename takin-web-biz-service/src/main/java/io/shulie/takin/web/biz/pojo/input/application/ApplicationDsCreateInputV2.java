@@ -82,5 +82,11 @@ public class ApplicationDsCreateInputV2 extends UserCommonExt {
     private String username;
 
 
+    /**
+     * 解析后配置
+     * 老数据切换用
+     */
+    private String parseConfig;
+
 
 }

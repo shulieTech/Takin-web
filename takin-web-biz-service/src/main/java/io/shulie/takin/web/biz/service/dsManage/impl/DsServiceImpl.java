@@ -619,6 +619,8 @@ public class DsServiceImpl implements DsService {
                 ApplicationDsDeleteParam deleteParam = new ApplicationDsDeleteParam();
                 deleteParam.setIdList(Collections.singletonList(updateRequestV2.getId()));
                 applicationDsDAO.delete(deleteParam);
+                updateRequestV2.setParseConfig(dsResult.getParseConfig());
+                updateRequestV2.setApplicationName(dsResult.getApplicationName());
                 service.createShadowProgramme(updateRequestV2, false);
             }
         }

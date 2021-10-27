@@ -49,7 +49,7 @@ public interface TraceClient {
      * @param query
      * @return
      */
-    PagingList<EntryTraceInfoDTO> listTraceLog(TraceLogQueryDTO query);
+    PagingList<RpcStack> listTraceLog(TraceLogQueryDTO query);
 
 
 }

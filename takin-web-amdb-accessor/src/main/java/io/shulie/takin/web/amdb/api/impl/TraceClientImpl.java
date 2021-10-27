@@ -40,6 +40,11 @@ public class TraceClientImpl implements TraceClient {
     private static final String ENTRY_TRACE_PATH = "/amdb/trace/getEntryTraceList";
 
     /**
+     * trace日志
+     */
+    private static final String ENTRY_TRACE_LOG_PATH = "/amdb/trace/getAllTraceList";
+
+    /**
      * 根据压测任务 id 获得对应的请求流量明细
      * 路由
      */
@@ -151,33 +156,19 @@ public class TraceClientImpl implements TraceClient {
         }
     }
 
-    // todo 等待amdb 方法实现
     @Override
-    public PagingList<EntryTraceInfoDTO> listTraceLog(TraceLogQueryDTO query) {
-        String url = properties.getUrl().getAmdb() + ENTRY_TRACE_PATH;
+    public PagingList<RpcStack> listTraceLog(TraceLogQueryDTO query) {
+        String url = properties.getUrl().getAmdb() + ENTRY_TRACE_LOG_PATH;
         try {
-            AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.newInStance().url(url)
+            AmdbResult<List<RpcStack>> response = AmdbHelper.newInStance().url(url)
                 .param(query)
-                .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
-                .eventName("查询链路列表")
-                .list(EntryTraceInfoDTO.class);
-            List<EntryTraceInfoDTO> list = response.getData();
-            if (CollectionUtil.isNotEmpty(list)) {
-                list.forEach(entry -> {
-                    entry.setEntry(entry.getServiceName());
-                    entry.setMethod(entry.getMethodName());
-                    entry.setProcessTime(entry.getCost());
-                    entry.setId("0");
-                    entry.setEndTime(entry.getEndTime());
-                    entry.setStatus(entry.getResultCode());
-                });
-                return PagingList.of(list, response.getTotal());
-            }
+                .exception(TakinWebExceptionEnum.APPLICATION_TRACE_LOG_AGENT_ERROR)
+                .eventName("查询trace日志列表")
+                .list(RpcStack.class);
+            return PagingList.of(response.getData(), response.getTotal());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
         }
-        return PagingList.empty();
     }
 
     /**

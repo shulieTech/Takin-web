@@ -20,6 +20,8 @@ import com.google.common.collect.Lists;
 import com.pamirs.pradar.log.parser.trace.RpcEntry;
 import com.pamirs.pradar.log.parser.trace.RpcStack;
 import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
+import com.pamirs.pradar.log.parser.utils.TraceIdUtil;
+import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.dao.linkmanage.TBusinessLinkManageTableMapper;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
@@ -41,6 +43,7 @@ import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.PradarWebRequest;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.trace.TraceNodeLogTypeEnum;
 import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
@@ -117,7 +120,11 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         PradarWebRequest pradarRequest = new PradarWebRequest();
         pradarRequest.setHttpMethod(HttpMethod.GET);
         pradarRequest.setTraceId(traceId);
-        RpcStack rpcStack = traceClient.getTraceDetailById(traceId);
+        // 时间解析 查询前后30分钟
+        Long time = TraceIdUtil.getTraceIdTime(traceId);
+        RpcStack rpcStack = traceClient.getTraceDetailById(traceId,
+            DateUtils.dateToString(new Date(time - 1000*60*30),DateUtils.FORMATE_YMDHMS),
+            DateUtils.dateToString(new Date(time + 1000*60*30),DateUtils.FORMATE_YMDHMS));
 
         // 构造响应出参
         ReportLinkDetailResponse response = new ReportLinkDetailResponse();
@@ -239,6 +246,15 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
                 reportTraceDetailDTO.setNodeIp(rpcEntry.getServerIp());
             }
             reportTraceDetailDTO.setResponse(rpcEntry.getResponse());
+
+            // by wuya 20211025
+            reportTraceDetailDTO.setMethodName(rpcEntry.getMethodName());
+            reportTraceDetailDTO.setLogType(rpcEntry.getLogType());
+            reportTraceDetailDTO.setLogTypeName(TraceNodeLogTypeEnum.judgeTraceNodeLogType(rpcEntry.getLogType()).getDesc());
+            reportTraceDetailDTO.setAsync(rpcEntry.isAsync());
+            reportTraceDetailDTO.setMiddlewareName(rpcEntry.getMiddlewareName());
+
+
             reportTraceDetailDTO.setNodeSuccess(true);
             if (!reportTraceDetailDTO.getSucceeded()) {
                 // 向上递归

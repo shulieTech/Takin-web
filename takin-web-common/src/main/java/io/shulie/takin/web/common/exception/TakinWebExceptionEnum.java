@@ -57,6 +57,7 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     APPLICATION_ENTRANCE_THIRD_PARTY_ERROR("0305-" + ErrorConstant.THIRD_PARTY_ERROR, "应用入口链路第三方返回异常"),
     APPLICATION_UNSTALL_AGENT_ERROR("0306-" + ErrorConstant.THIRD_PARTY_ERROR, "卸载应用agent异常"),
     APPLICATION_RESUME_AGENT_ERROR("0307-" + ErrorConstant.THIRD_PARTY_ERROR, "恢复应用agent异常"),
+    APPLICATION_TRACE_LOG_AGENT_ERROR("0307-" + ErrorConstant.THIRD_PARTY_ERROR, "trace日志获取异常"),
 
     /**
      * agent
@@ -132,6 +133,11 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      */
     PATROL_EXCEPTION_ADD_ERROR("1300-" + ErrorConstant.ADD_ERROR, "新增异常数据失败"),
     PATROL_EXCEPTION_QUERY_ERROR("1300-" + ErrorConstant.QUERY_NULL_ERROR, "查询巡检异常失败"),
+
+    /**
+     * 影子配置
+     */
+    SHADOW_CONFIG_CREATE_ERROR("1400-"+ErrorConstant.VALIDATE_ERROR,"新增影子配置异常"),
     ;
 
     private final String errorCode;

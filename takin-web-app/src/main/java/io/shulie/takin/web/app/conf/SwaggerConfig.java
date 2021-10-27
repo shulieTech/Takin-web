@@ -58,6 +58,19 @@ public class SwaggerConfig {
 
     private ObjectMapper objectMapper;
 
+    @Bean
+    public Docket all() {
+        return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
+            .groupName("压测平台-所有接口")
+            .select().apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(PathSelectors.any())
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(this.apiInfo()).enable(true);
+    }
+
 
     /**
      * v4.* 版本的都放在这里
@@ -376,6 +389,25 @@ public class SwaggerConfig {
             .useDefaultResponseMessages(false)
             .apiInfo(apiInfo())
             ;
+    }
+
+    /**
+     * 快速接入一期测试用 nf
+     * @return
+     */
+    @Bean
+    public Docket api_webTest_nf() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("快速接入一期测试用")
+                .select()
+                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+                .paths(PathSelectors
+                        .regex("/api/(v2/application/remote/call|v2/consumers|v2/link/ds|/application/remote/call/list).*"))
+                .build()
+                .directModelSubstitute(LocalDate.class, String.class)
+                .useDefaultResponseMessages(false)
+                .apiInfo(apiInfo())
+                ;
     }
 
     /**

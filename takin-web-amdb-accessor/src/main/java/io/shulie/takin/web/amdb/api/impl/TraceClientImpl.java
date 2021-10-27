@@ -13,6 +13,7 @@ import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.common.constant.AppConstants;
@@ -37,6 +38,11 @@ public class TraceClientImpl implements TraceClient {
     private static final String QUERY_TRACE_PATH = "/amdb/trace/getTraceDetail?traceId=@TraceId@";
 
     private static final String ENTRY_TRACE_PATH = "/amdb/trace/getEntryTraceList";
+
+    /**
+     * trace日志
+     */
+    private static final String ENTRY_TRACE_LOG_PATH = "/amdb/trace/getAllTraceList";
 
     /**
      * 根据压测任务 id 获得对应的请求流量明细
@@ -150,6 +156,21 @@ public class TraceClientImpl implements TraceClient {
         }
     }
 
+    @Override
+    public PagingList<RpcStack> listTraceLog(TraceLogQueryDTO query) {
+        String url = properties.getUrl().getAmdb() + ENTRY_TRACE_LOG_PATH;
+        try {
+            AmdbResult<List<RpcStack>> response = AmdbHelper.newInStance().url(url)
+                .param(query)
+                .exception(TakinWebExceptionEnum.APPLICATION_TRACE_LOG_AGENT_ERROR)
+                .eventName("查询trace日志列表")
+                .list(RpcStack.class);
+            return PagingList.of(response.getData(), response.getTotal());
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+        }
+    }
+
     /**
      * entryList 转换一下
      *
@@ -174,5 +195,6 @@ public class TraceClientImpl implements TraceClient {
 
         }).collect(Collectors.joining(AppConstants.COMMA));
     }
+
 
 }

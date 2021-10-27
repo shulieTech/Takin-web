@@ -7,6 +7,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.pradar.log.parser.ProtocolParserFactory;
 import com.pamirs.pradar.log.parser.trace.RpcBased;
 import com.pamirs.pradar.log.parser.trace.RpcStack;
+import com.pamirs.takin.common.util.DateUtils;
+import io.shulie.amdb.common.request.trace.EntryTraceQueryParam;
 import io.shulie.surge.data.deploy.pradar.link.model.TTrackClickhouseModel;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.TraceClient;
@@ -23,8 +25,10 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -164,8 +168,32 @@ public class TraceClientImpl implements TraceClient {
     @Override
     public PagingList<TTrackClickhouseModel> listTraceLog(TraceLogQueryDTO query) {
         String url = properties.getUrl().getAmdb() + ENTRY_TRACE_LOG_PATH;
+        EntryTraceQueryParam param = new EntryTraceQueryParam();
+        param.setAppNames(query.getAppNames());
+        if(StringUtils.isNotBlank(query.getApplicationName())) {
+            param.setAppName(query.getApplicationName());
+        }
+
+        if(StringUtils.isNotBlank(query.getServiceName())) {
+            param.setServiceName(query.getServiceName());
+        }
+        if(StringUtils.isBlank(query.getStartTime()) && StringUtils.isBlank(query.getEndTime())) {
+            // 查一天的
+            return PagingList.empty();
+        }
+        if(StringUtils.isNotBlank(query.getStartTime())) {
+            param.setStartTime(DateUtils.transferTime(query.getStartTime()).getTime());
+        }
+        if(StringUtils.isNotBlank(query.getEndTime())) {
+            param.setEndTime(DateUtils.transferTime(query.getEndTime()).getTime());
+        }
+
+        param.setCurrentPage(query.getCurrentPage() + 1);
+        param.setPageSize(query.getPageSize());
+
         try {
             AmdbResult<List<TTrackClickhouseModel>> response = AmdbHelper.newInStance().url(url)
+                .httpMethod(HttpMethod.POST)
                 .param(query)
                 .exception(TakinWebExceptionEnum.APPLICATION_TRACE_LOG_AGENT_ERROR)
                 .eventName("查询trace日志列表")

@@ -1,5 +1,8 @@
 package io.shulie.takin.web.amdb.bean.query.trace;
 
+import java.util.List;
+
+import io.shulie.takin.common.beans.page.PagingDevice;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -11,22 +14,25 @@ import lombok.Data;
  * @Date: 2021/10/25 17:30
  */
 @Data
-public class TraceLogQueryDTO  {
+public class TraceLogQueryDTO extends PagingDevice {
 
-    private Long startTime;
+    private String startTime;
 
-    private Long endTime;
+    private String endTime;
+
+    /**
+     * 查询当前租户的应用
+     */
+    private List<String> appNames;
 
     @ApiModelProperty("应用名")
     private String applicationName;
 
-    @ApiModelProperty("接口名")
-    private String interfaceName;
+    @ApiModelProperty("服务名")
+    private String serviceName;
 
-
-    private Integer pageNum;
-
-    private Integer pageSize;
+    @ApiModelProperty("traceId")
+    private String traceId;
 
 
 }

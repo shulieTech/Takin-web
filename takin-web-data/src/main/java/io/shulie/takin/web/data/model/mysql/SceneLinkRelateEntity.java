@@ -73,4 +73,16 @@ public class SceneLinkRelateEntity {
      */
     @TableField(value = "FRONT_UUID_KEY")
     private String frontUuidKey;
+
+    /**
+     * 脚本请求路径标识
+     */
+    @TableField(value = "script_identification")
+    private String scriptIdentification;
+
+    /**
+     * 脚本路径的MD5
+     */
+    @TableField(value = "script_xpath_md5")
+    private String scriptXpathMd5;
 }

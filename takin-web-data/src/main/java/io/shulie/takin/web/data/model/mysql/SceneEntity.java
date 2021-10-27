@@ -80,4 +80,34 @@ public class SceneEntity {
      */
     @TableField(value = "UPDATE_TIME")
     private LocalDateTime updateTime;
+
+    /**
+     * 场景类型，标识1为jmeter上传，默认0
+     */
+    @TableField(value = "type")
+    private Integer type;
+
+    /**
+     * 存储树状结构
+     */
+    @TableField(value = "script_jmx_node")
+    private String scriptJmxNode;
+
+    /**
+     * 脚本实例id
+     */
+    @TableField(value = "script_deploy_id")
+    private String scriptDeployId;
+
+    /**
+     * 关联节点数
+     */
+    @TableField(value = "link_relate_num")
+    private Integer linkRelateNum;
+
+    /**
+     * 脚本总节点数
+     */
+    @TableField(value = "total_node_num")
+    private Integer totalNodeNum;
 }

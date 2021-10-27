@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.result.scene;
 
 import java.time.LocalDateTime;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 /**
@@ -59,4 +60,16 @@ public class SceneLinkRelateResult {
      * 前端数结构对象key
      */
     private String frontUuidKey;
+
+    /**
+     * 脚本请求路径标识
+     */
+    @TableField(value = "script_identification")
+    private String scriptIdentification;
+
+    /**
+     * 脚本路径的MD5
+     */
+    @TableField(value = "script_xpath_md5")
+    private String scriptXpathMd5;
 }

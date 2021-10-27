@@ -591,12 +591,12 @@ public class DsServiceImpl implements DsService {
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
 
         if (!updateRequestV2.getIsNewData()) {
-            //针对老版本数据,先删除原表数据,新表重新保存
+            //针对老版本数据,先删除原表数据,逻辑删除,新表重新保存
             ApplicationDsResult dsResult = applicationDsDAO.queryByPrimaryKey(updateRequestV2.getId());
             if (Objects.nonNull(dsResult)) {
                 ApplicationDsDeleteParam deleteParam = new ApplicationDsDeleteParam();
                 deleteParam.setIdList(Collections.singletonList(updateRequestV2.getId()));
-                applicationDsDAO.delete(deleteParam);
+                applicationDsDAO.batchDelete(deleteParam);
                 service.createShadowProgramme(updateRequestV2, false);
             }
         }

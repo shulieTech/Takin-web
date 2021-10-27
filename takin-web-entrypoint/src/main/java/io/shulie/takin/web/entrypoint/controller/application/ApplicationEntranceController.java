@@ -1,7 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.application;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,6 +29,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 
 /**
  * @author shiyajian
@@ -127,6 +129,11 @@ public class ApplicationEntranceController {
         if (CollectionUtils.isEmpty(applicationEntrances)) {
             return Lists.newArrayList();
         }
+        //去重
+        applicationEntrances = applicationEntrances.stream().collect(
+                collectingAndThen(
+                        toCollection(() -> new TreeSet<>(Comparator.comparing(ServiceInfoDTO::getServiceName))), ArrayList::new)
+        );
         return applicationEntrances.stream()
                 .filter(item -> !item.getServiceName().startsWith("PT_"))
                 .map(item -> {

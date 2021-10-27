@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -259,11 +260,10 @@ public class DbTemplateParser extends AbstractTemplateParser {
         fieldMap.remove("id");
         fieldMap.remove("url");
         fieldMap.remove("username");
-        fieldMap.remove("schema");
         fieldMap.remove("password");
         fieldMap.remove("driverClassName");
 
-        return (List<String>) fieldMap.values();
+        return new ArrayList<>(fieldMap.values());
     }
 
 }

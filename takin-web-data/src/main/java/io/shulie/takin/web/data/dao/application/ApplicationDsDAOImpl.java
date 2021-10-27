@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author fanxx
@@ -232,4 +233,19 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
     public List<DsModelWithBLOBs> getAllEnabledDbConfig(Long applicationId) {
         return selectByAppIdForAgent(applicationId);
     }
+
+
+    @Override
+    @Transactional
+    public void batchDelete(ApplicationDsDeleteParam deleteParam) {
+        List<Long> idList = deleteParam.getIdList();
+        idList.forEach(id -> {
+            ApplicationDsManageEntity entity = new ApplicationDsManageEntity();
+            entity.setId(id);
+            entity.setStatus(1);
+            entity.setIsDeleted(1);
+            applicationDsManageMapper.updateById(entity);
+        });
+    }
+
 }

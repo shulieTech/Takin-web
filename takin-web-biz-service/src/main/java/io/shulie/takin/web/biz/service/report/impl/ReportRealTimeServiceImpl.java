@@ -122,7 +122,6 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         pradarRequest.setTraceId(traceId);
         // 时间解析 查询前后30分钟
         Long time = TraceIdUtil.getTraceIdTime(traceId);
-
         RpcStack rpcStack = traceClient.getTraceDetailById(traceId,
             DateUtils.dateToString(new Date(time - 1000*60*30),DateUtils.FORMATE_YMDHMS),
             DateUtils.dateToString(new Date(time + 1000*60*30),DateUtils.FORMATE_YMDHMS));

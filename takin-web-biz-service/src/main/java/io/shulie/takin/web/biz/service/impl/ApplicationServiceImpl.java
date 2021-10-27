@@ -1119,16 +1119,16 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (CollectionUtils.isEmpty(infoDTOList)) {
             return;
         }
+        LocalDateTime startTime = request.getStartTimeDate();
+        LocalDateTime endTime = request.getEndTimeDate();
         infoDTOList.stream().forEach(dto -> {
             String appName = dto.getAppName();
             String serviceAndMethod = dto.getServiceAndMethod();
             int clusterTest = request.getClusterTest();
             FlowTypeEnum flowTypeEnum = FlowTypeEnum.getByType(clusterTest);
-            LocalDateTime startTime = request.getStartTimeDate();
-            LocalDateTime endTime = request.getEndTimeDate();
             Map<String, String> activeMap = dto.getActiveIdAndName();
             List<ActivityInfoQueryRequest> activityList = activeMap.keySet().stream().map(id -> new ActivityInfoQueryRequest(Long.parseLong(id), flowTypeEnum, startTime, endTime)).collect(Collectors.toList());
-            ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(dto);
+            ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(dto,startTime,endTime);
             dto.setResponse(response);
         });
     }

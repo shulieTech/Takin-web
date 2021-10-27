@@ -1,18 +1,21 @@
 package io.shulie.takin.web.data.dao.filemanage;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import io.shulie.takin.web.data.mapper.mysql.FileManageMapper;
-import io.shulie.takin.web.data.model.mysql.FileManageEntity;
-import io.shulie.takin.web.data.param.filemanage.FileManageCreateParam;
-import io.shulie.takin.web.data.result.filemanage.FileManageResult;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.Resource;
+
+import cn.hutool.core.bean.BeanUtil;
+
 import org.springframework.stereotype.Component;
+import org.apache.commons.collections4.CollectionUtils;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+
+import io.shulie.takin.web.data.model.mysql.FileManageEntity;
+import io.shulie.takin.web.data.mapper.mysql.FileManageMapper;
+import io.shulie.takin.web.data.result.filemanage.FileManageResult;
+import io.shulie.takin.web.data.param.filemanage.FileManageCreateParam;
 
 /**
  * @author zhaoyong
@@ -20,21 +23,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class FileManageDAOImpl implements FileManageDAO {
 
-    @Autowired
+    @Resource
     private FileManageMapper fileManageMapper;
 
     @Override
     public List<FileManageResult> selectFileManageByIds(List<Long> fileIds) {
         LambdaQueryWrapper<FileManageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.select(
-                FileManageEntity::getFileExtend,
-                FileManageEntity::getFileName,
-                FileManageEntity::getFileSize,
-                FileManageEntity::getFileType,
-                FileManageEntity::getUploadPath,
-                FileManageEntity::getUploadTime,
-                FileManageEntity::getId,
-                FileManageEntity::getIsDeleted
+            FileManageEntity::getFileExtend,
+            FileManageEntity::getFileName,
+            FileManageEntity::getFileSize,
+            FileManageEntity::getFileType,
+            FileManageEntity::getUploadPath,
+            FileManageEntity::getUploadTime,
+            FileManageEntity::getId,
+            FileManageEntity::getIsDeleted
         );
         wrapper.in(FileManageEntity::getId, fileIds);
         List<FileManageEntity> fileManageEntities = fileManageMapper.selectList(wrapper);
@@ -67,20 +70,12 @@ public class FileManageDAOImpl implements FileManageDAO {
     }
 
     @Override
-    public List<Long> createFileManageList(List<FileManageCreateParam> fileManageCreateParams) {
-        if (CollectionUtils.isEmpty(fileManageCreateParams)) {
-            return Collections.emptyList();
-        }
-
+    public List<Long> createFileManageList(List<FileManageCreateParam> fileList) {
         // 收集 fileIds, 并赋值给 params
-        return fileManageCreateParams.stream().map(fileManageCreateParam -> {
-            FileManageEntity fileManageEntity = new FileManageEntity();
-            BeanUtils.copyProperties(fileManageCreateParam, fileManageEntity);
-            fileManageMapper.insert(fileManageEntity);
-
-            // 并赋值给 params
-            fileManageCreateParam.setId(fileManageEntity.getId());
-            return fileManageEntity.getId();
+        return fileList.stream().map(t -> {
+            FileManageEntity entity = BeanUtil.copyProperties(t, FileManageEntity.class);
+            fileManageMapper.insert(entity);
+            return entity.getId();
         }).collect(Collectors.toList());
     }
 }

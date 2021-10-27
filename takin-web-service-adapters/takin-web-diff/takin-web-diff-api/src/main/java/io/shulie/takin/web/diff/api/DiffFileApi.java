@@ -43,7 +43,7 @@ public interface DiffFileApi {
     /**
      * 将字符串转为指定文件
      *
-     * @return
+     * @return 文件的MD5值
      */
-    Boolean createFileByPathAndString(FileCreateByStringParamReq req);
+    String createFileByPathAndString(FileCreateByStringParamReq req);
 }

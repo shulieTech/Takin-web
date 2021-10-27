@@ -115,8 +115,7 @@ public class WhiteListFileService {
             if (ext == null){
                 ext = WebPluginUtils.traceTenantCommonExt();
             }
-            String whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH)
-                + WebPluginUtils.traceTenantCode() + Separator.Separator1.getValue();
+            String whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH);
             Map<String, Object> result = queryBlackWhiteList("", ext);
             if (null != result && result.size() > 0) {
                 File file = new File(whiteListPath);

@@ -501,7 +501,7 @@ public class ConfCenterService extends CommonService {
 
     private void writeWhiteListFile() {
         try {
-            String whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH)+WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue();
+            String whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH);
             Map<String, List<Map<String, Object>>> result = queryBlackWhiteList("");
             if (null != result && result.size() > 0) {
                 File file = new File(whiteListPath);

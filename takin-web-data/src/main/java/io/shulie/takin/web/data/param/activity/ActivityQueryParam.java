@@ -30,4 +30,6 @@ public class ActivityQueryParam extends AuthQueryParamCommonExt {
      */
     private List<Long> activityIds;
 
+    private String entrance;
+
 }

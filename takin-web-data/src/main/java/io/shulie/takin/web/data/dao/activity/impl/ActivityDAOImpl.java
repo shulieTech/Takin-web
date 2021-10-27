@@ -382,33 +382,16 @@ public class ActivityDAOImpl implements ActivityDAO {
         if (CollectionUtils.isNotEmpty(param.getActivityIds())) {
             lambdaQueryWrapper.in(BusinessLinkManageTableEntity::getLinkId, param.getActivityIds());
         }
+        if (StringUtils.isNotBlank(param.getEntrance())) {
+            lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getEntrace, param.getEntrance());
+        }
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
         List<BusinessLinkManageTableEntity> tableEntities = businessLinkManageTableMapper.selectList(
             lambdaQueryWrapper);
         if (CollectionUtils.isEmpty(tableEntities)) {
             return Lists.newArrayList();
         }
-        List<ActivityListResult> results = tableEntities.stream().map(entity -> {
-            ActivityListResult result = new ActivityListResult();
-            result.setActivityId(entity.getLinkId());
-            result.setActivityName(entity.getLinkName());
-            result.setIsChange(entity.getIsChange());
-            result.setIsCore(entity.getIsCore());
-            result.setIsDeleted(entity.getIsDeleted());
-            result.setUserId(entity.getUserId());
-            result.setCreateTime(entity.getCreateTime());
-            result.setUpdateTime(entity.getUpdateTime());
-            result.setBusinessDomain(entity.getBusinessDomain());
-            result.setCanDelete(entity.getCanDelete());
-            result.setActivityLevel(entity.getLinkLevel());
-            result.setIsCore(entity.getIsCore());
-            result.setBusinessDomain(entity.getBusinessDomain());
-            result.setBindBusinessId(entity.getBindBusinessId());
-            result.setBusinessType(
-                entity.getType() != null ? entity.getType() : BusinessTypeEnum.NORMAL_BUSINESS.getType());
-            return result;
-        }).collect(Collectors.toList());
-        return results;
+        return toListResult(tableEntities);
     }
 
     @Override
@@ -436,6 +419,41 @@ public class ActivityDAOImpl implements ActivityDAO {
     @Override
     public List<ActivityNodeState> getActivityNodeServiceState(long activityId) {
         return activityNodeStateTableMapper.getActivityNodes(activityId);
+    }
+
+    private List<ActivityListResult> toListResult(List<BusinessLinkManageTableEntity> entities) {
+        if (CollectionUtils.isEmpty(entities)) {
+            return null;
+        }
+        return entities.stream().filter(Objects::nonNull)
+                .map(this::toListResult)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    private ActivityListResult toListResult(BusinessLinkManageTableEntity entity) {
+        if (null == entity) {
+            return null;
+        }
+        ActivityListResult r = new ActivityListResult();
+        r.setActivityId(entity.getLinkId());
+        r.setActivityName(entity.getLinkName());
+        r.setIsChange(entity.getIsChange());
+        r.setIsCore(entity.getIsCore());
+        r.setIsDeleted(entity.getIsDeleted());
+        r.setUserId(entity.getUserId());
+        r.setCreateTime(entity.getCreateTime());
+        r.setUpdateTime(entity.getUpdateTime());
+        r.setBusinessDomain(entity.getBusinessDomain());
+        r.setCanDelete(entity.getCanDelete());
+        r.setActivityLevel(entity.getLinkLevel());
+        r.setIsCore(entity.getIsCore());
+        r.setBusinessDomain(entity.getBusinessDomain());
+        r.setBindBusinessId(entity.getBindBusinessId());
+        r.setBusinessType(entity.getType() != null ? entity.getType() : BusinessTypeEnum.NORMAL_BUSINESS.getType());
+        r.setTechLinkId(entity.getRelatedTechLink());
+        r.setParentTechLinkId(entity.getParentBusinessId());
+        return r;
     }
 
 }

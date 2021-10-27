@@ -304,6 +304,7 @@ public class ShadowTableServiceImpl extends AbstractDsService {
                 ShadowDetailResponse.TableInfo info = new ShadowDetailResponse.TableInfo();
                 info.setBizTableName(item);
                 info.setIsCheck(true);
+                info.setIsManual(true);
                 info.setShaDowTableName(PREFIX + info.getBizTableName());
                 map.put(item, info);
             }

@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.service;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -12,10 +14,14 @@ import io.shulie.takin.web.biz.common.CommonService;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.model.mysql.BaseConfigEntity;
+import io.shulie.takin.web.data.param.baseconfig.BaseConfigParam;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.ext.util.WebPluginUtils.EnvCodeEnum;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 基础配置表
@@ -107,5 +113,32 @@ public class BaseConfigService extends CommonService {
         wrapper.eq(BaseConfigEntity::getTenantId, WebPluginUtils.traceTenantId());
         wrapper.eq(BaseConfigEntity::getConfigCode,tBaseConfig.getConfigCode());
         return baseConfigMapper.update(configEntity,wrapper);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void init(Long tenantId){
+        final BaseConfigParam param = new BaseConfigParam();
+        param.setTenantId(WebPluginUtils.DEFAULT_TENANT_ID);
+        final List<TBaseConfig> configList = tbaseConfigDao.queryList(param);
+        if (CollectionUtils.isEmpty(configList)){
+            return;
+        }
+        final List<TBaseConfig> testConfigList = configList.stream().filter(
+            t -> EnvCodeEnum.TEST.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
+        final List<TBaseConfig> prodConfigList = configList.stream().filter(
+            t -> EnvCodeEnum.PROD.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
+
+        try {
+            if (CollectionUtils.isNotEmpty(testConfigList)){
+                testConfigList.forEach(t->t.setTenantId(tenantId));
+                tbaseConfigDao.batchInsert(testConfigList);
+            }
+            if (CollectionUtils.isNotEmpty(prodConfigList)){
+                prodConfigList.forEach(t->t.setTenantId(tenantId));
+                tbaseConfigDao.batchInsert(prodConfigList);
+            }
+        }catch (Exception e){
+            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON,"基础配置表初始化失败！",e);
+        }
     }
 }

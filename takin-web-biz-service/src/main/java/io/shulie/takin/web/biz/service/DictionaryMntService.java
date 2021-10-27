@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.google.common.base.Splitter;
@@ -11,13 +12,18 @@ import com.pamirs.takin.common.constant.TakinConstantEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.common.util.PageInfo;
 import com.pamirs.takin.entity.dao.dict.TDictionaryDataMapper;
+import com.pamirs.takin.entity.dao.dict.TDictionaryTypeMapper;
 import com.pamirs.takin.entity.domain.entity.TDictionaryData;
 import com.pamirs.takin.entity.domain.entity.TDictionaryType;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.takin.web.biz.common.CommonService;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.param.dictionary.DictionaryParam;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.ext.util.WebPluginUtils.EnvCodeEnum;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,8 +100,8 @@ public class DictionaryMntService extends CommonService {
      * @return
      */
     public PageInfo<TDictionaryVo> queryDictionaryList(Map<String, Object> paramMap) {
-        paramMap.put("tenant_id",WebPluginUtils.traceTenantId());
-        paramMap.put("env_code",WebPluginUtils.traceEnvCode());
+        paramMap.put("tenant_id", WebPluginUtils.traceTenantId());
+        paramMap.put("env_code", WebPluginUtils.traceEnvCode());
         PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
         List<TDictionaryVo> dictionaryVoList = tDictionaryDataMapper.queryDictionaryList(paramMap);
 
@@ -146,5 +152,33 @@ public class DictionaryMntService extends CommonService {
         dictMaps.forEach(map -> resultMap.put(MapUtils.getString(map, TakinConstantEnum.VALUE_ORDER.toString()),
             MapUtils.getString(map, TakinConstantEnum.VALUE_NAME.toString())));
         return resultMap;
+    }
+
+    @Transactional(value = "takinTransactionManager", rollbackFor = Exception.class)
+    public void init(Long tenantId) {
+        DictionaryParam param = new DictionaryParam();
+        param.setTenantId(WebPluginUtils.DEFAULT_TENANT_ID);
+        List<TDictionaryData> dataList = tDictionaryDataMapper.queryList(param);
+        if (CollectionUtils.isEmpty(dataList)) {
+            return;
+        }
+        //测试环境-默认租户下的 字典内容
+        List<TDictionaryData> testDataList = dataList.stream().filter(
+            t -> EnvCodeEnum.TEST.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
+        //生产环境-默认租户下的 字典内容
+        List<TDictionaryData> prodDataList = dataList.stream().filter(
+            t -> EnvCodeEnum.PROD.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
+        try {
+            if (CollectionUtils.isNotEmpty(testDataList)) {
+                testDataList.forEach(t -> t.setTenantId(tenantId));
+                tDictionaryDataMapper.batchInsert(testDataList);
+            }
+            if (CollectionUtils.isNotEmpty(prodDataList)) {
+                prodDataList.forEach(t -> t.setTenantId(tenantId));
+                tDictionaryDataMapper.batchInsert(prodDataList);
+            }
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "数据字典初始化错误", e);
+        }
     }
 }

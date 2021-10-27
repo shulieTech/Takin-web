@@ -342,8 +342,6 @@ ALTER TABLE `t_application_node_probe`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_application_plugins_config`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE `t_base_config`
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_black_list`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_business_link_manage_table`
@@ -427,6 +425,9 @@ ALTER TABLE `t_performance_thread_stack_data`
 ALTER TABLE `t_pessure_test_task_activity_config`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
+ALTER TABLE `t_base_config`
+DROP INDEX `unique_idx_config_code`,
+ADD UNIQUE INDEX `unique_idx_config_code_env_code_tenant_id`(`CONFIG_CODE`, `tenant_id`, `env_code`) USING BTREE;
 ALTER TABLE `t_application_ds_manage`
     MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 ALTER TABLE `t_application_mnt`

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.pamirs.pradar.log.parser.trace.RpcBased;
 import com.pamirs.pradar.log.parser.trace.RpcStack;
+import io.shulie.surge.data.deploy.pradar.link.model.TTrackClickhouseModel;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
@@ -49,7 +50,7 @@ public interface TraceClient {
      * @param query
      * @return
      */
-    PagingList<RpcStack> listTraceLog(TraceLogQueryDTO query);
+    PagingList<TTrackClickhouseModel> listTraceLog(TraceLogQueryDTO query);
 
 
 }

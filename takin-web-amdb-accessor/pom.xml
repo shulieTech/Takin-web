@@ -70,6 +70,12 @@
             <groupId>io.shulie.pradar</groupId>
             <artifactId>log-protocol</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>io.shulie.surge.data</groupId>
+            <artifactId>surge-deploy-pradar-link</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>

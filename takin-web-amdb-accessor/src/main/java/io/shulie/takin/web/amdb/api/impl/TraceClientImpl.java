@@ -7,6 +7,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.pradar.log.parser.ProtocolParserFactory;
 import com.pamirs.pradar.log.parser.trace.RpcBased;
 import com.pamirs.pradar.log.parser.trace.RpcStack;
+import io.shulie.surge.data.deploy.pradar.link.model.TTrackClickhouseModel;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
@@ -155,15 +156,20 @@ public class TraceClientImpl implements TraceClient {
         }
     }
 
+    /**
+     * 企业版本使用
+     * @param query
+     * @return
+     */
     @Override
-    public PagingList<RpcStack> listTraceLog(TraceLogQueryDTO query) {
+    public PagingList<TTrackClickhouseModel> listTraceLog(TraceLogQueryDTO query) {
         String url = properties.getUrl().getAmdb() + ENTRY_TRACE_LOG_PATH;
         try {
-            AmdbResult<List<RpcStack>> response = AmdbHelper.newInStance().url(url)
+            AmdbResult<List<TTrackClickhouseModel>> response = AmdbHelper.newInStance().url(url)
                 .param(query)
                 .exception(TakinWebExceptionEnum.APPLICATION_TRACE_LOG_AGENT_ERROR)
                 .eventName("查询trace日志列表")
-                .list(RpcStack.class);
+                .list(TTrackClickhouseModel.class);
             return PagingList.of(response.getData(), response.getTotal());
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());

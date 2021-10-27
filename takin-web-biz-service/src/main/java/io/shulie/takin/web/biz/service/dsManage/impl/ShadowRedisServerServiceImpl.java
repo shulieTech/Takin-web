@@ -404,7 +404,8 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
                 test.setModel(StringUtils.isBlank(bus.getModel()) ? modelMap.get(detail.getType()) : bus.getModel());
                 test.setClient(StringUtils.isBlank(bus.getClient()) ? detail.getCacheName() : bus.getClient());
             }
-
+            bus.setClient(test.getClient());
+            bus.setModel(test.getModel());
             return new ShadowServerConfigurationOutput(bus, test);
         }).collect(Collectors.toList());
 

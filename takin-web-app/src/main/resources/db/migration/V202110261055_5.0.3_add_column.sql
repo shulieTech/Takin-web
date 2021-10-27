@@ -63,7 +63,7 @@ BEGIN
     IF NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 't_file_manage' AND column_name = 'md5')
     THEN
         ALTER TABLE t_file_manage
-            ADD md5 int(11) COMMENT '文件MD5值';
+            ADD md5 VARCHAR(255) COMMENT '文件MD5值';
     END IF;
 
 

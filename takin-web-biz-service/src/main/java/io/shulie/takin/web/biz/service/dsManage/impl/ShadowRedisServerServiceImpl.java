@@ -381,13 +381,13 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         }
 
         list = results.stream().filter(
-                detail ->  detail.getDsType().equals(DsTypeEnum.SHADOW_REDIS_CLUSTER.getCode())
+                detail -> detail.getDsType().equals(DsTypeEnum.SHADOW_REDIS_CLUSTER.getCode())
         ).map(detail -> {
             SingleServerConfiguration bus;
-            if(StringUtils.isBlank(detail.getFileExtedn())){
-                bus = JSONObject.parseObject(detail.getColony(),SingleServerConfiguration.class);
-            }else{
-                 bus = JSONObject.parseObject(detail.getFileExtedn(), SingleServerConfiguration.class);
+            if (StringUtils.isBlank(detail.getFileExtedn())) {
+                bus = JSONObject.parseObject(detail.getColony(), SingleServerConfiguration.class);
+            } else {
+                bus = JSONObject.parseObject(detail.getFileExtedn(), SingleServerConfiguration.class);
             }
 
             String shaDowFileExtedn = detail.getShaDowFileExtedn();
@@ -395,14 +395,14 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
             String shadowConfig = jsonObject.getString("shadowConfig");
             SingleServerConfiguration test = JSONObject.parseObject(shadowConfig, SingleServerConfiguration.class);
             Map<String, String> modelMap = redisTemplateParser.convertModel();
-            if(Objects.isNull(bus)){
-                if(Objects.nonNull(modelMap)){
+            if (Objects.isNull(bus)) {
+                if (Objects.nonNull(modelMap)) {
                     test.setModel(modelMap.get(detail.getType()));
                     test.setClient(detail.getCacheName());
                 }
-            }else{
-                test.setModel(StringUtils.isBlank(bus.getModel())?modelMap.get(detail.getType()):bus.getModel());
-                test.setClient(StringUtils.isBlank(bus.getClient())?detail.getCacheName():bus.getClient());
+            } else {
+                test.setModel(StringUtils.isBlank(bus.getModel()) ? modelMap.get(detail.getType()) : bus.getModel());
+                test.setClient(StringUtils.isBlank(bus.getClient()) ? detail.getCacheName() : bus.getClient());
             }
 
             return new ShadowServerConfigurationOutput(bus, test);

@@ -568,10 +568,11 @@ public class ShadowDbServiceImpl extends AbstractDsService {
         response.setId(recordId);
         response.setApplicationId(String.valueOf(dsResult.getApplicationId()));
         response.setMiddlewareType(Type.MiddleWareType.LINK_POOL.value());
-        response.setConnectionPool("druid");
+        String poolName = "兼容老版本(影子库)";
+        response.setConnectionPool(poolName);
         response.setDsType(dsResult.getDsType());
         response.setUrl(bs.getUrl());
-        response.setUsername(bs.getUsername());
+        response.setUsername(StringUtils.isBlank(bs.getUsername())?"-":bs.getUsername());
         response.setPassword(ds.getPassword());
         response.setShadowInfo(s);
 

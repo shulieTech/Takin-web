@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.dao.activity;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
@@ -79,4 +80,6 @@ public interface ActivityDAO {
     List<ActivityNodeState> getActivityNodeServiceState(long activityId);
 
     List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance);
+
+    BusinessLinkManageTableEntity getActivityByName(String activityName);
 }

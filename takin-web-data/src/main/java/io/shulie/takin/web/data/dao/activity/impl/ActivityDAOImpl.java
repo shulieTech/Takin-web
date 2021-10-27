@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -444,4 +445,10 @@ public class ActivityDAOImpl implements ActivityDAO {
         return activityNodeStateTableMapper.findActivityIdByServiceName(customerId,appName,entrance);
     }
 
+    @Override
+    public BusinessLinkManageTableEntity getActivityByName(String activityName) {
+        LambdaQueryWrapper<BusinessLinkManageTableEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getLinkName,activityName);
+        return businessLinkManageTableMapper.selectOne(lambdaQueryWrapper);
+    }
 }

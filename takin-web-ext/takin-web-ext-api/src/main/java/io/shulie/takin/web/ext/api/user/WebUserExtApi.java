@@ -148,6 +148,13 @@ public interface WebUserExtApi extends ExtensionPoint {
      */
     String traceEnvCode();
 
+    /**
+     * 获取租户code
+     *
+     * @return
+     */
+    String traceTenantCode();
+
     //********************************http线程上下文模块**********************************//
 
 
@@ -176,4 +183,6 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @param ext
      */
     void switchEnv(SwitchTenantExt ext);
+
+
 }

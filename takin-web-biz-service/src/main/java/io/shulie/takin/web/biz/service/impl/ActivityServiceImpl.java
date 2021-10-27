@@ -51,6 +51,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.http.HttpAssert;
 import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
@@ -764,6 +765,11 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public List<ActivityNodeState> getActivityNodeServiceState(long activityId) {
         return activityDAO.getActivityNodeServiceState(activityId);
+    }
+
+    @Override
+    public BusinessLinkManageTableEntity getActivityByName(String activityName) {
+        return activityDAO.getActivityByName(activityName);
     }
 
     // TODO 变更逻辑后续看如何设计

@@ -41,6 +41,7 @@ import io.shulie.takin.web.biz.pojo.input.application.*;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
@@ -148,6 +149,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private TApplicationMntDao tApplicationMntDao;
     @Resource
     private TAppMiddlewareInfoMapper tAppMiddlewareInfoMapper;
+    @Autowired
+    private ActivityService activityService;
 
     @Autowired
     @Qualifier("redisTemplate")
@@ -234,9 +237,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private AmdbClientProperties properties;
-
-    @Autowired
-    private ActivityService activityService;
 
     @Autowired
     private ActivityDAO activityDAO;
@@ -1085,7 +1085,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public void attendApplicationService(ApplicationVisualInfoQueryRequest request) throws Exception {
         Map param = new HashMap<>();
         String applicationName = request.getAppName();
-        String interfaceName = request.getLabel();
+        String interfaceName = request.getServiceName();
         param.put("appName", applicationName);
         param.put("interfaceName", interfaceName);
         param.put("isAttend", Boolean.parseBoolean(String.valueOf(request.getAttend())));
@@ -1093,6 +1093,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         param.put("id", key);
         applicationDAO.attendApplicationService(param);
     }
+
+    @Override
+    public void gotoActivityInfo(ActivityCreateRequest request) {
+        activityService.createActivity(request);
+    }
+
 
     /**
      * 关注列表
@@ -1113,16 +1119,16 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (CollectionUtils.isEmpty(infoDTOList)) {
             return;
         }
+        LocalDateTime startTime = request.getStartTimeDate();
+        LocalDateTime endTime = request.getEndTimeDate();
         infoDTOList.stream().forEach(dto -> {
             String appName = dto.getAppName();
             String serviceAndMethod = dto.getServiceAndMethod();
             int clusterTest = request.getClusterTest();
             FlowTypeEnum flowTypeEnum = FlowTypeEnum.getByType(clusterTest);
-            LocalDateTime startTime = request.getStartTimeDate();
-            LocalDateTime endTime = request.getEndTimeDate();
             Map<String, String> activeMap = dto.getActiveIdAndName();
             List<ActivityInfoQueryRequest> activityList = activeMap.keySet().stream().map(id -> new ActivityInfoQueryRequest(Long.parseLong(id), flowTypeEnum, startTime, endTime)).collect(Collectors.toList());
-            ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(activityList, appName, serviceAndMethod);
+            ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(dto,startTime,endTime);
             dto.setResponse(response);
         });
     }
@@ -1142,52 +1148,55 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     .list(ApplicationVisualInfoResponse.class);
             //TODO 大数据待清洗
             List<ApplicationVisualInfoResponse> data = appDataResult.getData();
+            Long total = appDataResult.getTotal();
             List<String> attentionList = request.getAttentionList();
             String orderBy = request.getOrderBy();
             int current = request.getCurrent();
             int pageSize = request.getPageSize();
-            return doSortAndPageAndConvertActivityId(data, attentionList, orderBy, pageSize, current);
+            return doSortAndPageAndConvertActivityId(data, attentionList, orderBy, pageSize, current,total);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
         }
     }
 
-    private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current) {
+    private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current, Long total) {
         if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current)) {
             return null;
         }
-        String[] orderList = orderBy.split(" ");
-        if (orderList.length != 2) {
-            return null;
-        }
-        int total = data.size();
-        String orderName = orderList[0];
-        String orderType = orderList[1];
-        List<ApplicationVisualInfoResponse> visualInfoDTOList = data.stream().sorted((d1, d2) -> {
-            boolean b1 = attentionList.contains(d1.getServiceAndMethod());
-            boolean b2 = attentionList.contains(d2.getServiceAndMethod());
-            if ((b1 && b2) || (!b1 && !b2)) {
-                Number result = 0;
-                switch (orderName) {
-                    case "QPS":
-                        result = d1.getRequestCount() - d2.getRequestCount();
-                        break;
-                    case "TPS":
-                        result = d1.getTps() - d2.getTps();
-                        break;
-                    case "RT":
-                        result = d1.getResponseConsuming() - d2.getResponseConsuming();
-                        break;
-                    case "SUCCESSRATE":
-                        result = d1.getSuccessRatio() - d2.getSuccessRatio();
-                }
-                int diff = result.doubleValue() > 0 ? 1 : -1;
-                return "asc".equals(orderType) ? diff : -diff;
-            } else {
-                return b1 ? -1 : 1;
-            }
-        }).map(dto -> {
+//        String[] orderList = orderBy.split(" ");
+//        if (orderList.length != 2) {
+//            return null;
+//        }
+//        int total = data.size();
+//        String orderName = orderList[0];
+//        String orderType = orderList[1];
+        List<ApplicationVisualInfoResponse> visualInfoDTOList = data.stream()
+//                .sorted((d1, d2) -> {
+//            boolean b1 = attentionList.contains(d1.getServiceAndMethod());
+//            boolean b2 = attentionList.contains(d2.getServiceAndMethod());
+//            if ((b1 && b2) || (!b1 && !b2)) {
+//                Number result = 0;
+//                switch (orderName) {
+//                    case "QPS":
+//                        result = d1.getRequestCount() - d2.getRequestCount();
+//                        break;
+//                    case "TPS":
+//                        result = d1.getTps() - d2.getTps();
+//                        break;
+//                    case "RT":
+//                        result = d1.getResponseConsuming() - d2.getResponseConsuming();
+//                        break;
+//                    case "SUCCESSRATE":
+//                        result = d1.getSuccessRatio() - d2.getSuccessRatio();
+//                }
+//                int diff = result.doubleValue() > 0 ? 1 : -1;
+//                return "asc".equals(orderType) ? diff : -diff;
+//            } else {
+//                return b1 ? -1 : 1;
+//            }
+//        })
+                .map(dto -> {
             dto.setAttend(attentionList.contains(dto.getServiceAndMethod()));
             String[] activeList = dto.getActiveList();
             Map<String, String> activityResult = new HashMap<>();
@@ -1206,13 +1215,13 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return dto;
         }).collect(Collectors.toList());
 
-        List<ApplicationVisualInfoResponse> infoDTOPageList = new ArrayList<>();
-        for (int i = current * pageSize; i < (current + 1) * pageSize && i < visualInfoDTOList.size(); i++) {
-            infoDTOPageList.add(visualInfoDTOList.get(i));
-        }
+//        List<ApplicationVisualInfoResponse> infoDTOPageList = new ArrayList<>();
+//        for (int i = current * pageSize; i < (current + 1) * pageSize && i < visualInfoDTOList.size(); i++) {
+//            infoDTOPageList.add(visualInfoDTOList.get(i));
+//        }
 
         Map result = new HashMap<>();
-        result.put(infoDTOPageList, total);
+        result.put(visualInfoDTOList, total);
         return result;
     }
 

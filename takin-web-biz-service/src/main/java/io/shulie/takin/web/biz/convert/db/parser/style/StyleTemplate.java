@@ -125,6 +125,14 @@ public interface StyleTemplate {
 
         private Integer nodeType;
 
+        private Boolean required;
+
+        public InputStyle(String key, String label, Integer nodeType) {
+            this.key = key;
+            this.label = label;
+            this.nodeType = nodeType;
+            this.required = true;
+        }
     }
 
     /**
@@ -144,6 +152,7 @@ public interface StyleTemplate {
 
         private InputWithSelectStyle.NodeInfo nodeInfo;
 
+        private Boolean required;
 
         @Data
         @AllArgsConstructor
@@ -165,6 +174,14 @@ public interface StyleTemplate {
 
             private String value;
         }
+
+        public InputWithSelectStyle(String key, String label, Integer nodeType, NodeInfo nodeInfo) {
+            this.key = key;
+            this.label = label;
+            this.nodeType = nodeType;
+            this.nodeInfo = nodeInfo;
+            this.required = true;
+        }
     }
 
     /**
@@ -181,11 +198,14 @@ public interface StyleTemplate {
 
         private Integer nodeType;
 
+        private Boolean required;
+
 
         public ListStyle() {
             this.key = "shaDowTaleInfo";
             this.label ="";
             this.nodeType = StyleEnums.TABLE.getCode();
+            this.required = true;
         }
     }
 
@@ -199,12 +219,9 @@ public interface StyleTemplate {
 
         private String tips;
 
-        private Boolean required;
-
         public TipsInputStyle(String key, String label, Integer nodeType, String tips) {
             super(key, label, nodeType);
             this.tips = tips;
-            this.required = true;
         }
     }
 }

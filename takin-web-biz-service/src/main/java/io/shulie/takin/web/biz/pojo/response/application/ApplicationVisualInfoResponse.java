@@ -52,6 +52,8 @@ public class ApplicationVisualInfoResponse implements Serializable {
      * 是否关注
      */
     private boolean isAttend;
+
+    private int rpcType;
     /**
      * 健康检查结果
      */

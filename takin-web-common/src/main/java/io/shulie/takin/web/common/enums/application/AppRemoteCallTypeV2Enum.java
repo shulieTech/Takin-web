@@ -36,13 +36,24 @@ public enum AppRemoteCallTypeV2Enum {
     DUBBO(1, "dubbo",AppRemoteCallTypeEnum.DUBBO),
 
     /**
+     * DUBBO
+     */
+    DUBBO_OLD(1, "DUBBO",AppRemoteCallTypeEnum.DUBBO),
+
+    /**
      * FEIGN
      */
     FEIGN(2, "feign",AppRemoteCallTypeEnum.FEIGN),
 
     /**
+     * FEIGN
+     */
+    FEIGN_OLD(2, "FEIGN",AppRemoteCallTypeEnum.FEIGN),
+
+    /**
      * GRPC
      */
+    GRPC_OLD(3,"GRPC",AppRemoteCallTypeEnum.GRPC),
     GRPC(3,"grpc",AppRemoteCallTypeEnum.GRPC);
 
 

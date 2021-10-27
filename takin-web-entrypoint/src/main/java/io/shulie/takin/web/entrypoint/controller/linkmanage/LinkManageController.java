@@ -356,4 +356,16 @@ public class LinkManageController {
         }
     }
 
+    @PostMapping("/link/parseScriptAndSave")
+    @ApiOperation("解析脚本并保存业务流程")
+    public Response<List<MiddleWareNameDto>> parseScriptAndSave(@ApiParam(name = "filePath"
+            , value = "脚本文件路径") String filePath) {
+        try {
+            return null;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, e.getMessage());
+        }
+    }
+
 }

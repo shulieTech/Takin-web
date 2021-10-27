@@ -2,10 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 /**
@@ -85,4 +82,17 @@ public class SceneLinkRelateEntity {
      */
     @TableField(value = "script_xpath_md5")
     private String scriptXpathMd5;
+
+    /**
+     * 租户id
+     */
+    @TableField(value = "tenant_id")
+    private Long tenantId;
+
+    /**
+     * 环境
+     */
+    @TableField(value = "env_code")
+    private String envCode;
+
 }

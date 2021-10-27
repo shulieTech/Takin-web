@@ -15,6 +15,18 @@ BEGIN
             ADD script_xpath_md5 VARCHAR(64) COMMENT '脚本请求xpath的MD5';
     END IF;
 
+    IF NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 't_scene_link_relate' AND column_name = 'tenant_id')
+        THEN
+    ALTER TABLE t_scene_link_relate
+        ADD tenant_id bigint(20) COMMENT '租户id';
+    END IF;
+
+    IF NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 't_scene_link_relate' AND column_name = 'env_code')
+        THEN
+    ALTER TABLE t_scene_link_relate
+        ADD env_code VARCHAR(255) COMMENT '环境code';
+    END IF;
+
     IF NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 't_scene' AND column_name = 'type')
     THEN
         ALTER TABLE t_scene
@@ -44,6 +56,8 @@ BEGIN
         ALTER TABLE t_scene
             ADD total_node_num int(11) COMMENT '脚本总节点数';
     END IF;
+
+
 
 # 文件MD5
     IF NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 't_file_manage' AND column_name = 'md5')

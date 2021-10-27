@@ -43,6 +43,7 @@ import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.PradarWebRequest;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.trace.TraceNodeAsyncEnum;
 import io.shulie.takin.web.common.enums.trace.TraceNodeLogTypeEnum;
 import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
@@ -123,8 +124,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         // 时间解析 查询前后30分钟
         Long time = TraceIdUtil.getTraceIdTime(traceId);
         RpcStack rpcStack = traceClient.getTraceDetailById(traceId,
-            DateUtils.dateToString(new Date(time - 1000*60*30),DateUtils.FORMATE_YMDHMS),
-            DateUtils.dateToString(new Date(time + 1000*60*30),DateUtils.FORMATE_YMDHMS));
+            DateUtils.dateToString(new Date(time - 1000*60*30),DateUtils.FORMATE_YMDHMS).replace(" ", "%20"),
+            DateUtils.dateToString(new Date(time + 1000*60*30),DateUtils.FORMATE_YMDHMS).replace(" ", "%20"));
 
         // 构造响应出参
         ReportLinkDetailResponse response = new ReportLinkDetailResponse();
@@ -252,6 +253,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             reportTraceDetailDTO.setLogType(rpcEntry.getLogType());
             reportTraceDetailDTO.setLogTypeName(TraceNodeLogTypeEnum.judgeTraceNodeLogType(rpcEntry.getLogType()).getDesc());
             reportTraceDetailDTO.setAsync(rpcEntry.isAsync());
+            reportTraceDetailDTO.setAsyncName(rpcEntry.isAsync()? TraceNodeAsyncEnum.ASYNC.getDesc():TraceNodeAsyncEnum.SYNCHRONIZE.getDesc());
             reportTraceDetailDTO.setMiddlewareName(rpcEntry.getMiddlewareName());
 
 

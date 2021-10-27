@@ -87,6 +87,12 @@ public class ReportTraceDetailDTO implements Serializable {
     @ApiModelProperty(value = "同步异步 异步 true 同步 false")
     private Boolean async;
 
+    /**
+     * 异步 true 同步 false
+     */
+    @ApiModelProperty(value = "同步异步")
+    private String asyncName;
+
 
     /**
      * 中间件名

@@ -100,6 +100,8 @@ import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.FileUtil;
+import io.shulie.takin.web.data.model.mysql.FileManageEntity;
+import io.shulie.takin.web.data.mapper.mysql.FileManageMapper;
 import io.shulie.takin.web.common.vo.script.ScriptDeployFinishDebugVO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
@@ -161,6 +163,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     private ScriptFileRefDAO scriptFileRefDAO;
     @Autowired
     private FileManageDAO fileManageDAO;
+    @Resource
+    private FileManageMapper fileManageMapper;
     @Autowired
     private ScriptTagRefDAO scriptTagRefDAO;
     @Autowired
@@ -363,7 +367,14 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                 FileCreateByStringParamReq fileCreateByStringParamReq = new FileCreateByStringParamReq();
                 fileCreateByStringParamReq.setFileContent(fileManageUpdateRequest.getScriptContent());
                 fileCreateByStringParamReq.setFilePath(tempFile);
-                fileApi.createFileByPathAndString(fileCreateByStringParamReq);
+                String fileMd5 = fileApi.createFileByPathAndString(fileCreateByStringParamReq);
+                // 更新文件的MD5值
+                if (fileManageUpdateRequest.getId() != null && !StrUtil.isBlank(fileMd5)) {
+                    fileManageMapper.updateById(new FileManageEntity() {{
+                        setId(fileManageUpdateRequest.getId());
+                        setMd5(fileMd5);
+                    }});
+                }
             }
         }
     }

@@ -302,6 +302,7 @@ public class ShadowTableServiceImpl extends AbstractDsService {
             String[] configItems = configStr.split(",");
             for (String item : configItems) {
                 ShadowDetailResponse.TableInfo info = new ShadowDetailResponse.TableInfo();
+                info.setBizTableName(item);
                 info.setIsCheck(true);
                 info.setShaDowTableName(PREFIX + info.getBizTableName());
                 map.put(item, info);

@@ -67,7 +67,9 @@ public class DsDbTemplateServiceImpl extends AbstractDsTemplateService {
             return vos;
         }
         results.forEach(detail -> {
-            vos.add(new SelectVO(detail.getName(),detail.getName()));
+            if(!"兼容老版本(影子库)".equals(detail.getName()) || !"兼容老版本(影子表)".equals(detail.getName())){
+                vos.add(new SelectVO(detail.getName(),detail.getName()));
+            }
         });
         return vos;
     }

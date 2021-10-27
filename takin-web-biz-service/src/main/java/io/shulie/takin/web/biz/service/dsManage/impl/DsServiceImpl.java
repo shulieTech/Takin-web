@@ -54,10 +54,14 @@ import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.dsManage.impl.v2.ShaDowCacheServiceImpl;
 import io.shulie.takin.web.biz.service.dsManage.impl.v2.ShaDowDbServiceImpl;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsCacheManageDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
+import io.shulie.takin.web.data.dao.application.CacheConfigTemplateDAO;
+import io.shulie.takin.web.data.dao.application.ConnectpoolConfigTemplateDAO;
 import io.shulie.takin.web.data.param.application.ApplicationDsDeleteParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsEnableParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
@@ -66,6 +70,8 @@ import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsResult;
+import io.shulie.takin.web.data.result.application.CacheConfigTemplateDetailResult;
+import io.shulie.takin.web.data.result.application.ConnectpoolConfigTemplateDetailResult;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -158,6 +164,11 @@ public class DsServiceImpl implements DsService {
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
 
+    @Autowired
+    private ConnectpoolConfigTemplateDAO connectpoolConfigTemplateDAO;
+
+    @Autowired
+    private CacheConfigTemplateDAO cacheConfigTemplateDAO;
 
     @PostConstruct
     public void init() {
@@ -467,6 +478,7 @@ public class DsServiceImpl implements DsService {
             return Response.fail("0", "该应用不存在");
         }
 
+
         if (!isNewData) {
             // [db/cache]老数据兼容改造,其他类型保留原返回结构
             Response<ApplicationDsDetailOutput> oldResponse = this.dsQueryDetail(id, true);
@@ -589,6 +601,16 @@ public class DsServiceImpl implements DsService {
         }
         Integer code = MiddleWareTypeEnum.getEnumByValue(updateRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
+
+        ConnectpoolConfigTemplateDetailResult result = connectpoolConfigTemplateDAO.queryOne(updateRequestV2.getMiddlewareType(), updateRequestV2.getConnectionPool());
+        if(Objects.isNull(result)){
+            CacheConfigTemplateDetailResult cacheResult = cacheConfigTemplateDAO.queryOne(updateRequestV2.getMiddlewareType(), updateRequestV2.getConnectionPool());
+            if(Objects.isNull(cacheResult)){
+                throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_CREATE_ERROR,"此模式不支持");
+            }
+        }
+
+
 
         if (!updateRequestV2.getIsNewData()) {
             //针对老版本数据,先删除原表数据,逻辑删除,新表重新保存

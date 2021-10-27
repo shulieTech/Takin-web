@@ -239,9 +239,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private AmdbClientProperties properties;
 
     @Autowired
-    private ActivityService activityService;
-
-    @Autowired
     private ActivityDAO activityDAO;
 
 

@@ -185,7 +185,10 @@ public class BaseServerDaoImpl implements BaseServerDao {
                     "select sum(totalRt) as rt,MEAN(totalQps) as tps,SUM(totalCount) as count,SUM(errorCount) as "
                             + "errorCount "
                             +
-                            "from tro_pradar where ptFlag='true' and time >= " + sTime + " and time < " + eTime;
+                            "from tro_pradar where ptFlag='true' and time >= " + sTime + " and time < " + eTime +
+                        // 增加租户
+                        " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                        " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
             if (RpcType.TRACE.getText().equals(rpcType)) {
                 command = command + " and appName = '" + appName + "'  and event = '" + event + "'";
             }

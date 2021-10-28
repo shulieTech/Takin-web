@@ -2403,11 +2403,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Response userAppSilenceSwitchInfo() {
         ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
         UserExt user = WebPluginUtils.traceUser();
-        if (user == null) {
+        if (WebPluginUtils.checkUserPlugin() && user == null) {
             return Response.fail(FALSE_CORE);
         }
         //体验用户默认状态为开启
-        if (user.getRole() != null && user.getRole() == 1) {
+        if (user != null && user.getRole() != null && user.getRole() == 1) {
             result.setSwitchStatus(AppSwitchEnum.OPENED.getCode());
         } else {
             result.setSwitchStatus(getUserSilenceSwitchStatusForVo(WebPluginUtils.traceUserId()));

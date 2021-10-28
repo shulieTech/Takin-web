@@ -1,10 +1,12 @@
 package io.shulie.takin.web.ext.util;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -23,6 +25,8 @@ import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +64,17 @@ public class WebPluginUtils {
         userAuthExtApi = pluginManager.getExtension(WebUserAuthExtApi.class);
         inspectionExtApi = pluginManager.getExtension(InspectionExtApi.class);
         tenantExtApi = pluginManager.getExtension(WebTenantExtApi.class);
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public enum EnvCodeEnum{
+        TEST("test","测试环境",""),
+        PROD("prod","生产环境","当前环境为生产环境，请谨慎操作");
+
+        private String envCode;
+        private String envName;
+        private String desc;
     }
 
     //********************************用户插件模块**********************************//

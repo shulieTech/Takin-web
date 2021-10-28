@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class DictionaryParam extends BaseTenantBean {
+public class DictionaryParam{
     /**
      * 字典别名
      */
@@ -21,5 +21,17 @@ public class DictionaryParam extends BaseTenantBean {
      * 字典值ID
      */
     private String tDictionaryId;
+
+    private String active;
+
+    /**
+     * 租户ID
+     */
+    private Long tenantId;
+
+    /**
+     * 环境编码
+     */
+    private String envCode;
 
 }

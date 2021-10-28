@@ -347,4 +347,112 @@
                  LEFT JOIN t_dictionary_data d ON t.ID = d.DICT_TYPE
         WHERE d.ID IS NULL
     </delete>
+
+    <select id="queryList" resultType="com.pamirs.takin.entity.domain.entity.TDictionaryData" parameterType="io.shulie.takin.web.data.param.dictionary.DictionaryParam">
+        select
+        <include refid="Base_Column_List"/>
+        from t_dictionary_data d
+        where d.tenant_id = #{tenantId}
+        <if test="envCode!=null and envCode!=''">
+            AND d.env_code = #{envCode}
+        </if>
+        <if test="active!=null and active!=''">
+            AND d.ACTIVE = #{active}
+        </if>
+    </select>
+
+
+    <insert id="batchInsert" parameterType="com.pamirs.takin.entity.domain.entity.TDictionaryData">
+        <foreach collection="list" item="item" separator=";" >
+            insert into t_dictionary_data
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="item.dictType != null">
+                    DICT_TYPE,
+                </if>
+                <if test="item.valueOrder != null">
+                    VALUE_ORDER,
+                </if>
+                <if test="item.valueName != null">
+                    VALUE_NAME,
+                </if>
+                <if test="item.valueCode != null">
+                    VALUE_CODE,
+                </if>
+                <if test="item.language != null">
+                    LANGUAGE,
+                </if>
+                <if test="item.active != null">
+                    ACTIVE,
+                </if>
+                <if test="item.createTime != null">
+                    CREATE_TIME,
+                </if>
+                <if test="item.modifyTime != null">
+                    MODIFY_TIME,
+                </if>
+                <if test="item.createUserCode != null">
+                    CREATE_USER_CODE,
+                </if>
+                <if test="item.modifyUserCode != null">
+                    MODIFY_USER_CODE,
+                </if>
+                <if test="item.noteInfo != null">
+                    NOTE_INFO,
+                </if>
+                <if test="item.versionNo != null">
+                    VERSION_NO,
+                </if>
+                <if test="item.tenantId != null">
+                    tenant_id,
+                </if>
+                <if test="item.envCode != null">
+                    env_code,
+                </if>
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="item.dictType != null">
+                    #{item.dictType,jdbcType=VARCHAR},
+                </if>
+                <if test="item.valueOrder != null">
+                    #{item.valueOrder,jdbcType=INTEGER},
+                </if>
+                <if test="item.valueName != null">
+                    #{item.valueName,jdbcType=VARCHAR},
+                </if>
+                <if test="item.valueCode != null">
+                    #{item.valueCode,jdbcType=VARCHAR},
+                </if>
+                <if test="item.language != null">
+                    #{item.language,jdbcType=VARCHAR},
+                </if>
+                <if test="item.active != null">
+                    #{item.active,jdbcType=CHAR},
+                </if>
+                <if test="item.createTime != null">
+                    #{item.createTime,jdbcType=DATE},
+                </if>
+                <if test="item.modifyTime != null">
+                    #{item.modifyTime,jdbcType=DATE},
+                </if>
+                <if test="item.createUserCode != null">
+                    #{item.createUserCode,jdbcType=VARCHAR},
+                </if>
+                <if test="item.modifyUserCode != null">
+                    #{item.modifyUserCode,jdbcType=VARCHAR},
+                </if>
+                <if test="item.noteInfo != null">
+                    #{item.noteInfo,jdbcType=VARCHAR},
+                </if>
+                <if test="item.versionNo != null">
+                    #{item.versionNo,jdbcType=BIGINT},
+                </if>
+                <if test="item.tenantId != null">
+                    #{item.tenantId},
+                </if>
+                <if test="item.envCode != null">
+                    #{item.envCode},
+                </if>
+            </trim>
+        </foreach>
+    </insert>
 </mapper>

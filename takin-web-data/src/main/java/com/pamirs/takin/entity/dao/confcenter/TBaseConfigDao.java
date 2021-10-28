@@ -1,7 +1,12 @@
 package com.pamirs.takin.entity.dao.confcenter;
 
+import java.util.List;
+
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
+import io.shulie.takin.web.data.param.baseconfig.BaseConfigParam;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.checkerframework.checker.units.qual.A;
 
 /**
  * takin基础配置
@@ -59,4 +64,8 @@ public interface TBaseConfigDao {
      * @return
      */
     int updateByPrimaryKey(TBaseConfig record);
+
+    List<TBaseConfig> queryList(BaseConfigParam param);
+
+    void batchInsert(@Param("list") List<TBaseConfig> configList);
 }

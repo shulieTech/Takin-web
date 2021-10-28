@@ -34,6 +34,7 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.InstanceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.LibraryDTO;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
@@ -431,8 +432,8 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    public List<ApplicationAttentionListEntity> getAttentionList(String applicationName) {
-         return applicationAttentionListMapper.getAttentionList(applicationName);
+    public List<ApplicationAttentionListEntity> getAttentionList(ApplicationAttentionParam param) {
+         return applicationAttentionListMapper.getAttentionList(param);
     }
 
     @Override

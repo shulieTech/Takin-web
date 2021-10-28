@@ -342,8 +342,6 @@ ALTER TABLE `t_application_node_probe`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_application_plugins_config`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE `t_base_config`
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_black_list`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_business_link_manage_table`
@@ -427,6 +425,9 @@ ALTER TABLE `t_performance_thread_stack_data`
 ALTER TABLE `t_pessure_test_task_activity_config`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
+ALTER TABLE `t_base_config`
+DROP INDEX `unique_idx_config_code`,
+ADD UNIQUE INDEX `unique_idx_config_code_env_code_tenant_id`(`CONFIG_CODE`, `tenant_id`, `env_code`) USING BTREE;
 ALTER TABLE `t_application_ds_manage`
     MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 ALTER TABLE `t_application_mnt`
@@ -436,6 +437,12 @@ ALTER TABLE `t_application_middleware`
 
 CREATE VIEW APPLICATION_VIEW AS
 SELECT APPLICATION_ID,APPLICATION_NAME,tenant_id AS TENANT_ID,env_code as ENV_CODE FROM t_application_mnt;
+
+---系统信息的权限问题
+INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
+                                     `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES (510, NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, NULL, NULL, '2021-01-14 11:19:50',
+        '2021-01-14 11:19:50', 0);
 ----- 剑英 -----
 
 ----- 无涯 -----

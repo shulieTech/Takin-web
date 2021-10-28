@@ -10,9 +10,25 @@
         <result column="interface_name" jdbcType="VARCHAR" property="interfaceName"/>
         <result column="focus" jdbcType="TINYINT" property="focus"/>
     </resultMap>
-
-    <select id="getAttentionList" parameterType="java.lang.String" resultMap="BaseResultMap">
-        SELECT app_name,interface_name,focus FROM t_application_focus WHERE app_name = #{applicationName} AND focus = 1;
+    <sql id="Base_Column_List">
+        id,app_name,interface_name,focus,tenant_id,env_code
+    </sql>
+    <select id="getAttentionList" parameterType="io.shulie.takin.web.biz.pojo.request.application.ApplicationAttentionParam" resultType="io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM t_application_focus where 1=1
+        <if test="tenantId!=null and tenantId!=''">
+            AND tenant_id=#{tenantId}
+        </if>
+        <if test="envCode!=null and envCode!=''">
+            AND env_code = #{envCode}
+        </if>
+        <if test="applicationName!=null and applicationName!=''">
+            AND app_name = #{applicationName}
+        </if>
+        <if test="focus!=null and focus!=''">
+            AND focus = #{focus}
+        </if>
     </select>
 
     <insert id="attendApplicationService" parameterType="java.util.Map">

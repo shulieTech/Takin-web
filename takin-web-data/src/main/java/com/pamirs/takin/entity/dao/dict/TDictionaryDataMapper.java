@@ -92,4 +92,7 @@ public interface TDictionaryDataMapper {
      */
     void deleteEmptyDictType();
 
+    List<TDictionaryData> queryList(DictionaryParam param);
+
+    void batchInsert(@Param("list") List<TDictionaryData> dataList);
 }

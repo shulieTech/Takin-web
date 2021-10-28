@@ -23,7 +23,7 @@ public class ApplicationEntrancesResponse extends WebOptionEntity {
 
     private String serviceName;
 
-    private Map<String, String> activityNameAndId;
+    private Map activityNameAndId;
 
     @Override
     public boolean equals(Object o) {

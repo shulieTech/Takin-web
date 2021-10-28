@@ -823,6 +823,7 @@ public class DsServiceImpl implements DsService {
             v2Response.setConnectionPool(RedisTemplate.Client.jedis.toString());
             v2Response.setIsNewPage(true);
             v2Response.setAgentSourceType(Converter.TemplateConverter.TemplateEnum._6.getKey());
+            v2Response.setCacheType("主从模式");
             if (Objects.nonNull(response.getDsType())) {
                 //处理老数据类型映射的问题
                 v2Response.setDsType(DsTypeEnum.SHADOW_REDIS_CLUSTER.getDesc());

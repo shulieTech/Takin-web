@@ -24,9 +24,9 @@ import com.pamirs.takin.entity.domain.entity.report.TpsTarget;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.web.biz.service.report.ReportService;
-import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -159,7 +159,11 @@ public class SummaryService {
             //机器信息
             long startTime = System.currentTimeMillis();
             String searchAppIdSql = "select distinct(app_ip) as app_ip from app_base_data " +
-                "where time>=" + minTime + "ms and time <= " + maxTime + "ms and app_name = '" + applicationName + "'";
+                "where time>=" + minTime + "ms and time <= " + maxTime + "ms and app_name = '" + applicationName + "'" +
+                // 增加租户
+                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
+
             Collection<BaseServerResult> appIds = influxDatabaseManager.query(BaseServerResult.class, searchAppIdSql);
             log.info("search appIds :{},cost time : {}", searchAppIdSql, System.currentTimeMillis() - startTime);
             if (CollectionUtils.isEmpty(appIds)) {
@@ -170,7 +174,10 @@ public class SummaryService {
                 long baseTime = System.currentTimeMillis();
                 String searchBaseSql = "select time, app_ip, cpu_rate, cpu_load, mem_rate, iowait, net_bandwidth_rate" +
                     " from app_base_data where time>=" + minTime + "ms and time <= " + maxTime
-                    + "ms and app_name = '" + applicationName + "'" + " and app_ip = '" + host + "'";
+                    + "ms and app_name = '" + applicationName + "'" + " and app_ip = '" + host + "'" +
+                    // 增加租户
+                    " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                    " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
                 Collection<BaseServerResult> bases = influxDatabaseManager.query(BaseServerResult.class, searchBaseSql);
                 log.info("search baseSql :{},cost time = {} ", searchBaseSql, System.currentTimeMillis() - baseTime);
                 TpsTargetArray array = calcTpsTarget(metrics, bases);

@@ -53,6 +53,7 @@ import io.shulie.takin.web.data.result.baseserver.LinkDetailResult;
 import io.shulie.takin.web.data.result.risk.BaseRiskResult;
 import io.shulie.takin.web.data.result.risk.LinkDataResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -661,7 +662,10 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 
         appNames.forEach(appName -> {
             String ipSql = "select distinct(app_ip) as app_ip from app_base_data where app_name = '" + appName
-                    + "' and time > " + firstTime + " and time <= " + lastTime;
+                    + "' and time > " + firstTime + " and time <= " + lastTime +
+                // 增加租户
+                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
             Collection<BaseServerResult> ipList = influxDatabaseManager.query(BaseServerResult.class, ipSql);
             if (CollectionUtils.isNotEmpty(ipList)) {
                 // 需要统计的Metrices
@@ -672,7 +676,10 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                             "select mean(cpu_rate) as cpu_rate,mean(cpu_load) as cpu_load,mean(mem_rate) as mem_rate,mean"
                                     + "(iowait) as iowait,mean(net_bandwidth_rate) as net_bandwidth_rate from app_base_data"
                                     + " where tag_app_name = '" + appName + "' and tag_app_ip = '" + ip.getAppIp()
-                                    + "' and time > " + firstTime + " and time <= " + lastTime
+                                    + "' and time > " + firstTime + " and time <= " + lastTime +
+                                    // 增加租户
+                                    " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                                    " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
                                     + " group by time(5s) order by time";
                     Collection<BaseServerResult> voList = influxDatabaseManager.query(BaseServerResult.class, tmpSql);
                     if (CollectionUtils.isNotEmpty(voList)) {

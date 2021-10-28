@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Lists;
@@ -136,6 +137,10 @@ public class PerformanceBaseDataDAOImpl implements PerformanceBaseDataDAO {
         tags.put("app_ip", StringUtils.isNotBlank(param.getAppIp()) ? param.getAppIp() : "null");
         tags.put("process_id", param.getProcessId() != null ? String.valueOf(param.getProcessId()) : "null");
         tags.put("process_name", StringUtils.isNotBlank(param.getProcessName()) ? param.getProcessName() : "null");
+        // 租户信息tag
+        tags.put("tenant_id", WebPluginUtils.traceTenantId() + "");
+        tags.put("tenant_app_key", WebPluginUtils.traceTenantAppKey() + "");
+        tags.put("env_code", WebPluginUtils.traceEnvCode() + "");
         try {
             influxDatabaseWriter.insert("t_performance_base_data", tags, fields, param.getTimestamp());
         } catch (Exception e) {
@@ -155,6 +160,8 @@ public class PerformanceBaseDataDAOImpl implements PerformanceBaseDataDAO {
                 " app_name = '" + param.getAppName() + "'" +
                 " and time >= '" + param.getStartTime() + "'" +
                 " and time <= '" + param.getEndTime() + "'" +
+                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'" +
                 " TZ('Asia/Shanghai')";
 
         List<PerformanceBaseDataResult> dataList = influxDatabaseWriter.query(influxDatabaseSql,
@@ -181,6 +188,8 @@ public class PerformanceBaseDataDAOImpl implements PerformanceBaseDataDAO {
                 " and app_name = " + "'" + param.getAppName() + "'" +
                 " and app_ip = " + "'" + param.getAppIp() + "'" +
                 " and agent_id = " + "'" + param.getAgentId() + "'" +
+                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'" +
                 " limit 1" +
                 " TZ('Asia/Shanghai')";
         PerformanceBaseDataResult result = influxDatabaseWriter.querySingle(influxDatabaseSql,
@@ -200,6 +209,8 @@ public class PerformanceBaseDataDAOImpl implements PerformanceBaseDataDAO {
                 " and app_name = " + "'" + param.getAppName() + "'" +
                 " and app_ip = " + "'" + param.getAppIp() + "'" +
                 " and agent_id = " + "'" + param.getAgentId() + "'" +
+                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'" +
                 "order by time TZ('Asia/Shanghai') ";
 
         List<PerformanceBaseDataResult> dataList = influxDatabaseWriter.query(influxDatabaseSql,

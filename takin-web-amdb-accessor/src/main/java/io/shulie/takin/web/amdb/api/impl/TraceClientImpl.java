@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.google.common.collect.Sets;
 import com.pamirs.pradar.log.parser.ProtocolParserFactory;
 import com.pamirs.pradar.log.parser.trace.RpcBased;
 import com.pamirs.pradar.log.parser.trace.RpcStack;
@@ -176,6 +177,9 @@ public class TraceClientImpl implements TraceClient {
 
         if(StringUtils.isNotBlank(query.getServiceName())) {
             param.setServiceName(query.getServiceName());
+        }
+        if(StringUtils.isNotBlank(query.getTraceId())) {
+            param.setTraceIdList(Sets.newHashSet(query.getTraceId()));
         }
         if(StringUtils.isBlank(query.getStartTime()) && StringUtils.isBlank(query.getEndTime())) {
             // 查一天的

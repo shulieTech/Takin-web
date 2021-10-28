@@ -1070,8 +1070,10 @@ public class LinkTopologyService extends CommonService {
 
                 for (String id : keyList) {
                     LinkNodeDTO linkNodeDTO = nodeMap.get(id);
-                    String nodeName = linkNodeDTO.getNodeName();
-                    sourceIdToNodeName.put(id, nodeName);
+                    if (linkNodeDTO != null) {
+                        String nodeName = linkNodeDTO.getNodeName();
+                        sourceIdToNodeName.put(id, nodeName);
+                    }
                 }
 
                 String collect = item.getValue().stream()

@@ -194,7 +194,7 @@ public class TraceClientImpl implements TraceClient {
         try {
             AmdbResult<List<TTrackClickhouseModel>> response = AmdbHelper.newInStance().url(url)
                 .httpMethod(HttpMethod.POST)
-                .param(query)
+                .param(param)
                 .exception(TakinWebExceptionEnum.APPLICATION_TRACE_LOG_AGENT_ERROR)
                 .eventName("查询trace日志列表")
                 .list(TTrackClickhouseModel.class);

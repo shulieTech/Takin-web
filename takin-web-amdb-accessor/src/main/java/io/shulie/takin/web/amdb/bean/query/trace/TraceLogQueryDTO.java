@@ -26,7 +26,7 @@ public class TraceLogQueryDTO extends PagingDevice {
     private List<String> appNames;
 
     @ApiModelProperty("应用名")
-    private String applicationName;
+    private String appName;
 
     @ApiModelProperty("服务名")
     private String serviceName;

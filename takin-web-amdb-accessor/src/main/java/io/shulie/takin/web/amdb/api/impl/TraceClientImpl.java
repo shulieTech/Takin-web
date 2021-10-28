@@ -171,8 +171,8 @@ public class TraceClientImpl implements TraceClient {
         String url = properties.getUrl().getAmdb() + ENTRY_TRACE_LOG_PATH;
         EntryTraceQueryParam param = new EntryTraceQueryParam();
         param.setAppNames(query.getAppNames());
-        if(StringUtils.isNotBlank(query.getApplicationName())) {
-            param.setAppName(query.getApplicationName());
+        if(StringUtils.isNotBlank(query.getAppName())) {
+            param.setAppName(query.getAppName());
         }
 
         if(StringUtils.isNotBlank(query.getServiceName())) {

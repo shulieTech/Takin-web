@@ -11,6 +11,7 @@ import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationBizTableDTO;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
+import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbTableDAO;
@@ -120,8 +121,15 @@ public class DbTemplateParser extends AbstractTemplateParser {
 
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
         if (StringUtils.isBlank(convert.getShaDowFileExtedn())
-                && DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
+                && !DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())){
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
+        }
+
+        if(StringUtils.isBlank(convert.getShaDowFileExtedn())
+                && DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())){
+            if(JsonUtil.isJson(convert.getFileExtedn())){
+                shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
+            }
         }
         shadowDetailResponse.setShadowInfo(shaDowFileExtedn);
         shadowDetailResponse.setConnectionPool(convert.getConnPoolName());

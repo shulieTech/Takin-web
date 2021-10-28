@@ -120,7 +120,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
 
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
         if (StringUtils.isBlank(convert.getShaDowFileExtedn())
-                || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
+                && DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
         }
         shadowDetailResponse.setShadowInfo(shaDowFileExtedn);

@@ -387,7 +387,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
             if (StringUtils.isBlank(detail.getFileExtedn())) {
                 bus = JSONObject.parseObject(detail.getColony(), SingleServerConfiguration.class);
             } else if(Objects.equals("老转新",detail.getConfigJson())){
-                bus  = JSON.parseObject(detail.getConfigJson(), ShadowServerConfigurationOutput.class).getDataSourceBusiness();
+                bus  = JSON.parseObject(detail.getFileExtedn(), ShadowServerConfigurationOutput.class).getDataSourceBusiness();
             }else{
                 bus = JSONObject.parseObject(detail.getFileExtedn(), SingleServerConfiguration.class);
             }

@@ -360,7 +360,7 @@
             <dependency>
                 <groupId>io.shulie.amdb</groupId>
                 <artifactId>amdb-common</artifactId>
-                <version>1.0.2.2-SNAPSHOT</version>
+                <version>1.0.2.2</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.mapstruct</groupId>
@@ -434,7 +434,7 @@
             <dependency>
                 <groupId>io.shulie.surge.data</groupId>
                 <artifactId>surge-deploy-pradar-link</artifactId>
-                <version>1.0.2.1-SNAPSHOT</version>
+                <version>1.0.2.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

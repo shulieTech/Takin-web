@@ -116,7 +116,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setMiddlewareType(Type.MiddleWareType.LINK_POOL.value());
         shadowDetailResponse.setDsType(convert.getDsType() == 100 ? DsTypeEnum.SHADOW_REDIS_SERVER.getCode() : convert.getDsType());
         shadowDetailResponse.setUrl(convert.getUrl());
-        shadowDetailResponse.setUsername(convert.getUserName());
+        shadowDetailResponse.setUsername(StringUtils.isBlank(convert.getUserName())?"-":convert.getUserName());
         shadowDetailResponse.setPassword(convert.getPwd());
 
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
@@ -263,7 +263,6 @@ public class DbTemplateParser extends AbstractTemplateParser {
         fieldMap.remove("url");
         fieldMap.remove("username");
         fieldMap.remove("password");
-        fieldMap.remove("driverClassName");
 
         return new ArrayList<>(fieldMap.values());
     }

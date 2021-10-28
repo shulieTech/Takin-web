@@ -885,6 +885,8 @@ public class DsServiceImpl implements DsService {
 
                 DataSource dataSourcePerformanceTest = this.buildShadowMsg(shadowConfigMap);
                 dataSourcePerformanceTest.setId("dataSourcePerformanceTest");
+                dataSourcePerformanceTest.setDriverClassName(StringUtils.isBlank(dataSourcePerformanceTest.getDriverClassName())
+                        ?dataSourceBusiness.getDriverClassName():dataSourcePerformanceTest.getDriverClassName());
 
                 List<DataSource> dataSources = new ArrayList<>();
                 dataSources.add(dataSourceBusiness);

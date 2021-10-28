@@ -76,6 +76,7 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -805,7 +806,14 @@ public class DsServiceImpl implements DsService {
         v2Response.setCanRemove(v2Response.getIsManual());
         if (MiddleWareTypeEnum.LINK_POOL.getCode().equals(response.getDbType().getValue())) {
             v2Response.setUrl(response.getUrl());
-            v2Response.setConnectionPool("druid");
+            if(DsTypeEnum.SHADOW_TABLE.getCode().equals(response.getDsType().getValue())){
+                v2Response.setConnectionPool("兼容老版本(影子表)");
+            }else if(DsTypeEnum.SHADOW_DB.getCode().equals(response.getDsType().getValue())){
+                v2Response.setConnectionPool("兼容老版本(影子库)");
+            }else{
+                v2Response.setConnectionPool("druid");
+            }
+
             v2Response.setIsNewPage(true);
             v2Response.setAgentSourceType(Converter.TemplateConverter.TemplateEnum._1.getKey());
         }

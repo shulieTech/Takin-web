@@ -87,8 +87,6 @@ public class BaseConfigService extends CommonService {
 
     public TBaseConfig selectByPrimaryKey(String configCode){
         QueryWrapper<BaseConfigEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq("env_code", WebPluginUtils.traceEnvCode());
-        wrapper.eq("tenant_id", WebPluginUtils.traceTenantId());
         wrapper.eq("CONFIG_CODE",configCode);
         BaseConfigEntity configEntity = baseConfigMapper.selectOne(wrapper);
 
@@ -115,30 +113,30 @@ public class BaseConfigService extends CommonService {
         return baseConfigMapper.update(configEntity,wrapper);
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    public void init(Long tenantId){
-        final BaseConfigParam param = new BaseConfigParam();
-        param.setTenantId(WebPluginUtils.DEFAULT_TENANT_ID);
-        final List<TBaseConfig> configList = tbaseConfigDao.queryList(param);
-        if (CollectionUtils.isEmpty(configList)){
-            return;
-        }
-        final List<TBaseConfig> testConfigList = configList.stream().filter(
-            t -> EnvCodeEnum.TEST.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
-        final List<TBaseConfig> prodConfigList = configList.stream().filter(
-            t -> EnvCodeEnum.PROD.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
-
-        try {
-            if (CollectionUtils.isNotEmpty(testConfigList)){
-                testConfigList.forEach(t->t.setTenantId(tenantId));
-                tbaseConfigDao.batchInsert(testConfigList);
-            }
-            if (CollectionUtils.isNotEmpty(prodConfigList)){
-                prodConfigList.forEach(t->t.setTenantId(tenantId));
-                tbaseConfigDao.batchInsert(prodConfigList);
-            }
-        }catch (Exception e){
-            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON,"基础配置表初始化失败！",e);
-        }
-    }
+    //@Transactional(rollbackFor = Exception.class)
+    //public void init(Long tenantId){
+    //    final BaseConfigParam param = new BaseConfigParam();
+    //    param.setTenantId(WebPluginUtils.DEFAULT_TENANT_ID);
+    //    final List<TBaseConfig> configList = tbaseConfigDao.queryList(param);
+    //    if (CollectionUtils.isEmpty(configList)){
+    //        return;
+    //    }
+    //    final List<TBaseConfig> testConfigList = configList.stream().filter(
+    //        t -> EnvCodeEnum.TEST.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
+    //    final List<TBaseConfig> prodConfigList = configList.stream().filter(
+    //        t -> EnvCodeEnum.PROD.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
+    //
+    //    try {
+    //        if (CollectionUtils.isNotEmpty(testConfigList)){
+    //            testConfigList.forEach(t->t.setTenantId(tenantId));
+    //            tbaseConfigDao.batchInsert(testConfigList);
+    //        }
+    //        if (CollectionUtils.isNotEmpty(prodConfigList)){
+    //            prodConfigList.forEach(t->t.setTenantId(tenantId));
+    //            tbaseConfigDao.batchInsert(prodConfigList);
+    //        }
+    //    }catch (Exception e){
+    //        throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON,"基础配置表初始化失败！",e);
+    //    }
+    //}
 }

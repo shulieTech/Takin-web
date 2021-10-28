@@ -154,31 +154,31 @@ public class DictionaryMntService extends CommonService {
         return resultMap;
     }
 
-    @Transactional(value = "takinTransactionManager", rollbackFor = Exception.class)
-    public void init(Long tenantId) {
-        DictionaryParam param = new DictionaryParam();
-        param.setTenantId(WebPluginUtils.DEFAULT_TENANT_ID);
-        List<TDictionaryData> dataList = tDictionaryDataMapper.queryList(param);
-        if (CollectionUtils.isEmpty(dataList)) {
-            return;
-        }
-        //测试环境-默认租户下的 字典内容
-        List<TDictionaryData> testDataList = dataList.stream().filter(
-            t -> EnvCodeEnum.TEST.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
-        //生产环境-默认租户下的 字典内容
-        List<TDictionaryData> prodDataList = dataList.stream().filter(
-            t -> EnvCodeEnum.PROD.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
-        try {
-            if (CollectionUtils.isNotEmpty(testDataList)) {
-                testDataList.forEach(t -> t.setTenantId(tenantId));
-                tDictionaryDataMapper.batchInsert(testDataList);
-            }
-            if (CollectionUtils.isNotEmpty(prodDataList)) {
-                prodDataList.forEach(t -> t.setTenantId(tenantId));
-                tDictionaryDataMapper.batchInsert(prodDataList);
-            }
-        } catch (Exception e) {
-            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "数据字典初始化错误", e);
-        }
-    }
+    //@Transactional(value = "takinTransactionManager", rollbackFor = Exception.class)
+    //public void init(Long tenantId) {
+    //    DictionaryParam param = new DictionaryParam();
+    //    param.setTenantId(WebPluginUtils.DEFAULT_TENANT_ID);
+    //    List<TDictionaryData> dataList = tDictionaryDataMapper.queryList(param);
+    //    if (CollectionUtils.isEmpty(dataList)) {
+    //        return;
+    //    }
+    //    //测试环境-默认租户下的 字典内容
+    //    List<TDictionaryData> testDataList = dataList.stream().filter(
+    //        t -> EnvCodeEnum.TEST.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
+    //    //生产环境-默认租户下的 字典内容
+    //    List<TDictionaryData> prodDataList = dataList.stream().filter(
+    //        t -> EnvCodeEnum.PROD.getEnvCode().equals(t.getEnvCode())).collect(Collectors.toList());
+    //    try {
+    //        if (CollectionUtils.isNotEmpty(testDataList)) {
+    //            testDataList.forEach(t -> t.setTenantId(tenantId));
+    //            tDictionaryDataMapper.batchInsert(testDataList);
+    //        }
+    //        if (CollectionUtils.isNotEmpty(prodDataList)) {
+    //            prodDataList.forEach(t -> t.setTenantId(tenantId));
+    //            tDictionaryDataMapper.batchInsert(prodDataList);
+    //        }
+    //    } catch (Exception e) {
+    //        throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "数据字典初始化错误", e);
+    //    }
+    //}
 }

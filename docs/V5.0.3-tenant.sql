@@ -207,34 +207,34 @@ ALTER TABLE `t_base_config`
     ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_black_list`
-    ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
+    ADD COLUMN `env_code` varchar(20) NULL  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_business_link_manage_table`
-    ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
+    ADD COLUMN `env_code` varchar(20) NULL  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_data_build`
-    ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
+    ADD COLUMN `env_code` varchar(20) NULL  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_datasource_tag_ref`
-    ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
+    ADD COLUMN `env_code` varchar(20) NULL  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_dictionary_data`
-    ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
+    ADD COLUMN `env_code` varchar(20) NULL  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_dictionary_type`
-    ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
+    ADD COLUMN `env_code` varchar(20) NULL  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_exception_info`
-    ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
+    ADD COLUMN `env_code` varchar(20) NULL  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_fast_debug_config_info`
-    ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
+    ADD COLUMN `env_code` varchar(20) NULL  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_fast_debug_exception`
-    ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
+    ADD COLUMN `env_code` varchar(20) NULL  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_fast_debug_machine_performance`
-    ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,
+    ADD COLUMN `env_code` varchar(20) NULL  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL  COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_fast_debug_result`
     ADD COLUMN `env_code` varchar(20) NULL   COMMENT '环境code' ,

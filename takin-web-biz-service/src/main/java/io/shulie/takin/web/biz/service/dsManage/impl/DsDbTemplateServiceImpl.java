@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.service.dsManage.AbstractDsTemplateService;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.CacheConfigTemplateDAO;
 import io.shulie.takin.web.data.dao.application.ConnectpoolConfigTemplateDAO;
 import io.shulie.takin.web.data.result.application.CacheConfigTemplateDetailResult;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author: 南风
@@ -35,6 +38,9 @@ public class DsDbTemplateServiceImpl extends AbstractDsTemplateService {
     @Override
     public List<SelectVO> queryDsType(String middlewareType, String engName) {
         ConnectpoolConfigTemplateDetailResult result = connectpoolConfigTemplateDAO.queryOne(middlewareType, engName);
+        if(Objects.isNull(result)){
+            throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_CREATE_ERROR,"此连接池模式不支持");
+        }
         List<SelectVO> vos  = Lists.newArrayList();
         if(result.getShadowtableEnable() == 1){
             vos.add(new SelectVO(DsTypeEnum.SHADOW_TABLE.getDesc(),String.valueOf(DsTypeEnum.SHADOW_TABLE.getCode())));
@@ -61,7 +67,9 @@ public class DsDbTemplateServiceImpl extends AbstractDsTemplateService {
             return vos;
         }
         results.forEach(detail -> {
-            vos.add(new SelectVO(detail.getName(),detail.getName()));
+            if(!"兼容老版本(影子库)".equals(detail.getName()) || !"兼容老版本(影子表)".equals(detail.getName())){
+                vos.add(new SelectVO(detail.getName(),detail.getName()));
+            }
         });
         return vos;
     }

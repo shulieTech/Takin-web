@@ -92,7 +92,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
         entity.setShaDowUserName(inputV2.getShaDowUserName());
         entity.setShaDowPwd(inputV2.getShaDowPassword());
         entity.setUrl(inputV2.getUrl());
-        entity.setUserName(inputV2.getUsername());
+        entity.setUserName(Objects.equals("-",inputV2.getUsername())?"":inputV2.getUsername());
         entity.setConnPoolName(inputV2.getConnectionPool());
         entity.setStatus(0);
         String extInfo = inputV2.getExtInfo();
@@ -106,9 +106,15 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
             entity.setPwd("");
             entity.setConfigJson("");
             entity.setSource(1);
+            entity.setFileExtedn(inputV2.getParseConfig());
+            entity.setConfigJson(inputV2.getIsOld()?"老转新":"");
             if("other".equals(entity.getConnPoolName())){
                 entity.setAgentSourceType( Converter.TemplateConverter.TemplateEnum._default.getKey());
-            }else{
+            }else if("兼容老版本(影子表)".equals(entity.getConnPoolName())
+                    || "兼容老版本(影子库)".equals(entity.getConnPoolName())){
+                entity.setAgentSourceType( Converter.TemplateConverter.TemplateEnum._2.getKey());
+            }
+            else{
                 Converter.TemplateConverter.TemplateEnum templateEnum = templateParser.convert(entity.getConnPoolName());
                 entity.setAgentSourceType(templateEnum.getKey());
             }

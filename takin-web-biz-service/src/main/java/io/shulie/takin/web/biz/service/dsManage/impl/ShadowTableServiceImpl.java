@@ -302,7 +302,9 @@ public class ShadowTableServiceImpl extends AbstractDsService {
             String[] configItems = configStr.split(",");
             for (String item : configItems) {
                 ShadowDetailResponse.TableInfo info = new ShadowDetailResponse.TableInfo();
+                info.setBizTableName(item);
                 info.setIsCheck(true);
+                info.setIsManual(true);
                 info.setShaDowTableName(PREFIX + info.getBizTableName());
                 map.put(item, info);
             }
@@ -315,10 +317,11 @@ public class ShadowTableServiceImpl extends AbstractDsService {
         response.setId(recordId);
         response.setApplicationId(String.valueOf(dsResult.getApplicationId()));
         response.setMiddlewareType(Type.MiddleWareType.LINK_POOL.value());
-        response.setConnectionPool("druid");
         response.setDsType(dsResult.getDsType());
         response.setUrl(dsResult.getUrl());
-        response.setUsername("");
+        String poolName = "兼容老版本(影子表)";
+        response.setConnectionPool(poolName);
+        response.setUsername("-");
         response.setPassword("");
         response.setTables(list);
 
@@ -326,7 +329,7 @@ public class ShadowTableServiceImpl extends AbstractDsService {
         List<AppShadowDatabaseDTO> amdbInfo = applicationClient.getApplicationShadowDataBaseInfo(dsResult.getApplicationName(), dsResult.getUrl());
         if (CollectionUtils.isNotEmpty(amdbInfo)) {
             AppShadowDatabaseDTO dto = amdbInfo.get(0);
-            shadowInfo = dbTemplateParser.convertData(dto.getAttachment(),"druid");
+            shadowInfo = dbTemplateParser.convertData(dto.getAttachment(), "druid");
         }
         response.setShadowInfo(shadowInfo);
         return response;

@@ -38,4 +38,6 @@ public interface ApplicationDsDAO {
     List<DsModelWithBLOBs> selectByAppIdForAgent(Long applicationId);
 
     List<DsModelWithBLOBs> getAllEnabledDbConfig(Long applicationId);
+
+    void batchDelete(ApplicationDsDeleteParam deleteParam);
 }

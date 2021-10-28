@@ -121,16 +121,10 @@ public class DbTemplateParser extends AbstractTemplateParser {
 
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
         if (StringUtils.isBlank(convert.getShaDowFileExtedn())
-                && !DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())){
+                || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())){
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
         }
 
-        if(StringUtils.isBlank(convert.getShaDowFileExtedn())
-                && DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())){
-            if(JsonUtil.isJson(convert.getFileExtedn())){
-                shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
-            }
-        }
         shadowDetailResponse.setShadowInfo(shaDowFileExtedn);
         shadowDetailResponse.setConnectionPool(convert.getConnPoolName());
         List<ShadowDetailResponse.TableInfo> tableInfos = this.buildTableData(convert.getApplicationId(),
@@ -184,7 +178,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
     public String convertData(String str, String connPoolName) {
 
         Map<String, Object> convertMap = new HashMap<>();
-        if (StringUtils.isBlank(str)) {
+        if (StringUtils.isBlank(str) || !JsonUtil.isJson(str)) {
             Converter.TemplateConverter.TemplateEnum templateEnum = super.convert(connPoolName);
             if (Objects.nonNull(templateEnum)) {
                 List<String> attributeArray = this.getAttributeArray(templateEnum);

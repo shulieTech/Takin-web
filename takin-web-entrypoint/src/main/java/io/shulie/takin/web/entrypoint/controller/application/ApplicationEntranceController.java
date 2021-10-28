@@ -185,6 +185,7 @@ public class ApplicationEntranceController {
                     String entrance = ActivityUtil.buildEntrance(appName, item.getMethod(), item.getServiceName(), item.getRpcType());
                     List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
                     if (!CollectionUtils.isEmpty(serviceList)) {
+                        item.setActivityNameAndId(serviceList.get(0));
                         return true;
                     } else {
                         return false;

@@ -1194,7 +1194,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     .list(ApplicationVisualInfoResponse.class);
             //TODO 大数据待清洗
             List<ApplicationVisualInfoResponse> data = appDataResult.getData();
-            Long total = appDataResult.getTotal();
+            int total = Math.toIntExact(appDataResult.getTotal());
             List<String> attentionList = request.getAttentionList();
             String orderBy = request.getOrderBy();
             int current = request.getCurrent();
@@ -1206,7 +1206,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
     }
 
-    private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current, Long total) {
+    private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current, int total) {
         if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current)) {
             return null;
         }

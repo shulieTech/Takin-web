@@ -73,7 +73,7 @@ public interface ActivityService {
     ActivityResponse getActivityById(Long activityId);
     ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request);
     ActivityResponse getActivityWithMetricsByIdForReport(Long activityId, LocalDateTime start, LocalDateTime end);
-    ActivityBottleneckResponse getBottleneckByActivityList(ApplicationVisualInfoResponse applicationVisualInfoResponse,LocalDateTime startTime,LocalDateTime endTime);
+    ActivityBottleneckResponse getBottleneckByActivityList(ApplicationVisualInfoResponse applicationVisualInfoResponse, LocalDateTime startTime, LocalDateTime endTime);
 
     ActivityResponse getActivityByIdWithoutTopology(Long id);
 

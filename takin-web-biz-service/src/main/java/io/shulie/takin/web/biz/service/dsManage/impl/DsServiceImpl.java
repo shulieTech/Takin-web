@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.dsManage.impl;
 
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -854,7 +855,10 @@ public class DsServiceImpl implements DsService {
             dsAgentVO.setUrl(detail.getUrl());
             dsAgentVO.setStatus((byte) 0);
             String fileExtedn = detail.getFileExtedn();
-            JSONObject parameter = JSONObject.parseObject(fileExtedn);
+            JSONObject parameter = null;
+            if(JSONUtil.isJson(fileExtedn)){
+                 parameter = JSONObject.parseObject(fileExtedn);
+            }
             if (DsTypeEnum.SHADOW_TABLE.getCode().equals(detail.getDsType())) {
                 dsAgentVO.setShadowTableConfig(this.matchShadowTable(detail.getShaDowFileExtedn()));
             } else {

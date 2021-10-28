@@ -618,7 +618,10 @@ public class LinkTopologyService extends CommonService {
                         " where" +
                         " edgeId = '" + eagleId + "'" +
                         " and time >= " + formatTimestamp(startMilli) +
-                        " and time <= " + formatTimestamp(endMilli);
+                        " and time <= " + formatTimestamp(endMilli) +
+                    // 加租户
+                        " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                        " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
 
         // 如果不是 混合流量 则需要增加条件
         if (null != metricsType) {
@@ -692,6 +695,9 @@ public class LinkTopologyService extends CommonService {
                         " where" +
                         " time >= " + formatTimestamp(startMilli) +
                         " and time <= " + formatTimestamp(endMilli) +
+                    // 增加租户
+                        " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                        " and env_code = '" + WebPluginUtils.traceEnvCode() + "'" +
                         " order by time desc" +
                         " limit 1";
 

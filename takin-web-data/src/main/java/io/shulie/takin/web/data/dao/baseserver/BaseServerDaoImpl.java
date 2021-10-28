@@ -21,6 +21,7 @@ import io.shulie.takin.web.data.result.baseserver.LinkDetailResult;
 import io.shulie.takin.web.data.result.risk.BaseRiskResult;
 import io.shulie.takin.web.data.result.risk.LinkDataResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -46,7 +47,10 @@ public class BaseServerDaoImpl implements BaseServerDao {
     @Override
     public Collection<BaseServerResult> queryList(BaseServerParam param) {
         String sql = "select app_ip, app_name, cpu_rate, mem_rate from app_base_data where time>" + param.getStartTime()
-                + " and time <= " + param.getEndTime() + " and tag_app_name='" + param.getApplicationName() + "'";
+                + " and time <= " + param.getEndTime() + " and tag_app_name='" + param.getApplicationName() + "'" +
+            // 增加租户
+            " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+            " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
         return influxDatabaseManager.query(BaseServerResult.class, sql);
     }
 
@@ -54,9 +58,11 @@ public class BaseServerDaoImpl implements BaseServerDao {
     public Collection<BaseServerResult> queryBaseServer(BaseServerParam param) {
         long startTime = System.currentTimeMillis();
         String baseSql = "select max(memory) as memory,max(disk) as disk,max(cpu_cores) as cpu_cores ," +
-                "mean(net_bandwidth) as net_bandwidth from app_base_data where tag_app_name = '" + param
-                .getApplicationName()
-                + "' and time > " + param.getStartTime() + " and time <= " + param.getEndTime()
+                "mean(net_bandwidth) as net_bandwidth from app_base_data where tag_app_name = '" + param.getApplicationName()
+                + "' and time > " + param.getStartTime() + " and time <= " + param.getEndTime() +
+                // 增加租户
+                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
                 + " group by tag_agent_id, tag_app_ip";
         Collection<BaseServerResult> baseServerResults = influxDatabaseManager.query(BaseServerResult.class, baseSql);
         log.info("queryBaseServer influxdb sql :{},cost time :{}", baseSql, System.currentTimeMillis() - startTime);
@@ -66,7 +72,10 @@ public class BaseServerDaoImpl implements BaseServerDao {
     @Override
     public Collection<InfluxAvgResult> queryTraceId(InfluxAvgParam param) {
         String command = "select traceId,rt from tro_pradar where time >= " + param.getSTime() + " and time < " + param.getETime()
-                + " and appName = '" + param.getAppName() + "'  and event = '" + param.getEvent() + "' and ptFlag='true' and traceId <>'' "
+                + " and appName = '" + param.getAppName() + "'  and event = '" + param.getEvent() + "' and ptFlag='true' and traceId <>'' " +
+                // 增加租户
+                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
                 + " order by time desc limit 1000";
 
         return influxDatabaseManager.query(InfluxAvgResult.class, command, REAL_TIME_DATABASE);
@@ -89,7 +98,10 @@ public class BaseServerDaoImpl implements BaseServerDao {
             //需要增加作为入口
             String command = "select max(rt) as maxRt,min(rt) as minRt ,sum(totalRt) as rt,MEAN(totalQps) as tps," +
                     "SUM(totalCount) as count,SUM(errorCount) as errorCount " +
-                    "from  tro_pradar where ptFlag='true' and time >= " + sTime + " and time < " + eTime;
+                    "from  tro_pradar where ptFlag='true' and time >= " + sTime + " and time < " + eTime +
+                     // 增加租户
+                    " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                    " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
 
             //TODO
             if (RpcType.TRACE.getText().equals(rpcType)) {
@@ -134,8 +146,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
                 logger.error("Unsupport metrics query RpcType " + rpcType);
                 return linkDetailResult;
             }
-            Collection<InfluxAvgResult> influxAvgVoList = influxDatabaseManager.query(InfluxAvgResult.class, command,
-                    REAL_TIME_DATABASE);
+            Collection<InfluxAvgResult> influxAvgVoList = influxDatabaseManager.query(InfluxAvgResult.class, command, REAL_TIME_DATABASE);
             if (CollectionUtils.isEmpty(influxAvgVoList)) {
                 return linkDetailResult;
             }
@@ -239,7 +250,11 @@ public class BaseServerDaoImpl implements BaseServerDao {
                             + "iowait ,max(net_bandwidth_rate)as net_bandwidth_rate "
                             +
                             " from app_base_data where app_name = '" + appName + "' and time >= " + startTime
-                            + " and time <= " + endTime + " group by tag_app_ip";
+                            + " and time <= " + endTime +
+                            // 增加租户
+                            " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                            " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
+                            + " group by tag_app_ip";
             Collection<BaseServerResult> voList = influxDatabaseManager.query(BaseServerResult.class, tmpSql);
             if (CollectionUtils.isEmpty(voList)) {
                 return;
@@ -310,6 +325,9 @@ public class BaseServerDaoImpl implements BaseServerDao {
         if (param.getAgentId() != null) {
             sb.append(" and agent_id = '").append(param.getAgentId()).append("'");
         }
+        // 增加租户
+        sb.append(" and tenant_id = '").append(WebPluginUtils.traceTenantId()).append("'");
+        sb.append(" and env_code = '").append(WebPluginUtils.traceEnvCode()).append("'");
         sb.append(" group by time(5s) order by time");
         Collection<BaseServerResult> collection = influxDatabaseManager.query(BaseServerResult.class, sb.toString());
         log.info("queryBaseData.query<app_base_data>:{},数据量:{}", System.currentTimeMillis() - start, collection.size());

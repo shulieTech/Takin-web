@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.util.UriComponentsBuilder;
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
@@ -51,12 +52,17 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 @EnableKnife4j
 @Import(BeanValidatorPluginsConfiguration.class)
 @Order(0)
+@Profile({"local","dev","test"})
 public class SwaggerConfig {
 
     @Value("${server.servlet.context-path:}")
     private String servletContextPath;
 
     private ObjectMapper objectMapper;
+
+    @Value("${swagger.enable:true}")
+    private Boolean swaggerEnable;
+
 
     /**
      * 所有接口
@@ -71,6 +77,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
+            .enable(swaggerEnable)
             .apiInfo(this.apiInfo());
     }
 
@@ -88,7 +95,7 @@ public class SwaggerConfig {
             .paths(getRegex("/api/(scriptDebug|scriptManage|v2/file|config|probe|v2/application/node|agent/application/node/probe|application/middleware|login).*|/agent.*")).build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(this.apiInfo()).enable(true);
+            .apiInfo(this.apiInfo()) .enable(swaggerEnable);
     }
 
     @Bean
@@ -102,6 +109,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
+            .enable(swaggerEnable)
             .apiInfo(apiInfo())
             ;
     }
@@ -117,7 +125,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -133,7 +141,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -149,7 +157,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -165,7 +173,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -180,7 +188,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -195,7 +203,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -210,7 +218,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -226,7 +234,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -241,7 +249,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -256,7 +264,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -271,7 +279,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -286,7 +294,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -301,7 +309,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -316,7 +324,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -333,7 +341,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -351,7 +359,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -366,7 +374,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 
@@ -386,7 +394,7 @@ public class SwaggerConfig {
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
+            .apiInfo(apiInfo()).enable(swaggerEnable)
             ;
     }
 

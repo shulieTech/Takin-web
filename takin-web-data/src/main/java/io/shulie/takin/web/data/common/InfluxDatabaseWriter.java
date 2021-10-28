@@ -110,7 +110,6 @@ public class InfluxDatabaseWriter {
         try {
             getInfluxDatabase().write(database, "", builder.build());
         } catch (Exception ex) {
-            // todo 输出异常代码
             logger.error("插入数据出错[io.shulie.takin.web.data.common.InfluxDBWriter.insert].", ex);
             return false;
         }

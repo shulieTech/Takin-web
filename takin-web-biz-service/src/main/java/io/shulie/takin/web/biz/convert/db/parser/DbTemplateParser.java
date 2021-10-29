@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -222,6 +223,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
     public void enable(Long recordId, Integer status) {
         ApplicationDsDbManageEntity entity = new ApplicationDsDbManageEntity();
         entity.setStatus(status);
+        entity.setGmtUpdate(new Date());
         dsDbManageDAO.updateById(recordId, entity);
     }
 

@@ -251,6 +251,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         OperationLogContextHolder.addVars(Vars.INTERFACE, result.getInterfaceName());
         OperationLogContextHolder.addVars(Vars.INTERFACE_TYPE, AppRemoteCallTypeEnum.getEnum(result.getInterfaceType()).getDesc());
         appRemoteCallDAO.deleteById(id);
+        agentConfigCacheManager.evictRecallCalls(result.getAppName());
     }
 
     @Override

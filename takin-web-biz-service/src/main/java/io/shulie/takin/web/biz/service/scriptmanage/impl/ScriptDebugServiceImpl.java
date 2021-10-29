@@ -324,7 +324,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 String.format("脚本调试暂时支持 http, %s 的业务活动!", supportRpcType));
 
             // 应用名称获得
-            return ActivityUtil.covertEntrance(businessActivity.getEntrace()).getApplicationName();
+            return businessActivity.getApplicationName();
         }).filter(StrUtil::isNotBlank).collect(Collectors.toList());
         // 没有绑定应用, 不校验
         if (applicationNames.isEmpty()) {

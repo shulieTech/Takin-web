@@ -3,13 +3,7 @@ package io.shulie.takin.web.biz.service.linkManage;
 import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.EntranceSimpleDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessActiveIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.MiddleWareNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.SceneDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.SystemProcessIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.TopologicalGraphVo;
+import com.pamirs.takin.entity.domain.dto.linkmanage.*;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkHistoryInfoDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkDto;
 import com.pamirs.takin.entity.domain.entity.linkmanage.statistics.StatisticsQueryVo;
@@ -17,10 +11,11 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.BusinessQueryVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityNameResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessLinkResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.MiddleWareResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.TechLinkResponse;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.*;
 import io.shulie.takin.web.common.common.Response;
 
 /**
@@ -110,4 +105,10 @@ public interface LinkManageService {
      * @return 业务活动id和名称
      */
     List<BusinessActivityNameResponse> getBusinessActiveByFlowId(Long businessFlowId);
+
+    BusinessFlowDetailResponse parseScriptAndSave(FileManageCreateRequest fileManageCreateRequest);
+
+    BusinessFlowDetailResponse getBusinessFlowDetail(Long id);
+
+    BusinessFlowDetailResponse parseScriptAndUpdate(BusinessFlowUpdateRequest businessFlowUpdateRequest);
 }

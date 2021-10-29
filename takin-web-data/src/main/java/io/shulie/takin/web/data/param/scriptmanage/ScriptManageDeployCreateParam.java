@@ -61,5 +61,9 @@ public class ScriptManageDeployCreateParam {
      */
     private String description;
 
+    /**
+     * 脚本版本
+     */
+    private Integer mVersion;
 
 }

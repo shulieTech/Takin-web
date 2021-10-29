@@ -163,6 +163,7 @@ public class ScriptManageDAOImpl
                 scriptManageEntity.setName(scriptManageDeployCreateParam.getName());
                 scriptManageEntity.setScriptVersion(scriptManageDeployCreateParam.getScriptVersion());
                 scriptManageEntity.setFeature(scriptManageDeployCreateParam.getFeature());
+                scriptManageEntity.setMVersion(scriptManageDeployCreateParam.getMVersion());
                 scriptManageMapper.insert(scriptManageEntity);
                 scriptManageDeployCreateParam.setScriptId(scriptManageEntity.getId());
             }

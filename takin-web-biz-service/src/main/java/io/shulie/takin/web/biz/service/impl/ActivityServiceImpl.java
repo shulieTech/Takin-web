@@ -12,6 +12,7 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.open.api.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.open.req.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneBusinessActivityRefOpen;
@@ -117,7 +118,7 @@ public class ActivityServiceImpl implements ActivityService {
         createParam.setExtend(request.getExtend());
         createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
         createParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
+            ActivityUtil.buildEntrance(request.getMethod(), JmxUtil.pathGuiYi(request.getServiceName()),
                 request.getRpcType()));
         activityDAO.createActivity(createParam);
         notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
@@ -295,7 +296,7 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setServiceName(request.getServiceName());
         updateParam.setExtend(request.getExtend());
         updateParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
+            ActivityUtil.buildEntrance(request.getMethod(), JmxUtil.pathGuiYi(request.getServiceName()),
                 request.getRpcType()));
         // 技术链路id
         updateParam.setLinkId(oldActivity.getLinkId());

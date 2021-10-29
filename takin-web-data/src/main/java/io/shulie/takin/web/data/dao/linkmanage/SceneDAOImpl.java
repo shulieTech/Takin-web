@@ -82,4 +82,21 @@ public class SceneDAOImpl implements SceneDAO {
         }
         return sceneResultList;
     }
+
+    @Override
+    public int update(SceneUpdateParam sceneUpdateParam) {
+        SceneEntity entity = new SceneEntity();
+        BeanUtils.copyProperties(sceneUpdateParam, entity);
+        LambdaQueryWrapper<SceneEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SceneEntity::getId,sceneUpdateParam.getId());
+        return sceneMapper.update(entity, queryWrapper);
+    }
+
+    @Override
+    public SceneResult getSceneDetail(Long id) {
+        SceneEntity sceneEntity = sceneMapper.selectById(id);
+        SceneResult sceneResult = new SceneResult();
+        BeanUtils.copyProperties(sceneEntity, sceneResult);
+        return sceneResult;
+    }
 }

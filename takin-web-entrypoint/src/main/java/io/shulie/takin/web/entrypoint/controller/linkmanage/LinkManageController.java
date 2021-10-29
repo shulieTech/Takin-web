@@ -4,13 +4,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessActiveIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.DeleteVo;
-import com.pamirs.takin.entity.domain.dto.linkmanage.MiddleWareNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.SceneDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.SystemProcessIdAndNameDto;
+import com.pamirs.takin.entity.domain.dto.linkmanage.*;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkHistoryInfoDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkmiddleWareDto;
@@ -20,6 +14,10 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
@@ -297,6 +295,7 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.QUERY
     )
+    @Deprecated
     public Response getBusinessFlowDetail(@NotNull String id) {
         try {
             BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(id);
@@ -358,10 +357,56 @@ public class LinkManageController {
 
     @PostMapping("/link/parseScriptAndSave")
     @ApiOperation("解析脚本并保存业务流程")
-    public Response<List<MiddleWareNameDto>> parseScriptAndSave(@ApiParam(name = "filePath"
-            , value = "脚本文件路径") String filePath) {
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.LINK_CARDING,
+            subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_CREATE
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.CREATE
+    )
+    public ResponseResult<BusinessFlowDetailResponse> parseScriptAndSave(FileManageCreateRequest fileManageCreateRequest) {
         try {
-            return null;
+            BusinessFlowDetailResponse sceneDetailDto = linkManageService.parseScriptAndSave(fileManageCreateRequest);
+            return ResponseResult.success(sceneDetailDto);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_ADD_ERROR, e.getMessage());
+        }
+    }
+
+    @PostMapping("/link/parseScriptAndUpdate")
+    @ApiOperation("解析脚本并更新业务流程")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.LINK_CARDING,
+            subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATE
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.UPDATE
+    )
+    public ResponseResult<BusinessFlowDetailResponse> parseScriptAndUpdate(BusinessFlowUpdateRequest businessFlowUpdateRequest) {
+        try {
+            BusinessFlowDetailResponse sceneDetailDto = linkManageService.parseScriptAndUpdate(businessFlowUpdateRequest);
+            return ResponseResult.success(sceneDetailDto);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_ADD_ERROR, e.getMessage());
+        }
+    }
+
+    @GetMapping("/link/scene/detail")
+    @ApiOperation("业务流程树详情获取")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public ResponseResult<BusinessFlowDetailResponse> getSceneDetail(@NotNull Long id) {
+        try {
+            BusinessFlowDetailResponse dto = linkManageService.getBusinessFlowDetail(id);
+            return ResponseResult.success(dto);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, e.getMessage());

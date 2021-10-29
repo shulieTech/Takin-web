@@ -57,6 +57,12 @@ BEGIN
             ADD total_node_num int(11) COMMENT '脚本总节点数';
     END IF;
 
+    IF NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 't_business_link_manage_table' AND column_name = 'application_name')
+        THEN
+    ALTER TABLE t_business_link_manage_table
+        ADD application_name VARCHAR(200) COMMENT '脚本总节点数';
+    END IF;
+
 
 
 # 文件MD5

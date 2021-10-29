@@ -97,7 +97,7 @@ public class SceneEntity {
      * 脚本实例id
      */
     @TableField(value = "script_deploy_id")
-    private String scriptDeployId;
+    private Long scriptDeployId;
 
     /**
      * 关联节点数

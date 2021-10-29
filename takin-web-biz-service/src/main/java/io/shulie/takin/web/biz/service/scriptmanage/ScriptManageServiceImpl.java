@@ -91,6 +91,7 @@ import io.shulie.takin.web.common.constant.FileManageConstant;
 import io.shulie.takin.web.common.constant.ScriptManageConstant;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.script.FileTypeEnum;
+import io.shulie.takin.web.common.enums.script.ScriptMVersionEnum;
 import io.shulie.takin.web.common.enums.script.ScriptManageDeployStatusEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -252,7 +253,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件不唯一！");
         }
         ScriptCheckDTO scriptCheckDTO = checkAndUpdateScript(scriptManageDeployCreateRequest.getRefType(),
-            scriptManageDeployCreateRequest.getRefValue(),
+            scriptManageDeployCreateRequest.getRefValue(),scriptManageDeployCreateRequest.getMVersion(),
             tmpFilePath + "/" + scriptFile.get(0).getUploadId() + "/" + scriptFile.get(0).getFileName());
         if (scriptCheckDTO != null && !StringUtil.isBlank(scriptCheckDTO.getErrmsg())) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, scriptCheckDTO.getErrmsg());
@@ -380,9 +381,9 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     }
 
     @Override
-    public ScriptCheckDTO checkAndUpdateScript(String refType, String refValue, String scriptFileUploadPath) {
+    public ScriptCheckDTO checkAndUpdateScript(String refType, String refValue,Integer mVersion, String scriptFileUploadPath) {
         ScriptCheckDTO dto = new ScriptCheckDTO();
-        if (scriptCheck == null || !scriptCheck) {
+        if (scriptCheck == null || !scriptCheck || ScriptMVersionEnum.isM_1(mVersion)) {
             return dto;
         }
         ScriptCheckAndUpdateReq scriptCheckAndUpdateReq = new ScriptCheckAndUpdateReq();
@@ -448,7 +449,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     @Transactional(rollbackFor = Throwable.class)
     @Override
-    public void updateScriptManage(ScriptManageDeployUpdateRequest scriptManageDeployUpdateRequest) {
+    public Long updateScriptManage(ScriptManageDeployUpdateRequest scriptManageDeployUpdateRequest) {
         // 参数校验
         this.checkUpdateScriptManageParam(scriptManageDeployUpdateRequest);
         // 名称去除空格
@@ -486,7 +487,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
         // cloud 那边, 检查, 更新脚本
         ScriptCheckDTO scriptCheckDTO = this.checkAndUpdateScript(scriptManageDeployUpdateRequest.getRefType(),
-            scriptManageDeployUpdateRequest.getRefValue(), scriptFileUrl);
+            scriptManageDeployUpdateRequest.getRefValue(),scriptManageDeployUpdateRequest.getMVersion(), scriptFileUrl);
 
         // 判断错误信息
         if (scriptCheckDTO != null && !StringUtil.isBlank(scriptCheckDTO.getErrmsg())) {
@@ -526,6 +527,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
         // 文件ids与脚本发布id做关联
         scriptFileRefDAO.createScriptFileRefs(fileIds, newScriptDeployId);
+
+        return newScriptDeployId;
     }
 
     /**

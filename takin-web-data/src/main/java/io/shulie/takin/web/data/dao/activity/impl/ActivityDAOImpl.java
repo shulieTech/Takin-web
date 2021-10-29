@@ -69,7 +69,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         }
         if (param.getServiceName() != null) {
             wrapper.eq(BusinessLinkManageTableEntity::getEntrace,
-                ActivityUtil.buildEntrance(param.getApplicationName(), param.getMethod(), param.getServiceName(),
+                ActivityUtil.buildEntrance(param.getMethod(), param.getServiceName(),
                     param.getRpcType()));
         }
         if (StringUtils.isNotBlank(param.getVirtualEntrance())) {
@@ -179,7 +179,6 @@ public class ActivityDAOImpl implements ActivityDAO {
             result.setLinkId(Long.parseLong(relatedTechLink));
             EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(
                 businessLinkManageTableEntity.getEntrace());
-            result.setApplicationName(entranceJoinEntity.getApplicationName());
             // entranceName
             result.setEntranceName(entranceJoinEntity.getServiceName());
             Map<String, String> features = new HashMap<>(16);
@@ -214,6 +213,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         result.setActivityLevel(businessLinkManageTableEntity.getLinkLevel());
         result.setIsCore(businessLinkManageTableEntity.getIsCore());
         result.setBusinessDomain(businessLinkManageTableEntity.getBusinessDomain());
+        result.setApplicationName(businessLinkManageTableEntity.getApplicationName());
         return result;
     }
 

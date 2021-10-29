@@ -23,4 +23,8 @@ public interface SceneDAO {
     int allocationUser(SceneUpdateParam updateParam);
 
     List<SceneResult> selectList(SceneQueryParam queryParam);
+
+    int update(SceneUpdateParam sceneUpdateParam);
+
+    SceneResult getSceneDetail(Long id);
 }

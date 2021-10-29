@@ -71,7 +71,6 @@ public class LinkManageFixer {
 
                 try {
                     String entrace = item.getEntrace();
-
                     String[] split = entrace.split("\\|");
                     if (split.length > 3) {
                         String[] split1 = {"", "", ""};
@@ -82,9 +81,9 @@ public class LinkManageFixer {
                     }
 
                     ActivityUtil.EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
-                    entranceJoinEntity.setApplicationName(split[0]);
+
                     entranceJoinEntity.setRpcType("0");
-                    String s2 = split[2];
+                    String s2 = split[1];
                     String method = "GET";
                     if (s2.startsWith("POST/")) {
                         s2 = s2.startsWith("POST/") ? s2.replace("POST/", "") : s2;

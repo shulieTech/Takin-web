@@ -845,9 +845,10 @@ update e_patrol_exception set env_code='test',tenant_id=1;
 alter table e_patrol_exception_config modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 update e_patrol_exception_config set tenant_id=customer_id;
 update e_patrol_exception_config set env_code='test' where tenant_id is not null;
+ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `env_code`, `tenant_id`, `type_value`,`level_value` ) USING BTREE
+-- 注意顺序，先添加唯一索引，再insert新的默认配置
 INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (1, 4, 1, 30, 1, '一般慢SQL');
 INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (0, 4, 2, 60, 1, '严重慢SQL');
-ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `env_code`, `tenant_id`, `type_value`,`level_value` ) USING BTREE
 
 -- e_patrol_exception_notice_config 瓶颈通知配置表
 update e_patrol_exception_notice_config set env_code='test',tenant_id=1;

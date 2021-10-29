@@ -221,14 +221,15 @@ public class LinkTopologyService extends CommonService {
 
                 // 设置 拓扑图中节点上显示哪一个服务性能指标
                 setTopologyNodeServiceMetrics(node, appProviderInfos);
-                // 设置业务活动层级的瓶颈
-                setTopologyLevelBottleneck(topologyResponse);
             }
 
             if (node.getRoot()) {
                 rootNode = node;
             }
         }
+
+        // 设置业务活动层级的瓶颈
+        setTopologyLevelBottleneck(topologyResponse);
 
         /*
         填充 Edge

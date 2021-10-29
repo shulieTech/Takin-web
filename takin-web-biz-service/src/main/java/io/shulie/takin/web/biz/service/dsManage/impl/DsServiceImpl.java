@@ -769,8 +769,11 @@ public class DsServiceImpl implements DsService {
         v2Response.setCacheType("");
         v2Response.setIsNewData(true);
         v2Response.setIsNewPage(true);
-        v2Response.setCanRemove(v2Response.getIsManual());
+//        v2Response.setCanRemove(v2Response.getIsManual());
         v2Response.setStatus(dbDetail.getStatus());
+        v2Response.setUserId(WebPluginUtils.getUserId());
+        WebPluginUtils.fillQueryResponse(v2Response);
+        v2Response.setCanRemove(v2Response.getIsManual());
         return v2Response;
     }
 
@@ -788,9 +791,12 @@ public class DsServiceImpl implements DsService {
         v2Response.setCacheType(cacheDetail.getType());
         v2Response.setIsNewData(true);
         v2Response.setIsNewPage(true);
-        v2Response.setCanRemove(v2Response.getIsManual());
+//        v2Response.setCanRemove(v2Response.getIsManual());
         v2Response.setStatus(cacheDetail.getStatus());
         v2Response.setExtMsg(cacheDetail.getType());
+        v2Response.setUserId(WebPluginUtils.getUserId());
+        WebPluginUtils.fillQueryResponse(v2Response);
+        v2Response.setCanRemove(v2Response.getIsManual());
         return v2Response;
     }
 
@@ -804,7 +810,7 @@ public class DsServiceImpl implements DsService {
         v2Response.setConnectionPool("");
         v2Response.setIsManual(true);
         v2Response.setStatus(response.getStatus());
-        v2Response.setCanRemove(v2Response.getIsManual());
+//        v2Response.setCanRemove(v2Response.getIsManual());
         if (MiddleWareTypeEnum.LINK_POOL.getCode().equals(response.getDbType().getValue())) {
             v2Response.setUrl(response.getUrl());
             if (DsTypeEnum.SHADOW_TABLE.getCode().equals(response.getDsType().getValue())) {
@@ -830,7 +836,9 @@ public class DsServiceImpl implements DsService {
             }
 
         }
-
+        v2Response.setUserId(WebPluginUtils.getUserId());
+        WebPluginUtils.fillQueryResponse(v2Response);
+        v2Response.setCanRemove(v2Response.getIsManual());
         return v2Response;
     }
 

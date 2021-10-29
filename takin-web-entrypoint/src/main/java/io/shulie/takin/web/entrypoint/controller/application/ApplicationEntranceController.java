@@ -168,7 +168,11 @@ public class ApplicationEntranceController {
             return Lists.newArrayList();
         }
         return activities.stream()
-                .map(item -> {
+                .filter(item -> {
+                        String entrace = item.getEntrace();
+                        String[] entraceArray = entrace.split("\\|");
+                        return 4  == entraceArray.length;
+                }).map(item -> {
                     String entrace = item.getEntrace();
                     String[] entraceArray = entrace.split("\\|");
                     ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();

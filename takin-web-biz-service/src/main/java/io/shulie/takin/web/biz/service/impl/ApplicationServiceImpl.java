@@ -1199,17 +1199,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             String orderBy = request.getOrderBy();
             int current = request.getCurrent();
             int pageSize = request.getPageSize();
-            return doSortAndPageAndConvertActivityId(data, attentionList, orderBy, pageSize, current,total);
+            return doSortAndPageAndConvertActivityId(data, attentionList, orderBy, pageSize, current,total,request.getNameActivity());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR, e.getMessage());
         }
     }
 
-    private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current, int total) {
+    private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current, int total,String nameActivity) {
         if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current)) {
             return null;
         }
+
 //        String[] orderList = orderBy.split(" ");
 //        if (orderList.length != 2) {
 //            return null;
@@ -1253,7 +1254,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
                     List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
                     if (!CollectionUtils.isEmpty(serviceList)) {
-                        serviceList.stream().forEach(serviceName -> activityResult.put(String.valueOf(serviceName.get("linkId")), serviceName.get("linkName")));
+                        serviceList.stream().forEach(serviceName -> {
+                            String linkName = serviceName.get("linkName");
+                            if (!org.springframework.util.StringUtils.isEmpty(nameActivity) && linkName.equals(nameActivity))
+                            activityResult.put(String.valueOf(serviceName.get("linkId")), linkName);
+                        });
                     }
                 }
             }

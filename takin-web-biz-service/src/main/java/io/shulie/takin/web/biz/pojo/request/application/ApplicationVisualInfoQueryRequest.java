@@ -64,4 +64,6 @@ public class ApplicationVisualInfoQueryRequest extends PagingDevice {
      */
     @ApiModelProperty("是否关注")
     private Boolean attend;
+
+    private String nameActivity;
 }

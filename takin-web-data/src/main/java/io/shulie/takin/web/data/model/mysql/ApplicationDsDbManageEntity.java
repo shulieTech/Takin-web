@@ -1,5 +1,7 @@
 package io.shulie.takin.web.data.model.mysql;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -104,11 +106,13 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
     /**
      * 租户id
      */
+    @TableField(value = "customer_id", fill = FieldFill.INSERT)
     private Long customerId;
 
     /**
      * 用户id
      */
+    @TableField(value = "user_id" , fill = FieldFill.INSERT)
     private Long userId;
 
 

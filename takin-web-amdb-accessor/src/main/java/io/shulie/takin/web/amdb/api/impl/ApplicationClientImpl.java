@@ -520,6 +520,9 @@ public class ApplicationClientImpl implements ApplicationClient {
      */
     @Override
     public List<ApplicationBizTableDTO> getApplicationTable(String appName, String dataSource, String userName) {
+        if(StringUtils.isBlank(userName)){
+            return Collections.emptyList();
+        }
         String url = properties.getUrl().getAmdb() + APPLICATION_BUS_DATABASE_PATH;
         Map<String,String> paramMap =  new HashMap<>();
         paramMap.put("appName",appName);

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,6 +107,7 @@ public class RedisTemplateParser extends AbstractTemplateParser {
     public void enable(Long recordId, Integer status) {
         ApplicationDsCacheManageEntity entity = new ApplicationDsCacheManageEntity();
         entity.setStatus(status);
+        entity.setGmtUpdate(new Date());
         dsCacheManageDAO.updateById(recordId, entity);
     }
 

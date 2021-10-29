@@ -107,6 +107,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
             entity.setConfigJson("");
             entity.setSource(1);
             entity.setFileExtedn(inputV2.getParseConfig());
+            entity.setConfigJson(inputV2.getIsOld()?"老转新":"");
             if("other".equals(entity.getConnPoolName())){
                 entity.setAgentSourceType( Converter.TemplateConverter.TemplateEnum._default.getKey());
             }else if("兼容老版本(影子表)".equals(entity.getConnPoolName())

@@ -11,6 +11,7 @@ import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationBizTableDTO;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
+import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbTableDAO;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,14 +117,15 @@ public class DbTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setMiddlewareType(Type.MiddleWareType.LINK_POOL.value());
         shadowDetailResponse.setDsType(convert.getDsType() == 100 ? DsTypeEnum.SHADOW_REDIS_SERVER.getCode() : convert.getDsType());
         shadowDetailResponse.setUrl(convert.getUrl());
-        shadowDetailResponse.setUsername(convert.getUserName());
+        shadowDetailResponse.setUsername(StringUtils.isBlank(convert.getUserName())?"-":convert.getUserName());
         shadowDetailResponse.setPassword(convert.getPwd());
 
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
         if (StringUtils.isBlank(convert.getShaDowFileExtedn())
-                || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
+                || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())){
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
         }
+
         shadowDetailResponse.setShadowInfo(shaDowFileExtedn);
         shadowDetailResponse.setConnectionPool(convert.getConnPoolName());
         List<ShadowDetailResponse.TableInfo> tableInfos = this.buildTableData(convert.getApplicationId(),
@@ -176,7 +179,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
     public String convertData(String str, String connPoolName) {
 
         Map<String, Object> convertMap = new HashMap<>();
-        if (StringUtils.isBlank(str)) {
+        if (StringUtils.isBlank(str) || !JsonUtil.isJson(str)) {
             Converter.TemplateConverter.TemplateEnum templateEnum = super.convert(connPoolName);
             if (Objects.nonNull(templateEnum)) {
                 List<String> attributeArray = this.getAttributeArray(templateEnum);
@@ -220,6 +223,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
     public void enable(Long recordId, Integer status) {
         ApplicationDsDbManageEntity entity = new ApplicationDsDbManageEntity();
         entity.setStatus(status);
+        entity.setGmtUpdate(new Date());
         dsDbManageDAO.updateById(recordId, entity);
     }
 
@@ -261,7 +265,6 @@ public class DbTemplateParser extends AbstractTemplateParser {
         fieldMap.remove("url");
         fieldMap.remove("username");
         fieldMap.remove("password");
-        fieldMap.remove("driverClassName");
 
         return new ArrayList<>(fieldMap.values());
     }

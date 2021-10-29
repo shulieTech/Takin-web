@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.dsManage.impl;
 
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -604,13 +605,12 @@ public class DsServiceImpl implements DsService {
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
 
         ConnectpoolConfigTemplateDetailResult result = connectpoolConfigTemplateDAO.queryOne(updateRequestV2.getMiddlewareType(), updateRequestV2.getConnectionPool());
-        if(Objects.isNull(result)){
+        if (Objects.isNull(result)) {
             CacheConfigTemplateDetailResult cacheResult = cacheConfigTemplateDAO.queryOne(updateRequestV2.getMiddlewareType(), updateRequestV2.getConnectionPool());
-            if(Objects.isNull(cacheResult)){
-                throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_CREATE_ERROR,"此模式不支持");
+            if (Objects.isNull(cacheResult)) {
+                throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_CREATE_ERROR, "此模式不支持");
             }
         }
-
 
 
         if (!updateRequestV2.getIsNewData()) {
@@ -622,6 +622,7 @@ public class DsServiceImpl implements DsService {
                 applicationDsDAO.delete(deleteParam);
                 updateRequestV2.setParseConfig(dsResult.getParseConfig());
                 updateRequestV2.setApplicationName(dsResult.getApplicationName());
+                updateRequestV2.setIsOld(true);
                 service.createShadowProgramme(updateRequestV2, false);
             }
         }
@@ -637,16 +638,16 @@ public class DsServiceImpl implements DsService {
         Converter.TemplateConverter.TemplateEnum templateEnum;
         if (Strings.isNotBlank(connectionPool)) {
             templateEnum = redisTemplateParser.convert(connectionPool);
-            if(Objects.isNull(templateEnum)){
+            if (Objects.isNull(templateEnum)) {
                 templateEnum = dbTemplateParser.convert(connectionPool);
             }
         } else {
             templateEnum = Converter.TemplateConverter.ofKey(agentSourceType);
         }
-        Type type ;
-        if(Objects.isNull(templateEnum) || Converter.TemplateConverter.TemplateEnum._default.equals(templateEnum)){
+        Type type;
+        if (Objects.isNull(templateEnum) || Converter.TemplateConverter.TemplateEnum._default.equals(templateEnum)) {
             type = Type.MiddleWareType.LINK_POOL;
-        }else{
+        } else {
             type = templateEnum.getType();
         }
 
@@ -768,8 +769,11 @@ public class DsServiceImpl implements DsService {
         v2Response.setCacheType("");
         v2Response.setIsNewData(true);
         v2Response.setIsNewPage(true);
-        v2Response.setCanRemove(v2Response.getIsManual());
+//        v2Response.setCanRemove(v2Response.getIsManual());
         v2Response.setStatus(dbDetail.getStatus());
+        v2Response.setUserId(WebPluginUtils.getUserId());
+        WebPluginUtils.fillQueryResponse(v2Response);
+        v2Response.setCanRemove(v2Response.getIsManual());
         return v2Response;
     }
 
@@ -787,9 +791,12 @@ public class DsServiceImpl implements DsService {
         v2Response.setCacheType(cacheDetail.getType());
         v2Response.setIsNewData(true);
         v2Response.setIsNewPage(true);
-        v2Response.setCanRemove(v2Response.getIsManual());
+//        v2Response.setCanRemove(v2Response.getIsManual());
         v2Response.setStatus(cacheDetail.getStatus());
         v2Response.setExtMsg(cacheDetail.getType());
+        v2Response.setUserId(WebPluginUtils.getUserId());
+        WebPluginUtils.fillQueryResponse(v2Response);
+        v2Response.setCanRemove(v2Response.getIsManual());
         return v2Response;
     }
 
@@ -803,14 +810,14 @@ public class DsServiceImpl implements DsService {
         v2Response.setConnectionPool("");
         v2Response.setIsManual(true);
         v2Response.setStatus(response.getStatus());
-        v2Response.setCanRemove(v2Response.getIsManual());
+//        v2Response.setCanRemove(v2Response.getIsManual());
         if (MiddleWareTypeEnum.LINK_POOL.getCode().equals(response.getDbType().getValue())) {
             v2Response.setUrl(response.getUrl());
-            if(DsTypeEnum.SHADOW_TABLE.getCode().equals(response.getDsType().getValue())){
+            if (DsTypeEnum.SHADOW_TABLE.getCode().equals(response.getDsType().getValue())) {
                 v2Response.setConnectionPool("兼容老版本(影子表)");
-            }else if(DsTypeEnum.SHADOW_DB.getCode().equals(response.getDsType().getValue())){
+            } else if (DsTypeEnum.SHADOW_DB.getCode().equals(response.getDsType().getValue())) {
                 v2Response.setConnectionPool("兼容老版本(影子库)");
-            }else{
+            } else {
                 v2Response.setConnectionPool("druid");
             }
 
@@ -822,13 +829,16 @@ public class DsServiceImpl implements DsService {
             v2Response.setConnectionPool(RedisTemplate.Client.jedis.toString());
             v2Response.setIsNewPage(true);
             v2Response.setAgentSourceType(Converter.TemplateConverter.TemplateEnum._6.getKey());
+            v2Response.setCacheType("主从模式");
             if (Objects.nonNull(response.getDsType())) {
                 //处理老数据类型映射的问题
                 v2Response.setDsType(DsTypeEnum.SHADOW_REDIS_CLUSTER.getDesc());
             }
 
         }
-
+        v2Response.setUserId(WebPluginUtils.getUserId());
+        WebPluginUtils.fillQueryResponse(v2Response);
+        v2Response.setCanRemove(v2Response.getIsManual());
         return v2Response;
     }
 
@@ -854,7 +864,10 @@ public class DsServiceImpl implements DsService {
             dsAgentVO.setUrl(detail.getUrl());
             dsAgentVO.setStatus((byte) 0);
             String fileExtedn = detail.getFileExtedn();
-            JSONObject parameter = JSONObject.parseObject(fileExtedn);
+            JSONObject parameter = null;
+            if (JSONUtil.isJson(fileExtedn)) {
+                parameter = JSONObject.parseObject(fileExtedn);
+            }
             if (DsTypeEnum.SHADOW_TABLE.getCode().equals(detail.getDsType())) {
                 dsAgentVO.setShadowTableConfig(this.matchShadowTable(detail.getShaDowFileExtedn()));
             } else {
@@ -863,11 +876,26 @@ public class DsServiceImpl implements DsService {
                 configurations.setDatasourceMediator(new DatasourceMediator("dataSourceBusiness", "dataSourcePerformanceTest"));
                 DataSource dataSourceBusiness = new DataSource();
                 dataSourceBusiness.setId("dataSourceBusiness");
-                dataSourceBusiness.setUrl(Objects.isNull(parameter) ? detail.getUrl() : parameter.getString("url"));
-                dataSourceBusiness.setUsername(Objects.isNull(parameter) ? detail.getUserName() : parameter.getString("username"));
+                if(Objects.equals("老转新",detail.getConfigJson())){
+                    if(Objects.nonNull(parameter)){
+                        List<JSONObject> dataSources = JSONArray.parseArray(parameter.getString("dataSources"),
+                                JSONObject.class);
+                        JSONObject busObj = dataSources.get(0);
+                        JSONObject testObj = dataSources.get(1);
+                        dataSourceBusiness.setUrl( busObj.getString("url"));
+                        dataSourceBusiness.setUsername( busObj.getString("username"));
+                        dataSourceBusiness.setDriverClassName(testObj.getString("driverClassName"));
+                    }
+                }else{
+                    dataSourceBusiness.setUrl(Objects.isNull(parameter) ? detail.getUrl() : parameter.getString("url"));
+                    dataSourceBusiness.setUsername(Objects.isNull(parameter) ? detail.getUserName() : parameter.getString("username"));
+                    dataSourceBusiness.setDriverClassName(Objects.isNull(parameter) ? "":parameter.getString("driverClassName"));
+                }
 
                 DataSource dataSourcePerformanceTest = this.buildShadowMsg(shadowConfigMap);
                 dataSourcePerformanceTest.setId("dataSourcePerformanceTest");
+                dataSourcePerformanceTest.setDriverClassName(StringUtils.isBlank(dataSourcePerformanceTest.getDriverClassName())
+                        ?dataSourceBusiness.getDriverClassName():dataSourcePerformanceTest.getDriverClassName());
 
                 List<DataSource> dataSources = new ArrayList<>();
                 dataSources.add(dataSourceBusiness);
@@ -900,8 +928,8 @@ public class DsServiceImpl implements DsService {
         shadowMap.forEach((k, v) -> {
             String value = null;
             Map map = JSONObject.parseObject(String.valueOf(v), Map.class);
-            if(Objects.equals("2",String.valueOf(map.get("tag")))){
-               value = String.valueOf(map.get("context"));
+            if (Objects.equals("2", String.valueOf(map.get("tag")))) {
+                value = String.valueOf(map.get("context"));
             }
             matchMap.put(String.valueOf(k), value);
         });

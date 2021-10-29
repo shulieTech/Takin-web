@@ -105,7 +105,7 @@ public class ShaDowCacheServiceImpl extends AbstractShaDowManageService {
             entity.setType(inputV2.getCacheType());
             entity.setDsType(inputV2.getDsType());
             entity.setFileExtedn(inputV2.getParseConfig());
-            entity.setConfigJson("");
+            entity.setConfigJson(inputV2.getIsOld()?"老转新":"");
             entity.setSource(1);
             Converter.TemplateConverter.TemplateEnum templateEnum = templateParser.convert(entity.getCacheName());
             entity.setAgentSourceType(templateEnum.getKey());

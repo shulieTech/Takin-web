@@ -157,7 +157,7 @@ public class ApplicationEntranceController {
 
     @GetMapping("/allByActivity")
     @ApiOperation("获取应用下创建业务活动所有入口服务列表")
-    public List<ApplicationEntrancesResponse> getApplicationAllEntrancesByActivity(String appName,String activityName) {
+    public List<ApplicationEntrancesResponse> getApplicationAllEntrancesByActivity(String appName) {
         if(StringUtils.isBlank(appName)){
             log.error("应用名称不能为空");
             return Collections.emptyList();
@@ -185,12 +185,7 @@ public class ApplicationEntranceController {
                     String entrance = ActivityUtil.buildEntrance(appName, item.getMethod(), item.getServiceName(), item.getRpcType());
                     List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
                     if (!CollectionUtils.isEmpty(serviceList)) {
-                        Map<String, String> activityNameAndId = serviceList.get(0);
-                        String linkName = activityNameAndId.get("linkName");
-                        if (!activityName.equals(linkName)) {
-                            return false;
-                        }
-                        item.setActivityNameAndId(activityNameAndId);
+                        item.setActivityNameAndId(serviceList.get(0));
                         return true;
                     } else {
                         return false;

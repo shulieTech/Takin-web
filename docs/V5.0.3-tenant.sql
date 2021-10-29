@@ -829,39 +829,32 @@ alter table t_whitelist_effective_app
 
 ----- 兮曦 -----
 -- e_patrol_activity_assert 断言配置表
-alter table e_patrol_activity_assert modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 update e_patrol_activity_assert set env_code='test',tenant_id=1;
 
 -- e_patrol_board 看板表
 alter table e_patrol_board modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
-update e_patrol_board set env_code='test',tenant_id=1;
+update e_patrol_board set tenant_id=customer_id,env_code='test';
 
 -- e_patrol_board_scene 看板场景关系表
-alter table e_patrol_board_scene modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 update e_patrol_board_scene set env_code='test',tenant_id=1;
 
 -- e_patrol_exception 瓶颈异常记录表
-alter table e_patrol_exception modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 update e_patrol_exception set env_code='test',tenant_id=1;
 
 -- e_patrol_exception_config 瓶颈配置表
 alter table e_patrol_exception_config modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
-update e_patrol_exception_config set env_code='test',tenant_id=1 where customer_id>0;
+update e_patrol_exception_config set env_code='test',tenant_id=customer_id;
 
 -- e_patrol_exception_notice_config 瓶颈通知配置表
-alter table e_patrol_exception_notice_config modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 update e_patrol_exception_notice_config set env_code='test',tenant_id=1;
 
 -- e_patrol_scene 巡检场景表
-alter table e_patrol_scene modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
-update e_patrol_scene set env_code='test',tenant_id=1;
+update e_patrol_scene set env_code='test',tenant_id=customer_id;
 
 -- e_patrol_scene_chain 链路配置表
-alter table e_patrol_scene_chain modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 update e_patrol_scene_chain set env_code='test',tenant_id=1;
 
 -- e_patrol_scene_check 巡检任务启动异常表
-alter table e_patrol_scene_check modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 update e_patrol_scene_check set env_code='test',tenant_id=1;
 
 ----- 兮曦 -----

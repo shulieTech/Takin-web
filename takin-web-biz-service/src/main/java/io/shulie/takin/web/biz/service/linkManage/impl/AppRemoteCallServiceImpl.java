@@ -903,6 +903,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         if (detailResult == null) {
             throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "应用不存在");
         }
+        agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
         if (Objects.isNull(request.getId())) {
             this.create(request);
             return;
@@ -920,8 +921,6 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         param.setMockReturnValue(request.getMockValue());
         param.setRemark(request.getRemark());
         appRemoteCallDAO.update(param);
-
-        agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
 
     }
 

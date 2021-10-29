@@ -451,4 +451,10 @@ public class ActivityDAOImpl implements ActivityDAO {
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getLinkName,activityName);
         return businessLinkManageTableMapper.selectOne(lambdaQueryWrapper);
     }
+
+    @Override
+    public List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace) {
+        Long customerId = WebPluginUtils.getCustomerId();
+        return businessLinkManageTableMapper.findActivityAppName(appName,entrace,customerId);
+    }
 }

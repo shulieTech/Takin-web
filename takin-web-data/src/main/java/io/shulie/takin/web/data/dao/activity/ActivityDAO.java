@@ -82,4 +82,6 @@ public interface ActivityDAO {
     List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance);
 
     BusinessLinkManageTableEntity getActivityByName(String activityName);
+
+    List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace);
 }

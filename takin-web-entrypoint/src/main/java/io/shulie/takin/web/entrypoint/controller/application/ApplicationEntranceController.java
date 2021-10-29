@@ -18,6 +18,7 @@ import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -162,34 +163,25 @@ public class ApplicationEntranceController {
             log.error("应用名称不能为空");
             return Collections.emptyList();
         }
-        List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                appName, "");
-        if (CollectionUtils.isEmpty(applicationEntrances)) {
+        List<BusinessLinkManageTableEntity> activities = activityDAO.findActivityAppName(appName, appName + "%");
+        if (CollectionUtils.isEmpty(activities)) {
             return Lists.newArrayList();
         }
-        return applicationEntrances.stream()
-                .filter(item -> !item.getServiceName().startsWith("PT_"))
+        return activities.stream()
                 .map(item -> {
+                    String entrace = item.getEntrace();
+                    String[] entraceArray = entrace.split("|");
                     ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
-                    applicationEntrancesResponse.setMethod(item.getMethodName());
-                    applicationEntrancesResponse.setRpcType(item.getRpcType());
-                    applicationEntrancesResponse.setExtend(item.getExtend());
-                    applicationEntrancesResponse.setServiceName(item.getServiceName());
+                    HashMap nameAndId = new HashMap();
+                    nameAndId.put("linkId",item.getLinkId());
+                    nameAndId.put("linkName",item.getLinkName());
+                    applicationEntrancesResponse.setActivityNameAndId(nameAndId);
                     applicationEntrancesResponse.setLabel(
-                            ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
+                            ActivityUtil.serviceNameLabel(entraceArray[2], entraceArray[1]));
                     applicationEntrancesResponse.setValue(
-                            ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
-                                    item.getAppName(), item.getRpcType(), item.getExtend()));
+                            ActivityUtil.createLinkId(entraceArray[2], entraceArray[1],
+                                    appName, entraceArray[3], ""));
                     return applicationEntrancesResponse;
-                }).filter(item -> {
-                    String entrance = ActivityUtil.buildEntrance(appName, item.getMethod(), item.getServiceName(), item.getRpcType());
-                    List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
-                    if (!CollectionUtils.isEmpty(serviceList)) {
-                        item.setActivityNameAndId(serviceList.get(0));
-                        return true;
-                    } else {
-                        return false;
-                    }
                 }).collect(Collectors.toList());
     }
 

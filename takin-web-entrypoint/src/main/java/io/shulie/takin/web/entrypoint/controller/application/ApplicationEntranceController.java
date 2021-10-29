@@ -170,7 +170,7 @@ public class ApplicationEntranceController {
         return activities.stream()
                 .map(item -> {
                     String entrace = item.getEntrace();
-                    String[] entraceArray = entrace.split("|");
+                    String[] entraceArray = entrace.split("\\|");
                     ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
                     HashMap nameAndId = new HashMap();
                     nameAndId.put("linkId",item.getLinkId());

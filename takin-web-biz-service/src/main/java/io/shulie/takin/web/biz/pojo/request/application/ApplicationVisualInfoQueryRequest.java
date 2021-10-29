@@ -43,7 +43,7 @@ public class ApplicationVisualInfoQueryRequest extends PagingDevice {
     /**
      * 业务活动
      */
-    @ApiModelProperty("业务活动名称")
+    @ApiModelProperty("服务名称")
     private String activityName;
 
     /**

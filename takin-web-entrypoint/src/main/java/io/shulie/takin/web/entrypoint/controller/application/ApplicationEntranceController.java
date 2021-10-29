@@ -156,7 +156,7 @@ public class ApplicationEntranceController {
     }
 
     @GetMapping("/allByActivity")
-    @ApiOperation("获取应用下所有入口服务列表")
+    @ApiOperation("获取应用下创建业务活动所有入口服务列表")
     public List<ApplicationEntrancesResponse> getApplicationAllEntrancesByActivity(String appName) {
         if(StringUtils.isBlank(appName)){
             log.error("应用名称不能为空");

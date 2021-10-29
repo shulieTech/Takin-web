@@ -34,7 +34,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -320,13 +322,18 @@ public class ApplicationController {
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
             needAuth = ActionTypeEnum.CREATE
     )
-    public long gotoActivityInfo(@Validated @RequestBody ActivityCreateRequest request) throws Exception {
+    public Map gotoActivityInfo(@Validated @RequestBody ActivityCreateRequest request) throws Exception {
+        HashMap result = new HashMap();
         //业务活动名称模糊搜索
-        String activityName = request.getActivityName();
-        BusinessLinkManageTableEntity entity = activityService.getActivityByName(activityName);
+        String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.getCustomerId());
+        BusinessLinkManageTableEntity entity = activityService.getActivityByName(key);
         if (null != entity) {
-            return entity.getLinkId();
+            result.put(entity.getLinkId(), false);
         } else {
+            entity = activityService.getActivity(request);
+            if (null != entity) {
+                result.put(entity.getLinkId(), true);
+            }
             List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
                     request.getApplicationName(), "");
             ApplicationEntrancesResponse entrancesResponse = applicationEntrances.stream()
@@ -345,13 +352,14 @@ public class ApplicationController {
                         return applicationEntrancesResponse;
                         // 增加去重
                     }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(Collectors.toList()).get(0);
-            String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.getCustomerId());
+
             request.setActivityName(key);
             request.setLinkId(entrancesResponse.getValue());
             request.setRpcType(entrancesResponse.getRpcType());
             applicationService.gotoActivityInfo(request);
-            return activityService.getActivityByName(activityName).getLinkId();
+            result.put(activityService.getActivityByName(key).getLinkId(), false);
         }
+        return result;
     }
 
 }

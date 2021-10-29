@@ -86,4 +86,6 @@ public interface ActivityService {
     List<ActivityNodeState> getActivityNodeServiceState(long activityId);
 
     BusinessLinkManageTableEntity getActivityByName(String activityName);
+
+    BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request);
 }

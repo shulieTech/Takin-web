@@ -772,6 +772,20 @@ public class ActivityServiceImpl implements ActivityService {
         return activityDAO.getActivityByName(activityName);
     }
 
+    @Override
+    public BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request) {
+        String entrance = ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(), request.getRpcType());
+        List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(request.getApplicationName(), entrance);
+        if (CollectionUtils.isEmpty(serviceList)) {
+            return null;
+        }
+        BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
+        Map linkNameAndId = serviceList.get(0);
+        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkeId").toString()));
+        businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName").toString());
+        return businessLinkManageTableEntity;
+    }
+
     // TODO 变更逻辑后续看如何设计
     private boolean isChange(ActivityResult oldActivity, ActivityUpdateRequest newActivity) {
         return false;

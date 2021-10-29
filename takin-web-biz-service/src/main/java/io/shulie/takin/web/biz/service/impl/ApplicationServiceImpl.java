@@ -1256,7 +1256,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     if (!CollectionUtils.isEmpty(serviceList)) {
                         serviceList.stream().forEach(serviceName -> {
                             String linkName = serviceName.get("linkName");
-                            if (!org.springframework.util.StringUtils.isEmpty(nameActivity) && linkName.equals(nameActivity))
+                            if (org.springframework.util.StringUtils.isEmpty(nameActivity) || linkName.equals(nameActivity))
                             activityResult.put(String.valueOf(serviceName.get("linkId")), linkName);
                         });
                     }

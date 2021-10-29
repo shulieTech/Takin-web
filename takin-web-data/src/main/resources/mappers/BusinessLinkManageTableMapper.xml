@@ -25,6 +25,6 @@
     </sql>
 
     <select id="findActivityAppName" resultMap="BaseResultMap">
-        SELECT LINK_ID,LINK_NAME,ENTRACE FROM t_business_link_manage_table WHERE ENTRACE LIKE #{entrace} AND IS_DELETED = 0 AND CUSTOMER_ID = #{customerId}
+        SELECT LINK_ID,LINK_NAME,ENTRACE FROM t_business_link_manage_table WHERE IS_DELETED = 0 AND CUSTOMER_ID = #{customerId}
     </select>
 </mapper>

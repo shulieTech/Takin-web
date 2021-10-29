@@ -844,6 +844,7 @@ update e_patrol_exception set env_code='test',tenant_id=1;
 -- e_patrol_exception_config 瓶颈配置表
 alter table e_patrol_exception_config modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 update e_patrol_exception_config set env_code='test',tenant_id=customer_id;
+ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `env_code`, `tenant_id`, `type_value`,`level_value` ) USING BTREE
 
 -- e_patrol_exception_notice_config 瓶颈通知配置表
 update e_patrol_exception_notice_config set env_code='test',tenant_id=1;

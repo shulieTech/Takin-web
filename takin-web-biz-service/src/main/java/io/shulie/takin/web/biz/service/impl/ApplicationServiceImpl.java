@@ -648,7 +648,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return Response.success("上传应用状态信息成功");
     }
 
-    //Scheduled(cron = "0/10 * *  * * ?")
     @Override
     public void syncApplicationAccessStatus() {
         long startTime = System.currentTimeMillis();
@@ -1183,12 +1182,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         LocalDateTime startTime = request.getStartTimeDate();
         LocalDateTime endTime = request.getEndTimeDate();
         infoDTOList.stream().forEach(dto -> {
-//            String appName = dto.getAppName();
-//            String serviceAndMethod = dto.getServiceAndMethod();
-//            int clusterTest = request.getClusterTest();
-//            FlowTypeEnum flowTypeEnum = FlowTypeEnum.getByType(clusterTest);
-//            Map<String, String> activeMap = dto.getActiveIdAndName();
-//            List<ActivityInfoQueryRequest> activityList = activeMap.keySet().stream().map(id -> new ActivityInfoQueryRequest(Long.parseLong(id), flowTypeEnum, startTime, endTime)).collect(Collectors.toList());
             ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(dto,startTime,endTime);
             dto.setResponse(response);
         });
@@ -1226,38 +1219,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return null;
         }
 
-//        String[] orderList = orderBy.split(" ");
-//        if (orderList.length != 2) {
-//            return null;
-//        }
-//        int total = data.size();
-//        String orderName = orderList[0];
-//        String orderType = orderList[1];
         List<ApplicationVisualInfoResponse> visualInfoDTOList = data.stream()
-//                .sorted((d1, d2) -> {
-//            boolean b1 = attentionList.contains(d1.getServiceAndMethod());
-//            boolean b2 = attentionList.contains(d2.getServiceAndMethod());
-//            if ((b1 && b2) || (!b1 && !b2)) {
-//                Number result = 0;
-//                switch (orderName) {
-//                    case "QPS":
-//                        result = d1.getRequestCount() - d2.getRequestCount();
-//                        break;
-//                    case "TPS":
-//                        result = d1.getTps() - d2.getTps();
-//                        break;
-//                    case "RT":
-//                        result = d1.getResponseConsuming() - d2.getResponseConsuming();
-//                        break;
-//                    case "SUCCESSRATE":
-//                        result = d1.getSuccessRatio() - d2.getSuccessRatio();
-//                }
-//                int diff = result.doubleValue() > 0 ? 1 : -1;
-//                return "asc".equals(orderType) ? diff : -diff;
-//            } else {
-//                return b1 ? -1 : 1;
-//            }
-//        })
                 .map(dto -> {
             dto.setAttend(attentionList.contains(dto.getServiceAndMethod()));
             String[] activeList = dto.getActiveList();
@@ -1281,11 +1243,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             dto.setActiveIdAndName(activityResult);
             return dto;
         }).collect(Collectors.toList());
-
-//        List<ApplicationVisualInfoResponse> infoDTOPageList = new ArrayList<>();
-//        for (int i = current * pageSize; i < (current + 1) * pageSize && i < visualInfoDTOList.size(); i++) {
-//            infoDTOPageList.add(visualInfoDTOList.get(i));
-//        }
 
         Map result = new HashMap<>();
         result.put(visualInfoDTOList, total);
@@ -2446,7 +2403,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response getApplicationReportConfigInfo(Integer type,String appName) {
         List<AppAgentConfigReportDetailResult> results = reportDAO.listByBizType(type,appName);
-        //todo 现在只有一种配置 先这么写
         String silenceSwitchStatus = getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId());
         String configValue =  AppSwitchEnum.OPENED.getCode().equals(silenceSwitchStatus)?"true":"false";
         List<AppAgentConfigReportDetailResult> filter = results.stream().filter(x -> configValue.equals(x.getConfigValue())).collect(Collectors.toList());

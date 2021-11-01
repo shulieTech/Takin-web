@@ -75,7 +75,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
      */
     @Override
     protected Expression builderExpression(Expression currentExpression, Table table) {
-        AndExpression tenantExpression = this.buildTenantExpression(table);
+        AndExpression tenantExpression = this.buildTenantExpression(table,currentExpression);
         if (currentExpression == null) {
             return tenantExpression;
         }
@@ -92,7 +92,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     @Override
     protected BinaryExpression andExpression(Table table, Expression where) {
         //获得where条件表达式
-        AndExpression tenantExpression = this.buildTenantExpression(table);
+        AndExpression tenantExpression = this.buildTenantExpression(table,where);
         if (null != where) {
             if (where instanceof OrExpression) {
                 return new AndExpression(tenantExpression, new Parenthesis(where));
@@ -278,26 +278,25 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         return new Column(column.toString());
     }
 
-    private AndExpression buildTenantExpression(Table table) {
+    private AndExpression buildTenantExpression(Table table,Expression where) {
+        // 已经存在
+        String tenantIdColumn = tenantLineHandler.getTenantIdColumn();
+        String envCodeColumn = tenantLineHandler.getEnvCodeColumn();
+
         EqualsTo tenantIdCondition = null;
-        if (!tableWithoutTenantId.contains(table.getName())) {
+        if (!tenantLineHandler.ignoreSearch(where, tenantIdColumn) || !tableWithoutTenantId.contains(table.getName())) {
             tenantIdCondition = new EqualsTo();
             tenantIdCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getTenantIdColumn()));
             tenantIdCondition.setRightExpression(tenantLineHandler.getTenantId());
         }
         EqualsTo envCodeCondition = null;
-        if(!tableWithoutEnvCode.contains(table.getName())) {
+        if(!tenantLineHandler.ignoreSearch(where, envCodeColumn) ||  !tableWithoutEnvCode.contains(table.getName())) {
             envCodeCondition = new EqualsTo();
             envCodeCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getEnvCodeColumn()));
             envCodeCondition.setRightExpression(tenantLineHandler.getEnvCode());
         }
 
-        //EqualsTo userIdCondition = null;
-        //if(!tableWithoutUserId.contains(table.getName())) {
-        //    userIdCondition = new EqualsTo();
-        //    userIdCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getUserIdColumn()));
-        //    userIdCondition.setRightExpression(tenantLineHandler.getUserId());
-        //}
+
 
         if(tenantIdCondition == null && envCodeCondition == null) {
             return null;
@@ -314,12 +313,6 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             tenantExpression =  new AndExpression(equalsTo, tenantIdCondition);
         }
 
-        //if (userIdCondition != null) {
-        //    allAndExpression = new AndExpression(tenantExpression, userIdCondition);
-        //}else {
-        //    // 没有 user_id
-        //    return tenantExpression;
-        //}
         return tenantExpression;
     }
 

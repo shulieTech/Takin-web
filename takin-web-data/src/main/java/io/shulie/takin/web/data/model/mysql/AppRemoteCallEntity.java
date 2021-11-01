@@ -104,4 +104,19 @@ public class AppRemoteCallEntity {
     @TableField(value = "is_synchronize")
     private Boolean isSynchronize;
 
+    /**
+     * 是否手动录入 0:否;1:是
+     */
+    @TableField(value = "manual_tag")
+    private Integer manualTag;
+
+    /**
+     * 接口子类型
+     */
+    @TableField(value = "interface_child_type")
+    private String interfaceChildType;
+
+    @TableField(value = "remark")
+    private String remark;
+
 }

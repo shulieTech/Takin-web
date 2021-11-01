@@ -76,4 +76,9 @@ public class ApplicationDsResult {
      * 是否有效 0:有效;1:无效
      */
     private Integer isDeleted;
+
+
+    public String getFilterStr(){
+        return this.getUrl()+"@@"+""+"@@"+"";
+    }
 }

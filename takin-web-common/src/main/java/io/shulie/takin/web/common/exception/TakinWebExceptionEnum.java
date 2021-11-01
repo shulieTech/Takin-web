@@ -132,6 +132,11 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      */
     PATROL_EXCEPTION_ADD_ERROR("1300-" + ErrorConstant.ADD_ERROR, "新增异常数据失败"),
     PATROL_EXCEPTION_QUERY_ERROR("1300-" + ErrorConstant.QUERY_NULL_ERROR, "查询巡检异常失败"),
+
+    /**
+     * 影子配置
+     */
+    SHADOW_CONFIG_CREATE_ERROR("1400-"+ErrorConstant.VALIDATE_ERROR,"新增影子配置异常"),
     ;
 
     private final String errorCode;

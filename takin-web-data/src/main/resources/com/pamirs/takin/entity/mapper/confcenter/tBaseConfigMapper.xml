@@ -138,7 +138,7 @@
         where CONFIG_CODE = #{configCode,jdbcType=VARCHAR}
     </update>
 
-    <insert id="batchInsert" parameterType="">
+    <insert id="batchInsert" parameterType="java.util.List">
         <foreach collection="list" item="item" separator=";">
             insert into t_base_config
             <trim prefix="(" suffix=")" suffixOverrides=",">

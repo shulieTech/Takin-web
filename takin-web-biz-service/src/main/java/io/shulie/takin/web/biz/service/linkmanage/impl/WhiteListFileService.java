@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.service.linkManage.impl;
+package io.shulie.takin.web.biz.service.linkmanage.impl;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,7 +26,7 @@ import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TWhiteListMntDao;
 import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.query.whitelist.AgentWhiteList;
-import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
+import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;

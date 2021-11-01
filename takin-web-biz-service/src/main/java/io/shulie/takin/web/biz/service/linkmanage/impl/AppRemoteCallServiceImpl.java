@@ -14,7 +14,7 @@
  *
  */
 
-package io.shulie.takin.web.biz.service.linkManage.impl;
+package io.shulie.takin.web.biz.service.linkmanage.impl;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -47,7 +47,7 @@ import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
-import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
+import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;

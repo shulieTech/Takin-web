@@ -10,7 +10,7 @@ package io.shulie.takin.web.entrypoint.controller.whitelist;
  */
 
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
+import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;

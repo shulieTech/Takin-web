@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.service.linkManage;
+package io.shulie.takin.web.biz.service.linkmanage;
 
 import java.util.List;
 import java.util.Map;

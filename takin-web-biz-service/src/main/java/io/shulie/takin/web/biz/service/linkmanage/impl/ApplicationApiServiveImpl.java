@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.service.linkManage.impl;
+package io.shulie.takin.web.biz.service.linkmanage.impl;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,7 +20,7 @@ import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
 import io.shulie.takin.web.biz.cache.DictionaryCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
+import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;

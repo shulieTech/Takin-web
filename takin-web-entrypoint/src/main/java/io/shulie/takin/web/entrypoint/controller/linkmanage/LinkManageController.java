@@ -18,7 +18,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
-import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;

@@ -9,7 +9,7 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.SceneDto;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.BusinessQueryVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
-import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.biz.pojo.openapi.converter.LinkManageOpenApiConverter;

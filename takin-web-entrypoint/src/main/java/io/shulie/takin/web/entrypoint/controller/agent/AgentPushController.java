@@ -20,7 +20,7 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.ConfCenterService;
 import io.shulie.takin.web.biz.service.UploadInterfaceService;
-import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
+import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
 import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.utils.XmlUtil;

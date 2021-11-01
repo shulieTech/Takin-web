@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.service.linkManage.impl;
+package io.shulie.takin.web.biz.service.linkmanage.impl;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -65,7 +65,7 @@ import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.agent.AgentPluginSupportService;
-import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.CategoryUtils;

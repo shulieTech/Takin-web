@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.service.linkManage;
+package io.shulie.takin.web.biz.service.linkmanage;
 
 import java.util.List;
 
@@ -11,9 +11,7 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.BusinessQueryVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.*;
 import io.shulie.takin.web.common.common.Response;

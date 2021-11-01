@@ -41,4 +41,22 @@ public interface TakinTenantLineHandler extends TenantLineHandler {
     //    return TenantField.FIELD_USER_ID.getColumnName();
     //}
 
+    /**
+     * 已带查询条件 则不添加
+     * @param expression
+     * @param columnName
+     * @return
+     */
+    default boolean ignoreSearch(Expression expression, String columnName) {
+        if (expression == null ) {
+            // 都要增加过滤 提交
+            return false;
+        }
+        // 判断是否已经带了
+        if (expression.toString().toLowerCase().contains(columnName.toLowerCase())) {
+            return true;
+        }
+        return false;
+    }
+
 }

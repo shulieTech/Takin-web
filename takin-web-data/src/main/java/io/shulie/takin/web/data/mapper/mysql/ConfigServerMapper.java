@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.mapper.mysql;
 
 import java.util.List;
 
+import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.shulie.takin.web.data.model.mysql.ConfigServerEntity;
 import io.shulie.takin.web.data.result.config.ConfigServerDetailResult;
@@ -24,6 +25,7 @@ public interface ConfigServerMapper extends BaseMapper<ConfigServerEntity> {
      * @param envCode 环境
      * @return 配置值
      */
+    @InterceptorIgnore(tenantLine = "true")
     List<ConfigServerDetailResult> selectTenantEnvListByKey(@Param("key") String key, @Param("tenantAppKey") String tenantAppKey, @Param("envCode") String envCode);
 
 }

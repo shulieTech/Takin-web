@@ -1261,7 +1261,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     dto.setActiveIdAndName(activityResult);
                     String[] allActiveList = dto.getAllActiveList();
                     Map<String, String> allActivityResult = new HashMap<>();
-                    if (activeList != null) {
+                    if (allActiveList != null) {
                         for (String active : allActiveList) {
                             String[] split = active.split("#");
                             String appName = split[0];

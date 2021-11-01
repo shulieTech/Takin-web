@@ -1,11 +1,8 @@
-package io.shulie.takin.web.biz.pojo.request.application;
+package io.shulie.takin.web.data.param.application;
 
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
-/**
- * @author caijianying
- */
 @Data
 public class ApplicationAttentionParam extends TenantCommonExt {
     private String applicationName;

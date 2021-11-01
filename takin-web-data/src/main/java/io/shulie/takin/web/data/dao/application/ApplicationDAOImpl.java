@@ -36,11 +36,11 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.InstanceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.LibraryDTO;
-import io.shulie.takin.web.biz.pojo.request.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
+import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
@@ -51,7 +51,6 @@ import io.shulie.takin.web.data.result.application.LibraryResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -288,7 +287,7 @@ public class ApplicationDAOImpl
         if (param.getTenantId() != null) {
             wrapper.eq(ApplicationMntEntity::getTenantId, param.getTenantId());
         }
-        if(StringUtils.isNotBlank(param.getEnvCode())) {
+        if(org.apache.commons.lang3.StringUtils.isNotBlank(param.getEnvCode())) {
             wrapper.eq(ApplicationMntEntity::getEnvCode, param.getEnvCode());
         }
         return getApplicationDetailResults(wrapper);

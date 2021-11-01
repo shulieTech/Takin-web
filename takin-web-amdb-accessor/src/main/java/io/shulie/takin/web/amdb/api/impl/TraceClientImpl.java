@@ -173,7 +173,7 @@ public class TraceClientImpl implements TraceClient {
     public PagingList<TTrackClickhouseModel> listTraceLog(TraceLogQueryDTO query) {
         String url = properties.getUrl().getAmdb() + ENTRY_TRACE_LOG_PATH;
         EntryTraceQueryParam param = new EntryTraceQueryParam();
-        param.setAppNames(query.getAppNames());
+        //param.setAppNames(query.getAppNames());
         if(StringUtils.isNotBlank(query.getAppName())) {
             param.setAppName(query.getAppName());
         }
@@ -199,7 +199,7 @@ public class TraceClientImpl implements TraceClient {
         param.setPageSize(query.getPageSize());
 
         try {
-            AmdbResult<List<TTrackClickhouseModel>> response = AmdbHelper.newInStance().url(url)
+            AmdbResult<List<TTrackClickhouseModel>> response = AmdbHelper.builder().url(url)
                 .httpMethod(HttpMethod.POST)
                 .param(param)
                 .exception(TakinWebExceptionEnum.APPLICATION_TRACE_LOG_AGENT_ERROR)

@@ -19,7 +19,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.0.1-SNAPSHOT</version>
+        <version>takin-web-tenant-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-common</artifactId>
@@ -109,7 +109,6 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-ext-api</artifactId>
-            <version>takin-web-5.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
@@ -131,6 +130,11 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>simulator-internal-bootstrap-api</artifactId>
             <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.instrument.module</groupId>
+            <artifactId>module-pradar-core</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

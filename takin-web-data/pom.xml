@@ -21,7 +21,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.0.1-SNAPSHOT</version>
+        <version>takin-web-tenant-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-data</artifactId>
@@ -29,7 +29,6 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-ext-api</artifactId>
-            <version>takin-web-5.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
@@ -105,11 +104,6 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-common</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-web-biz-service</artifactId>
-        </dependency>
-
 
     </dependencies>
 

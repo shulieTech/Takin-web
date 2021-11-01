@@ -20,7 +20,7 @@
     <parent>
         <artifactId>takin-web</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.0.1-SNAPSHOT</version>
+        <version>takin-web-tenant-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -93,6 +93,10 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.surge.data</groupId>
+            <artifactId>surge-deploy-pradar-link</artifactId>
         </dependency>
     </dependencies>
 

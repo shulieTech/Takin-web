@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
@@ -446,7 +445,7 @@ public class ApplicationClientImpl implements ApplicationClient {
         paramMap.put("appName",appName);
         paramMap.put("pageSize",Integer.MAX_VALUE);
         paramMap.put("dataSource",dataSource);
-        AmdbResult<List<AppShadowDatabaseDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.GET)
+        AmdbResult<List<AppShadowDatabaseDTO>> amdbResponse = AmdbHelper.builder().httpMethod(HttpMethod.GET)
                 .url(url)
                 .param(paramMap)
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
@@ -472,7 +471,7 @@ public class ApplicationClientImpl implements ApplicationClient {
         paramMap.put("appName",appName);
         paramMap.put("dataSource",dataSource);
         paramMap.put("tableUser",userName);
-        AmdbResult<List<ApplicationBizTableDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(HttpMethod.GET)
+        AmdbResult<List<ApplicationBizTableDTO>> amdbResponse = AmdbHelper.builder().httpMethod(HttpMethod.GET)
                 .url(url)
                 .param(paramMap)
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)

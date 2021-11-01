@@ -119,4 +119,27 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
      * @return
      */
     List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList);
+    List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList,
+        Long customerId);
+
+
+    /**
+     * 根据id 批量逻辑删除
+     * @param ids
+     */
+    void batchLogicDelByIds(List<Long> ids);
+
+    /**
+     * 批量保存
+     * @param list
+     */
+    void batchSave(List<AppRemoteCallResult> list);
+
+    /**
+     * 查询全部有效的记录
+     * @return
+     */
+    List<AppRemoteCallResult> getAllRecord();
+
+    AppRemoteCallResult queryOne(String appName,Integer interfaceType,String interfaceName);
 }

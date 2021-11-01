@@ -1,35 +1,28 @@
 package io.shulie.takin.web.biz.service.dsManage.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
-
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Lists;
+import com.pamirs.attach.plugin.dynamic.Type;
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.vo.dsmanage.Configurations;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DataSource;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DatasourceMediator;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
+import io.shulie.takin.web.biz.convert.db.parser.DbTemplateParser;
 import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput;
+import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.dsManage.AbstractDsService;
 import io.shulie.takin.web.biz.utils.DsManageUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.AppConstants;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDAO;
@@ -40,12 +33,21 @@ import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsUpdateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author HengYu
@@ -73,6 +75,9 @@ public class ShadowDbServiceImpl extends AbstractDsService {
 
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
+
+    @Autowired
+    private DbTemplateParser dbTemplateParser;
 
     @Override
     public Response dsAdd(ApplicationDsCreateInput createRequest) {
@@ -217,7 +222,6 @@ public class ShadowDbServiceImpl extends AbstractDsService {
 
         // 获得密码脱敏的 xml
         config = this.getSafeConfigFromSchema(config);
-
         dsDetailResponse.setConfig(config);
     }
 
@@ -531,13 +535,51 @@ public class ShadowDbServiceImpl extends AbstractDsService {
         if (configurations == null) {
             return "";
         }
-
         // 密码脱敏
         DataSource dataSource = configurations.getDataSources().get(1);
         String password = dataSource.getPassword();
         String originPasswordElement = DsManageUtil.getOriginPasswordElementAboutXml(password);
         String newPasswordElement = DsManageUtil.getSafePasswordElementAboutXml();
         return xml.replace(originPasswordElement, newPasswordElement);
+    }
+
+    /**
+     * 老数据映射成新的结构
+     *
+     * @param recordId
+     * @return
+     */
+    @Override
+    public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
+        ApplicationDsResult dsResult = applicationDsDAO.queryByPrimaryKey(recordId);
+        if (Objects.isNull(dsResult)) {
+           return null;
+        }
+        //取xml方式的老版本数据兼容
+        Configurations config = DsManageUtil.getConfigurationsByXml(dsResult.getConfig());
+        if (Objects.isNull(config)) {
+            return null;
+        }
+        DataSource ds = config.getDataSources().get(1);
+        DataSource bs = config.getDataSources().get(0);
+
+        String s = dbTemplateParser.convertData(JSON.toJSONString(ds),"druid");
+        ShadowDetailResponse response = new ShadowDetailResponse();
+        response.setId(recordId);
+        response.setApplicationId(String.valueOf(dsResult.getApplicationId()));
+        response.setMiddlewareType(Type.MiddleWareType.LINK_POOL.value());
+        String poolName = "兼容老版本(影子库)";
+        response.setConnectionPool(poolName);
+        response.setDsType(dsResult.getDsType());
+        response.setUrl(bs.getUrl());
+        response.setUsername(StringUtils.isBlank(bs.getUsername())?"-":bs.getUsername());
+        response.setPassword(ds.getPassword());
+        response.setShadowInfo(s);
+
+        List<ShadowDetailResponse.TableInfo> tableInfos = dbTemplateParser.buildTableData(dsResult.getApplicationId(),
+                bs.getUrl(), bs.getUsername());
+        response.setTables(tableInfos);
+        return response;
     }
 }
 

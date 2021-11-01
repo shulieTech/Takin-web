@@ -140,13 +140,6 @@
                 <version>1.9.6</version>
             </dependency>
 
-            <!-- https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator -->
-            <dependency>
-                <groupId>org.hibernate.validator</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>7.0.1.Final</version>
-            </dependency>
-
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>
                 <artifactId>knife4j-spring-boot-starter</artifactId>

@@ -57,8 +57,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             //开关状态、开关开启、关闭的时间存放在redis
             redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS + tenantId + envCode, status);
             redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + tenantId + envCode, voStatus);
-            redisTemplate.opsForHash().put(NEED_VERIFY_USER_MAP, String.valueOf(tenantId + envCode),
-                System.currentTimeMillis());
+            redisTemplate.opsForHash().put(NEED_VERIFY_USER_MAP, String.valueOf(tenantId + envCode), System.currentTimeMillis());
+
             result.setSwitchStutus(voStatus);
         }
         agentConfigCacheManager.evictPressureSwitch();

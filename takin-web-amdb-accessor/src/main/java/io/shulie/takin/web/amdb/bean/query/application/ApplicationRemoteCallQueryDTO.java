@@ -37,7 +37,7 @@ public class ApplicationRemoteCallQueryDTO {
     @JsonProperty("userName")
     private String userName;
     @JsonProperty("fieldNames")
-    private String fieldNames = "appName,serviceName,methodName,middlewareName,rpcType,extend,upAppName";
+    private String fieldNames = "appName,serviceName,methodName,middlewareName,middlewareDetail,rpcType,extend,upAppName";
     /**
      * 客户端查询
      */

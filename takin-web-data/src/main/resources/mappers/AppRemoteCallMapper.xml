@@ -18,11 +18,12 @@
     <result column="IS_DELETED" jdbcType="TINYINT" property="isDeleted" />
     <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
     <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
+    <result column="manual_tag" jdbcType="TINYINT" property="manualTag" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     ID, interface_name, interface_type, server_appname, APPLICATION_ID, APP_NAME, `type`, 
     mock_response_time, mock_return_value, CUSTOMER_ID, USER_ID, IS_DELETED, gmt_create, 
-    gmt_modified
+    gmt_modified,manual_tag
   </sql>
 </mapper>

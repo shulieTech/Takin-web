@@ -62,7 +62,7 @@ public class BaseConfigController {
     @ApiOperation(value = "获取配置")
     public ResponseEntity<Object> queryByConfigCode(@RequestParam("configCode") String configCode) {
         if (StringUtils.isEmpty(String.valueOf(configCode))) {
-            return ResponseError.create(1010100301, "参数缺失");
+            return ResponseError.create(TakinErrorEnum.API_TAKIN_CONFCENTER_BASE_CONFIG_QUERY_EXCEPTION.getErrorCode(), "参数缺失");
         }
         try {
             return ResponseOk.create(baseConfigService.queryByConfigCode(configCode));

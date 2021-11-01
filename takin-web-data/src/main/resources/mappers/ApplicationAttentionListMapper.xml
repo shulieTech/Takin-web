@@ -13,7 +13,7 @@
     <sql id="Base_Column_List">
         id,app_name,interface_name,focus,tenant_id,env_code
     </sql>
-    <select id="getAttentionList" parameterType="io.shulie.takin.web.biz.pojo.request.application.ApplicationAttentionParam" resultType="io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity">
+    <select id="getAttentionList" parameterType="io.shulie.takin.web.data.param.application.ApplicationAttentionParam" resultType="io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity">
         SELECT
         <include refid="Base_Column_List" />
         FROM t_application_focus where 1=1

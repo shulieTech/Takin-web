@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 import com.alibaba.excel.util.CollectionUtils;
 
+import com.alibaba.excel.util.StringUtils;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
@@ -420,7 +422,7 @@ public class ApplicationDAOImpl
         entity.setApplicationId(applicationId);
         entity.setAccessStatus(status);
         LambdaUpdateWrapper<ApplicationMntEntity> wrapper = this.getLambdaUpdateWrapper();
-        ;
+
         wrapper.set(ApplicationMntEntity::getAccessStatus, status)
             .eq(ApplicationMntEntity::getApplicationId, applicationId);
         applicationMntMapper.update(null, wrapper);

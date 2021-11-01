@@ -259,14 +259,15 @@ public class LinkTopologyService extends CommonService {
 
                 // 设置 拓扑图中节点上显示哪一个服务性能指标
                 setTopologyNodeServiceMetrics(node, appProviderInfos);
-                // 设置业务活动层级的瓶颈
-                setTopologyLevelBottleneck(topologyResponse);
             }
 
             if (node.getRoot()) {
                 rootNode = node;
             }
         }
+
+        // 设置业务活动层级的瓶颈
+        setTopologyLevelBottleneck(topologyResponse);
 
         /*
         填充 Edge
@@ -502,7 +503,7 @@ public class LinkTopologyService extends CommonService {
         appProvider.setServiceAllMaxRt(serviceAllMaxRt);
     }
 
-    private void computeBottleneck(
+    public void computeBottleneck(
             LocalDateTime startDateTime, Long activityId,
             List<E2eExceptionConfigInfoExt> bottleneckConfig, AppProvider appProvider) {
 
@@ -523,10 +524,11 @@ public class LinkTopologyService extends CommonService {
         E2eBaseStorageParam baseStorageParam = new E2eBaseStorageParam();
         baseStorageParam.setSuccessRate(appProvider.getServiceAllSuccessRate());
         baseStorageParam.setRt(appProvider.getServiceAvgRt()); // 预设
-        baseStorageParam.setEdgeId(appProvider.getEagleId());
         baseStorageParam.setStartTime(DateUtils.convertLocalDateTimeToUDate(startDateTime.plusHours(8)));
         baseStorageParam.setServiceName(appProvider.getOwnerApps() + "#" + appProvider.getServiceName());
         baseStorageParam.setRpcType(appProvider.getRpcType());
+        // 应用详情模块使用时，不传这两个值
+        baseStorageParam.setEdgeId(appProvider.getEagleId());
         baseStorageParam.setActivityId(activityId);
 
         // 卡慢 rt
@@ -1118,8 +1120,10 @@ public class LinkTopologyService extends CommonService {
 
                 for (String id : keyList) {
                     LinkNodeDTO linkNodeDTO = nodeMap.get(id);
-                    String nodeName = linkNodeDTO.getNodeName();
-                    sourceIdToNodeName.put(id, nodeName);
+                    if (linkNodeDTO != null) {
+                        String nodeName = linkNodeDTO.getNodeName();
+                        sourceIdToNodeName.put(id, nodeName);
+                    }
                 }
 
                 String collect = item.getValue().stream()

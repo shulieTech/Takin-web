@@ -16,7 +16,9 @@ import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 
 /**
  * 业务活动
@@ -80,7 +82,7 @@ public interface ActivityService {
     ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request);
 
     ActivityResponse getActivityWithMetricsByIdForReport(Long activityId, LocalDateTime start, LocalDateTime end);
-    ActivityBottleneckResponse getBottleneckByActivityList(List<ActivityInfoQueryRequest> activityList, String appName, String serviceName);
+    ActivityBottleneckResponse getBottleneckByActivityList(ApplicationVisualInfoResponse applicationVisualInfoResponse, LocalDateTime startTime, LocalDateTime endTime);
 
     ActivityResponse getActivityByIdWithoutTopology(Long id);
 
@@ -91,4 +93,8 @@ public interface ActivityService {
     void setActivityNodeState(long activityId, String serviceName, String ownerApps, boolean state);
 
     List<ActivityNodeState> getActivityNodeServiceState(long activityId);
+
+    BusinessLinkManageTableEntity getActivityByName(String activityName);
+
+    BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request);
 }

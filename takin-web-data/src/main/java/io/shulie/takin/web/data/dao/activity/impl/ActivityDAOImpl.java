@@ -43,6 +43,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  * @author shiyajian
  * create: 2020-12-30
@@ -446,4 +454,16 @@ public class ActivityDAOImpl implements ActivityDAO {
         return activityNodeStateTableMapper.findActivityIdByServiceName(tenantId,appName,entrance);
     }
 
+    @Override
+    public BusinessLinkManageTableEntity getActivityByName(String activityName) {
+        LambdaQueryWrapper<BusinessLinkManageTableEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getLinkName,activityName);
+        return businessLinkManageTableMapper.selectOne(lambdaQueryWrapper);
+    }
+
+    @Override
+    public List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace) {
+        Long customerId = WebPluginUtils.getCustomerId();
+        return businessLinkManageTableMapper.findActivityAppName(appName,entrace,customerId);
+    }
 }

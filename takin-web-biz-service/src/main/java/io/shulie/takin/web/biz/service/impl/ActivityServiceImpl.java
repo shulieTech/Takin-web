@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 
+import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
@@ -26,7 +27,6 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
-import io.shulie.takin.web.biz.annotation.ActivityCache;
 import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
@@ -40,11 +40,12 @@ import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
@@ -58,12 +59,15 @@ import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
+import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
@@ -73,12 +77,22 @@ import io.shulie.takin.web.data.result.activity.ActivityResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
+import io.shulie.takin.web.ext.util.E2ePluginUtils;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -416,8 +430,31 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    public ActivityBottleneckResponse getBottleneckByActivityList(ApplicationVisualInfoResponse applicationVisualInfoResponse,
+                                                                  LocalDateTime startDateTime, LocalDateTime endTime) {
+        // 查询 瓶颈阈值 配置
+        List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
+        if (WebPluginUtils.checkUserData() && E2ePluginUtils.checkE2ePlugin()) {
+            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.getCustomerId());
+        }
 
-    public ActivityBottleneckResponse getBottleneckByActivityList(List<ActivityInfoQueryRequest> activityList, String appName, String serviceName) {
+        ApplicationEntranceTopologyResponse.AppProvider provider = new ApplicationEntranceTopologyResponse.AppProvider();
+        provider.setServiceAvgRt(applicationVisualInfoResponse.getResponseConsuming());
+        provider.setServiceAllSuccessRate(applicationVisualInfoResponse.getSuccessRatio());
+        provider.setOwnerApps(applicationVisualInfoResponse.getAppName());
+        provider.setServiceName(applicationVisualInfoResponse.getServiceAndMethod());
+        provider.setRpcType(String.valueOf(applicationVisualInfoResponse.getRpcType()));
+
+        // 瓶颈类型 init
+        int rateBottleneckType = -1; // 瓶颈类型(-1 没有瓶颈)
+        provider.setAllSuccessRateBottleneckType(rateBottleneckType);
+        provider.setAllTotalRtBottleneckType(rateBottleneckType);
+        provider.setAllSqlTotalRtBottleneckType(rateBottleneckType);
+
+        if (applicationVisualInfoResponse.getRequestCount() != 0) { // 如果不是初始值，再计算瓶颈
+            linkTopologyService.computeBottleneck(startDateTime, null, bottleneckConfig, provider);
+        }
+
         ActivityBottleneckResponse activityBottleneckResponse = new ActivityBottleneckResponse();
         // -1 没有瓶颈
         int init = -1;
@@ -425,46 +462,22 @@ public class ActivityServiceImpl implements ActivityService {
         activityBottleneckResponse.setAllSuccessRateBottleneckType(init);
         activityBottleneckResponse.setAllSqlTotalRtBottleneckType(init);
 
-        for (ActivityInfoQueryRequest activityInfo : activityList) {
-            activityInfo.setStartTime(null);
-            activityInfo.setEndTime(null);
-            // 获取 拓扑图
-            ActivityResponse activityWithMetricsById = getActivityWithMetricsById(activityInfo);
-            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityWithMetricsById.getTopology().getNodes()) {
-                if (node.getLabel().equals(appName)) {
-                    if (node.getProviderService() != null) {
-                        for (ApplicationEntranceTopologyResponse.AppProviderInfo appProviderInfo : node.getProviderService()) {
-                            for (ApplicationEntranceTopologyResponse.AppProvider appProvider : appProviderInfo.getDataSource()) {
-                                for (ApplicationEntranceTopologyResponse.AppProvider provider : appProvider.getContainRealAppProvider()) {
-                                    if (provider.getServiceName().equals(serviceName)) {
-                                        // 有 Rt 瓶颈
-                                        if ((provider.getAllTotalRtBottleneckType() != -1)) {
-                                            activityBottleneckResponse.setAllTotalRtBottleneckType(provider.getAllTotalRtBottleneckType());
-                                            activityBottleneckResponse.setRtBottleneckId(provider.getRtBottleneckId());
-                                        }
-                                        // 成功率 瓶颈
-                                        if ((provider.getAllSuccessRateBottleneckType() != -1)) {
-                                            activityBottleneckResponse.setAllSuccessRateBottleneckType(provider.getAllSuccessRateBottleneckType());
-                                            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getRtBottleneckId());
-                                        }
-                                        // 慢 sql 瓶颈
-                                        if ((provider.getAllSqlTotalRtBottleneckType() != -1)) {
-                                            activityBottleneckResponse.setAllSqlTotalRtBottleneckType(provider.getAllSqlTotalRtBottleneckType());
-                                            activityBottleneckResponse.setRtSqlBottleneckId(provider.getRtSqlBottleneckId());
-                                        }
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-                }
-
-            }
+        // 有 Rt 瓶颈
+        if ((provider.getAllTotalRtBottleneckType() != -1)) {
+            activityBottleneckResponse.setAllTotalRtBottleneckType(provider.getAllTotalRtBottleneckType());
+            activityBottleneckResponse.setRtBottleneckId(provider.getRtBottleneckId());
         }
+        // 成功率 瓶颈
+        if ((provider.getAllSuccessRateBottleneckType() != -1)) {
+            activityBottleneckResponse.setAllSuccessRateBottleneckType(provider.getAllSuccessRateBottleneckType());
+            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getRtBottleneckId());
+        }
+        // 慢 sql 瓶颈
+        if ((provider.getAllSqlTotalRtBottleneckType() != -1)) {
+            activityBottleneckResponse.setAllSqlTotalRtBottleneckType(provider.getAllSqlTotalRtBottleneckType());
+            activityBottleneckResponse.setRtSqlBottleneckId(provider.getRtSqlBottleneckId());
+        }
+
         return activityBottleneckResponse;
     }
 
@@ -777,6 +790,25 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public List<ActivityNodeState> getActivityNodeServiceState(long activityId) {
         return activityDAO.getActivityNodeServiceState(activityId);
+    }
+
+    @Override
+    public BusinessLinkManageTableEntity getActivityByName(String activityName) {
+        return activityDAO.getActivityByName(activityName);
+    }
+
+    @Override
+    public BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request) {
+        String entrance = ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(), request.getRpcType());
+        List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(request.getApplicationName(), entrance);
+        if (CollectionUtils.isEmpty(serviceList)) {
+            return null;
+        }
+        BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
+        Map linkNameAndId = serviceList.get(0);
+        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkeId").toString()));
+        businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName").toString());
+        return businessLinkManageTableEntity;
     }
 
     // TODO 变更逻辑后续看如何设计

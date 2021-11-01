@@ -36,7 +36,7 @@ public class BaseConfigService extends CommonService {
         QueryWrapper<BaseConfigEntity> wrapper = new QueryWrapper<>();
         wrapper.eq("CONFIG_CODE", configCode);
         wrapper.in("tenant_id", Lists.newArrayList(tenantId, null));
-        wrapper.eq("env_code", WebPluginUtils.traceEnvCode());
+        wrapper.in("env_code", Lists.newArrayList(WebPluginUtils.traceEnvCode(), null));
         List<BaseConfigEntity> entityList = baseConfigMapper.selectList(wrapper);
 
         BaseConfigEntity configEntity = null;

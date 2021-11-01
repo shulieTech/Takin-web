@@ -1207,7 +1207,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current, int total,String nameActivity) {
-        if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current)) {
+        if (CollectionUtils.isEmpty(data)) {
             return null;
         }
 

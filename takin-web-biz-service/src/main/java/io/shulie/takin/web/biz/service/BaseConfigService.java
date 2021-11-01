@@ -1,8 +1,6 @@
 package io.shulie.takin.web.biz.service;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -14,14 +12,10 @@ import io.shulie.takin.web.biz.common.CommonService;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.model.mysql.BaseConfigEntity;
-import io.shulie.takin.web.data.param.baseconfig.BaseConfigParam;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.web.ext.util.WebPluginUtils.EnvCodeEnum;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 基础配置表
@@ -89,7 +83,9 @@ public class BaseConfigService extends CommonService {
         QueryWrapper<BaseConfigEntity> wrapper = new QueryWrapper<>();
         wrapper.eq("CONFIG_CODE",configCode);
         BaseConfigEntity configEntity = baseConfigMapper.selectOne(wrapper);
-
+        if (configEntity == null) {
+            return null;
+        }
         TBaseConfig baseConfig = new TBaseConfig();
         BeanUtils.copyProperties(configEntity,baseConfig);
         return baseConfig;

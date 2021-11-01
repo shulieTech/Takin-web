@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_env_ref`
     `gmt_create`     datetime       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `gmt_update`     datetime       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `unique_id_code` (`id`,`env_code`) USING BTREE
+    UNIQUE KEY `unique_code` (`env_code`) USING BTREE
     ) ENGINE = InnoDB;
 
 INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`is_default`) VALUES (1, 'test', '测试环境',1);
@@ -55,18 +55,7 @@ ALTER TABLE pradar_app_point ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COM
 ALTER TABLE pradar_app_warn ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE pradar_biz_key_config ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE pradar_user_login ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_t_ac_account ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_t_ac_account_book ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_t_app_middleware_info ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_t_application_mnt ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_t_report ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_t_return_data ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_t_scene_business_activity_ref ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_t_scene_manage ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_t_scene_script_ref ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT  '租户 id, 默认 1';
-ALTER TABLE pt_t_scene_sla_ref ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_t_tro_user ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE pt_user ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
+
 ALTER TABLE t_abstract_data ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE t_ac_account ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE t_ac_account_balance ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
@@ -104,18 +93,6 @@ ALTER TABLE pradar_app_point ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'te
 ALTER TABLE pradar_app_warn ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
 ALTER TABLE pradar_biz_key_config ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
 ALTER TABLE pradar_user_login ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_ac_account ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_ac_account_book ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_app_middleware_info ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_application_mnt ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_report ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_return_data ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_scene_business_activity_ref ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_scene_manage ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_scene_script_ref ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_scene_sla_ref ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_t_tro_user ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE pt_user ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
 ALTER TABLE t_abstract_data ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
 ALTER TABLE t_ac_account ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
 ALTER TABLE t_ac_account_balance ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
@@ -153,18 +130,7 @@ alter table pradar_app_point ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code`
 alter table pradar_app_warn ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table pradar_biz_key_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table pradar_user_login ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_ac_account ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_ac_account_book ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_app_middleware_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_application_mnt ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_report ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_return_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_scene_business_activity_ref ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_scene_manage ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_scene_script_ref ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_scene_sla_ref ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_t_tro_user ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table pt_user ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+
 alter table t_abstract_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table t_ac_account ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table t_ac_account_balance ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );

@@ -4,6 +4,7 @@ import java.util.Date;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pamirs.takin.common.util.DateToStringFormatSerialize;
 import io.shulie.takin.web.data.common.BaseTenantBean;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -14,6 +15,12 @@ import org.springframework.format.annotation.DateTimeFormat;
  * @create 2018/11/1 0001 17:32
  */
 public class TDictionaryVo{
+
+    public TDictionaryVo(){
+        this.tenantId = WebPluginUtils.traceTenantId();
+        this.envCode = WebPluginUtils.traceEnvCode();
+    }
+
     /**
      * 字典ID
      */

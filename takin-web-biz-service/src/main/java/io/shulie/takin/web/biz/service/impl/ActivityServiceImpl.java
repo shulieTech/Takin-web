@@ -59,13 +59,11 @@ import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
-import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
-import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
@@ -76,7 +74,6 @@ import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
 import io.shulie.takin.web.ext.util.E2ePluginUtils;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -84,15 +81,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -434,8 +424,8 @@ public class ActivityServiceImpl implements ActivityService {
                                                                   LocalDateTime startDateTime, LocalDateTime endTime) {
         // 查询 瓶颈阈值 配置
         List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
-        if (WebPluginUtils.checkUserData() && E2ePluginUtils.checkE2ePlugin()) {
-            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.getCustomerId());
+        if (WebPluginUtils.checkUserPlugin() && E2ePluginUtils.checkE2ePlugin()) {
+            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId());
         }
 
         ApplicationEntranceTopologyResponse.AppProvider provider = new ApplicationEntranceTopologyResponse.AppProvider();

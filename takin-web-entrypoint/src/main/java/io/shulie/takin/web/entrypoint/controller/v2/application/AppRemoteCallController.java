@@ -1,5 +1,10 @@
 package io.shulie.takin.web.entrypoint.controller.v2.application;
 
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.validation.Valid;
+
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
@@ -13,7 +18,7 @@ import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallStringResp
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallV2Response;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -27,17 +32,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
-import javax.validation.Valid;
-import java.util.List;
-
 /**
  * @author 南风
  * @date 2021/8/25 11:25 上午
  */
 @Slf4j
 @RestController("v2.application.remote")
-@RequestMapping(APIUrls.TAKIN_API_URL+"v2")
+@RequestMapping(ApiUrls.TAKIN_API_URL+"v2")
 @Api(tags = "接口-v2:远程调用", value = "远程调用管理接口")
 public class AppRemoteCallController {
 

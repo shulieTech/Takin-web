@@ -43,14 +43,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 /**
  * @author shiyajian
  * create: 2020-12-30
@@ -107,7 +99,6 @@ public class ActivityDAOImpl implements ActivityDAO {
         linkManageTableEntity.setChangeBefore(param.getChangeBefore());
         linkManageTableEntity.setChangeAfter(param.getChangeAfter());
         linkManageTableEntity.setIsChange(param.getIsChange() ? 1 : 0);
-        linkManageTableEntity.setCustomerId(param.getTenantId());
         linkManageTableEntity.setUserId(param.getUserId());
         linkManageTableEntity.setIsChange(0);
         linkManageTableEntity.setApplicationName(param.getApplicationName());
@@ -143,7 +134,6 @@ public class ActivityDAOImpl implements ActivityDAO {
         businessLinkManageTableEntity.setIsCore(param.getIsCore());
         businessLinkManageTableEntity.setBusinessDomain(param.getBusinessDomain());
         businessLinkManageTableEntity.setIsDeleted(0);
-        businessLinkManageTableEntity.setCustomerId(param.getTenantId());
         businessLinkManageTableEntity.setUserId(param.getUserId());
         businessLinkManageTableEntity.setCanDelete(0);
         if (null != param.getServerMiddlewareType()) {
@@ -219,8 +209,11 @@ public class ActivityDAOImpl implements ActivityDAO {
         result.setActivityId(businessLinkManageTableEntity.getLinkId());
         result.setActivityName(businessLinkManageTableEntity.getLinkName());
         result.setIsChange(businessLinkManageTableEntity.getIsChange() == 1);
+
         result.setUserId(businessLinkManageTableEntity.getUserId());
-        result.setCustomerId(businessLinkManageTableEntity.getCustomerId());
+        result.setTenantId(businessLinkManageTableEntity.getTenantId());
+        result.setEnvCode(businessLinkManageTableEntity.getEnvCode());
+
         result.setActivityLevel(businessLinkManageTableEntity.getLinkLevel());
         result.setIsCore(businessLinkManageTableEntity.getIsCore());
         result.setBusinessDomain(businessLinkManageTableEntity.getBusinessDomain());
@@ -463,7 +456,6 @@ public class ActivityDAOImpl implements ActivityDAO {
 
     @Override
     public List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace) {
-        Long customerId = WebPluginUtils.getCustomerId();
-        return businessLinkManageTableMapper.findActivityAppName(appName,entrace,customerId);
+        return businessLinkManageTableMapper.findActivityAppName(appName,entrace);
     }
 }

@@ -60,7 +60,8 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO {
             BusinessLinkManageTableEntity::getBusinessDomain,
             BusinessLinkManageTableEntity::getLinkLevel,
             BusinessLinkManageTableEntity::getRelatedTechLink,
-            BusinessLinkManageTableEntity::getCustomerId,
+            BusinessLinkManageTableEntity::getTenantId,
+            BusinessLinkManageTableEntity::getEnvCode,
             BusinessLinkManageTableEntity::getUserId
         );
         businessLinkManageWrapper.eq(BusinessLinkManageTableEntity::getLinkId, id);
@@ -79,7 +80,8 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO {
             businessLinkResult.setIsCore(String.valueOf(businessLinkManageTableEntity.getIsCore()));
             businessLinkResult.setLinkLevel(businessLinkManageTableEntity.getLinkLevel());
             businessLinkResult.setBusinessDomain(businessLinkManageTableEntity.getBusinessDomain());
-            businessLinkResult.setCustomerId(businessLinkManageTableEntity.getCustomerId());
+            businessLinkResult.setTenantId(businessLinkManageTableEntity.getTenantId());
+            businessLinkResult.setEnvCode(businessLinkManageTableEntity.getEnvCode());
             businessLinkResult.setUserId(businessLinkManageTableEntity.getUserId());
         }
 

@@ -21,6 +21,7 @@ import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.LinkManageTableMapper;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.LinkManageTableEntity;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,7 +43,6 @@ public class ActivityOpenApi {
     @Resource
     private BusinessLinkManageTableMapper businessLinkManageTableMapper;
 
-    public static final Long CUSTOMER_ID = 1L;
 
     @PostMapping("/create")
     @Transactional(rollbackFor = Throwable.class)
@@ -89,9 +89,11 @@ public class ActivityOpenApi {
         linkManageTableEntity.setChangeRemark(null);
         linkManageTableEntity.setIsChange(0);
         linkManageTableEntity.setIsJob(0);
-        // todo user 如何处理
-        linkManageTableEntity.setCustomerId(CUSTOMER_ID);
+
+        linkManageTableEntity.setTenantId(WebPluginUtils.DEFAULT_TENANT_ID);
+        linkManageTableEntity.setEnvCode(WebPluginUtils.DEFAULT_ENV_CODE);
         linkManageTableEntity.setUserId(request.getUserId());
+
         linkManageTableEntity.setIsDeleted(0);
         linkManageTableEntity.setApplicationName(request.getApplicationName());
         linkManageTableEntity.setChangeType(0);
@@ -107,7 +109,8 @@ public class ActivityOpenApi {
         businessLinkManageTableEntity.setIsChange(0);
         businessLinkManageTableEntity.setIsCore(request.getIsCore());
         businessLinkManageTableEntity.setIsDeleted(0);
-        businessLinkManageTableEntity.setCustomerId(CUSTOMER_ID);
+        businessLinkManageTableEntity.setTenantId(WebPluginUtils.DEFAULT_TENANT_ID);
+        businessLinkManageTableEntity.setEnvCode(WebPluginUtils.DEFAULT_ENV_CODE);
         businessLinkManageTableEntity.setUserId(request.getUserId());
         businessLinkManageTableEntity.setBusinessDomain(request.getBusinessDomain());
         businessLinkManageTableEntity.setCanDelete(0);

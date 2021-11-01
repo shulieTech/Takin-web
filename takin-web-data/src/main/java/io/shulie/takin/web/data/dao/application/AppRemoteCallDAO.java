@@ -119,8 +119,6 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
      * @return
      */
     List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList);
-    List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList,
-        Long customerId);
 
 
     /**

@@ -17,14 +17,18 @@
         <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime"/>
         <result column="BUSINESS_DOMAIN" jdbcType="VARCHAR" property="businessDomain"/>
         <result column="CAN_DELETE" jdbcType="TINYINT" property="canDelete"/>
+
+        <result column="TENANT_ID" jdbcType="BIGINT" property="tenantId"/>
+        <result column="ENV_CODE" jdbcType="VARCHAR" property="envCode"/>
+        <result column="USER_ID" jdbcType="BIGINT" property="userId"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         LINK_ID, LINK_NAME, ENTRACE, RELATED_TECH_LINK, LINK_LEVEL, PARENT_BUSINESS_ID, IS_CHANGE,
-        IS_CORE, IS_DELETED, CREATE_TIME, UPDATE_TIME, BUSINESS_DOMAIN, CAN_DELETE
+        IS_CORE, IS_DELETED, CREATE_TIME, UPDATE_TIME, BUSINESS_DOMAIN, CAN_DELETE,TENANT_ID,ENV_CODE,USER_ID
     </sql>
 
     <select id="findActivityAppName" resultMap="BaseResultMap">
-        SELECT LINK_ID,LINK_NAME,ENTRACE FROM t_business_link_manage_table WHERE IS_DELETED = 0 AND CUSTOMER_ID = #{customerId}
+        SELECT LINK_ID,LINK_NAME,ENTRACE FROM t_business_link_manage_table WHERE IS_DELETED = 0
     </select>
 </mapper>

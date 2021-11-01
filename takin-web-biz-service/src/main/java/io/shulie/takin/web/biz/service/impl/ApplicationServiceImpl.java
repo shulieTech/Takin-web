@@ -138,6 +138,7 @@ import io.shulie.takin.web.data.model.mysql.ShadowJobConfigEntity;
 import io.shulie.takin.web.data.model.mysql.ShadowMqConsumerEntity;
 import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
+import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
@@ -1110,15 +1111,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request) {
         //do 1.关注
-        List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(request.getAppName());
-        //do 2.根据应用名称查询大数据性能数据
-        //TODO 1.关注
-         ApplicationAttentionParam param = new ApplicationAttentionParam();
+        ApplicationAttentionParam param = new ApplicationAttentionParam();
         param.setApplicationName(request.getAppName());
         param.setFocus(1);
         param.setTenantId(WebPluginUtils.traceTenantId());
         List<ApplicationAttentionListEntity> attentionList = doGetAttentionList(param);
-        //TODO 2.根据应用名称查询大数据性能数据
+        // 2.根据应用名称查询大数据性能数据
         List<String> attentionInterfaces = attentionList.stream().map(ApplicationAttentionListEntity::getInterfaceName).collect(Collectors.toList());
         request.setAttentionList(attentionInterfaces);
         Map<List<ApplicationVisualInfoResponse>, Integer> infoResponseMap = doGetAppDataByAppName(request);
@@ -1273,8 +1271,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     if (!CollectionUtils.isEmpty(serviceList)) {
                         serviceList.stream().forEach(serviceName -> {
                             String linkName = serviceName.get("linkName");
-                            if (org.springframework.util.StringUtils.isEmpty(nameActivity) || linkName.equals(nameActivity))
-                            activityResult.put(String.valueOf(serviceName.get("linkId")), linkName);
+                            if (org.springframework.util.StringUtils.isEmpty(nameActivity) || linkName.equals(nameActivity)) {
+                                activityResult.put(String.valueOf(serviceName.get("linkId")), linkName);
+                            }
                         });
                     }
                 }
@@ -2416,23 +2415,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response userAppSilenceSwitchInfo() {
         ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
-        UserExt user = WebPluginUtils.getUser();
-        if (WebPluginUtils.checkUserData() && user == null) {
-            String userAppKey = WebPluginUtils.getTenantUserAppKey();
-            user = WebPluginUtils.getUserByAppKey(userAppKey);
-        }
-        if (WebPluginUtils.checkUserData() && user == null) {
         UserExt user = WebPluginUtils.traceUser();
         if (WebPluginUtils.checkUserPlugin() && user == null) {
             return Response.fail(FALSE_CORE);
         }
         //体验用户默认状态为开启
         if (user != null && user.getRole() != null && user.getRole() == 1) {
-        if (WebPluginUtils.checkUserData() && user.getRole() != null && user.getRole() == 1) {
             result.setSwitchStatus(AppSwitchEnum.OPENED.getCode());
         } else {
-            result.setSwitchStatus(getUserSilenceSwitchStatusForVo(WebPluginUtils.traceUserId()));
-            result.setSwitchStatus(getUserSilenceSwitchStatusForVo(WebPluginUtils.getCustomerId()));
+            result.setSwitchStatus(getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId()));
         }
 
         return Response.success(result);

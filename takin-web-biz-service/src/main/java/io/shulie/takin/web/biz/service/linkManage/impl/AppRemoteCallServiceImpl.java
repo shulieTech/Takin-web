@@ -17,9 +17,11 @@
 package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -28,10 +30,11 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import com.alibaba.fastjson.JSONObject;
+
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
 import com.pamirs.takin.entity.domain.entity.TBList;
@@ -49,20 +52,19 @@ import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutputV2;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallCreateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateV2Request;
-import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.biz.service.BaseConfigService;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeTemplateEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeV2Enum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
@@ -86,7 +88,7 @@ import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.HttpClientConfigTemplateDetailResult;
 import io.shulie.takin.web.data.result.application.RpcConfigTemplateDetailResult;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -96,18 +98,6 @@ import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
 
 /**
  * @author 无涯
@@ -914,7 +904,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
         AppRemoteCallCreateParam param = new AppRemoteCallCreateParam();
         BeanUtils.copyProperties(request, param);
-        param.setCustomerId(detailResult.getCustomerId());
+        // 租户信息
+        WebPluginUtils.transferTenantParam(detailResult,param);
+
         param.setAppName(detailResult.getApplicationName());
         param.setInterfaceType(enumByDesc.getType());
         param.setInterfaceChildType(request.getInterfaceType());
@@ -941,7 +933,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         AppRemoteCallUpdateParam param = new AppRemoteCallUpdateParam();
         BeanUtils.copyProperties(request, param);
         AppRemoteCallTypeV2Enum enumByDesc = AppRemoteCallTypeV2Enum.getEnumByDesc(request.getInterfaceType());
-        param.setCustomerId(detailResult.getCustomerId());
+
+        WebPluginUtils.transferTenantParam(detailResult,param);
+
         param.setAppName(detailResult.getApplicationName());
         param.setInterfaceType(enumByDesc.getType());
         param.setInterfaceChildType(request.getInterfaceType());

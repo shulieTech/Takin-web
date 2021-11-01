@@ -1,5 +1,15 @@
 package io.shulie.takin.web.entrypoint.controller.confcenter;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.github.pagehelper.util.StringUtil;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.AppUnstallAgentVo;
@@ -16,30 +26,29 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntrancesRes
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.constant.ApiUrls;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -327,7 +336,8 @@ public class ApplicationController {
     public Map gotoActivityInfo(@Validated @RequestBody ActivityCreateRequest request) throws Exception {
         HashMap result = new HashMap();
         //业务活动名称模糊搜索
-        String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.getCustomerId());
+        // todo 有可能要修改
+        String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.traceTenantId() + WebPluginUtils.traceEnvCode());
         BusinessLinkManageTableEntity entity = activityService.getActivityByName(key);
         if (null != entity) {
             result.put(entity.getLinkId(), false);

@@ -1,11 +1,13 @@
 package io.shulie.takin.web.data.model.mysql;
 
 import java.io.Serializable;
+import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -20,8 +22,21 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_application_ds_cache_manage")
 @ToString(callSuper = true)
-public class ApplicationDsCacheManageEntity extends NewBaseEntity implements Serializable {
+public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Serializable {
     private static final long serialVersionUID = 214783401261180458L;
+
+    /**
+     * 主键
+     */
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
+    /**
+     * 删除
+     * 1 删除, 0 未删除
+     */
+    @TableLogic
+    private Integer isDeleted;
 
     /**
      * 应用主键
@@ -86,18 +101,16 @@ public class ApplicationDsCacheManageEntity extends NewBaseEntity implements Ser
      */
     private Integer status;
 
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id" , fill = FieldFill.INSERT)
-    private Long userId;
-
     private String agentSourceType;
+
+    /**
+     * 创建时间
+     */
+    private Date gmtCreate;
+
+    /**
+     * 更新时间
+     */
+    private Date gmtUpdate;
 
 }

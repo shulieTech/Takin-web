@@ -2,11 +2,11 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
@@ -14,7 +14,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_link_manage_table")
-public class LinkManageTableEntity {
+public class LinkManageTableEntity extends UserBaseEntity {
     /**
      * 主键
      */
@@ -69,17 +69,6 @@ public class LinkManageTableEntity {
     @TableField(value = "IS_JOB")
     private Integer isJob;
 
-    /**
-     * 租户id
-     */
-    @TableField(value = "CUSTOMER_ID", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "USER_ID", fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 是否有效 0:有效;1:无效

@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.param.dictionary;
 
 import io.shulie.takin.web.data.common.BaseTenantBean;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,8 +11,13 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class DictionaryParam{
+
+    public DictionaryParam(){
+        this.tenantId = WebPluginUtils.traceTenantId();
+        this.envCode = WebPluginUtils.traceEnvCode();
+    }
+
     /**
      * 字典别名
      */

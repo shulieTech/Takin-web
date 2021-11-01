@@ -578,7 +578,7 @@ public class CommonService {
      * @author shulie
      */
     public Map<String, Object> queryDicList(TakinDictTypeEnum takinDictTypeEnum) {
-        List<Map<String, Object>> queryWListDic = tDicDao.queryDicList(takinDictTypeEnum.toString());
+        List<Map<String, Object>> queryWListDic = tDicDao.queryDicList(takinDictTypeEnum.toString(),WebPluginUtils.traceTenantId(),WebPluginUtils.traceEnvCode());
         if (queryWListDic.isEmpty()) {
             return Maps.newHashMap();
         }

@@ -15,6 +15,6 @@
             SELECT tdt.ID
             FROM t_dictionary_type tdt
             WHERE tdt.TYPE_ALIAS = #{TYPE_ALIAS}
-        )
+        ) AND tdd.tenant_id = #{tenantId} AND tdd.env_code = #{envCode}
     </select>
 </mapper>

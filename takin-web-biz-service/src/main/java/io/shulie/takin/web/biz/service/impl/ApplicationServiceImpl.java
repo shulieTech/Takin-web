@@ -1244,27 +1244,37 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 //            }
 //        })
                 .map(dto -> {
-            dto.setAttend(attentionList.contains(dto.getServiceAndMethod()));
-            String[] activeList = dto.getActiveList();
-            Map<String, String> activityResult = new HashMap<>();
-            if (activeList != null) {
-                for (String active : activeList) {
-                    String[] split = active.split("#");
-                    String appName = split[0];
-                    String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
-                    List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
-                    if (!CollectionUtils.isEmpty(serviceList)) {
-                        serviceList.stream().forEach(serviceName -> {
-                            String linkName = serviceName.get("linkName");
-                            if (org.springframework.util.StringUtils.isEmpty(nameActivity) || linkName.equals(nameActivity))
-                            activityResult.put(String.valueOf(serviceName.get("linkId")), linkName);
-                        });
+                    dto.setAttend(attentionList.contains(dto.getServiceAndMethod()));
+                    String[] activeList = dto.getActiveList();
+                    Map<String, String> activityResult = new HashMap<>();
+                    if (activeList != null) {
+                        for (String active : activeList) {
+                            String[] split = active.split("#");
+                            String appName = split[0];
+                            String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
+                            List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
+                            if (!CollectionUtils.isEmpty(serviceList)) {
+                                serviceList.stream().forEach(serviceName -> activityResult.put(String.valueOf(serviceName.get("linkId")), serviceName.get("linkName")));
+                            }
+                        }
                     }
-                }
-            }
-            dto.setActiveIdAndName(activityResult);
-            return dto;
-        }).collect(Collectors.toList());
+                    dto.setActiveIdAndName(activityResult);
+                    String[] allActiveList = dto.getAllActiveList();
+                    Map<String, String> allActivityResult = new HashMap<>();
+                    if (activeList != null) {
+                        for (String active : allActiveList) {
+                            String[] split = active.split("#");
+                            String appName = split[0];
+                            String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
+                            List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
+                            if (!CollectionUtils.isEmpty(serviceList)) {
+                                serviceList.stream().forEach(serviceName -> allActivityResult.put(split[1] + "#" + split[2], serviceName.get("linkName")));
+                            }
+                        }
+                    }
+                    dto.setAllActiveIdAndName(allActivityResult);
+                    return dto;
+                }).collect(Collectors.toList());
 
 //        List<ApplicationVisualInfoResponse> infoDTOPageList = new ArrayList<>();
 //        for (int i = current * pageSize; i < (current + 1) * pageSize && i < visualInfoDTOList.size(); i++) {

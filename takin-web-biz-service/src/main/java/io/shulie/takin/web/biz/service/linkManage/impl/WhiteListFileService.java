@@ -26,9 +26,7 @@ import com.pamirs.takin.entity.dao.confcenter.TWhiteListMntDao;
 import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.query.whitelist.AgentWhiteList;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
-import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -42,6 +40,7 @@ import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -97,6 +96,7 @@ public class WhiteListFileService {
             for (TenantInfoExt infoExt : WebPluginUtils.getTenantInfoList()) {
                 infoExt.getEnvs().forEach(t -> {
                     TenantCommonExt ext = new TenantCommonExt();
+                    ext.setTenantCode(infoExt.getTenantCode());
                     ext.setTenantId(infoExt.getTenantId());
                     ext.setTenantAppKey(infoExt.getTenantAppKey());
                     ext.setEnvCode(t.getEnvCode());
@@ -253,8 +253,7 @@ public class WhiteListFileService {
     }
 
     private List<Map<String, Object>> getBlackList(TenantCommonExt tenantCommonExt) {
-        List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList(tenantCommonExt.getTenantId(),
-            tenantCommonExt.getEnvCode());
+        List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList(tenantCommonExt.getTenantId(), tenantCommonExt.getEnvCode());
         if (CollectionUtils.isEmpty(tbLists)) {
             return Lists.newArrayList();
         }

@@ -8,6 +8,7 @@ import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +30,11 @@ public class TenantController {
 
     @GetMapping
     @ApiOperation("获取租户列表 以及 环境列表")
-    public List<TenantInfoExt> getTenantInfoList(@RequestParam(value = "tenantCode") String tenantCode) {
+    public List<TenantInfoExt> getTenantInfoList(@RequestParam(value = "tenantCode",required = false) String tenantCode) {
+        // 没有传则取默认
+        if(StringUtils.isBlank(tenantCode)) {
+            tenantCode = WebPluginUtils.DEFAULT_TENANT_CODE;
+        }
         return WebPluginUtils.getTenantInfoListByTenantCode(tenantCode);
     }
 

@@ -110,6 +110,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         map.put(FeaturesConstants.SERVICE_NAME_KEY, param.getServiceName());
         map.put(FeaturesConstants.SERVER_MIDDLEWARE_TYPE_KEY, param.getType().getType());
         linkManageTableEntity.setFeatures(JSON.toJSONString(map));
+        linkManageTableEntity.setPersistence(param.isPersistence());
 
         // 再创建业务链路
         int insert1 = linkManageTableMapper.insert(linkManageTableEntity);
@@ -147,6 +148,7 @@ public class ActivityDAOImpl implements ActivityDAO {
             // 虚拟业务活动
             businessLinkManageTableEntity.setBindBusinessId(param.getBindBusinessId());
         }
+        businessLinkManageTableEntity.setPersistence(param.isPersistence());
         return businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
     }
 

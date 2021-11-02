@@ -781,7 +781,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
         BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
         Map linkNameAndId = serviceList.get(0);
-        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkeId").toString()));
+        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkId").toString()));
         businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName").toString());
         return businessLinkManageTableEntity;
     }

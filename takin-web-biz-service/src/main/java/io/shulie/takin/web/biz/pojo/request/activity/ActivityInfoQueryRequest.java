@@ -30,4 +30,7 @@ public class ActivityInfoQueryRequest extends PagingDevice {
     @ApiModelProperty("结束时间")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
+
+    @ApiModelProperty("临时 业务活动标志[true 为临时, false 为正常业务活动]")
+    private boolean tempActivity;
 }

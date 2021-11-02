@@ -104,6 +104,11 @@ public class AgentPushController {
         }
     }
 
+    /**
+     * 应用注册
+     * @param vo
+     * @return
+     */
     @PostMapping(value = AgentUrls.APP_INSERT_URL)
     @ApiOperation("上传应用")
     public Response addApplication(@RequestBody ApplicationVo vo) {

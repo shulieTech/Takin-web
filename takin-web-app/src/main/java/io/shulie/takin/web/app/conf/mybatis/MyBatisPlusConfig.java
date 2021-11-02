@@ -12,9 +12,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @author shiyajian
- * create: 2020-09-24
- */
+* @Package io.shulie.takin.web.app.conf.mybatis
+* @ClassName: MyBatisPlusConfig
+* @author hezhongqi
+* @description:
+* @date 2021/11/2 16:55
+*/
 
 @Configuration
 public class MyBatisPlusConfig {

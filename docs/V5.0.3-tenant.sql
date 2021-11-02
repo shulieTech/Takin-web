@@ -29,6 +29,23 @@ CREATE TABLE IF NOT EXISTS `t_tenant_env_ref`
     UNIQUE KEY `unique_code` (`env_code`) USING BTREE
     ) ENGINE = InnoDB;
 
+-- 配置表
+CREATE TABLE IF NOT EXISTS `t_tenant_config`
+(
+    `id`             bigint(20)     NOT NULL AUTO_INCREMENT,
+    `tenant_id`    	 bigint(20)     NOT NULL COMMENT '租户id',
+    `env_code`       varchar(512)   NOT NULL COMMENT '环境代码，测试环境：test,生产环境：prod',
+    `type`           tinyint(10)  	NOT NULL COMMENT '配置类型":0:存储配置;',
+    `component`      varchar(512)   NOT NULL COMMENT '来源组件":web,cloud,amdb,agent,link-agent,pressure_engine,jmeter,ui;',
+    `name`           varchar(128)   NOT NULL COMMENT '配置名',
+    `value`      		 LONGTEXT       NOT NULL COMMENT '配置值',
+    `status`      	 tinyint(4)     NOT NULL DEFAULT '1' COMMENT '状态：0：停用；1：启用；',
+    `is_deleted`     tinyint(1)     NOT NULL DEFAULT '0' COMMENT '0: 正常 1： 删除',
+    `gmt_create`     datetime       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `gmt_update`     datetime       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `unique_name_tenant_env` (`tenant_id`,`env_code`,`name`) USING BTREE
+    ) ENGINE = InnoDB;
 INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`is_default`) VALUES (1, 'test', '测试环境',1);
 INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`desc`,`is_default`) VALUES (1, 'prod', '生产环境','当前环境为生产环境，请谨慎操作',0);
 

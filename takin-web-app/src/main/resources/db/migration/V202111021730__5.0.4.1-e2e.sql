@@ -1,0 +1,1 @@
+INSERT IGNORE INTO `t_pradar_zk_config` (`id`, `zk_path`, `type`, `value`, `remark`, `create_time`, `modify_time`, `is_deleted`) VALUES (21, '/pradar/config/e2e/chain/maxMergeCount', 'Int', '80', 'E2E巡检大屏看板最大合并节点数量', '2021-11-02 17:44:22', '2021-11-02 17:44:22', 0);

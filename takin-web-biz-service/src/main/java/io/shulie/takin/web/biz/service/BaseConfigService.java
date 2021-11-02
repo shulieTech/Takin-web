@@ -2,11 +2,9 @@ package io.shulie.takin.web.biz.service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
@@ -16,6 +14,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.model.mysql.BaseConfigEntity;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -32,28 +31,17 @@ public class BaseConfigService extends CommonService {
      * @return
      */
     public TBaseConfig queryByConfigCode(String configCode) {
-        final Long tenantId = WebPluginUtils.traceTenantId();
         QueryWrapper<BaseConfigEntity> wrapper = new QueryWrapper<>();
         wrapper.eq("CONFIG_CODE", configCode);
-        wrapper.in("tenant_id", Lists.newArrayList(tenantId, null));
-        wrapper.in("env_code", Lists.newArrayList(WebPluginUtils.traceEnvCode(), null));
+        wrapper.and(qw ->qw.eq("tenant_id", WebPluginUtils.traceTenantId()).or().isNull("tenant_id"));
+        wrapper.and(qw -> qw.eq("env_code", WebPluginUtils.traceEnvCode()).or().isNull("env_code"));
+        wrapper.orderByDesc("tenant_id");
         List<BaseConfigEntity> entityList = baseConfigMapper.selectList(wrapper);
-
-        BaseConfigEntity configEntity = null;
-        if (entityList != null) {
-            final int size = entityList.size();
-
-            if (size == 1) {
-                configEntity = entityList.get(0);
-            }
-
-            if (size > 1) {
-                configEntity = entityList.stream().filter(
-                    t -> Objects.nonNull(t.getTenantId()) && t.getTenantId().equals(tenantId)).collect(
-                    Collectors.toList()).get(0);
-            }
+        if(CollectionUtils.isEmpty(entityList)) {
+            return null;
         }
 
+        BaseConfigEntity configEntity = entityList.get(0);
         TBaseConfig baseConfig = new TBaseConfig();
         BeanUtils.copyProperties(configEntity, baseConfig);
         return baseConfig;

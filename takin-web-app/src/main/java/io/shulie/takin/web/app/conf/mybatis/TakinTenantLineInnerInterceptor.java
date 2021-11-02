@@ -76,9 +76,14 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     @Override
     protected Expression builderExpression(Expression currentExpression, Table table) {
         AndExpression tenantExpression = this.buildTenantExpression(table,currentExpression);
+        // 没有租户的
+        if(tenantExpression == null) {
+            return currentExpression;
+        }
         if (currentExpression == null) {
             return tenantExpression;
         }
+
         if (currentExpression instanceof OrExpression) {
             return new AndExpression(tenantExpression, new Parenthesis(currentExpression));
         } else {
@@ -284,13 +289,13 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         String envCodeColumn = tenantLineHandler.getEnvCodeColumn();
 
         EqualsTo tenantIdCondition = null;
-        if (!tenantLineHandler.ignoreSearch(where, tenantIdColumn) || !tableWithoutTenantId.contains(table.getName())) {
+        if (!tenantLineHandler.ignoreSearch(where, tenantIdColumn) && !tableWithoutTenantId.contains(table.getName())) {
             tenantIdCondition = new EqualsTo();
             tenantIdCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getTenantIdColumn()));
             tenantIdCondition.setRightExpression(tenantLineHandler.getTenantId());
         }
         EqualsTo envCodeCondition = null;
-        if(!tenantLineHandler.ignoreSearch(where, envCodeColumn) ||  !tableWithoutEnvCode.contains(table.getName())) {
+        if(!tenantLineHandler.ignoreSearch(where, envCodeColumn) &&  !tableWithoutEnvCode.contains(table.getName())) {
             envCodeCondition = new EqualsTo();
             envCodeCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getEnvCodeColumn()));
             envCodeCondition.setRightExpression(tenantLineHandler.getEnvCode());

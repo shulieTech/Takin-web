@@ -75,7 +75,7 @@ public class MenuServiceImpl implements MenuService {
         WebMenuAuthExtApi menuAuthExtApi = pluginManager.getExtension(WebMenuAuthExtApi.class);
         //      如果没有拓展插件，则默认返回数据库配置的全部菜单项
         if (menuAuthExtApi == null) {
-            return queryUserMenuList().stream().map(MenuResponseExt::getKey)
+            return this.queryUserMenuList().stream().map(MenuResponseExt::getKey)
                 .distinct().filter(StrUtil::isNotBlank)
                 .collect(Collectors.toMap(t -> t, c -> true));
         }

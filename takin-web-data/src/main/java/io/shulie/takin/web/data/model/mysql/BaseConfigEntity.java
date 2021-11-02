@@ -1,6 +1,6 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -42,13 +42,13 @@ public class BaseConfigEntity {
      * 插入时间
      */
     @TableField(value = "CREATE_TIME")
-    private LocalDateTime createTime;
+    private Date createTime;
 
     /**
      * 更新时间
      */
     @TableField(value = "UPDATE_TIME")
-    private LocalDateTime updateTime;
+    private Date updateTime;
 
     /**
      * 租户ID

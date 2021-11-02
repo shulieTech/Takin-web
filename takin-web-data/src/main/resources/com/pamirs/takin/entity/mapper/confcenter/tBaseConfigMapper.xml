@@ -205,6 +205,6 @@
         SELECT
         <include refid="Base_Column_List"/>
         FROM t_base_config
-        WHERE CONFIG_CODE = #{configCode} AND tenant_id IS NULL AND env_code IS NULL
+        WHERE CONFIG_CODE = #{configCode} AND tenant_id = -1 AND env_code ='system'
     </select>
 </mapper>

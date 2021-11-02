@@ -37,17 +37,15 @@ INSERT INTO `t_tenant_info`(`key`, `name`, `nick`, `code`, `config`) VALUES ('5b
 ---t_base_config
 DROP TABLE t_base_config;
 CREATE TABLE `t_base_config` (
-     `ID` BIGINT ( 20 ) auto_increment COMMENT '主键ID',
      `CONFIG_CODE` varchar(64) NOT NULL COMMENT '配置编码',
      `CONFIG_VALUE` longtext NOT NULL COMMENT '配置值',
      `CONFIG_DESC` varchar(128) NOT NULL COMMENT '配置说明',
      `USE_YN` int(11) DEFAULT '0' COMMENT '是否可用(0表示未启用,1表示启用)',
      `CREATE_TIME` datetime DEFAULT NULL COMMENT '插入时间',
      `UPDATE_TIME` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-     `env_code` VARCHAR ( 20 ) NULL DEFAULT NULL COMMENT '环境code',
-     `tenant_id` BIGINT ( 20 ) NULL DEFAULT NULL COMMENT '租户id',
-     KEY `idx_config_code`(`CONFIG_CODE`),
-     UNIQUE KEY `unique_idx_env_code_tenant_id` (`ID`,`tenant_id`,`env_code`) USING BTREE
+     `env_code` VARCHAR ( 20 ) NOT NULL DEFAULT 'system' COMMENT '环境code',
+     `tenant_id` BIGINT ( 20 ) NOT NULL DEFAULT -1 COMMENT '租户id',
+      PRIMARY KEY (`CONFIG_CODE`, `env_code`, `tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='takin基础配置表';
 
 INSERT INTO `trodb`.`t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`, `USE_YN`, `CREATE_TIME`, `UPDATE_TIME`) VALUES ('ALL_BUTTON', '[\n    \"appManage_2_create\",\n    \"appManage_3_update\",\n    \"appManage_4_delete\",\n    \"appManage_6_enable_disable\",\n    \"bottleneckConfig_3_update\",\n    \"businessActivity_2_create\",\n    \"businessActivity_3_update\",\n    \"businessActivity_4_delete\",\n    \"businessFlow_2_create\",\n    \"businessFlow_3_update\",\n    \"businessFlow_4_delete\",\n    \"configCenter_authorityConfig_2_create\",\n    \"configCenter_authorityConfig_3_update\",\n    \"configCenter_authorityConfig_4_delete\",\n    \"configCenter_bigDataConfig_3_update\",\n    \"configCenter_blacklist_2_create\",\n    \"configCenter_blacklist_3_update\",\n    \"configCenter_blacklist_4_delete\",\n    \"configCenter_blacklist_6_enable_disable\",\n    \"configCenter_dataSourceConfig_2_create\",\n    \"configCenter_dataSourceConfig_3_update\",\n    \"configCenter_dataSourceConfig_4_delete\",\n    \"configCenter_entryRule_2_create\",\n    \"configCenter_entryRule_3_update\",\n    \"configCenter_entryRule_4_delete\",\n    \"configCenter_middlewareManage_3_update\",\n    \"configCenter_pressureMeasureSwitch_6_enable_disable\",\n    \"configCenter_whitelistSwitch_6_enable_disable\",\n    \"debugTool_linkDebug_2_create\",\n    \"debugTool_linkDebug_3_update\",\n    \"debugTool_linkDebug_4_delete\",\n    \"debugTool_linkDebug_5_start_stop\",\n    \"exceptionNoticeManage_2_create\",\n    \"exceptionNoticeManage_3_update\",\n    \"exceptionNoticeManage_4_delete\",\n    \"patrolBoard_2_create\",\n    \"patrolBoard_3_update\",\n    \"patrolBoard_4_delete\",\n    \"patrolManage_2_create\",\n    \"patrolManage_3_update\",\n    \"patrolManage_4_delete\",\n    \"patrolManage_5_start_stop\",\n    \"pressureTestManage_pressureTestScene_2_create\",\n    \"pressureTestManage_pressureTestScene_3_update\",\n    \"pressureTestManage_pressureTestScene_4_delete\",\n    \"pressureTestManage_pressureTestScene_5_start_stop\",\n    \"scriptManage_2_create\",\n    \"scriptManage_3_update\",\n    \"scriptManage_4_delete\",\n    \"scriptManage_7_download\"\n]', '全部按钮名称', 0, '2021-10-20 18:53:10', '2021-10-20 18:53:10');
@@ -222,8 +220,8 @@ ALTER TABLE `t_datasource_tag_ref`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_dictionary_data`
-    ADD COLUMN `env_code` varchar(20) NULL DEFAULT NULL  COMMENT '环境code' ,
-    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id' AFTER `env_code`;
+    ADD COLUMN `env_code` varchar(20) NOT NULL DEFAULT 'system'  COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NOT NULL DEFAULT -1 COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_dictionary_type`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
@@ -354,7 +352,8 @@ ALTER TABLE `t_data_build`
 ALTER TABLE `t_datasource_tag_ref`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_dictionary_data`
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+    DROP PRIMARY KEY,
+    ADD PRIMARY KEY(`ID`,`tenant_id`,`env_code`) USING BTREE;
 ALTER TABLE `t_dictionary_type`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_exception_info`
@@ -456,8 +455,8 @@ ALTER TABLE t_prada_http_data comment '表已废弃，prada获取http接口表';
 
 -- t_pradar_zk_config zk配置信息表 增加zk配置
 alter table t_pradar_zk_config
-    ADD COLUMN `tenant_id` bigint(20)  DEFAULT NULL COMMENT '租户id',
-	  ADD COLUMN `env_code`  varchar(20) DEFAULT NULL  COMMENT '环境变量' AFTER `tenant_id`;
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT -1 COMMENT '租户id',
+	  ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'system'  COMMENT '环境变量' AFTER `tenant_id`;
 alter table t_pradar_zk_config
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 -- 已有索引 idx_zk_path

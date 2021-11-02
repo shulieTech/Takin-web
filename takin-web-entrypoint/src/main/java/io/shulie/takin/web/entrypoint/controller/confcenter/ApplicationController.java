@@ -118,6 +118,11 @@ public class ApplicationController {
         return applicationService.getApplicationInfo(id);
     }
 
+    /**
+     * 新增应用接口
+     * @param vo
+     * @return
+     */
     @PostMapping("/console/application/center/app/info")
     @ApiOperation("新增应用接口")
     @ModuleDef(

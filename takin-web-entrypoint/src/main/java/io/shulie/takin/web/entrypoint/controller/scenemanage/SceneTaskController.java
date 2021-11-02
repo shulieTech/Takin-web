@@ -25,7 +25,6 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.UpdateTpsRequest;
-import io.shulie.takin.web.biz.pojo.response.scene.StartResponse;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
@@ -36,8 +35,6 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
@@ -71,6 +68,11 @@ public class SceneTaskController {
     @Autowired
     private RedisClientUtils redisClientUtils;
 
+    /**
+     * 启动场景
+     * @param param
+     * @return
+     */
     @PostMapping("/start")
     @ApiOperation(value = "开始场景测试")
     @ModuleDef(
@@ -131,6 +133,11 @@ public class SceneTaskController {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
     }
 
+    /**
+     * 停止压测
+     * @param param
+     * @return
+     */
     @PostMapping("/stop")
     @ApiOperation(value = "结束场景测试")
     @ModuleDef(
@@ -161,6 +168,12 @@ public class SceneTaskController {
         return stopResult;
     }
 
+    /**
+     * 检查压测场景启动状态
+     * @param sceneId
+     * @param reportId
+     * @return
+     */
     @GetMapping("/checkStartStatus")
     @ApiOperation(value = "检查启动状态")
     public ResponseResult<SceneActionResp> checkStartStatus(@RequestParam("sceneId") Long sceneId, @RequestParam("reportId") Long reportId) {

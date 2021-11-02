@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
@@ -48,6 +49,20 @@ public class TenantController {
     @ApiOperation("切换环境")
     public void switchEnv(@RequestBody SwitchTenantExt ext) {
         WebPluginUtils.switchEnv(ext);
+    }
+
+    @PutMapping("/config")
+    @ApiOperation("获取租户配置，无需登录")
+    public TenantConfigExt getConfig(@RequestParam(value = "tenantAppKey",required = false) String tenantAppKey,
+        @RequestParam(value = "envCode",required = false) String envCode) {
+        // 默认
+        if(StringUtils.isBlank(tenantAppKey)) {
+            tenantAppKey = WebPluginUtils.DEFAULT_TENANT_APP_KEY;
+        }
+        if(StringUtils.isBlank(envCode)) {
+            envCode = WebPluginUtils.DEFAULT_ENV_CODE;
+        }
+        return WebPluginUtils.getTenantConfig(tenantAppKey,envCode);
     }
 
 }

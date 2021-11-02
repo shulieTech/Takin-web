@@ -1,12 +1,10 @@
 package io.shulie.takin.web.ext.util;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -23,6 +21,7 @@ import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import lombok.AllArgsConstructor;
@@ -507,6 +506,24 @@ public class WebPluginUtils {
         }
     }
 
+    /**
+     * 切换
+     * @param tenantAppKey
+     * @param envCode
+     * @return
+     */
+    public static TenantConfigExt getTenantConfig(String tenantAppKey, String envCode) {
+        if (Objects.nonNull(tenantExtApi)) {
+            return tenantExtApi.getTenantConfig(tenantAppKey,envCode);
+        }
+        // 默认一个租户
+        if(Objects.nonNull(userApi)) {
+            // 企业版
+            return userApi.getTenantConfig(envCode);
+        }
+        // 开源版本
+        return new TenantConfigExt();
+    }
 
     /**
      * 租户参数传递

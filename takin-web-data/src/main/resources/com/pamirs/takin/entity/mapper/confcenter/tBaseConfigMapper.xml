@@ -197,12 +197,14 @@
     </insert>
 
     <select id="queryList" resultMap="BaseResultMap" parameterType="io.shulie.takin.web.data.param.baseconfig.BaseConfigParam">
-        select
+        SELECT
         <include refid="Base_Column_List"/>
-        from t_base_config
-        where tenant_id=#{tenantId}
-        <if test="envCode != null">
-           and env_code = #{env_code}
-        </if>
+        FROM t_base_config
+        WHERE CONFIG_CODE = #{configCode} AND tenant_id=#{tenantId} AND env_code = #{envCode}
+        UNION
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_base_config
+        WHERE CONFIG_CODE = #{configCode} AND tenant_id = -1 AND env_code ='system'
     </select>
 </mapper>

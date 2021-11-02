@@ -334,32 +334,33 @@ public class ApplicationController {
             entity = activityService.getActivity(request);
             if (null != entity) {
                 result.put(entity.getLinkId(), true);
+            } else {
+                List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
+                        request.getApplicationName(), "");
+                if (CollectionUtils.isNotEmpty(applicationEntrances)) {
+                    ApplicationEntrancesResponse entrancesResponse = applicationEntrances.stream()
+                            .filter(item -> !item.getServiceName().startsWith("PT_"))
+                            .map(item -> {
+                                ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
+                                applicationEntrancesResponse.setMethod(item.getMethodName());
+                                applicationEntrancesResponse.setRpcType(item.getRpcType());
+                                applicationEntrancesResponse.setExtend(item.getExtend());
+                                applicationEntrancesResponse.setServiceName(item.getServiceName());
+                                applicationEntrancesResponse.setLabel(
+                                        ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
+                                applicationEntrancesResponse.setValue(
+                                        ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
+                                                item.getAppName(), item.getRpcType(), item.getExtend()));
+                                return applicationEntrancesResponse;
+                                // 增加去重
+                            }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(Collectors.toList()).get(0);
+                    request.setLinkId(entrancesResponse.getValue());
+                }
+                request.setActivityName(key);
+                request.setRpcType(request.getRpcType());
+                applicationService.gotoActivityInfo(request);
+                result.put(activityService.getActivityByName(key).getLinkId(), false);
             }
-            List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                    request.getApplicationName(), "");
-            if (CollectionUtils.isNotEmpty(applicationEntrances)) {
-                ApplicationEntrancesResponse entrancesResponse = applicationEntrances.stream()
-                        .filter(item -> !item.getServiceName().startsWith("PT_"))
-                        .map(item -> {
-                            ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
-                            applicationEntrancesResponse.setMethod(item.getMethodName());
-                            applicationEntrancesResponse.setRpcType(item.getRpcType());
-                            applicationEntrancesResponse.setExtend(item.getExtend());
-                            applicationEntrancesResponse.setServiceName(item.getServiceName());
-                            applicationEntrancesResponse.setLabel(
-                                    ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
-                            applicationEntrancesResponse.setValue(
-                                    ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
-                                            item.getAppName(), item.getRpcType(), item.getExtend()));
-                            return applicationEntrancesResponse;
-                            // 增加去重
-                        }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(Collectors.toList()).get(0);
-                request.setLinkId(entrancesResponse.getValue());
-            }
-            request.setActivityName(key);
-            request.setRpcType(request.getRpcType());
-            applicationService.gotoActivityInfo(request);
-            result.put(activityService.getActivityByName(key).getLinkId(), false);
         }
         return result;
     }

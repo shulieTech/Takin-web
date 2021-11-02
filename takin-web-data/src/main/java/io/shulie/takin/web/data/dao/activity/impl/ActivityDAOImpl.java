@@ -321,6 +321,7 @@ public class ActivityDAOImpl implements ActivityDAO {
             lambdaQueryWrapper.in(BusinessLinkManageTableEntity::getUserId, param.getUserIdList());
         }
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
+        lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::isPersistence, 1);
 
         Page<BusinessLinkManageTableEntity> tableEntityPage = businessLinkManageTableMapper
             .selectPage(page, lambdaQueryWrapper);

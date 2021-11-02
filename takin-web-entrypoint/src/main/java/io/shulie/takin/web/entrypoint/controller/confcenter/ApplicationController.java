@@ -347,12 +347,14 @@ public class ApplicationController {
         //业务活动名称模糊搜索
         String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.getCustomerId());
         BusinessLinkManageTableEntity entity = activityService.getActivityByName(key);
+
+        boolean isTempActivity = true;
         if (null != entity) {
-            result.put(entity.getLinkId(), false);
+            result.put(entity.getLinkId(), isTempActivity);
         } else {
             entity = activityService.getActivity(request);
             if (null != entity) {
-                result.put(entity.getLinkId(), true);
+                result.put(entity.getLinkId(), false);
             } else {
                 List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
                         request.getApplicationName(), "");
@@ -379,7 +381,7 @@ public class ApplicationController {
                 request.setActivityName(key);
                 request.setRpcType(request.getRpcType());
                 applicationService.gotoActivityInfo(request);
-                result.put(activityService.getActivityByName(key).getLinkId(), false);
+                result.put(activityService.getActivityByName(key).getLinkId(), isTempActivity);
             }
         }
         return result;

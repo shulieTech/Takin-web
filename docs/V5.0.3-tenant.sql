@@ -177,7 +177,11 @@ alter table t_activity_node_service_state ADD INDEX `idx_tenant_env` ( `tenant_i
 alter table t_agent_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table t_agent_plugin ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table t_agent_plugin_lib_support ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-alter table t_agent_version ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+
+ALTER TABLE t_agent_version
+DROP KEY `version`,
+ADD UNIQUE KEY `idx_version_tenant_id_env_code`( `version`,`tenant_id`,`env_code` );
+
 alter table t_alarm_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table t_app_agent_config_report ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table t_app_business_table_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );

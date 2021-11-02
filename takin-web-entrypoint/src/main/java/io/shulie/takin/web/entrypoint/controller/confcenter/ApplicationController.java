@@ -35,9 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -310,7 +308,12 @@ public class ApplicationController {
         List<ApplicationVisualInfoResponse> data = response.getData();
         if (CollectionUtils.isNotEmpty(data)) {
             Map allActiveIdAndName = data.get(0).getAllActiveIdAndName();
-            return Response.success(allActiveIdAndName);
+            ArrayList<Map.Entry> activityList = new ArrayList<>();
+            if (null != allActiveIdAndName && !allActiveIdAndName.isEmpty()) {
+                Set<Map.Entry> set = allActiveIdAndName.entrySet();
+                set.forEach(entry->activityList.add(entry));
+            }
+            return Response.success(activityList);
         }
         return null;
     }

@@ -1142,7 +1142,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public void gotoActivityInfo(ActivityCreateRequest request) {
-        activityService.createActivity(request);
+        activityService.createActivityWithoutAMDB(request);
     }
 
 

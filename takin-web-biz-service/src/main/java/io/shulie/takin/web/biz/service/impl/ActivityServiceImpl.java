@@ -128,6 +128,31 @@ public class ActivityServiceImpl implements ActivityService {
             request.getMethod(), request.getRpcType(), request.getExtend());
     }
 
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
+    public void createActivityWithoutAMDB(ActivityCreateRequest request) {
+        // 检查业务活动是否能入库
+        checkActivity(request);
+        ActivityCreateParam createParam = new ActivityCreateParam();
+        createParam.setActivityName(request.getActivityName());
+        createParam.setEntranceName(request.getServiceName());
+        createParam.setIsChange(false);
+        createParam.setApplicationName(request.getApplicationName());
+        createParam.setType(request.getType());
+        createParam.setActivityLevel(request.getActivityLevel());
+        createParam.setIsCore(request.getIsCore());
+        createParam.setBusinessDomain(request.getBusinessDomain());
+        createParam.setRpcType(request.getRpcType());
+        createParam.setMethod(request.getMethod());
+        createParam.setServiceName(request.getServiceName());
+        createParam.setExtend(request.getExtend());
+        createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+        createParam.setEntrance(
+                ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
+                        request.getRpcType()));
+        activityDAO.createActivity(createParam);
+    }
+
     /**
      * 检查正常业务活动
      *

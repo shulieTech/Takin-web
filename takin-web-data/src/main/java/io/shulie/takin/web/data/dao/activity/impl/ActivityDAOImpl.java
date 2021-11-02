@@ -79,6 +79,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         }
 
         wrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
+        wrapper.eq(BusinessLinkManageTableEntity::getCustomerId,WebPluginUtils.getCustomerId());
         List<BusinessLinkManageTableEntity> businessLinkManageTableEntities = businessLinkManageTableMapper.selectList(
             wrapper);
         if (CollectionUtils.isEmpty(businessLinkManageTableEntities)) {

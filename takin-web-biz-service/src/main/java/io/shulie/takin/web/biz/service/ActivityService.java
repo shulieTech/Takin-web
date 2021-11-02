@@ -80,4 +80,11 @@ public interface ActivityService {
     void setActivityNodeState(long activityId, String serviceName, String ownerApps, boolean state);
 
     List<ActivityNodeState> getActivityNodeServiceState(long activityId);
+
+    /**
+     * 根据条件查询业务活动
+     * @param request
+     * @return
+     */
+    List<ActivityListResponse> queryNormalActivities(ActivityResultQueryRequest request);
 }

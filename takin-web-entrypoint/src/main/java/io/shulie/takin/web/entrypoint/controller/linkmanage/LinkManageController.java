@@ -15,9 +15,10 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
 import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
@@ -366,9 +367,9 @@ public class LinkManageController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.CREATE
     )
-    public ResponseResult<BusinessFlowDetailResponse> parseScriptAndSave(FileManageCreateRequest fileManageCreateRequest) {
+    public ResponseResult<BusinessFlowDetailResponse> parseScriptAndSave(BusinessFlowParseRequest businessFlowParseRequest) {
         try {
-            BusinessFlowDetailResponse sceneDetailDto = linkManageService.parseScriptAndSave(fileManageCreateRequest);
+            BusinessFlowDetailResponse sceneDetailDto = linkManageService.parseScriptAndSave(businessFlowParseRequest);
             return ResponseResult.success(sceneDetailDto);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -376,8 +377,8 @@ public class LinkManageController {
         }
     }
 
-    @PostMapping("/link/parseScriptAndUpdate")
-    @ApiOperation("解析脚本并更新业务流程")
+    @PostMapping("/link/uploadDataFile")
+    @ApiOperation("业务流程上传数据文件")
     @ModuleDef(
             moduleName = BizOpConstants.Modules.LINK_CARDING,
             subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
@@ -387,9 +388,30 @@ public class LinkManageController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.UPDATE
     )
-    public ResponseResult<BusinessFlowDetailResponse> parseScriptAndUpdate(BusinessFlowUpdateRequest businessFlowUpdateRequest) {
+    public ResponseResult<BusinessFlowDetailResponse> uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest) {
         try {
-            BusinessFlowDetailResponse sceneDetailDto = linkManageService.parseScriptAndUpdate(businessFlowUpdateRequest);
+            BusinessFlowDetailResponse sceneDetailDto = linkManageService.uploadDataFile(businessFlowDataFileRequest);
+            return ResponseResult.success(sceneDetailDto);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_ADD_ERROR, e.getMessage());
+        }
+    }
+
+    @PostMapping("/link/autoMatchActivity")
+    @ApiOperation("自动匹配业务活动")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.LINK_CARDING,
+            subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATE
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.UPDATE
+    )
+    public ResponseResult<BusinessFlowMatchResponse> autoMatchActivity(@NotNull Long id) {
+        try {
+            BusinessFlowMatchResponse sceneDetailDto = linkManageService.autoMatchActivity(id);
             return ResponseResult.success(sceneDetailDto);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -398,7 +420,7 @@ public class LinkManageController {
     }
 
     @GetMapping("/link/scene/detail")
-    @ApiOperation("业务流程树详情获取")
+    @ApiOperation("业务流程详情获取")
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.QUERY
@@ -412,5 +434,24 @@ public class LinkManageController {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, e.getMessage());
         }
     }
+
+
+    @GetMapping("/link/scene/threadGroupDetail")
+    @ApiOperation("业务流程详情获取线程组内容详情")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public ResponseResult<BusinessFlowDetailResponse> getThreadGroupDetail(@NotNull Long id,@NotNull String xpathMd5) {
+        try {
+            BusinessFlowDetailResponse dto = linkManageService.getThreadGroupDetail(id,xpathMd5);
+            return ResponseResult.success(dto);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, e.getMessage());
+        }
+    }
+
+
 
 }

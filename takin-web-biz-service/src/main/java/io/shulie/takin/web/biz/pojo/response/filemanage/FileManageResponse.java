@@ -47,6 +47,12 @@ public class FileManageResponse implements Serializable {
     private Integer isOrderSplit;
 
     /**
+     * 文件MD5值
+     */
+    @ApiModelProperty(value = "md5")
+    private String md5;
+
+    /**
      * 上传时间
      */
     @ApiModelProperty(value = "上传时间")

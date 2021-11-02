@@ -385,6 +385,9 @@ public class ActivityDAOImpl implements ActivityDAO {
         if (StringUtils.isNotBlank(param.getEntrance())) {
             lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getEntrace, param.getEntrance());
         }
+        if (StringUtils.isNotBlank(param.getApplicationName())){
+            lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getApplicationName, param.getApplicationName());
+        }
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
         List<BusinessLinkManageTableEntity> tableEntities = businessLinkManageTableMapper.selectList(
             lambdaQueryWrapper);
@@ -453,6 +456,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         r.setBusinessType(entity.getType() != null ? entity.getType() : BusinessTypeEnum.NORMAL_BUSINESS.getType());
         r.setTechLinkId(entity.getRelatedTechLink());
         r.setParentTechLinkId(entity.getParentBusinessId());
+        r.setApplicationName(entity.getApplicationName());
         return r;
     }
 

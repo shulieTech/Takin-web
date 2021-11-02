@@ -2,6 +2,8 @@ package io.shulie.takin.web.biz.convert.linkmanage;
 
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.ext.content.script.ScriptNode;
+import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
@@ -29,4 +31,8 @@ public interface LinkManageConvert {
     BusinessFlowDetailResponse ofBusinessFlowDetailResponse(ScriptManageDeployDetailResponse scriptManageDeployDetail);
 
     FileManageResponse ofFileManageResponse(FileManageResponse fileManageResponse);
+
+    FileManageCreateRequest ofFileManageCreateRequest(FileManageUpdateRequest fileManageCreateRequest);
+
+    List<FileManageUpdateRequest> ofFileManageResponseList(List<FileManageResponse> fileManageResponseList);
 }

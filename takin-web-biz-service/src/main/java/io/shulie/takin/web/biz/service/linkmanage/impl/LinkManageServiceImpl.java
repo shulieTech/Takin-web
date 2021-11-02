@@ -47,6 +47,7 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.BusinessQueryVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.cloud.open.req.filemanager.FileCreateByStringParamReq;
 import io.shulie.takin.cloud.open.req.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.ext.content.emus.NodeTypeEnum;
@@ -55,9 +56,9 @@ import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.cache.DictionaryCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.convert.linkmanage.LinkManageConvert;
-import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.application.AgentPluginSupportResponse;
@@ -83,8 +84,8 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.param.linkmanage.*;
-import io.shulie.takin.web.data.param.scene.SceneLinkRelateSaveParam;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
+import io.shulie.takin.web.diff.api.DiffFileApi;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
@@ -170,24 +171,26 @@ public class LinkManageServiceImpl implements LinkManageService {
     private String tmpFilePath;
     @Autowired
     private SceneService sceneService;
+    @Autowired
+    private DiffFileApi fileApi;
 
     private static void iteratorChildNodes(TopologicalGraphNode parentNode,
-        List<Category> childList,
-        List<TopologicalGraphNode> nodes,
-        List<TopologicalGraphRelation> relations) {
+                                           List<Category> childList,
+                                           List<TopologicalGraphNode> nodes,
+                                           List<TopologicalGraphRelation> relations) {
         if (CollectionUtils.isEmpty(childList)) {
             return;
         }
         List<Category> filterChildList = childList.stream().filter(distinctByName(c -> c.getApplicationName())).collect(
-            Collectors.toList());
+                Collectors.toList());
         int index = 0;
         for (int i = 0; i < filterChildList.size(); i++) {
             TopologicalGraphNode childNode = new TopologicalGraphNode();
             childNode.setKey(parentNode.getKey() + "." + index);
             NodeClassEnum nodeClassEnum = getNodeClassEnumByApplicationName(
-                filterChildList.get(i).getApplicationName());
+                    filterChildList.get(i).getApplicationName());
             MiddlewareTypeEnum middlewareTypeEnum = getMiddlewareTypeEnumByApplicationName(
-                filterChildList.get(i).getApplicationName());
+                    filterChildList.get(i).getApplicationName());
             childNode.setNodeType(nodeClassEnum.getCode());
             childNode.setNodeClass(nodeClassEnum.getDesc());
             if (middlewareTypeEnum != null) {
@@ -365,62 +368,62 @@ public class LinkManageServiceImpl implements LinkManageService {
         List<BusinessLinkDto> queryResult = tBusinessLinkManageTableMapper.selectBussinessLinkListBySelective2(queryVo);
         //用户ids
         List<Long> userIds = queryResult.stream().filter(data -> null != data.getUserId()).map(
-            BusinessLinkDto::getUserId).collect(Collectors.toList());
+                BusinessLinkDto::getUserId).collect(Collectors.toList());
         //用户信息Map key:userId  value:user对象
         Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
 
         List<BusinessLinkDto> pageData = PageUtils.getPage(true, vo.getCurrentPage(), vo.getPageSize(), queryResult);
         if (CollectionUtils.isNotEmpty(pageData) && pageData.size() > 0) {
             pageData.forEach(
-                single -> {
-                    BusinessActiveViewListDto dto = new BusinessActiveViewListDto();
-                    dto.setBusinessActiceId(single.getId());
-                    dto.setBusinessActiveName(single.getLinkName());
-                    dto.setCandelete(single.getCandelete());
-                    dto.setCreateTime(single.getCreateTime());
-                    dto.setIschange(single.getIschange());
-                    //负责人id
-                    dto.setUserId(single.getUserId());
-                    //负责人name
-                    String userName = Optional.ofNullable(userMap.get(single.getUserId()))
-                        .map(UserExt::getName)
-                        .orElse("");
-                    dto.setUserName(userName);
-                    WebPluginUtils.fillQueryResponse(dto);
-                    //新版本设置业务域
-                    if (StringUtils.isNotBlank(single.getBusinessDomain())) {
-                        String desc = DictionaryCache.getObjectByParam("domain",
-                            Integer.parseInt(single.getBusinessDomain())).getLabel();
-                        if (StringUtils.isNotBlank(desc)) {
-                            dto.setBusinessDomain(desc);
-                        } else {
-                            //兼容历史版本
-                            LinkDomainEnum domainEnum = LinkDomainEnumMapping.getByCode(single.getBusinessDomain());
-                            dto.setBusinessDomain(domainEnum == null ? null : domainEnum.getDesc());
+                    single -> {
+                        BusinessActiveViewListDto dto = new BusinessActiveViewListDto();
+                        dto.setBusinessActiceId(single.getId());
+                        dto.setBusinessActiveName(single.getLinkName());
+                        dto.setCandelete(single.getCandelete());
+                        dto.setCreateTime(single.getCreateTime());
+                        dto.setIschange(single.getIschange());
+                        //负责人id
+                        dto.setUserId(single.getUserId());
+                        //负责人name
+                        String userName = Optional.ofNullable(userMap.get(single.getUserId()))
+                                .map(UserExt::getName)
+                                .orElse("");
+                        dto.setUserName(userName);
+                        WebPluginUtils.fillQueryResponse(dto);
+                        //新版本设置业务域
+                        if (StringUtils.isNotBlank(single.getBusinessDomain())) {
+                            String desc = DictionaryCache.getObjectByParam("domain",
+                                    Integer.parseInt(single.getBusinessDomain())).getLabel();
+                            if (StringUtils.isNotBlank(desc)) {
+                                dto.setBusinessDomain(desc);
+                            } else {
+                                //兼容历史版本
+                                LinkDomainEnum domainEnum = LinkDomainEnumMapping.getByCode(single.getBusinessDomain());
+                                dto.setBusinessDomain(domainEnum == null ? null : domainEnum.getDesc());
+                            }
                         }
-                    }
-                    TechLinkDto techLinkDto = single.getTechLinkDto();
+                        TechLinkDto techLinkDto = single.getTechLinkDto();
 
-                    if (techLinkDto != null) {
-                        List<TMiddlewareInfo> middlewareInfos =
-                            tMiddlewareInfoMapper.selectBySystemProcessId(techLinkDto.getLinkId());
-                        List<String> middleWareStrings = middlewareInfos
-                            .stream()
-                            .map(entity ->
-                                entity.getMiddlewareName() + " " + entity.getMiddlewareVersion()
-                            ).collect(Collectors.toList());
-                        dto.setMiddleWareList(middleWareStrings);
-                        dto.setSystemProcessName(single.getTechLinkDto().getTechLinkName());
+                        if (techLinkDto != null) {
+                            List<TMiddlewareInfo> middlewareInfos =
+                                    tMiddlewareInfoMapper.selectBySystemProcessId(techLinkDto.getLinkId());
+                            List<String> middleWareStrings = middlewareInfos
+                                    .stream()
+                                    .map(entity ->
+                                            entity.getMiddlewareName() + " " + entity.getMiddlewareVersion()
+                                    ).collect(Collectors.toList());
+                            dto.setMiddleWareList(middleWareStrings);
+                            dto.setSystemProcessName(single.getTechLinkDto().getTechLinkName());
+                        }
+                        result.add(dto);
                     }
-                    result.add(dto);
-                }
             );
         }
         return Response.success(result, CollectionUtils.isEmpty(queryResult) ? 0 : queryResult.size());
     }
 
     private void convertBusinessLinkResponse(BusinessLinkResult businessLinkResult,
-        BusinessLinkResponse businessLinkResponse) {
+                                             BusinessLinkResponse businessLinkResponse) {
         businessLinkResponse.setId(businessLinkResult.getId());
         businessLinkResponse.setLinkName(businessLinkResult.getLinkName());
         businessLinkResponse.setEntrance(businessLinkResult.getEntrace());
@@ -460,9 +463,9 @@ public class LinkManageServiceImpl implements LinkManageService {
                 Long systemProcessId = businessLinkResponse.getTechLinkResponse().getLinkId();
                 if (systemProcessId != null) {
                     LinkManageResult linkManageResult = linkManageDAO.selectLinkManageById(
-                        businessLinkResult.getTechLinkResult().getLinkId());
+                            businessLinkResult.getTechLinkResult().getLinkId());
                     businessLinkResponse.getTechLinkResponse().setMiddleWareResponses(
-                        getMiddleWareResponses(linkManageResult.getApplicationName()));
+                            getMiddleWareResponses(linkManageResult.getApplicationName()));
                     //处理系统流程前端展示数据
                     TechLinkResponse techLinkResponse = businessLinkResponse.getTechLinkResponse();
                     String linkBody = null;
@@ -537,13 +540,13 @@ public class LinkManageServiceImpl implements LinkManageService {
             return;
         }
         List<Long> candeletedList = businessLinkIds.stream()
-            .map(single -> {
-                long count = tSceneLinkRelateMapper.countByBusinessLinkId(single);
-                if (!(count > 0)) {
-                    return single;
-                }
-                return 0L;
-            }).collect(Collectors.toList());
+                .map(single -> {
+                    long count = tSceneLinkRelateMapper.countByBusinessLinkId(single);
+                    if (!(count > 0)) {
+                        return single;
+                    }
+                    return 0L;
+                }).collect(Collectors.toList());
 
         tBusinessLinkManageTableMapper.cannotdelete(candeletedList, 0L);
     }
@@ -555,7 +558,7 @@ public class LinkManageServiceImpl implements LinkManageService {
 
         //查询业务活动是否存在虚拟业务活动
         List<String> sceneIds = pageData.stream().map(SceneDto::getId).map(String::valueOf).collect(
-            Collectors.toList());
+                Collectors.toList());
         SceneLinkRelateParam relateParam = new SceneLinkRelateParam();
         relateParam.setSceneIds(sceneIds);
         List<SceneLinkRelateResult> relateResults = sceneLinkRelateDAO.getList(relateParam);
@@ -565,25 +568,25 @@ public class LinkManageServiceImpl implements LinkManageService {
             ActivityQueryParam param = new ActivityQueryParam();
             param.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
             param.setActivityIds(relateResults.stream().map(SceneLinkRelateResult::getBusinessLinkId)
-                .map(Long::parseLong).collect(Collectors.toList()));
+                    .map(Long::parseLong).collect(Collectors.toList()));
             List<ActivityListResult> results = activityDAO.getActivityList(param);
             map = relateResults.stream().collect(
-                Collectors.toMap(
-                    SceneLinkRelateResult::getSceneId,
-                    data -> results.stream()
-                        .filter(activity -> data.getBusinessLinkId().equals(String.valueOf(activity.getActivityId())))
-                        .collect(Collectors.toList()),
-                    (List<ActivityListResult> newValueList, List<ActivityListResult> oldValueList) -> {
-                        oldValueList.addAll(newValueList);
-                        return oldValueList;
-                    }));
+                    Collectors.toMap(
+                            SceneLinkRelateResult::getSceneId,
+                            data -> results.stream()
+                                    .filter(activity -> data.getBusinessLinkId().equals(String.valueOf(activity.getActivityId())))
+                                    .collect(Collectors.toList()),
+                            (List<ActivityListResult> newValueList, List<ActivityListResult> oldValueList) -> {
+                                oldValueList.addAll(newValueList);
+                                return oldValueList;
+                            }));
         }
 
         Map<String, List<ActivityListResult>> finalMap = map;
 
         //用户ids
         List<Long> userIds = sceneDtos.stream().filter(data -> null != data.getUserId()).map(SceneDto::getUserId)
-            .collect(Collectors.toList());
+                .collect(Collectors.toList());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(userIds);
         pageData = pageData.stream().map(single -> {
             int count = tSceneLinkRelateMapper.countBySceneId(single.getId());
@@ -596,8 +599,8 @@ public class LinkManageServiceImpl implements LinkManageService {
             }
             single.setTechLinkCount(count);
             single.setBusinessLinkCount(count);
-            String userName = WebPluginUtils.getUserName(single.getUserId(),userExtMap);
-            single.setUserName(userName) ;
+            String userName = WebPluginUtils.getUserName(single.getUserId(), userExtMap);
+            single.setUserName(userName);
             WebPluginUtils.fillQueryResponse(single);
             return single;
         }).collect(Collectors.toList());
@@ -610,20 +613,20 @@ public class LinkManageServiceImpl implements LinkManageService {
         try {
             List<LinkRemarkmiddleWareDto> list = tMiddlewareInfoMapper.selectforstatistics(vo);
             List<LinkRemarkmiddleWareDto> pageData = PageUtils.getPage(true, vo.getCurrentPage(), vo.getPageSize(),
-                list);
+                    list);
 
             pageData = pageData.stream().map(
-                single -> {
-                    long id = single.getMiddleWareId();
-                    List<String> techLinkIds = tMiddlewareLinkRelateMapper.selectTechIdsByMiddleWareIds(id);
-                    single.setSystemProcessCount(String.valueOf(techLinkIds.size()));
-                    //统计业务流程条数
-                    if (CollectionUtils.isNotEmpty(techLinkIds)) {
-                        int countBusinessProcess = tSceneLinkRelateMapper.countByTechLinkIds(techLinkIds);
-                        single.setBussinessProcessCount(String.valueOf(countBusinessProcess));
+                    single -> {
+                        long id = single.getMiddleWareId();
+                        List<String> techLinkIds = tMiddlewareLinkRelateMapper.selectTechIdsByMiddleWareIds(id);
+                        single.setSystemProcessCount(String.valueOf(techLinkIds.size()));
+                        //统计业务流程条数
+                        if (CollectionUtils.isNotEmpty(techLinkIds)) {
+                            int countBusinessProcess = tSceneLinkRelateMapper.countByTechLinkIds(techLinkIds);
+                            single.setBussinessProcessCount(String.valueOf(countBusinessProcess));
+                        }
+                        return single;
                     }
-                    return single;
-                }
             ).collect(Collectors.toList());
 
             return Response.success(pageData, CollectionUtils.isEmpty(list) ? 0 : list.size());
@@ -698,8 +701,8 @@ public class LinkManageServiceImpl implements LinkManageService {
         String businessFlowTotalCount = String.valueOf(businessFlowTotalCountNum);
         String businessFlowPressureCount = "0";
         String businessFlowPressureRate =
-            (businessFlowTotalCountNum == 0L || "0".equals(businessFlowPressureCount)) ?
-                "0" : String.valueOf(businessFlowTotalCountNum / Long.parseLong(businessFlowPressureCount));
+                (businessFlowTotalCountNum == 0L || "0".equals(businessFlowPressureCount)) ?
+                        "0" : String.valueOf(businessFlowTotalCountNum / Long.parseLong(businessFlowPressureCount));
         dto.setBusinessFlowTotalCount(businessFlowTotalCount);
         dto.setBusinessFlowPressureCount(businessFlowPressureCount);
         dto.setBusinessFlowPressureRate(businessFlowPressureRate);
@@ -709,7 +712,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         String applicationTotalCount = String.valueOf(applicationTotalCountNum);
         String applicationPressureCount = "0";
         String applicationPressureRate = (applicationTotalCountNum == 0L || applicationPressureCount.equals("0")) ?
-            "0" : String.valueOf(applicationTotalCountNum / Long.parseLong(applicationPressureCount));
+                "0" : String.valueOf(applicationTotalCountNum / Long.parseLong(applicationPressureCount));
         dto.setApplicationTotalCount(applicationTotalCount);
         dto.setApplicationPressureCount(applicationPressureCount);
         dto.setApplicationPressureRate(applicationPressureRate);
@@ -722,7 +725,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         List<MiddleWareEntity> result = Lists.newArrayList();
 
         List<Long> businessIds =
-            ids.stream().map(id -> Long.parseLong(String.valueOf(id))).collect(Collectors.toList());
+                ids.stream().map(id -> Long.parseLong(String.valueOf(id))).collect(Collectors.toList());
         //查系统流程id集合
         List<String> techIds = tBusinessLinkManageTableMapper.selectTechIdsByBusinessIds(businessIds);
         if (CollectionUtils.isEmpty(techIds)) {
@@ -735,7 +738,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         }
         //查中间件信息
         List<Long> midllewareIdslong = middleWareIds.stream()
-            .map(id -> Long.parseLong(id)).collect(Collectors.toList());
+                .map(id -> Long.parseLong(id)).collect(Collectors.toList());
         List<MiddleWareEntity> middleWareEntities = tMiddlewareInfoMapper.selectByIds(midllewareIdslong);
 
         result = middleWareEntities;
@@ -747,7 +750,7 @@ public class LinkManageServiceImpl implements LinkManageService {
     public List<MiddleWareEntity> getAllMiddleWareTypeList() {
         List<MiddleWareEntity> result = Lists.newArrayList();
         List<TMiddlewareInfo> infos = tMiddlewareInfoMapper
-            .selectBySelective(new TMiddlewareInfo());
+                .selectBySelective(new TMiddlewareInfo());
 
         //按照中间件类型去重
         infos.stream().forEach(info -> {
@@ -759,10 +762,10 @@ public class LinkManageServiceImpl implements LinkManageService {
             result.add(entity);
         });
         List<MiddleWareEntity> distinct = result.stream()
-            .collect(Collectors.collectingAndThen(Collectors.toCollection(
-                () -> new TreeSet<>(
-                    Comparator.comparing(MiddleWareEntity::getMiddleWareType))),
-                ArrayList::new));
+                .collect(Collectors.collectingAndThen(Collectors.toCollection(
+                                () -> new TreeSet<>(
+                                        Comparator.comparing(MiddleWareEntity::getMiddleWareType))),
+                        ArrayList::new));
 
         return distinct;
     }
@@ -793,7 +796,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         serachTable.setCanDelete(0);
 
         List<LinkManageTable> tables =
-            tLinkManageTableMapper.selectBySelective(serachTable);
+                tLinkManageTableMapper.selectBySelective(serachTable);
         if (CollectionUtils.isNotEmpty(tables)) {
             tables.stream().forEach(table -> {
                 SystemProcessIdAndNameDto dto = new SystemProcessIdAndNameDto();
@@ -855,14 +858,14 @@ public class LinkManageServiceImpl implements LinkManageService {
     private void diableDeleteBusinessActives(List<SceneLinkRelate> relates) {
 
         List<Long> relateBusinessLinkIds =
-            relates.stream().map(
-                single -> {
-                    if (single.getBusinessLinkId() != null) {
-                        return Long.parseLong(single.getBusinessLinkId());
-                    }
-                    return 0L;
-                }
-            ).collect(Collectors.toList());
+                relates.stream().map(
+                        single -> {
+                            if (single.getBusinessLinkId() != null) {
+                                return Long.parseLong(single.getBusinessLinkId());
+                            }
+                            return 0L;
+                        }
+                ).collect(Collectors.toList());
 
         if (CollectionUtils.isNotEmpty(relateBusinessLinkIds)) {
             tBusinessLinkManageTableMapper.cannotdelete(relateBusinessLinkIds, 1L);
@@ -941,28 +944,28 @@ public class LinkManageServiceImpl implements LinkManageService {
     private void infoCompletion(List<SceneLinkRelate> relates) {
         //获取出所有的业务活动ID
         List<Long> businessIds
-            = relates
-            .stream()
-            .map(relate -> Long.parseLong(relate.getBusinessLinkId())).collect(Collectors.toList());
+                = relates
+                .stream()
+                .map(relate -> Long.parseLong(relate.getBusinessLinkId())).collect(Collectors.toList());
 
         List<BusinessLinkManageTable> tables =
-            tBusinessLinkManageTableMapper.selectByPrimaryKeys(businessIds);
+                tBusinessLinkManageTableMapper.selectByPrimaryKeys(businessIds);
 
         Map<Long, List<BusinessLinkManageTable>> map
-            = tables.stream()
-            .collect(Collectors.groupingBy(
-                BusinessLinkManageTable::getLinkId));
+                = tables.stream()
+                .collect(Collectors.groupingBy(
+                        BusinessLinkManageTable::getLinkId));
 
         relates.stream().forEach(
-            relate -> {
-                Long businessLinkId = Long.parseLong(relate.getBusinessLinkId());
-                List<BusinessLinkManageTable> lists = map.get(businessLinkId);
-                if (CollectionUtils.isNotEmpty(lists)) {
-                    BusinessLinkManageTable table = lists.get(0);
-                    relate.setEntrance(table.getEntrace());
-                    relate.setTechLinkId(table.getRelatedTechLink());
+                relate -> {
+                    Long businessLinkId = Long.parseLong(relate.getBusinessLinkId());
+                    List<BusinessLinkManageTable> lists = map.get(businessLinkId);
+                    if (CollectionUtils.isNotEmpty(lists)) {
+                        BusinessLinkManageTable table = lists.get(0);
+                        relate.setEntrance(table.getEntrace());
+                        relate.setTechLinkId(table.getRelatedTechLink());
+                    }
                 }
-            }
         );
     }
 
@@ -974,7 +977,7 @@ public class LinkManageServiceImpl implements LinkManageService {
      * @return
      */
     private List<SceneLinkRelate> parsing(List<BusinessFlowTree> children, String parentId, Long sceneId,
-        List<SceneLinkRelate> result) {
+                                          List<SceneLinkRelate> result) {
         for (int i = 0; i < children.size(); i++) {
             SceneLinkRelate relate = new SceneLinkRelate();
             BusinessFlowTree child = children.get(i);
@@ -1015,13 +1018,13 @@ public class LinkManageServiceImpl implements LinkManageService {
         List<SceneLinkRelate> relates = tSceneLinkRelateMapper.selectBySceneId(Long.parseLong(id));
 
         List<ExistBusinessActiveDto> existBusinessActiveIds =
-            relates.stream().map(relate ->
-            {
-                ExistBusinessActiveDto single = new ExistBusinessActiveDto();
-                single.setKey(relate.getFrontUUIDKey());
-                single.setId(relate.getBusinessLinkId());
-                return single;
-            }).collect(Collectors.toList());
+                relates.stream().map(relate ->
+                {
+                    ExistBusinessActiveDto single = new ExistBusinessActiveDto();
+                    single.setKey(relate.getFrontUUIDKey());
+                    single.setId(relate.getBusinessLinkId());
+                    return single;
+                }).collect(Collectors.toList());
 
         dto.setExistBusinessActive(existBusinessActiveIds);
 
@@ -1033,7 +1036,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         if (CollectionUtils.isNotEmpty(techLinkIds)) {
             List<String> middleWareIdStrings = tMiddlewareLinkRelateMapper.selectMiddleWareIdsByTechIds(techLinkIds);
             List<Long> middleWareIds = middleWareIdStrings.stream().map(single -> Long.parseLong(single)).collect(
-                Collectors.toList());
+                    Collectors.toList());
 
             List<MiddleWareEntity> middleWareEntityList = Lists.newArrayList();
             if (CollectionUtils.isNotEmpty(middleWareIds)) {
@@ -1076,12 +1079,12 @@ public class LinkManageServiceImpl implements LinkManageService {
         Scene oldScene = tSceneMapper.selectByPrimaryKey(Long.parseLong(vo.getId()));
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_PROCESS, vo.getSceneName());
         List<SceneLinkRelate> oldSceneLinkRelateList = tSceneLinkRelateMapper.selectBySceneId(
-            Long.parseLong(vo.getId()));
+                Long.parseLong(vo.getId()));
         List<Long> oldBusinessLinkIdList = oldSceneLinkRelateList.stream().map(SceneLinkRelate::getBusinessLinkId).map(
-            Long::parseLong).collect(Collectors.toList());
+                Long::parseLong).collect(Collectors.toList());
         List<SceneLinkRelate> currentSceneLinkRelateList = parsingTree(vo, Long.parseLong(vo.getId()));
         List<Long> currentBusinessLinkIdList = currentSceneLinkRelateList.stream().map(
-            SceneLinkRelate::getBusinessLinkId).map(Long::parseLong).collect(Collectors.toList());
+                SceneLinkRelate::getBusinessLinkId).map(Long::parseLong).collect(Collectors.toList());
         List<Long> toDeleteIdList = Lists.newArrayList();
         toDeleteIdList.addAll(oldBusinessLinkIdList);
         toDeleteIdList.removeAll(currentBusinessLinkIdList);
@@ -1090,25 +1093,25 @@ public class LinkManageServiceImpl implements LinkManageService {
         toAddIdList.removeAll(oldBusinessLinkIdList);
         String selectiveContent = "";
         if (oldScene.getSceneName().equals(vo.getSceneName())
-            && CollectionUtils.isEmpty(toAddIdList)
-            && CollectionUtils.isEmpty(toDeleteIdList)) {
+                && CollectionUtils.isEmpty(toAddIdList)
+                && CollectionUtils.isEmpty(toDeleteIdList)) {
             OperationLogContextHolder.ignoreLog();
         }
         if (CollectionUtils.isNotEmpty(toAddIdList)) {
             List<BusinessLinkManageTable> businessLinkManageTableList = tBusinessLinkManageTableMapper
-                .selectBussinessLinkByIdList(toAddIdList);
+                    .selectBussinessLinkByIdList(toAddIdList);
             if (CollectionUtils.isNotEmpty(businessLinkManageTableList)) {
                 String addNodeNames = businessLinkManageTableList.stream().map(BusinessLinkManageTable::getLinkName)
-                    .collect(Collectors.joining(","));
+                        .collect(Collectors.joining(","));
                 selectiveContent = selectiveContent + "｜新增节点：" + addNodeNames;
             }
         }
         if (CollectionUtils.isNotEmpty(toDeleteIdList)) {
             List<BusinessLinkManageTable> businessLinkManageTableList = tBusinessLinkManageTableMapper
-                .selectBussinessLinkByIdList(toDeleteIdList);
+                    .selectBussinessLinkByIdList(toDeleteIdList);
             if (CollectionUtils.isNotEmpty(businessLinkManageTableList)) {
                 String deleteNodeNames = businessLinkManageTableList.stream().map(BusinessLinkManageTable::getLinkName)
-                    .collect(Collectors.joining(","));
+                        .collect(Collectors.joining(","));
                 selectiveContent = selectiveContent + "｜删除节点：" + deleteNodeNames;
             }
         }
@@ -1120,19 +1123,19 @@ public class LinkManageServiceImpl implements LinkManageService {
             return;
         }
         List<SceneLinkRelate> oldRelates =
-            tSceneLinkRelateMapper.selectBySceneId(Long.parseLong(vo.getId()));
+                tSceneLinkRelateMapper.selectBySceneId(Long.parseLong(vo.getId()));
         if (CollectionUtils.isEmpty(oldRelates)) {
             return;
         }
 
         List<Long> candeleteList = oldRelates.stream()
-            .map(single ->
-            {
-                if (single.getBusinessLinkId() == null) {
-                    return 0L;
-                }
-                return Long.parseLong(single.getBusinessLinkId());
-            }).collect(Collectors.toList());
+                .map(single ->
+                {
+                    if (single.getBusinessLinkId() == null) {
+                        return 0L;
+                    }
+                    return Long.parseLong(single.getBusinessLinkId());
+                }).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(candeleteList)) {
             return;
         }
@@ -1165,10 +1168,10 @@ public class LinkManageServiceImpl implements LinkManageService {
             info.setMiddlewareType(middleWareType);
         }
         List<TMiddlewareInfo> infos =
-            tMiddlewareInfoMapper.selectBySelective(info);
+                tMiddlewareInfoMapper.selectBySelective(info);
         if (CollectionUtils.isNotEmpty(infos)) {
             Map<String, List<TMiddlewareInfo>> groupByMiddleWareName =
-                infos.stream().collect(Collectors.groupingBy(TMiddlewareInfo::getMiddlewareName));
+                    infos.stream().collect(Collectors.groupingBy(TMiddlewareInfo::getMiddlewareName));
 
             for (Map.Entry<String, List<TMiddlewareInfo>> entry : groupByMiddleWareName.entrySet()) {
                 MiddleWareNameDto dto = new MiddleWareNameDto();
@@ -1178,13 +1181,13 @@ public class LinkManageServiceImpl implements LinkManageService {
                 List<TMiddlewareInfo> values = entry.getValue();
                 if (CollectionUtils.isNotEmpty(values)) {
                     List<MiddleWareVersionDto> children = values.stream().map(
-                        single -> {
-                            MiddleWareVersionDto versionDto = new MiddleWareVersionDto();
-                            String version = single.getMiddlewareVersion();
-                            versionDto.setLabel(version);
-                            versionDto.setValue(version);
-                            return versionDto;
-                        }
+                            single -> {
+                                MiddleWareVersionDto versionDto = new MiddleWareVersionDto();
+                                String version = single.getMiddlewareVersion();
+                                versionDto.setLabel(version);
+                                versionDto.setValue(version);
+                                return versionDto;
+                            }
                     ).collect(Collectors.toList());
                     dto.setChildren(children);
                 }
@@ -1199,7 +1202,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         List<MiddleWareNameDto> result = Lists.newArrayList();
 
         List<TMiddlewareInfo> infos = tMiddlewareInfoMapper
-            .selectBySelective(new TMiddlewareInfo());
+                .selectBySelective(new TMiddlewareInfo());
 
         //按照中间件类型去重
         infos.stream().forEach(single -> {
@@ -1209,10 +1212,10 @@ public class LinkManageServiceImpl implements LinkManageService {
             result.add(entity);
         });
         List<MiddleWareNameDto> distinct = result.stream()
-            .collect(Collectors.collectingAndThen(Collectors.toCollection(
-                () -> new TreeSet<>(
-                    Comparator.comparing(MiddleWareNameDto::getLabel))),
-                ArrayList::new));
+                .collect(Collectors.collectingAndThen(Collectors.toCollection(
+                                () -> new TreeSet<>(
+                                        Comparator.comparing(MiddleWareNameDto::getLabel))),
+                        ArrayList::new));
         return distinct;
     }
 
@@ -1226,7 +1229,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         List<MiddleWareResponse> middleWareResponses = Lists.newArrayList();
         List<AgentPluginSupportResponse> supportList = agentPluginSupportService.queryAgentPluginSupportList();
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(
-            Arrays.asList(applicationName));
+                Arrays.asList(applicationName));
         if (CollectionUtils.isEmpty(applicationResultList)) {
             return middleWareResponses;
         }
@@ -1236,7 +1239,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         }
         for (LibraryResult libraryResult : libraryResults) {
             MiddleWareResponse middleWareResponse = agentPluginSupportService.convertLibInfo(supportList,
-                libraryResult.getLibraryName());
+                    libraryResult.getLibraryName());
             if (!Objects.isNull(middleWareResponse)) {
                 middleWareResponses.add(middleWareResponse);
             }
@@ -1259,16 +1262,16 @@ public class LinkManageServiceImpl implements LinkManageService {
         List<SceneLinkRelate> sceneLinkRelates = tSceneLinkRelateMapper.selectBySceneId(businessFlowId);
         if (CollectionUtils.isNotEmpty(sceneLinkRelates)) {
             List<Long> businessActivityIds = sceneLinkRelates.stream().map(o -> Long.valueOf(o.getBusinessLinkId()))
-                .collect(Collectors.toList());
+                    .collect(Collectors.toList());
             List<BusinessLinkManageTable> businessLinkManageTables = tBusinessLinkManageTableMapper
-                .selectBussinessLinkByIdList(businessActivityIds);
+                    .selectBussinessLinkByIdList(businessActivityIds);
             //因为businessLinkManageTables打乱了业务活动的顺序 所以使用businessActivityIds
             sceneBusinessActivityRefVOS = businessActivityIds.stream().map(activityId -> {
                 BusinessActivityNameResponse businessActivityNameResponse = new BusinessActivityNameResponse();
                 businessActivityNameResponse.setBusinessActivityId(activityId);
                 BusinessLinkManageTable linkManageTable = businessLinkManageTables.stream().filter(
                         link -> activityId.equals(link.getLinkId())).findFirst().orElse(null);
-                if(Objects.nonNull(linkManageTable)){
+                if (Objects.nonNull(linkManageTable)) {
                     businessActivityNameResponse.setBusinessActivityName(linkManageTable.getLinkName());
                 }
                 return businessActivityNameResponse;
@@ -1278,28 +1281,54 @@ public class LinkManageServiceImpl implements LinkManageService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public BusinessFlowDetailResponse parseScriptAndSave(FileManageCreateRequest fileManageCreateRequest) {
+    public BusinessFlowDetailResponse parseScriptAndSave(BusinessFlowParseRequest businessFlowParseRequest) {
+        FileManageUpdateRequest fileManageCreateRequest = businessFlowParseRequest.getScriptFile();
+        //如果文件内容不为空，使用文件内容新建脚本文件
+        if (StringUtils.isNotBlank(fileManageCreateRequest.getScriptContent())) {
+            UUID uuid = UUID.randomUUID();
+            fileManageCreateRequest.setUploadId(uuid.toString());
+            String tempFile = tmpFilePath + "/" + uuid + "/" + fileManageCreateRequest.getFileName();
+            FileCreateByStringParamReq fileCreateByStringParamReq = new FileCreateByStringParamReq();
+            fileCreateByStringParamReq.setFileContent(fileManageCreateRequest.getScriptContent());
+            fileCreateByStringParamReq.setFilePath(tempFile);
+            String fileMd5 = fileApi.createFileByPathAndString(fileCreateByStringParamReq);
+            fileManageCreateRequest.setMd5(fileMd5);
+        }
+
         //解析脚本
         ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
         analyzeRequest.setScriptFile(tmpFilePath + "/" + fileManageCreateRequest.getUploadId() + "/" + fileManageCreateRequest.getFileName());
         ResponseResult<List<ScriptNode>> listResponseResult = sceneManageApi.scriptAnalyze(analyzeRequest);
-        if (!listResponseResult.getSuccess() || CollectionUtils.isEmpty(listResponseResult.getData())){
+        if (!listResponseResult.getSuccess() || CollectionUtils.isEmpty(listResponseResult.getData())) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件解析失败！" + listResponseResult.getError().getMsg());
         }
         List<ScriptNode> data = listResponseResult.getData();
         List<ScriptNode> testPlan = JmxUtil.getScriptNodeByType(NodeTypeEnum.TEST_PLAN, data);
-        if (CollectionUtils.isEmpty(testPlan)){
+        if (CollectionUtils.isEmpty(testPlan)) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
         }
+
+        if (businessFlowParseRequest.getId() == null) {
+            saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest);
+        } else {
+            updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null);
+        }
+
+        BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
+        result.setId(businessFlowParseRequest.getId());
+        return result;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void saveBusinessFlow(String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest) {
         //保存业务流程
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
-        sceneCreateParam.setSceneName(testPlan.get(0).getTestName());
+        sceneCreateParam.setSceneName(testName);
         sceneCreateParam.setCustomerId(WebPluginUtils.getCustomerId());
         sceneCreateParam.setUserId(WebPluginUtils.getUserId());
         sceneCreateParam.setLinkRelateNum(0);
-        sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(listResponseResult.getData()));
-        sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER,data));
+        sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
+        sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
         sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
         sceneDAO.insert(sceneCreateParam);
 
@@ -1308,10 +1337,10 @@ public class LinkManageServiceImpl implements LinkManageService {
         //脚本文件名称去重
         String scriptName = sceneCreateParam.getSceneName();
         List<ScriptManageResult> scriptManageResults = scriptManageDAO.selectScriptManageByName(sceneCreateParam.getSceneName());
-        if (CollectionUtils.isNotEmpty(scriptManageResults)){
+        if (CollectionUtils.isNotEmpty(scriptManageResults)) {
             scriptName = sceneCreateParam.getSceneName() + "_" + DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
         }
-        createRequest.setFileManageCreateRequests(Collections.singletonList(fileManageCreateRequest));
+        createRequest.setFileManageCreateRequests(Collections.singletonList(LinkManageConvert.INSTANCE.ofFileManageCreateRequest(fileManageCreateRequest)));
         createRequest.setName(scriptName);
         createRequest.setType(ScriptTypeEnum.JMETER.getCode());
         createRequest.setMVersion(ScriptMVersionEnum.SCRIPT_M_1.getCode());
@@ -1324,18 +1353,14 @@ public class LinkManageServiceImpl implements LinkManageService {
         sceneUpdateParam.setId(sceneCreateParam.getId());
         sceneCreateParam.setScriptDeployId(scriptManageId);
         sceneDAO.update(sceneUpdateParam);
-
-        BusinessFlowDetailResponse result  = new BusinessFlowDetailResponse();
-        result.setId(sceneCreateParam.getId());
-        return result;
     }
 
 
     @Override
     public BusinessFlowDetailResponse getBusinessFlowDetail(Long id) {
-        BusinessFlowDetailResponse result  = new BusinessFlowDetailResponse();
+        BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
         SceneResult sceneResult = sceneDAO.getSceneDetail(id);
-        if (sceneResult == null){
+        if (sceneResult == null) {
             return result;
         }
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
@@ -1343,17 +1368,13 @@ public class LinkManageServiceImpl implements LinkManageService {
         List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.THREAD_GROUP, scriptNodes);
         List<ScriptJmxNode> scriptJmxNodes = LinkManageConvert.INSTANCE.ofScriptNodeList(scriptNodeByType);
 
-        SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
-        sceneLinkRelateParam.setSceneIds(Collections.singletonList(id.toString()));
-        List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDAO.getList(sceneLinkRelateParam);
-        dealScriptJmxNodes(sceneLinkRelateList,scriptJmxNodes);
         ScriptManageDeployDetailResponse scriptManageDeployDetail = scriptManageService.getScriptManageDeployDetail(sceneResult.getScriptDeployId());
-        if (scriptManageDeployDetail != null){
+        if (scriptManageDeployDetail != null) {
             //脚本文件单独存储
-            if (CollectionUtils.isNotEmpty(scriptManageDeployDetail.getFileManageResponseList())){
+            if (CollectionUtils.isNotEmpty(scriptManageDeployDetail.getFileManageResponseList())) {
                 List<FileManageResponse> fileManageResponses = scriptManageDeployDetail.getFileManageResponseList().stream()
                         .filter(o -> FileTypeEnum.SCRIPT.getCode().equals(o.getFileType())).collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(fileManageResponses)){
+                if (CollectionUtils.isNotEmpty(fileManageResponses)) {
                     result.setScriptFile(LinkManageConvert.INSTANCE.ofFileManageResponse(fileManageResponses.get(0)));
                     scriptManageDeployDetail.getFileManageResponseList().remove(fileManageResponses.get(0));
                 }
@@ -1366,114 +1387,174 @@ public class LinkManageServiceImpl implements LinkManageService {
 
         result.setScriptJmxNodeList(scriptJmxNodes);
         result.setThreadGroupNum(scriptNodeByType.size());
-        toBusinessFlowDetailResponse(sceneResult,result);
+        toBusinessFlowDetailResponse(sceneResult, result);
         return result;
     }
 
     @Override
-    public BusinessFlowDetailResponse parseScriptAndUpdate(BusinessFlowUpdateRequest businessFlowUpdateRequest) {
-        SceneResult sceneResult = sceneDAO.getSceneDetail(businessFlowUpdateRequest.getId());
-        if (sceneResult == null){
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到对应的业务流程！");
-        }
-
-        SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
-        if (CollectionUtils.isNotEmpty(businessFlowUpdateRequest.getFileManageUpdateRequests())){
-            List<FileManageUpdateRequest> scriptUpdates = businessFlowUpdateRequest.getFileManageUpdateRequests()
-                    .stream().filter(o -> FileTypeEnum.SCRIPT.getCode().equals(o.getFileType()) &&
-                            o.getIsDeleted() == 0).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(scriptUpdates)){
-                //脚本文件只会有一个
-                FileManageUpdateRequest fileManageUpdateRequest = scriptUpdates.get(0);
-                if (fileManageUpdateRequest.getId() == null && StringUtils.isNotBlank(fileManageUpdateRequest.getUploadId())){
-                    //新上传了脚本文件，解析脚本
-                    ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
-                    analyzeRequest.setScriptFile(tmpFilePath + "/" + fileManageUpdateRequest.getUploadId() + "/" + fileManageUpdateRequest.getFileName());
-                    ResponseResult<List<ScriptNode>> listResponseResult = sceneManageApi.scriptAnalyze(analyzeRequest);
-                    if (!listResponseResult.getSuccess() || CollectionUtils.isEmpty(listResponseResult.getData())){
-                        throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件解析失败！" + listResponseResult.getError().getMsg());
-                    }
-                    List<ScriptNode> responseResultData = listResponseResult.getData();
-                    List<ScriptNode> testPlan = JmxUtil.getScriptNodeByType(NodeTypeEnum.TEST_PLAN, responseResultData);
-                    if (CollectionUtils.isEmpty(testPlan)){
-                        throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
-                    }
-                    //自动匹配
-                    List<SceneLinkRelateResult> sceneLinkRelateResults = sceneService.nodeLinkToBusinessActivity(responseResultData, businessFlowUpdateRequest.getId());
-                    List<SceneLinkRelateSaveParam> saveParams = LinkManageConvert.INSTANCE.ofSceneLinkRelateResults(sceneLinkRelateResults);
-                    if (CollectionUtils.isNotEmpty(saveParams)){
-                        sceneLinkRelateDAO.batchInsertOrUpdate(saveParams);
-                    }
-                    //如果脚本文件发生变动，修改参数
-                    sceneUpdateParam.setLinkRelateNum(sceneLinkRelateResults.size());
-                    sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(listResponseResult.getData()));
-                    sceneUpdateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER,responseResultData));
-                }
-            }
-        }
-
-        //更新脚本
-        ScriptManageDeployUpdateRequest updateRequest = new ScriptManageDeployUpdateRequest();
-        updateRequest.setFileManageUpdateRequests(businessFlowUpdateRequest.getFileManageUpdateRequests());
-        updateRequest.setAttachmentManageUpdateRequests(businessFlowUpdateRequest.getAttachmentManageUpdateRequests());
-        updateRequest.setPluginConfigUpdateRequests(businessFlowUpdateRequest.getPluginConfigUpdateRequests());
-        Long scriptDeployId = scriptManageService.updateScriptManage(updateRequest);
-
-        //更新业务流程
-        sceneUpdateParam.setScriptDeployId(scriptDeployId);
-        sceneDAO.update(sceneUpdateParam);
-
+    public BusinessFlowDetailResponse uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest) {
+        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest);
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
-        result.setId(businessFlowUpdateRequest.getId());
+        result.setId(businessFlowDataFileRequest.getId());
         return result;
     }
 
-    private void toBusinessFlowDetailResponse(SceneResult sceneResult,BusinessFlowDetailResponse result){
+    @Override
+    public BusinessFlowDetailResponse getThreadGroupDetail(Long id, String xpathMd5) {
+        BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
+        SceneResult sceneResult = sceneDAO.getSceneDetail(id);
+        if (sceneResult == null) {
+            return result;
+        }
+        List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
+        //将节点树处理成线程组在最外层的形式
+        List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.THREAD_GROUP, scriptNodes);
+        List<ScriptJmxNode> scriptJmxNodes = LinkManageConvert.INSTANCE.ofScriptNodeList(scriptNodeByType);
+        List<ScriptJmxNode> threadJmxNode = scriptJmxNodes.stream().filter(o -> o.getXpathMd5().equals(xpathMd5)).collect(Collectors.toList());
+        SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
+        sceneLinkRelateParam.setSceneIds(Collections.singletonList(id.toString()));
+        List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDAO.getList(sceneLinkRelateParam);
+        dealScriptJmxNodes(sceneLinkRelateList, threadJmxNode);
+
+        result.setScriptJmxNodeList(threadJmxNode);
+        result.setThreadGroupNum(scriptNodeByType.size());
+        toBusinessFlowDetailResponse(sceneResult, result);
+        return result;
+    }
+
+    @Override
+    public BusinessFlowMatchResponse autoMatchActivity(Long id) {
+        BusinessFlowMatchResponse result = new BusinessFlowMatchResponse();
+        SceneResult sceneResult = sceneDAO.getSceneDetail(id);
+        if (sceneResult == null) {
+            return result;
+        }
+        result.setId(id);
+        result.setBusinessProcessName(sceneResult.getSceneName());
+        List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
+        int nodeNumByType = JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, scriptNodes);
+        List<SceneLinkRelateResult> sceneLinkRelateResults = sceneService.nodeLinkToBusinessActivity(scriptNodes, id);
+        //查询已有的匹配关系,删除现在没有关联的节点
+        SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
+        sceneLinkRelateParam.setSceneIds(Collections.singletonList(id.toString()));
+        List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDAO.getList(sceneLinkRelateParam);
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateList)){
+            List<Long> oldIds = sceneLinkRelateList.stream().map(SceneLinkRelateResult::getId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)){
+                List<Long> longList = sceneLinkRelateResults.stream().map(SceneLinkRelateResult::getId)
+                        .filter(Objects::nonNull).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(longList)){
+                    oldIds = oldIds.stream().filter(o -> !longList.contains(o)).collect(Collectors.toList());
+                }
+            }
+            sceneLinkRelateDAO.deleteByIds(oldIds);
+        }
+
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)){
+            sceneLinkRelateDAO.batchInsertOrUpdate(LinkManageConvert.INSTANCE.ofSceneLinkRelateResults(sceneLinkRelateResults));
+        }
+        int matchNum = CollectionUtils.isEmpty(sceneLinkRelateResults) ? 0 : sceneLinkRelateResults.size();
+        result.setMatchNum(matchNum);
+        result.setUnMatchNum(nodeNumByType - matchNum);
+        return result;
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    public void updateBusinessFlow(Long businessFlowId, FileManageUpdateRequest scriptFile, BusinessFlowDataFileRequest businessFlowDataFileRequest) {
+        SceneResult sceneResult = sceneDAO.getSceneDetail(businessFlowId);
+        if (sceneResult == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到对应的业务流程！");
+        }
+        //取之前脚本中关联的其他文件
+        Long oldScriptDeployId = sceneResult.getScriptDeployId();
+        ScriptManageDeployDetailResponse result = new ScriptManageDeployDetailResponse();
+        result.setId(oldScriptDeployId);
+        scriptManageService.setFileList(result);
+        List<FileManageResponse> fileManageResponseList = result.getFileManageResponseList();
+
+        ScriptManageDeployUpdateRequest updateRequest = new ScriptManageDeployUpdateRequest();
+        if (scriptFile == null) {
+            List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
+                    FileTypeEnum.SCRIPT.getCode().equals(o.getFileType())).collect(Collectors.toList());
+            //更新脚本
+            if (CollectionUtils.isEmpty(businessFlowDataFileRequest.getFileManageUpdateRequests())) {
+                businessFlowDataFileRequest.setFileManageUpdateRequests(new ArrayList<>());
+            }
+            businessFlowDataFileRequest.getFileManageUpdateRequests().addAll(LinkManageConvert.INSTANCE
+                    .ofFileManageResponseList(dataFileManageResponseList));
+
+            updateRequest.setFileManageUpdateRequests(businessFlowDataFileRequest.getFileManageUpdateRequests());
+            updateRequest.setAttachmentManageUpdateRequests(businessFlowDataFileRequest.getAttachmentManageUpdateRequests());
+            updateRequest.setPluginConfigUpdateRequests(businessFlowDataFileRequest.getPluginConfigUpdateRequests());
+
+        } else {
+            List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
+                    !FileTypeEnum.SCRIPT.getCode().equals(o.getFileType())).collect(Collectors.toList());
+            List<FileManageUpdateRequest> updateFileManageRequests = new ArrayList<>();
+            updateFileManageRequests.add(scriptFile);
+            updateFileManageRequests.addAll(LinkManageConvert.INSTANCE.ofFileManageResponseList(dataFileManageResponseList));
+            updateRequest.setFileManageUpdateRequests(updateFileManageRequests);
+        }
+
+        //更新脚本
+        Long scriptDeployId = scriptManageService.updateScriptManage(updateRequest);
+        SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
+        //更新业务流程
+        sceneUpdateParam.setScriptDeployId(scriptDeployId);
+        sceneDAO.update(sceneUpdateParam);
+        //TODO 更新压测场景
+
+
+    }
+
+    private void toBusinessFlowDetailResponse(SceneResult sceneResult, BusinessFlowDetailResponse result) {
         result.setSceneLevel(sceneResult.getSceneLevel());
         result.setIsCode(sceneResult.getIsCore());
         result.setBusinessProcessName(sceneResult.getSceneName());
         result.setId(sceneResult.getId());
     }
 
-    private void dealScriptJmxNodes(List<SceneLinkRelateResult> sceneLinkRelateResults,List<ScriptJmxNode> scriptJmxNodes){
-        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)){
-            Map<String,String> xpathMd5Map = sceneLinkRelateResults.stream().filter(o -> StringUtils.isNotBlank(o.getScriptXpathMd5()))
-                    .collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5,SceneLinkRelateResult::getBusinessLinkId));
+    private void dealScriptJmxNodes(List<SceneLinkRelateResult> sceneLinkRelateResults, List<ScriptJmxNode> scriptJmxNodes) {
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
+            Map<String, String> xpathMd5Map = sceneLinkRelateResults.stream().filter(o -> StringUtils.isNotBlank(o.getScriptXpathMd5()))
+                    .collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5, SceneLinkRelateResult::getBusinessLinkId));
             List<Long> businessLinkIds = sceneLinkRelateResults.stream().map(o -> Long.parseLong(o.getBusinessLinkId())).collect(Collectors.toList());
             ActivityQueryParam activityQueryParam = new ActivityQueryParam();
             activityQueryParam.setActivityIds(businessLinkIds);
             List<ActivityListResult> activityList = activityDAO.getActivityList(activityQueryParam);
-            if (CollectionUtils.isNotEmpty(activityList)){
-                Map<String, ActivityListResult> collect = activityList.stream().collect(Collectors.toMap(o -> o.getActivityId().toString() , t -> t));
-                dealScriptJmxNodes(scriptJmxNodes,xpathMd5Map,collect);
+            if (CollectionUtils.isNotEmpty(activityList)) {
+                Map<String, ActivityListResult> collect = activityList.stream().collect(Collectors.toMap(o -> o.getActivityId().toString(), t -> t));
+                dealScriptJmxNodes(scriptJmxNodes, xpathMd5Map, collect);
             }
         }
     }
 
     /**
      * 填充处理业务活动信息
+     *
      * @param scriptJmxNodes
      * @param xpathMd5Map
      * @param activityMap
      */
-    private void dealScriptJmxNodes(List<ScriptJmxNode> scriptJmxNodes,Map<String,String> xpathMd5Map,Map<String, ActivityListResult> activityMap){
-        if (CollectionUtils.isNotEmpty(scriptJmxNodes)){
-            for (ScriptJmxNode scriptJmxNode : scriptJmxNodes){
-                if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null){
+    private void dealScriptJmxNodes(List<ScriptJmxNode> scriptJmxNodes, Map<String, String> xpathMd5Map, Map<String, ActivityListResult> activityMap) {
+        if (CollectionUtils.isNotEmpty(scriptJmxNodes)) {
+            for (ScriptJmxNode scriptJmxNode : scriptJmxNodes) {
+                if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
                     ActivityListResult activityListResult = activityMap.get(xpathMd5Map.get(scriptJmxNode.getXpathMd5()));
-                    if (activityListResult != null){
+                    if (activityListResult != null) {
                         scriptJmxNode.setBusinessApplicationName(activityListResult.getActivityName());
                         ActivityUtil.EntranceJoinEntity entranceJoinEntity;
-                        if (BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(activityListResult.getBusinessType())){
+                        if (BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(activityListResult.getBusinessType())) {
                             entranceJoinEntity = ActivityUtil.covertVirtualEntrance(activityListResult.getEntrace());
-                        }else {
+                        } else {
                             entranceJoinEntity = ActivityUtil.covertEntrance(activityListResult.getEntrace());
                         }
                         scriptJmxNode.setBusinessServicePath(entranceJoinEntity.getServiceName());
                     }
                 }
-                if (CollectionUtils.isNotEmpty(scriptJmxNode.getChildren())){
-                    dealScriptJmxNodes(scriptJmxNode.getChildren(),xpathMd5Map,activityMap);
+                if (CollectionUtils.isNotEmpty(scriptJmxNode.getChildren())) {
+                    dealScriptJmxNodes(scriptJmxNode.getChildren(), xpathMd5Map, activityMap);
                 }
             }
         }

@@ -74,8 +74,18 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
 
     @Override
     public void batchInsertOrUpdate(List<SceneLinkRelateSaveParam> saveParams) {
+        if (CollectionUtils.isEmpty(saveParams)){
+            return;
+        }
         List<SceneLinkRelateEntity> sceneLinkRelateEntities = BusinessLinkManageConvert.INSTANCE.ofSceneLinkRelateSaveParams(saveParams);
         this.saveOrUpdateBatch(sceneLinkRelateEntities);
+    }
+
+    @Override
+    public void deleteByIds(List<Long> oldIds) {
+        if (CollectionUtils.isNotEmpty(oldIds)){
+            this.removeByIds(oldIds);
+        }
     }
 
     private List<SceneLinkRelateResult> toResult(List<SceneLinkRelateEntity> entities) {

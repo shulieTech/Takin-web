@@ -38,4 +38,6 @@ public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
      * @param saveParams
      */
     void batchInsertOrUpdate(List<SceneLinkRelateSaveParam> saveParams);
+
+    void deleteByIds(List<Long> oldIds);
 }

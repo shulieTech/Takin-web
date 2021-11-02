@@ -27,6 +27,7 @@ import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
+import io.shulie.takin.web.biz.convert.activity.ActivityServiceConvert;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.*;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
@@ -710,6 +711,26 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public List<ActivityNodeState> getActivityNodeServiceState(long activityId) {
         return activityDAO.getActivityNodeServiceState(activityId);
+    }
+
+    @Override
+    public List<ActivityListResponse> queryNormalActivities(ActivityResultQueryRequest request) {
+        if (request == null){
+            return null;
+        }
+        ActivityQueryParam queryParam = new ActivityQueryParam();
+        queryParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+        if (StringUtil.isNotEmpty(request.getServiceName()) && StringUtil.isNotEmpty(request.getRpcType())
+                && StringUtil.isNotEmpty(request.getMethod())){
+            queryParam.setEntrance(ActivityUtil.buildEntrance(request.getMethod(), JmxUtil.pathGuiYi(request.getServiceName()),
+                    request.getRpcType()));
+        }
+        if (StringUtil.isNotEmpty(request.getApplicationName())){
+            queryParam.setApplicationName(request.getApplicationName());
+        }
+
+        List<ActivityListResult> activityList = activityDAO.getActivityList(queryParam);
+        return ActivityServiceConvert.INSTANCE.ofActivityList(activityList);
     }
 
     // TODO 变更逻辑后续看如何设计

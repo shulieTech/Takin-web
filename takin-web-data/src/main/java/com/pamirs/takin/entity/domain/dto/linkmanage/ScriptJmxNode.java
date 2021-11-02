@@ -1,6 +1,7 @@
 package com.pamirs.takin.entity.domain.dto.linkmanage;
 
 import io.shulie.takin.ext.content.emus.NodeTypeEnum;
+import io.shulie.takin.ext.content.emus.SamplerTypeEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -49,6 +50,9 @@ public class ScriptJmxNode {
 
     @ApiModelProperty(name = "businessServicePath", value = "业务活动链接路径")
     private String businessServicePath;
+
+    @ApiModelProperty(name = "samplerType", value = "采样器类型")
+    private SamplerTypeEnum samplerType;
 
     @ApiModelProperty(name = "children", value = "子节点")
     private List<ScriptJmxNode> children;

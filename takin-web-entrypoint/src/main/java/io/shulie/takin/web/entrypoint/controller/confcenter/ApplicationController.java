@@ -299,6 +299,22 @@ public class ApplicationController {
         return applicationService.getApplicationVisualInfo(request);
     }
 
+    @GetMapping("/application/center/app/activityList")
+    @ApiOperation("关联业务活动")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response getApplicationActivityList(@Valid ApplicationVisualInfoQueryRequest request) {
+        Response<List<ApplicationVisualInfoResponse>> response = applicationService.getApplicationVisualInfo(request);
+        List<ApplicationVisualInfoResponse> data = response.getData();
+        if (CollectionUtils.isNotEmpty(data)) {
+            Map allActiveIdAndName = data.get(0).getAllActiveIdAndName();
+            return Response.success(allActiveIdAndName);
+        }
+        return null;
+    }
+
     /**
      * 关注应用服务接口
      *
@@ -338,7 +354,7 @@ public class ApplicationController {
                 List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
                         request.getApplicationName(), "");
                 if (CollectionUtils.isNotEmpty(applicationEntrances)) {
-                    ApplicationEntrancesResponse entrancesResponse = applicationEntrances.stream()
+                    List<ApplicationEntrancesResponse> responseList = applicationEntrances.stream()
                             .filter(item -> !item.getServiceName().startsWith("PT_"))
                             .map(item -> {
                                 ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
@@ -353,8 +369,9 @@ public class ApplicationController {
                                                 item.getAppName(), item.getRpcType(), item.getExtend()));
                                 return applicationEntrancesResponse;
                                 // 增加去重
-                            }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(Collectors.toList()).get(0);
-                    request.setLinkId(entrancesResponse.getValue());
+                            }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(responseList))
+                    request.setLinkId(responseList.get(0).getValue());
                 }
                 request.setActivityName(key);
                 request.setRpcType(request.getRpcType());

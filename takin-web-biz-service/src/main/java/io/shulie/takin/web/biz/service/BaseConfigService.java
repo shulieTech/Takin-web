@@ -13,6 +13,7 @@ import io.shulie.takin.web.biz.common.CommonService;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.model.mysql.BaseConfigEntity;
+import io.shulie.takin.web.data.param.baseconfig.BaseConfigParam;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,19 +32,13 @@ public class BaseConfigService extends CommonService {
      * @return
      */
     public TBaseConfig queryByConfigCode(String configCode) {
-        QueryWrapper<BaseConfigEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq("CONFIG_CODE", configCode);
-        wrapper.and(qw ->qw.eq("tenant_id", WebPluginUtils.traceTenantId()).or().isNull("tenant_id"));
-        wrapper.and(qw -> qw.eq("env_code", WebPluginUtils.traceEnvCode()).or().isNull("env_code"));
-        wrapper.orderByDesc("tenant_id");
-        List<BaseConfigEntity> entityList = baseConfigMapper.selectList(wrapper);
-        if(CollectionUtils.isEmpty(entityList)) {
+
+        List<TBaseConfig> list = tbaseConfigDao.queryList(new BaseConfigParam(configCode));
+        if (CollectionUtils.isEmpty(list)) {
             return null;
         }
 
-        BaseConfigEntity configEntity = entityList.get(0);
-        TBaseConfig baseConfig = new TBaseConfig();
-        BeanUtils.copyProperties(configEntity, baseConfig);
+        TBaseConfig baseConfig = list.get(0);
         return baseConfig;
     }
 

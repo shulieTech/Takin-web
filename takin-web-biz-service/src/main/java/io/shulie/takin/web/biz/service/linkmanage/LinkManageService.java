@@ -13,6 +13,7 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.BusinessQueryVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.*;
 import io.shulie.takin.web.common.common.Response;
 
@@ -104,13 +105,4 @@ public interface LinkManageService {
      */
     List<BusinessActivityNameResponse> getBusinessActiveByFlowId(Long businessFlowId);
 
-    BusinessFlowDetailResponse parseScriptAndSave(BusinessFlowParseRequest businessFlowParseRequest);
-
-    BusinessFlowDetailResponse getBusinessFlowDetail(Long id);
-
-    BusinessFlowDetailResponse uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest);
-
-    BusinessFlowDetailResponse getThreadGroupDetail(Long id, String xpathMd5);
-
-    BusinessFlowMatchResponse autoMatchActivity(Long id);
 }

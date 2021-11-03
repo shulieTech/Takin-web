@@ -23,14 +23,14 @@ public interface ActivityService {
      *
      * @param request
      */
-    void createActivity(ActivityCreateRequest request);
+    Long createActivity(ActivityCreateRequest request);
 
     /**
      * 新增虚拟业务活动
      *
      * @param request
      */
-    void createVirtualActivity(VirtualActivityCreateRequest request);
+    Long createVirtualActivity(VirtualActivityCreateRequest request);
 
     /**
      * 更新业务活动

@@ -16,6 +16,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author zhaoyong
+ */
 @Data
 @ApiModel("出参类-业务流程详情出参")
 public class BusinessFlowDetailResponse extends AuthQueryResponseCommonExt implements Serializable {

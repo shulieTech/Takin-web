@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.request.activity;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ import java.io.Serializable;
  * @author zhaoyong
  */
 @Data
+@ApiModel("业务活动查询对象")
 public class ActivityResultQueryRequest implements Serializable {
 
     @ApiModelProperty("应用名")

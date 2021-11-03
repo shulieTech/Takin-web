@@ -7,6 +7,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * @author zhaoyong
+ */
 @Data
 @ApiModel("出参类-业务流程自动匹配出参")
 public class BusinessFlowMatchResponse extends AuthQueryResponseCommonExt implements Serializable {

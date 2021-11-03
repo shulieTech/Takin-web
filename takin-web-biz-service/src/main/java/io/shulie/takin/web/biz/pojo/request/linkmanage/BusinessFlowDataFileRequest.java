@@ -11,6 +11,9 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * @author zhaoyong
+ */
 @Data
 @ApiModel(value = "BusinessFlowDataFileRequest", description = "业务流程数据文件入参")
 public class BusinessFlowDataFileRequest implements Serializable {

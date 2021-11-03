@@ -101,7 +101,7 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void createActivity(ActivityCreateRequest request) {
+    public Long createActivity(ActivityCreateRequest request) {
         // 检查业务活动是否能入库
         checkActivity(request);
         ActivityCreateParam createParam = new ActivityCreateParam();
@@ -124,6 +124,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityDAO.createActivity(createParam);
         notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
             request.getMethod(), request.getRpcType(), request.getExtend());
+        return createParam.getLinkId();
     }
 
     /**
@@ -158,7 +159,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public void createVirtualActivity(VirtualActivityCreateRequest request) {
+    public Long createVirtualActivity(VirtualActivityCreateRequest request) {
         // 检查虚拟业务活动是否能入库
         checkVirtualActivity(request);
         ActivityCreateParam createParam = new ActivityCreateParam();
@@ -176,6 +177,7 @@ public class ActivityServiceImpl implements ActivityService {
         //单独字段存中间软件类型
         createParam.setServerMiddlewareType(request.getType());
         activityDAO.createActivityNew(createParam);
+        return createParam.getLinkId();
     }
 
     private void checkVirtualActivity(VirtualActivityCreateRequest request) {

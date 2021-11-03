@@ -2,9 +2,11 @@ package io.shulie.takin.web.data.dao.linkmanage;
 
 import java.util.List;
 
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
+import io.shulie.takin.web.data.param.scene.ScenePageQueryParam;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 
 /**
@@ -24,7 +26,16 @@ public interface SceneDAO {
 
     List<SceneResult> selectList(SceneQueryParam queryParam);
 
+
+
     int update(SceneUpdateParam sceneUpdateParam);
 
     SceneResult getSceneDetail(Long id);
+
+    /**
+     * 分页查询业务流程列表
+     * @param queryParam
+     * @return
+     */
+    PagingList<SceneResult> selectPageList(ScenePageQueryParam queryParam);
 }

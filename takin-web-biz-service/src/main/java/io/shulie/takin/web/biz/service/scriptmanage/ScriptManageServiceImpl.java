@@ -28,6 +28,7 @@ import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.SceneManageConstant;
+import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.common.util.parse.UrlUtil;
 import com.pamirs.takin.entity.dao.linkmanage.TBusinessLinkManageTableMapper;
 import com.pamirs.takin.entity.dao.linkmanage.TSceneLinkRelateMapper;
@@ -98,13 +99,14 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.vo.file.FileExtendVO;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.common.vo.script.ScriptDeployFinishDebugVO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.LinkManageDAO;
+import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.dao.script.ScriptDebugDAO;
+import io.shulie.takin.web.data.dao.script.ScriptManageDeployDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptTagRefDAO;
@@ -125,6 +127,7 @@ import io.shulie.takin.web.data.result.tagmanage.TagManageResult;
 import io.shulie.takin.web.diff.api.DiffFileApi;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -191,6 +194,12 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     @Autowired
     private ScriptDebugDAO scriptDebugDAO;
+
+    @Autowired
+    private ScriptManageDeployDAO scriptManageDeployDAO;
+
+    @Autowired
+    private SceneLinkRelateDAO sceneLinkRelateDAO;
 
     @Override
     public String getZipFileUrl(Long scriptDeployId) {
@@ -906,6 +915,32 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         fileManageResults = addScriptFile(partRequest, takinScriptId);
         response.setFileManageResults(fileManageResults);
         return response;
+    }
+
+    @Override
+    public List<BusinessLinkResult> listBusinessActivityByScriptDeployId(Long scriptDeployId) {
+        List<Long> businessIds = this.listBusinessActivityIdsByScriptDeployId(scriptDeployId);
+        return businessIds.isEmpty() ? Collections.emptyList()
+            : businessLinkManageDAO.selectBussinessLinkByIdList(businessIds);
+    }
+
+    @Override
+    public List<Long> listBusinessActivityIdsByScriptDeployId(Long scriptDeployId) {
+        // 根据脚本实例id获得业务活动或者业务流程id
+        ScriptManageDeployResult scriptDeploy = scriptManageDeployDAO.getById(scriptDeployId);
+        if (scriptDeploy == null) {
+            throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, "场景关联脚本不存在!");
+        }
+
+        String refType = scriptDeploy.getRefType();
+        // 获得业务活动列表
+        // 1 1的话, 直接查业务活动表, 2的话, 查web的scene表, 然后
+        if (ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE.equals(refType)) {
+            return sceneLinkRelateDAO.listBusinessLinkIdsByBusinessFlowId(
+                Long.valueOf(scriptDeploy.getRefValue()));
+        }
+
+        return Collections.singletonList(Long.valueOf(scriptDeploy.getRefValue()));
     }
 
     private List<FileManageResult> addScriptFile(WebPartRequest partRequest, Long takinScriptId) {

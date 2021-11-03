@@ -35,7 +35,6 @@ import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStartResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStatusResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
@@ -103,8 +102,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 
 /**
  * 脚本调试表(ScriptDebug)表服务实现类
@@ -446,26 +443,16 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         queryLinkDetailDTO.setStartTime(scriptDebugEntity.getCreatedAt().getTime());
         queryLinkDetailDTO.setEndTime(scriptDebugEntity.getUpdatedAt().getTime());
 
-        // 业务活动入参筛选
-        Long businessActivityId = request.getBusinessActivityId();
-        if (businessActivityId != null) {
-            // 查询, 判断
-            BusinessLinkResult businessLinkResult = businessLinkManageDAO.selectBussinessLinkById(businessActivityId);
-            ScriptDebugExceptionUtil.isRequestListError(businessLinkResult == null, "业务活动不存在!");
-
-            // 取 serviceName, 赋值
-            String entrance = businessLinkResult.getEntrace();
-            EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(entrance);
-            queryLinkDetailDTO.setServiceName(entranceJoinEntity.getServiceName());
-        }
-
         // entryList
-        List<EntranceRuleDTO> entryList = this.getEntryList(scriptDebugEntity.getScriptDeployId(),
-            request.getBusinessActivityId());
-        if (entryList.isEmpty()) {
-            return PagingList.empty();
+        if (request.getBusinessActivityId() != null) {
+            List<EntranceRuleDTO> entryList = this.getEntryList(scriptDebugEntity.getScriptDeployId(),
+                request.getBusinessActivityId());
+            if (entryList.isEmpty()) {
+                // 说明没搜到
+                return PagingList.empty();
+            }
+            queryLinkDetailDTO.setEntranceRuleDTOS(entryList);
         }
-        queryLinkDetailDTO.setEntranceRuleDTOS(entryList);
 
         // 根据 入参 type, 转换为 resultType
         Integer type = request.getType();
@@ -482,7 +469,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }
 
         // 调用大数据
-        PagingList<EntryTraceInfoDTO> entryTracePage = traceClient.listEntryTraceByTaskId(queryLinkDetailDTO);
+        PagingList<EntryTraceInfoDTO> entryTracePage = traceClient.listEntryTraceByTaskIdV2(queryLinkDetailDTO);
         List<EntryTraceInfoDTO> list = entryTracePage.getList();
         if (CollectionUtils.isEmpty(list)) {
             return PagingList.empty();
@@ -507,7 +494,6 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
 
             return response;
         }).collect(Collectors.toList());
-
         return PagingList.of(requestList, entryTracePage.getTotal());
     }
 
@@ -519,21 +505,27 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @return entryList
      */
     private List<EntranceRuleDTO> getEntryList(Long scriptDeployId, Long businessActivityId) {
-        // 脚本发布实例是否存在
-        ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDeployId);
-        ScriptDebugExceptionUtil.isCommonError(scriptDeploy == null, "脚本发布实例不存在!");
-
-        List<Long> businessActivityIds = this.listBusinessActivityIdsByScriptDeploy(scriptDeploy);
-        if (businessActivityId != null && businessActivityIds.contains(businessActivityId)) {
-            businessActivityIds = Collections.singletonList(businessActivityId);
-        }
-
-        // ids 不存在, 返回空
+        List<Long> businessActivityIds = scriptManageService.listBusinessActivityIdsByScriptDeployId(scriptDeployId);
         if (businessActivityIds.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return reportRealTimeService.getEntryListByBusinessActivityIds(businessActivityIds);
+        if (businessActivityId != null) {
+            businessActivityIds.retainAll(Collections.singletonList(businessActivityId));
+        }
+
+        if (businessActivityIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 业务活动
+        List<BusinessLinkResult> businessActivities = businessLinkManageDAO.selectBussinessLinkByIdList(businessActivityIds);
+        return businessActivities.stream().map(businessLinkResult -> {
+            EntranceRuleDTO entranceRuleDTO = new EntranceRuleDTO();
+            entranceRuleDTO.setBusinessType(businessLinkResult.getType());
+            entranceRuleDTO.setEntrance(businessLinkResult.getEntrace());
+            return entranceRuleDTO;
+        }).collect(Collectors.toList());
     }
 
     /**
@@ -685,10 +677,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             dto.setResultTypeInt(LinkRequestResultTypeEnum.FAILED.getCode());
             dto.setTaskId(newScriptDebug.getCloudReportId().toString());
             dto.setPageSize(1);
-            dto.setEntranceRuleDTOS(this.getEntryList(newScriptDebug.getScriptDeployId(), null));
             dto.setStartTime(newScriptDebug.getCreatedAt().getTime());
             dto.setEndTime(System.currentTimeMillis());
-            PagingList<EntryTraceInfoDTO> entryTracePage = traceClient.listEntryTraceByTaskId(dto);
+            PagingList<EntryTraceInfoDTO> entryTracePage = traceClient.listEntryTraceByTaskIdV2(dto);
 
             if (entryTracePage.getTotal() != 0) {
                 newScriptDebug.setFailedType(ScriptDebugFailedTypeEnum.FAILED_RESPONSE.getCode());

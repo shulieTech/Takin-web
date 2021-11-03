@@ -367,13 +367,11 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
      * 业务活动ids, 获得 entryList
      *
      * @param businessActivityIds 业务活动ids
-     *
      * @return entryList
      */
     @Override
     public List<EntranceRuleDTO> getEntryListByBusinessActivityIds(List<Long> businessActivityIds) {
         // 查询入口集合
-        //List<BusinessLinkManageTable> businessLinkManageTableList = tBusinessLinkManageTableMapper.selectBussinessLinkByIdList(businessActivityIds);
         List<BusinessLinkResult> results = businessLinkManageDAO.getListByIds(businessActivityIds);
         List<EntranceRuleDTO> entranceList = Lists.newArrayList();
         for (BusinessLinkResult result : results) {
@@ -383,7 +381,6 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
                 entrance = entrance.substring(entrance.indexOf("http"));
             }
             dto.setEntrance(entrance);
-            //entranceList.add(entrance);
             dto.setBusinessType(result.getType());
             entranceList.add(dto);
         }

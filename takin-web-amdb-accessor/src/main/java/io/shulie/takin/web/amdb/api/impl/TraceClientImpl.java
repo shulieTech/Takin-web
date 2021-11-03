@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.lang.TypeReference;
+import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Sets;
 import com.pamirs.pradar.log.parser.ProtocolParserFactory;
 import com.pamirs.pradar.log.parser.trace.RpcBased;
@@ -20,6 +22,7 @@ import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
+import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -41,6 +44,12 @@ import org.springframework.util.Assert;
 @Slf4j
 public class TraceClientImpl implements TraceClient {
 
+    /**
+     * 获得调试对应的请求流量明细
+     * 路由
+     */
+    private static final String ENTRY_TRACE_BY_TASK_ID_PATH_V2 = "/amdb/trace/getDebugTraceList";
+
     private static final String QUERY_TRACE_PATH = "/amdb/trace/getTraceDetail?traceId=@TraceId@";
 
     private static final String ENTRY_TRACE_PATH = "/amdb/trace/getEntryTraceList";
@@ -59,9 +68,8 @@ public class TraceClientImpl implements TraceClient {
     @Autowired
     private AmdbClientProperties properties;
 
-
     @Override
-    public PagingList<EntryTraceInfoDTO> listEntryTraceByTaskId(QueryLinkDetailDTO dto) {
+    public PagingList<EntryTraceInfoDTO> listEntryTraceByTaskIdV2(QueryLinkDetailDTO dto) {
         Assert.notNull(dto, "参数必须传递!");
 
         // 结果类型
@@ -72,19 +80,25 @@ public class TraceClientImpl implements TraceClient {
         dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
         dto.setEntranceList(this.getEntryListString(dto.getEntranceRuleDTOS()));
 
-        String url = properties.getUrl().getAmdb() + ENTRY_TRACE_BY_TASK_ID_PATH;
+        String url = properties.getUrl().getAmdb() + ENTRY_TRACE_BY_TASK_ID_PATH_V2;
         try {
-            AmdbResult<List<EntryTraceInfoDTO>> result = AmdbHelper.newInStance().url(url)
-                    .param(dto)
-                    .eventName("通过taskId查询链路列表")
-                    .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
-                    .list(EntryTraceInfoDTO.class);
+            String response = HttpClientUtil.sendGet(url, dto);
+            if (StringUtils.isBlank(response)) {
+                log.error("amdb 请求错误 --> 请求地址：{}，响应信息：{}, ", url, response);
+                return PagingList.empty();
+            }
 
+            AmdbResult<List<EntryTraceInfoDTO>> result = JSONUtil.toBean(response,
+                new TypeReference<AmdbResult<List<EntryTraceInfoDTO>>>() {}, true);
+            if (result == null || !result.getSuccess()) {
+                log.error("amdb 请求错误 --> 请求地址：{}，响应信息：{}, 返回数据不存在!", url, response);
+                return PagingList.empty();
+            }
             return PagingList.of(result.getData(), result.getTotal());
 
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage());
+            log.error("amdb 请求错误 --> 请求地址：{}!, 错误信息: {}", e.getMessage(), e);
+            return PagingList.empty();
         }
     }
 

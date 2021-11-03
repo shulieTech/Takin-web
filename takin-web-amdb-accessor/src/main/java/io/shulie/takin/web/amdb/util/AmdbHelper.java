@@ -220,7 +220,7 @@ public class AmdbHelper {
      * @param clazz
      * @param <T>
      */
-    public static <T> void debug(String resultJson, Class<T> clazz) {
+    public static <T> void debugList(String resultJson, Class<T> clazz) {
         AmdbResult<List<T>> amdbResponse = JSONUtil.toBean(resultJson,
             new TypeReference<AmdbResult<List<T>>>() {
             }, true);
@@ -234,11 +234,12 @@ public class AmdbHelper {
      * @param clazz
      * @param <T>
      */
-    public static <T> void debugList(String resultJson, Class<T> clazz) {
+    public static <T> void debugOne(String resultJson, Class<T> clazz) {
         AmdbResult<T> amdbResponse = JSONUtil.toBean(resultJson,
             new TypeReference<AmdbResult<T>>() {
             }, true);
         log.info(JSON.toJSONString(amdbResponse));
+        amdbResponse.setData(JSON.parseObject(JSON.toJSONString(amdbResponse.getData()), clazz));
     }
 
 }

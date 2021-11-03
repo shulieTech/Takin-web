@@ -79,6 +79,10 @@ public class DateUtils {
         return time;
     }
 
+    public static String formatLocalDateTime(LocalDateTime localDateTime) {
+        return localDateTime.format(LONG_FORMAT);
+    }
+
     public static LocalDateTime parseLocalDateTime(String text) {
         try {
             return LocalDateTime.parse(text, LONG_FORMAT);

@@ -110,4 +110,7 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
      */
     @TableField(value = "SERVER_MIDDLEWARE_TYPE")
     private String serverMiddlewareType;
+
+    @TableField(value = "persistence")
+    private boolean persistence = true;
 }

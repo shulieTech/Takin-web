@@ -37,5 +37,6 @@
         AND lmt.APPLICATION_NAME = #{appName}
         AND blmt.TENANT_ID = #{tenantId}
         AND blmt.IS_DELETED = 0
+        AND blmt.persistence = 1
     </select>
 </mapper>

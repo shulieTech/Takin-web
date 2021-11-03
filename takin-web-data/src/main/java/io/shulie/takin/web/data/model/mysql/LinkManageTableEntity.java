@@ -112,6 +112,8 @@ public class LinkManageTableEntity extends UserBaseEntity {
     @TableField(value = "features")
     private String features;
 
+    @TableField(value = "persistence")
+    private boolean persistence = true;
 
     public static final String COL_LINK_ID = "LINK_ID";
 

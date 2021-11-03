@@ -50,6 +50,8 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -69,6 +71,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -333,6 +343,27 @@ public class ApplicationController {
         return applicationService.getApplicationVisualInfo(request);
     }
 
+    @GetMapping("/application/center/app/activityList")
+    @ApiOperation("关联业务活动")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response getApplicationActivityList(@Valid ApplicationVisualInfoQueryRequest request) {
+        Response<List<ApplicationVisualInfoResponse>> response = applicationService.getApplicationVisualInfo(request);
+        List<ApplicationVisualInfoResponse> data = response.getData();
+        if (CollectionUtils.isNotEmpty(data)) {
+            Map allActiveIdAndName = data.get(0).getAllActiveIdAndName();
+            ArrayList<Map.Entry> activityList = new ArrayList<>();
+            if (null != allActiveIdAndName && !allActiveIdAndName.isEmpty()) {
+                Set<Map.Entry> set = allActiveIdAndName.entrySet();
+                set.forEach(entry->activityList.add(entry));
+            }
+            return Response.success(activityList);
+        }
+        return null;
+    }
+
     /**
      * 关注应用服务接口
      *
@@ -363,37 +394,42 @@ public class ApplicationController {
         // todo 有可能要修改
         String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.traceTenantId() + WebPluginUtils.traceEnvCode());
         BusinessLinkManageTableEntity entity = activityService.getActivityByName(key);
+
+        boolean isTempActivity = true;
         if (null != entity) {
-            result.put(entity.getLinkId(), false);
+            result.put(entity.getLinkId(), isTempActivity);
         } else {
             entity = activityService.getActivity(request);
             if (null != entity) {
-                result.put(entity.getLinkId(), true);
+                result.put(entity.getLinkId(), false);
+            } else {
+                List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
+                        request.getApplicationName(), "");
+                if (CollectionUtils.isNotEmpty(applicationEntrances)) {
+                    List<ApplicationEntrancesResponse> responseList = applicationEntrances.stream()
+                            .filter(item -> !item.getServiceName().startsWith("PT_"))
+                            .map(item -> {
+                                ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
+                                applicationEntrancesResponse.setMethod(item.getMethodName());
+                                applicationEntrancesResponse.setRpcType(item.getRpcType());
+                                applicationEntrancesResponse.setExtend(item.getExtend());
+                                applicationEntrancesResponse.setServiceName(item.getServiceName());
+                                applicationEntrancesResponse.setLabel(
+                                        ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
+                                applicationEntrancesResponse.setValue(
+                                        ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
+                                                item.getAppName(), item.getRpcType(), item.getExtend()));
+                                return applicationEntrancesResponse;
+                                // 增加去重
+                            }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(responseList))
+                    request.setLinkId(responseList.get(0).getValue());
+                }
+                request.setActivityName(key);
+                request.setRpcType(request.getRpcType());
+                applicationService.gotoActivityInfo(request);
+                result.put(activityService.getActivityByName(key).getLinkId(), isTempActivity);
             }
-            List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                    request.getApplicationName(), "");
-            ApplicationEntrancesResponse entrancesResponse = applicationEntrances.stream()
-                    .filter(item -> !item.getServiceName().startsWith("PT_"))
-                    .map(item -> {
-                        ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
-                        applicationEntrancesResponse.setMethod(item.getMethodName());
-                        applicationEntrancesResponse.setRpcType(item.getRpcType());
-                        applicationEntrancesResponse.setExtend(item.getExtend());
-                        applicationEntrancesResponse.setServiceName(item.getServiceName());
-                        applicationEntrancesResponse.setLabel(
-                                ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
-                        applicationEntrancesResponse.setValue(
-                                ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
-                                        item.getAppName(), item.getRpcType(), item.getExtend()));
-                        return applicationEntrancesResponse;
-                        // 增加去重
-                    }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(Collectors.toList()).get(0);
-
-            request.setActivityName(key);
-            request.setLinkId(entrancesResponse.getValue());
-            request.setRpcType(entrancesResponse.getRpcType());
-            applicationService.gotoActivityInfo(request);
-            result.put(activityService.getActivityByName(key).getLinkId(), false);
         }
         return result;
     }

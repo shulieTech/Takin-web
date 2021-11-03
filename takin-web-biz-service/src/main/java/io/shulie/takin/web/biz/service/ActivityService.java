@@ -35,6 +35,8 @@ public interface ActivityService {
      */
     void createActivity(ActivityCreateRequest request);
 
+    void createActivityWithoutAMDB(ActivityCreateRequest request);
+
     /**
      * 新增虚拟业务活动
      *

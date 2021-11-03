@@ -138,6 +138,32 @@ public class ActivityServiceImpl implements ActivityService {
             request.getMethod(), request.getRpcType(), request.getExtend());
     }
 
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
+    public void createActivityWithoutAMDB(ActivityCreateRequest request) {
+        // 检查业务活动是否能入库
+        checkActivity(request);
+        ActivityCreateParam createParam = new ActivityCreateParam();
+        createParam.setActivityName(request.getActivityName());
+        createParam.setEntranceName(request.getServiceName());
+        createParam.setIsChange(false);
+        createParam.setApplicationName(request.getApplicationName());
+        createParam.setType(request.getType());
+        createParam.setActivityLevel(request.getActivityLevel());
+        createParam.setIsCore(request.getIsCore());
+        createParam.setBusinessDomain(request.getBusinessDomain());
+        createParam.setRpcType(request.getRpcType());
+        createParam.setMethod(request.getMethod());
+        createParam.setServiceName(request.getServiceName());
+        createParam.setExtend(request.getExtend());
+        createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+        createParam.setEntrance(
+                ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
+                        request.getRpcType()));
+        createParam.setPersistence(request.isPersistence());
+        activityDAO.createActivity(createParam);
+    }
+
     /**
      * 检查正常业务活动
      *
@@ -442,7 +468,7 @@ public class ActivityServiceImpl implements ActivityService {
         provider.setAllSqlTotalRtBottleneckType(rateBottleneckType);
 
         if (applicationVisualInfoResponse.getRequestCount() != 0) { // 如果不是初始值，再计算瓶颈
-            linkTopologyService.computeBottleneck(startDateTime, null, bottleneckConfig, provider);
+            linkTopologyService.computeBottleneck(startDateTime.minusHours(8), null, bottleneckConfig, provider);
         }
 
         ActivityBottleneckResponse activityBottleneckResponse = new ActivityBottleneckResponse();
@@ -486,26 +512,24 @@ public class ActivityServiceImpl implements ActivityService {
         LocalDateTime endTime = request.getEndTime();
         LocalDateTime allTotalCountStartDateTime = startTime;
 
-        if (null == startTime && null == endTime) {
-            /*
-            如果 起始时间 和 结束时间 为空，默认 查询5分钟的数据
-            总的 (TPS / RT)（最近5 min）
-            line : 成功率（最近5 min）
-            */
+        if (null == startTime || null == endTime) {
+            // 如果 起始时间 和 结束时间 为空，默认 查询5分钟的数据
             endTime = LocalDateTime.now().minusHours(8);
             startTime = endTime.minusMinutes(5);
 
             // line : 总调用量 startTime, 最近5 min
 //            allTotalCountStartDateTime = endTime.minusDays(1);
             allTotalCountStartDateTime = startTime;
+        } else {
+            startTime.minusHours(8);
+            endTime.minusHours(8);
         }
 
         linkTopologyService.fillMetrics(
-                request.getActivityId(),
+                request,
                 activity.getTopology(),
                 startTime, endTime,
-                allTotalCountStartDateTime,
-                request.getFlowTypeEnum());
+                allTotalCountStartDateTime);
 
         return activity;
     }
@@ -521,12 +545,16 @@ public class ActivityServiceImpl implements ActivityService {
             return activity;
         }
 
+        ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
+        request.setActivityId(activityId);
+        request.setFlowTypeEnum(FlowTypeEnum.BLEND);
+
         linkTopologyService.fillMetrics(
-                activityId,
+                request,
                 activity.getTopology(),
                 startDateTime, endDateTime,
                 //默认不区分流量类型，按照混合流量查询
-                startDateTime, FlowTypeEnum.BLEND);
+                startDateTime);
 
         return activity;
     }
@@ -796,7 +824,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
         BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
         Map linkNameAndId = serviceList.get(0);
-        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkeId").toString()));
+        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkId").toString()));
         businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName").toString());
         return businessLinkManageTableEntity;
     }

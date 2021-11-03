@@ -369,6 +369,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         param.put("pageSize", queryParam.getPageSize());
         param.put("pageNum", queryParam.getCurrentPage());
         param.put("applicationIds", queryParam.getApplicationIds());
+
         PageInfo<TApplicationMnt> pageInfo = confCenterService.queryApplicationList(param);
         List<TApplicationMnt> list = pageInfo.getList();
         List<ApplicationVo> applicationVoList = appEntryListToVoList(list);
@@ -1156,7 +1157,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public void gotoActivityInfo(ActivityCreateRequest request) {
-        activityService.createActivity(request);
+        activityService.createActivityWithoutAMDB(request);
     }
 
 
@@ -1215,7 +1216,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     private Map<List<ApplicationVisualInfoResponse>, Integer> doSortAndPageAndConvertActivityId(List<ApplicationVisualInfoResponse> data, List<String> attentionList, String orderBy, int pageSize, int current, int total,String nameActivity) {
-        if (CollectionUtils.isEmpty(data) || data.size() <= pageSize * (current)) {
+        if (CollectionUtils.isEmpty(data)) {
             return null;
         }
 
@@ -1243,6 +1244,37 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             dto.setActiveIdAndName(activityResult);
             return dto;
         }).collect(Collectors.toList());
+                    dto.setAttend(attentionList.contains(dto.getServiceAndMethod()));
+                    String[] activeList = dto.getActiveList();
+                    Map<String, String> activityResult = new HashMap<>();
+                    if (activeList != null) {
+                        for (String active : activeList) {
+                            String[] split = active.split("#");
+                            String appName = split[0];
+                            String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
+                            List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
+                            if (!CollectionUtils.isEmpty(serviceList)) {
+                                serviceList.stream().forEach(serviceName -> activityResult.put(String.valueOf(serviceName.get("linkId")), serviceName.get("linkName")));
+                            }
+                        }
+                    }
+                    dto.setActiveIdAndName(activityResult);
+                    String[] allActiveList = dto.getAllActiveList();
+                    Map<String, String> allActivityResult = new HashMap<>();
+                    if (allActiveList != null) {
+                        for (String active : allActiveList) {
+                            String[] split = active.split("#");
+                            String appName = split[0];
+                            String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
+                            List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
+                            if (!CollectionUtils.isEmpty(serviceList)) {
+                                serviceList.stream().forEach(serviceName -> allActivityResult.put(split[1] + "#" + split[2], serviceName.get("linkName")));
+                            }
+                        }
+                    }
+                    dto.setAllActiveIdAndName(allActivityResult);
+                    return dto;
+                }).collect(Collectors.toList());
 
         Map result = new HashMap<>();
         result.put(visualInfoDTOList, total);

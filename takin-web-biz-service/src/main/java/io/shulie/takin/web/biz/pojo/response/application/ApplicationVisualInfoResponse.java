@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -49,9 +50,18 @@ public class ApplicationVisualInfoResponse implements Serializable {
      */
     private String[] activeList;
     /**
+     * 关联关联业务活动名称
+     */
+    private String[] allActiveList;
+
+    /**
      * 关联业务活动名称
      */
     private Map activeIdAndName;
+    /**
+     * 关联业务活动名称
+     */
+    private Map allActiveIdAndName;
     /**
      * 是否关注
      */

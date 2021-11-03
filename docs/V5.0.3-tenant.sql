@@ -882,3 +882,7 @@ update e_patrol_scene_chain set env_code='test',tenant_id=1;
 update e_patrol_scene_check set env_code='test',tenant_id=1;
 
 ----- 兮曦 -----
+
+
+alter table t_application_mnt
+    ADD INDEX `idx_application_id` ( `application_id` );

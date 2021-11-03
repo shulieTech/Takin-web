@@ -429,22 +429,19 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (accessStatus == null) {
             return getApplicationList(param);
         }
-
         //进行内存分页
+        Integer pageSize = param.getPageSize();
+        Integer currentPage = param.getCurrentPage();
         param.setPageSize(-1);
         Response<List<ApplicationVo>> response = getApplicationList(param);
         List<ApplicationVo> voList = response.getData();
         if (CollectionUtils.isEmpty(voList)) {
             return response;
         }
-        List<ApplicationVo> filterData = voList.stream().filter(vo -> vo.getAccessStatus().equals(accessStatus))
-                .collect(Collectors.toList());
-
-        Integer pageSize = param.getPageSize();
-        Integer currentPage = param.getCurrentPage();
         currentPage = currentPage - 1;
+        List<ApplicationVo> filterData = voList.stream().filter(vo -> vo.getAccessStatus().equals(accessStatus))
+            .collect(Collectors.toList());
         List<ApplicationVo> page = PageUtils.getPage(true, currentPage, pageSize, filterData);
-
         return Response.success(page, CollectionUtils.isEmpty(filterData) ? 0 : filterData.size());
     }
 

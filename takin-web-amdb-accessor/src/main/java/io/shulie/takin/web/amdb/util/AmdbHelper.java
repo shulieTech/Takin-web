@@ -124,77 +124,15 @@ public class AmdbHelper {
             return amdbResponse;
         }
 
+
         /**
-         * 返回amdb的数据集合
-         *
-         * @param clazz 需要被转化的VO class
-         * @param <T>
-         * @return
-         */
+        * 返回amdb的数据集合
+        *
+        * @param clazz 需要被转化的VO class
+        * @param <T>
+        * @return
+        */
         public <T> AmdbResult<List<T>> list(Class<T> clazz) {
-            Assert.notNull(this.url, "url 不能为空！");
-            Assert.notNull(this.exception, "exception 不能为空！");
-            Assert.notNull(this.eventName, "eventName 不能为空！");
-            if (this.httpMethod == null) {
-                this.httpMethod = HttpMethod.GET;
-            }
-            String responseEntity = "";
-            if (this.httpMethod.equals(HttpMethod.GET)) {
-                responseEntity = (this.param == null ? HttpClientUtil.sendGet(url) : HttpClientUtil.sendGet(url,
-                    this.param));
-                this.eventName += "【GET】";
-            } else if (this.httpMethod.equals(HttpMethod.POST)) {
-                Assert.notNull(this.param, "param 不能为空！");
-                responseEntity = HttpClientUtil.sendPost(url, this.param);
-                this.eventName += "【POST】";
-            }
-            this.eventName = "AMDB" + this.eventName;
-            if (StringUtils.isBlank(responseEntity)) {
-                log.error("{}返回为空,请求地址：{}，请求参数：{}", this.eventName, this.url, JSON.toJSONString(this.param));
-                throw new TakinWebException(this.exception, this.eventName + "返回为空！");
-            }
-            AmdbResult<List<T>> amdbResponse = JSONUtil.toBean(responseEntity,
-    public <T> AmdbResult<T> getData() {
-        Assert.notNull(this.url, "url 不能为空！");
-        Assert.notNull(this.exception, "exception 不能为空！");
-        Assert.notNull(this.eventName, "eventName 不能为空！");
-        if (this.httpMethod == null) {
-            this.httpMethod = HttpMethod.GET;
-        }
-        Assert.notNull(this.httpMethod, "httpMethod 不能为空！");
-        String responseEntity = "";
-        if (this.httpMethod.equals(HttpMethod.GET)) {
-            responseEntity = (this.param == null ? HttpClientUtil.sendGet(url) : HttpClientUtil.sendGet(url, this.param));
-            this.eventName += "【GET】";
-        } else if (this.httpMethod.equals(HttpMethod.POST)) {
-            Assert.notNull(this.param, "param 不能为空！");
-            responseEntity = HttpClientUtil.sendPost(url, this.param);
-            this.eventName += "【POST】";
-        }
-        this.eventName = "AMDB" + this.eventName;
-        if (StringUtils.isBlank(responseEntity)) {
-            log.error("{}返回为空,请求地址：{}，请求参数：{}，响应体为空", this.eventName, this.url, JSON.toJSONString(this.param));
-            throw new TakinWebException(this.exception, this.eventName + "返回为空！");
-        }
-        AmdbResult<T> amdbResponse = JSONUtil.toBean(responseEntity,
-                new TypeReference<AmdbResult<T>>() {
-                }, true);
-
-        if (amdbResponse == null || !amdbResponse.getSuccess()) {
-            log.error("{}返回异常,请求地址：{}，响应体：{},{}", this.eventName, this.url, responseEntity, ",\"可通过arthas命令 watch io.shulie.takin.web.amdb.util.AmdbHelper param '{params,returnObj,throwExp}'  -n 5  -x 3  获取参数！\"");
-            throw new TakinWebException(this.exception, this.eventName + "返回异常！");
-        }
-        return amdbResponse;
-    }
-
-    /**
-     * 返回amdb的数据集合
-     *
-     * @param clazz 需要被转化的VO class
-     * @param <T>
-     * @return
-     */
-    public <T> AmdbResult<List<T>> list(Class<T> clazz) {
         Assert.notNull(this.url, "url 不能为空！");
         Assert.notNull(this.exception, "exception 不能为空！");
         Assert.notNull(this.eventName, "eventName 不能为空！");
@@ -237,7 +175,43 @@ public class AmdbHelper {
             return amdbResponse;
         }
 
+        public <T> AmdbResult<T> getData() {
+            Assert.notNull(this.url, "url 不能为空！");
+            Assert.notNull(this.exception, "exception 不能为空！");
+            Assert.notNull(this.eventName, "eventName 不能为空！");
+            if (this.httpMethod == null) {
+                this.httpMethod = HttpMethod.GET;
+            }
+            Assert.notNull(this.httpMethod, "httpMethod 不能为空！");
+            String responseEntity = "";
+            if (this.httpMethod.equals(HttpMethod.GET)) {
+                responseEntity = (this.param == null ? HttpClientUtil.sendGet(url) : HttpClientUtil.sendGet(url, this.param));
+                this.eventName += "【GET】";
+            } else if (this.httpMethod.equals(HttpMethod.POST)) {
+                Assert.notNull(this.param, "param 不能为空！");
+                responseEntity = HttpClientUtil.sendPost(url, this.param);
+                this.eventName += "【POST】";
+            }
+            this.eventName = "AMDB" + this.eventName;
+            if (StringUtils.isBlank(responseEntity)) {
+                log.error("{}返回为空,请求地址：{}，请求参数：{}，响应体为空", this.eventName, this.url, JSON.toJSONString(this.param));
+                throw new TakinWebException(this.exception, this.eventName + "返回为空！");
+            }
+            AmdbResult<T> amdbResponse = JSONUtil.toBean(responseEntity,
+                new TypeReference<AmdbResult<T>>() {
+                }, true);
+
+            if (amdbResponse == null || !amdbResponse.getSuccess()) {
+                log.error("{}返回异常,请求地址：{}，响应体：{},{}", this.eventName, this.url, responseEntity, ",\"可通过arthas命令 watch io.shulie.takin.web.amdb.util.AmdbHelper param '{params,returnObj,throwExp}'  -n 5  -x 3  获取参数！\"");
+                throw new TakinWebException(this.exception, this.eventName + "返回异常！");
+            }
+            return amdbResponse;
+        }
+
     }
+
+
+
 
     /**
      * 用于单元测试调试amdb返回json 排查问题

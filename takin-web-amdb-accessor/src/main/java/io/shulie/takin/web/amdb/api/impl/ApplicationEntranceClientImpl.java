@@ -81,7 +81,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         String url = properties.getUrl().getAmdb() + QUERY_TEMP_ACTIVITY_METRICS_STEP1;
 
         try {
-            AmdbResult<String> amdbResponse = AmdbHelper.newInStance().url(url)
+            AmdbResult<String> amdbResponse = AmdbHelper.builder().url(url)
                     .httpMethod(HttpMethod.POST)
                     .param(tempTopologyQuery1)
                     .eventName("查询临时业务活动指标step1")
@@ -101,7 +101,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         String url = properties.getUrl().getAmdb() + QUERY_TEMP_ACTIVITY_METRICS_STEP2;
 
         try {
-            AmdbResult<JSONObject> amdbResponse = AmdbHelper.newInStance().url(url)
+            AmdbResult<JSONObject> amdbResponse = AmdbHelper.builder().url(url)
                     .httpMethod(HttpMethod.POST)
                     .param(tempTopologyQuery1)
                     .eventName("查询临时业务活动指标step2")

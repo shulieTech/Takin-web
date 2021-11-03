@@ -23,6 +23,28 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.alibaba.fastjson.JSONObject;
+
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -2322,6 +2344,16 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 return Response.fail(FALSE_CORE, "当前用户为空", null);
             }
             uid = WebPluginUtils.traceTenantId();
+        if (WebPluginUtils.checkUserData()) {
+            if (uid == null) {
+                UserExt user = WebPluginUtils.getUser();
+                if (user == null) {
+                    return Response.fail(FALSE_CORE, "当前用户为空", null);
+                }
+                uid = user.getCustomerId();
+            }
+        } else {
+            uid = WebPluginUtils.getCustomerId();
         }
 
         String realStatus = getUserSilenceSwitchFromRedis(uid);

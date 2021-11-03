@@ -257,6 +257,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         String envCode = WebPluginUtils.traceEnvCode();
         String flag = AgentDownloadUrlVerifyUtil.generatorFlag(projectName, tenantAppKey, userId, version, envCode,
             expireDate);
+        String userAppKey = WebPluginUtils.getTenantUserAppKey();
+        String flag = AgentDownloadUrlVerifyUtil.generatorFlag(projectName, userAppKey, version, expireDate);
         urlPrefix = urlPrefix.endsWith("/") ? urlPrefix.substring(0, urlPrefix.length() - 1) : urlPrefix;
         return String.format(AGENT_DOWNLOAD_TEMPLATE, urlPrefix, projectName, tenantAppKey, userId, version, envCode,
             expireDate, flag);

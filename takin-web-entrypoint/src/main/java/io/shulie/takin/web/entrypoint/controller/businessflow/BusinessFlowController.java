@@ -30,7 +30,7 @@ import javax.validation.constraints.NotNull;
 
 @Slf4j
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(APIUrls.TAKIN_API_URL + "businessFlow")
 @Api(tags = "businessFlow", value = "业务流程接口")
 public class BusinessFlowController {
 

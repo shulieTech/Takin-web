@@ -1,19 +1,18 @@
 package io.shulie.takin.web.data.dao.perfomanceanaly;
 
+import java.util.List;
+import java.util.Map;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.web.data.common.InfluxDatabaseWriter;
 import io.shulie.takin.web.data.param.machine.PressureMachineLogInsertParam;
 import io.shulie.takin.web.data.param.machine.PressureMachineLogQueryParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineLogResult;
-import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineStatisticsResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author mubai
@@ -44,11 +43,11 @@ public class PressureMachineLogDaoImpl implements PressureMachineLogDao {
         if (StringUtils.isBlank(time)) {
             return;
         }
-        String influxDatabaseSql = "delete" +
-                " from t_pressure_machine_log" +
-                " where time <= '" + time + "'";
-
-        influxDatabaseWriter.query(influxDatabaseSql, PressureMachineStatisticsResult.class);
+        //String influxDatabaseSql = "delete" +
+        //        " from t_pressure_machine_log" +
+        //        " where time <= '" + time + "'";
+        //
+        //influxDatabaseWriter.query(influxDatabaseSql, PressureMachineStatisticsResult.class);
 
     }
 

@@ -213,10 +213,10 @@ public class PerformanceBaseDataDAOImpl implements PerformanceBaseDataDAO {
 
     @Override
     public void clearData(String time) {
-        if (!StringUtils.isBlank(time)) {
-            influxDatabaseWriter.query(String.format("delete from t_performance_base_data where time <= '%s'", time),
-                PerformanceBaseDataResult.class);
-        }
+        //if (!StringUtils.isBlank(time)) {
+        //    influxDatabaseWriter.query(String.format("delete from t_performance_base_data where time <= '%s'", time),
+        //        PerformanceBaseDataResult.class);
+        //}
     }
 
 }

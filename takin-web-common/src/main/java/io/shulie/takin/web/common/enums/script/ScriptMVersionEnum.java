@@ -8,7 +8,12 @@ import lombok.Getter;
 public enum ScriptMVersionEnum {
 
     /**
-     * 脚本m版本
+     * 脚本m版本,0 之前版本
+     */
+    SCRIPT_M_0(0),
+
+    /**
+     * 脚本m版本,1 业务流程jmeter上传生成脚本版本
      */
     SCRIPT_M_1(1),
     ;

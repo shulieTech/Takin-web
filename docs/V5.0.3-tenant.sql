@@ -306,16 +306,10 @@ ALTER TABLE `t_middleware_info`
 ALTER TABLE `t_middleware_jar`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
-ALTER TABLE `t_middleware_jar_copy1`
-    ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
-    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_middleware_link_relate`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_middleware_summary`
-    ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
-    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
-ALTER TABLE `t_middleware_summary_copy1`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_migration_history`
@@ -416,13 +410,9 @@ ALTER TABLE `t_login_record`
 ALTER TABLE `t_middleware_info` ADD UNIQUE INDEX `idx_name_version_tenant_env` ( `MIDDLEWARE_NAME`, `MIDDLEWARE_VERSION`, `tenant_id`, `env_code` );
 ALTER TABLE `t_middleware_jar`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE `t_middleware_jar_copy1`
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_middleware_link_relate`
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+    ADD UNIQUE INDEX `idx_middleware_tech_link_tenant_env` ( `MIDDLEWARE_ID`,`TECH_LINK_ID`,`tenant_id`,`env_code` );
 ALTER TABLE `t_middleware_summary`
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE `t_middleware_summary_copy1`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_migration_history`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );

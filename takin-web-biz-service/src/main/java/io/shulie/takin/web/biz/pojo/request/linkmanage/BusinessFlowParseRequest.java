@@ -14,7 +14,6 @@ import javax.validation.constraints.NotNull;
 @ApiModel(value = "BusinessFlowParseRequest", description = "业务流程解析脚本文件入参")
 public class BusinessFlowParseRequest {
 
-    @NotNull
     @ApiModelProperty(name = "id", value = "业务流程id")
     private Long id;
 

@@ -19,12 +19,10 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 
@@ -49,7 +47,7 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.CREATE
     )
-    public ResponseResult<BusinessFlowDetailResponse> parseScriptAndSave(BusinessFlowParseRequest businessFlowParseRequest) {
+    public ResponseResult<BusinessFlowDetailResponse> parseScriptAndSave(@RequestBody BusinessFlowParseRequest businessFlowParseRequest) {
         try {
             BusinessFlowDetailResponse sceneDetailDto = sceneService.parseScriptAndSave(businessFlowParseRequest);
             return ResponseResult.success(sceneDetailDto);
@@ -70,7 +68,7 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.UPDATE
     )
-    public ResponseResult<BusinessFlowDetailResponse> uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest) {
+    public ResponseResult<BusinessFlowDetailResponse> uploadDataFile(@RequestBody BusinessFlowDataFileRequest businessFlowDataFileRequest) {
         try {
             BusinessFlowDetailResponse sceneDetailDto = sceneService.uploadDataFile(businessFlowDataFileRequest);
             return ResponseResult.success(sceneDetailDto);
@@ -112,7 +110,7 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.UPDATE
     )
-    public ResponseResult<Boolean> matchActivity(SceneLinkRelateRequest sceneLinkRelateRequest) {
+    public ResponseResult<Boolean> matchActivity(@RequestBody SceneLinkRelateRequest sceneLinkRelateRequest) {
         try {
             sceneService.matchActivity(sceneLinkRelateRequest);
             return ResponseResult.success(Boolean.TRUE);
@@ -156,7 +154,11 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.QUERY
     )
-    public ResponseResult<PagingList<BusinessFlowListResponse>> getBusinessFlowList(BusinessFlowPageQueryRequest queryRequest) {
+    public ResponseResult<PagingList<BusinessFlowListResponse>> getBusinessFlowList(@ApiParam("业务流程名称") String businessFlowName, Integer current, Integer pageSize) {
+        BusinessFlowPageQueryRequest queryRequest = new BusinessFlowPageQueryRequest();
+        queryRequest.setCurrent(current);
+        queryRequest.setPageSize(pageSize);
+        queryRequest.setBusinessFlowName(businessFlowName);
         PagingList<BusinessFlowListResponse> dto = sceneService.getBusinessFlowList(queryRequest);
         return ResponseResult.success(dto);
     }

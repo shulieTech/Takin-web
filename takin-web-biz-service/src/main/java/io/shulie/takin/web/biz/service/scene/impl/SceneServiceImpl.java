@@ -268,6 +268,7 @@ public class SceneServiceImpl implements SceneService {
         if (sceneResult == null) {
             return result;
         }
+
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
         //将节点树处理成线程组在最外层的形式
         List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.THREAD_GROUP, scriptNodes);
@@ -482,6 +483,7 @@ public class SceneServiceImpl implements SceneService {
         result.setIsCode(sceneResult.getIsCore());
         result.setBusinessProcessName(sceneResult.getSceneName());
         result.setId(sceneResult.getId());
+        result.setScriptDeployId(sceneResult.getScriptDeployId());
     }
 
     private void dealScriptJmxNodes(List<SceneLinkRelateResult> sceneLinkRelateResults, List<ScriptJmxNode> scriptJmxNodes) {

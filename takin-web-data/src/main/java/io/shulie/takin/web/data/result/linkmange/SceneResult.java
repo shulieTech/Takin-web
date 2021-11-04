@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.result.linkmange;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * @author fanxx
@@ -44,12 +45,12 @@ public class SceneResult {
     /**
      * 创建时间
      */
-    private LocalDateTime createTime;
+    private Date createTime;
 
     /**
      * 更新时间
      */
-    private LocalDateTime updateTime;
+    private Date updateTime;
 
     /**
      * 场景类型，标识1为jmeter上传，默认0

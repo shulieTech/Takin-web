@@ -55,6 +55,9 @@ public class BusinessFlowDetailResponse extends AuthQueryResponseCommonExt imple
     @JsonProperty("updateTime")
     private Date gmtUpdate;
 
+    @ApiModelProperty(name = "scriptDeployId", value = "脚本实例id")
+    private Long scriptDeployId;
+
     @ApiModelProperty(name = "scriptVersion", value = "脚本版本")
     private Integer scriptVersion;
 

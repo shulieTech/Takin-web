@@ -14,7 +14,7 @@ public class TenantConfigExt {
     /**
      * 配置名
      */
-    private String configName;
+    private String configKey;
     /**
      * 配置内容
      */

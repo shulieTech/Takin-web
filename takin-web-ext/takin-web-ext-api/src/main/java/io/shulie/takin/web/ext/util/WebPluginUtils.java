@@ -45,6 +45,7 @@ public class WebPluginUtils {
     public static String DEFAULT_TENANT_CODE = "default";
 
 
+
     public static Long DEFAULT_USER_ID = -1L;
 
     private static WebUserExtApi userApi;
@@ -512,7 +513,8 @@ public class WebPluginUtils {
      * @param envCode
      * @return
      */
-    public static TenantConfigExt getTenantConfig(String tenantAppKey, String envCode) {
+    public static List<TenantConfigExt> getTenantConfig(String tenantAppKey, String envCode) {
+
         if (Objects.nonNull(tenantExtApi)) {
             return tenantExtApi.getTenantConfig(tenantAppKey,envCode);
         }
@@ -522,7 +524,7 @@ public class WebPluginUtils {
             return userApi.getTenantConfig(envCode);
         }
         // 开源版本
-        return new TenantConfigExt();
+        return Lists.newArrayList();
     }
 
     /**

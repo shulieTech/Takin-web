@@ -3,6 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.tenant;
 import java.util.List;
 
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.util.TenantUtils;
 import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
@@ -10,6 +11,8 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +31,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(ApiUrls.TAKIN_API_URL +"tenant")
 @Api(tags = "租户接口")
 public class TenantController {
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @GetMapping
     @ApiOperation("获取租户列表 以及 环境列表")
@@ -51,18 +57,19 @@ public class TenantController {
         WebPluginUtils.switchEnv(ext);
     }
 
-    @PutMapping("/config")
+    @GetMapping("/config")
     @ApiOperation("获取租户配置，无需登录")
-    public TenantConfigExt getConfig(@RequestParam(value = "tenantAppKey",required = false) String tenantAppKey,
+    public List<TenantConfigExt> getConfig(@RequestParam(value = "tenantAppKey",required = false) String tenantAppKey,
         @RequestParam(value = "envCode",required = false) String envCode) {
-        // 默认
-        if(StringUtils.isBlank(tenantAppKey)) {
-            tenantAppKey = WebPluginUtils.DEFAULT_TENANT_APP_KEY;
+
+        // 先从缓存获取
+        String tenantConfigRedisKey = TenantUtils.getTenantConfigRedisKey();
+        if (redisTemplate.hasKey(tenantConfigRedisKey)) {
+            return (List<TenantConfigExt>)redisTemplate.opsForValue().get(tenantConfigRedisKey);
         }
-        if(StringUtils.isBlank(envCode)) {
-            envCode = WebPluginUtils.DEFAULT_ENV_CODE;
-        }
-        return WebPluginUtils.getTenantConfig(tenantAppKey,envCode);
+        List<TenantConfigExt> exts =WebPluginUtils.getTenantConfig(tenantAppKey,envCode);
+        redisTemplate.opsForValue().set(tenantConfigRedisKey,exts);
+        return exts;
     }
 
 }

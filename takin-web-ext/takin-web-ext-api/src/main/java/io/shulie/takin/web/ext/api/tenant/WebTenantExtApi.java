@@ -72,5 +72,5 @@ public interface WebTenantExtApi extends ExtensionPoint {
      * @param envCode
      * @return
      */
-    TenantConfigExt getTenantConfig(String tenantAppKey, String envCode);
+    List<TenantConfigExt> getTenantConfig(String tenantAppKey, String envCode);
 }

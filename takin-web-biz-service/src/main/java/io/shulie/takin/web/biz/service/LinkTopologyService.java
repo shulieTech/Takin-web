@@ -407,8 +407,6 @@ public class LinkTopologyService extends CommonService {
                 .inMethod(method)
                 .startTime(startTime)
                 .endTime(endTime)
-//                .startTime("2021-11-01 10:30:00")
-//                .endTime("2021-11-01 19:59:00")
                 .build();
 
         String response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);

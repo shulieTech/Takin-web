@@ -359,6 +359,21 @@ public class SwaggerConfig {
             ;
     }
 
+    @Bean
+    public Docket api_businessFlow() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .pathProvider(this.pathProvider())
+                .groupName("业务流程jmeter上传改造")
+                .select()
+                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+                .paths(getRegex("/api/businessFlow.*"))
+                .build()
+                .directModelSubstitute(LocalDate.class, String.class)
+                .useDefaultResponseMessages(false)
+                .apiInfo(apiInfo())
+                ;
+    }
+
     /**
      * 两周迭代放在这里
      * @return

@@ -551,7 +551,9 @@ public class LinkManageServiceImpl implements LinkManageService {
     public Response<List<SceneDto>> getScenes(SceneQueryVo vo) {
         List<SceneDto> sceneDtos = tSceneMapper.selectByRelatedQuery(vo);
         List<SceneDto> pageData = PageUtils.getPage(true, vo.getCurrentPage(), vo.getPageSize(), sceneDtos);
-
+        if (CollectionUtils.isEmpty(sceneDtos)){
+            return Response.success(pageData,  0);
+        }
         //查询业务活动是否存在虚拟业务活动
         List<String> sceneIds = pageData.stream().map(SceneDto::getId).map(String::valueOf).collect(
                 Collectors.toList());

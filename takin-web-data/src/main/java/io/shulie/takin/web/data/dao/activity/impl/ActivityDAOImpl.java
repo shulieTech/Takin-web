@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.dao.activity.impl;
 
 import com.alibaba.fastjson.JSON;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -35,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -325,7 +327,7 @@ public class ActivityDAOImpl implements ActivityDAO {
             .selectPage(page, lambdaQueryWrapper);
 
         if (CollectionUtils.isEmpty(tableEntityPage.getRecords())) {
-            return PagingList.of(Lists.newArrayList(),tableEntityPage.getTotal());
+            return PagingList.of(Lists.newArrayList(), tableEntityPage.getTotal());
         }
 
         List<String> techLinkIds = tableEntityPage.getRecords().stream().map(
@@ -336,7 +338,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         }
 
         List<Long> userIds = tableEntityPage.getRecords().stream().filter(f -> Objects.nonNull(f.getUserId())).map(
-            BusinessLinkManageTableEntity::getUserId)
+                BusinessLinkManageTableEntity::getUserId)
             .collect(Collectors.toList());
         List<LinkManageTableEntity> linkManageTableEntities = linkManageTableMapper.selectBatchIds(techLinkIds);
         Map<Long, LinkManageTableEntity> linkMap = linkManageTableEntities.stream()
@@ -385,7 +387,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         if (StringUtils.isNotBlank(param.getEntrance())) {
             lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getEntrace, param.getEntrance());
         }
-        if (StringUtils.isNotBlank(param.getApplicationName())){
+        if (StringUtils.isNotBlank(param.getApplicationName())) {
             lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getApplicationName, param.getApplicationName());
         }
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
@@ -400,11 +402,11 @@ public class ActivityDAOImpl implements ActivityDAO {
     @Override
     public void setActivityNodeServiceState(long activityId, String ownerApps, String serviceName, boolean state) {
         ActivityNodeState activityNodeState = new ActivityNodeState();
-        String key = null;
+        String key;
         try {
             key = MD5Tool.getMD5(activityId + ownerApps + serviceName);
         } catch (Exception e) {
-            e.printStackTrace();
+            return;
         }
         activityNodeState.setId(key);
         activityNodeState.setActivityId(activityId);
@@ -413,7 +415,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         activityNodeState.setState(state);
 
         //SY:如果限制节点下只允许一个服务为打开状态则先清空再新增
-//        activityNodeStateTableMapper.removeActivityNodeByActivityIdAndOwnerApp(activityNodeState);
+        //        activityNodeStateTableMapper.removeActivityNodeByActivityIdAndOwnerApp(activityNodeState);
 
         //SY:保存节点状态-如果存在则更新状态字段
         activityNodeStateTableMapper.setActivityNodeState(activityNodeState);
@@ -429,9 +431,9 @@ public class ActivityDAOImpl implements ActivityDAO {
             return null;
         }
         return entities.stream().filter(Objects::nonNull)
-                .map(this::toListResult)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+            .map(this::toListResult)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     private ActivityListResult toListResult(BusinessLinkManageTableEntity entity) {
@@ -458,6 +460,12 @@ public class ActivityDAOImpl implements ActivityDAO {
         r.setParentTechLinkId(entity.getParentBusinessId());
         r.setApplicationName(entity.getApplicationName());
         return r;
+    }
+
+    @Override
+    public List<Map<String, String>> findActivityIdByServiceName(String appName, String entrance) {
+        Long customerId = WebPluginUtils.getCustomerId();
+        return activityNodeStateTableMapper.findActivityIdByServiceName(customerId, appName, entrance);
     }
 
 }

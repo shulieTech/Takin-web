@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.pojo.response.application;
 
 import java.util.List;
 import java.util.Set;
+import java.util.HashMap;
 
 import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
 import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
@@ -23,6 +24,16 @@ public class ApplicationEntranceTopologyResponse {
 
     @ApiModelProperty("边")
     private List<ApplicationEntranceTopologyEdgeResponse> edges;
+
+    // 一般瓶颈 [false 没有瓶颈 | true 有一般瓶颈]
+    boolean hasL1Bottleneck = false;
+    // 一般瓶颈数量
+    int l1bottleneckNum = 0;
+
+    // 严重瓶颈 [false 没有瓶颈 | true 有严重瓶颈]
+    boolean hasL2Bottleneck = false;
+    // 严重瓶颈数量
+    int l2bottleneckNum = 0;
 
     private List<ExceptionListResponse> exceptions;
 
@@ -98,6 +109,16 @@ public class ApplicationEntranceTopologyResponse {
             @ApiModelProperty("服务Rt")
             private Double serviceRt;
         // >>>>> 节点中 某个服务的 4 个性能指标
+
+        // 一般瓶颈 [false 没有瓶颈 | true 有一般瓶颈]
+        boolean hasL1Bottleneck = false;
+        // 一般瓶颈数量
+        int l1bottleneckNum = 0;
+
+        // 严重瓶颈 [false 没有瓶颈 | true 有严重瓶颈]
+        boolean hasL2Bottleneck = false;
+        // 严重瓶颈数量
+        int l2bottleneckNum = 0;
 
         // TopologyAppNodeResponse
         private String manager;
@@ -175,6 +196,7 @@ public class ApplicationEntranceTopologyResponse {
         private String serviceName;
         // 上游应用
         private String beforeApps;
+        private HashMap<String, String> beforeAppsMap;
         // 服务开关状态(true 打开 | false 关闭)
         private Boolean switchState;
 

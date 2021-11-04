@@ -15,6 +15,7 @@ import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
@@ -55,6 +56,7 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugListRespons
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
+import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
@@ -169,8 +171,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     @Autowired
     private LinkManageDAO linkManageDAO;
 
-    @Resource
-    PluginManager pluginManager;
+    @Autowired
+    private ApplicationService applicationService;
 
     @Override
     public ScriptDebugResponse debug(ScriptDebugDoDebugRequest request) {
@@ -187,6 +189,10 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         ScriptDebugResponse response = new ScriptDebugResponse();
         ScriptDebugEntity scriptDebug;
         try {
+
+            //探针总开关关闭状态禁止启动压测
+            ScriptDebugExceptionUtil.isDebugError(applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.getCustomerId(), AppSwitchEnum.CLOSED),
+                    "脚本调试失败，探针总开关已关闭");
             // 脚本发布实例是否存在
             ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDeployId);
             ScriptDebugExceptionUtil.isDebugError(scriptDeploy == null, "脚本发布实例不存在!");

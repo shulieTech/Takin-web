@@ -25,9 +25,13 @@ import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
+import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutputV2;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallCreateV2Request;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import io.shulie.takin.web.common.vo.application.AppRemoteCallListVO;
+import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 
 /**
  * @author 无涯
@@ -102,4 +106,51 @@ public interface AppRemoteCallService {
      * @param request
      */
     void batchConfig(AppRemoteCallConfigRequest request);
+
+
+    /**
+     * 根据配置类型筛选数据
+     *
+     * @return
+     */
+    List<SelectVO> getConfigSelectV2(String interfaceType);
+
+    /**
+     * 根据接口类型筛选数据
+     *
+     * @return
+     */
+    List<SelectVO> getInterfaceTypeSelect();
+
+    /**
+     * 获取服务端应用的接口
+     * @return
+     */
+    Map<Long,List<AppRemoteCallResult>> getListGroupByAppId();
+
+    /**
+     * 根据id批量逻辑删除
+     * @param ids
+     */
+    void batchLogicDelByIds(List<Long> ids);
+
+    /**
+     * 批量保存
+     * @param list
+     */
+    void batchSave(List<AppRemoteCallResult> list);
+
+    void create(AppRemoteCallCreateV2Request request);
+
+    /**
+     * 更新
+     */
+    void updateV2(AppRemoteCallUpdateV2Request request);
+
+    /**
+     * 根据id获取
+     *
+     * @return
+     */
+    AppRemoteCallOutputV2 getByIdV2(Long id);
 }

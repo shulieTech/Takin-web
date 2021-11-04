@@ -1,16 +1,13 @@
 package io.shulie.takin.web.biz.service.dsManage;
 
+import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput;
+import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.biz.pojo.request.application.ApplicationDsCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.application.ApplicationDsDeleteRequest;
-import io.shulie.takin.web.biz.pojo.request.application.ApplicationDsEnableRequest;
-import io.shulie.takin.web.biz.pojo.request.application.ApplicationDsUpdateRequest;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationDsDetailResponse;
 
 /**
  * @author HengYu
@@ -18,7 +15,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationDsDetailResp
  * @date 2021/4/12 9:25 下午
  * @description 数据源存储抽象服务
  */
-public abstract class AbstractDsService {
+public abstract class AbstractDsService implements StyleTemplate {
 
     /**
      * 添加数据源
@@ -61,5 +58,14 @@ public abstract class AbstractDsService {
      * @return -
      */
     public abstract Response dsDelete(ApplicationDsDeleteInput dsDeleteRequest);
+
+    /**
+     * 老数据映射成新的结构
+     * @param recordId
+     * @return
+     */
+    public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
+        return null;
+    }
 
 }

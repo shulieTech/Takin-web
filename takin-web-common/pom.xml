@@ -19,7 +19,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.0.1</version>
+        <version>takin-web-5.0.3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-common</artifactId>
@@ -115,7 +115,7 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-ext-api</artifactId>
-            <version>takin-web-5.0.1</version>
+            <version>takin-web-5.0.3-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
@@ -131,6 +131,12 @@
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>simulator-internal-bootstrap-api</artifactId>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 

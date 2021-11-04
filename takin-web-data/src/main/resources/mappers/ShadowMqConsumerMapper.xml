@@ -16,10 +16,11 @@
         <result column="feature" jdbcType="LONGVARCHAR" property="feature"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="manual_tag" jdbcType="INTEGER" property="manualTag"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         id, `type`, `topic_group`, application_id, application_name, `status`, customer_id,
-        user_id, deleted, feature, create_time, update_time
+        user_id, deleted, feature, create_time, update_time,manualTag
     </sql>
 </mapper>

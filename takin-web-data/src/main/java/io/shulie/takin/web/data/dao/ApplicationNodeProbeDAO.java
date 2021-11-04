@@ -18,7 +18,7 @@ public interface ApplicationNodeProbeDAO {
      * 通过 应用名称, agentId 获得对应的探针操作记录
      *
      * @param applicationName 应用名称
-     * @param agentId agentId
+     * @param agentId         agentId
      * @return 探针操作记录
      */
     ApplicationNodeProbeResult getByApplicationNameAndAgentId(String applicationName, String agentId);
@@ -26,8 +26,8 @@ public interface ApplicationNodeProbeDAO {
     /**
      * 根据 应用名称,  agentId 更新操作结果
      *
-     * @return 是否更新成功
      * @param updateOperateResultParam 更新所需参数
+     * @return 是否更新成功
      */
     boolean updateById(UpdateOperateResultParam updateOperateResultParam);
 
@@ -43,10 +43,32 @@ public interface ApplicationNodeProbeDAO {
      * 根据应用名称, agentIds 获得节点探针操作记录
      *
      * @param applicationName 应用名称
-     * @param agentIds agentIds
+     * @param agentIds        agentIds
      * @return 节点探针操作记录列表
      */
     List<ApplicationNodeProbeResult> listByApplicationNameAndAgentIds(String applicationName, List<String> agentIds);
+
+    /**
+     * 根据appnames和操作id删除
+     *
+     * @param customerId
+     * @param operate
+     * @param appNames
+     */
+    void delByAppNamesAndOperate(Long customerId, Integer operate, List<String> appNames);
+
+    /**
+     * 通过拿到最大的 customerId 的操作
+     * 因为这个接口没有做拦截, 所以先这么操作
+     * admin 的是 1, 比他大的就是那个租户的操作
+     *
+     * @param applicationName 应用名称
+     * @param agentId         agentId
+     * @param customerId      租户 id
+     * @return 探针操作记录
+     */
+    ApplicationNodeProbeResult getByApplicationNameAndAgentIdAndMaxCustomerId(String applicationName, String agentId,
+        Long customerId);
 
 }
 

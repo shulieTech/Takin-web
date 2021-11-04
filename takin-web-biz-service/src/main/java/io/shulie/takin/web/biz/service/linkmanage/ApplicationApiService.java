@@ -7,6 +7,7 @@ import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 
 /**
  * @author  vernon
@@ -27,4 +28,6 @@ public interface ApplicationApiService {
     Response create(ApiCreateVo vo);
 
     Response queryDetail(String id);
+
+    Map<Long,List<ApplicationApiManageVO>> selectListGroupByAppId();
 }

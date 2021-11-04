@@ -23,7 +23,7 @@ public interface ApplicationDsDAO {
     /**
      * 启动状态
      *
-     * @return
+     * @return 启动结果
      */
     int enable(ApplicationDsEnableParam enableParam);
 
@@ -38,4 +38,6 @@ public interface ApplicationDsDAO {
     List<DsModelWithBLOBs> selectByAppIdForAgent(Long applicationId);
 
     List<DsModelWithBLOBs> getAllEnabledDbConfig(Long applicationId);
+
+    void batchDelete(ApplicationDsDeleteParam deleteParam);
 }

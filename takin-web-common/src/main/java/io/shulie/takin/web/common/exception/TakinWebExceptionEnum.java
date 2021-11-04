@@ -56,6 +56,7 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     APPLICATION_SHADOW_THIRD_PARTY_ERROR("0304-" + ErrorConstant.THIRD_PARTY_ERROR, "应用影子消费者第三方返回异常"),
     APPLICATION_ENTRANCE_THIRD_PARTY_ERROR("0305-" + ErrorConstant.THIRD_PARTY_ERROR, "应用入口链路第三方返回异常"),
     APPLICATION_UNSTALL_AGENT_ERROR("0306-" + ErrorConstant.THIRD_PARTY_ERROR, "卸载应用agent异常"),
+    APPLICATION_RESUME_AGENT_ERROR("0307-" + ErrorConstant.THIRD_PARTY_ERROR, "恢复应用agent异常"),
 
     /**
      * agent
@@ -67,6 +68,7 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     AGENT_PUSH_APPLICATION_STATUS_VALIDATE_ERROR("0506-" + ErrorConstant.VALIDATE_ERROR, "Agent 上报应用状态, 数据校验"),
     AGENT_UPDATE_SHADOW_JOB_UPDATE_ERROR("0503-" + ErrorConstant.UPDATE_ERROR, "Agent 影子配置修改错误"),
     AGENT_UPDATE_SHADOW_JOB_VALIDATE_ERROR("0503-" + ErrorConstant.VALIDATE_ERROR, "Agent 影子配置校验错误"),
+    AGENT_UPLOAD_CONFIG_MSG_ERROR("0503-" + ErrorConstant.VALIDATE_ERROR, "Agent 上传 配置数据 相关, 校验错误"),
 
     /**
      * agent 更新 agent 版本, 校验错误
@@ -126,10 +128,15 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     PATROL_ASSERT_ADD_ERROR("1200-" + ErrorConstant.ADD_ERROR, "新增断言异常"),
 
     /**
-     *  巡检异常管理
+     * 巡检异常管理
      */
     PATROL_EXCEPTION_ADD_ERROR("1300-" + ErrorConstant.ADD_ERROR, "新增异常数据失败"),
     PATROL_EXCEPTION_QUERY_ERROR("1300-" + ErrorConstant.QUERY_NULL_ERROR, "查询巡检异常失败"),
+
+    /**
+     * 影子配置
+     */
+    SHADOW_CONFIG_CREATE_ERROR("1400-" + ErrorConstant.VALIDATE_ERROR, "新增影子配置异常"),
     ;
 
     private final String errorCode;

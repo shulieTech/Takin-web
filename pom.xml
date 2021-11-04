@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-5.0.1</version>
+    <version>takin-web-5.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -39,7 +39,7 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-5.0.1</takin.web.version>
+        <takin.web.version>takin-web-5.0.3-SNAPSHOT</takin.web.version>
         <takin.cloud.open.version>takin-cloud-open-5.0.1-SNAPSHOT</takin.cloud.open.version>
         <takin.cloud.version>takin-cloud-5.0.2-SNAPSHOT</takin.cloud.version>
         <takin.common.version>common-1.7.4</takin.common.version>
@@ -135,13 +135,6 @@
                 <groupId>com.github.xiaoymin</groupId>
                 <artifactId>swagger-bootstrap-ui</artifactId>
                 <version>1.9.6</version>
-            </dependency>
-
-            <!-- https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator -->
-            <dependency>
-                <groupId>org.hibernate.validator</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>7.0.1.Final</version>
             </dependency>
 
             <dependency>

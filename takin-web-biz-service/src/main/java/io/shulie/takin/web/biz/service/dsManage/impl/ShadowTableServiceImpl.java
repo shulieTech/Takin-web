@@ -1,29 +1,26 @@
 package io.shulie.takin.web.biz.service.dsManage.impl;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Lists;
+import com.pamirs.attach.plugin.dynamic.Type;
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
-import com.pamirs.takin.entity.dao.simplify.TAppBusinessTableInfoMapper;
+import io.shulie.takin.web.amdb.api.ApplicationClient;
+import io.shulie.takin.web.amdb.bean.result.application.AppShadowDatabaseDTO;
+import io.shulie.takin.web.amdb.bean.result.application.ApplicationBizTableDTO;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
+import io.shulie.takin.web.biz.convert.db.parser.DbTemplateParser;
 import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput;
+import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.dsManage.AbstractDsService;
 import io.shulie.takin.web.biz.utils.DsManageUtil;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDAO;
 import io.shulie.takin.web.data.param.application.ApplicationDsCreateParam;
@@ -33,10 +30,21 @@ import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsUpdateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author HengYu
@@ -45,13 +53,12 @@ import org.springframework.util.Assert;
  * @description 影子表存储服务
  */
 @Component
+@Slf4j
 public class ShadowTableServiceImpl extends AbstractDsService {
 
     @Autowired
     private ApplicationService applicationService;
 
-    @Resource
-    private TAppBusinessTableInfoMapper tAppBusinessTableInfoMapper;
 
     @Autowired
     private ConfigSyncService configSyncService;
@@ -65,11 +72,16 @@ public class ShadowTableServiceImpl extends AbstractDsService {
     @Autowired
     private AgentConfigCacheManager agentConfigCacheManager;
 
+    @Autowired
+    private ApplicationClient applicationClient;
+
+    @Autowired
+    private DbTemplateParser dbTemplateParser;
 
     @Override
     public Response dsAdd(ApplicationDsCreateInput createRequest) {
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(
-            createRequest.getApplicationId());
+                createRequest.getApplicationId());
 
         Response response = validator(applicationDetailResult, createRequest);
         if (response != null) {
@@ -106,14 +118,14 @@ public class ShadowTableServiceImpl extends AbstractDsService {
         configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), applicationId, null);
         //修改应用状态
         applicationService.modifyAccessStatus(String.valueOf(applicationId),
-            AppAccessTypeEnum.UNUPLOAD.getValue(), null);
+                AppAccessTypeEnum.UNUPLOAD.getValue(), null);
 
         agentConfigCacheManager.evictShadowDb(applicationName);
     }
 
     private Response validator(
-        ApplicationDetailResult applicationDetailResult,
-        ApplicationDsCreateInput createRequest) {
+            ApplicationDetailResult applicationDetailResult,
+            ApplicationDsCreateInput createRequest) {
         if (applicationDetailResult == null) {
             return Response.fail("0", "应用不存在!");
         }
@@ -125,9 +137,9 @@ public class ShadowTableServiceImpl extends AbstractDsService {
         List<Integer> dsTypeList = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(applicationDsResultList)) {
             dsTypeList = applicationDsResultList.stream().map(ApplicationDsResult::getDsType)
-                .map(String::valueOf).map(Integer::parseInt)
-                .distinct()
-                .collect(Collectors.toList());
+                    .map(String::valueOf).map(Integer::parseInt)
+                    .distinct()
+                    .collect(Collectors.toList());
         }
 
         //新增影子表配置
@@ -190,7 +202,6 @@ public class ShadowTableServiceImpl extends AbstractDsService {
         dsDetailResponse.setUrl(dsResult.getUrl());
 
         queryParserConfig(dsResult, dsDetailResponse);
-
         return Response.success(dsDetailResponse);
     }
 
@@ -269,6 +280,59 @@ public class ShadowTableServiceImpl extends AbstractDsService {
             parsedConfig.substring(0, parsedConfigBuilder.length() - 1);
         }
         return parsedConfig;
+    }
+
+
+    /**
+     * 老数据映射成新的结构
+     *
+     * @param recordId
+     * @return
+     */
+    @Override
+    public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
+        ApplicationDsResult dsResult = applicationDsDAO.queryByPrimaryKey(recordId);
+        if (Objects.isNull(dsResult)) {
+            return null;
+        }
+
+        Map<String, ShadowDetailResponse.TableInfo> map = new HashMap<>();
+        String configStr = dsResult.getConfig();
+        if (StringUtils.isNotBlank(configStr)) {
+            String[] configItems = configStr.split(",");
+            for (String item : configItems) {
+                ShadowDetailResponse.TableInfo info = new ShadowDetailResponse.TableInfo();
+                info.setBizTableName(item);
+                info.setIsCheck(true);
+                info.setIsManual(true);
+                info.setShaDowTableName(PREFIX + info.getBizTableName());
+                map.put(item, info);
+            }
+        }
+
+        List<ShadowDetailResponse.TableInfo> list = new ArrayList<>();
+        list.addAll(map.values());
+
+        ShadowDetailResponse response = new ShadowDetailResponse();
+        response.setId(recordId);
+        response.setApplicationId(String.valueOf(dsResult.getApplicationId()));
+        response.setMiddlewareType(Type.MiddleWareType.LINK_POOL.value());
+        response.setDsType(dsResult.getDsType());
+        response.setUrl(dsResult.getUrl());
+        String poolName = "兼容老版本(影子表)";
+        response.setConnectionPool(poolName);
+        response.setUsername("-");
+        response.setPassword("");
+        response.setTables(list);
+
+        String shadowInfo = "";
+        List<AppShadowDatabaseDTO> amdbInfo = applicationClient.getApplicationShadowDataBaseInfo(dsResult.getApplicationName(), dsResult.getUrl());
+        if (CollectionUtils.isNotEmpty(amdbInfo)) {
+            AppShadowDatabaseDTO dto = amdbInfo.get(0);
+            shadowInfo = dbTemplateParser.convertData(dto.getAttachment(), "druid");
+        }
+        response.setShadowInfo(shadowInfo);
+        return response;
     }
 
 }

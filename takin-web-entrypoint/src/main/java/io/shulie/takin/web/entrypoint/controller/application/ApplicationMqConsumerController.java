@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/consumers")
-@Api(tags = "ApplicationMqConsumerController", value = "影子消费者")
+@Api(tags = "接口:影子消费者管理", value = "影子消费者")
 public class ApplicationMqConsumerController {
 
     @Autowired

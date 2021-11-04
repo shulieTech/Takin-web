@@ -154,4 +154,8 @@ public class AgentUrls {
      */
     public static final String AGENT_PUSH_APPLICATION_MIDDLEWARE = "/agent/push/application/middleware";
 
+    /**
+     * agent 上报应用配置
+     */
+    public static final String AGENT_PUSH_APPLICATION_CONFIG = "/agent/push/application/config";
 }

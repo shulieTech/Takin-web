@@ -6,12 +6,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import lombok.Data;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author by: hezhongqi
  * @date 2021/8/6 11:52
  */
 @Data
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 public class ShadowConsumerOutput extends AuthQueryResponseCommonExt {
     private Long id;
 
@@ -34,4 +38,14 @@ public class ShadowConsumerOutput extends AuthQueryResponseCommonExt {
     private Integer deleted;
 
     private String feature;
+
+    /**
+     * 是否是手动录入的
+     */
+    private Boolean isManual;
+
+    /**
+     * 1 消费/ 0 不消费影子topic
+     */
+    private String shadowconsumerEnable;
 }

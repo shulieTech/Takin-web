@@ -6,12 +6,14 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author 无涯
  * @date 2021/5/29 12:35 上午
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class AppRemoteCallVO extends UserCommonExt {
     /**
      * 接口名称
@@ -73,6 +75,18 @@ public class AppRemoteCallVO extends UserCommonExt {
      * 同步字段 是否从白名单同步过来的
      */
     private Boolean isSynchronize;
+
+    /**
+     * 是否是手动录入的
+     */
+    private Boolean isManual;
+
+    /**
+     * 接口子类型
+     */
+    private String interfaceChildType;
+
+    private String remark;
 
     public AppRemoteCallVO() {}
 

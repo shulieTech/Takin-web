@@ -62,7 +62,7 @@ public class ShadowMqConsumerEntity {
     /**
      * 用户id
      */
-    @TableField(value = "user_id" , fill = FieldFill.INSERT)
+    @TableField(value = "user_id", fill = FieldFill.INSERT)
     private Long userId;
 
     /**
@@ -89,6 +89,12 @@ public class ShadowMqConsumerEntity {
      */
     @TableField(value = "update_time")
     private Date updateTime;
+
+    /**
+     * 是否手动录入 0否，1手动
+     */
+    @TableField(value = "manual_tag")
+    private Integer manualTag;
 
     public static final String COL_ID = "id";
 

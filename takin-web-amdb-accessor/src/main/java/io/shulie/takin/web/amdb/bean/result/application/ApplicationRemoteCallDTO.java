@@ -19,11 +19,15 @@ public class ApplicationRemoteCallDTO {
     private String methodName;
     @JsonProperty("middlewareName")
     private String middlewareName;
+    @JsonProperty("middlewareDetail")
+    private String middlewareDetail;
     @JsonProperty("rpcType")
     private String rpcType;
     @JsonProperty("serviceName")
     private String serviceName;
     @JsonProperty("upAppName")
     private String upAppName;
+    @JsonProperty("defaultWhiteInfo")
+    private String defaultWhiteInfo;
 
 }

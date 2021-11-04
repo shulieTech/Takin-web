@@ -9,6 +9,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -31,7 +32,7 @@ public class ActivityCacheAspect {
     @Around(value = "pointcut()")
     public Object advice(ProceedingJoinPoint point) throws Throwable {
         ActivityResponse activityResponse;
-        ActivityCache cache = point.getSignature().getDeclaringType().getMethod("getActivityById", ActivityInfoQueryRequest.class).getAnnotation(ActivityCache.class);
+        ActivityCache cache = ((MethodSignature) point.getSignature()).getMethod().getAnnotation(ActivityCache.class);
         int expireTime = cache.expireTime();
         ActivityInfoQueryRequest request = (ActivityInfoQueryRequest) point.getArgs()[0];
         if (Objects.isNull(request)) {

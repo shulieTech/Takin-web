@@ -23,6 +23,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
+import io.shulie.takin.web.biz.annotation.ActivityCache;
 import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
@@ -34,6 +35,7 @@ import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopol
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
@@ -399,6 +401,59 @@ public class ActivityServiceImpl implements ActivityService {
             }).collect(Collectors.toList());
 
         return PagingList.of(responses, activityListResultPagingList.getTotal());
+    }
+
+    @Override
+
+    public ActivityBottleneckResponse getBottleneckByActivityList(List<ActivityInfoQueryRequest> activityList, String appName, String serviceName) {
+        ActivityBottleneckResponse activityBottleneckResponse = new ActivityBottleneckResponse();
+        // -1 没有瓶颈
+        int init = -1;
+        activityBottleneckResponse.setAllTotalRtBottleneckType(init);
+        activityBottleneckResponse.setAllSuccessRateBottleneckType(init);
+        activityBottleneckResponse.setAllSqlTotalRtBottleneckType(init);
+
+        for (ActivityInfoQueryRequest activityInfo : activityList) {
+            activityInfo.setStartTime(null);
+            activityInfo.setEndTime(null);
+            // 获取 拓扑图
+            ActivityResponse activityWithMetricsById = getActivityWithMetricsById(activityInfo);
+            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityWithMetricsById.getTopology().getNodes()) {
+                if (node.getLabel().equals(appName)) {
+                    if (node.getProviderService() != null) {
+                        for (ApplicationEntranceTopologyResponse.AppProviderInfo appProviderInfo : node.getProviderService()) {
+                            for (ApplicationEntranceTopologyResponse.AppProvider appProvider : appProviderInfo.getDataSource()) {
+                                for (ApplicationEntranceTopologyResponse.AppProvider provider : appProvider.getContainRealAppProvider()) {
+                                    if (provider.getServiceName().equals(serviceName)) {
+                                        // 有 Rt 瓶颈
+                                        if ((provider.getAllTotalRtBottleneckType() != -1)) {
+                                            activityBottleneckResponse.setAllTotalRtBottleneckType(provider.getAllTotalRtBottleneckType());
+                                            activityBottleneckResponse.setRtBottleneckId(provider.getRtBottleneckId());
+                                        }
+                                        // 成功率 瓶颈
+                                        if ((provider.getAllSuccessRateBottleneckType() != -1)) {
+                                            activityBottleneckResponse.setAllSuccessRateBottleneckType(provider.getAllSuccessRateBottleneckType());
+                                            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getRtBottleneckId());
+                                        }
+                                        // 慢 sql 瓶颈
+                                        if ((provider.getAllSqlTotalRtBottleneckType() != -1)) {
+                                            activityBottleneckResponse.setAllSqlTotalRtBottleneckType(provider.getAllSqlTotalRtBottleneckType());
+                                            activityBottleneckResponse.setRtSqlBottleneckId(provider.getRtSqlBottleneckId());
+                                        }
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                }
+
+            }
+        }
+        return activityBottleneckResponse;
     }
 
     @Override

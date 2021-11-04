@@ -1,10 +1,6 @@
 package io.shulie.takin.web.biz.init;
 
-import io.shulie.takin.web.biz.init.fix.BlacklistDataFixer;
-import io.shulie.takin.web.biz.init.fix.LinkManageFixer;
-import io.shulie.takin.web.biz.init.fix.RemoteCallFixer;
-import io.shulie.takin.web.biz.init.fix.WhitelistDataFixer;
-import io.shulie.takin.web.biz.init.fix.WhitelistEffectAppNameDataFixer;
+import io.shulie.takin.web.biz.init.fix.*;
 import io.shulie.takin.web.biz.init.sync.ConfigSynchronizer;
 import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
 import io.shulie.takin.web.biz.service.OpsScriptManageService;
@@ -47,6 +43,9 @@ public class Initializer implements InitializingBean {
     @Autowired
     OpsScriptManageService opsScriptManageService;
 
+    @Autowired
+    ActivityFixer activityFixer;
+
     /**
      * 所有项目启动需要做的事情都统一注册在这里
      */
@@ -68,5 +67,8 @@ public class Initializer implements InitializingBean {
         //new Thread(() -> remoteCallFixer.fix()).start();
         // 校验是否有此用户，没有则创建。用于用户执行运维脚本
         new Thread(() -> opsScriptManageService.init()).start();
+        //将历史数据业务活动字段entrance字段中的applicationName拆分出来
+        new Thread(() -> activityFixer.fix()).start();
+
     }
 }

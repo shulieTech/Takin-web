@@ -86,7 +86,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
                     .param(tempTopologyQuery1)
                     .eventName("查询临时业务活动指标step1")
                     .exception(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP1_ERROR)
-                    .getData();
+                    .one(String.class);
 
             String data = amdbResponse.getData();
             return data;
@@ -106,7 +106,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
                     .param(tempTopologyQuery1)
                     .eventName("查询临时业务活动指标step2")
                     .exception(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP2_ERROR)
-                    .getData();
+                    .one(JSONObject.class);
 
             JSONObject data = amdbResponse.getData();
             return data;

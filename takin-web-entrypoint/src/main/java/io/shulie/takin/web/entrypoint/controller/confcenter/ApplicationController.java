@@ -1,5 +1,12 @@
 package io.shulie.takin.web.entrypoint.controller.confcenter;
 
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.github.pagehelper.util.StringUtil;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.AppUnstallAgentVo;
@@ -25,7 +32,20 @@ import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -238,8 +258,7 @@ public class ApplicationController {
             moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
             needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
-    public Response UpdateAppSilenceSwitch(
-            @RequestBody ApplicationVo vo) {
+    public Response UpdateAppSilenceSwitch(@RequestBody ApplicationVo vo) {
         if (vo == null || vo.getSilenceEnable()== null) {
             return Response.fail(FALSE_CODE, "silenceEnable 不能为空");
         }

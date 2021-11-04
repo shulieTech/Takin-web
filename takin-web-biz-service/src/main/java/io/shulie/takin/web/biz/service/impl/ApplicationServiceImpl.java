@@ -2354,12 +2354,16 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (enable == null) {
             return Response.fail(FALSE_CORE, "开关状态不能为空", null);
         }
-        if (uid == null) {
-            UserExt user = WebPluginUtils.getUser();
-            if (user == null) {
-                return Response.fail(FALSE_CORE, "当前用户为空", null);
+        if (WebPluginUtils.checkUserData()) {
+            if (uid == null) {
+                UserExt user = WebPluginUtils.getUser();
+                if (user == null) {
+                    return Response.fail(FALSE_CORE, "当前用户为空", null);
+                }
+                uid = user.getCustomerId();
             }
-            uid = user.getCustomerId();
+        } else {
+            uid = WebPluginUtils.getCustomerId();
         }
 
         String realStatus = getUserSilenceSwitchFromRedis(uid);

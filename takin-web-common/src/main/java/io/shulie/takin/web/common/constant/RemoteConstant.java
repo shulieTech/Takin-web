@@ -20,7 +20,7 @@ public class RemoteConstant {
     public static final String SCENE_MANAGE_DETAIL_URL = "/api/scenemanage/detail";
     public static final String SCENE_MANAGE_IPNUM_URL = "/api/scenemanage/ipnum";
     public static final String SCENE_MANAGE_PARSE_URL = "/api/scenemanage/parse/script";
-    public static final String FILE_UPLOAD_URL = "/api/v2/file/upload";
+    public static final String FILE_UPLOAD_URL = "/api/file/upload";
     public static final String FILE_URL = "/api/file";
     public static final String SCENE_TASK_START_URL = "/api/scene/task/start";
     public static final String SCENE_TASK_STOP_URL = "/api/scene/task/stop";

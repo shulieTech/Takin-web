@@ -43,7 +43,7 @@ public class BusinessFlowController {
     private SceneService sceneService;
 
 
-    @PostMapping("/link/parseScriptAndSave")
+    @PostMapping("/parseScriptAndSave")
     @ApiOperation("解析脚本并保存业务流程")
     @ModuleDef(
             moduleName = BizOpConstants.Modules.LINK_CARDING,
@@ -64,7 +64,7 @@ public class BusinessFlowController {
         }
     }
 
-    @PostMapping("/link/uploadDataFile")
+    @PostMapping("/uploadDataFile")
     @ApiOperation("业务流程上传数据文件")
     @ModuleDef(
             moduleName = BizOpConstants.Modules.LINK_CARDING,
@@ -85,7 +85,7 @@ public class BusinessFlowController {
         }
     }
 
-    @PostMapping("/link/autoMatchActivity")
+    @PostMapping("/autoMatchActivity")
     @ApiOperation("自动匹配业务活动")
     @ModuleDef(
             moduleName = BizOpConstants.Modules.LINK_CARDING,
@@ -106,7 +106,7 @@ public class BusinessFlowController {
         }
     }
 
-    @PostMapping("/link/matchActivity")
+    @PostMapping("/matchActivity")
     @ApiOperation("匹配业务活动")
     @ModuleDef(
             moduleName = BizOpConstants.Modules.LINK_CARDING,
@@ -127,7 +127,7 @@ public class BusinessFlowController {
         }
     }
 
-    @GetMapping("/link/scene/detail")
+    @GetMapping("/scene/detail")
     @ApiOperation("业务流程详情获取")
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
@@ -144,7 +144,7 @@ public class BusinessFlowController {
     }
 
 
-    @GetMapping("/link/scene/threadGroupDetail")
+    @GetMapping("/scene/threadGroupDetail")
     @ApiOperation("业务流程详情获取线程组内容详情")
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
@@ -155,7 +155,7 @@ public class BusinessFlowController {
         return ResponseResult.success(dto);
     }
 
-    @GetMapping("/link/scene/manage")
+    @GetMapping("/scene/list")
     @ApiOperation("业务流程列表查询")
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,

@@ -50,4 +50,7 @@ public interface LinkManageConvert {
     VirtualActivityCreateRequest ofVirtualActivityCreateRequest(SceneLinkRelateRequest sceneLinkRelateRequest);
 
     List<BusinessFlowListResponse> ofSceneResultList(List<SceneResult> list);
+
+    @Mapping(target = "status", expression = "java(sceneResult.getLinkRelateNum() == sceneResult.getTotalNodeNum() ? 1 : 0)")
+    BusinessFlowListResponse ofSceneResult(SceneResult sceneResult);
 }

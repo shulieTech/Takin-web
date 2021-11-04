@@ -22,14 +22,8 @@ public class BusinessFlowListResponse  extends AuthQueryResponseCommonExt implem
     @ApiModelProperty(name = "sceneName", value = "业务流程名称")
     private String sceneName;
 
-    @ApiModelProperty(name = "sceneLevel", value = "场景等级 :p0/p1/02/03")
-    private String sceneLevel;
-
-    @ApiModelProperty(name = "isCore", value = "是否核心场景 0:不是;1:是")
-    private Integer isCore;
-
-    @ApiModelProperty(name = "isChanged", value = "是否有变更 0:没有变更，1有变更")
-    private Integer isChanged;
+    @ApiModelProperty(name = "status", value = "状态：0未匹配完成，1匹配完成")
+    private Integer status;
 
     @ApiModelProperty(name = "createTime", value = "创建时间")
     private Date createTime;

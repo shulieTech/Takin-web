@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
@@ -33,6 +34,7 @@ import io.shulie.takin.web.biz.pojo.request.scene.CreateSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.UpdateSceneRequest;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.cloud.open.request.scene.manage.WriteSceneRequest;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
 
 /**
@@ -43,6 +45,8 @@ import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
 @RestController
 @RequestMapping("/api/v2/scene")
 public class SceneController {
+    @Resource
+    SceneService sceneService;
     @Resource
     FileManageDAO fileManageDao;
     @Resource
@@ -103,6 +107,17 @@ public class SceneController {
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<SceneDetailResponse> detail(@RequestParam(required = false) Long sceneId) {
         return multipleSceneApi.detail(new SceneTaskStartReq() {{setSceneId(sceneId);}});
+    }
+
+    /**
+     * 获取业务流程
+     *
+     * @return 业务流程列表
+     */
+    @GetMapping("business_activity_flow")
+    @ApiOperation("获取业务流程列表 - 压测场景用")
+    public ResponseResult<List<BusinessLinkManageTableEntity>> businessActivityFlow() {
+        return ResponseResult.success(sceneService.businessActivityFlowList());
     }
 
     /**

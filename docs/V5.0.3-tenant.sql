@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_info`
     UNIQUE KEY `unique_key` (`key`) USING BTREE,
     UNIQUE KEY `unique_code` (`code`) USING BTREE
     ) ENGINE = InnoDB;
+
 CREATE TABLE IF NOT EXISTS `t_tenant_env_ref`
 (
     `id`             bigint(20)     NOT NULL AUTO_INCREMENT,
@@ -26,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_env_ref`
     `gmt_create`     datetime       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `gmt_update`     datetime       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `unique_code` (`env_code`) USING BTREE
+    UNIQUE KEY `unique_tenant_code` (`tenant_id`,`env_code`) USING BTREE
     ) ENGINE = InnoDB;
 
 -- 配置表
@@ -35,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_config`
     `id`             bigint(20)     NOT NULL AUTO_INCREMENT,
     `tenant_id`    	 bigint(20)     NOT NULL COMMENT '租户id',
     `env_code`       varchar(512)   NOT NULL COMMENT '环境代码，测试环境：test,生产环境：prod',
-    `type`           tinyint(10)  	NOT NULL COMMENT '配置类型":0:存储配置;',
+    `desc`           varchar(1024)  DEFAULT ""   COMMENT '配置描述',
     `key`           varchar(128)   NOT NULL COMMENT '配置名',
     `value`      		 LONGTEXT       NOT NULL COMMENT '配置值',
     `status`      	 tinyint(4)     NOT NULL DEFAULT '1' COMMENT '状态：0：停用；1：启用；',
@@ -45,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_config`
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_key_tenant_env` (`tenant_id`,`env_code`,`key`) USING BTREE
     ) ENGINE = InnoDB;
+
 INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`is_default`) VALUES (1, 'test', '测试环境',1);
 INSERT INTO `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`desc`,`is_default`) VALUES (1, 'prod', '生产环境','当前环境为生产环境，请谨慎操作',0);
 
@@ -311,6 +313,12 @@ ALTER TABLE `t_middleware_link_relate`
 ALTER TABLE `t_middleware_summary`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
+ALTER TABLE `t_middleware_summary_copy1`
+    ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
+
+    ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_operation_log`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
@@ -410,6 +418,10 @@ ALTER TABLE `t_middleware_link_relate`
     ADD UNIQUE INDEX `idx_middleware_tech_link_tenant_env` ( `MIDDLEWARE_ID`,`TECH_LINK_ID`,`tenant_id`,`env_code` );
 ALTER TABLE `t_middleware_summary`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_middleware_summary_copy1`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+
 ALTER TABLE `t_operation_log`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_ops_script_batch_no`
@@ -742,6 +754,10 @@ alter table t_tro_dept
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id';
 alter table t_tro_dept
     ADD INDEX `idx_tenant` ( `tenant_id` );
+
+
+-- t_tro_resource
+ALTER TABLE t_tro_resource comment '菜单资源库表';
 --  已有索引 idx_value value
 
 
@@ -776,7 +792,8 @@ alter table t_tro_trace_entry
 alter table t_tro_user
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id';
 alter table t_tro_user
-    ADD INDEX `idx_tenant` ( `tenant_id`);
+    ADD INDEX `idx_tenant` ( `tenant_id`),
+    ADD UNIQUE KEY `idx_name_tenant_id`(`tenant_id`,`name` );
 -- idx_name 唯一索引
 
 -- t_tro_user_dept_relation

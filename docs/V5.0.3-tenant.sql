@@ -886,4 +886,10 @@ alter table t_cache_config_template
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`,
     ADD UNIQUE KEY `idx_eng_name_env_tenant` (`eng_name`,`tenant_id`,`env_code`) USING BTREE;
 
+alter table t_app_remote_call_template_mapping
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`,
+    ADD UNIQUE KEY `idx_interface_type_env_tenant` (`interfaceType`,`tenant_id`,`env_code`) USING BTREE;
+
+
 

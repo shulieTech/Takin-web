@@ -156,7 +156,7 @@ public class BusinessFlowController {
     )
     public ResponseResult<PagingList<BusinessFlowListResponse>> getBusinessFlowList(@ApiParam("业务流程名称") String businessFlowName, Integer current, Integer pageSize) {
         BusinessFlowPageQueryRequest queryRequest = new BusinessFlowPageQueryRequest();
-        queryRequest.setCurrent(current);
+        queryRequest.setCurrentPage(current);
         queryRequest.setPageSize(pageSize);
         queryRequest.setBusinessFlowName(businessFlowName);
         PagingList<BusinessFlowListResponse> dto = sceneService.getBusinessFlowList(queryRequest);

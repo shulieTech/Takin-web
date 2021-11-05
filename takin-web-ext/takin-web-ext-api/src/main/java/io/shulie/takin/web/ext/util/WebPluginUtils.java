@@ -652,7 +652,7 @@ public class WebPluginUtils {
         if (userApi != null) {
             return userApi.traceTenantId();
         }
-        return defaultSystem?SYS_DEFAULT_TENANT_ID:DEFAULT_TENANT_ID;
+        return defaultSystem ? SYS_DEFAULT_TENANT_ID : DEFAULT_TENANT_ID;
     }
 
     /**
@@ -684,7 +684,7 @@ public class WebPluginUtils {
         if (userApi != null) {
             return userApi.traceEnvCode();
         }
-        return defaultSystem?SYS_DEFAULT_ENV_CODE:DEFAULT_ENV_CODE;
+        return defaultSystem ? SYS_DEFAULT_ENV_CODE : DEFAULT_ENV_CODE;
     }
 
     /**
@@ -714,7 +714,6 @@ public class WebPluginUtils {
     }
 
     /**
-     * TODO by wy
      * 组装 http 租户参数
      * @return
      */
@@ -751,7 +750,7 @@ public class WebPluginUtils {
      * @return
      */
     private static List<TenantEnv> getDefaultTenantEnvList() {
-        List<TenantEnv> envs =Lists.newArrayList();
+        List<TenantEnv> envs = Lists.newArrayList();
         TenantInfoExt.TenantEnv env = new TenantEnv();
         env.setEnvCode(DEFAULT_ENV_CODE);
         env.setEnvName("测试环境");

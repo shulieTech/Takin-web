@@ -22,7 +22,7 @@ import java.util.List;
  */
 @Data
 @ApiModel("出参类-业务流程详情出参")
-public class BusinessFlowDetailResponse extends AuthQueryResponseCommonExt implements Serializable {
+public class BusinessFlowDetailResponse implements Serializable {
 
     @ApiModelProperty(name = "id", value = "业务流程id")
     private Long id;

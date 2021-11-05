@@ -276,7 +276,7 @@ public class SceneServiceImpl implements SceneService {
         //将节点树处理成线程组在最外层的形式
         List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.THREAD_GROUP, scriptNodes);
         List<ScriptJmxNode> scriptJmxNodes = LinkManageConvert.INSTANCE.ofScriptNodeList(scriptNodeByType);
-
+        FileManageResponse scriptFile = new FileManageResponse();
         ScriptManageDeployDetailResponse scriptManageDeployDetail = scriptManageService.getScriptManageDeployDetail(sceneResult.getScriptDeployId());
         if (scriptManageDeployDetail != null) {
             //脚本文件单独存储
@@ -284,16 +284,16 @@ public class SceneServiceImpl implements SceneService {
                 List<FileManageResponse> fileManageResponses = scriptManageDeployDetail.getFileManageResponseList().stream()
                     .filter(o -> FileTypeEnum.SCRIPT.getCode().equals(o.getFileType())).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(fileManageResponses)) {
-                    result.setScriptFile(LinkManageConvert.INSTANCE.ofFileManageResponse(fileManageResponses.get(0)));
+                    scriptFile = LinkManageConvert.INSTANCE.ofFileManageResponse(fileManageResponses.get(0));
                     scriptManageDeployDetail.getFileManageResponseList().remove(fileManageResponses.get(0));
                     //将附件数据放入数据文件之中
                     if (CollectionUtils.isNotEmpty(scriptManageDeployDetail.getAttachmentManageResponseList())){
                         scriptManageDeployDetail.getFileManageResponseList().addAll(scriptManageDeployDetail.getAttachmentManageResponseList());
                     }
                 }
-
             }
             result = LinkManageConvert.INSTANCE.ofBusinessFlowDetailResponse(scriptManageDeployDetail);
+            result.setScriptFile(scriptFile);
             int fileManageNum = result.getFileManageResponseList() == null ? 0 : result.getFileManageResponseList().size();
             result.setFileNum(fileManageNum);
         }

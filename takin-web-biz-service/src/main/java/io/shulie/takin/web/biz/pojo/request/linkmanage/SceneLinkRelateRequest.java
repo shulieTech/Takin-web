@@ -35,9 +35,6 @@ public class SceneLinkRelateRequest implements Serializable {
     @ApiModelProperty("请求方式：GET,POST")
     private String method;
 
-    @ApiModelProperty("远程调用类型")
-    private String rpcType;
-
     @ApiModelProperty("请求路径")
     private String serviceName;
 

@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
+import io.shulie.takin.web.common.enums.activity.info.RpcTypeEnum;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import lombok.extern.slf4j.Slf4j;
 
@@ -318,23 +320,28 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Override
-    public List<ScriptJmxNode> getThreadGroupDetail(Long id, String xpathMd5) {
-
+    public BusinessFlowThreadResponse getThreadGroupDetail(Long id, String xpathMd5) {
+        BusinessFlowThreadResponse response = new BusinessFlowThreadResponse();
         SceneResult sceneResult = sceneDao.getSceneDetail(id);
         if (sceneResult == null) {
-            return new ArrayList<>();
+            return response;
         }
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
         //将节点树处理成线程组在最外层的形式
         List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.THREAD_GROUP, scriptNodes);
+        int nodeNumByType = JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, scriptNodeByType);
         List<ScriptJmxNode> scriptJmxNodes = LinkManageConvert.INSTANCE.ofScriptNodeList(scriptNodeByType);
         List<ScriptJmxNode> threadJmxNode = scriptJmxNodes.stream().filter(o -> o.getXpathMd5().equals(xpathMd5)).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(threadJmxNode)){
+            return response;
+        }
         SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
         sceneLinkRelateParam.setSceneIds(Collections.singletonList(id.toString()));
         List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
         dealScriptJmxNodes(sceneLinkRelateList, threadJmxNode);
-
-        return threadJmxNode;
+        response.setLinkRelateNum(CollectionUtils.isEmpty(sceneLinkRelateList) ? 0 : sceneLinkRelateList.size());
+        response.setTotalNodeNum(nodeNumByType);
+        return response;
     }
 
     @Override
@@ -391,15 +398,24 @@ public class SceneServiceImpl implements SceneService {
                 Long activity = activityService.createActivity(request);
                 sceneLinkRelateRequest.setBusinessLinkId(activity);
             }
+
             entrance = ActivityUtil.buildEntrance(sceneLinkRelateRequest.getMethod(), JmxUtil.pathGuiYi(sceneLinkRelateRequest.getServiceName()),
-                sceneLinkRelateRequest.getRpcType());
+                    EntranceTypeUtils.getRpcType(sceneLinkRelateRequest.getType().getType()).getRpcType());
         } else if (BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
-            if (sceneLinkRelateRequest.getBusinessLinkId() == null) {
+            ActivityQueryParam queryParam = new ActivityQueryParam();
+            queryParam.setBusinessType(sceneLinkRelateRequest.getBusinessType());
+            queryParam.setEntrance(ActivityUtil.buildVirtualEntrance(sceneLinkRelateRequest.getServiceName(),EntranceTypeUtils.getRpcType(sceneLinkRelateRequest.getType().getType()).getRpcType()));
+            List<ActivityListResult> activityList = activityDao.getActivityList(queryParam);
+            if (CollectionUtils.isNotEmpty(activityList)){
+                ActivityListResult activityListResult = activityList.get(0);
+                sceneLinkRelateRequest.setBusinessLinkId(activityListResult.getActivityId());
+            }else {
                 VirtualActivityCreateRequest createRequest = LinkManageConvert.INSTANCE.ofVirtualActivityCreateRequest(sceneLinkRelateRequest);
                 createRequest.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getType().getType()));
                 Long virtualActivity = activityService.createVirtualActivity(createRequest);
                 sceneLinkRelateRequest.setBusinessLinkId(virtualActivity);
             }
+
             entrance = ActivityUtil.buildVirtualEntrance(sceneLinkRelateRequest.getServiceName(),
                 EntranceTypeUtils.getRpcType(sceneLinkRelateRequest.getType().getType()).getRpcType());
         } else {
@@ -539,6 +555,8 @@ public class SceneServiceImpl implements SceneService {
     private void dealScriptJmxNodes(List<ScriptJmxNode> scriptJmxNodes, Map<String, String> xpathMd5Map, Map<String, ActivityListResult> activityMap) {
         if (CollectionUtils.isNotEmpty(scriptJmxNodes)) {
             for (ScriptJmxNode scriptJmxNode : scriptJmxNodes) {
+                //默认不匹配
+                scriptJmxNode.setStatus(0);
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
                     ActivityListResult activityListResult = activityMap.get(xpathMd5Map.get(scriptJmxNode.getXpathMd5()));
                     if (activityListResult != null) {
@@ -560,6 +578,7 @@ public class SceneServiceImpl implements SceneService {
                         scriptJmxNode.setBindBusinessId(activityListResult.getBindBusinessId());
                         scriptJmxNode.setTechLinkId(activityListResult.getTechLinkId());
                         scriptJmxNode.setEntrace(activityListResult.getEntrace());
+                        scriptJmxNode.setStatus(1);
                     }
 
                 }

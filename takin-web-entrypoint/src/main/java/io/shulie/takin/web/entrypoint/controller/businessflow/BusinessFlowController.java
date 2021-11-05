@@ -11,6 +11,7 @@ import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -159,9 +160,9 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.QUERY
     )
-    public ResponseResult<List<ScriptJmxNode>> getThreadGroupDetail(@NotNull Long id, @NotNull String xpathMd5) {
-        List<ScriptJmxNode> list = sceneService.getThreadGroupDetail(id,xpathMd5);
-        return ResponseResult.success(list);
+    public ResponseResult<BusinessFlowThreadResponse> getThreadGroupDetail(@NotNull Long id, @NotNull String xpathMd5) {
+        BusinessFlowThreadResponse response = sceneService.getThreadGroupDetail(id,xpathMd5);
+        return ResponseResult.success(response);
     }
 
     @GetMapping("/scene/list")

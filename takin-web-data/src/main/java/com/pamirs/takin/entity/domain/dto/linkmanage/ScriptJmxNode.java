@@ -45,6 +45,9 @@ public class ScriptJmxNode {
     @ApiModelProperty(name = "samplerType", value = "采样器类型")
     private SamplerTypeEnum samplerType;
 
+    @ApiModelProperty(name = "status", value = "状态：0未匹配完成，1匹配完成")
+    private Integer status;
+
     @ApiModelProperty(name = "children", value = "子节点")
     private List<ScriptJmxNode> children;
 

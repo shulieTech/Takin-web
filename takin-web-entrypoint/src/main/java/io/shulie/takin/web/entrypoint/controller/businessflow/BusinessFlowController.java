@@ -89,7 +89,7 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.UPDATE
     )
-    public ResponseResult<BusinessFlowMatchResponse> autoMatchActivity(@NotNull Long id) {
+    public ResponseResult<BusinessFlowMatchResponse> autoMatchActivity(@RequestBody @NotNull Long id) {
         try {
             BusinessFlowMatchResponse sceneDetailDto = sceneService.autoMatchActivity(id);
             return ResponseResult.success(sceneDetailDto);

@@ -440,8 +440,8 @@ ALTER TABLE `t_application_ds_manage`
     MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 ALTER TABLE `t_application_mnt`
     MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
-ALTER TABLE `t_application_middleware`
-    MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
+-- ALTER TABLE `t_application_middleware`
+--     MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 
 CREATE VIEW APPLICATION_VIEW AS
 SELECT APPLICATION_ID,APPLICATION_NAME,tenant_id AS TENANT_ID,env_code as ENV_CODE FROM t_application_mnt;
@@ -469,15 +469,6 @@ alter table t_pradar_zk_config
 alter table t_pradar_zk_config
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 -- 已有索引 idx_zk_path
-
-
--- t_pressure_machine 压测引擎机器 先不加
-ALTER TABLE t_pressure_machine comment '压测引擎机器';
-alter table t_pressure_machine
-    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
-	  ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
-alter table t_pressure_machine
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 
 -- t_pressure_machine_log 压测引擎机器日志 先不加
@@ -853,7 +844,7 @@ update e_patrol_exception set env_code='test',tenant_id=1;
 alter table e_patrol_exception_config modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 update e_patrol_exception_config set tenant_id=customer_id;
 update e_patrol_exception_config set env_code='test' where tenant_id is not null;
-ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `env_code`, `tenant_id`, `type_value`,`level_value` ) USING BTREE
+ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `env_code`, `tenant_id`, `type_value`,`level_value` ) USING BTREE;
 -- 注意顺序，先添加唯一索引，再insert新的默认配置
 INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (1, 4, 1, 30, 1, '一般慢SQL');
 INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (0, 4, 2, 60, 1, '严重慢SQL');
@@ -875,3 +866,6 @@ update e_patrol_scene_check set env_code='test',tenant_id=1;
 
 alter table t_application_mnt
     ADD INDEX `idx_application_id` ( `application_id` );
+
+
+--表字段变更

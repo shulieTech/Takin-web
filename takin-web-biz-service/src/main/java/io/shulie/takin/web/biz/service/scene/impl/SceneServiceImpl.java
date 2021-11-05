@@ -306,11 +306,11 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Override
-    public BusinessFlowDetailResponse getThreadGroupDetail(Long id, String xpathMd5) {
-        BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
+    public List<ScriptJmxNode> getThreadGroupDetail(Long id, String xpathMd5) {
+
         SceneResult sceneResult = sceneDao.getSceneDetail(id);
         if (sceneResult == null) {
-            return result;
+            return new ArrayList<>();
         }
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
         //将节点树处理成线程组在最外层的形式
@@ -322,10 +322,7 @@ public class SceneServiceImpl implements SceneService {
         List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
         dealScriptJmxNodes(sceneLinkRelateList, threadJmxNode);
 
-        result.setScriptJmxNodeList(threadJmxNode);
-        result.setThreadGroupNum(scriptNodeByType.size());
-        toBusinessFlowDetailResponse(sceneResult, result);
-        return result;
+        return threadJmxNode;
     }
 
     @Override
@@ -527,7 +524,16 @@ public class SceneServiceImpl implements SceneService {
                             entranceJoinEntity = ActivityUtil.covertEntrance(activityListResult.getEntrace());
                         }
                         scriptJmxNode.setBusinessServicePath(entranceJoinEntity.getServiceName());
+                        scriptJmxNode.setIsChange(activityListResult.getIsChange());
+                        scriptJmxNode.setIsCore(activityListResult.getIsCore());
+                        scriptJmxNode.setBusinessDomain(activityListResult.getBusinessDomain());
+                        scriptJmxNode.setActivityLevel(activityListResult.getActivityLevel());
+                        scriptJmxNode.setBusinessType(activityListResult.getBusinessType());
+                        scriptJmxNode.setBindBusinessId(activityListResult.getBindBusinessId());
+                        scriptJmxNode.setTechLinkId(activityListResult.getTechLinkId());
+                        scriptJmxNode.setEntrace(activityListResult.getEntrace());
                     }
+
                 }
                 if (CollectionUtils.isNotEmpty(scriptJmxNode.getChildren())) {
                     dealScriptJmxNodes(scriptJmxNode.getChildren(), xpathMd5Map, activityMap);

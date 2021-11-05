@@ -42,6 +42,13 @@ public class ScriptJmxNode {
     @ApiModelProperty(name = "identification", value = "url的拼接值")
     private String identification;
 
+    @ApiModelProperty(name = "samplerType", value = "采样器类型")
+    private SamplerTypeEnum samplerType;
+
+    @ApiModelProperty(name = "children", value = "子节点")
+    private List<ScriptJmxNode> children;
+
+
     @ApiModelProperty(name = "businessActivityId", value = "业务活动id")
     private Long businessActivityId;
 
@@ -51,11 +58,31 @@ public class ScriptJmxNode {
     @ApiModelProperty(name = "businessServicePath", value = "业务活动链接路径")
     private String businessServicePath;
 
-    @ApiModelProperty(name = "samplerType", value = "采样器类型")
-    private SamplerTypeEnum samplerType;
+    @ApiModelProperty(name = "isChange", value = "是否有变更 0:正常；1:已变更")
+    private Integer isChange;
 
-    @ApiModelProperty(name = "children", value = "子节点")
-    private List<ScriptJmxNode> children;
+    @ApiModelProperty(name = "isCore", value = "业务链路是否否核心链路 0:不是;1:是")
+    private Integer isCore;
+
+    @ApiModelProperty(name = "businessDomain", value = "业务域: 0:订单域\", \"1:运单域\", \"2:结算域")
+    private String businessDomain;
+
+    @ApiModelProperty(name = "activityLevel", value = "业务活动级别")
+    private String activityLevel;
+
+    @ApiModelProperty(name = "businessType", value = "业务活动类型")
+    private Integer businessType;
+
+    @ApiModelProperty(name = "bindBusinessId", value = "绑定业务活动")
+    private Long bindBusinessId;
+
+    @ApiModelProperty(name = "techLinkId", value = "技术链路ID")
+    private String techLinkId;
+
+    @ApiModelProperty(name = "entrace", value = "链路入口")
+    private String entrace;
+
+
 
 
 }

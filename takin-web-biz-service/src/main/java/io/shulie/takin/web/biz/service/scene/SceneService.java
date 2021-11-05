@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.scene;
 
+import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
@@ -36,7 +37,7 @@ public interface SceneService {
 
     BusinessFlowDetailResponse uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest);
 
-    BusinessFlowDetailResponse getThreadGroupDetail(Long id, String xpathMd5);
+    List<ScriptJmxNode> getThreadGroupDetail(Long id, String xpathMd5);
 
     BusinessFlowMatchResponse autoMatchActivity(Long id);
 

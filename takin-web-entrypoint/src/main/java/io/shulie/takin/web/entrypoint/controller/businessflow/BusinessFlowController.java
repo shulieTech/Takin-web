@@ -1,5 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.businessflow;
 
+import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -143,9 +145,9 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.QUERY
     )
-    public ResponseResult<BusinessFlowDetailResponse> getThreadGroupDetail(@NotNull Long id,@NotNull String xpathMd5) {
-        BusinessFlowDetailResponse dto = sceneService.getThreadGroupDetail(id,xpathMd5);
-        return ResponseResult.success(dto);
+    public ResponseResult<List<ScriptJmxNode>> getThreadGroupDetail(@NotNull Long id, @NotNull String xpathMd5) {
+        List<ScriptJmxNode> list = sceneService.getThreadGroupDetail(id,xpathMd5);
+        return ResponseResult.success(list);
     }
 
     @GetMapping("/scene/list")

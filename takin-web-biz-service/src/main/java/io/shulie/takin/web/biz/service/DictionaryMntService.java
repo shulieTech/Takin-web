@@ -94,8 +94,8 @@ public class DictionaryMntService extends CommonService {
      * @return
      */
     public PageInfo<TDictionaryVo> queryDictionaryList(Map<String, Object> paramMap) {
-        paramMap.put("tenant_id", WebPluginUtils.traceTenantId(true));
-        paramMap.put("env_code", WebPluginUtils.traceEnvCode(true));
+        paramMap.put("tenant_id", WebPluginUtils.traceTenantId());
+        paramMap.put("env_code", WebPluginUtils.traceEnvCode());
         PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
         List<TDictionaryVo> dictionaryVoList = tDictionaryDataMapper.queryDictionaryList(paramMap);
 

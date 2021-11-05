@@ -639,20 +639,23 @@ public class WebPluginUtils {
      * @return 租户主键
      */
     public static Long traceTenantId() {
-        return traceTenantId(false);
+        if (userApi != null) {
+            return userApi.traceTenantId();
+        }
+        return DEFAULT_TENANT_ID;
     }
 
     /**
      * 返回租户id
      * 租户依赖于用户
-     * @param defaultSystem 是否使用系统的默认值 true=使用系统默认值(-1,system...) false=使用一般默认值(prod,test,1....)
+     * 系统全局表查询使用
      * @return 租户主键
      */
-    public static Long traceTenantId(boolean defaultSystem) {
+    public static List<Long> traceTenantIdForSystem() {
         if (userApi != null) {
-            return userApi.traceTenantId();
+            return Lists.newArrayList(userApi.traceTenantId());
         }
-        return defaultSystem ? SYS_DEFAULT_TENANT_ID : DEFAULT_TENANT_ID;
+        return Lists.newArrayList(SYS_DEFAULT_TENANT_ID ,DEFAULT_TENANT_ID);
     }
 
     /**
@@ -673,18 +676,20 @@ public class WebPluginUtils {
      * @return 环境代码
      */
     public static String traceEnvCode() {
-        return traceEnvCode(false);
-    }
-
-    /**
-     * @param defaultSystem 是否使用系统的默认值 true=使用系统默认值(-1,system...) false=使用一般默认值(prod,test,1....)
-     * @return
-     */
-    public static String traceEnvCode(boolean defaultSystem) {
         if (userApi != null) {
             return userApi.traceEnvCode();
         }
-        return defaultSystem ? SYS_DEFAULT_ENV_CODE : DEFAULT_ENV_CODE;
+        return DEFAULT_ENV_CODE;
+    }
+
+    /**
+     * @return
+     */
+    public static List<String> traceEnvCodeForSystem() {
+        if (userApi != null) {
+            return Lists.newArrayList(userApi.traceEnvCode());
+        }
+        return Lists.newArrayList(SYS_DEFAULT_ENV_CODE, DEFAULT_ENV_CODE);
     }
 
     /**

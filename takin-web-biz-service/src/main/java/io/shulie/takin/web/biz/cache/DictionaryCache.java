@@ -109,8 +109,8 @@ public class DictionaryCache {
     private void fillDictFromDatabase() {
         Map<String, Object> paramMap = Maps.newHashMap();
         paramMap.put("valueActive", "Y");
-        paramMap.put("tenantId", WebPluginUtils.traceTenantId(true));
-        paramMap.put("envCode", WebPluginUtils.traceEnvCode(true));
+        paramMap.put("tenantId", WebPluginUtils.traceTenantId());
+        paramMap.put("envCode", WebPluginUtils.traceEnvCode());
         List<TDictionaryVo> voList = tDictionaryDataMapper.queryDictionaryList(paramMap);
         if (CollectionUtils.isEmpty(voList)) {
             return;

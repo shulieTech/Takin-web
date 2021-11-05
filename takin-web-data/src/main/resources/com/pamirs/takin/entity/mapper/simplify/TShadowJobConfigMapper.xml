@@ -33,7 +33,7 @@
         select count (*) from t_shadow_job_config
         <include refid="Data_Where_Clause"/>
     </select>
-    <select id="selectOneById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    <select id="selectOneById" parameterType="com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery" resultMap="BaseResultMap">
         select
         'false' as QUERYID,
         <include refid="Base_Column_List"/>

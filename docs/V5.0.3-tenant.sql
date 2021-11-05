@@ -89,7 +89,7 @@ INSERT INTO `trodb`.`t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`
 INSERT INTO `trodb`.`t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`, `USE_YN`, `CREATE_TIME`, `UPDATE_TIME`) VALUES ('WECHAT_HOOK_URL', 'https://work.weixin.qq.com/help?person_id=1&doc_id=1337', '微信机器人地址', 0, '2021-04-16 15:55:33', '2021-04-16 15:57:19');
 INSERT INTO `trodb`.`t_base_config`(`CONFIG_CODE`, `CONFIG_VALUE`, `CONFIG_DESC`, `USE_YN`, `CREATE_TIME`, `UPDATE_TIME`) VALUES ('WHITE_LIST_SWITCH', '1', '白名单开关：0-关闭 1-开启', 0, NULL, '2021-08-23 16:59:30');
 
------ 流川 -----
+-- 流川
 -- tenant_id
 ALTER TABLE e_patrol_activity_assert ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_board ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
@@ -197,7 +197,7 @@ alter table t_agent_plugin ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` )
 alter table t_agent_plugin_lib_support ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 ALTER TABLE t_agent_version
-DROP KEY `version`,
+-- DROP KEY `version`,
 ADD UNIQUE KEY `idx_version_tenant_id_env_code`( `version`,`tenant_id`,`env_code` );
 
 alter table t_alarm_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -206,9 +206,9 @@ alter table t_app_business_table_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`
 alter table t_app_middleware_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table t_app_remote_call ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table t_application_api_manage ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
------ 流川 -----
+-- 流川
 
------ 剑英 -----
+-- 剑英
 ALTER TABLE `t_application_ds_manage`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code',
 ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
@@ -307,9 +307,6 @@ ALTER TABLE `t_middleware_info`
 ALTER TABLE `t_middleware_jar`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
-ALTER TABLE `t_middleware_jar_copy1`
-    ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
-    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_middleware_link_relate`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
@@ -320,6 +317,8 @@ ALTER TABLE `t_middleware_summary_copy1`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 
+    ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
+    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 ALTER TABLE `t_operation_log`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
@@ -415,11 +414,10 @@ ALTER TABLE `t_login_record`
 ALTER TABLE `t_middleware_info` ADD UNIQUE INDEX `idx_name_version_tenant_env` ( `MIDDLEWARE_NAME`, `MIDDLEWARE_VERSION`, `tenant_id`, `env_code` );
 ALTER TABLE `t_middleware_jar`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE `t_middleware_jar_copy1`
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_middleware_link_relate`
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+    ADD UNIQUE INDEX `idx_middleware_tech_link_tenant_env` ( `MIDDLEWARE_ID`,`TECH_LINK_ID`,`tenant_id`,`env_code` );
 ALTER TABLE `t_middleware_summary`
+    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_middleware_summary_copy1`
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -449,21 +447,21 @@ ALTER TABLE `t_application_ds_manage`
     MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 ALTER TABLE `t_application_mnt`
     MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
-ALTER TABLE `t_application_middleware`
-    MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
+-- ALTER TABLE `t_application_middleware`
+--     MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 
 CREATE VIEW APPLICATION_VIEW AS
 SELECT APPLICATION_ID,APPLICATION_NAME,tenant_id AS TENANT_ID,env_code as ENV_CODE FROM t_application_mnt;
 
----系统信息的权限问题
+-- 系统信息的权限问题
 INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,
                                      `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
 VALUES (510, NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, NULL, NULL, '2021-01-14 11:19:50',
         '2021-01-14 11:19:50', 0);
------ 剑英 -----
+-- 剑英
 
------ 无涯 -----
--- t_pessure_test_task_process_config  压测任务业务流程配置  已废弃 -----
+-- 无涯
+-- t_pessure_test_task_process_config  压测任务业务流程配置  已废弃
 ALTER TABLE t_pessure_test_task_process_config comment '表已废弃，压测任务业务流程配置 ';
 
 -- t_prada_http_data prada获取http接口表 已废弃
@@ -478,15 +476,6 @@ alter table t_pradar_zk_config
 alter table t_pradar_zk_config
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 -- 已有索引 idx_zk_path
-
-
--- t_pressure_machine 压测引擎机器 先不加
-ALTER TABLE t_pressure_machine comment '压测引擎机器';
-alter table t_pressure_machine
-    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
-	  ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
-alter table t_pressure_machine
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 
 -- t_pressure_machine_log 压测引擎机器日志 先不加
@@ -508,7 +497,7 @@ alter table t_pressure_machine_statistics
 -- t_pressure_test_engine_config 压测引擎配置 已废弃
 ALTER TABLE t_pressure_test_engine_config comment '表已废弃，压测引擎配置';
 
----- t_pressure_time_record 先不加
+-- t_pressure_time_record 先不加
 alter table t_pressure_time_record
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
@@ -599,7 +588,7 @@ alter table t_scene_scheduler_task
 alter table t_scene_scheduler_task
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
--- t_scene_tag_ref  --标签
+-- t_scene_tag_ref  标签
 ALTER TABLE t_scene_tag_ref comment '场景标签关联';
 alter table t_scene_tag_ref
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
@@ -617,7 +606,7 @@ alter table t_script_debug
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 -- 已有索引 idx_si 快照id
 
--- t_script_execute_result  --脚本执行结果
+-- t_script_execute_result  脚本执行结果
 ALTER TABLE t_script_execute_result comment '脚本执行结果';
 alter table t_script_execute_result
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
@@ -627,7 +616,7 @@ alter table t_script_execute_result
 -- 索引 idx_script_deploy_id 快照id
 
 
--- t_script_file_ref  --脚本文件关联表
+-- t_script_file_ref -脚本文件关联表
 ALTER TABLE t_script_file_ref comment '脚本文件关联表';
 alter table t_script_file_ref
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
@@ -636,7 +625,7 @@ alter table t_script_file_ref
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 
--- t_script_manage  --脚本表
+-- t_script_manage  脚本表
 ALTER TABLE t_script_manage comment '脚本表';
 alter table t_script_manage
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
@@ -647,7 +636,7 @@ alter table t_script_manage
 
 
 
--- t_script_manage_deploy  --脚本文件关联表
+-- t_script_manage_deploy  脚本文件关联表
 ALTER TABLE t_script_manage_deploy comment '脚本文件关联表';
 alter table t_script_manage_deploy
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
@@ -657,7 +646,7 @@ alter table t_script_manage_deploy
 -- 唯一索引 name_version name和脚本版本
 
 
--- t_script_tag_ref  --脚本标签关联表
+-- t_script_tag_ref  脚本标签关联表
 ALTER TABLE t_script_tag_ref comment '脚本标签关联表';
 alter table t_script_tag_ref
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
@@ -666,7 +655,7 @@ alter table t_script_tag_ref
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 
--- t_shadow_job_config  --影子job任务配置
+-- t_shadow_job_config  影子job任务配置
 alter table t_shadow_job_config
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
@@ -677,7 +666,7 @@ alter table t_shadow_job_config
 
 
 
--- t_shadow_mq_consumer  --影子job任务配置
+-- t_shadow_mq_consumer  影子job任务配置
 alter table t_shadow_mq_consumer
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
@@ -685,7 +674,7 @@ alter table t_shadow_mq_consumer
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 
--- t_shadow_table_datasource  --影子表数据源配置
+-- t_shadow_table_datasource  影子表数据源配置
 alter table t_shadow_table_datasource
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
@@ -769,6 +758,8 @@ alter table t_tro_dept
 
 -- t_tro_resource
 ALTER TABLE t_tro_resource comment '菜单资源库表';
+--  已有索引 idx_value value
+
 
 
 -- t_tro_role
@@ -834,11 +825,6 @@ alter table t_whitelist_effective_app
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 alter table t_whitelist_effective_app
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-
------ 无涯 -----
-
-
------ 兮曦 -----
 -- e_patrol_activity_assert 断言配置表
 update e_patrol_activity_assert set env_code='test',tenant_id=1;
 
@@ -856,7 +842,7 @@ update e_patrol_exception set env_code='test',tenant_id=1;
 alter table e_patrol_exception_config modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 update e_patrol_exception_config set tenant_id=customer_id;
 update e_patrol_exception_config set env_code='test' where tenant_id is not null;
-ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `env_code`, `tenant_id`, `type_value`,`level_value` ) USING BTREE
+ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `env_code`, `tenant_id`, `type_value`,`level_value` ) USING BTREE;
 -- 注意顺序，先添加唯一索引，再insert新的默认配置
 INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (1, 4, 1, 30, 1, '一般慢SQL');
 INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (0, 4, 2, 60, 1, '严重慢SQL');
@@ -873,8 +859,48 @@ update e_patrol_scene_chain set env_code='test',tenant_id=1;
 -- e_patrol_scene_check 巡检任务启动异常表
 update e_patrol_scene_check set env_code='test',tenant_id=1;
 
------ 兮曦 -----
-
 
 alter table t_application_mnt
     ADD INDEX `idx_application_id` ( `application_id` );
+
+-- 额外补充 租户期间增加的表
+alter table t_mq_config_template
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`,
+--     DROP KEY `eng_name`,
+    ADD UNIQUE KEY `idx_eng_name_env_tenant` (`eng_name`,`tenant_id`,`env_code`) USING BTREE;
+
+alter table t_application_ds_cache_manage
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
+
+
+alter table t_application_ds_db_table
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
+
+alter table t_application_ds_db_manage
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
+
+alter table t_http_client_config_template
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`,
+    ADD UNIQUE KEY `idx_eng_name_env_tenant` (`eng_name`,`tenant_id`,`env_code`) USING BTREE;
+
+alter table t_rpc_config_template
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`,
+    ADD UNIQUE KEY `idx_eng_name_env_tenant` (`eng_name`,`tenant_id`,`env_code`) USING BTREE;
+
+alter table t_connectpool_config_template
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`,
+    ADD UNIQUE KEY `idx_eng_name_env_tenant` (`eng_name`,`tenant_id`,`env_code`) USING BTREE;
+
+alter table t_cache_config_template
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`,
+    ADD UNIQUE KEY `idx_eng_name_env_tenant` (`eng_name`,`tenant_id`,`env_code`) USING BTREE;
+
+

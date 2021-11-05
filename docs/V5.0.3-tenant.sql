@@ -957,6 +957,91 @@ alter table t_application_ds_db_manage
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 
+CREATE TABLE IF NOT EXISTS  `t_http_client_config_template` (
+     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+     `name` varchar(100) DEFAULT '' COMMENT '中间件中文描述',
+     `type` varchar(100) DEFAULT '' COMMENT '中间件所属类型',
+     `eng_name` varchar(100) DEFAULT '' COMMENT '中间件英文名称',
+     `cobm_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持自动梳理;0:不支持;1:支持',
+     `whitelist_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持白名单;0:不支持;1:支持',
+     `return_mock_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持返回值mock;0:不支持;1:支持',
+     `return_mock` text CHARACTER SET utf8 COMMENT '返回值mock文本',
+     `forward_mock_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持转发mock;0:不支持;1:支持',
+     `forward_mock` text CHARACTER SET utf8 COMMENT '转发mock文本',
+     `status` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '1.可用，2不可用',
+     `remark` varchar(500) DEFAULT NULL COMMENT '标记',
+     `commit` varchar(500) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
+     `CUSTOMER_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '租户id',
+     `USER_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '用户id',
+     `IS_DELETED` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+     `gmt_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     `gmt_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     PRIMARY KEY (`id`) USING BTREE,
+     UNIQUE KEY `eng_name` (`eng_name`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='http-client配置模版表';
 
+alter table t_http_client_config_template
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`,
+    ADD UNIQUE KEY `idx_eng_name_env_tenant` (`eng_name`,`tenant_id`,`env_code`) USING BTREE;
+
+
+CREATE TABLE `t_rpc_config_template` (
+     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+     `name` varchar(100) DEFAULT '' COMMENT '中间件中文描述',
+     `type` varchar(100) DEFAULT '' COMMENT '中间件所属类型',
+     `eng_name` varchar(100) DEFAULT '' COMMENT '中间件英文名称',
+     `cobm_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持自动梳理;0:不支持;1:支持',
+     `whitelist_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持白名单;0:不支持;1:支持',
+     `return_mock_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持返回值mock;0:不支持;1:支持',
+     `return_mock` text CHARACTER SET utf8 COMMENT '返回值mock文本',
+     `forward_mock_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持转发mock;0:不支持;1:支持',
+     `forward_mock` text CHARACTER SET utf8 COMMENT '转发mock文本',
+     `status` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '1.可用，2不可用',
+     `remark` varchar(500) DEFAULT NULL COMMENT '标记',
+     `commit` varchar(500) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
+     `CUSTOMER_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '租户id',
+     `USER_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '用户id',
+     `CREATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+     `UPDATE_TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+     `IS_DELETED` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+     `gmt_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     `gmt_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     PRIMARY KEY (`id`) USING BTREE,
+     UNIQUE KEY `eng_name` (`eng_name`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='rpc框架配置模版';
+
+alter table t_rpc_config_template
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`,
+    ADD UNIQUE KEY `idx_eng_name_env_tenant` (`eng_name`,`tenant_id`,`env_code`) USING BTREE;
+
+
+CREATE TABLE `t_connectpool_config_template` (
+     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+     `name` varchar(100) DEFAULT '' COMMENT '中间件中文描述',
+     `type` varchar(100) DEFAULT '' COMMENT '中间件所属类型',
+     `eng_name` varchar(100) DEFAULT '' COMMENT '中间件英文名称',
+     `cobm_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持自动梳理;0:不支持;1:支持',
+     `shadowtable_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持影子表方案;0:不支持;1:支持',
+     `shadowdb_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持影子库方案;0:不支持;1:支持',
+     `shadowdbwithshadowtable_enable` tinyint(3) DEFAULT '0' COMMENT '是否支持影子库和影子库方案;0:不支持;1:支持',
+     `shadowdb_attribute` text COMMENT '影子库方案配置属性',
+     `status` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '1.可用，2不可用',
+     `remark` varchar(500) DEFAULT NULL COMMENT '标记',
+     `commit` varchar(500) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
+     `CUSTOMER_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '租户id',
+     `USER_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '用户id',
+     `gmt_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+     `gmt_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+     `IS_DELETED` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+     PRIMARY KEY (`id`) USING BTREE,
+     UNIQUE KEY `eng_name` (`eng_name`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='连接池配置模版表';
+
+alter table t_connectpool_config_template
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`,
+    ADD UNIQUE KEY `idx_eng_name_env_tenant` (`eng_name`,`tenant_id`,`env_code`) USING BTREE;
 
 

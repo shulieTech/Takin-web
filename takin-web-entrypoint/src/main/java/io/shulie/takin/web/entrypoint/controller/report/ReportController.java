@@ -74,6 +74,12 @@ public class ReportController {
         return reportService.queryTempReportTrend(reportTrendQuery);
     }
 
+    @GetMapping("/report/queryNodeTree")
+    @ApiOperation("脚本节点树")
+    public WebResponse queryNodeTree(ReportTrendQueryParam param){
+        return reportService.queryNodeTree(param);
+    }
+
     @GetMapping("/report/queryTempReportTrendWithTopology")
     @ApiOperation("实况报告链路趋势 拓扑图")
     public WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,

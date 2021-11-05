@@ -39,6 +39,7 @@ public class RemoteConstant {
     public static final String REPORT_LOCK = "/api/report/lock";
     public static final String REPORT_UNLOCK = "/api/report/unlock";
     public static final String REPORT_FINISH = "/api/report/finish";
+    public static final String REPORT_NODE_TREE = "/api/report/nodeTree";
     public static final String ACCOUNT_BOOK = "/api/settle/accountbook";
     public static final String ACCOUNT_BALANCE_LIST = "/api/settle/balance/list";
     public static final String DICT_LIST = "/api/link/dictionary";

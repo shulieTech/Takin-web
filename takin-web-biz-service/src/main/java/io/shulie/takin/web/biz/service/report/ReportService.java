@@ -63,4 +63,11 @@ public interface ReportService {
 
     WebResponse finishReport(Long reportId);
 
+    /**
+     * 查询脚本节点树
+     * @param param 查询参数
+     * @return
+     */
+    WebResponse queryNodeTree(ReportTrendQueryParam param);
+
 }

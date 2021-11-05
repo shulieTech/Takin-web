@@ -362,6 +362,11 @@ public class SceneServiceImpl implements SceneService {
         int matchNum = CollectionUtils.isEmpty(sceneLinkRelateResults) ? 0 : sceneLinkRelateResults.size();
         result.setMatchNum(matchNum);
         result.setUnMatchNum(nodeNumByType - matchNum);
+        //更新匹配数量
+        SceneUpdateParam updateParam = new SceneUpdateParam();
+        updateParam.setId(id);
+        updateParam.setLinkRelateNum(matchNum);
+        sceneDao.update(updateParam);
         return result;
     }
 

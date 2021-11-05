@@ -5,7 +5,7 @@
     <parent>
         <artifactId>takin-web-service-adapters</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.0.4.2</version>
+        <version>takin-web-5.0.4.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>

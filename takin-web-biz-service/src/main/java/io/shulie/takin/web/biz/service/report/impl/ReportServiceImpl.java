@@ -99,7 +99,7 @@ public class ReportServiceImpl implements ReportService {
             setSceneName(param.getSceneName());
             setStartTime(param.getStartTime());
             setEndTime(param.getEndTime());
-        }});
+        }}).getData();
         List<Long> userIds = reportResponseList.stream().filter(data -> null != data.getUserId())
             .map(data -> Long.valueOf(data.getUserId().toString()))
             .collect(Collectors.toList());
@@ -220,7 +220,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<WarnDetailResponse> listWarn(WarnQueryReq req) {
-        return cloudReportApi.listWarn(req);
+        return cloudReportApi.listWarn(req).getData();
 
     }
 

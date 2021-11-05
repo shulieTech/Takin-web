@@ -1,21 +1,17 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
-import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
-import com.pamirs.takin.entity.domain.vo.report.ReportIdVO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
-import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
@@ -39,10 +35,6 @@ import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQuery
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.report.ReportService;
-import io.shulie.takin.web.common.constant.RemoteConstant;
-import io.shulie.takin.web.common.domain.ErrorInfo;
-import io.shulie.takin.web.common.domain.WebRequest;
-import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -58,7 +50,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 /**
@@ -80,7 +71,7 @@ public class ReportServiceImpl implements ReportService {
     private ActivityDAO activityDAO;
 
     @Override
-    public List<ReportDTO> listReport(ReportQueryParam param) {
+    public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
         // 前端查询条件 传用户
         if (StringUtils.isNotBlank(param.getUserName())) {
             List<UserExt> userList = WebPluginUtils.selectByName(param.getUserName());
@@ -92,20 +83,21 @@ public class ReportServiceImpl implements ReportService {
                     //param.setUserIdStr(StringUtils.join(userIds, ","));
                 }
             } else {
-                return Lists.newArrayList();
+                return ResponseResult.success(new ArrayList<>(0), 0L);
             }
         }
-        List<ReportResp> reportResponseList = cloudReportApi.listReport(new ReportQueryReq() {{
+        ResponseResult<List<ReportResp>> reportResponseList = cloudReportApi.listReport(new ReportQueryReq() {{
             setSceneName(param.getSceneName());
             setStartTime(param.getStartTime());
             setEndTime(param.getEndTime());
-        }}).getData();
-        List<Long> userIds = reportResponseList.stream().filter(data -> null != data.getUserId())
-            .map(data -> Long.valueOf(data.getUserId().toString()))
-            .collect(Collectors.toList());
+            setPageSize(param.getPageSize());
+            setPageNumber(param.getCurrentPage() + 1);
+        }});
+        List<Long> userIds = reportResponseList.getData().stream().map(ContextExt::getUserId)
+            .filter(Objects::nonNull).collect(Collectors.toList());
         //用户信息Map key:userId  value:user对象
         Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
-        return reportResponseList.stream().map(t -> {
+        List<ReportDTO> dtoList = reportResponseList.getData().stream().map(t -> {
             Long userId = t.getUserId() == null ? null : Long.valueOf(t.getUserId().toString());
             //负责人名称
             String userName = Optional.ofNullable(userMap.get(userId))
@@ -116,6 +108,7 @@ public class ReportServiceImpl implements ReportService {
             result.setUserId(userId);
             return result;
         }).collect(Collectors.toList());
+        return ResponseResult.success(dtoList, reportResponseList.getTotalNum());
     }
 
     @Override
@@ -219,8 +212,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<WarnDetailResponse> listWarn(WarnQueryReq req) {
-        return cloudReportApi.listWarn(req).getData();
+    public ResponseResult<List<WarnDetailResponse>> listWarn(WarnQueryReq req) {
+        return cloudReportApi.listWarn(req);
 
     }
 
@@ -263,9 +256,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public Long queryRunningReport() {
-        return cloudReportApi.listRunning(new ContextExt() {{
-
-        }});
+        return cloudReportApi.listRunning(new ContextExt());
     }
 
     @Override

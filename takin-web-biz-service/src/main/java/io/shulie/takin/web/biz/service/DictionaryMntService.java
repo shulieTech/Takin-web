@@ -12,18 +12,12 @@ import com.pamirs.takin.common.constant.TakinConstantEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.common.util.PageInfo;
 import com.pamirs.takin.entity.dao.dict.TDictionaryDataMapper;
-import com.pamirs.takin.entity.dao.dict.TDictionaryTypeMapper;
 import com.pamirs.takin.entity.domain.entity.TDictionaryData;
 import com.pamirs.takin.entity.domain.entity.TDictionaryType;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 import io.shulie.takin.web.biz.common.CommonService;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.param.dictionary.DictionaryParam;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.web.ext.util.WebPluginUtils.EnvCodeEnum;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,8 +94,8 @@ public class DictionaryMntService extends CommonService {
      * @return
      */
     public PageInfo<TDictionaryVo> queryDictionaryList(Map<String, Object> paramMap) {
-        paramMap.put("tenant_id", WebPluginUtils.traceTenantId());
-        paramMap.put("env_code", WebPluginUtils.traceEnvCode());
+        paramMap.put("tenant_id", WebPluginUtils.traceTenantId(true));
+        paramMap.put("env_code", WebPluginUtils.traceEnvCode(true));
         PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
         List<TDictionaryVo> dictionaryVoList = tDictionaryDataMapper.queryDictionaryList(paramMap);
 

@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.data.convert.linkmanage.BusinessLinkManageConvert;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
@@ -122,6 +123,10 @@ public class SceneDAOImpl implements SceneDAO {
         lambdaQueryWrapper.eq(SceneEntity::getIsDeleted, 0);
         lambdaQueryWrapper.orderByDesc(SceneEntity::getUpdateTime);
         Page<SceneEntity> sceneEntityPage = sceneMapper.selectPage(page, lambdaQueryWrapper);
-        return PagingList.of(Lists.newArrayList(),sceneEntityPage.getTotal());
+        if (sceneEntityPage == null || CollectionUtils.isEmpty(sceneEntityPage.getRecords())){
+            return PagingList.of(Lists.newArrayList(),0);
+        }
+        List<SceneResult> sceneResultList = BusinessLinkManageConvert.INSTANCE.ofSceneEntityList(sceneEntityPage.getRecords());
+        return PagingList.of(sceneResultList,sceneEntityPage.getTotal());
     }
 }

@@ -874,7 +874,7 @@ alter table t_mq_config_template
 --     DROP KEY `eng_name`,
     ADD UNIQUE KEY `idx_eng_name_env_tenant` (`eng_name`,`tenant_id`,`env_code`) USING BTREE;
 
-CREATE TABLE NOT EXISTS `t_application_ds_cache_manage` (
+CREATE TABLE IF NOT EXISTS `t_application_ds_cache_manage` (
      `ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
      `APPLICATION_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '应用主键',
      `APPLICATION_NAME` varchar(50) NOT NULL DEFAULT '' COMMENT '应用名称',
@@ -901,6 +901,62 @@ CREATE TABLE NOT EXISTS `t_application_ds_cache_manage` (
 alter table t_application_ds_cache_manage
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
+
+
+CREATE TABLE  IF NOT EXISTS `t_application_ds_db_table` (
+     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+     `app_id` bigint(20) NOT NULL COMMENT '应用id',
+     `url` varchar(250) DEFAULT '' COMMENT '业务数据源url',
+     `user_name` varchar(50) NOT NULL DEFAULT '' COMMENT '数据源用户名',
+     `biz_data_base` varchar(128) DEFAULT '' COMMENT '业务库',
+     `biz_table` varchar(128) DEFAULT '' COMMENT '业务表',
+     `shadow_table` varchar(128) DEFAULT NULL COMMENT '影子表',
+     `is_check` tinyint(2) NOT NULL DEFAULT '0' COMMENT '是否选中 0=未选中，1=选中',
+     `manual_tag` tinyint(2) DEFAULT '0' COMMENT '是否手动录入 0:否;1:是',
+     `CUSTOMER_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '租户id',
+     `USER_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '用户id',
+     `gmt_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+     `gmt_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+     `IS_DELETED` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+     PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COMMENT='业务数据库表';
+
+
+alter table t_application_ds_db_table
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
+
+CREATE TABLE  IF NOT EXISTS `t_application_ds_db_manage` (
+  `ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `APPLICATION_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '应用主键',
+  `APPLICATION_NAME` varchar(50) NOT NULL DEFAULT '' COMMENT '应用名称',
+  `CONN_POOL_NAME` varchar(50) NOT NULL DEFAULT '' COMMENT '连接池名称 druid, hikari,c3p0等',
+  `AGENT_SOURCE_TYPE` varchar(50) NOT NULL DEFAULT '' COMMENT 'agent上报的模板类型key',
+  `DB_NAME` varchar(50) NOT NULL DEFAULT '' COMMENT '数据源名称',
+  `URL` varchar(250) NOT NULL DEFAULT '' COMMENT '业务数据源url',
+  `USER_NAME` varchar(50) NOT NULL DEFAULT '' COMMENT '数据源用户名',
+  `PWD` varchar(50) NOT NULL DEFAULT '' COMMENT '数据源密码',
+  `DS_TYPE` tinyint(2) DEFAULT '100' COMMENT '方案类型 0:影子库 1:影子表 2:影子server',
+  `SHA_DOW_URL` varchar(250) NOT NULL DEFAULT '' COMMENT '影子数据源url',
+  `SHA_DOW_USER_NAME` varchar(50) NOT NULL DEFAULT '' COMMENT '影子数据源用户名',
+  `SHA_DOW_PWD` varchar(50) NOT NULL DEFAULT '' COMMENT '影子数据源密码',
+  `FILE_EXTEDN` text COMMENT '连接池额外配置,存json',
+  `SHA_DOW_FILE_EXTEDN` text COMMENT '影子连接池额外配置,存json',
+  `CONFIG_JSON` text COMMENT '配置全部参数json化',
+  `SOURCE` tinyint(2) NOT NULL DEFAULT '0' COMMENT '方案类型 0:amdb 1:手动录入',
+  `STATUS` tinyint(4) NOT NULL DEFAULT '0' COMMENT '状态 0:启用；1:禁用',
+  `CUSTOMER_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '租户id',
+  `USER_ID` bigint(20) NOT NULL DEFAULT '0' COMMENT '用户id',
+  `gmt_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `gmt_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+  `IS_DELETED` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+  PRIMARY KEY (`ID`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8 COMMENT='db连接池影子库表配置表';
+
+alter table t_application_ds_db_manage
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
+
 
 
 

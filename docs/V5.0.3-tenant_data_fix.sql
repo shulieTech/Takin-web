@@ -1,6 +1,8 @@
 -- 额外 租户期间增加的表
 update t_mq_config_template set tenant_id=customer_id;
 update t_application_ds_cache_manage set tenant_id=customer_id;
+update t_application_ds_db_manage set tenant_id=customer_id;
+update t_application_ds_db_table set tenant_id=customer_id;
 
 -- caijy
 update t_application_ds_manage set tenant_id=customer_id;

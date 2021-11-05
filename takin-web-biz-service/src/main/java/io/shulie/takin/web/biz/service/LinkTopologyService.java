@@ -51,6 +51,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -298,29 +299,53 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void setTopologyNodeServiceMetrics(AbstractTopologyNodeResponse node, List<AppProviderInfo> appProviderInfos) {
-        // init
-        Double allTotalCount = INIT;
-        Double allSuccessCount = INIT; // 总成功调用次数
-        Double allTotalTps = INIT;
-        Double allTotalRt = INIT;
+        AppProvider appProviderContainer = AppProvider.buildInit();
 
         for (AppProviderInfo appProviderInfo : appProviderInfos) {
-            for (AppProvider appProvider : appProviderInfo.getDataSource()) {
-                // 如果服务打开，则更新值
-                if (appProvider.getSwitchState()) {
-                    allTotalCount = bigDecimalAdd(allTotalCount, appProvider.getServiceAllTotalCount());
-                    allSuccessCount = bigDecimalAdd(allSuccessCount, appProvider.getAllSuccessCount());
-                    allTotalTps = bigDecimalAdd(allTotalTps, appProvider.getServiceAllTotalTps());
-                    allTotalRt = bigDecimalAdd(allTotalRt, appProvider.getAllTotalRt());
-                }
-            }
+            List<AppProvider> appProviderList = appProviderInfo.getDataSource();
+            avgComputer(appProviderContainer, appProviderList);
         }
 
         // 在 node 上赋值
-        node.setServiceAllTotalCount(allTotalCount);
-        node.setServiceAllSuccessRate(bigDecimalDivide(allSuccessCount, allTotalCount));
-        node.setServiceAllTotalTps(allTotalTps);
-        node.setServiceRt(bigDecimalDivide(allTotalRt, allTotalCount));
+        node.setServiceAllTotalCount(appProviderContainer.getServiceAllTotalCount());
+        node.setServiceAllSuccessRate(appProviderContainer.getServiceAllSuccessRate());
+        node.setServiceAllTotalTps(appProviderContainer.getServiceAllTotalTps());
+        node.setServiceRt(appProviderContainer.getServiceRt());
+    }
+
+    private AppProvider avgComputer(AppProvider appProviderContainer, List<AppProvider> appProviderList) {
+        appProviderList.stream()
+                // 如果服务打开，则更新值
+                .filter(a -> {
+                    if (a.getSwitchState() == null) return true;
+                    else return a.getSwitchState();
+                })
+                .forEach(appProvider -> {
+                    appProviderContainer.setServiceAllTotalCount(
+                            bigDecimalAdd(appProviderContainer.getServiceAllTotalCount(), appProvider.getServiceAllTotalCount())
+                    );
+                    appProviderContainer.setAllSuccessCount(
+                            bigDecimalAdd(appProviderContainer.getAllSuccessCount(), appProvider.getAllSuccessCount())
+                    );
+                    appProviderContainer.setServiceAllTotalTps(
+                            bigDecimalAdd(appProviderContainer.getServiceAllTotalTps(), appProvider.getServiceAllTotalTps())
+                    );
+                    appProviderContainer.setAllTotalRt(
+                            bigDecimalAdd(appProviderContainer.getAllTotalRt(), appProvider.getAllTotalRt())
+                    );
+                    appProviderContainer.setServiceAllMaxRt(
+                            Math.max(appProviderContainer.getServiceAllMaxRt(), appProvider.getServiceAllMaxRt())
+                    );
+                });
+
+        appProviderContainer.setServiceAllSuccessRate(
+                bigDecimalDivide(appProviderContainer.getAllSuccessCount(), appProviderContainer.getServiceAllTotalCount())
+        );
+        appProviderContainer.setServiceRt(
+                bigDecimalDivide(appProviderContainer.getAllTotalRt(), appProviderContainer.getServiceAllTotalCount())
+        );
+
+        return appProviderContainer;
     }
 
     private List<AppProviderInfo> fillAppNodeServiceSuccessRateAndRt(
@@ -365,15 +390,38 @@ public class LinkTopologyService extends CommonService {
                     appProviderFromDb.setAllTotalRtBottleneckType(rateBottleneckType);
                     appProviderFromDb.setAllSqlTotalRtBottleneckType(rateBottleneckType);
 
-                    if (!appProviderFromDb.getServiceAllTotalCount().equals(INIT)) { // 如果不是初始值，再计算瓶颈
-                        //SY:瓶颈计算+落库
-                        computeBottleneck(startDateTime, request.getActivityId(), bottleneckConfig, appProviderFromDb);
-                    }
-
                     appProvider.getContainRealAppProvider().add(appProviderFromDb);
                 }
 
-                // 计算出每条真实边的指标后，再计算平均指标，用来对节点的某一服务赋值
+                // 合并 同一上游 的多条边
+                Map<String, AppProvider> appProviderHashMap = appProvider.getContainRealAppProvider().stream()
+                        .collect(Collectors.toMap(
+                                AppProvider::getBeforeApps,
+                                Function.identity(),
+                                (existingValue, newValue) -> {
+                                    ArrayList<AppProvider> arrayList = new ArrayList();
+                                    arrayList.add(newValue);
+
+                                    avgComputer(existingValue, arrayList);
+
+                                    existingValue.setEagleId(existingValue.getEagleId() + "," + newValue.getEagleId());
+
+                                    return existingValue;
+                                }));
+
+                ArrayList<AppProvider> arrayList = new ArrayList(appProviderHashMap.values());
+                appProvider.setContainRealAppProvider(arrayList);
+
+                // 计算瓶颈
+                appProvider.getContainRealAppProvider().stream()
+                        // 如果不是初始值，再计算瓶颈
+                        .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT))
+                        .forEach(appProviderFromDb -> {
+                            // 瓶颈计算 and 落库
+                            computeBottleneck(startDateTime, request.getActivityId(), bottleneckConfig, appProviderFromDb);
+                        });
+
+                // 计算出每条真实边的指标后，再计算平均指标，用来对节点的某一服务赋值, 当开关打开时，在拓扑图中展示
                 fillNodeServiceMetrics(appProvider);
 
                 allAppProviderServiceList.add(appProvider);
@@ -502,35 +550,30 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void fillNodeServiceMetrics(AppProvider appProvider) {
-        // init
-        Double serviceAllTotalCount = INIT;
-        Double allSuccessCount = INIT; // 总成功调用次数
-        Double serviceAllTotalTps = INIT;
-        Double allTotalRt = INIT;
-        Double serviceAllMaxRt = INIT;
+        AppProvider appProviderContainer = AppProvider.buildInit();
 
         // 将同一服务 的多条调用线上 的指标平均
-        for (AppProvider realPro : appProvider.getContainRealAppProvider()) {
-            serviceAllTotalCount = bigDecimalAdd(serviceAllTotalCount, realPro.getServiceAllTotalCount());
-            allSuccessCount = bigDecimalAdd(allSuccessCount, realPro.getAllSuccessCount());
-            serviceAllTotalTps = bigDecimalAdd(serviceAllTotalTps, realPro.getServiceAllTotalTps());
-
-            allTotalRt = bigDecimalAdd(allTotalRt, realPro.getAllTotalRt());
-            serviceAllMaxRt = Math.max(serviceAllMaxRt, realPro.getServiceAllMaxRt());
-        }
+        avgComputer(appProviderContainer, appProvider.getContainRealAppProvider());
 
         // 节点中 某个服务的 4 类性能指标
-        appProvider.setServiceAllTotalCount(serviceAllTotalCount);
+
+        // 1) 总调用量
+        appProvider.setServiceAllTotalCount(appProviderContainer.getServiceAllTotalCount());
+
         // 成功率（入口1+入口2+入口3 成功次数）/（入口1+入口2+入口3 总次数）
-        appProvider.setAllSuccessCount(allSuccessCount);
-        appProvider.setServiceAllSuccessRate(bigDecimalDivide(appProvider.getAllSuccessCount(), serviceAllTotalCount));
-        // tps 入口1+入口2+入口3 tps
-        appProvider.setServiceAllTotalTps(serviceAllTotalTps);
+        appProvider.setAllSuccessCount(appProviderContainer.getAllSuccessCount());
+        // 2) 总成功率
+        appProvider.setServiceAllSuccessRate(appProviderContainer.getServiceAllSuccessRate());
+
+        // 3) 总Tps          tps 入口1+入口2+入口3 tps
+        appProvider.setServiceAllTotalTps(appProviderContainer.getServiceAllTotalTps());
+
         // rt （入口1+入口2+入口3 总耗时） /（入口1+入口2+入口3 总次数）
-        appProvider.setAllTotalRt(allTotalRt);
-        appProvider.setServiceAvgRt(bigDecimalDivide(appProvider.getAllTotalRt(), serviceAllTotalCount));
+        appProvider.setAllTotalRt(appProviderContainer.getAllTotalRt());
+        appProvider.setServiceAvgRt(appProviderContainer.getServiceRt());
+        appProvider.setServiceAllMaxRt(appProviderContainer.getServiceAllMaxRt());
+        // 4) 前端显示 RT
         appProvider.setServiceRt(appProvider.getServiceAvgRt());
-        appProvider.setServiceAllMaxRt(serviceAllMaxRt);
     }
 
     public void computeBottleneck(

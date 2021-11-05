@@ -908,4 +908,17 @@ alter table t_app_remote_call_template_mapping
     ADD UNIQUE KEY `idx_interface_type_env_tenant` (`interfaceType`,`tenant_id`,`env_code`) USING BTREE;
 
 
+ALTER TABLE t_application_ds_db_manage MODIFY COLUMN CUSTOMER_ID bigint(20) NULL DEFAULT '0' COMMENT '租户id 废弃';
+ALTER TABLE t_application_ds_db_table MODIFY COLUMN CUSTOMER_ID bigint(20) NULL DEFAULT '0' COMMENT '租户id 废弃';
+ALTER TABLE t_app_remote_call_template_mapping MODIFY COLUMN CUSTOMER_ID bigint(20) NULL DEFAULT '0' COMMENT '租户id 废弃';
+ALTER TABLE t_cache_config_template MODIFY COLUMN CUSTOMER_ID bigint(20) NULL DEFAULT '0' COMMENT '租户id 废弃';
+ALTER TABLE t_connectpool_config_template MODIFY COLUMN CUSTOMER_ID bigint(20) NULL DEFAULT '0' COMMENT '租户id 废弃';
+ALTER TABLE t_application_ds_cache_manage MODIFY COLUMN CUSTOMER_ID bigint(20) NULL DEFAULT '0' COMMENT '租户id 废弃';
+ALTER TABLE t_http_client_config_template MODIFY COLUMN CUSTOMER_ID bigint(20) NULL DEFAULT '0' COMMENT '租户id 废弃';
+ALTER TABLE t_rpc_config_template MODIFY COLUMN CUSTOMER_ID bigint(20) NULL DEFAULT '0' COMMENT '租户id 废弃';
+ALTER TABLE t_mq_config_template MODIFY COLUMN CUSTOMER_ID bigint(20) NULL DEFAULT '0' COMMENT '租户id 废弃';
+
+
+
+
 

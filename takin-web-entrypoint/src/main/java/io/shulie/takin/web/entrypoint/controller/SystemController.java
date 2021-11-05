@@ -51,6 +51,9 @@ public class SystemController {
     @Value("${takin.web.url}")
     private String takinWebUrl;
 
+    @Value("${takin.config.zk.addr}")
+    private String zkAddr;
+
     @Autowired
     private CloudCommonApi commonApi;
 
@@ -106,7 +109,7 @@ public class SystemController {
         SystemInfoItemVo itemVo = new SystemInfoItemVo();
         itemVo.setTitle("产品配置信息");
         HashMap<String, String> dataMap = new LinkedHashMap<>();
-        dataMap.put("zookeeper 地址", ifNull(takinWebVersion));
+        dataMap.put("zookeeper 地址", ifNull(zkAddr));
         dataMap.put("takin地址", ifNull(takinWebUrl));
 
         itemVo.setDataMap(dataMap);

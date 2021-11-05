@@ -15,6 +15,7 @@ import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionListResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +34,16 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
 
     @Override
     public PagingList<AgentVersionListResult> page(AgentVersionQueryParam queryParam) {
+        final List<Long> tenantIdList = WebPluginUtils.traceTenantIdForSystem();
+        final List<String> envCodeList = WebPluginUtils.traceEnvCodeForSystem();
         Page<AgentVersionEntity> entityPage = agentVersionMapper.selectPage(this.setPage(queryParam),
             this.getLambdaQueryWrapper()
                 .eq(StringUtils.isNotBlank(queryParam.getVersion()), AgentVersionEntity::getVersion,
                     queryParam.getVersion())
                 .eq(StringUtils.isNotBlank(queryParam.getFirstVersion()), AgentVersionEntity::getFirstVersion,
                     queryParam.getFirstVersion())
-                .eq(AgentVersionEntity::getTenantId, WebPluginUtils.traceTenantId(true))
-                .eq(AgentVersionEntity::getEnvCode, WebPluginUtils.traceEnvCode(true))
+                .in(CollectionUtils.isNotEmpty(tenantIdList),AgentVersionEntity::getTenantId, tenantIdList)
+                .in(CollectionUtils.isNotEmpty(envCodeList),AgentVersionEntity::getEnvCode, envCodeList)
                 .orderByDesc(AgentVersionEntity::getVersionNum));
 
         List<AgentVersionEntity> records = entityPage.getRecords();
@@ -53,10 +56,12 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
 
     @Override
     public AgentVersionDetailResult selectByVersion(String version) {
+        final List<Long> tenantIdList = WebPluginUtils.traceTenantIdForSystem();
+        final List<String> envCodeList = WebPluginUtils.traceEnvCodeForSystem();
         LambdaQueryWrapper<AgentVersionEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(AgentVersionEntity::getVersion, version)
-        .eq(AgentVersionEntity::getTenantId, WebPluginUtils.traceTenantId(true))
-        .eq(AgentVersionEntity::getEnvCode, WebPluginUtils.traceEnvCode(true));
+            .in(CollectionUtils.isNotEmpty(tenantIdList),AgentVersionEntity::getTenantId, tenantIdList)
+            .in(CollectionUtils.isNotEmpty(envCodeList),AgentVersionEntity::getEnvCode, envCodeList);
         AgentVersionEntity entity = agentVersionMapper.selectOne(queryWrapper);
         if (entity == null) {
             return null;

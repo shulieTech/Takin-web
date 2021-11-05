@@ -38,11 +38,11 @@
 
     <insert id="insertBatch" parameterType="java.util.List">
         insert into t_application_api_manage ( APPLICATION_NAME,
-        CREATE_TIME, UPDATE_TIME, IS_DELETED,api,method,application_id,customer_id,user_id,IS_AGENT_REGISTE)
+        CREATE_TIME, UPDATE_TIME, IS_DELETED,api,method,application_id,tenant_id,user_id,IS_AGENT_REGISTE)
         values
         <foreach collection="list" item="item" index="index" separator=",">
             (
-            #{item.applicationName},#{item.createTime},#{item.updateTime},#{item.isDeleted},#{item.api},#{item.requestMethod},#{item.applicationId},#{item.customerId},#{item.userId},#{item.isAgentRegiste})
+            #{item.applicationName},#{item.createTime},#{item.updateTime},#{item.isDeleted},#{item.api},#{item.requestMethod},#{item.applicationId},#{item.tenantId},#{item.userId},#{item.isAgentRegiste})
         </foreach>
 
 
@@ -85,6 +85,12 @@
             <if test="isAgentRegiste != null">
                 is_agent_registe,
             </if>
+            <if test="tenantId != null">
+                tenant_id,
+            </if>
+            <if test="envCode != null">
+                env_code,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="id != null">
@@ -119,6 +125,12 @@
             </if>
             <if test="isAgentRegiste != null">
                 #{isAgentRegiste},
+            </if>
+            <if test="tenantId != null">
+                #{tenantId},
+            </if>
+            <if test="envCode != null">
+                #{envCode},
             </if>
         </trim>
     </insert>

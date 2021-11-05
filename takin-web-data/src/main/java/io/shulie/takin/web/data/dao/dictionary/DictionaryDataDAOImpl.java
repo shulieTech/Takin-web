@@ -28,8 +28,8 @@ public class DictionaryDataDAOImpl implements DictionaryDataDAO{
         Map<String, Object> paramMap = Maps.newHashMap();
         paramMap.put("valueActive", "Y");
         paramMap.put("typeAlias", code);
-        paramMap.put("tenantId", WebPluginUtils.traceTenantId(true));
-        paramMap.put("envCode", WebPluginUtils.traceEnvCode(true));
+        paramMap.put("tenantId", WebPluginUtils.traceTenantId());
+        paramMap.put("envCode", WebPluginUtils.traceEnvCode());
         List<TDictionaryVo> vos = tDictionaryDataMapper.queryDictionaryList(paramMap);
         if(CollectionUtils.isEmpty(vos)) {
             return Lists.newArrayList();

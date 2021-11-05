@@ -57,8 +57,10 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
         if (StringUtils.isNotBlank(param.getRemark())) {
             wrapper.like(PradarZkConfigEntity::getRemark, param.getRemark());
         }
-        wrapper.eq(PradarZkConfigEntity::getTenantId, WebPluginUtils.traceTenantId(true));
-        wrapper.eq(PradarZkConfigEntity::getEnvCode, WebPluginUtils.traceEnvCode(true));
+        final List<String> envCodeList = WebPluginUtils.traceEnvCodeForSystem();
+        final List<Long> tenantIdList = WebPluginUtils.traceTenantIdForSystem();
+        wrapper.in(CollectionUtils.isNotEmpty(tenantIdList), PradarZkConfigEntity::getTenantId, tenantIdList);
+        wrapper.in(CollectionUtils.isNotEmpty(envCodeList), PradarZkConfigEntity::getEnvCode, envCodeList);
         Page<PradarZkConfigEntity> page = new Page<>(param.getCurrent(), param.getPageSize());
         wrapper.orderByDesc(PradarZkConfigEntity::getModifyTime);
 

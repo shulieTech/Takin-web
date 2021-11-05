@@ -14,6 +14,7 @@ import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionListResult;
 import io.shulie.takin.web.data.util.MPUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
                     queryParam.getVersion())
                 .eq(StringUtils.isNotBlank(queryParam.getFirstVersion()), AgentVersionEntity::getFirstVersion,
                     queryParam.getFirstVersion())
+                .eq(AgentVersionEntity::getTenantId, WebPluginUtils.traceTenantId(true))
+                .eq(AgentVersionEntity::getEnvCode, WebPluginUtils.traceEnvCode(true))
                 .orderByDesc(AgentVersionEntity::getVersionNum));
 
         List<AgentVersionEntity> records = entityPage.getRecords();
@@ -51,7 +54,9 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
     @Override
     public AgentVersionDetailResult selectByVersion(String version) {
         LambdaQueryWrapper<AgentVersionEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(AgentVersionEntity::getVersion, version);
+        queryWrapper.eq(AgentVersionEntity::getVersion, version)
+        .eq(AgentVersionEntity::getTenantId, WebPluginUtils.traceTenantId(true))
+        .eq(AgentVersionEntity::getEnvCode, WebPluginUtils.traceEnvCode(true));
         AgentVersionEntity entity = agentVersionMapper.selectOne(queryWrapper);
         if (entity == null) {
             return null;

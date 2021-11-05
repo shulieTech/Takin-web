@@ -87,16 +87,16 @@ public class WebPluginUtils {
 
     /**
      * 根据userId 获取 用户信息
+     *
      * @param userId
      * @return
      */
     public static UserExt getUserExtByUserId(Long userId) {
         if (Objects.nonNull(userApi)) {
-           return userApi.getUserExtByUserId(userId);
+            return userApi.getUserExtByUserId(userId);
         }
         return null;
     }
-
 
     /**
      * 补充 插入 更新 用户数据

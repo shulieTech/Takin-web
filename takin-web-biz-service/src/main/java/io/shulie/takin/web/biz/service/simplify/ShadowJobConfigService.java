@@ -87,7 +87,8 @@ public class ShadowJobConfigService {
         BeanUtils.copyProperties(tShadowJobConfig, shadowJobCreateParam);
         WebPluginUtils.fillUserData(shadowJobCreateParam);
         applicationShadowJobDAO.insert(shadowJobCreateParam);
-        configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), tShadowJobConfig.getApplicationId(), null);
+        configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), tShadowJobConfig.getApplicationId(),
+            null);
         TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(
             tShadowJobConfig.getApplicationId());
         if (null == tApplicationMnt) {
@@ -98,7 +99,11 @@ public class ShadowJobConfigService {
     }
 
     public Response queryDetail(Long id) {
-        TShadowJobConfig shadowJobConfig = tShadowJobConfigMapper.selectOneById(id);
+        ShadowJobConfigQuery query = new ShadowJobConfigQuery();
+        query.setId(id);
+        query.setTenantId(WebPluginUtils.traceTenantId());
+        query.setEnvCode(WebPluginUtils.traceEnvCode());
+        TShadowJobConfig shadowJobConfig = tShadowJobConfigMapper.selectOneById(query);
         if (shadowJobConfig == null) {
             return Response.fail("未查询到相关数据");
         }
@@ -112,7 +117,7 @@ public class ShadowJobConfigService {
 
     public Response update(ShadowJobConfigQuery query) throws DocumentException {
         TShadowJobConfig updateShadowJobConfig = new TShadowJobConfig();
-        TShadowJobConfig shadowJobConfig = tShadowJobConfigMapper.selectOneById(query.getId());
+        TShadowJobConfig shadowJobConfig = tShadowJobConfigMapper.selectOneById(query);
         if (null == shadowJobConfig) {
             return Response.fail("根据ID未查询到相关数据");
         }
@@ -159,13 +164,18 @@ public class ShadowJobConfigService {
         if (null == tApplicationMnt) {
             return Response.fail("未查询到相关应用信息");
         }
-        configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), shadowJobConfig.getApplicationId(), null);
+        configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), shadowJobConfig.getApplicationId(),
+            null);
         agentConfigCacheManager.evictShadowJobs(tApplicationMnt.getApplicationName());
         return Response.success();
     }
 
     public Response delete(Long id) {
-        TShadowJobConfig shadowJobConfig = tShadowJobConfigMapper.selectOneById(id);
+        ShadowJobConfigQuery query = new ShadowJobConfigQuery();
+        query.setId(id);
+        query.setTenantId(WebPluginUtils.traceTenantId());
+        query.setEnvCode(WebPluginUtils.traceEnvCode());
+        TShadowJobConfig shadowJobConfig = tShadowJobConfigMapper.selectOneById(query);
         if (null == shadowJobConfig) {
             return Response.fail("根据ID未查询到相关信息");
         }
@@ -175,7 +185,8 @@ public class ShadowJobConfigService {
             return Response.fail("未查询到相关应用信息");
         }
         tShadowJobConfigMapper.delete(id);
-        configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), shadowJobConfig.getApplicationId(), null);
+        configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), shadowJobConfig.getApplicationId(),
+            null);
         agentConfigCacheManager.evictShadowJobs(tApplicationMnt.getApplicationName());
         return Response.success();
     }

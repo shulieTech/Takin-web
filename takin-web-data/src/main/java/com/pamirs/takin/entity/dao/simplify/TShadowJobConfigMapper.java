@@ -18,7 +18,7 @@ public interface TShadowJobConfigMapper {
 
     int insert(TShadowJobConfig record);
 
-    TShadowJobConfig selectOneById(@Param("id") Long id);
+    TShadowJobConfig selectOneById(ShadowJobConfigQuery query);
 
     @DataAuth
     List<TShadowJobConfig> selectList(ShadowJobConfigQuery query);

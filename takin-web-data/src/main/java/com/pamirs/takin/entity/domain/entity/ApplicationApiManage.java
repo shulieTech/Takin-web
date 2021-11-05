@@ -48,4 +48,9 @@ public class ApplicationApiManage extends TenantCommonExt implements Serializabl
     private String requestMethod;
 
     private Integer isAgentRegiste;
+
+    /**
+     * 没有这个字段插入会抛错
+     */
+    private Long customerId;
 }

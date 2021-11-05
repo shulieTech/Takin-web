@@ -414,7 +414,7 @@ public class SceneServiceImpl implements SceneService {
     @Override
     public PagingList<BusinessFlowListResponse> getBusinessFlowList(BusinessFlowPageQueryRequest queryRequest) {
         ScenePageQueryParam queryParam = new ScenePageQueryParam();
-        queryParam.setSceneName(queryParam.getSceneName());
+        queryParam.setSceneName(queryRequest.getBusinessFlowName());
         queryParam.setCurrent(queryRequest.getCurrent());
         queryParam.setPageSize(queryRequest.getPageSize());
         PagingList<SceneResult> pageList = sceneDao.selectPageList(queryParam);

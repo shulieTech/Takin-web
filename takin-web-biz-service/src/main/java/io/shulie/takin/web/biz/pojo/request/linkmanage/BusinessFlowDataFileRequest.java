@@ -26,9 +26,6 @@ public class BusinessFlowDataFileRequest implements Serializable {
     @JsonProperty("uploadFiles")
     private List<FileManageUpdateRequest> fileManageUpdateRequests;
 
-    @JsonProperty("uploadAttachments")
-    @ApiModelProperty(name = "uploadAttachments", value = "关联附件列表")
-    private List<FileManageUpdateRequest> attachmentManageUpdateRequests;
 
     @JsonProperty("pluginConfigs")
     @ApiModelProperty(name = "pluginConfigs", value = "引擎插件列表")

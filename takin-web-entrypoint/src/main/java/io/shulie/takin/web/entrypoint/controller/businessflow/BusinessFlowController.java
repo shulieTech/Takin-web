@@ -156,13 +156,12 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.QUERY
     )
-    public ResponseResult<PagingList<BusinessFlowListResponse>> getBusinessFlowList(@ApiParam("业务流程名称") String businessFlowName, Integer current, Integer pageSize) {
+    public PagingList<BusinessFlowListResponse> getBusinessFlowList(@ApiParam("业务流程名称") String businessFlowName, Integer current, Integer pageSize) {
         BusinessFlowPageQueryRequest queryRequest = new BusinessFlowPageQueryRequest();
         queryRequest.setCurrentPage(current);
         queryRequest.setPageSize(pageSize);
         queryRequest.setBusinessFlowName(businessFlowName);
-        PagingList<BusinessFlowListResponse> dto = sceneService.getBusinessFlowList(queryRequest);
-        return ResponseResult.success(dto);
+        return sceneService.getBusinessFlowList(queryRequest);
     }
 
 }

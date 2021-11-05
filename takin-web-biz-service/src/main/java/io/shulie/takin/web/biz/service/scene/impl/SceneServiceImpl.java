@@ -215,7 +215,8 @@ public class SceneServiceImpl implements SceneService {
         }
 
         if (businessFlowParseRequest.getId() == null) {
-            saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest);
+            Long businessFlowId = saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest);
+            businessFlowParseRequest.setId(businessFlowId);
         } else {
             updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null);
         }
@@ -226,7 +227,7 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveBusinessFlow(String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest) {
+    public Long saveBusinessFlow(String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest) {
         //保存业务流程
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
         sceneCreateParam.setSceneName(testName);
@@ -259,6 +260,7 @@ public class SceneServiceImpl implements SceneService {
         sceneUpdateParam.setId(sceneCreateParam.getId());
         sceneUpdateParam.setScriptDeployId(scriptManageId);
         sceneDao.update(sceneUpdateParam);
+        return sceneCreateParam.getId();
     }
 
     @Override
@@ -283,12 +285,16 @@ public class SceneServiceImpl implements SceneService {
                 if (CollectionUtils.isNotEmpty(fileManageResponses)) {
                     result.setScriptFile(LinkManageConvert.INSTANCE.ofFileManageResponse(fileManageResponses.get(0)));
                     scriptManageDeployDetail.getFileManageResponseList().remove(fileManageResponses.get(0));
+                    //将附件数据放入数据文件之中
+                    if (CollectionUtils.isNotEmpty(scriptManageDeployDetail.getAttachmentManageResponseList())){
+                        scriptManageDeployDetail.getFileManageResponseList().addAll(scriptManageDeployDetail.getAttachmentManageResponseList());
+                    }
                 }
+
             }
             result = LinkManageConvert.INSTANCE.ofBusinessFlowDetailResponse(scriptManageDeployDetail);
             int fileManageNum = result.getFileManageResponseList() == null ? 0 : result.getFileManageResponseList().size();
-            int attachmentManageNum = result.getAttachmentManageResponseList() == null ? 0 : result.getAttachmentManageResponseList().size();
-            result.setFileNum(fileManageNum + attachmentManageNum);
+            result.setFileNum(fileManageNum);
         }
 
         result.setScriptJmxNodeList(scriptJmxNodes);
@@ -447,9 +453,8 @@ public class SceneServiceImpl implements SceneService {
             }
             businessFlowDataFileRequest.getFileManageUpdateRequests().addAll(LinkManageConvert.INSTANCE
                 .ofFileManageResponseList(dataFileManageResponseList));
-
+            //脚本后续会把文件和附件放到一起，这里就不差分出来了
             updateRequest.setFileManageUpdateRequests(businessFlowDataFileRequest.getFileManageUpdateRequests());
-            updateRequest.setAttachmentManageUpdateRequests(businessFlowDataFileRequest.getAttachmentManageUpdateRequests());
             updateRequest.setPluginConfigUpdateRequests(businessFlowDataFileRequest.getPluginConfigUpdateRequests());
 
             //自动匹配

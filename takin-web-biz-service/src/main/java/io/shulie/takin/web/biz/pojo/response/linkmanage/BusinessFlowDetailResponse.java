@@ -68,10 +68,6 @@ public class BusinessFlowDetailResponse extends AuthQueryResponseCommonExt imple
     @JsonProperty("relatedFiles")
     private List<FileManageResponse> fileManageResponseList;
 
-    @ApiModelProperty(name = "relatedAttachments", value = "附件文件")
-    @JsonProperty("relatedAttachments")
-    private List<FileManageResponse> attachmentManageResponseList;
-
     @ApiModelProperty(name = "fileNum", value = "文件数量")
     private Integer fileNum;
 

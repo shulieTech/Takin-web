@@ -1,0 +1,53 @@
+-- 额外 租户期间增加的表
+update t_mq_config_template set tenant_id=customer_id;
+update t_application_ds_cache_manage set tenant_id=customer_id;
+
+-- caijy
+update t_application_ds_manage set tenant_id=customer_id;
+update t_application_mnt set tenant_id=customer_id;
+update t_application_node_probe set tenant_id=customer_id;
+update t_application_plugins_config set tenant_id=customer_id;
+update t_black_list set tenant_id=customer_id;
+update t_business_link_manage_table set tenant_id=customer_id;
+update t_exception_info set tenant_id=customer_id;
+update t_fast_debug_config_info set tenant_id=customer_id;
+update t_fast_debug_exception set tenant_id=customer_id;
+update t_fast_debug_result set tenant_id=customer_id;
+update t_file_manage set tenant_id=customer_id;
+update t_leakcheck_config set tenant_id=customer_id;
+update t_leakcheck_config_detail set tenant_id=customer_id;
+update t_leakverify_result set tenant_id=customer_id;
+update t_link_guard set tenant_id=customer_id;
+update t_link_manage_table set tenant_id=customer_id;
+update t_operation_log set tenant_id=customer_id;
+update t_ops_script_manage set tenant_id=customer_id;
+update t_tro_dbresource set tenant_id=customer_id;
+
+
+update t_application_focus set tenant_id=(select tenant_id from t_application_mnt where APPLICATION_NAME = app_name);
+update t_application_middleware set tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = application_id);
+update t_data_build t set t.tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = t.APPLICATION_ID);
+update t_datasource_tag_ref t set t.tenant_id=(select tenant_id from t_tro_dbresource where id = t.datasource_id)
+update t_fast_debug_result f set f.tenant_id=(SELECT customer_id from t_fast_debug_config_info WHERE id = f.config_id AND is_deleted=0);
+update t_fast_debug_machine_performance f set f.tenant_id=(SELECT t.tenant_id from t_fast_debug_result t  WHERE  t.trace_id = f.trace_id AND t.is_deleted=0);
+update t_fast_debug_stack_info f set f.tenant_id=(SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0);
+update t_leakverify_detail t set t.tenant_id=(SELECT tenant_id FROM t_leakverify_result WHERE id=t.result_id and is_deleted=0;
+update t_link_detection t set t.tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = t.APPLICATION_ID);
+update t_link_mnt set tenant_id=
+update t_link_service_mnt set tenant_id=
+update t_link_topology_info set tenant_id=
+update t_login_record t set t.tenant_id=(select tenant_id from t_tro_user WHERE name=t.user_name and is_delete=0);
+update t_middleware_info set tenant_id=
+update t_middleware_jar set tenant_id=
+update t_middleware_link_relate set tenant_id=
+update t_middleware_summary set tenant_id=
+update t_ops_script_batch_no t set t.tenant_id=(select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_delete=0);
+update t_ops_script_execute_result t set t.tenant_id=(select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_delete=0);
+update t_ops_script_file t set t.tenant_id=(select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_delete=0);
+update t_performance_base_data t set t.tenant_id= (select tenant_id from t_application_mnt where APPLICATION_NAME = t.app_name);
+update t_performance_criteria_config t set t.tenant_id= (select tenant_id from t_application_mnt where APPLICATION_ID = t.app_id);
+update t_performance_thread_data t set t.tenant_id= (select tenant_id from t_application_mnt where APPLICATION_NAME = t.app_name);
+-- t_performance_thread_stack_data 不用迁移
+update t_pessure_test_task_activity_config set tenant_id=
+
+-- caijy end

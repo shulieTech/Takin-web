@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,15 +66,11 @@ import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.shulie.takin.cloud.open.req.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
@@ -437,6 +434,21 @@ public class SceneServiceImpl implements SceneService {
         return businessActivityFlowMapper.selectList(
             Wrappers.lambdaQuery(BusinessLinkManageTableEntity.class)
                 .ne(BusinessLinkManageTableEntity::getIsDeleted, false));
+    }
+
+    @Override
+    public void updateBusinessFlow(BusinessFlowUpdateRequest businessFlowUpdateRequest) {
+        SceneResult sceneResult = sceneDao.getSceneDetail(businessFlowUpdateRequest.getId());
+        if (sceneResult == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到对应的业务流程！");
+        }
+        SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
+        //更新业务流程
+        sceneUpdateParam.setId(businessFlowUpdateRequest.getId());
+        sceneUpdateParam.setSceneName(businessFlowUpdateRequest.getSceneName());
+        sceneUpdateParam.setSceneLevel(businessFlowUpdateRequest.getSceneLevel());
+        sceneUpdateParam.setIsCore(businessFlowUpdateRequest.getIsCore());
+        sceneDao.update(sceneUpdateParam);
     }
 
     @Transactional(rollbackFor = Exception.class)

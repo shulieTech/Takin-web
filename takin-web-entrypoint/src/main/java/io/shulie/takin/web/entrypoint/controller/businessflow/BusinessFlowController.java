@@ -7,10 +7,7 @@ import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
@@ -25,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -132,6 +130,22 @@ public class BusinessFlowController {
         try {
             BusinessFlowDetailResponse dto = sceneService.getBusinessFlowDetail(id);
             return ResponseResult.success(dto);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, e.getMessage());
+        }
+    }
+
+    @PutMapping("/scene")
+    @ApiOperation("业务流程更新")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public ResponseResult<Boolean> getSceneDetail(@Valid BusinessFlowUpdateRequest businessFlowUpdateRequest) {
+        try {
+            sceneService.updateBusinessFlow(businessFlowUpdateRequest);
+            return ResponseResult.success(Boolean.TRUE);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, e.getMessage());

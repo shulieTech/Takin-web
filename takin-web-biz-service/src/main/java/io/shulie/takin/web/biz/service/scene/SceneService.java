@@ -3,11 +3,8 @@ package io.shulie.takin.web.biz.service.scene;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.ext.content.script.ScriptNode;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
@@ -51,4 +48,6 @@ public interface SceneService {
      * @return 业务流程列表
      */
     List<BusinessLinkManageTableEntity> businessActivityFlowList();
+
+    void updateBusinessFlow(BusinessFlowUpdateRequest businessFlowUpdateRequest);
 }

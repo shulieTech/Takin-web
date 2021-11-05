@@ -1,6 +1,7 @@
 package io.shulie.takin.web.common.util;
 
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author by: hezhongqi
@@ -19,8 +20,10 @@ public class TenantUtils {
      * 获取租户配置 redis key
      * @return
      */
-    public static String getTenantConfigRedisKey(){
-        return CommonUtil.generateRedisKey(TENANT_CONFIG_REDIS_KEY,WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode());
+    public static String getTenantConfigRedisKey(String tenantAppKey,String envCode){
+        return CommonUtil.generateRedisKey(TENANT_CONFIG_REDIS_KEY,
+            (StringUtils.isNotEmpty(tenantAppKey)?tenantAppKey:WebPluginUtils.traceTenantAppKey()),
+            (StringUtils.isNotEmpty(envCode)?envCode:WebPluginUtils.traceEnvCode()));
     }
 
 }

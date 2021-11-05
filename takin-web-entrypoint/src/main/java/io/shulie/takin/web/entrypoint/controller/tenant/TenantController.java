@@ -63,7 +63,7 @@ public class TenantController {
         @RequestParam(value = "envCode",required = false) String envCode) {
 
         // 先从缓存获取
-        String tenantConfigRedisKey = TenantUtils.getTenantConfigRedisKey();
+        String tenantConfigRedisKey = TenantUtils.getTenantConfigRedisKey(tenantAppKey,envCode);
         if (redisTemplate.hasKey(tenantConfigRedisKey)) {
             return (List<TenantConfigExt>)redisTemplate.opsForValue().get(tenantConfigRedisKey);
         }

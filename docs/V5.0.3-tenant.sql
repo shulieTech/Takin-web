@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS `t_tenant_info`
     `name`           varchar(512)   NOT NULL COMMENT '租户名称',
     `nick`           varchar(512)   NOT NULL COMMENT '租户中文名称',
     `code`           varchar(512)   NOT NULL COMMENT '租户代码',
-    `config`       	 varchar(1024)  DEFAULT "" COMMENT '租户配置',
     `status`         tinyint(1)     NOT NULL DEFAULT '1' COMMENT '状态 0: 停用 1:正常 2：欠费 3：试用',
     `is_deleted`     tinyint(1)     NOT NULL DEFAULT '0' COMMENT '0: 正常 1： 删除',
     `gmt_create`     datetime       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

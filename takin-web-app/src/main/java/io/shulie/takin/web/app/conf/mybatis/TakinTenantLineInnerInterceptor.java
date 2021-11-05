@@ -98,6 +98,18 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     protected BinaryExpression andExpression(Table table, Expression where) {
         //获得where条件表达式
         AndExpression tenantExpression = this.buildTenantExpression(table,where);
+
+        if(tenantExpression == null) {
+            EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
+            if (null != where) {
+                if (where instanceof OrExpression) {
+                    return new AndExpression(equalsTo, new Parenthesis(where));
+                } else {
+                    return new AndExpression(equalsTo, where);
+                }
+            }
+           return equalsTo;
+        }
         if (null != where) {
             if (where instanceof OrExpression) {
                 return new AndExpression(tenantExpression, new Parenthesis(where));

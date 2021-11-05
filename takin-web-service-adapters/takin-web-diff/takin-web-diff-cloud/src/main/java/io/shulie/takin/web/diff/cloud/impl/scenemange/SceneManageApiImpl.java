@@ -90,11 +90,7 @@ public class SceneManageApiImpl implements SceneManageApi {
 
     @Override
     public ResponseResult<List<SceneManageListResp>> getSceneList(SceneManageQueryReq sceneManageQueryReq) {
-        try {
-            return ResponseResult.success(cloudSceneApi.getSceneList(sceneManageQueryReq));
-        } catch (Throwable e) {
-            return ResponseResult.fail(e.getMessage(), "");
-        }
+        return cloudSceneApi.getSceneList(sceneManageQueryReq);
     }
 
     @Override

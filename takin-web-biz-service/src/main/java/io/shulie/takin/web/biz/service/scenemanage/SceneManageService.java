@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageIdVO;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
@@ -14,6 +13,7 @@ import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.common.domain.WebResponse;
 
@@ -45,7 +45,7 @@ public interface SceneManageService {
 
     ScriptCheckDTO checkBusinessActivityAndScript(SceneManageWrapperDTO sceneData);
 
-    WebResponse getPageList(SceneManageQueryVO vo);
+    ResponseResult<List<SceneManageListOutput>> getPageList(SceneManageQueryVO vo);
 
     ResponseResult<StrategyResp> getIpNum(Integer concurrenceNum, Integer tpsNum);
 

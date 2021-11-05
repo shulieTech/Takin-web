@@ -10,6 +10,7 @@ import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
 import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
 import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
@@ -49,8 +50,8 @@ public class ReportOpenApi {
     @ApiOperation("报告列表")
     public Response<List<ReportOpenApiResp>> listReport(ReportQueryOpenApiReq reportQueryOpenApiReq) {
         ReportQueryParam reportQuery = ReportOpenApiConverter.INSTANCE.ofReportQueryOpenApiReq(reportQueryOpenApiReq);
-        List<ReportDTO> webResponse = reportService.listReport(reportQuery);
-        return Response.success(ofListReportOpenApiResp(webResponse));
+        ResponseResult<List<ReportDTO>> webResponse = reportService.listReport(reportQuery);
+        return Response.success(ofListReportOpenApiResp(webResponse.getData()), webResponse.getTotalNum());
     }
 
     @GetMapping(value = "report/getReportByReportId")
@@ -71,8 +72,8 @@ public class ReportOpenApi {
     @GetMapping("/report/listWarn")
     @ApiOperation("警告列表")
     public Response<List<WarnDetailOpenApiResp>> listWarn(WarnQueryReq req) {
-        List<WarnDetailResponse> webResponse = reportService.listWarn(req);
-        return Response.success(ofListWarnDetailOpenApiResp(webResponse));
+        ResponseResult<List<WarnDetailResponse>> webResponse = reportService.listWarn(req);
+        return Response.success(ofListWarnDetailOpenApiResp(webResponse.getData()), webResponse.getTotalNum());
     }
 
     @GetMapping("/report/queryReportActivityByReportId")

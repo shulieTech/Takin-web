@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
 import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
@@ -21,7 +22,7 @@ import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
  */
 public interface ReportService {
 
-    List<ReportDTO> listReport(ReportQueryParam param);
+    ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param);
 
     ReportDetailOutput getReportByReportId(Long reportId);
 
@@ -31,7 +32,7 @@ public interface ReportService {
 
     TrendResponse queryTempReportTrend(TrendRequest param);
 
-    List<WarnDetailResponse> listWarn(WarnQueryReq req);
+    ResponseResult<List<WarnDetailResponse>> listWarn(WarnQueryReq req);
 
     List<ActivityResponse> queryReportActivityByReportId(Long reportId);
 

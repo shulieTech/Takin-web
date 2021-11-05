@@ -11,10 +11,12 @@ import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -42,8 +44,9 @@ public class ReportController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
         needAuth = ActionTypeEnum.QUERY
     )
-    public List<ReportDTO> listReport(ReportQueryParam reportQuery) {
-        return reportService.listReport(reportQuery);
+    public Response<List<ReportDTO>> listReport(ReportQueryParam reportQuery) {
+        ResponseResult<List<ReportDTO>> response = reportService.listReport(reportQuery);
+        return Response.success(response.getData(), response.getTotalNum());
     }
 
     @GetMapping(value = "report/getReportByReportId")
@@ -81,8 +84,9 @@ public class ReportController {
 
     @GetMapping("/report/listWarn")
     @ApiOperation("警告列表")
-    public List<WarnDetailResponse> listWarn(WarnQueryReq param) {
-        return reportService.listWarn(param);
+    public Response<List<WarnDetailResponse>> listWarn(WarnQueryReq param) {
+        ResponseResult<List<WarnDetailResponse>> response = reportService.listWarn(param);
+        return Response.success(response.getData(), response.getTotalNum());
     }
 
     @GetMapping("/report/queryReportActivityByReportId")

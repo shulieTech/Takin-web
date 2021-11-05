@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import io.shulie.takin.cloud.ext.content.trace.ContextExt;
+import io.shulie.takin.cloud.ext.content.trace.PagingContextExt;
 
 /**
  * 场景列表查询
@@ -15,7 +15,7 @@ import io.shulie.takin.cloud.ext.content.trace.ContextExt;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SceneManageQueryVO extends ContextExt {
+public class SceneManageQueryVO extends PagingContextExt {
 
     private Long sceneId;
 

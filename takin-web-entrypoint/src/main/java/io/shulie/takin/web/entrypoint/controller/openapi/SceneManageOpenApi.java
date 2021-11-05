@@ -3,16 +3,14 @@ package io.shulie.takin.web.entrypoint.controller.openapi;
 import java.util.List;
 
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
-import io.shulie.takin.web.biz.pojo.openapi.response.scenemanage.SceneManageListOpenApiResp;
+import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.openapi.response.scenemanage.SceneManageOpenApiResp;
-import io.shulie.takin.web.common.domain.WebResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -42,7 +40,7 @@ public class SceneManageOpenApi {
 
     @GetMapping("/list")
     @ApiOperation(value = "压测场景列表")
-    public Response<List<SceneManageListOpenApiResp>> getList(@ApiParam(name = "current", value = "页码", required = true) Integer current,
+    public Response<List<SceneManageListOutput>> getList(@ApiParam(name = "current", value = "页码", required = true) Integer current,
         @ApiParam(name = "pageSize", value = "页大小", required = true) Integer pageSize,
         @ApiParam(name = "customName", value = "客户名称") String customerName,
         @ApiParam(name = "customId", value = "客户ID") Long customerId,
@@ -50,19 +48,13 @@ public class SceneManageOpenApi {
         @ApiParam(name = "sceneName", value = "压测场景名称") String sceneName,
         @ApiParam(name = "status", value = "压测状态") Integer status) {
         SceneManageQueryVO queryVO = new SceneManageQueryVO();
-        /*
-        TODO 具体实现
-        queryVO.setCurrent(current);
-        queryVO.setCurrentPage(current);
-        queryVO.setPageSize(pageSize);
-        queryVO.setCustomerName(customerName);
-        queryVO.setCustomerId(customerId);
-        */
         queryVO.setSceneId(sceneId);
         queryVO.setSceneName(sceneName);
         queryVO.setStatus(status);
-        WebResponse<List<SceneManageListResp>> pageList = sceneManageService.getPageList(queryVO);
-        return Response.success(ofListSceneManageListOpenApiResp(pageList.getData()));
+        queryVO.setPageSize(pageSize);
+        queryVO.setPageNumber(current + 1);
+        ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
+        return Response.success(responseResult.getData(), responseResult.getTotalNum());
     }
 
     private SceneManageOpenApiResp ofSceneManageOpenApiResp(Object data) {
@@ -71,13 +63,5 @@ public class SceneManageOpenApi {
         }
         String s = JsonHelper.bean2Json(data);
         return JsonHelper.json2Bean(s, SceneManageOpenApiResp.class);
-    }
-
-    private List<SceneManageListOpenApiResp> ofListSceneManageListOpenApiResp(Object data) {
-        if (data == null) {
-            return null;
-        }
-        String s = JsonHelper.bean2Json(data);
-        return JsonHelper.json2List(s, SceneManageListOpenApiResp.class);
     }
 }

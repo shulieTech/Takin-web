@@ -549,7 +549,9 @@ public class SceneServiceImpl implements SceneService {
                         } else {
                             entranceJoinEntity = ActivityUtil.covertEntrance(activityListResult.getEntrace());
                         }
-                        scriptJmxNode.setBusinessServicePath(entranceJoinEntity.getServiceName());
+                        scriptJmxNode.setServiceName(entranceJoinEntity.getServiceName());
+                        scriptJmxNode.setMethod(entranceJoinEntity.getMethodName());
+                        scriptJmxNode.setRpcType(entranceJoinEntity.getRpcType());
                         scriptJmxNode.setIsChange(activityListResult.getIsChange());
                         scriptJmxNode.setIsCore(activityListResult.getIsCore());
                         scriptJmxNode.setBusinessDomain(activityListResult.getBusinessDomain());

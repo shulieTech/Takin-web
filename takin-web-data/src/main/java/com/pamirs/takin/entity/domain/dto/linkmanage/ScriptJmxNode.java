@@ -55,8 +55,14 @@ public class ScriptJmxNode {
     @ApiModelProperty(name = "businessApplicationName", value = "业务活动应用名")
     private String businessApplicationName;
 
-    @ApiModelProperty(name = "businessServicePath", value = "业务活动链接路径")
-    private String businessServicePath;
+    @ApiModelProperty("请求路径")
+    private String serviceName;
+
+    @ApiModelProperty("请求方式：GET,POST")
+    private String method;
+
+    @ApiModelProperty("远程调用类型")
+    private String rpcType;
 
     @ApiModelProperty(name = "isChange", value = "是否有变更 0:正常；1:已变更")
     private Integer isChange;

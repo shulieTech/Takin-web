@@ -47,7 +47,7 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.CREATE
     )
-    public ResponseResult<BusinessFlowDetailResponse> parseScriptAndSave(@RequestBody BusinessFlowParseRequest businessFlowParseRequest) {
+    public ResponseResult<BusinessFlowDetailResponse> parseScriptAndSave(@RequestBody @Valid BusinessFlowParseRequest businessFlowParseRequest) {
         try {
             BusinessFlowDetailResponse sceneDetailDto = sceneService.parseScriptAndSave(businessFlowParseRequest);
             return ResponseResult.success(sceneDetailDto);
@@ -68,7 +68,7 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.UPDATE
     )
-    public ResponseResult<BusinessFlowDetailResponse> uploadDataFile(@RequestBody BusinessFlowDataFileRequest businessFlowDataFileRequest) {
+    public ResponseResult<BusinessFlowDetailResponse> uploadDataFile(@RequestBody @Valid BusinessFlowDataFileRequest businessFlowDataFileRequest) {
         try {
             BusinessFlowDetailResponse sceneDetailDto = sceneService.uploadDataFile(businessFlowDataFileRequest);
             return ResponseResult.success(sceneDetailDto);
@@ -110,7 +110,7 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.UPDATE
     )
-    public ResponseResult<Boolean> matchActivity(@RequestBody SceneLinkRelateRequest sceneLinkRelateRequest) {
+    public ResponseResult<Boolean> matchActivity(@RequestBody @Valid SceneLinkRelateRequest sceneLinkRelateRequest) {
         try {
             sceneService.matchActivity(sceneLinkRelateRequest);
             return ResponseResult.success(Boolean.TRUE);

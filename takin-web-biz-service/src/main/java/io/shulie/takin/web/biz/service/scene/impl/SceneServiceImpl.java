@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import io.shulie.takin.web.common.vo.WebOptionEntity;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -296,8 +297,16 @@ public class SceneServiceImpl implements SceneService {
             int fileManageNum = result.getFileManageResponseList() == null ? 0 : result.getFileManageResponseList().size();
             result.setFileNum(fileManageNum);
         }
+        if (CollectionUtils.isNotEmpty(scriptJmxNodes)){
+            List<WebOptionEntity> webOptionEntities = scriptJmxNodes.stream().map(scriptJmxNode -> {
+                WebOptionEntity webOptionEntity = new WebOptionEntity();
+                webOptionEntity.setLabel(scriptJmxNode.getTestName());
+                webOptionEntity.setValue(scriptJmxNode.getXpathMd5());
+                return webOptionEntity;
+            }).collect(Collectors.toList());
+            result.setScriptJmxNodeList(webOptionEntities);
+        }
 
-        result.setScriptJmxNodeList(scriptJmxNodes);
         result.setThreadGroupNum(scriptNodeByType.size());
         toBusinessFlowDetailResponse(sceneResult, result);
         return result;

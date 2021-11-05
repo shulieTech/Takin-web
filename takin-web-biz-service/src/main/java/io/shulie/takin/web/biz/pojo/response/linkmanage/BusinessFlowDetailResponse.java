@@ -7,6 +7,7 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
+import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -36,7 +37,7 @@ public class BusinessFlowDetailResponse extends AuthQueryResponseCommonExt imple
     private String sceneLevel;
 
     @ApiModelProperty(name = "scriptJmxNodeList", value = "脚本的节点信息")
-    private List<ScriptJmxNode> scriptJmxNodeList;
+    private List<WebOptionEntity> scriptJmxNodeList;
 
     @ApiModelProperty(name = "threadGroupNum", value = "线程组数量")
     private Integer threadGroupNum;

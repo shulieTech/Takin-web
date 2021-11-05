@@ -366,7 +366,7 @@ public class SwaggerConfig {
                 .groupName("业务流程jmeter上传改造")
                 .select()
                 .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-                .paths(getRegex("/api/application/entrances/bySamplerType|/api/businessFlow/.*"))
+                .paths(getRegex("/api(/businessFlow|/application/entrances/bySamplerType).*"))
                 .build()
                 .directModelSubstitute(LocalDate.class, String.class)
                 .useDefaultResponseMessages(false)

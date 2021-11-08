@@ -3,9 +3,10 @@ package io.shulie.takin.web.data.param.fastagentaccess;
 import lombok.Data;
 
 /**
- * @Description agent配置dao层查询对象
- * @Author ocean_wll
- * @Date 2021/8/16 11:12 上午
+ * agent配置dao层查询对象
+ *
+ * @author ocean_wll
+ * @date 2021/8/16 11:12 上午
  */
 @Data
 public class AgentConfigQueryParam {

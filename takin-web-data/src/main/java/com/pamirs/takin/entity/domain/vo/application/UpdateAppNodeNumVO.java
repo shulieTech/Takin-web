@@ -9,9 +9,10 @@ import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 /**
- * @Description 修改应用节点接受对象
- * @Author ocean_wll
- * @Date 2021/10/14 10:55 上午
+ * 修改应用节点接受对象
+ *
+ * @author ocean_wll
+ * @date 2021/10/14 10:55 上午
  */
 @Data
 @ApiModel(value = "UpdateAppNodeNumVO", description = "修改应用节点入参")

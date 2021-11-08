@@ -116,7 +116,7 @@ ALTER TABLE t_ac_account ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT
 ALTER TABLE t_ac_account_balance ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE t_ac_account_book ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE t_activity_node_service_state ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
-ALTER TABLE t_agent_config ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT NULL COMMENT '租户 id, 默认 1';
+ALTER TABLE t_agent_config ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE t_agent_plugin ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE t_agent_plugin_lib_support ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE t_agent_version ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
@@ -603,6 +603,8 @@ alter table t_script_debug
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 alter table t_script_debug
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_script_debug`
+    MODIFY COLUMN `customer_id` bigint(20) UNSIGNED NULL COMMENT '租户id' AFTER `cloud_report_id`
 -- 已有索引 idx_si 快照id
 
 -- t_script_execute_result  脚本执行结果

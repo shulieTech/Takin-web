@@ -4,9 +4,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
- * @Description agent状态统计对象
- * @Author ocean_wll
- * @Date 2021/8/19 3:43 下午
+ * agent状态统计对象
+ *
+ * @author ocean_wll
+ * @date 2021/8/19 3:43 下午
  */
 @Data
 public class AgentConfigStatusCountResponse {

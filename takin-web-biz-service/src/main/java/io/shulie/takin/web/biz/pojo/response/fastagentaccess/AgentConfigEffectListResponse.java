@@ -1,12 +1,14 @@
 package io.shulie.takin.web.biz.pojo.response.fastagentaccess;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
- * @Description agent配置生效列表
- * @Author ocean_wll
- * @Date 2021/8/19 4:20 下午
+ * agent配置生效列表
+ *
+ * @author ocean_wll
+ * @date 2021/8/19 4:20 下午
  */
 @Data
 public class AgentConfigEffectListResponse {

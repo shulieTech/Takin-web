@@ -396,23 +396,26 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public void matchActivity(SceneLinkRelateRequest sceneLinkRelateRequest) {
-        String entrance;
+
         if (BusinessTypeEnum.NORMAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
             //普通业务活动
             if (sceneLinkRelateRequest.getBusinessLinkId() == null) {
                 //业务活动id为空，新增业务活动
                 ActivityCreateRequest request = LinkManageConvert.INSTANCE.ofActivityCreateRequest(sceneLinkRelateRequest);
                 request.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getType().getType()));
+                ActivityUtil.EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(sceneLinkRelateRequest.getEntrance());
+                request.setServiceName(entranceJoinEntity.getServiceName());
+                request.setMethod(entranceJoinEntity.getMethodName());
+                request.setRpcType(entranceJoinEntity.getRpcType());
                 Long activity = activityService.createActivity(request);
                 sceneLinkRelateRequest.setBusinessLinkId(activity);
             }
 
-            entrance = ActivityUtil.buildEntrance(sceneLinkRelateRequest.getMethod(), JmxUtil.pathGuiYi(sceneLinkRelateRequest.getServiceName()),
-                    EntranceTypeUtils.getRpcType(sceneLinkRelateRequest.getType().getType()).getRpcType());
+
         } else if (BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
             ActivityQueryParam queryParam = new ActivityQueryParam();
             queryParam.setBusinessType(sceneLinkRelateRequest.getBusinessType());
-            queryParam.setEntrance(ActivityUtil.buildVirtualEntrance(sceneLinkRelateRequest.getServiceName(),EntranceTypeUtils.getRpcType(sceneLinkRelateRequest.getType().getType()).getRpcType()));
+            queryParam.setEntrance(sceneLinkRelateRequest.getEntrance());
             List<ActivityListResult> activityList = activityDao.getActivityList(queryParam);
             if (CollectionUtils.isNotEmpty(activityList)){
                 ActivityListResult activityListResult = activityList.get(0);
@@ -423,15 +426,12 @@ public class SceneServiceImpl implements SceneService {
                 Long virtualActivity = activityService.createVirtualActivity(createRequest);
                 sceneLinkRelateRequest.setBusinessLinkId(virtualActivity);
             }
-
-            entrance = ActivityUtil.buildVirtualEntrance(sceneLinkRelateRequest.getServiceName(),
-                EntranceTypeUtils.getRpcType(sceneLinkRelateRequest.getType().getType()).getRpcType());
         } else {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "不是已知的业务活动类型！");
         }
 
         SceneLinkRelateSaveParam saveParam = LinkManageConvert.INSTANCE.ofSceneLinkRelateRequest(sceneLinkRelateRequest);
-        saveParam.setEntrance(entrance);
+        saveParam.setEntrance(sceneLinkRelateRequest.getEntrance());
         sceneLinkRelateDao.batchInsertOrUpdate(Collections.singletonList(saveParam));
     }
 

@@ -32,20 +32,15 @@ public class SceneLinkRelateRequest implements Serializable {
     @ApiModelProperty("应用名")
     private String applicationName;
 
-    @ApiModelProperty("请求方式：GET,POST")
-    private String method;
-
-    @ApiModelProperty("请求路径")
-    private String serviceName;
+    @NotNull
+    @ApiModelProperty("入口entrance")
+    private String entrance;
 
     @ApiModelProperty("业务活动ID")
     private Long businessLinkId;
 
     @ApiModelProperty("业务活动名称")
     private String activityName;
-
-    @ApiModelProperty("技术链路ID")
-    private Long techLinkId;
 
     @NotNull
     @ApiModelProperty("请求类型")

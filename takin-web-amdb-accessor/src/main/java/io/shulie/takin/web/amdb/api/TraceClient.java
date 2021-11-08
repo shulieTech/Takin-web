@@ -23,7 +23,7 @@ public interface TraceClient {
      * @param dto 请求参数
      * @return 分页数据
      */
-    PagingList<EntryTraceInfoDTO> listEntryTraceByTaskId(QueryLinkDetailDTO dto);
+    PagingList<EntryTraceInfoDTO> listEntryTraceByTaskIdV2(QueryLinkDetailDTO dto);
 
     /**
      * 查询入口的trace请求流量信息

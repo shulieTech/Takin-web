@@ -42,6 +42,12 @@ import org.springframework.util.Assert;
 @Slf4j
 public class TraceClientImpl implements TraceClient {
 
+    /**
+     * 获得调试对应的请求流量明细
+     * 路由
+     */
+    private static final String ENTRY_TRACE_BY_TASK_ID_PATH_V2 = "/amdb/trace/getDebugTraceList";
+
     private static final String QUERY_TRACE_PATH = "/amdb/trace/getTraceDetail?traceId=@TraceId@";
 
     private static final String ENTRY_TRACE_PATH = "/amdb/trace/getEntryTraceList";
@@ -60,9 +66,8 @@ public class TraceClientImpl implements TraceClient {
     @Autowired
     private AmdbClientProperties properties;
 
-
     @Override
-    public PagingList<EntryTraceInfoDTO> listEntryTraceByTaskId(QueryLinkDetailDTO dto) {
+    public PagingList<EntryTraceInfoDTO> listEntryTraceByTaskIdV2(QueryLinkDetailDTO dto) {
         Assert.notNull(dto, "参数必须传递!");
 
         // 结果类型

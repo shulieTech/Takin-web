@@ -183,7 +183,9 @@ public class SceneManageServiceImpl implements SceneManageService {
         List<SceneScriptRefOpen> data = webResponse.getData();
         if (!webResponse.getSuccess()) {return webResponse;}
         BeanUtils.copyProperties(dto, req);
-        if (data != null) {req.setUploadFile(data);}
+        if (data != null) {
+            req.setUploadFile(data);
+        }
         //补充压测时间
         if (dto.getPressureTestTime() != null) {
             TimeBean presTime = new TimeBean();

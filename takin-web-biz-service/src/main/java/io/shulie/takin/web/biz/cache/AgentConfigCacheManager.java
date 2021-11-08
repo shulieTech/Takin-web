@@ -127,7 +127,7 @@ public class AgentConfigCacheManager {
 
     public ApplicationSwitchStatusDTO getPressureSwitch() {
         ApplicationSwitchStatusDTO applicationSwitchStatusDTO = pressureSwitchConfigCache.get(null);
-        String silenceSwitch = applicationService.getUserSilenceSwitchStatusForVo(WebPluginUtils.getUser().getCustomerId());
+        String silenceSwitch = applicationService.getUserSilenceSwitchStatusForVo(WebPluginUtils.getCustomerId());
         String silenceSwitchOn = AppSwitchEnum.OPENED.getCode().equals(silenceSwitch) ?
                 AppSwitchEnum.CLOSED.getCode() : AppSwitchEnum.OPENED.getCode();
         applicationSwitchStatusDTO.setSilenceSwitchOn(silenceSwitchOn);

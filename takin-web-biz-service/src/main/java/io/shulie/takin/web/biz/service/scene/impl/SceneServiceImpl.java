@@ -352,6 +352,7 @@ public class SceneServiceImpl implements SceneService {
         if (sceneResult == null) {
             return result;
         }
+        result.setFinishDate(new Date());
         result.setId(id);
         result.setBusinessProcessName(sceneResult.getSceneName());
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);

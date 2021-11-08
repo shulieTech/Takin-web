@@ -28,12 +28,12 @@ import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
+import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneTaskStartReq;
 import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
 import io.shulie.takin.web.biz.pojo.request.scene.CreateSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.UpdateSceneRequest;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
-import io.shulie.takin.cloud.open.request.scene.manage.WriteSceneRequest;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
 
@@ -68,7 +68,7 @@ public class SceneController {
     )
     @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<Long> create(@RequestBody @Valid CreateSceneRequest request) {
-        WriteSceneRequest sceneRequest = BeanUtil.copyProperties(request, WriteSceneRequest.class);
+        SceneRequest sceneRequest = BeanUtil.copyProperties(request, SceneRequest.class);
         sceneRequest.setFile(assembleFileList(request.getBasicInfo().getScriptId()));
         return multipleSceneApi.create(sceneRequest);
     }
@@ -87,7 +87,7 @@ public class SceneController {
     )
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<Boolean> update(@RequestBody @Valid UpdateSceneRequest request) {
-        WriteSceneRequest sceneRequest = BeanUtil.copyProperties(request, WriteSceneRequest.class);
+        SceneRequest sceneRequest = BeanUtil.copyProperties(request, SceneRequest.class);
         sceneRequest.setFile(assembleFileList(request.getBasicInfo().getScriptId()));
         return multipleSceneApi.update(sceneRequest);
     }
@@ -126,7 +126,7 @@ public class SceneController {
      * @param scriptId 脚本主键
      * @return 文件列表
      */
-    private List<WriteSceneRequest.File> assembleFileList(long scriptId) {
+    private List<SceneRequest.File> assembleFileList(long scriptId) {
         // 根据脚本主键获取文件主键集合
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDao.selectFileIdsByScriptDeployId(scriptId);
         // 根据文件主键集合查询文件信息
@@ -134,7 +134,7 @@ public class SceneController {
         // 组装返回数据
         return fileManageDao.selectFileManageByIds(fileIds).stream().map(t -> {
             Map<String, Object> extend = JSONObject.parseObject(t.getFileExtend(), new TypeReference<Map<String, Object>>() {});
-            return new WriteSceneRequest.File() {{
+            return new SceneRequest.File() {{
                 setName(t.getFileName());
                 setPath(t.getUploadPath());
                 setType(t.getFileType());

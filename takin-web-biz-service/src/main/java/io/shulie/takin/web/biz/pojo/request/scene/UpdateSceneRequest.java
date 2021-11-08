@@ -1,15 +1,18 @@
 package io.shulie.takin.web.biz.pojo.request.scene;
 
-import java.util.List;
 import java.util.Map;
+import java.util.List;
 
-import javax.validation.constraints.NotBlank;
+import lombok.Data;
+
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
-import io.shulie.takin.cloud.open.request.scene.manage.WriteSceneRequest;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
+
+import io.shulie.takin.ext.content.enginecall.PtConfigExt;
+import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 
 /**
  * 操作压测场景入参 -新
@@ -21,23 +24,23 @@ import lombok.Data;
 public class UpdateSceneRequest {
     @ApiModelProperty(value = "基础信息")
     @NotBlank(message = "场景基础信息不能为空")
-    private WriteSceneRequest.BasicInfo basicInfo;
+    private SceneRequest.BasicInfo basicInfo;
     @ApiModelProperty(value = "脚本解析结果")
     @NotBlank(message = "脚本解析结果不能为空")
     private List<?> analysisResult;
     @ApiModelProperty(value = "压测内容")
     @NotNull(message = "压测目标不能为空")
-    private List<WriteSceneRequest.Content> content;
+    private List<SceneRequest.Content> content;
     @ApiModelProperty(value = "施压配置")
     @NotNull(message = "施压配置不能为空")
-    private WriteSceneRequest.Config config;
+    private PtConfigExt config;
     @ApiModelProperty(value = "压测目标")
     @NotNull(message = "业压测目标不能为空")
-    private Map<String, WriteSceneRequest.Goal> goal;
+    private Map<String, SceneRequest.Goal> goal;
     @ApiModelProperty(value = "SLA配置")
     @NotNull(message = "SLA配置不能为空")
-    private List<WriteSceneRequest.MonitoringGoal> monitoringGoal;
+    private List<SceneRequest.MonitoringGoal> monitoringGoal;
     @ApiModelProperty(value = "数据验证配置")
     @NotNull(message = "数据验证配置不能为空")
-    private WriteSceneRequest.DataValidation dataValidation;
+    private SceneRequest.DataValidation dataValidation;
 }

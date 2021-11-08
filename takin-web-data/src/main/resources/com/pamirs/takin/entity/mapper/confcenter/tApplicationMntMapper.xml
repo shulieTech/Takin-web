@@ -263,8 +263,8 @@
         <include refid="Base_Column_List"/>
         from t_application_mnt where
         APPLICATION_NAME=#{applicationName}
-        <if test="customerId != null">
-            and customer_id=#{customerId}
+        <if test="tenantId != null">
+            and tenant_id=#{tenantId}
         </if>
     </select>
 

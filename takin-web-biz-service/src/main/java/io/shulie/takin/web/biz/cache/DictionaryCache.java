@@ -112,7 +112,7 @@ public class DictionaryCache {
         paramMap.put("tenantId", WebPluginUtils.traceTenantId());
         paramMap.put("envCode", WebPluginUtils.traceEnvCode());
         List<TDictionaryVo> voList = null;
-            //tDictionaryDataMapper.queryDictionaryList(paramMap);
+            tDictionaryDataMapper.queryDictionaryList(paramMap);
         if (CollectionUtils.isEmpty(voList)) {
             return;
         }

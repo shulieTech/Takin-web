@@ -862,6 +862,10 @@ update e_patrol_scene_check set env_code='test',tenant_id=1;
 alter table t_application_mnt
     ADD INDEX `idx_application_id` ( `application_id` );
 
+alter table t_application_mnt
+    DROP KEY `index_identifier_application_name`,
+    ADD UNIQUE KEY `idx_application_name_tenant_env` ( `APPLICATION_NAME`,`tenant_id`,`env_code`);
+
 -- 额外补充 租户期间增加的表
 alter table t_mq_config_template
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',

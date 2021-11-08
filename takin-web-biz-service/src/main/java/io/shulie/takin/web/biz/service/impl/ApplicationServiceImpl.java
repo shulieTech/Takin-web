@@ -307,11 +307,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             map.forEach((key, value) -> {
                 if (System.currentTimeMillis() - value >= pradarSwitchProcessingTime * 1000L) {
                     // 操作完删除，保证只执行一次
-                    Long uid = Long.valueOf(key);
-                    String switchStatus = getUserSwitchStatusForAgent(uid);
-                    redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + uid, switchStatus);
+                    // 这里的key形式是 tenantUseAppkey_env
+                    String switchStatus = getUserSwitchStatusForAgent(key);
+                    redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + key, switchStatus);
                     // agent接收的关闭信息后不再上报信息
-                    // reCalculateUserSwitch(Long.valueOf(key.toString()));
                     redisTemplate.opsForHash().delete(NEED_VERIFY_USER_MAP, key);
                 }
             });
@@ -754,57 +753,19 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public ApplicationSwitchStatusDTO agentGetUserSwitchInfo() {
         ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
-        result.setSwitchStatus(getUserSwitchStatusForAgent(WebPluginUtils.traceTenantId()));
+        result.setSwitchStatus(getUserSwitchStatusForAgent(WebPluginUtils.traceTenantAppKey()+Separator.Separator3+WebPluginUtils.traceEnvCode()));
         return result;
     }
 
     /**
-     * 重新计算
+     *
+     * @param key tenantUseAppkey_env
+     * @return
      */
-    private void reCalculateUserSwitch(Long customerId) throws IllegalArgumentException {
-        if (customerId == null) {
-            throw new IllegalArgumentException("uid can not by null !");
-        }
-        List<TApplicationMnt> tApplicationMnts = tApplicationMntDao.queryApplicationByTenant(customerId);
-        List<ApplicationVo> errorVoList = new ArrayList<>();
-        if (tApplicationMnts != null && tApplicationMnts.size() > 0) {
-            for (TApplicationMnt app : tApplicationMnts) {
-                ApplicationSwitchStatusDTO dto = judgeAppSwitchStatus(app, false);
-                if (dto != null && dto.getErrorList().size() > 0) {
-                    List<ApplicationVo> errorList = dto.getErrorList();
-                    for (Object s : errorList) {
-                        ApplicationVo vo = new ApplicationVo();
-                        vo.setApplicationName(app.getApplicationName());
-                        vo.setExceptionInfo(s.toString());
-                        errorVoList.add(vo);
-                    }
-                }
-            }
-        }
-        String oldStatus = getUserSwitchStatusForAgent(customerId);
-        String voStatus = null;
-        String userStatus = null;
-        if (errorVoList.size() > 0) {
-            if (StringUtil.isNotEmpty(oldStatus) && oldStatus.equals(AppSwitchEnum.OPENED.getCode())) {
-                voStatus = AppSwitchEnum.OPEN_FAILING.getCode();
-            } else if (StringUtil.isNotEmpty(oldStatus) && oldStatus.equals(AppSwitchEnum.CLOSED.getCode())) {
-                voStatus = AppSwitchEnum.CLOSE_FAILING.getCode();
-            }
-            userStatus = AppSwitchEnum.CLOSED.getCode();
-        } else {
-            voStatus = oldStatus;
-            userStatus = oldStatus;
-        }
-        redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS + customerId, userStatus);
-        redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS_VO + customerId, voStatus);
-        redisTemplate.opsForValue().set(PRADAR_SWITCH_ERROR_INFO_UID + customerId, errorVoList);
-
-    }
-
-    private String getUserSwitchStatusForAgent(Long customerId) {
-        Object o = redisTemplate.opsForValue().get(PRADAR_SWITCH_STATUS + customerId);
+    private String getUserSwitchStatusForAgent(String key) {
+        Object o = redisTemplate.opsForValue().get(PRADAR_SWITCH_STATUS + key);
         if (o == null) {
-            redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS + customerId, AppSwitchEnum.OPENED.getCode());
+            redisTemplate.opsForValue().set(PRADAR_SWITCH_STATUS + key, AppSwitchEnum.OPENED.getCode());
             return AppSwitchEnum.OPENED.getCode();
         } else {
             return (String)o;
@@ -813,15 +774,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public String getUserSwitchStatusForVo() {
-        Long uid = -1L;
-        if (WebPluginUtils.traceUser() != null) {
-            uid = WebPluginUtils.traceUser().getId();
-        }
-        String key = CommonUtil.generateRedisKey(PRADAR_SWITCH_STATUS_VO + uid,
-            WebPluginUtils.traceTenantCommonExt().toString(), WebPluginUtils.traceEnvCode());
-        Object o = redisTemplate.opsForValue().get(key);
+        //String key = CommonUtil.generateRedisKey(PRADAR_SWITCH_STATUS_VO + uid,
+        //    WebPluginUtils.traceTenantCommonExt().toString(), WebPluginUtils.traceEnvCode());
+        String envCode = WebPluginUtils.traceEnvCode();
+        String appKey = WebPluginUtils.traceTenantAppKey();
+        final String statusVoRedisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
+            PRADAR_SWITCH_STATUS_VO + appKey, envCode);
+        Object o = redisTemplate.opsForValue().get(statusVoRedisKey);
         if (o == null) {
-            redisTemplate.opsForValue().set(key, AppSwitchEnum.OPENED.getCode());
+            redisTemplate.opsForValue().set(statusVoRedisKey, AppSwitchEnum.OPENED.getCode());
             return AppSwitchEnum.OPENED.getCode();
         } else {
             return (String)o;

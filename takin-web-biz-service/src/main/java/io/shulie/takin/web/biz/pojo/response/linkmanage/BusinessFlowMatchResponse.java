@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.response.linkmanage;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -28,5 +29,6 @@ public class BusinessFlowMatchResponse extends AuthQueryResponseCommonExt implem
     private Integer unMatchNum;
 
     @ApiModelProperty(name = "finishDate", value = "完成时间")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private Date finishDate;
 }

@@ -15,15 +15,15 @@ public class SceneLinkRelateRequest implements Serializable {
     @ApiModelProperty("关联关系主键")
     private Long id;
 
-    @NotNull
+    @NotNull(message = "业务流程ID 不能为空")
     @ApiModelProperty("业务流程ID")
     private Long sceneId;
 
-    @NotNull
+    @NotNull(message = "脚本请求路径标识 不能为空")
     @ApiModelProperty("脚本请求路径标识")
     private String scriptIdentification;
 
-    @NotNull
+    @NotNull(message = "脚本请求路径标识 不能为空")
     @ApiModelProperty("脚本路径的MD5")
     private String scriptXpathMd5;
 
@@ -32,7 +32,7 @@ public class SceneLinkRelateRequest implements Serializable {
     @ApiModelProperty("应用名")
     private String applicationName;
 
-    @NotNull
+    @NotNull(message = "入口entrance 不能为空")
     @ApiModelProperty("入口entrance")
     private String entrance;
 
@@ -42,11 +42,11 @@ public class SceneLinkRelateRequest implements Serializable {
     @ApiModelProperty("业务活动名称")
     private String activityName;
 
-    @NotNull
+    @NotNull(message = "请求类型 不能为空")
     @ApiModelProperty("请求类型")
     private SamplerTypeEnum samplerType;
 
-    @NotNull
+    @NotNull(message = "业务活动类型 不能为空")
     @ApiModelProperty("业务活动类型")
     private Integer businessType;
 

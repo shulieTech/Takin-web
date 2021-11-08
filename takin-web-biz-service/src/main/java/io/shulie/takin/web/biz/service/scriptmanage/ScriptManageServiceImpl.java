@@ -276,7 +276,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件不唯一！");
         }
         String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue();
+            .traceTenantCode() + Separator.Separator1.getValue() + WebPluginUtils.traceEnvCode();
         ScriptCheckDTO scriptCheckDTO = checkAndUpdateScript(scriptManageDeployCreateRequest.getRefType(),
             scriptManageDeployCreateRequest.getRefValue(),
             tmpFilePath + "/" + scriptFile.get(0).getUploadId() + "/" + scriptFile.get(0).getFileName());
@@ -372,7 +372,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             return;
         }
         String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue();
+            .traceTenantCode() + Separator.Separator1.getValue()+WebPluginUtils.traceEnvCode();
         // 脚本文件遍历删除, 创建
         for (FileManageUpdateRequest fileManageUpdateRequest : fileManageCreateRequests) {
             if (StringUtil.isNotBlank(fileManageUpdateRequest.getScriptContent())) {
@@ -500,7 +500,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             "脚本文件不唯一!");
 
         String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue();
+            .traceTenantCode() + Separator.Separator1.getValue()+WebPluginUtils.traceEnvCode();
         // 脚本文件 url
         String scriptFileUrl;
         if (scriptFile.get(0).getId() == null) {
@@ -623,7 +623,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         // 脚本路径前缀 目录 + 脚本id + 版本
         String targetScriptPath = this.getTargetScriptPath(scriptManageDeployResult);
         String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue();
+            .traceTenantCode() + Separator.Separator1.getValue()+WebPluginUtils.traceEnvCode();
         List<String> tmpFilePaths = scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream().filter(
             o -> o.getIsDeleted() == 0
                 && !StringUtil.isBlank(o.getUploadId())).map(

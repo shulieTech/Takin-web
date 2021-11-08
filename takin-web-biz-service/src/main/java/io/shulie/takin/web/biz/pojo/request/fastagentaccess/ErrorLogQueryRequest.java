@@ -10,9 +10,10 @@ import lombok.EqualsAndHashCode;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
- * @Description 异常日志查询对象
- * @Author ocean_wll
- * @Date 2021/8/18 3:49 下午
+ * 异常日志查询对象
+ *
+ * @author ocean_wll
+ * @date 2021/8/18 3:49 下午
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

@@ -1,9 +1,10 @@
 package io.shulie.takin.web.biz.utils.fastagentaccess;
 
 /**
- * @Description agent版本处理工具类
- * @Author ocean_wll
- * @Date 2021/8/16 6:35 下午
+ * agent版本处理工具类
+ *
+ * @author ocean_wll
+ * @date 2021/8/16 6:35 下午
  */
 public class AgentVersionUtil {
 

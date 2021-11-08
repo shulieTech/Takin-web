@@ -4,14 +4,21 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @Description 探针配置生效范围
- * @Author ocean_wll
- * @Date 2021/8/13 10:00 上午
+ * 探针配置生效范围
+ *
+ * @author ocean_wll
+ * @date 2021/8/13 10:00 上午
  */
 @AllArgsConstructor
 @Getter
 public enum AgentConfigEffectTypeEnum {
+    /**
+     * 探针配置
+     */
     PROBE(0, "探针配置"),
+    /**
+     * agent配置
+     */
     AGENT(1, "agent配置"),
     ;
 

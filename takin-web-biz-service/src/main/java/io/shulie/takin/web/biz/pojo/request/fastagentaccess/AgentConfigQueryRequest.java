@@ -5,9 +5,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
- * @Description agent配置列表查询对象
- * @Author ocean_wll
- * @Date 2021/8/16 10:41 上午
+ * agent配置列表查询对象
+ *
+ * @author ocean_wll
+ * @date 2021/8/16 10:41 上午
  */
 @Data
 @ApiModel("入参-agent配置列表查询对象")

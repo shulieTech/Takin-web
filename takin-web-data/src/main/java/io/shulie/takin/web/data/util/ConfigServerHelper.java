@@ -119,7 +119,9 @@ public class ConfigServerHelper {
             throw new IllegalArgumentException(String.format("%s 配置不存在", key));
         }
 
+        // 放入redis，过期时间1天
         RedisHelper.hashPut(redisKey, key, value);
+        RedisHelper.expireDay(redisKey, 1L);
         return value;
     }
 

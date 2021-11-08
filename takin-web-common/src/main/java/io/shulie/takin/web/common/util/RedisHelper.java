@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
@@ -35,6 +36,29 @@ public class RedisHelper {
     @PostConstruct
     public void init() {
         redisTemplate = redisT;
+    }
+
+    /**
+     * 对 redis key 设置过期时间
+     * 单位： 天
+     *
+     * @param redisKey redis key
+     * @param timeout 时长
+     * @param unit 单位
+     */
+    public static void expire(String redisKey, Long timeout, TimeUnit unit) {
+        redisTemplate.expire(redisKey, timeout, unit);
+    }
+
+    /**
+     * 对 redis key 设置过期时间
+     * 单位： 天
+     *
+     * @param redisKey redis key
+     * @param day 天数
+     */
+    public static void expireDay(String redisKey, Long day) {
+        redisTemplate.expire(redisKey, day, TimeUnit.DAYS);
     }
 
     /**

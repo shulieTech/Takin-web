@@ -752,7 +752,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public ApplicationSwitchStatusDTO agentGetUserSwitchInfo() {
         ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
-        result.setSwitchStatus(getUserSwitchStatusForAgent(WebPluginUtils.traceTenantAppKey()+Separator.Separator3+WebPluginUtils.traceEnvCode()));
+        result.setSwitchStatus(getUserSwitchStatusForAgent(WebPluginUtils.traceTenantAppKey()+Separator.Separator3.getValue()+WebPluginUtils.traceEnvCode()));
         return result;
     }
 

@@ -528,6 +528,8 @@ public class SceneServiceImpl implements SceneService {
         result.setBusinessProcessName(sceneResult.getSceneName());
         result.setId(sceneResult.getId());
         result.setScriptDeployId(sceneResult.getScriptDeployId());
+        result.setTotalNodeNum(sceneResult.getTotalNodeNum());
+        result.setLinkRelateNum(sceneResult.getLinkRelateNum());
     }
 
     private void dealScriptJmxNodes(List<SceneLinkRelateResult> sceneLinkRelateResults, List<ScriptJmxNode> scriptJmxNodes) {

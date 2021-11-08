@@ -7,9 +7,10 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEditableEnum;
 
 /**
- * @Description 配置是否可编辑枚举类
- * @Author ocean_wll
- * @Date 2021/8/13 10:06 上午
+ * 配置是否可编辑枚举类
+ *
+ * @author ocean_wll
+ * @date 2021/8/13 10:06 上午
  */
 public class AgentConfigEditableEnumMapping {
 

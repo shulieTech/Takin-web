@@ -13,9 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @Description 对外暴露的接口控制器
- * @Author ocean_wll
- * @Date 2021/10/14 10:39 上午
+ * 对外暴露的接口控制器
+ *
+ * @author ocean_wll
+ * @date 2021/10/14 10:39 上午
  */
 @RestController
 @RequestMapping(ApiUrls.PUBLIC_TAKIN_API_URL)

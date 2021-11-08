@@ -44,6 +44,12 @@ public class WebPluginUtils {
     public static String DEFAULT_ENV_CODE = "test";
     public static String DEFAULT_TENANT_CODE = "default";
 
+    /**
+     * 默认系统相关属性
+     */
+    public static String SYS_DEFAULT_ENV_CODE = "system";
+    public static Long SYS_DEFAULT_TENANT_ID = -1L;
+
 
 
     public static Long DEFAULT_USER_ID = -1L;
@@ -81,16 +87,16 @@ public class WebPluginUtils {
 
     /**
      * 根据userId 获取 用户信息
+     *
      * @param userId
      * @return
      */
     public static UserExt getUserExtByUserId(Long userId) {
         if (Objects.nonNull(userApi)) {
-           return userApi.getUserExtByUserId(userId);
+            return userApi.getUserExtByUserId(userId);
         }
         return null;
     }
-
 
     /**
      * 补充 插入 更新 用户数据
@@ -376,6 +382,9 @@ public class WebPluginUtils {
         if (tenantExtApi != null) {
             return tenantExtApi.getDefaultUserId(userAppKey,tenantCode);
         }
+        if(userApi != null) {
+            return 1L;
+        }
         return DEFAULT_USER_ID;
     }
 
@@ -508,20 +517,18 @@ public class WebPluginUtils {
     }
 
     /**
-     * 切换
-     * @param tenantAppKey
-     * @param envCode
+     * 获取租户配置
      * @return
      */
-    public static List<TenantConfigExt> getTenantConfig(String tenantAppKey, String envCode) {
+    public static List<TenantConfigExt> getTenantConfig() {
 
         if (Objects.nonNull(tenantExtApi)) {
-            return tenantExtApi.getTenantConfig(tenantAppKey,envCode);
+            return tenantExtApi.getTenantConfig();
         }
         // 默认一个租户
         if(Objects.nonNull(userApi)) {
             // 企业版
-            return userApi.getTenantConfig(envCode);
+            return userApi.getTenantConfig();
         }
         // 开源版本
         return Lists.newArrayList();
@@ -640,6 +647,19 @@ public class WebPluginUtils {
     }
 
     /**
+     * 返回租户id
+     * 租户依赖于用户
+     * 系统全局表查询使用
+     * @return 租户主键
+     */
+    public static List<Long> traceTenantIdForSystem() {
+        if (userApi != null) {
+            return Lists.newArrayList(userApi.traceTenantId());
+        }
+        return Lists.newArrayList(SYS_DEFAULT_TENANT_ID ,DEFAULT_TENANT_ID);
+    }
+
+    /**
      * 返回 tenantAppKey
      *
      * @return tenantAppKey
@@ -661,6 +681,16 @@ public class WebPluginUtils {
             return userApi.traceEnvCode();
         }
         return DEFAULT_ENV_CODE;
+    }
+
+    /**
+     * @return
+     */
+    public static List<String> traceEnvCodeForSystem() {
+        if (userApi != null) {
+            return Lists.newArrayList(userApi.traceEnvCode());
+        }
+        return Lists.newArrayList(SYS_DEFAULT_ENV_CODE, DEFAULT_ENV_CODE);
     }
 
     /**
@@ -690,7 +720,6 @@ public class WebPluginUtils {
     }
 
     /**
-     * TODO by wy
      * 组装 http 租户参数
      * @return
      */
@@ -727,7 +756,7 @@ public class WebPluginUtils {
      * @return
      */
     private static List<TenantEnv> getDefaultTenantEnvList() {
-        List<TenantEnv> envs =Lists.newArrayList();
+        List<TenantEnv> envs = Lists.newArrayList();
         TenantInfoExt.TenantEnv env = new TenantEnv();
         env.setEnvCode(DEFAULT_ENV_CODE);
         env.setEnvName("测试环境");

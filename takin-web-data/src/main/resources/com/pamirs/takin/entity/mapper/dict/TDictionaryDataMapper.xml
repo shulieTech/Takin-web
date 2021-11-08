@@ -285,6 +285,39 @@
         FROM
         t_dictionary_type t, t_dictionary_data d
         WHERE
+        t.ID = d.DICT_TYPE AND d.tenant_id = -1  AND d.env_code = 'system'
+        <if test="typeName!=null and typeName!=''">
+            AND t.TYPE_NAME LIKE CONCAT('%',#{typeName},'%')
+        </if>
+        <if test="typeAlias!=null and typeAlias!=''">
+            AND t.TYPE_ALIAS LIKE CONCAT('%',#{typeAlias},'%')
+        </if>
+        <if test="valueName!=null and valueName!=''">
+            AND d.VALUE_NAME LIKE CONCAT('%',#{valueName},'%')
+        </if>
+        <if test="valueActive!=null and valueActive!=''">
+            AND d.ACTIVE = #{valueActive}
+        </if>
+
+        UNION
+
+        SELECT
+        d.ID valueId,
+        d.VALUE_ORDER,
+        d.VALUE_CODE,
+        d.VALUE_NAME,
+        d.ACTIVE valueActive,
+        d.CREATE_TIME,
+        d.MODIFY_TIME,
+        d.`LANGUAGE`,
+        t.ID typeId,
+        t.TYPE_NAME,
+        t.ACTIVE typeActive,
+        t.TYPE_ALIAS,
+        t.IS_LEAF
+        FROM
+        t_dictionary_type t, t_dictionary_data d
+        WHERE
         t.ID = d.DICT_TYPE
         <if test="tenantId!=null and tenantId!=''">
             AND d.tenant_id = #{tenantId}
@@ -304,6 +337,7 @@
         <if test="valueActive!=null and valueActive!=''">
             AND d.ACTIVE = #{valueActive}
         </if>
+
         ORDER BY TYPE_ALIAS, VALUE_ORDER
     </select>
 

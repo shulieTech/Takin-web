@@ -6,9 +6,10 @@ import javax.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
- * @Description 应用节点数对象
- * @Author ocean_wll
- * @Date 2021/10/14 10:53 上午
+ * 应用节点数对象
+ *
+ * @author ocean_wll
+ * @date 2021/10/14 10:53 上午
  */
 @Data
 public class NodeNumParam {

@@ -19,4 +19,9 @@ public class TenantConfigExt {
      * 配置内容
      */
     private String configValue;
+
+    /**
+     * 配置说明
+     */
+    private String configDesc;
 }

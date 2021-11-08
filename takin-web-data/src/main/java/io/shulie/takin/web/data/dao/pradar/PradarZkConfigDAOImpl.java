@@ -15,6 +15,7 @@ import io.shulie.takin.web.data.model.mysql.PradarZkConfigEntity;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigQueryParam;
 import io.shulie.takin.web.data.result.pradarzkconfig.PradarZKConfigResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -56,12 +57,16 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
         if (StringUtils.isNotBlank(param.getRemark())) {
             wrapper.like(PradarZkConfigEntity::getRemark, param.getRemark());
         }
+        final List<String> envCodeList = WebPluginUtils.traceEnvCodeForSystem();
+        final List<Long> tenantIdList = WebPluginUtils.traceTenantIdForSystem();
+        wrapper.in(CollectionUtils.isNotEmpty(tenantIdList), PradarZkConfigEntity::getTenantId, tenantIdList);
+        wrapper.in(CollectionUtils.isNotEmpty(envCodeList), PradarZkConfigEntity::getEnvCode, envCodeList);
         Page<PradarZkConfigEntity> page = new Page<>(param.getCurrent(), param.getPageSize());
         wrapper.orderByDesc(PradarZkConfigEntity::getModifyTime);
 
         IPage<PradarZkConfigEntity> configs = pradarZkConfigMapper.selectPage(page, wrapper);
         if (CollectionUtils.isEmpty(configs.getRecords())) {
-            return PagingList.of(Lists.newArrayList(),configs.getTotal());
+            return PagingList.of(Lists.newArrayList(), configs.getTotal());
         }
         List<PradarZKConfigResult> pradarZkConfigResultList = configs.getRecords().stream().map(entity -> {
             PradarZKConfigResult configResult = new PradarZKConfigResult();

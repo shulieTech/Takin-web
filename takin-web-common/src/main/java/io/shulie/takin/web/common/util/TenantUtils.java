@@ -20,7 +20,7 @@ public class TenantUtils {
      * @return
      */
     public static String getTenantConfigRedisKey(){
-        return CommonUtil.generateRedisKey(TENANT_CONFIG_REDIS_KEY,WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode());
+        return CommonUtil.generateRedisKey(TENANT_CONFIG_REDIS_KEY, WebPluginUtils.traceTenantCode(), WebPluginUtils.traceEnvCode());
     }
 
 }

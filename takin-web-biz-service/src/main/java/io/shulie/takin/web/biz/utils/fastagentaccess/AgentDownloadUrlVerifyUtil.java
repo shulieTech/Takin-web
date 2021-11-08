@@ -3,9 +3,10 @@ package io.shulie.takin.web.biz.utils.fastagentaccess;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * @Description agent下载url校验工具类
- * @Author ocean_wll
- * @Date 2021/8/17 3:31 下午
+ * agent下载url校验工具类
+ *
+ * @author ocean_wll
+ * @date 2021/8/17 3:31 下午
  */
 public class AgentDownloadUrlVerifyUtil {
 

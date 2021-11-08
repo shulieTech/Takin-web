@@ -16,7 +16,6 @@ public interface ConfigServerKeyConstants {
     /**
      * zk 地址
      */
-    String TAKIN_REMOTE_CLIENT_DOWNLOAD_URI = "takin.remote.client.download.uri";
     String TAKIN_APPLICATION_NEW_AGENT = "takin.application.new-agent";
     String TAKIN_SCRIPT_DEBUG_RPCTYPE = "takin.script-debug.rpcType";
 

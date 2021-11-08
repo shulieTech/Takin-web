@@ -14,6 +14,8 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.bean.BeanUtil;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.SceneManageConstant;
@@ -219,14 +221,9 @@ public class SceneManageServiceImpl implements SceneManageService {
     }
 
     @Override
-    public WebResponse getPageList(SceneManageQueryVO vo) {
+    public ResponseResult<List<SceneManageListOutput>> getPageList(SceneManageQueryVO vo) {
 
-        WebResponse webResponse = new WebResponse();
-        webResponse.setData(Lists.newArrayList());
-        webResponse.setSuccess(true);
-        webResponse.setTotal(0L);
-        SceneManageQueryReq req = new SceneManageQueryReq();
-        BeanUtils.copyProperties(vo, req);
+        SceneManageQueryReq req = BeanUtil.copyProperties(vo, SceneManageQueryReq.class);
         if (vo.getTagId() != null) {
             List<Long> tagIds = Collections.singletonList(vo.getTagId());
             List<SceneTagRefResponse> sceneTagRefBySceneIds = sceneTagService.getTagRefByTagIds(tagIds);
@@ -235,11 +232,9 @@ public class SceneManageServiceImpl implements SceneManageService {
                 String sceneIdStr = StringUtils.join(sceneIds, ",");
                 req.setSceneIds(sceneIdStr);
             } else {
-                return webResponse;
+                return ResponseResult.success(new ArrayList<>(0), 0L);
             }
         }
-        req.setLastPtStartTime(vo.getLastPtStartTime());
-        req.setLastPtEndTime(vo.getLastPtEndTime());
         ResponseResult<List<SceneManageListResp>> sceneList = sceneManageApi.getSceneList(req);
         if (!Objects.isNull(sceneList)) {
             if (!Boolean.TRUE.equals(sceneList.getSuccess())) {
@@ -253,20 +248,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR, "cloud查询场景列表返回为空！");
         }
         List<SceneManageListOutput> listData = convertData(sceneList.getData());
-        //计算场景的定时执行时间
-        //List<SceneSchedulerTaskResponse> responseList = sceneSchedulerTaskService.selectBySceneIds(sceneIds);
-        //Map<Long, String> sceneExcuteTimeMap = new HashMap<>();
-        //responseList.stream().forEach(response -> {
-        //    sceneExcuteTimeMap.put(response.getSceneId(), response.getExecuteTime());
-        //});
-        if (null != sceneList) {
-            webResponse.setTotal(sceneList.getTotalNum());
-        } else {
-            webResponse.setTotal(0L);
-        }
-        webResponse.setSuccess(true);
-        webResponse.setData(listData);
-        return webResponse;
+        return ResponseResult.success(listData, sceneList.getTotalNum());
     }
 
     /**

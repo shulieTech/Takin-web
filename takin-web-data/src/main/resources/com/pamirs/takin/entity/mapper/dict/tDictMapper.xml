@@ -15,6 +15,20 @@
             SELECT tdt.ID
             FROM t_dictionary_type tdt
             WHERE tdt.TYPE_ALIAS = #{TYPE_ALIAS}
+        ) AND tdd.tenant_id = -1 AND tdd.env_code = 'system'
+
+        UNION
+
+        SELECT tdt.ID DICT_TYPE,
+               tdd.VALUE_ORDER,
+               tdd.VALUE_NAME
+        FROM t_dictionary_type tdt,
+             t_dictionary_data tdd
+        WHERE tdt.ID = tdd.DICT_TYPE
+          AND tdt.ID = (
+            SELECT tdt.ID
+            FROM t_dictionary_type tdt
+            WHERE tdt.TYPE_ALIAS = #{TYPE_ALIAS}
         ) AND tdd.tenant_id = #{tenantId} AND tdd.env_code = #{envCode}
     </select>
 </mapper>

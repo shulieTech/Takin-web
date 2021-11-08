@@ -59,15 +59,14 @@ public class TenantController {
 
     @GetMapping("/config")
     @ApiOperation("获取租户配置，无需登录")
-    public List<TenantConfigExt> getConfig(@RequestParam(value = "tenantAppKey",required = false) String tenantAppKey,
-        @RequestParam(value = "envCode",required = false) String envCode) {
+    public List<TenantConfigExt> getConfig() {
 
         // 先从缓存获取
         String tenantConfigRedisKey = TenantUtils.getTenantConfigRedisKey();
         if (redisTemplate.hasKey(tenantConfigRedisKey)) {
             return (List<TenantConfigExt>)redisTemplate.opsForValue().get(tenantConfigRedisKey);
         }
-        List<TenantConfigExt> exts =WebPluginUtils.getTenantConfig(tenantAppKey,envCode);
+        List<TenantConfigExt> exts =WebPluginUtils.getTenantConfig();
         redisTemplate.opsForValue().set(tenantConfigRedisKey,exts);
         return exts;
     }

@@ -50,17 +50,17 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     /**
      * 没有tenant_id 的表
      */
-    private List<String> tableWithoutTenantId = Lists.newArrayList("t_dictionary_type","t_tc_sequence");
+    private List<String> tableWithoutTenantId = Lists.newArrayList("t_dictionary_type","t_tc_sequence","t_tenant_info","t_tro_resource", "t_config_server");
 
     /**
      * 没有env_code 的表
      */
-    private List<String> tableWithoutEnvCode = Lists.newArrayList("t_tro_user","t_tro_dept","t_dictionary_type","t_tro_user_dept_relation","t_tc_sequence");
+    private List<String> tableWithoutEnvCode = Lists.newArrayList("t_tro_user","t_tro_dept","t_dictionary_type","t_tro_user_dept_relation","t_tc_sequence","t_tenant_info","t_tro_resource", "t_config_server");
 
     /**
      * 没有user_id 的表
      */
-    private List<String> tableWithoutUserId = Lists.newArrayList("t_tro_user","t_tro_dept","t_dictionary_type","t_config_server","t_tc_sequence");
+    private List<String> tableWithoutUserId = Lists.newArrayList("t_tro_user","t_tro_dept","t_dictionary_type","t_config_server","t_tc_sequence","t_tenant_info","t_tro_resource", "t_config_server");
 
 
     private TakinTenantLineHandler tenantLineHandler;
@@ -98,6 +98,18 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     protected BinaryExpression andExpression(Table table, Expression where) {
         //获得where条件表达式
         AndExpression tenantExpression = this.buildTenantExpression(table,where);
+
+        if(tenantExpression == null) {
+            EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
+            if (null != where) {
+                if (where instanceof OrExpression) {
+                    return new AndExpression(equalsTo, new Parenthesis(where));
+                } else {
+                    return new AndExpression(equalsTo, where);
+                }
+            }
+           return equalsTo;
+        }
         if (null != where) {
             if (where instanceof OrExpression) {
                 return new AndExpression(tenantExpression, new Parenthesis(where));

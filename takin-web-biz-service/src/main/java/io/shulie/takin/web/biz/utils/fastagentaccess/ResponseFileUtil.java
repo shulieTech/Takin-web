@@ -12,9 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * @Description http response传输文件工具类
- * @Author ocean_wll
- * @Date 2021/8/17 11:05 上午
+ * http response传输文件工具类
+ *
+ * @author ocean_wll
+ * @date 2021/8/17 11:05 上午
  */
 @Slf4j
 public class ResponseFileUtil {

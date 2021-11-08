@@ -4,9 +4,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
- * @Description 插件状态对象
- * @Author ocean_wll
- * @Date 2021/8/19 2:53 下午
+ * 插件状态对象
+ *
+ * @author ocean_wll
+ * @date 2021/8/19 2:53 下午
  */
 @Data
 public class PluginLoadListResponse {

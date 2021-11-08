@@ -68,9 +68,7 @@ public interface WebTenantExtApi extends ExtensionPoint {
 
     /**
      * 返回租户配置
-     * @param tenantAppKey
-     * @param envCode
      * @return
      */
-    List<TenantConfigExt> getTenantConfig(String tenantAppKey, String envCode);
+    List<TenantConfigExt> getTenantConfig();
 }

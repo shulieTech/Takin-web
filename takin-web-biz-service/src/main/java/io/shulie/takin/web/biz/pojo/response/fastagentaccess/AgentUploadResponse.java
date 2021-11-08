@@ -5,9 +5,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
- * @Description agent文件上传响应
- * @Author ocean_wll
- * @Date 2021/8/12 10:22 上午
+ * agent文件上传响应
+ *
+ * @author ocean_wll
+ * @date 2021/8/12 10:22 上午
  */
 @Data
 @ApiModel("出参类-agent上传")

@@ -37,7 +37,7 @@ public class SceneLinkRelateRequest implements Serializable {
     private String entrance;
 
     @ApiModelProperty("业务活动ID")
-    private Long businessLinkId;
+    private Long businessActivityId;
 
     @ApiModelProperty("业务活动名称")
     private String activityName;

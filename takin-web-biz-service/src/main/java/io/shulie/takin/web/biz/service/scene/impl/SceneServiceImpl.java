@@ -397,7 +397,7 @@ public class SceneServiceImpl implements SceneService {
 
         if (BusinessTypeEnum.NORMAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
             //普通业务活动
-            if (sceneLinkRelateRequest.getBusinessLinkId() == null) {
+            if (sceneLinkRelateRequest.getBusinessActivityId() == null) {
                 //业务活动id为空，新增业务活动
                 ActivityCreateRequest request = LinkManageConvert.INSTANCE.ofActivityCreateRequest(sceneLinkRelateRequest);
                 request.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getSamplerType().getType()));
@@ -406,7 +406,7 @@ public class SceneServiceImpl implements SceneService {
                 request.setMethod(entranceJoinEntity.getMethodName());
                 request.setRpcType(entranceJoinEntity.getRpcType());
                 Long activity = activityService.createActivity(request);
-                sceneLinkRelateRequest.setBusinessLinkId(activity);
+                sceneLinkRelateRequest.setBusinessActivityId(activity);
             }
         } else if (BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
             ActivityQueryParam queryParam = new ActivityQueryParam();
@@ -415,13 +415,13 @@ public class SceneServiceImpl implements SceneService {
             List<ActivityListResult> activityList = activityDao.getActivityList(queryParam);
             if (CollectionUtils.isNotEmpty(activityList)){
                 ActivityListResult activityListResult = activityList.get(0);
-                sceneLinkRelateRequest.setBusinessLinkId(activityListResult.getActivityId());
+                sceneLinkRelateRequest.setBusinessActivityId(activityListResult.getActivityId());
             }else {
                 VirtualActivityCreateRequest createRequest = LinkManageConvert.INSTANCE.ofVirtualActivityCreateRequest(sceneLinkRelateRequest);
                 createRequest.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getSamplerType().getType()));
                 createRequest.setVirtualEntrance(sceneLinkRelateRequest.getEntrance());
                 Long virtualActivity = activityService.createVirtualActivity(createRequest);
-                sceneLinkRelateRequest.setBusinessLinkId(virtualActivity);
+                sceneLinkRelateRequest.setBusinessActivityId(virtualActivity);
             }
         } else {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "不是已知的业务活动类型！");

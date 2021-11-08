@@ -44,22 +44,7 @@ public class FileManageDAOImpl implements FileManageDAO {
         if (CollectionUtils.isEmpty(fileManageEntities)) {
             return null;
         }
-        return fileManageEntities.stream().map(fileManageEntity -> {
-            FileManageResult fileManageResult = new FileManageResult();
-            fileManageResult.setId(fileManageEntity.getId());
-            fileManageResult.setFileName(fileManageEntity.getFileName());
-            fileManageResult.setFileSize(fileManageEntity.getFileSize());
-            fileManageResult.setFileExt(fileManageEntity.getFileExt());
-            fileManageResult.setFileType(fileManageEntity.getFileType());
-            fileManageResult.setFileExtend(fileManageEntity.getFileExtend());
-            fileManageResult.setCustomerId(fileManageEntity.getCustomerId());
-            fileManageResult.setUploadTime(fileManageEntity.getUploadTime());
-            fileManageResult.setUploadPath(fileManageEntity.getUploadPath());
-            fileManageResult.setIsDeleted(fileManageEntity.getIsDeleted());
-            fileManageResult.setGmtCreate(fileManageEntity.getGmtCreate());
-            fileManageResult.setGmtUpdate(fileManageEntity.getGmtUpdate());
-            return fileManageResult;
-        }).collect(Collectors.toList());
+        return fileManageEntities.stream().map(this::toFileManageResult).collect(Collectors.toList());
     }
 
     @Override
@@ -77,5 +62,34 @@ public class FileManageDAOImpl implements FileManageDAO {
             fileManageMapper.insert(entity);
             return entity.getId();
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public FileManageResult selectFileManageById(Long id) {
+        if (id == null){
+            return null;
+        }
+        FileManageEntity fileManageEntity = fileManageMapper.selectById(id);
+        return toFileManageResult(fileManageEntity);
+    }
+
+    private FileManageResult toFileManageResult(FileManageEntity fileManageEntity){
+        if (fileManageEntity == null) {
+            return null;
+        }
+        FileManageResult fileManageResult = new FileManageResult();
+        fileManageResult.setId(fileManageEntity.getId());
+        fileManageResult.setFileName(fileManageEntity.getFileName());
+        fileManageResult.setFileSize(fileManageEntity.getFileSize());
+        fileManageResult.setFileExt(fileManageEntity.getFileExt());
+        fileManageResult.setFileType(fileManageEntity.getFileType());
+        fileManageResult.setFileExtend(fileManageEntity.getFileExtend());
+        fileManageResult.setCustomerId(fileManageEntity.getCustomerId());
+        fileManageResult.setUploadTime(fileManageEntity.getUploadTime());
+        fileManageResult.setUploadPath(fileManageEntity.getUploadPath());
+        fileManageResult.setIsDeleted(fileManageEntity.getIsDeleted());
+        fileManageResult.setGmtCreate(fileManageEntity.getGmtCreate());
+        fileManageResult.setGmtUpdate(fileManageEntity.getGmtUpdate());
+        return fileManageResult;
     }
 }

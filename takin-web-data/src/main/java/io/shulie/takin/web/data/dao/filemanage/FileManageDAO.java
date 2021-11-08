@@ -33,4 +33,10 @@ public interface FileManageDAO {
      */
     List<Long> createFileManageList(List<FileManageCreateParam> fileList);
 
+    /**
+     * 根据id查询文件
+     * @param id
+     * @return
+     */
+    FileManageResult selectFileManageById(Long id);
 }

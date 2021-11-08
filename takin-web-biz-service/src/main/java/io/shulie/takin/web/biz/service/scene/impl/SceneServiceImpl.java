@@ -8,6 +8,8 @@ import javax.annotation.Resource;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
+import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
+import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -102,6 +104,8 @@ public class SceneServiceImpl implements SceneService {
     private ScriptManageService scriptManageService;
     @Resource
     BusinessLinkManageTableMapper businessActivityFlowMapper;
+    @Resource
+    private FileManageDAO fileManageDAO;
 
     @Value("${file.upload.tmp.path:/tmp/takin/}")
     private String tmpFilePath;
@@ -186,6 +190,7 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public BusinessFlowDetailResponse parseScriptAndSave(BusinessFlowParseRequest businessFlowParseRequest) {
+
         FileManageUpdateRequest fileManageCreateRequest = businessFlowParseRequest.getScriptFile();
         //如果文件内容不为空，使用文件内容新建脚本文件
         if (StringUtils.isNotBlank(fileManageCreateRequest.getScriptContent())) {
@@ -198,10 +203,18 @@ public class SceneServiceImpl implements SceneService {
             String fileMd5 = fileApi.createFileByPathAndString(fileCreateByStringParamReq);
             fileManageCreateRequest.setMd5(fileMd5);
         }
-
-        //解析脚本
         ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
         analyzeRequest.setScriptFile(tmpFilePath + "/" + fileManageCreateRequest.getUploadId() + "/" + fileManageCreateRequest.getFileName());
+        if (businessFlowParseRequest.getScriptFile().getId() != null){
+            //已存在文件
+            FileManageResult fileManageResult = fileManageDAO.selectFileManageById(businessFlowParseRequest.getScriptFile().getId());
+            if (fileManageResult == null){
+                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "没有根据脚本id找到对应脚本！");
+            }
+            analyzeRequest.setScriptFile(fileManageResult.getUploadPath());
+        }
+        //解析脚本
+
         ResponseResult<List<ScriptNode>> listResponseResult = sceneManageApi.scriptAnalyze(analyzeRequest);
         if (!listResponseResult.getSuccess() || CollectionUtils.isEmpty(listResponseResult.getData())) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件解析失败！" + listResponseResult.getError().getMsg());

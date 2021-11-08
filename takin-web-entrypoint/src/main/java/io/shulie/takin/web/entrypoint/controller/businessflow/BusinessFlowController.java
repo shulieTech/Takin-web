@@ -1,39 +1,27 @@
 package io.shulie.takin.web.entrypoint.controller.businessflow;
 
-import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
-import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntrancesQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntrancesResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.util.ActivityUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -57,13 +45,8 @@ public class BusinessFlowController {
             needAuth = ActionTypeEnum.CREATE
     )
     public ResponseResult<BusinessFlowDetailResponse> parseScriptAndSave(@RequestBody @Valid BusinessFlowParseRequest businessFlowParseRequest) {
-        try {
-            BusinessFlowDetailResponse sceneDetailDto = sceneService.parseScriptAndSave(businessFlowParseRequest);
-            return ResponseResult.success(sceneDetailDto);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_ADD_ERROR, e.getMessage());
-        }
+        BusinessFlowDetailResponse sceneDetailDto = sceneService.parseScriptAndSave(businessFlowParseRequest);
+        return ResponseResult.success(sceneDetailDto);
     }
 
     @PostMapping("/uploadDataFile")
@@ -78,13 +61,8 @@ public class BusinessFlowController {
             needAuth = ActionTypeEnum.UPDATE
     )
     public ResponseResult<BusinessFlowDetailResponse> uploadDataFile(@RequestBody @Valid BusinessFlowDataFileRequest businessFlowDataFileRequest) {
-        try {
-            BusinessFlowDetailResponse sceneDetailDto = sceneService.uploadDataFile(businessFlowDataFileRequest);
-            return ResponseResult.success(sceneDetailDto);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, e.getMessage());
-        }
+        BusinessFlowDetailResponse sceneDetailDto = sceneService.uploadDataFile(businessFlowDataFileRequest);
+        return ResponseResult.success(sceneDetailDto);
     }
 
     @PostMapping("/autoMatchActivity")
@@ -99,13 +77,8 @@ public class BusinessFlowController {
             needAuth = ActionTypeEnum.UPDATE
     )
     public ResponseResult<BusinessFlowMatchResponse> autoMatchActivity(@RequestBody BusinessFlowAutoMatchRequest businessFlowAutoMatchRequest) {
-        try {
-            BusinessFlowMatchResponse sceneDetailDto = sceneService.autoMatchActivity(businessFlowAutoMatchRequest.getId());
-            return ResponseResult.success(sceneDetailDto);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, e.getMessage());
-        }
+        BusinessFlowMatchResponse sceneDetailDto = sceneService.autoMatchActivity(businessFlowAutoMatchRequest.getId());
+        return ResponseResult.success(sceneDetailDto);
     }
 
     @PostMapping("/matchActivity")
@@ -120,13 +93,8 @@ public class BusinessFlowController {
             needAuth = ActionTypeEnum.UPDATE
     )
     public ResponseResult<Boolean> matchActivity(@RequestBody @Valid SceneLinkRelateRequest sceneLinkRelateRequest) {
-        try {
-            sceneService.matchActivity(sceneLinkRelateRequest);
-            return ResponseResult.success(Boolean.TRUE);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, e.getMessage());
-        }
+        sceneService.matchActivity(sceneLinkRelateRequest);
+        return ResponseResult.success(Boolean.TRUE);
     }
 
     @GetMapping("/scene/detail")
@@ -136,13 +104,8 @@ public class BusinessFlowController {
             needAuth = ActionTypeEnum.QUERY
     )
     public ResponseResult<BusinessFlowDetailResponse> getSceneDetail(@NotNull Long id) {
-        try {
-            BusinessFlowDetailResponse dto = sceneService.getBusinessFlowDetail(id);
-            return ResponseResult.success(dto);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, e.getMessage());
-        }
+        BusinessFlowDetailResponse dto = sceneService.getBusinessFlowDetail(id);
+        return ResponseResult.success(dto);
     }
 
     @PutMapping("/scene")
@@ -152,13 +115,8 @@ public class BusinessFlowController {
             needAuth = ActionTypeEnum.QUERY
     )
     public ResponseResult<Boolean> getSceneDetail(@Valid BusinessFlowUpdateRequest businessFlowUpdateRequest) {
-        try {
-            sceneService.updateBusinessFlow(businessFlowUpdateRequest);
-            return ResponseResult.success(Boolean.TRUE);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, e.getMessage());
-        }
+        sceneService.updateBusinessFlow(businessFlowUpdateRequest);
+        return ResponseResult.success(Boolean.TRUE);
     }
 
 

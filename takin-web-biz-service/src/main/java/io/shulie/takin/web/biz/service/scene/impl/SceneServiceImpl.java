@@ -7,7 +7,6 @@ import javax.annotation.Resource;
 
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
-import io.shulie.takin.web.common.enums.activity.info.RpcTypeEnum;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +31,6 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.ext.content.emus.NodeTypeEnum;
-import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
@@ -402,7 +400,7 @@ public class SceneServiceImpl implements SceneService {
             if (sceneLinkRelateRequest.getBusinessLinkId() == null) {
                 //业务活动id为空，新增业务活动
                 ActivityCreateRequest request = LinkManageConvert.INSTANCE.ofActivityCreateRequest(sceneLinkRelateRequest);
-                request.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getType().getType()));
+                request.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getSamplerType().getType()));
                 ActivityUtil.EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(sceneLinkRelateRequest.getEntrance());
                 request.setServiceName(entranceJoinEntity.getServiceName());
                 request.setMethod(entranceJoinEntity.getMethodName());
@@ -420,7 +418,7 @@ public class SceneServiceImpl implements SceneService {
                 sceneLinkRelateRequest.setBusinessLinkId(activityListResult.getActivityId());
             }else {
                 VirtualActivityCreateRequest createRequest = LinkManageConvert.INSTANCE.ofVirtualActivityCreateRequest(sceneLinkRelateRequest);
-                createRequest.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getType().getType()));
+                createRequest.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getSamplerType().getType()));
                 createRequest.setVirtualEntrance(sceneLinkRelateRequest.getEntrance());
                 Long virtualActivity = activityService.createVirtualActivity(createRequest);
                 sceneLinkRelateRequest.setBusinessLinkId(virtualActivity);

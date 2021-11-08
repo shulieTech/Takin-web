@@ -44,7 +44,7 @@ public class SceneLinkRelateRequest implements Serializable {
 
     @NotNull
     @ApiModelProperty("请求类型")
-    private SamplerTypeEnum type;
+    private SamplerTypeEnum samplerType;
 
     @NotNull
     @ApiModelProperty("业务活动类型")

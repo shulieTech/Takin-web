@@ -603,6 +603,8 @@ alter table t_script_debug
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 alter table t_script_debug
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_script_debug`
+    MODIFY COLUMN `customer_id` bigint(20) UNSIGNED NULL COMMENT '租户id' AFTER `cloud_report_id`
 -- 已有索引 idx_si 快照id
 
 -- t_script_execute_result  脚本执行结果

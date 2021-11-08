@@ -33,16 +33,13 @@ public class ActivityCreateRequest {
     private String linkId;
 
     @ApiModelProperty(name = "link_level", value = "业务活动等级")
-    @NotBlank
     @JsonProperty("link_level")
     private String activityLevel;
 
     @ApiModelProperty(name = "isCore", value = "业务活动链路是否核心链路 0:不是;1:是")
-    @NotNull
     private Integer isCore;
 
     @ApiModelProperty(name = "businessDomain", value = "业务域")
-    @NotBlank
     private String businessDomain;
 
     @NotBlank

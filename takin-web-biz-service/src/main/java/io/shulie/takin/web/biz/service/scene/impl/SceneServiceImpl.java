@@ -410,8 +410,6 @@ public class SceneServiceImpl implements SceneService {
                 Long activity = activityService.createActivity(request);
                 sceneLinkRelateRequest.setBusinessLinkId(activity);
             }
-
-
         } else if (BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
             ActivityQueryParam queryParam = new ActivityQueryParam();
             queryParam.setBusinessType(sceneLinkRelateRequest.getBusinessType());
@@ -423,6 +421,7 @@ public class SceneServiceImpl implements SceneService {
             }else {
                 VirtualActivityCreateRequest createRequest = LinkManageConvert.INSTANCE.ofVirtualActivityCreateRequest(sceneLinkRelateRequest);
                 createRequest.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getType().getType()));
+                createRequest.setVirtualEntrance(sceneLinkRelateRequest.getEntrance());
                 Long virtualActivity = activityService.createVirtualActivity(createRequest);
                 sceneLinkRelateRequest.setBusinessLinkId(virtualActivity);
             }

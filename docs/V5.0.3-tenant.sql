@@ -868,6 +868,7 @@ ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `env_cod
 -- 注意顺序，先添加唯一索引，再insert新的默认配置
 INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (1, 4, 1, 30, 1, '一般慢SQL');
 INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (0, 4, 2, 60, 1, '严重慢SQL');
+update e_patrol_exception_config set env_code='system',tenant_id=-1 where env_code is null and tenant_id is null;
 
 -- e_patrol_exception_notice_config 瓶颈通知配置表
 update e_patrol_exception_notice_config set env_code='test',tenant_id=1;

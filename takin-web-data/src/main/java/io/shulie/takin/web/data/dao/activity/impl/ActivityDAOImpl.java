@@ -138,6 +138,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         businessLinkManageTableEntity.setCustomerId(param.getCustomerId());
         businessLinkManageTableEntity.setUserId(param.getUserId());
         businessLinkManageTableEntity.setCanDelete(0);
+        businessLinkManageTableEntity.setApplicationName(param.getApplicationName());
         if (null != param.getServerMiddlewareType()) {
             businessLinkManageTableEntity.setServerMiddlewareType(param.getServerMiddlewareType().getType());
         }

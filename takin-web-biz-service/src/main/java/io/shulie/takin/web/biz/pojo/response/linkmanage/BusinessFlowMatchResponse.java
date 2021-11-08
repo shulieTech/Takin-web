@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author zhaoyong
@@ -25,4 +26,7 @@ public class BusinessFlowMatchResponse extends AuthQueryResponseCommonExt implem
 
     @ApiModelProperty(name = "unMatchNum", value = "未匹配条数")
     private Integer unMatchNum;
+
+    @ApiModelProperty(name = "finishDate", value = "完成时间")
+    private Date finishDate;
 }

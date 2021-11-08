@@ -339,6 +339,7 @@ public class SceneServiceImpl implements SceneService {
         sceneLinkRelateParam.setSceneIds(Collections.singletonList(id.toString()));
         List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
         dealScriptJmxNodes(sceneLinkRelateList, threadJmxNode);
+        response.setThreadScriptJmxNodes(threadJmxNode);
         response.setLinkRelateNum(CollectionUtils.isEmpty(sceneLinkRelateList) ? 0 : sceneLinkRelateList.size());
         response.setTotalNodeNum(nodeNumByType);
         return response;
@@ -351,6 +352,7 @@ public class SceneServiceImpl implements SceneService {
         if (sceneResult == null) {
             return result;
         }
+        result.setFinishDate(new Date());
         result.setId(id);
         result.setBusinessProcessName(sceneResult.getSceneName());
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
@@ -383,6 +385,10 @@ public class SceneServiceImpl implements SceneService {
         updateParam.setId(id);
         updateParam.setLinkRelateNum(matchNum);
         sceneDao.update(updateParam);
+        //匹配数量符合，修改压测成就
+        if (matchNum == nodeNumByType){
+            //TODO 修改压测场景
+        }
         return result;
     }
 
@@ -479,7 +485,6 @@ public class SceneServiceImpl implements SceneService {
         result.setId(oldScriptDeployId);
         scriptManageService.setFileList(result);
         List<FileManageResponse> fileManageResponseList = result.getFileManageResponseList();
-        int unMatchNum = sceneResult.getTotalNodeNum() - sceneResult.getLinkRelateNum();
         ScriptManageDeployUpdateRequest updateRequest = new ScriptManageDeployUpdateRequest();
         if (scriptFile == null) {
             List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
@@ -495,10 +500,8 @@ public class SceneServiceImpl implements SceneService {
             updateRequest.setPluginConfigUpdateRequests(businessFlowDataFileRequest.getPluginConfigUpdateRequests());
 
             //自动匹配
-            BusinessFlowMatchResponse businessFlowMatchResponse = autoMatchActivity(businessFlowId);
-            if (businessFlowMatchResponse != null) {
-                unMatchNum = businessFlowMatchResponse.getUnMatchNum();
-            }
+            autoMatchActivity(businessFlowId);
+
         } else {
             List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
                 !FileTypeEnum.SCRIPT.getCode().equals(o.getFileType())).collect(Collectors.toList());
@@ -514,11 +517,6 @@ public class SceneServiceImpl implements SceneService {
         //更新业务流程
         sceneUpdateParam.setScriptDeployId(scriptDeployId);
         sceneDao.update(sceneUpdateParam);
-
-        if (unMatchNum == 0) {
-            //TODO 更新压测场景
-
-        }
 
     }
 

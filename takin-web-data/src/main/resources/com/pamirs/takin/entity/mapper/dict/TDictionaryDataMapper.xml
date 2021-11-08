@@ -298,7 +298,6 @@
         <if test="valueActive!=null and valueActive!=''">
             AND d.ACTIVE = #{valueActive}
         </if>
-        ORDER BY TYPE_ALIAS, VALUE_ORDER
 
         UNION
 
@@ -338,6 +337,7 @@
         <if test="valueActive!=null and valueActive!=''">
             AND d.ACTIVE = #{valueActive}
         </if>
+
         ORDER BY TYPE_ALIAS, VALUE_ORDER
     </select>
 

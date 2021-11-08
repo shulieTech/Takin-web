@@ -365,6 +365,8 @@ public class SceneServiceImpl implements SceneService {
         if (CollectionUtils.isNotEmpty(sceneLinkRelateList)) {
             List<Long> oldIds = sceneLinkRelateList.stream().map(SceneLinkRelateResult::getId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
+                sceneLinkRelateResults = sceneLinkRelateResults.stream().filter(Objects::nonNull)
+                        .filter(o -> StringUtils.isNotBlank(o.getBusinessLinkId())).collect(Collectors.toList());
                 List<Long> longList = sceneLinkRelateResults.stream().map(SceneLinkRelateResult::getId)
                     .filter(Objects::nonNull).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(longList)) {

@@ -111,7 +111,8 @@ public class DictionaryCache {
         paramMap.put("valueActive", "Y");
         paramMap.put("tenantId", WebPluginUtils.traceTenantId());
         paramMap.put("envCode", WebPluginUtils.traceEnvCode());
-        List<TDictionaryVo> voList = tDictionaryDataMapper.queryDictionaryList(paramMap);
+        List<TDictionaryVo> voList = null;
+            //tDictionaryDataMapper.queryDictionaryList(paramMap);
         if (CollectionUtils.isEmpty(voList)) {
             return;
         }

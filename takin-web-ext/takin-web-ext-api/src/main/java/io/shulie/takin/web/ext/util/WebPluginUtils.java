@@ -514,20 +514,18 @@ public class WebPluginUtils {
     }
 
     /**
-     * 切换
-     * @param tenantAppKey
-     * @param envCode
+     * 获取租户配置
      * @return
      */
-    public static List<TenantConfigExt> getTenantConfig(String tenantAppKey, String envCode) {
+    public static List<TenantConfigExt> getTenantConfig() {
 
         if (Objects.nonNull(tenantExtApi)) {
-            return tenantExtApi.getTenantConfig(tenantAppKey,envCode);
+            return tenantExtApi.getTenantConfig();
         }
         // 默认一个租户
         if(Objects.nonNull(userApi)) {
             // 企业版
-            return userApi.getTenantConfig(envCode);
+            return userApi.getTenantConfig();
         }
         // 开源版本
         return Lists.newArrayList();

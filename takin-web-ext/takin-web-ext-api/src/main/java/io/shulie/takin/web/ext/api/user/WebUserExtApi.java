@@ -187,8 +187,7 @@ public interface WebUserExtApi extends ExtensionPoint {
 
     /**
      * 获取租户默认配置
-     * @param envCode
      * @return
      */
-    List<TenantConfigExt> getTenantConfig(String envCode);
+    List<TenantConfigExt> getTenantConfig();
 }

@@ -382,6 +382,9 @@ public class WebPluginUtils {
         if (tenantExtApi != null) {
             return tenantExtApi.getDefaultUserId(userAppKey,tenantCode);
         }
+        if(userApi != null) {
+            return 1L;
+        }
         return DEFAULT_USER_ID;
     }
 

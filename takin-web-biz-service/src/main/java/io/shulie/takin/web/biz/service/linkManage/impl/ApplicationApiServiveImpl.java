@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,12 +30,12 @@ import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 import io.shulie.takin.web.data.dao.application.ApplicationApiDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.param.application.ApplicationApiCreateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -283,14 +282,16 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
     }
 
     @Override
-    public Map<Long,List<ApplicationApiManageVO>> selectListGroupByAppId(){
+    public Map<Long, List<ApplicationApiManageVO>> selectListGroupByAppId() {
         List<ApplicationApiManage> apiManageList = manageMapper.query();
-        if(CollectionUtils.isEmpty(apiManageList)){
-            return Collections.EMPTY_MAP;
+        if (CollectionUtils.isEmpty(apiManageList)) {
+            return new HashMap<>(0);
         }
-        List<ApplicationApiManageVO> voList = apiManageList.stream()
-                .map(apiManage -> Convert.convert(ApplicationApiManageVO.class, apiManage))
-                .collect(Collectors.toList());
+
+        List<ApplicationApiManageVO> voList = apiManageList.stream().filter(apiManage ->
+            apiManage.getApplicationId() != null)
+            .map(apiManage -> Convert.convert(ApplicationApiManageVO.class, apiManage))
+            .collect(Collectors.toList());
         return CollStreamUtil.groupByKey(voList, ApplicationApiManageVO::getApplicationId);
     }
 }

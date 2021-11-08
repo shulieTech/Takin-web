@@ -8,6 +8,7 @@ package io.shulie.takin.web.biz.cache.webimpl;
 
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import io.shulie.takin.web.biz.utils.TenantKeyUtils;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
  * 缓存检测应用是否存在结果
  */
 @Component
+@Deprecated
 public class ApplicationRegisterCache {
 
     public static final String CACHE_NAME = "t:a:c:application:register";
@@ -35,7 +37,7 @@ public class ApplicationRegisterCache {
             return (Integer)obj;
         }
         int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(
-            customerId, applicationName);
+            customerId, WebPluginUtils.traceEnvCode(), applicationName);
         redisTemplate.opsForValue().set(key,applicationExist);
         return applicationExist;
     }

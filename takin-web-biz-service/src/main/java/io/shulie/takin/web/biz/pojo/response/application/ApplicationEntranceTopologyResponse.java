@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.Getter;
 
+import static io.shulie.takin.web.biz.service.LinkTopologyService.INIT;
+
 /**
  * @author shiyajian
  * create: 2020-12-29
@@ -185,6 +187,20 @@ public class ApplicationEntranceTopologyResponse {
 
     @Data
     public static class AppProvider {
+
+        public static AppProvider buildInit() {
+            AppProvider appProvider = new AppProvider();
+
+            // init
+            appProvider.setServiceAllTotalCount(INIT);
+            appProvider.setAllSuccessCount(INIT); // 总成功调用次数
+            appProvider.setServiceAllTotalTps(INIT);
+            appProvider.setAllTotalRt(INIT);
+            appProvider.setServiceAllMaxRt(INIT);
+
+            return appProvider;
+        }
+
         List<LinkEdgeDTO> containEdgeList;
         List<AppProvider> containRealAppProvider;
 

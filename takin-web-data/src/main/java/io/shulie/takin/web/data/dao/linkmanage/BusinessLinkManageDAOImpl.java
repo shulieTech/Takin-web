@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.excel.util.StringUtils;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
@@ -22,6 +23,7 @@ import io.shulie.takin.web.data.param.linkmanage.BusinessLinkManageQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.BusinessLinkManageUpdateParam;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.TechLinkResult;
+import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +35,7 @@ import org.springframework.stereotype.Component;
  * @date 2020/10/16 5:21 下午
  */
 @Component
-public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO {
+public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<BusinessLinkManageTableEntity> {
 
     @Autowired
     private TSceneLinkRelateMapper tSceneLinkRelateMapper;
@@ -113,24 +115,25 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO {
 
     @Override
     public List<BusinessLinkResult> selectBussinessLinkByIdList(List<Long> ids) {
-        List<BusinessLinkResult> resultList = Lists.newArrayList();
-        LambdaQueryWrapper<BusinessLinkManageTableEntity> businessLinkManageWrapper = new LambdaQueryWrapper<>();
-        businessLinkManageWrapper.select(
-                BusinessLinkManageTableEntity::getLinkId,
-                BusinessLinkManageTableEntity::getLinkName
-        );
-        businessLinkManageWrapper.in(BusinessLinkManageTableEntity::getLinkId, ids);
-        businessLinkManageWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
-        List<BusinessLinkManageTableEntity> entityList = businessLinkManageTableMapper.selectList(businessLinkManageWrapper);
-        if (CollectionUtils.isNotEmpty(entityList)) {
-            resultList = entityList.stream().map(businessLinkManageTableEntity -> {
-                BusinessLinkResult businessLinkResult = new BusinessLinkResult();
-                businessLinkResult.setId(String.valueOf(businessLinkManageTableEntity.getLinkId()));
-                businessLinkResult.setLinkName(businessLinkManageTableEntity.getLinkName());
-                return businessLinkResult;
-            }).collect(Collectors.toList());
+        List<BusinessLinkManageTableEntity> entityList = businessLinkManageTableMapper.selectList(this.getLambdaQueryWrapper()
+            .select(BusinessLinkManageTableEntity::getLinkId, BusinessLinkManageTableEntity::getLinkName,
+                BusinessLinkManageTableEntity::getEntrace, BusinessLinkManageTableEntity::getServerMiddlewareType,
+                BusinessLinkManageTableEntity::getType)
+            .in(BusinessLinkManageTableEntity::getLinkId, ids)
+            .eq(BusinessLinkManageTableEntity::getIsDeleted, 0));
+        if (CollectionUtil.isEmpty(entityList)) {
+            return Collections.emptyList();
         }
-        return resultList;
+
+        return entityList.stream().map(businessLinkManageTableEntity -> {
+            BusinessLinkResult businessLinkResult = new BusinessLinkResult();
+            businessLinkResult.setId(String.valueOf(businessLinkManageTableEntity.getLinkId()));
+            businessLinkResult.setLinkName(businessLinkManageTableEntity.getLinkName());
+            businessLinkResult.setEntrace(businessLinkManageTableEntity.getEntrace());
+            businessLinkResult.setType(businessLinkManageTableEntity.getType());
+            businessLinkResult.setServerMiddlewareType(businessLinkManageTableEntity.getServerMiddlewareType());
+            return businessLinkResult;
+        }).collect(Collectors.toList());
     }
 
     @Override

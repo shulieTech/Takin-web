@@ -2,8 +2,8 @@ package io.shulie.takin.web.biz.service.scriptmanage;
 
 import java.util.List;
 
-import io.shulie.takin.common.beans.page.PagingList;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployPageQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
@@ -20,6 +20,7 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.SupportJmeterPluginNam
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.SupportJmeterPluginVersionResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.WebPartResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
+import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 
 /**
  * @author zhaoyong
@@ -156,4 +157,21 @@ public interface ScriptManageService {
      * @return
      */
     WebPartResponse bigFileSyncRecord(WebPartRequest partRequest);
+
+    /**
+     * 根据脚本实例id获得业务活动列表
+     *
+     * @param scriptDeployId 脚本实例id
+     * @return 业务活动列表
+     */
+    List<BusinessLinkResult> listBusinessActivityByScriptDeployId(Long scriptDeployId);
+
+    /**
+     * 根据脚本发布id, 获得业务活动ids
+     *
+     * @param scriptDeployId 脚本发布id
+     * @return 业务活动ids
+     */
+    List<Long> listBusinessActivityIdsByScriptDeployId(Long scriptDeployId);
+
 }

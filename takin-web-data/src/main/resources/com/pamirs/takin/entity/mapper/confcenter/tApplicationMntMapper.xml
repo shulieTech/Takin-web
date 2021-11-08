@@ -24,9 +24,12 @@
     <select id="applicationExistByCustomerIdAndAppName" resultType="Integer">
         select count(1) from t_application_mnt where 1=1
         <if test="customerId!=null">
-            AND CUSTOMER_ID = #{customerId}
+            AND TENANT_ID = #{tenantId}
         </if>
-            AND APPLICATION_NAME= #{applicationName}
+        <if test="customerId!=null">
+            AND ENV_CODE = #{envCode}
+        </if>
+        AND APPLICATION_NAME= #{applicationName}
     </select>
 
     <!-- 新增应用信息 -->

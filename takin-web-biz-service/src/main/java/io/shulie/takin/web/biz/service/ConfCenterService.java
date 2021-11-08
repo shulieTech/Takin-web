@@ -73,12 +73,10 @@ import io.shulie.takin.web.biz.common.CommonService;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.biz.service.linkManage.impl.WhiteListFileService;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
@@ -87,6 +85,7 @@ import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.param.blacklist.BlackListCreateParam;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -157,7 +156,7 @@ public class ConfCenterService extends CommonService {
     @Transactional(rollbackFor = Exception.class)
     public void saveApplication(TApplicationMnt tApplicationMnt) throws TakinModuleException {
         int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(
-            WebPluginUtils.traceTenantId(), tApplicationMnt.getApplicationName());
+            WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),tApplicationMnt.getApplicationName());
         if (applicationExist > 0) {
             throw new TakinModuleException(TakinErrorEnum.CONFCENTER_ADD_APPLICATION_DUPICATE_EXCEPTION);
         }
@@ -182,7 +181,8 @@ public class ConfCenterService extends CommonService {
 
     @Transactional(rollbackFor = Exception.class)
     public void saveAgentRegisteApplication(TApplicationMnt tApplicationMnt) {
-        int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(WebPluginUtils.traceTenantId(), tApplicationMnt.getApplicationName());
+        int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(
+            WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), tApplicationMnt.getApplicationName());
         if (applicationExist > 0) {
             OperationLogContextHolder.ignoreLog();
             return;

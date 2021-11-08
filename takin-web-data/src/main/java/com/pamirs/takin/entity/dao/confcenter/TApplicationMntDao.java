@@ -33,11 +33,12 @@ public interface TApplicationMntDao {
     /**
      * 判断同一租户下应用名称是否重复
      *
-     * @param customerId
+     * @param tenantId
      * @param applicationName
      * @return
      */
-    int applicationExistByCustomerIdAndAppName(@Param("customerId") Long customerId, @Param("applicationName") String applicationName);
+    int applicationExistByCustomerIdAndAppName(@Param("tenantId") Long tenantId, @Param("envCode") String envCode,
+        @Param("applicationName") String applicationName);
 
     /**
      * 说明: 添加应用接口

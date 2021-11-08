@@ -13,7 +13,7 @@ public class TenantUtils {
     /**
      * 租户配置key
      */
-    private static String TENANT_CONFIG_REDIS_KEY = "TAKIN:TENANT:CONFIG";
+    private static String TENANT_CONFIG_REDIS_KEY = "takin:tenant:config";
 
     /**
      * 获取租户配置 redis key

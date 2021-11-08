@@ -38,6 +38,11 @@ public class ConfigServerHelper {
     @Autowired
     private ConfigServerDAO csd;
 
+    @PostConstruct
+    public void init() {
+        configServerDAO = csd;
+    }
+
     /**
      * 根据配置 key, 租户 key, 环境 获取值
      *
@@ -61,11 +66,6 @@ public class ConfigServerHelper {
 
         RedisHelper.hashPut(redisKey, key, value);
         return value;
-    }
-
-    @PostConstruct
-    public void init() {
-        configServerDAO = csd;
     }
 
     /**

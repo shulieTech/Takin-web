@@ -65,7 +65,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
     private String getCacheKey(String namespace) {
 
         return CommonUtil.generateRedisKey(cacheName,
-            WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(), namespace);
+            WebPluginUtils.traceTenantCode(), WebPluginUtils.traceEnvCode(), namespace);
 
     }
 

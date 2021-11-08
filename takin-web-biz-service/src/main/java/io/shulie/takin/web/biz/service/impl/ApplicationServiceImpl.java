@@ -777,9 +777,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         //String key = CommonUtil.generateRedisKey(PRADAR_SWITCH_STATUS_VO + uid,
         //    WebPluginUtils.traceTenantCommonExt().toString(), WebPluginUtils.traceEnvCode());
         String envCode = WebPluginUtils.traceEnvCode();
-        String appKey = WebPluginUtils.traceTenantAppKey();
+        String tenantCode = WebPluginUtils.traceTenantCode();
         final String statusVoRedisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-            PRADAR_SWITCH_STATUS_VO + appKey, envCode);
+            PRADAR_SWITCH_STATUS_VO + tenantCode, envCode);
         Object o = redisTemplate.opsForValue().get(statusVoRedisKey);
         if (o == null) {
             redisTemplate.opsForValue().set(statusVoRedisKey, AppSwitchEnum.OPENED.getCode());

@@ -47,12 +47,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (enable == null) {
             throw new TakinWebException(DashboardExceptionCode.DEFAULT, "开关状态不能为空");
         }
-        String envCode = WebPluginUtils.traceEnvCode();
-        String appKey = WebPluginUtils.traceTenantAppKey();
+        final String envCode = WebPluginUtils.traceEnvCode();
+        final String tenantCode = WebPluginUtils.traceTenantCode();
         final String statusVoRedisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-            PRADAR_SWITCH_STATUS_VO + appKey, envCode);
+            PRADAR_SWITCH_STATUS_VO + tenantCode, envCode);
         final String statusRedisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-            PRADAR_SWITCH_STATUS + appKey, envCode);
+            PRADAR_SWITCH_STATUS + tenantCode, envCode);
         String realStatus = getUserPressureSwitchFromRedis(statusVoRedisKey, statusRedisKey);
         AppPressureSwitchSetResponse result = new AppPressureSwitchSetResponse();
         if (realStatus.equals(AppSwitchEnum.CLOSING.getCode()) || realStatus.equals(AppSwitchEnum.OPENING.getCode())) {
@@ -64,7 +64,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             redisTemplate.opsForValue().set(statusRedisKey, status);
             redisTemplate.opsForValue().set(statusVoRedisKey, voStatus);
             redisTemplate.opsForHash().put(NEED_VERIFY_USER_MAP,
-                String.valueOf(appKey + Separator.Separator3.getValue() + envCode), System.currentTimeMillis());
+                String.valueOf(tenantCode + Separator.Separator3.getValue() + envCode), System.currentTimeMillis());
 
             result.setSwitchStutus(voStatus);
         }

@@ -23,10 +23,10 @@
 
     <select id="applicationExistByCustomerIdAndAppName" resultType="Integer">
         select count(1) from t_application_mnt where 1=1
-        <if test="customerId!=null">
+        <if test="tenantId!=null">
             AND TENANT_ID = #{tenantId}
         </if>
-        <if test="customerId!=null">
+        <if test="envCode!=null">
             AND ENV_CODE = #{envCode}
         </if>
         AND APPLICATION_NAME= #{applicationName}

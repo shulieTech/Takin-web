@@ -2257,8 +2257,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public TApplicationMnt queryTApplicationMntByName(String appName) {
-        return tApplicationMntDao.queryApplicationInfoByNameAndTenant(appName,
-            WebPluginUtils.checkUserPlugin() ? WebPluginUtils.traceTenantId() : null);
+        return tApplicationMntDao.queryApplicationInfoByNameAndTenant(appName, WebPluginUtils.traceTenantId());
     }
 
     /**

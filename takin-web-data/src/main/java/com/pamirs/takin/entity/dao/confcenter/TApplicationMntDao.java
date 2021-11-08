@@ -217,7 +217,7 @@ public interface TApplicationMntDao {
     public TApplicationMnt queryApplicationinfoByName(@Param("applicationName") String applicationName);
 
     TApplicationMnt queryApplicationInfoByNameAndTenant(@Param("applicationName") String applicationName,
-        @Param("customerId") Long customerId);
+        @Param("tenantId") Long tenantId);
 
     /**
      * 更新 agentVersion

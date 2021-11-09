@@ -53,3 +53,45 @@ update t_performance_thread_data t set t.tenant_id= (select tenant_id from t_app
 update t_pessure_test_task_activity_config set tenant_id=
 
 -- caijy end
+
+
+---无涯
+UPDATE t_pradar_zk_config set TENANT_ID = -1 and env_code = 'system'
+
+-- 查出租户
+SELECT * from t_tro_user WHERE id = customer_id
+-- 插入租户
+INSERT INTO `t_tenant_info`
+(`id`, `key`, `name`, `nick`, `code`, `status`)
+VALUES (1, 'ed45ef6b-bf94-48fa-b0c0-15e0285365d2', 'default', 'default', 'default', 1),
+    (2, 'ed45ef6b-bf94-48fa-b0c0-15e0285365d3', 'test', '测试', 'test', 1),
+    (3, '4d2a89a0-204d-4eab-a031-d9d55eaafc3c', 'T3Trip', 'T3出行', 'T3Trip', 1),
+    (5, '5b06060a-17cb-4588-bb71-edd7f65035aa', 'lbx-pressure', 'lbx-pressure', 'lbx-pressure', 1),
+    (7, '292e98d4-9efe-4e24-a0c1-e906fa568009', 'sto', '申通快递', 'sto', 1),
+    (10, '4beee59d-e8f5-497e-a487-dbbb75194dde', 'liandongyun', '联动云', 'liandongyun', 1),
+    (24, '89e425fc-feaa-4983-91c2-8a6c877afb03', 'akc', '爱库存', 'akc', 1);
+
+-- 插入环境
+INSERT INTO `t_tenant_env_ref`
+(`tenant_id`, `env_code`, `env_name`, `desc`)
+VALUES
+    (1, 'test', '测试环境', ''),
+    (1, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
+    (2, 'test', '测试环境', ''),
+    (2, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
+    (3, 'test', '测试环境', ''),
+    (3, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
+    (5, 'test', '测试环境', ''),
+    (5, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
+    (7, 'test', '测试环境', ''),
+    (7, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
+    (10, 'test', '测试环境', ''),
+    (10, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
+    (24, 'test', '测试环境', ''),
+    (24, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作');
+
+-- 更正t_tro_user
+
+
+
+---无涯

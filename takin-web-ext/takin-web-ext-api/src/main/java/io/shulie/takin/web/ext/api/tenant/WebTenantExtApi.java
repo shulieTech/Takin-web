@@ -3,6 +3,7 @@ package io.shulie.takin.web.ext.api.tenant;
 import java.util.List;
 
 import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import org.pf4j.ExtensionPoint;
 
@@ -71,4 +72,10 @@ public interface WebTenantExtApi extends ExtensionPoint {
      * @return
      */
     List<TenantConfigExt> getTenantConfig();
+
+    /**
+     * 获取所以租户的配置
+     * @return
+     */
+    List<TenantInfoConfigExt> getAllTenantConfig();
 }

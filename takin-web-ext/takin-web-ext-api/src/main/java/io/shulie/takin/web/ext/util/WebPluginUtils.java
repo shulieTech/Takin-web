@@ -22,6 +22,7 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import lombok.AllArgsConstructor;
@@ -61,6 +62,8 @@ public class WebPluginUtils {
     private static WebTenantExtApi tenantExtApi;
 
     static PluginManager pluginManager;
+
+
 
     @Autowired
     public void setPluginManager(PluginManager pluginManager) {
@@ -535,6 +538,24 @@ public class WebPluginUtils {
     }
 
     /**
+     * 获取全部租户配置
+     * @return
+     */
+    public static List<TenantInfoConfigExt> getAllTenantConfig() {
+        if (Objects.nonNull(tenantExtApi)) {
+            return tenantExtApi.getAllTenantConfig();
+        }
+        // 默认一个租户
+        if(Objects.nonNull(userApi)) {
+            // 企业版
+            return userApi.getAllTenantConfig();
+        }
+        // 开源版本
+        return Lists.newArrayList();
+    }
+
+
+    /**
      * 租户参数传递
      * 转 TenantCommonExt
      * @param source -
@@ -659,7 +680,7 @@ public class WebPluginUtils {
      */
     public static List<Long> traceTenantIdForSystem() {
         if (userApi != null) {
-            return Lists.newArrayList(userApi.traceTenantId());
+            return Lists.newArrayList(userApi.traceTenantId(),SYS_DEFAULT_TENANT_ID);
         }
         return Lists.newArrayList(SYS_DEFAULT_TENANT_ID ,DEFAULT_TENANT_ID);
     }
@@ -693,7 +714,7 @@ public class WebPluginUtils {
      */
     public static List<String> traceEnvCodeForSystem() {
         if (userApi != null) {
-            return Lists.newArrayList(userApi.traceEnvCode());
+            return Lists.newArrayList(userApi.traceEnvCode(),SYS_DEFAULT_ENV_CODE);
         }
         return Lists.newArrayList(SYS_DEFAULT_ENV_CODE, DEFAULT_ENV_CODE);
     }

@@ -12,6 +12,7 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 
 /**
@@ -186,8 +187,14 @@ public interface WebUserExtApi extends ExtensionPoint {
     void switchEnv(SwitchTenantExt ext);
 
     /**
-     * 获取租户默认配置
+     * 获取租户配置
      * @return
      */
     List<TenantConfigExt> getTenantConfig();
+
+    /**
+     * 获取所有租户的配置
+     * @return
+     */
+    List<TenantInfoConfigExt> getAllTenantConfig();
 }

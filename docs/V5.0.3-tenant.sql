@@ -471,9 +471,11 @@ ALTER TABLE t_prada_http_data comment '表已废弃，prada获取http接口表';
 -- t_pradar_zk_config zk配置信息表 增加zk配置
 alter table t_pradar_zk_config
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT -1 COMMENT '租户id',
-	  ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'system'  COMMENT '环境变量' AFTER `tenant_id`;
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'system'  COMMENT '环境变量' AFTER `tenant_id`;
 alter table t_pradar_zk_config
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+    ADD UNIQUE INDEX `idx_path_tenant_env` ( `zk_path`,`tenant_id`,`env_code` );
+drop index `idx_zk_path` on t_pradar_zk_config ;
+
 -- 已有索引 idx_zk_path
 
 

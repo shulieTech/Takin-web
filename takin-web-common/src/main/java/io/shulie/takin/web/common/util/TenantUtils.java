@@ -16,11 +16,24 @@ public class TenantUtils {
     private static String TENANT_CONFIG_REDIS_KEY = "takin:tenant:config";
 
     /**
+     * 全部租户配置key
+     */
+    private static String TENANT_CONFIG_ALL_REDIS_KEY = "takin:tenant:config:all";
+
+    /**
      * 获取租户配置 redis key
      * @return
      */
     public static String getTenantConfigRedisKey(){
         return CommonUtil.generateRedisKey(TENANT_CONFIG_REDIS_KEY, WebPluginUtils.traceTenantCode(), WebPluginUtils.traceEnvCode());
+    }
+
+    /**
+     * 获取租户配置 redis key
+     * @return
+     */
+    public static String getAllTenantConfigRedisKey(){
+        return CommonUtil.generateRedisKey(TENANT_CONFIG_ALL_REDIS_KEY);
     }
 
 }

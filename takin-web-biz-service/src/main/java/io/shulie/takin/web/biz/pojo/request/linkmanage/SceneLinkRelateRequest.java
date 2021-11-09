@@ -1,6 +1,6 @@
 package io.shulie.takin.web.biz.pojo.request.linkmanage;
 
-import io.shulie.takin.ext.content.emus.SamplerTypeEnum;
+import io.shulie.takin.ext.content.enums.SamplerTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

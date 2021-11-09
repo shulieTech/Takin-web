@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
@@ -32,7 +33,6 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.ext.content.script.ScriptNode;
-import io.shulie.takin.ext.content.emus.NodeTypeEnum;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;

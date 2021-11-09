@@ -369,22 +369,26 @@ public class SceneServiceImpl implements SceneService {
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
         int nodeNumByType = JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, scriptNodes);
         List<SceneLinkRelateResult> sceneLinkRelateResults = sceneService.nodeLinkToBusinessActivity(scriptNodes, id);
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
+            sceneLinkRelateResults = sceneLinkRelateResults.stream().filter(Objects::nonNull)
+                    .filter(o -> StringUtils.isNotBlank(o.getBusinessLinkId())).collect(Collectors.toList());
+        }
+
         //查询已有的匹配关系,删除现在没有关联的节点
         SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
         sceneLinkRelateParam.setSceneIds(Collections.singletonList(id.toString()));
         List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
+
         if (CollectionUtils.isNotEmpty(sceneLinkRelateList)) {
             List<Long> oldIds = sceneLinkRelateList.stream().map(SceneLinkRelateResult::getId).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
-                sceneLinkRelateResults = sceneLinkRelateResults.stream().filter(Objects::nonNull)
-                        .filter(o -> StringUtils.isNotBlank(o.getBusinessLinkId())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)){
                 List<Long> longList = sceneLinkRelateResults.stream().map(SceneLinkRelateResult::getId)
-                    .filter(Objects::nonNull).collect(Collectors.toList());
+                        .filter(Objects::nonNull).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(longList)) {
                     oldIds = oldIds.stream().filter(o -> !longList.contains(o)).collect(Collectors.toList());
                 }
+                sceneLinkRelateDao.deleteByIds(oldIds);
             }
-            sceneLinkRelateDao.deleteByIds(oldIds);
         }
 
         if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {

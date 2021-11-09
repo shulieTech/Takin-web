@@ -27,6 +27,5 @@ public interface PressureMachineStatisticsService {
 
     PressureMachineStatisticsResult getStatistics();
 
-    void clearRubbishData();
 
 }

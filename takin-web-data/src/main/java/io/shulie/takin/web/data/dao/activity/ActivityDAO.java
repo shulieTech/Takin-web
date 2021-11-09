@@ -9,6 +9,7 @@ import io.shulie.takin.web.data.param.activity.ActivityUpdateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
 
+import java.util.Map;
 import java.util.List;
 
 /**
@@ -19,6 +20,7 @@ public interface ActivityDAO {
 
     /**
      * 判断是否存在
+     *
      * @param param
      * @return
      */
@@ -26,6 +28,7 @@ public interface ActivityDAO {
 
     /**
      * 创建正常业务活动，因为涉及老版兼容问题，这里独立 新版本业务活动createActivityNew
+     *
      * @param createParam
      * @return
      */
@@ -33,6 +36,7 @@ public interface ActivityDAO {
 
     /**
      * 新版创建业务活动
+     *
      * @param createParam
      * @return
      */
@@ -46,6 +50,7 @@ public interface ActivityDAO {
 
     /**
      * 创建正常业务活动，因为涉及老版兼容问题，这里独立 新版本业务活动createActivityNew
+     *
      * @param updateParam
      * @return
      */
@@ -53,6 +58,7 @@ public interface ActivityDAO {
 
     /**
      * 更新创建业务活动
+     *
      * @param updateParam
      * @return
      */
@@ -60,6 +66,7 @@ public interface ActivityDAO {
 
     /**
      * 删除业务活动
+     *
      * @param activityId
      */
     void deleteActivity(Long activityId);
@@ -68,6 +75,7 @@ public interface ActivityDAO {
 
     /**
      * 获取业务活动
+     *
      * @param param
      * @return
      */
@@ -76,4 +84,6 @@ public interface ActivityDAO {
     void setActivityNodeServiceState(long activityId, String serviceName, String ownerApps, boolean state);
 
     List<ActivityNodeState> getActivityNodeServiceState(long activityId);
+
+    List<Map<String, String>> findActivityIdByServiceName(String appName, String entrance);
 }

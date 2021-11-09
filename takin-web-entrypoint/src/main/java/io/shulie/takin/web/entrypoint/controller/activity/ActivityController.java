@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * 业务活动
@@ -100,6 +101,16 @@ public class ActivityController {
     )
     public PagingList<ActivityListResponse> pageActivities(@Valid ActivityQueryRequest request) {
         return activityService.pageActivities(request);
+    }
+
+    @ApiOperation("根据条件查询普通业务活动")
+    @GetMapping("/queryNormalActivities")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public List<ActivityListResponse> queryNormalActivities(@Valid ActivityResultQueryRequest request) {
+        return activityService.queryNormalActivities(request);
     }
 
     @ApiOperation("|_ 业务活动详情")

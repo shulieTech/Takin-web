@@ -4,7 +4,7 @@
 //import java.util.List;
 //
 //import io.shulie.takin.web.app.Application;
-//import io.shulie.takin.web.biz.service.linkManage.LinkManage;
+//import io.shulie.takin.web.biz.service.linkmanage.LinkManage;
 //import io.shulie.takin.web.biz.service.report.impl.ReportDataCache;
 //import io.shulie.takin.web.biz.service.report.impl.SummaryService;
 //import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;

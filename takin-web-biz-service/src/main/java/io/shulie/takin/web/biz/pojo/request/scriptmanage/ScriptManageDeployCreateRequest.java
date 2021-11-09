@@ -39,6 +39,11 @@ public class ScriptManageDeployCreateRequest implements Serializable {
     private Integer type;
 
     /**
+     * 脚本版本
+     */
+    private Integer mVersion;
+
+    /**
      * 关联文件列表
      */
     @JsonProperty("uploadFiles")

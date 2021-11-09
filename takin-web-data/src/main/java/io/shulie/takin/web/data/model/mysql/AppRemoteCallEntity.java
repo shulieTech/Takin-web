@@ -10,12 +10,13 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
-* @author 何仲奇
-* @date 2021/5/29 上午12:12
-*/
+ * @author 何仲奇
+ * @date 2021/5/29 上午12:12
+ */
+
 /**
-    * 远程调用表
-    */
+ * 远程调用表
+ */
 @Data
 @TableName(value = "t_app_remote_call")
 public class AppRemoteCallEntity {
@@ -30,7 +31,6 @@ public class AppRemoteCallEntity {
      */
     @TableField(value = "interface_name")
     private String interfaceName;
-
 
     /**
      * 接口类型
@@ -103,5 +103,20 @@ public class AppRemoteCallEntity {
      */
     @TableField(value = "is_synchronize")
     private Boolean isSynchronize;
+
+    /**
+     * 是否手动录入 0:否;1:是
+     */
+    @TableField(value = "manual_tag")
+    private Integer manualTag;
+
+    /**
+     * 接口子类型
+     */
+    @TableField(value = "interface_child_type")
+    private String interfaceChildType;
+
+    @TableField(value = "remark")
+    private String remark;
 
 }

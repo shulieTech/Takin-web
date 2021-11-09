@@ -96,4 +96,9 @@ public class ActivityListResult {
      * 链路入口
      */
     private String entrace;
+
+    /**
+     * 应用名
+     */
+    private String applicationName;
 }

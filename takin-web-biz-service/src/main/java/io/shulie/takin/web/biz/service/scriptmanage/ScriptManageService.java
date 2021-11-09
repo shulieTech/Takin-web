@@ -42,7 +42,7 @@ public interface ScriptManageService {
      *
      * @return
      */
-    ScriptCheckDTO checkAndUpdateScript(String refType, String refValue, String scriptFileUploadPath);
+    ScriptCheckDTO checkAndUpdateScript(String refType, String refValue,Integer mVersion, String scriptFileUploadPath);
 
     /**
      * 分页查询脚本列表
@@ -82,7 +82,7 @@ public interface ScriptManageService {
     /**
      * 修改脚本文件
      */
-    void updateScriptManage(ScriptManageDeployUpdateRequest scriptManageDeployUpdateRequest);
+    Long updateScriptManage(ScriptManageDeployUpdateRequest scriptManageDeployUpdateRequest);
 
     /**
      * 查询所有业务流程，再将所有关联的脚本id附带出来

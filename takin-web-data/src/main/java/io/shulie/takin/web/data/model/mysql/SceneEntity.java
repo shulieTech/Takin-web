@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.model.mysql;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -73,13 +74,13 @@ public class SceneEntity {
      * 创建时间
      */
     @TableField(value = "CREATE_TIME")
-    private LocalDateTime createTime;
+    private Date createTime;
 
     /**
      * 更新时间
      */
     @TableField(value = "UPDATE_TIME")
-    private LocalDateTime updateTime;
+    private Date updateTime;
 
     /**
      * 场景类型，标识1为jmeter上传，默认0
@@ -97,7 +98,7 @@ public class SceneEntity {
      * 脚本实例id
      */
     @TableField(value = "script_deploy_id")
-    private String scriptDeployId;
+    private Long scriptDeployId;
 
     /**
      * 关联节点数

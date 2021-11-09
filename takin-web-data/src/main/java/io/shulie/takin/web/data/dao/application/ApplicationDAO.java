@@ -15,6 +15,7 @@
 
 package io.shulie.takin.web.data.dao.application;
 
+import java.util.Map;
 import java.util.List;
 
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
@@ -22,6 +23,7 @@ import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
+import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 
@@ -119,4 +121,7 @@ public interface ApplicationDAO {
      */
     void batchUpdateAppNodeNum(List<NodeNumParam> paramList, Long customerId);
 
+    List<ApplicationAttentionListEntity> getAttentionList(String applicationName);
+
+    void attendApplicationService(Map<String, String> param);
 }

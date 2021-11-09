@@ -73,4 +73,7 @@ public class ApplicationVo extends AuthQueryResponseCommonExt implements Seriali
     @NotBlank(message = "缓存预热脚本地址" + MUST_BE_NOT_NULL)
     @ApiModelProperty(name = "cacheScriptPath", value = "缓存预热脚本地址")
     private String cacheScriptPath;
+
+    @ApiModelProperty(name = "silenceEnable", value = "静默开关，true：开")
+    private Boolean silenceEnable = true;
 }

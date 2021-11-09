@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
@@ -13,8 +14,11 @@ import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -23,6 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface ApplicationService {
 
+    /**
+     * 带租户
+     */
     void configureTasks();
 
     List<ApplicationListResponse> getApplicationList(String appNames);
@@ -199,10 +206,58 @@ public interface ApplicationService {
     void uninstallAllAgent(List<String> appIds);
 
     /**
+     * 一键恢复探针
+     * @param appIds
+     */
+    void resumeAllAgent(List<String> appIds);
+
+    /**
+     * 通过 applicationId 获得 应用
+     * 并判断是否存在
+     *
+     * @param applicationId 应用id
+     * @return 应用
+     */
+    ApplicationDetailResult getByApplicationIdWithCheck(Long applicationId);
+    /**
      * 修改应用节点数
      *
      * @param numParamList 数据集合
      */
     void modifyAppNodeNum(List<NodeNumParam> numParamList);
+
+    /**
+     * 编辑静默开关
+     *
+     * @return
+     */
+    Response userAppSilenceSwitch(Long uid, Boolean enable);
+
+
+    /**
+     * 获取静默开关状态
+     * @return
+     */
+    Response userAppSilenceSwitchInfo();
+
+    String getUserSilenceSwitchStatusForVo(Long uid);
+
+    Response getApplicationReportConfigInfo(Integer bizType,String appName);
+
+    Boolean silenceSwitchStatusIsTrue(Long uid, AppSwitchEnum appSwitchEnum);
+
+    /**
+     * 应用监控查询接口
+     *
+     * @param request 包含应用名称及服务名称
+     */
+    Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(ApplicationVisualInfoQueryRequest request);
+
+    /**
+     * 关注服务
+     *
+     * @param request 应用名➕服务名➕是否关注
+     */
+    void attendApplicationService(ApplicationVisualInfoQueryRequest request) throws Exception;
 
 }

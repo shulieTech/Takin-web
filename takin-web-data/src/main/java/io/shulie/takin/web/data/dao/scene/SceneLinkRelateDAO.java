@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import io.shulie.takin.web.data.model.mysql.SceneLinkRelateEntity;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
+import io.shulie.takin.web.data.param.scene.SceneLinkRelateSaveParam;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 
 /**
@@ -30,4 +31,13 @@ public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
      * 通过entrance查找匹配的记录
      */
     List<SceneLinkRelateResult> getByEntrance(String entrance);
+
+
+    /**
+     * 批量插入或更新关联关系
+     * @param saveParams
+     */
+    void batchInsertOrUpdate(List<SceneLinkRelateSaveParam> saveParams);
+
+    void deleteByIds(List<Long> oldIds);
 }

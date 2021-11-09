@@ -1,5 +1,11 @@
 package io.shulie.takin.web.ext.util;
 
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.LinkedHashMap;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
@@ -16,11 +22,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
-
 /**
  * @author by: hezhongqi
- * @ClassName: CustomUtil
  * @date 2021/8/4 14:42
  */
 public class WebPluginUtils {
@@ -31,6 +34,8 @@ public class WebPluginUtils {
     public static String USER_APP_KEY = "takin";
     public static Long CUSTOMER_ID = -1L;
     public static Long USER_ID = -1L;
+
+    public static Long DEFAULT_TENANT_ID = 0L;
 
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
@@ -47,7 +52,6 @@ public class WebPluginUtils {
         userAuthExtApi = pluginManager.getExtension(WebUserAuthExtApi.class);
         inspectionExtApi = pluginManager.getExtension(InspectionExtApi.class);
     }
-
 
     /**
      * 补充 插入 更新 用户数据
@@ -182,8 +186,6 @@ public class WebPluginUtils {
         return null;
     }
 
-
-
     /**
      * 返回 userAppKey
      *
@@ -263,8 +265,6 @@ public class WebPluginUtils {
         return null;
     }
 
-
-
     //public void fillMiddlewareUserData(AppMiddlewareQuery query) {
     //    //UserExt user = null;
     //    ////TakinRestContext.getUser();
@@ -273,18 +273,18 @@ public class WebPluginUtils {
     //    //}
     //}
 
-
     public static Class<?> getClassByName(String className) {
         try {
             // 先扫描用户插件
-            return Class.forName(className,true,pluginManager.getExtension(WebUserExtApi.class).getClass().getClassLoader());
+            return Class.forName(className, true, pluginManager.getExtension(WebUserExtApi.class).getClass().getClassLoader());
         } catch (ClassNotFoundException e) {
-           return null;
+            return null;
         }
     }
 
     /**
      * 根据用户名 模糊查询
+     *
      * @param userName
      * @return
      */
@@ -297,6 +297,7 @@ public class WebPluginUtils {
 
     /**
      * 权限相关数据
+     *
      * @return
      */
     public static List<Long> getQueryAllowUserIdList() {

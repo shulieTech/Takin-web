@@ -12,6 +12,7 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.open.api.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.open.req.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneBusinessActivityRefOpen;
@@ -22,16 +23,19 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
+import io.shulie.takin.web.biz.annotation.ActivityCache;
 import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
+import io.shulie.takin.web.biz.convert.activity.ActivityServiceConvert;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.*;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
@@ -99,7 +103,7 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void createActivity(ActivityCreateRequest request) {
+    public Long createActivity(ActivityCreateRequest request) {
         // 检查业务活动是否能入库
         checkActivity(request);
         ActivityCreateParam createParam = new ActivityCreateParam();
@@ -117,11 +121,12 @@ public class ActivityServiceImpl implements ActivityService {
         createParam.setExtend(request.getExtend());
         createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
         createParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
+            ActivityUtil.buildEntrance(request.getMethod(), JmxUtil.pathGuiYi(request.getServiceName()),
                 request.getRpcType()));
         activityDAO.createActivity(createParam);
         notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
             request.getMethod(), request.getRpcType(), request.getExtend());
+        return createParam.getLinkId();
     }
 
     /**
@@ -156,7 +161,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public void createVirtualActivity(VirtualActivityCreateRequest request) {
+    public Long createVirtualActivity(VirtualActivityCreateRequest request) {
         // 检查虚拟业务活动是否能入库
         checkVirtualActivity(request);
         ActivityCreateParam createParam = new ActivityCreateParam();
@@ -174,6 +179,7 @@ public class ActivityServiceImpl implements ActivityService {
         //单独字段存中间软件类型
         createParam.setServerMiddlewareType(request.getType());
         activityDAO.createActivityNew(createParam);
+        return createParam.getLinkId();
     }
 
     private void checkVirtualActivity(VirtualActivityCreateRequest request) {
@@ -295,7 +301,7 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setServiceName(request.getServiceName());
         updateParam.setExtend(request.getExtend());
         updateParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
+            ActivityUtil.buildEntrance(request.getMethod(), JmxUtil.pathGuiYi(request.getServiceName()),
                 request.getRpcType()));
         // 技术链路id
         updateParam.setLinkId(oldActivity.getLinkId());
@@ -395,6 +401,59 @@ public class ActivityServiceImpl implements ActivityService {
             }).collect(Collectors.toList());
 
         return PagingList.of(responses, activityListResultPagingList.getTotal());
+    }
+
+    @Override
+
+    public ActivityBottleneckResponse getBottleneckByActivityList(List<ActivityInfoQueryRequest> activityList, String appName, String serviceName) {
+        ActivityBottleneckResponse activityBottleneckResponse = new ActivityBottleneckResponse();
+        // -1 没有瓶颈
+        int init = -1;
+        activityBottleneckResponse.setAllTotalRtBottleneckType(init);
+        activityBottleneckResponse.setAllSuccessRateBottleneckType(init);
+        activityBottleneckResponse.setAllSqlTotalRtBottleneckType(init);
+
+        for (ActivityInfoQueryRequest activityInfo : activityList) {
+            activityInfo.setStartTime(null);
+            activityInfo.setEndTime(null);
+            // 获取 拓扑图
+            ActivityResponse activityWithMetricsById = getActivityWithMetricsById(activityInfo);
+            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityWithMetricsById.getTopology().getNodes()) {
+                if (node.getLabel().equals(appName)) {
+                    if (node.getProviderService() != null) {
+                        for (ApplicationEntranceTopologyResponse.AppProviderInfo appProviderInfo : node.getProviderService()) {
+                            for (ApplicationEntranceTopologyResponse.AppProvider appProvider : appProviderInfo.getDataSource()) {
+                                for (ApplicationEntranceTopologyResponse.AppProvider provider : appProvider.getContainRealAppProvider()) {
+                                    if (provider.getServiceName().equals(serviceName)) {
+                                        // 有 Rt 瓶颈
+                                        if ((provider.getAllTotalRtBottleneckType() != -1)) {
+                                            activityBottleneckResponse.setAllTotalRtBottleneckType(provider.getAllTotalRtBottleneckType());
+                                            activityBottleneckResponse.setRtBottleneckId(provider.getRtBottleneckId());
+                                        }
+                                        // 成功率 瓶颈
+                                        if ((provider.getAllSuccessRateBottleneckType() != -1)) {
+                                            activityBottleneckResponse.setAllSuccessRateBottleneckType(provider.getAllSuccessRateBottleneckType());
+                                            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getRtBottleneckId());
+                                        }
+                                        // 慢 sql 瓶颈
+                                        if ((provider.getAllSqlTotalRtBottleneckType() != -1)) {
+                                            activityBottleneckResponse.setAllSqlTotalRtBottleneckType(provider.getAllSqlTotalRtBottleneckType());
+                                            activityBottleneckResponse.setRtSqlBottleneckId(provider.getRtSqlBottleneckId());
+                                        }
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                }
+
+            }
+        }
+        return activityBottleneckResponse;
     }
 
     @Override
@@ -709,6 +768,24 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public List<ActivityNodeState> getActivityNodeServiceState(long activityId) {
         return activityDAO.getActivityNodeServiceState(activityId);
+    }
+
+    @Override
+    public List<ActivityListResponse> queryNormalActivities(ActivityResultQueryRequest request) {
+        if (request == null){
+            return null;
+        }
+        ActivityQueryParam queryParam = new ActivityQueryParam();
+        queryParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+        if (StringUtil.isNotEmpty(request.getEntrance())){
+            queryParam.setEntrance(request.getEntrance());
+        }
+        if (StringUtil.isNotEmpty(request.getApplicationName())){
+            queryParam.setApplicationName(request.getApplicationName());
+        }
+
+        List<ActivityListResult> activityList = activityDAO.getActivityList(queryParam);
+        return ActivityServiceConvert.INSTANCE.ofActivityList(activityList);
     }
 
     // TODO 变更逻辑后续看如何设计

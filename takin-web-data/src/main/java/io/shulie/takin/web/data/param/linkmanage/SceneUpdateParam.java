@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.param.linkmanage;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 /**
@@ -55,6 +56,31 @@ public class SceneUpdateParam {
      * 用户id
      */
     private Long userId;
+
+    /**
+     * 场景类型，标识1为jmeter上传，默认0
+     */
+    private Integer type;
+
+    /**
+     * 存储树状结构
+     */
+    private String scriptJmxNode;
+
+    /**
+     * 脚本实例id
+     */
+    private Long scriptDeployId;
+
+    /**
+     * 关联节点数
+     */
+    private Integer linkRelateNum;
+
+    /**
+     * 脚本总节点数
+     */
+    private Integer totalNodeNum;
 
     public SceneUpdateParam() {
     }

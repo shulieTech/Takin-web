@@ -7,10 +7,12 @@ import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import io.shulie.takin.web.data.convert.linkmanage.BusinessLinkManageConvert;
 import io.shulie.takin.web.data.mapper.mysql.SceneLinkRelateMapper;
 import io.shulie.takin.web.data.model.mysql.SceneLinkRelateEntity;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
+import io.shulie.takin.web.data.param.scene.SceneLinkRelateSaveParam;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
@@ -68,6 +70,22 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
         SceneLinkRelateQuery query = new SceneLinkRelateQuery();
         query.setEntrance(entrance);
         return query(query);
+    }
+
+    @Override
+    public void batchInsertOrUpdate(List<SceneLinkRelateSaveParam> saveParams) {
+        if (CollectionUtils.isEmpty(saveParams)){
+            return;
+        }
+        List<SceneLinkRelateEntity> sceneLinkRelateEntities = BusinessLinkManageConvert.INSTANCE.ofSceneLinkRelateSaveParams(saveParams);
+        this.saveOrUpdateBatch(sceneLinkRelateEntities);
+    }
+
+    @Override
+    public void deleteByIds(List<Long> oldIds) {
+        if (CollectionUtils.isNotEmpty(oldIds)){
+            this.removeByIds(oldIds);
+        }
     }
 
     private List<SceneLinkRelateResult> toResult(List<SceneLinkRelateEntity> entities) {

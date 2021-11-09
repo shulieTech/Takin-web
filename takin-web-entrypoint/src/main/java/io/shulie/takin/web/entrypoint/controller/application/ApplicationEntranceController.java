@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntrancesSampleTypeQueryRequest;
 import io.shulie.takin.web.biz.service.LinkTopologyService;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
@@ -90,6 +91,32 @@ public class ApplicationEntranceController {
                 // 增加去重
             }).distinct().collect(Collectors.toList());
     }
+
+    @GetMapping("/bySamplerType")
+    @ApiOperation("获得入口服务列表")
+    public List<ApplicationEntrancesResponse> getApplicationEntrances(@Validated ApplicationEntrancesSampleTypeQueryRequest request) {
+        List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
+                request.getApplicationName(), EntranceTypeEnum.getEnumByType(request.getSamplerType().getType()).getType());
+        if (CollectionUtils.isEmpty(applicationEntrances)) {
+            return Lists.newArrayList();
+        }
+        return applicationEntrances.stream()
+                .filter(item -> !item.getServiceName().startsWith("PT_"))
+                .map(item -> {
+                    ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
+                    applicationEntrancesResponse.setMethod(item.getMethodName());
+                    applicationEntrancesResponse.setRpcType(item.getRpcType());
+                    applicationEntrancesResponse.setExtend(item.getExtend());
+                    applicationEntrancesResponse.setServiceName(item.getServiceName());
+                    applicationEntrancesResponse.setLabel(
+                            ActivityUtil.buildEntrance(item.getMethodName(),item.getServiceName(),item.getRpcType()));
+                    applicationEntrancesResponse.setValue(
+                            ActivityUtil.buildEntrance(item.getMethodName(),item.getServiceName(),item.getRpcType()));
+                    return applicationEntrancesResponse;
+                    // 增加去重
+                }).distinct().collect(Collectors.toList());
+    }
+
     //
     //@ApiOperation("获得入口经过的应用上面的中间件信息")
     //@GetMapping("/middlewares")

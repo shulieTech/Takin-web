@@ -30,7 +30,7 @@ import com.pamirs.takin.entity.domain.risk.LinkCount;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessLinkResponse;
-import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.biz.service.report.impl.ReportDataCache;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;

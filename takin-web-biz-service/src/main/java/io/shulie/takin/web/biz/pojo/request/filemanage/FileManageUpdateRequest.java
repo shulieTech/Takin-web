@@ -29,9 +29,14 @@ public class FileManageUpdateRequest implements Serializable {
     private String fileSize;
 
     /**
-     * 文件类型：0-脚本文件 1-数据文件 2-脚本jar文件 3-jmeter ext jar
+     * 文件类型：0-脚本文件 1-数据文件 2-附件
      */
     private Integer fileType;
+
+    /**
+     * 文件MD5值
+     */
+    private String md5;
 
     /**
      * 脚本内容，前端编辑之后的脚本，需要转化为文件存储到指定目录

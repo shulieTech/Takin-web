@@ -318,7 +318,7 @@ public class SwaggerConfig {
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
             .paths(getRegex("/api/(application/center/app/config|datasource|fastdebug/debug/callStack/node/locate|"
                         + "fastdebug/debug/callStack/exception|link/ds/manage|application/plugins/config|opsScriptManage|sys|"
-                        + "pradar/switch).*"))
+                        + "pradar/switch|application/center/app).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
@@ -359,6 +359,21 @@ public class SwaggerConfig {
             ;
     }
 
+    @Bean
+    public Docket api_businessFlow() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .pathProvider(this.pathProvider())
+                .groupName("业务流程jmeter上传改造")
+                .select()
+                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+                .paths(getRegex("/api(/businessFlow|/application/entrances/bySamplerType|/activities/queryNormalActivities).*"))
+                .build()
+                .directModelSubstitute(LocalDate.class, String.class)
+                .useDefaultResponseMessages(false)
+                .apiInfo(apiInfo())
+                ;
+    }
+
     /**
      * 两周迭代放在这里
      * @return
@@ -376,6 +391,25 @@ public class SwaggerConfig {
             .useDefaultResponseMessages(false)
             .apiInfo(apiInfo())
             ;
+    }
+
+    /**
+     * 快速接入一期测试用 nf
+     * @return
+     */
+    @Bean
+    public Docket api_webTest_nf() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("快速接入一期测试用")
+                .select()
+                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+                .paths(PathSelectors
+                        .regex("/api/(v2/application/remote/call|v2/consumers|v2/link/ds|/application/remote/call/list).*"))
+                .build()
+                .directModelSubstitute(LocalDate.class, String.class)
+                .useDefaultResponseMessages(false)
+                .apiInfo(apiInfo())
+                ;
     }
 
     /**

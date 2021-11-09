@@ -28,10 +28,16 @@ public class BusinessLinkManageTableEntity {
     private String linkName;
 
     /**
-     * 链路入口
+     * 链路入口，将之前拼接进去的应用名拆成一个字段
      */
     @TableField(value = "ENTRACE")
     private String entrace;
+
+    /**
+     * 入口应用名称
+     */
+    @TableField(value = "application_name")
+    private String applicationName;
 
     /**
      * 业务链路绑定的技术链路

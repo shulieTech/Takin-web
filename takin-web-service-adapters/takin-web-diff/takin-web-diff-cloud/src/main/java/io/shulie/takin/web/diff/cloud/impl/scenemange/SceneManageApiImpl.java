@@ -8,14 +8,7 @@ import io.shulie.takin.cloud.open.api.engine.CloudEngineApi;
 import io.shulie.takin.cloud.open.api.scenemanage.CloudSceneApi;
 import io.shulie.takin.cloud.open.req.engine.EnginePluginDetailsWrapperReq;
 import io.shulie.takin.cloud.open.req.engine.EnginePluginFetchWrapperReq;
-import io.shulie.takin.cloud.open.req.scenemanage.CloudUpdateSceneFileRequest;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneIpNumReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageDeleteReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageQueryByIdsReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageQueryReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageWrapperReq;
-import io.shulie.takin.cloud.open.req.scenemanage.ScriptCheckAndUpdateReq;
+import io.shulie.takin.cloud.open.req.scenemanage.*;
 import io.shulie.takin.cloud.open.resp.engine.EnginePluginDetailResp;
 import io.shulie.takin.cloud.open.resp.engine.EnginePluginSimpleInfoResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageListResp;
@@ -23,6 +16,7 @@ import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.ScriptCheckResp;
 import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -117,5 +111,10 @@ public class SceneManageApiImpl implements SceneManageApi {
     public ResponseResult<ScriptCheckResp> checkAndUpdateScript(ScriptCheckAndUpdateReq scriptCheckAndUpdateReq) {
         WebPluginUtils.fillCloudUserData(scriptCheckAndUpdateReq);
         return cloudSceneApi.checkAndUpdateScript(scriptCheckAndUpdateReq);
+    }
+
+    @Override
+    public ResponseResult<List<ScriptNode>> scriptAnalyze(ScriptAnalyzeRequest request) {
+        return cloudSceneApi.scriptAnalyze(request);
     }
 }

@@ -7,12 +7,19 @@ import com.alibaba.excel.util.StringUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.data.convert.linkmanage.BusinessLinkManageConvert;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.model.mysql.ScriptManageEntity;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
+import io.shulie.takin.web.data.param.scene.ScenePageQueryParam;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -81,5 +88,45 @@ public class SceneDAOImpl implements SceneDAO {
             }).collect(Collectors.toList());
         }
         return sceneResultList;
+    }
+
+    @Override
+    public int update(SceneUpdateParam sceneUpdateParam) {
+        SceneEntity entity = new SceneEntity();
+        BeanUtils.copyProperties(sceneUpdateParam, entity);
+        LambdaQueryWrapper<SceneEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SceneEntity::getId,sceneUpdateParam.getId());
+        return sceneMapper.update(entity, queryWrapper);
+    }
+
+    @Override
+    public SceneResult getSceneDetail(Long id) {
+        SceneEntity sceneEntity = sceneMapper.selectById(id);
+        SceneResult sceneResult = new SceneResult();
+        BeanUtils.copyProperties(sceneEntity, sceneResult);
+        return sceneResult;
+    }
+
+    @Override
+    public PagingList<SceneResult> selectPageList(ScenePageQueryParam param) {
+        Page<SceneEntity> page = new Page<>();
+        page.setCurrent(param.getCurrent() + 1);
+        page.setSize(param.getPageSize());
+
+        LambdaQueryWrapper<SceneEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if (!StringUtils.isEmpty(param.getSceneName())) {
+            lambdaQueryWrapper.likeLeft(SceneEntity::getSceneName, param.getSceneName());
+        }
+        if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
+            lambdaQueryWrapper.in(SceneEntity::getSceneName, param.getUserIdList());
+        }
+        lambdaQueryWrapper.eq(SceneEntity::getIsDeleted, 0);
+        lambdaQueryWrapper.orderByDesc(SceneEntity::getUpdateTime);
+        Page<SceneEntity> sceneEntityPage = sceneMapper.selectPage(page, lambdaQueryWrapper);
+        if (sceneEntityPage == null || CollectionUtils.isEmpty(sceneEntityPage.getRecords())){
+            return PagingList.of(Lists.newArrayList(),0);
+        }
+        List<SceneResult> sceneResultList = BusinessLinkManageConvert.INSTANCE.ofSceneEntityList(sceneEntityPage.getRecords());
+        return PagingList.of(sceneResultList,sceneEntityPage.getTotal());
     }
 }

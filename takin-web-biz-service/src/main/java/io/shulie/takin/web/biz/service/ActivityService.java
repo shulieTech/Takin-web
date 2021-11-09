@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.activity.*;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
@@ -23,14 +24,14 @@ public interface ActivityService {
      *
      * @param request
      */
-    void createActivity(ActivityCreateRequest request);
+    Long createActivity(ActivityCreateRequest request);
 
     /**
      * 新增虚拟业务活动
      *
      * @param request
      */
-    void createVirtualActivity(VirtualActivityCreateRequest request);
+    Long createVirtualActivity(VirtualActivityCreateRequest request);
 
     /**
      * 更新业务活动
@@ -70,6 +71,7 @@ public interface ActivityService {
     ActivityResponse getActivityById(Long activityId);
     ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request);
     ActivityResponse getActivityWithMetricsByIdForReport(Long activityId, LocalDateTime start, LocalDateTime end);
+    ActivityBottleneckResponse getBottleneckByActivityList(List<ActivityInfoQueryRequest> activityList, String appName, String serviceName);
 
     ActivityResponse getActivityByIdWithoutTopology(Long id);
 
@@ -80,4 +82,11 @@ public interface ActivityService {
     void setActivityNodeState(long activityId, String serviceName, String ownerApps, boolean state);
 
     List<ActivityNodeState> getActivityNodeServiceState(long activityId);
+
+    /**
+     * 根据条件查询业务活动
+     * @param request
+     * @return
+     */
+    List<ActivityListResponse> queryNormalActivities(ActivityResultQueryRequest request);
 }

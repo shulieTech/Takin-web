@@ -164,7 +164,7 @@ public class TraceClientImpl implements TraceClient {
         return entranceList.stream().map(entrance -> {
             if (ActivityUtil.isNormalBusiness(entrance.getBusinessType())) {
                 EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(entrance.getEntrance());
-                return String.format("%s#%s#%s#%s", entranceJoinEntity.getApplicationName(),
+                return String.format("%s#%s#%s",
                         entranceJoinEntity.getServiceName(),
                         entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
             } else {

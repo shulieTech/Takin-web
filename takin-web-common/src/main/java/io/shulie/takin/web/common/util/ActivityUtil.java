@@ -46,8 +46,8 @@ public class ActivityUtil {
         }
     }
 
-    public static String buildEntrance(String applicationName, String methodName, String serviceName, String rpcType) {
-        return StringUtils.join(Lists.newArrayList(applicationName, methodName, serviceName, rpcType), "|");
+    public static String buildEntrance(String methodName, String serviceName, String rpcType) {
+        return StringUtils.join(Lists.newArrayList( methodName, serviceName, rpcType), "|");
     }
 
     /**
@@ -77,21 +77,20 @@ public class ActivityUtil {
      */
     public static EntranceJoinEntity covertEntrance(String dbEntrance) {
         String[] split = StringUtils.split(dbEntrance, "\\|");
-        if (split.length != 4) {
+        if (split.length != 3) {
             return new EntranceJoinEntity();
         }
         EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
-        entranceJoinEntity.setApplicationName(split[0]);
-        entranceJoinEntity.setMethodName(split[1]);
-        entranceJoinEntity.setServiceName(split[2]);
-        entranceJoinEntity.setRpcType(split[3]);
+        entranceJoinEntity.setMethodName(split[0]);
+        entranceJoinEntity.setServiceName(split[1]);
+        entranceJoinEntity.setRpcType(split[2]);
         return entranceJoinEntity;
     }
 
 
     public static String toEntrance(EntranceJoinEntity entranceJoinEntity) {
         return StringUtils.join(
-            Lists.newArrayList(entranceJoinEntity.getApplicationName(),
+            Lists.newArrayList(
                 entranceJoinEntity.getMethodName(),
                 entranceJoinEntity.getServiceName(),
                 entranceJoinEntity.getRpcType()
@@ -120,8 +119,6 @@ public class ActivityUtil {
 
     @Data
     public static class EntranceJoinEntity {
-
-        private String applicationName;
 
         private String methodName;
 

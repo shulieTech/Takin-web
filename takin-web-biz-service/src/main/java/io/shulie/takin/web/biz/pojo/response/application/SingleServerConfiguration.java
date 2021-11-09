@@ -12,4 +12,6 @@ public class SingleServerConfiguration {
     private String nodes;
     private String password;
     private String database;
+    private String client;
+    private String model;
 }

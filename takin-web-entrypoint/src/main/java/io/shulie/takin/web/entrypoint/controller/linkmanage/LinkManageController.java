@@ -4,13 +4,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessActiveIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowIdAndNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.DeleteVo;
-import com.pamirs.takin.entity.domain.dto.linkmanage.MiddleWareNameDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.SceneDto;
-import com.pamirs.takin.entity.domain.dto.linkmanage.SystemProcessIdAndNameDto;
+import com.pamirs.takin.entity.domain.dto.linkmanage.*;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkHistoryInfoDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkmiddleWareDto;
@@ -20,7 +14,13 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;
@@ -297,6 +297,7 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.QUERY
     )
+    @Deprecated
     public Response getBusinessFlowDetail(@NotNull String id) {
         try {
             BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(id);
@@ -356,16 +357,5 @@ public class LinkManageController {
         }
     }
 
-    @PostMapping("/link/parseScriptAndSave")
-    @ApiOperation("解析脚本并保存业务流程")
-    public Response<List<MiddleWareNameDto>> parseScriptAndSave(@ApiParam(name = "filePath"
-            , value = "脚本文件路径") String filePath) {
-        try {
-            return null;
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, e.getMessage());
-        }
-    }
 
 }

@@ -67,7 +67,7 @@ import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
 public class SceneController {
     @Resource
     SceneService sceneService;
-    @Autowired
+    @Resource
     SceneManageService sceneManageService;
     @Resource
     FileManageDAO fileManageDao;

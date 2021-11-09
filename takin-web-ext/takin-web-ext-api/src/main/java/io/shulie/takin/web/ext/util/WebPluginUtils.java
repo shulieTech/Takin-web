@@ -658,10 +658,7 @@ public class WebPluginUtils {
      * @return 租户主键
      */
     public static List<Long> traceTenantIdForSystem() {
-        if (userApi != null) {
-            return Lists.newArrayList(userApi.traceTenantId());
-        }
-        return Lists.newArrayList(SYS_DEFAULT_TENANT_ID ,DEFAULT_TENANT_ID);
+        return Lists.newArrayList(SYS_DEFAULT_TENANT_ID,traceTenantId());
     }
 
     /**
@@ -692,10 +689,7 @@ public class WebPluginUtils {
      * @return
      */
     public static List<String> traceEnvCodeForSystem() {
-        if (userApi != null) {
-            return Lists.newArrayList(userApi.traceEnvCode());
-        }
-        return Lists.newArrayList(SYS_DEFAULT_ENV_CODE, DEFAULT_ENV_CODE);
+        return Lists.newArrayList(SYS_DEFAULT_ENV_CODE, traceEnvCode());
     }
 
     /**

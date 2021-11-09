@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 
 import cn.hutool.core.bean.BeanUtil;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,6 +45,7 @@ import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
  */
 @RestController
 @RequestMapping("/api/v2/scene")
+@Api(tags = "压测场景-新", value = "压测场景-新")
 public class SceneController {
     @Resource
     SceneService sceneService;

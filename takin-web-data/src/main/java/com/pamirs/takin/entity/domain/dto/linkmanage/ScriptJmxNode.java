@@ -1,7 +1,7 @@
 package com.pamirs.takin.entity.domain.dto.linkmanage;
 
-import io.shulie.takin.ext.content.emus.NodeTypeEnum;
-import io.shulie.takin.ext.content.emus.SamplerTypeEnum;
+import io.shulie.takin.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.ext.content.enums.SamplerTypeEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

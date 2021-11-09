@@ -10,6 +10,7 @@ import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
+import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import lombok.extern.slf4j.Slf4j;
 
@@ -449,8 +450,16 @@ public class SceneServiceImpl implements SceneService {
         } else {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "不是已知的业务活动类型！");
         }
-
+        SceneLinkRelateQuery sceneLinkRelateQuery = new SceneLinkRelateQuery();
+        sceneLinkRelateQuery.setSceneId(sceneLinkRelateRequest.getBusinessFlowId());
+        sceneLinkRelateQuery.setXpathMd5(sceneLinkRelateRequest.getXpathMd5());
         SceneLinkRelateSaveParam saveParam = LinkManageConvert.INSTANCE.ofSceneLinkRelateRequest(sceneLinkRelateRequest);
+
+        List<SceneLinkRelateResult> sceneLinkRelateResults = sceneLinkRelateDao.query(sceneLinkRelateQuery);
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)){
+            //一个业务流程中只会有一个XpathMd5
+            saveParam.setId(sceneLinkRelateResults.get(0).getId());
+        }
         saveParam.setEntrance(sceneLinkRelateRequest.getEntrance());
         saveParam.setSceneId(sceneLinkRelateRequest.getBusinessFlowId().toString());
         saveParam.setBusinessLinkId(sceneLinkRelateRequest.getBusinessActivityId().toString());

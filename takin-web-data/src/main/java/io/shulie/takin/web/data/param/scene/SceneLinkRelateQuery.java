@@ -20,4 +20,9 @@ public class SceneLinkRelateQuery extends AbstractEntry {
     private String envCode;
     private String xpathMd5;
     private String entrance;
+
+    /**
+     * 业务流程id
+     */
+    private Long sceneId;
 }

@@ -926,6 +926,7 @@ alter table e_patrol_exception_status_change_log ADD INDEX `idx_tenant_env` ( `t
 ALTER TABLE e_patrol_scene ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_scene ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
 alter table e_patrol_scene ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE e_patrol_scene ADD COLUMN tenant_app_key varchar(512) NOT NULL COMMENT '租户key 唯一，同时也是userappkey';
 
 ALTER TABLE e_patrol_scene_chain ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_scene_chain ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;

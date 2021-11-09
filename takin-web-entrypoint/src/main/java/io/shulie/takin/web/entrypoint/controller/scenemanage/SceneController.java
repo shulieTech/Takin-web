@@ -13,6 +13,7 @@ import com.alibaba.fastjson.TypeReference;
 import cn.hutool.core.bean.BeanUtil;
 import com.google.common.collect.Maps;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.convert.linkmanage.LinkManageConvert;
@@ -86,6 +87,8 @@ public class SceneController {
         SceneRequest.BasicInfo basicInfo = request.getBasicInfo();
         Long flowId = basicInfo.getBusinessFlowId();
         SceneRequest sceneRequest = BeanUtil.copyProperties(request, SceneRequest.class);
+        PtConfigExt ptConfig = BeanUtil.copyProperties(request.getConfig(), PtConfigExt.class);
+        sceneRequest.setConfig(ptConfig);
         sceneRequest.setFile(assembleFileList(basicInfo.getScriptId()));
         SceneResult scene = sceneService.getScene(flowId);
         if (null != scene && StringUtils.isNotBlank(scene.getScriptJmxNode())) {

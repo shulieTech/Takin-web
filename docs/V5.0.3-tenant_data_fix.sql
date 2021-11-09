@@ -66,7 +66,7 @@ INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `l
 update e_patrol_exception_config set env_code='system',tenant_id=-1 where env_code is null and tenant_id is null;
 update e_patrol_exception_notice_config set env_code='test',tenant_id=1;
 update e_patrol_scene set env_code='test',tenant_id=customer_id;
-update e_patrol_scene a,t_tenant_info b set a.tenant_app_key = b.`key` where a.tenant_id=b.id and a.tenant_id is not null
+update e_patrol_scene a,t_tenant_info b set a.tenant_app_key = b.`key` where a.tenant_id=b.id and a.tenant_id is not null;
 update e_patrol_scene_chain set env_code='test',tenant_id=1;
 update e_patrol_scene_check set env_code='test',tenant_id=1;
 -- 兮曦 --

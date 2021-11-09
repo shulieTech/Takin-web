@@ -44,6 +44,8 @@ public interface SceneManageService {
 
     ScriptCheckDTO checkBusinessActivityAndScript(SceneManageWrapperDTO sceneData);
 
+    List<String> getAppIdsByBusinessActivityId(Long businessActivityId);
+
     WebResponse getPageList(SceneManageQueryVO vo);
 
     ResponseResult<StrategyResp> getIpNum(Integer concurrenceNum, Integer tpsNum);

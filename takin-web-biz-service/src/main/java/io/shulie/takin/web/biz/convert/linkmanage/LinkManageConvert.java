@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.convert.linkmanage;
 
+import com.pamirs.takin.common.util.NumberUtil;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
+import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
@@ -14,6 +16,7 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDeta
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateSaveParam;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -53,4 +56,13 @@ public interface LinkManageConvert {
 
     @Mapping(target = "status", expression = "java(sceneResult.getLinkRelateNum() == sceneResult.getTotalNodeNum() ? 1 : 0)")
     BusinessFlowListResponse ofSceneResult(SceneResult sceneResult);
+
+    List<SceneRequest.Content> ofSceneLinkRelateResult(List<SceneLinkRelateResult> links);
+
+    default SceneRequest.Content of(SceneLinkRelateResult sceneLinkRelateResult) {
+        SceneRequest.Content content = new SceneRequest.Content();
+        content.setPathMd5(sceneLinkRelateResult.getScriptXpathMd5());
+        content.setBusinessActivityId(NumberUtils.toLong(sceneLinkRelateResult.getBusinessLinkId()));
+        return content;
+    }
 }

@@ -8,12 +8,14 @@ import javax.annotation.Resource;
 import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.collections4.CollectionUtils;
@@ -323,6 +325,14 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Override
+    public SceneResult getScene(Long id) {
+        if (null == id) {
+            return null;
+        }
+        return sceneDao.getSceneDetail(id);
+    }
+
+    @Override
     public BusinessFlowDetailResponse uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest) {
         updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest);
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
@@ -355,6 +365,24 @@ public class SceneServiceImpl implements SceneService {
         response.setTotalNodeNum(nodeNumByType);
         return response;
     }
+
+    /**
+     * 脚本节点和业务活动关联关系
+     * @param sceneId 业务流程id
+     * @return 节点也业务流程关联关系
+     */
+    @Override
+    public List<SceneLinkRelateResult> getSceneLinkRelates(Long sceneId) {
+        if (null == sceneId) {
+            return null;
+        }
+        SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
+        sceneLinkRelateParam.setSceneIds(Collections.singletonList(sceneId.toString()));
+        List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
+        return sceneLinkRelateList;
+    }
+
+
 
     @Override
     public BusinessFlowMatchResponse autoMatchActivity(Long id) {
@@ -573,9 +601,13 @@ public class SceneServiceImpl implements SceneService {
 
     private void dealScriptJmxNodes(List<SceneLinkRelateResult> sceneLinkRelateResults, List<ScriptJmxNode> scriptJmxNodes) {
         if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
-            Map<String, String> xpathMd5Map = sceneLinkRelateResults.stream().filter(o -> StringUtils.isNotBlank(o.getScriptXpathMd5()))
-                .collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5, SceneLinkRelateResult::getBusinessLinkId));
-            List<Long> businessLinkIds = sceneLinkRelateResults.stream().map(o -> Long.parseLong(o.getBusinessLinkId())).collect(Collectors.toList());
+            Map<String, String> xpathMd5Map = sceneLinkRelateResults.stream().filter(Objects::nonNull)
+                    .filter(o -> StringUtils.isNotBlank(o.getScriptXpathMd5()))
+                    .collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5, SceneLinkRelateResult::getBusinessLinkId));
+            List<Long> businessLinkIds = sceneLinkRelateResults.stream().filter(Objects::nonNull)
+                    .map(o -> Long.parseLong(o.getBusinessLinkId()))
+                    .distinct()
+                    .collect(Collectors.toList());
             ActivityQueryParam activityQueryParam = new ActivityQueryParam();
             activityQueryParam.setActivityIds(businessLinkIds);
             List<ActivityListResult> activityList = activityDao.getActivityList(activityQueryParam);

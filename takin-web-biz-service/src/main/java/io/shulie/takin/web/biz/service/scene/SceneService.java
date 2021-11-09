@@ -9,6 +9,7 @@ import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 
 import java.util.List;
@@ -33,9 +34,16 @@ public interface SceneService {
 
     BusinessFlowDetailResponse getBusinessFlowDetail(Long id);
 
+    /**
+     * 通过id获取业务流程记录
+     */
+    SceneResult getScene(Long id);
+
     BusinessFlowDetailResponse uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest);
 
     BusinessFlowThreadResponse getThreadGroupDetail(Long id, String xpathMd5);
+
+    List<SceneLinkRelateResult> getSceneLinkRelates(Long sceneId);
 
     BusinessFlowMatchResponse autoMatchActivity(Long id);
 

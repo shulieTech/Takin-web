@@ -1,6 +1,6 @@
 package io.shulie.takin.web.biz.pojo.request.linkmanage;
 
-import io.shulie.takin.ext.content.emus.SamplerTypeEnum;
+import io.shulie.takin.ext.content.enums.SamplerTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -17,7 +17,7 @@ public class SceneLinkRelateRequest implements Serializable {
 
     @NotNull(message = "业务流程ID 不能为空")
     @ApiModelProperty("业务流程ID")
-    private Long sceneId;
+    private Long businessFlowId;
 
     @NotNull(message = "脚本请求路径标识 不能为空")
     @ApiModelProperty("脚本请求路径标识")

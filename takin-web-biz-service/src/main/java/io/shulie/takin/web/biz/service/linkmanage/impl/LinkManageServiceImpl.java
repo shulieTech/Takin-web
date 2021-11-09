@@ -50,7 +50,7 @@ import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.open.req.filemanager.FileCreateByStringParamReq;
 import io.shulie.takin.cloud.open.req.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.ext.content.emus.NodeTypeEnum;
+import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;

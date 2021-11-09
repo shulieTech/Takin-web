@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
@@ -32,7 +33,6 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.ext.content.script.ScriptNode;
-import io.shulie.takin.ext.content.emus.NodeTypeEnum;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
@@ -405,15 +405,17 @@ public class SceneServiceImpl implements SceneService {
         //匹配数量符合，修改压测成就
         if (matchNum == nodeNumByType){
             //TODO 修改压测场景
+
         }
         return result;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void matchActivity(SceneLinkRelateRequest sceneLinkRelateRequest) {
-        SceneResult sceneDetail = sceneDao.getSceneDetail(sceneLinkRelateRequest.getSceneId());
+        SceneResult sceneDetail = sceneDao.getSceneDetail(sceneLinkRelateRequest.getBusinessFlowId());
         if (sceneDetail == null){
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "匹配业务活动，业务流程未找到！");
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "匹配业务活动，未找到对应业务流程！");
         }
 
         if (BusinessTypeEnum.NORMAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
@@ -450,6 +452,10 @@ public class SceneServiceImpl implements SceneService {
 
         SceneLinkRelateSaveParam saveParam = LinkManageConvert.INSTANCE.ofSceneLinkRelateRequest(sceneLinkRelateRequest);
         saveParam.setEntrance(sceneLinkRelateRequest.getEntrance());
+        saveParam.setSceneId(sceneLinkRelateRequest.getBusinessFlowId().toString());
+        saveParam.setBusinessLinkId(sceneLinkRelateRequest.getBusinessActivityId().toString());
+        saveParam.setScriptXpathMd5(sceneLinkRelateRequest.getXpathMd5());
+        saveParam.setScriptIdentification(sceneLinkRelateRequest.getIdentification());
         sceneLinkRelateDao.batchInsertOrUpdate(Collections.singletonList(saveParam));
 
         int linkRelateNum = sceneDetail.getLinkRelateNum();
@@ -462,7 +468,7 @@ public class SceneServiceImpl implements SceneService {
             sceneDao.update(updateParam);
         }
 
-        //匹配数量符合，修改压测成就
+        //匹配数量符合，修改压测场景
         if (sceneDetail.getTotalNodeNum() == linkRelateNum){
             //TODO 修改压测场景
         }

@@ -1707,15 +1707,13 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     private void checkUpdateScriptManageParam(ScriptManageDeployUpdateRequest scriptManageDeployUpdateRequest) {
         ScriptManageExceptionUtil.isUpdateValidError(scriptManageDeployUpdateRequest == null, "入参为空!");
         ScriptManageExceptionUtil.isUpdateValidError(scriptManageDeployUpdateRequest.getId() == null, "脚本id为空!");
-        if (!ScriptMVersionEnum.SCRIPT_M_1.getCode().equals(scriptManageDeployUpdateRequest.getMVersion())){
-            ScriptManageExceptionUtil.isUpdateValidError(StringUtil.isBlank(scriptManageDeployUpdateRequest.getName()),
-                    "脚本名称为空!");
-            ScriptManageExceptionUtil.isUpdateValidError(StringUtil.isBlank(scriptManageDeployUpdateRequest.getRefType()),
-                    "脚本关联类型为空!");
-            ScriptManageExceptionUtil.isUpdateValidError(StringUtil.isBlank(scriptManageDeployUpdateRequest.getRefValue()),
-                    "脚本关联值为空!");
-            ScriptManageExceptionUtil.isUpdateValidError(scriptManageDeployUpdateRequest.getType() == null, "脚本类型为空!");
-        }
+        ScriptManageExceptionUtil.isUpdateValidError(StringUtil.isBlank(scriptManageDeployUpdateRequest.getName()),
+                "脚本名称为空!");
+        ScriptManageExceptionUtil.isUpdateValidError(StringUtil.isBlank(scriptManageDeployUpdateRequest.getRefType()),
+                "脚本关联类型为空!");
+        ScriptManageExceptionUtil.isUpdateValidError(StringUtil.isBlank(scriptManageDeployUpdateRequest.getRefValue()),
+                "脚本关联值为空!");
+        ScriptManageExceptionUtil.isUpdateValidError(scriptManageDeployUpdateRequest.getType() == null, "脚本类型为空!");
 
         ScriptManageExceptionUtil.isUpdateValidError(
             CollectionUtils.isEmpty(scriptManageDeployUpdateRequest.getFileManageUpdateRequests()), "文件列表为空!");

@@ -12,6 +12,7 @@ import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -531,6 +532,10 @@ public class SceneServiceImpl implements SceneService {
         }
         //取之前脚本中关联的其他文件
         Long oldScriptDeployId = sceneResult.getScriptDeployId();
+        ScriptManageDeployResult scriptManageDeployResult = scriptManageDao.selectScriptManageDeployById(oldScriptDeployId);
+        if (scriptManageDeployResult == null){
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到业务流程对应的脚本！");
+        }
         ScriptManageDeployDetailResponse result = new ScriptManageDeployDetailResponse();
         result.setId(oldScriptDeployId);
         scriptManageService.setFileList(result);
@@ -538,6 +543,10 @@ public class SceneServiceImpl implements SceneService {
         ScriptManageDeployUpdateRequest updateRequest = new ScriptManageDeployUpdateRequest();
         updateRequest.setId(oldScriptDeployId);
         updateRequest.setMVersion(ScriptMVersionEnum.SCRIPT_M_1.getCode());
+        updateRequest.setType(ScriptTypeEnum.JMETER.getCode());
+        updateRequest.setRefType(ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE);
+        updateRequest.setRefValue(businessFlowId.toString());
+        updateRequest.setName(scriptManageDeployResult.getName());
         if (scriptFile == null) {
             List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
                 FileTypeEnum.SCRIPT.getCode().equals(o.getFileType())).collect(Collectors.toList());

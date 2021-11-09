@@ -101,8 +101,8 @@ public class SceneController {
         List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(flowId);
         if (CollectionUtils.isNotEmpty(links)) {
             Map<String, String> nodeNameMap = Maps.newHashMap();
-            if (CollectionUtils.isNotEmpty(sceneRequest.getAnalysisResult())) {
-                List<ScriptNode> nodes = forList(sceneRequest.getAnalysisResult());
+            List<ScriptNode> nodes = JmxUtil.toOneDepthList(sceneRequest.getAnalysisResult());
+            if (CollectionUtils.isNotEmpty(nodes)) {
                 for (ScriptNode node : nodes) {
                     nodeNameMap.put(node.getXpathMd5(), node.getTestName());
                 }
@@ -115,20 +115,6 @@ public class SceneController {
         }
 
         return multipleSceneApi.create(sceneRequest);
-    }
-    private List<ScriptNode> forList(List<ScriptNode> nodes) {
-        if (CollectionUtils.isEmpty(nodes)) {
-            return null;
-        }
-        List<ScriptNode> list = new ArrayList<>();
-        for (ScriptNode node : nodes) {
-            list.add(node);
-            if (CollectionUtils.isNotEmpty(node.getChildren())) {
-                List<ScriptNode> children = forList(node.getChildren());
-                list.addAll(children);
-            }
-        }
-        return list;
     }
 
     /**

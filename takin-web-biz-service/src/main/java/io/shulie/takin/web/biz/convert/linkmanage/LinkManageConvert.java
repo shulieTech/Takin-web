@@ -33,6 +33,7 @@ public interface LinkManageConvert {
 
     List<ScriptJmxNode> ofScriptNodeList(List<ScriptNode> scriptNodes);
 
+    @Mapping(target = "id",ignore = true)
     List<SceneLinkRelateSaveParam> ofSceneLinkRelateResults(List<SceneLinkRelateResult> sceneLinkRelateResults);
 
     @Mapping(target = "id",ignore = true)

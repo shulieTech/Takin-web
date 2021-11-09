@@ -40,4 +40,6 @@ public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
     void batchInsertOrUpdate(List<SceneLinkRelateSaveParam> saveParams);
 
     void deleteByIds(List<Long> oldIds);
+
+    void batchInsert(List<SceneLinkRelateSaveParam> ofSceneLinkRelateResults);
 }

@@ -388,6 +388,7 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public BusinessFlowMatchResponse autoMatchActivity(Long id) {
+
         BusinessFlowMatchResponse result = new BusinessFlowMatchResponse();
         SceneResult sceneResult = sceneDao.getSceneDetail(id);
         if (sceneResult == null) {
@@ -422,7 +423,7 @@ public class SceneServiceImpl implements SceneService {
         }
 
         if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
-            sceneLinkRelateDao.batchInsertOrUpdate(LinkManageConvert.INSTANCE.ofSceneLinkRelateResults(sceneLinkRelateResults));
+            sceneLinkRelateDao.batchInsert(LinkManageConvert.INSTANCE.ofSceneLinkRelateResults(sceneLinkRelateResults));
         }
         int matchNum = CollectionUtils.isEmpty(sceneLinkRelateResults) ? 0 : sceneLinkRelateResults.size();
         result.setMatchNum(matchNum);

@@ -418,7 +418,6 @@ public class LinkTopologyService extends CommonService {
             // 根据服务边，查询指标
             AppProvider appProviderFromDb;
             if (request.isTempActivity()) {
-                if (StringUtils.isBlank(beforeApps)) continue;
                 appProviderFromDb = queryMetricsFromAMDB(beforeApps, appProvider.getOwnerApps(), appProvider.getServiceName(), request, startDateTime, endDateTime);
             } else {
                 appProviderFromDb = queryMetricsFromDb(startMilli, endMilli, realSeconds, metricsType, eagleId);

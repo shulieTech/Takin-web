@@ -21,11 +21,11 @@ public class SceneLinkRelateRequest implements Serializable {
 
     @NotNull(message = "脚本请求路径标识 不能为空")
     @ApiModelProperty("脚本请求路径标识")
-    private String scriptIdentification;
+    private String identification;
 
     @NotNull(message = "脚本请求路径标识 不能为空")
     @ApiModelProperty("脚本路径的MD5")
-    private String scriptXpathMd5;
+    private String xpathMd5;
 
     /*****业务活动相关*******/
 

@@ -411,6 +411,10 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public void matchActivity(SceneLinkRelateRequest sceneLinkRelateRequest) {
+        SceneResult sceneDetail = sceneDao.getSceneDetail(sceneLinkRelateRequest.getSceneId());
+        if (sceneDetail == null){
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "匹配业务活动，业务流程未找到！");
+        }
 
         if (BusinessTypeEnum.NORMAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
             //普通业务活动
@@ -447,6 +451,21 @@ public class SceneServiceImpl implements SceneService {
         SceneLinkRelateSaveParam saveParam = LinkManageConvert.INSTANCE.ofSceneLinkRelateRequest(sceneLinkRelateRequest);
         saveParam.setEntrance(sceneLinkRelateRequest.getEntrance());
         sceneLinkRelateDao.batchInsertOrUpdate(Collections.singletonList(saveParam));
+
+        int linkRelateNum = sceneDetail.getLinkRelateNum();
+        //更新匹配数量
+        if (sceneLinkRelateRequest.getId() == null){
+            SceneUpdateParam updateParam = new SceneUpdateParam();
+            updateParam.setId(sceneLinkRelateRequest.getId());
+            linkRelateNum = sceneDetail.getLinkRelateNum() + 1;
+            updateParam.setLinkRelateNum(linkRelateNum);
+            sceneDao.update(updateParam);
+        }
+
+        //匹配数量符合，修改压测成就
+        if (sceneDetail.getTotalNodeNum() == linkRelateNum){
+            //TODO 修改压测场景
+        }
     }
 
     @Override

@@ -1843,7 +1843,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      */
     private String getTargetScriptPath(ScriptManageDeployResult scriptManageDeployResult) {
         return String.format("%s/%s/%s/",
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH)+WebPluginUtils.traceTenantCode()+Separator.Separator1.getValue(),
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH)+WebPluginUtils.traceTenantCode()+Separator.Separator1.getValue()+WebPluginUtils.traceEnvCode(),
             scriptManageDeployResult.getScriptId(), scriptManageDeployResult.getScriptVersion());
     }
 

@@ -22,7 +22,6 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import lombok.AllArgsConstructor;
@@ -679,10 +678,7 @@ public class WebPluginUtils {
      * @return 租户主键
      */
     public static List<Long> traceTenantIdForSystem() {
-        if (userApi != null) {
-            return Lists.newArrayList(userApi.traceTenantId(),SYS_DEFAULT_TENANT_ID);
-        }
-        return Lists.newArrayList(SYS_DEFAULT_TENANT_ID ,DEFAULT_TENANT_ID);
+        return Lists.newArrayList(SYS_DEFAULT_TENANT_ID,traceTenantId());
     }
 
     /**
@@ -713,10 +709,7 @@ public class WebPluginUtils {
      * @return
      */
     public static List<String> traceEnvCodeForSystem() {
-        if (userApi != null) {
-            return Lists.newArrayList(userApi.traceEnvCode(),SYS_DEFAULT_ENV_CODE);
-        }
-        return Lists.newArrayList(SYS_DEFAULT_ENV_CODE, DEFAULT_ENV_CODE);
+        return Lists.newArrayList(SYS_DEFAULT_ENV_CODE, traceEnvCode());
     }
 
     /**

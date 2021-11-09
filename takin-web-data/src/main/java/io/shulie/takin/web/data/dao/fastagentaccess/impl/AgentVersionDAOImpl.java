@@ -45,7 +45,7 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
                     queryParam.getFirstVersion())
                 .in(CollectionUtils.isNotEmpty(tenantIdList), AgentVersionEntity::getTenantId, tenantIdList)
                 .in(CollectionUtils.isNotEmpty(envCodeList), AgentVersionEntity::getEnvCode, envCodeList)
-                .orderByDesc(AgentVersionEntity::getVersionNum));
+                .orderByDesc(AgentVersionEntity::getTenantId));
 
         List<AgentVersionEntity> records = entityPage.getRecords();
         if (records.isEmpty()) {
@@ -62,7 +62,8 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
         LambdaQueryWrapper<AgentVersionEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(AgentVersionEntity::getVersion, version)
             .in(CollectionUtils.isNotEmpty(tenantIdList), AgentVersionEntity::getTenantId, tenantIdList)
-            .in(CollectionUtils.isNotEmpty(envCodeList), AgentVersionEntity::getEnvCode, envCodeList);
+            .in(CollectionUtils.isNotEmpty(envCodeList), AgentVersionEntity::getEnvCode, envCodeList)
+            .orderByDesc(AgentVersionEntity::getTenantId);
         AgentVersionEntity entity = agentVersionMapper.selectOne(queryWrapper);
         if (entity == null) {
             return null;

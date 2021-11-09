@@ -17,7 +17,7 @@ public class SceneLinkRelateRequest implements Serializable {
 
     @NotNull(message = "业务流程ID 不能为空")
     @ApiModelProperty("业务流程ID")
-    private Long sceneId;
+    private Long businessFlowId;
 
     @NotNull(message = "脚本请求路径标识 不能为空")
     @ApiModelProperty("脚本请求路径标识")

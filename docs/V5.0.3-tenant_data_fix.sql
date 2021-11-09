@@ -5,6 +5,203 @@ update t_application_ds_db_manage set tenant_id=customer_id;
 update t_application_ds_db_table set tenant_id=customer_id;
 
 -- caijy
+-- env_code
+-- 应用表 t_application_mnt
+UPDATE t_application_mnt t1
+    LEFT JOIN (
+    SELECT
+    `name`,
+    id,
+    CASE
+    WHEN LOCATE( 'test', `name` ) > 0 THEN
+    'test' ELSE 'prod'
+    END env_code
+    FROM
+    t_tro_user
+    ) t2 ON t2.id = t1.USER_ID
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_business_link_manage_table
+UPDATE t_business_link_manage_table t1
+    LEFT JOIN (
+    SELECT
+    `name`,
+    id,
+    CASE
+    WHEN LOCATE( 'test', `name` ) > 0 THEN
+    'test' ELSE 'prod'
+    END env_code
+    FROM
+    t_tro_user
+    ) t2 ON t2.id = t1.USER_ID
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_script_manage
+UPDATE t_script_manage t1
+    LEFT JOIN (
+    SELECT
+    `name`,
+    id,
+    CASE
+    WHEN LOCATE( 'test', `name` ) > 0 THEN
+    'test' ELSE 'prod'
+    END env_code
+    FROM
+    t_tro_user
+    ) t2 ON t2.id = t1.user_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- 	t_leakcheck_config
+UPDATE t_leakcheck_config t1
+    LEFT JOIN (
+    SELECT
+    `name`,
+    id,
+    CASE
+    WHEN LOCATE( 'test', `name` ) > 0 THEN
+    'test' ELSE 'prod'
+    END env_code
+    FROM
+    t_tro_user
+    ) t2 ON t2.id = t1.user_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_leakcheck_config_detail
+UPDATE t_leakcheck_config_detail t1
+    LEFT JOIN (
+    SELECT
+    `name`,
+    id,
+    CASE
+    WHEN LOCATE( 'test', `name` ) > 0 THEN
+    'test' ELSE 'prod'
+    END env_code
+    FROM
+    t_tro_user
+    ) t2 ON t2.id = t1.user_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_operation_log
+UPDATE t_operation_log t1
+    LEFT JOIN (
+    SELECT
+    `name`,
+    id,
+    CASE
+    WHEN LOCATE( 'test', `name` ) > 0 THEN
+    'test' ELSE 'prod'
+    END env_code
+    FROM
+    t_tro_user
+    ) t2 ON t2.id = t1.user_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_ops_script_manage
+UPDATE t_ops_script_manage t1
+    LEFT JOIN (
+    SELECT
+    `name`,
+    id,
+    CASE
+    WHEN LOCATE( 'test', `name` ) > 0 THEN
+    'test' ELSE 'prod'
+    END env_code
+    FROM
+    t_tro_user
+    ) t2 ON t2.id = t1.user_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_tro_dbresource
+UPDATE t_tro_dbresource t1
+    LEFT JOIN (
+    SELECT
+    `name`,
+    id,
+    CASE
+    WHEN LOCATE( 'test', `name` ) > 0 THEN
+    'test' ELSE 'prod'
+    END env_code
+    FROM
+    t_tro_user
+    ) t2 ON t2.id = t1.user_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_application_ds_manage
+UPDATE t_application_ds_manage t1
+    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_application_node_probe
+UPDATE t_application_node_probe t1
+    LEFT JOIN t_application_mnt t2 ON t1.application_name = t2.APPLICATION_NAME
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_application_plugins_config
+UPDATE t_application_plugins_config t1
+    LEFT JOIN t_application_mnt t2 ON t1.application_name = t2.APPLICATION_NAME
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_black_list
+UPDATE t_black_list t1
+    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_exception_info 无需订正 就取默认的test
+
+-- t_fast_debug_config_info t_business_link_manage_table
+UPDATE t_fast_debug_config_info t1
+    LEFT JOIN t_business_link_manage_table t2 ON t1.business_link_id = t2.LINK_ID
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_fast_debug_exception
+UPDATE t_fast_debug_exception t1
+    LEFT JOIN t_application_mnt t2 ON t1.application_Name = t2.APPLICATION_NAME
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_fast_debug_result t_business_link_manage_table
+UPDATE t_fast_debug_result t1
+    LEFT JOIN t_business_link_manage_table t2 ON t1.business_link_name = t2.LINK_NAME
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_file_manage
+UPDATE t_file_manage t1
+    LEFT JOIN t_script_file_ref t2 ON t1.id = t2.file_id
+    LEFT JOIN t_script_manage_deploy t3 ON t3.id = t2.script_deploy_id
+    LEFT JOIN t_script_manage t4 ON t4.id = t3.script_id
+    SET t1.env_code = t4.env_code;
+
+-- t_link_guard
+UPDATE t_link_guard t1
+    LEFT JOIN t_application_mnt t2 ON t1.application_id = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_link_manage_table
+UPDATE t_link_manage_table t1
+    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_NAME = t2.APPLICATION_NAME
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_application_focus
+UPDATE t_application_focus t1
+    LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_application_middleware
+UPDATE t_application_middleware t1
+    LEFT JOIN t_application_mnt t2 ON t1.application_id = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_data_build
+UPDATE t_data_build t1
+    LEFT JOIN t_application_mnt t2 ON t1.application_id = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_datasource_tag_ref
+UPDATE t_datasource_tag_ref t1
+    LEFT JOIN t_tro_dbresource t2 ON t1.datasource_id = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+
+-- tenant_id
 update t_application_ds_manage set tenant_id=customer_id;
 update t_application_mnt set tenant_id=customer_id;
 update t_application_node_probe set tenant_id=customer_id;
@@ -24,8 +221,6 @@ update t_link_manage_table set tenant_id=customer_id;
 update t_operation_log set tenant_id=customer_id;
 update t_ops_script_manage set tenant_id=customer_id;
 update t_tro_dbresource set tenant_id=customer_id;
-
-
 update t_application_focus set tenant_id=(select tenant_id from t_application_mnt where APPLICATION_NAME = app_name);
 update t_application_middleware set tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = application_id);
 update t_data_build t set t.tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = t.APPLICATION_ID);

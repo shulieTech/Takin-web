@@ -453,6 +453,7 @@ public class SceneServiceImpl implements SceneService {
         SceneLinkRelateSaveParam saveParam = LinkManageConvert.INSTANCE.ofSceneLinkRelateRequest(sceneLinkRelateRequest);
         saveParam.setEntrance(sceneLinkRelateRequest.getEntrance());
         saveParam.setSceneId(sceneLinkRelateRequest.getBusinessFlowId().toString());
+        saveParam.setBusinessLinkId(sceneLinkRelateRequest.getBusinessActivityId().toString());
         sceneLinkRelateDao.batchInsertOrUpdate(Collections.singletonList(saveParam));
 
         int linkRelateNum = sceneDetail.getLinkRelateNum();

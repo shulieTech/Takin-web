@@ -105,6 +105,7 @@ public class SceneController {
                 d.setApplicationId(sceneManageService.getAppIdsByBusinessActivityId(d.getBusinessActivityId()));
                 d.setName(nodeNameMap.get(d.getPathMd5()));
             });
+            sceneRequest.setContent(content);
         }
 
         return multipleSceneApi.create(sceneRequest);

@@ -1,9 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -14,16 +12,12 @@ import com.alibaba.fastjson.TypeReference;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.google.common.collect.Maps;
-import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
-import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.convert.linkmanage.LinkManageConvert;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.swagger.annotations.Api;
@@ -31,7 +25,6 @@ import io.swagger.annotations.ApiOperation;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

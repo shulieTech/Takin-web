@@ -577,6 +577,7 @@ public class SceneServiceImpl implements SceneService {
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
         //更新业务流程
         sceneUpdateParam.setScriptDeployId(scriptDeployId);
+        sceneUpdateParam.setId(businessFlowId);
         sceneDao.update(sceneUpdateParam);
 
     }

@@ -16,15 +16,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONObject;
 
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.MiddlewareType;
@@ -93,17 +92,6 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -834,7 +822,7 @@ public class LinkTopologyService extends CommonService {
                 " time >= " + formatTimestamp(startMilli) +
                 " and time <= " + formatTimestamp(endMilli) +
                 // 增加租户
-                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                 " and env_code = '" + WebPluginUtils.traceEnvCode() + "'" +
                 " order by time desc" +
                 " limit 1";

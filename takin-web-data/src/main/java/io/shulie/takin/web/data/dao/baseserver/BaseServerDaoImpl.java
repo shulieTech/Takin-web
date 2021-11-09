@@ -49,7 +49,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
         String sql = "select app_ip, app_name, cpu_rate, mem_rate from app_base_data where time>" + param.getStartTime()
                 + " and time <= " + param.getEndTime() + " and tag_app_name='" + param.getApplicationName() + "'" +
             // 增加租户
-            " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+            " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
             " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
         return influxDatabaseManager.query(BaseServerResult.class, sql);
     }
@@ -61,7 +61,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
                 "mean(net_bandwidth) as net_bandwidth from app_base_data where tag_app_name = '" + param.getApplicationName()
                 + "' and time > " + param.getStartTime() + " and time <= " + param.getEndTime() +
                 // 增加租户
-                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                 " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
                 + " group by tag_agent_id, tag_app_ip";
         Collection<BaseServerResult> baseServerResults = influxDatabaseManager.query(BaseServerResult.class, baseSql);
@@ -74,7 +74,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
         String command = "select traceId,rt from tro_pradar where time >= " + param.getSTime() + " and time < " + param.getETime()
                 + " and appName = '" + param.getAppName() + "'  and event = '" + param.getEvent() + "' and ptFlag='true' and traceId <>'' " +
                 // 增加租户
-                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and tenant_app_key = '" + WebPluginUtils.traceTenantCode() + "'" +
                 " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
                 + " order by time desc limit 1000";
 
@@ -100,7 +100,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
                     "SUM(totalCount) as count,SUM(errorCount) as errorCount " +
                     "from  tro_pradar where ptFlag='true' and time >= " + sTime + " and time < " + eTime +
                      // 增加租户
-                    " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                    " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                     " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
 
             //TODO
@@ -187,7 +187,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
                             +
                             "from tro_pradar where ptFlag='true' and time >= " + sTime + " and time < " + eTime +
                         // 增加租户
-                        " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                        " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                         " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
             if (RpcType.TRACE.getText().equals(rpcType)) {
                 command = command + " and appName = '" + appName + "'  and event = '" + event + "'";
@@ -255,7 +255,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
                             " from app_base_data where app_name = '" + appName + "' and time >= " + startTime
                             + " and time <= " + endTime +
                             // 增加租户
-                            " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                            " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                             " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
                             + " group by tag_app_ip";
             Collection<BaseServerResult> voList = influxDatabaseManager.query(BaseServerResult.class, tmpSql);
@@ -329,7 +329,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
             sb.append(" and agent_id = '").append(param.getAgentId()).append("'");
         }
         // 增加租户
-        sb.append(" and tenant_id = '").append(WebPluginUtils.traceTenantId()).append("'");
+        sb.append(" and tenant_app_key = '").append(WebPluginUtils.traceTenantAppKey()).append("'");
         sb.append(" and env_code = '").append(WebPluginUtils.traceEnvCode()).append("'");
         sb.append(" group by time(5s) order by time");
         Collection<BaseServerResult> collection = influxDatabaseManager.query(BaseServerResult.class, sb.toString());

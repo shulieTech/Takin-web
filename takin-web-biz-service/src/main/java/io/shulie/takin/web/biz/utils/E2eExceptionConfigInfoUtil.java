@@ -15,7 +15,8 @@ public final class E2eExceptionConfigInfoUtil {
     public static List<E2eExceptionConfigInfoExt> getConfig() {
         List<E2eExceptionConfigInfoExt> bottleneckConfig = null;
         if (WebPluginUtils.checkUserPlugin() && E2ePluginUtils.checkE2ePlugin()) {
-            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId());
+            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId(),
+                WebPluginUtils.traceEnvCode());
         }
         return bottleneckConfig;
     }

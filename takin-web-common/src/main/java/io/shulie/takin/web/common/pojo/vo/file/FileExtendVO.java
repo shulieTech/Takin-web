@@ -17,6 +17,11 @@ public class FileExtendVO {
     private Integer isSplit;
 
     /**
+     * 是否按分区顺序分割
+     */
+    private Integer isOrderSplit;
+
+    /**
      * 数据计数
      */
     private Integer dataCount;

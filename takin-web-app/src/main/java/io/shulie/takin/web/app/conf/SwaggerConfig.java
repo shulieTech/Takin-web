@@ -374,6 +374,21 @@ public class SwaggerConfig {
                 ;
     }
 
+    @Bean
+    public Docket api_reportQuery(){
+        return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
+            .groupName("报告实况/节点树查询")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(getRegex("/api/report(/queryReportTrend|/tempReportDetail|/queryTempReportTrend|/queryNodeTree).*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo())
+            ;
+    }
+
     /**
      * 两周迭代放在这里
      * @return

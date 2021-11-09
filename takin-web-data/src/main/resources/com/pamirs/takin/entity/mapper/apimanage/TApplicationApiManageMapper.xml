@@ -10,11 +10,12 @@
         <result column="IS_DELETED" jdbcType="TINYINT" property="isDeleted"/>
         <result column="api" property="api"/>
         <result column="method" property="requestMethod"/>
-        <result column="CUSTOMER_ID" jdbcType="BIGINT" property="customerId"/>
+        <result column="tenant_Id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="env_code" jdbcType="BIGINT" property="envCode"/>
         <result column="USER_ID" jdbcType="BIGINT" property="userId"/>
     </resultMap>
     <sql id="Base_Column_List">
-        ID, APPLICATION_ID, APPLICATION_NAME, CREATE_TIME, UPDATE_TIME, IS_DELETED,api,`method`,customer_id,user_id
+        ID, APPLICATION_ID, APPLICATION_NAME, CREATE_TIME, UPDATE_TIME, IS_DELETED,api,`method`,tenant_id,user_id,env_code
     </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
         select
@@ -38,11 +39,11 @@
 
     <insert id="insertBatch" parameterType="java.util.List">
         insert into t_application_api_manage ( APPLICATION_NAME,
-        CREATE_TIME, UPDATE_TIME, IS_DELETED,api,method,application_id,tenant_id,user_id,IS_AGENT_REGISTE)
+        CREATE_TIME, UPDATE_TIME, IS_DELETED,api,method,application_id,user_id,IS_AGENT_REGISTE)
         values
         <foreach collection="list" item="item" index="index" separator=",">
             (
-            #{item.applicationName},#{item.createTime},#{item.updateTime},#{item.isDeleted},#{item.api},#{item.requestMethod},#{item.applicationId},#{item.tenantId},#{item.userId},#{item.isAgentRegiste})
+            #{item.applicationName},#{item.createTime},#{item.updateTime},#{item.isDeleted},#{item.api},#{item.requestMethod},#{item.applicationId},#{item.userId},#{item.isAgentRegiste})
         </foreach>
 
 
@@ -76,20 +77,11 @@
             <if test="requestMethod != null">
                 method,
             </if>
-            <if test="customerId != null">
-                customer_id,
-            </if>
             <if test="userId != null">
                 user_id,
             </if>
             <if test="isAgentRegiste != null">
                 is_agent_registe,
-            </if>
-            <if test="tenantId != null">
-                tenant_id,
-            </if>
-            <if test="envCode != null">
-                env_code,
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -117,20 +109,11 @@
             <if test="requestMethod != null">
                 #{requestMethod},
             </if>
-            <if test="customerId != null">
-                #{customerId},
-            </if>
             <if test="userId != null">
                 #{userId},
             </if>
             <if test="isAgentRegiste != null">
                 #{isAgentRegiste},
-            </if>
-            <if test="tenantId != null">
-                #{tenantId},
-            </if>
-            <if test="envCode != null">
-                #{envCode},
             </if>
         </trim>
     </insert>
@@ -182,6 +165,16 @@
         from t_application_api_manage
         where method is not null
           and method != ''
+        <if test="appName != null">
+            and APPLICATION_NAME = #{appName}
+        </if>
+    </select>
+
+    <select id="querySimpleWithTenant" resultMap="BaseResultMap" parameterType="com.pamirs.takin.entity.domain.query.ApplicationApiParam">
+        select APPLICATION_NAME, api, method
+        from t_application_api_manage
+        where method is not null
+        and method != ''
         <if test="appName != null">
             and APPLICATION_NAME = #{appName}
         </if>

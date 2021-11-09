@@ -75,8 +75,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                     continue;
                 }
 
-                ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByCustomerIdAndName(
-                    appName);
+                ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByCustomerIdAndName(appName);
                 if (applicationDetailResult == null) {
                     throw new TakinWebException(TakinWebExceptionEnum.AGENT_REGISTER_API,
                         String.format("应用不存在, 应用名称: %s", appName));
@@ -104,7 +103,6 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                             manage.setUpdateTime(new Date());
                             manage.setRequestMethod(requestMethod);
                             manage.setApplicationId(applicationDetailResult.getApplicationId());
-                            manage.setTenantId(applicationDetailResult.getTenantId());
                             manage.setUserId(applicationDetailResult.getUserId());
                             manage.setIsAgentRegiste(1);
                             batch.add(manage);
@@ -119,7 +117,6 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                         manage.setRequestMethod(requestMethod);
                         manage.setUpdateTime(new Date());
                         manage.setApplicationId(applicationDetailResult.getApplicationId());
-                        manage.setTenantId(applicationDetailResult.getTenantId());
                         manage.setUserId(applicationDetailResult.getUserId());
                         manage.setIsAgentRegiste(1);
                         batch.add(manage);
@@ -162,6 +159,23 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
 
     @Override
     public Response pullApi(String appName) {
+        ApplicationApiParam apiParam = new ApplicationApiParam();
+        apiParam.setAppName(appName);
+        List<ApplicationApiManage> all = manageMapper.querySimple(apiParam);
+        if (org.apache.commons.collections4.CollectionUtils.isEmpty(all)) {
+            return Response.success(new HashMap<>());
+        }
+        Map<String, List<String>> res = new HashMap<>();
+        for (ApplicationApiManage applicationApiManage : all) {
+            res.computeIfAbsent(applicationApiManage.getApplicationName(), k -> new ArrayList<>()).add(
+                applicationApiManage.getApi()
+                    + "#" + applicationApiManage.getRequestMethod());
+        }
+        return Response.success(res);
+    }
+
+    @Override
+    public Response pullApiV1(String appName) {
         ApplicationApiParam apiParam = new ApplicationApiParam();
         apiParam.setAppName(appName);
         List<ApplicationApiManage> all = manageMapper.querySimple(apiParam);

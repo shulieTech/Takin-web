@@ -352,9 +352,6 @@ public class ApplicationDAOImpl
     public ApplicationDetailResult getApplicationByCustomerIdAndName(String appName) {
         if (!StringUtils.isEmpty(appName)) {
             LambdaQueryWrapper<ApplicationMntEntity> queryWrapper = new LambdaQueryWrapper<>();
-            if (WebPluginUtils.checkUserPlugin()) {
-                queryWrapper.eq(ApplicationMntEntity::getTenantId, WebPluginUtils.traceTenantId());
-            }
             queryWrapper.eq(ApplicationMntEntity::getApplicationName, appName);
             ApplicationMntEntity applicationMntEntity = applicationMntMapper.selectOne(queryWrapper);
             if (!Objects.isNull(applicationMntEntity)) {

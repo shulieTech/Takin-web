@@ -601,7 +601,7 @@ public class SceneServiceImpl implements SceneService {
                 if (xpathMd5Map.get(scriptJmxNode.getXpathMd5()) != null) {
                     ActivityListResult activityListResult = activityMap.get(xpathMd5Map.get(scriptJmxNode.getXpathMd5()));
                     if (activityListResult != null) {
-                        scriptJmxNode.setBusinessApplicationName(activityListResult.getActivityName());
+                        scriptJmxNode.setBusinessApplicationName(activityListResult.getApplicationName());
                         ActivityUtil.EntranceJoinEntity entranceJoinEntity;
                         if (BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(activityListResult.getBusinessType())) {
                             entranceJoinEntity = ActivityUtil.covertVirtualEntrance(activityListResult.getEntrace());
@@ -613,6 +613,7 @@ public class SceneServiceImpl implements SceneService {
                         scriptJmxNode.setRpcType(entranceJoinEntity.getRpcType());
                         scriptJmxNode.setIsChange(activityListResult.getIsChange());
                         scriptJmxNode.setIsCore(activityListResult.getIsCore());
+                        scriptJmxNode.setBusinessActivityName(activityListResult.getActivityName());
                         scriptJmxNode.setBusinessDomain(activityListResult.getBusinessDomain());
                         scriptJmxNode.setActivityLevel(activityListResult.getActivityLevel());
                         scriptJmxNode.setBusinessType(activityListResult.getBusinessType());

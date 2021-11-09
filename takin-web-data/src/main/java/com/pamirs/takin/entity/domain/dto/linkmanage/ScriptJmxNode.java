@@ -55,6 +55,9 @@ public class ScriptJmxNode {
     @ApiModelProperty(name = "businessActivityId", value = "业务活动id")
     private Long businessActivityId;
 
+    @ApiModelProperty(name = "businessActivityName", value = "业务活动名称")
+    private String businessActivityName;
+
     @ApiModelProperty(name = "businessApplicationName", value = "业务活动应用名")
     private String businessApplicationName;
 

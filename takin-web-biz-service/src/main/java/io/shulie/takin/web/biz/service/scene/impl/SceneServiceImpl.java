@@ -536,6 +536,7 @@ public class SceneServiceImpl implements SceneService {
         scriptManageService.setFileList(result);
         List<FileManageResponse> fileManageResponseList = result.getFileManageResponseList();
         ScriptManageDeployUpdateRequest updateRequest = new ScriptManageDeployUpdateRequest();
+        updateRequest.setId(oldScriptDeployId);
         if (scriptFile == null) {
             List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
                 FileTypeEnum.SCRIPT.getCode().equals(o.getFileType())).collect(Collectors.toList());

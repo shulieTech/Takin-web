@@ -48,10 +48,9 @@ public interface ReportService {
      *
      * @param reportId   报告 id
      * @param sceneId    场景 id
-     * @param customerId 租户 id
      * @return 指标列表
      */
-    List<MetricesResponse> queryMetrics(Long reportId, Long sceneId, Long customerId);
+    List<MetricesResponse> queryMetrics(Long reportId, Long sceneId);
 
     Map<String, Object> queryReportCount(Long reportId);
 

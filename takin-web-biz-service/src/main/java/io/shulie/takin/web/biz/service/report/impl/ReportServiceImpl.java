@@ -239,9 +239,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<MetricesResponse> queryMetrics(Long reportId, Long sceneId, Long tenantId) {
+    public List<MetricesResponse> queryMetrics(Long reportId, Long sceneId) {
         return cloudReportApi.metrics(new TrendRequest() {{
-            setTenantId(tenantId);
             setReportId(reportId);
             setSceneId(sceneId);
         }});

@@ -53,3 +53,20 @@ update t_performance_thread_data t set t.tenant_id= (select tenant_id from t_app
 update t_pessure_test_task_activity_config set tenant_id=
 
 -- caijy end
+
+-- 兮曦 --
+update e_patrol_activity_assert set env_code='test',tenant_id=1;
+update e_patrol_board set tenant_id=customer_id,env_code='test';
+update e_patrol_board_scene set env_code='test',tenant_id=1;
+update e_patrol_exception set env_code='test',tenant_id=1;
+update e_patrol_exception_config set tenant_id=customer_id;
+update e_patrol_exception_config set env_code='test' where tenant_id is not null;
+INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (1, 4, 1, 30, 1, '一般慢SQL');
+INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (0, 4, 2, 60, 1, '严重慢SQL');
+update e_patrol_exception_config set env_code='system',tenant_id=-1 where env_code is null and tenant_id is null;
+update e_patrol_exception_notice_config set env_code='test',tenant_id=1;
+update e_patrol_scene set env_code='test',tenant_id=customer_id;
+update e_patrol_scene_chain set env_code='test',tenant_id=1;
+update e_patrol_scene_check set env_code='test',tenant_id=1;
+-- 兮曦 --
+

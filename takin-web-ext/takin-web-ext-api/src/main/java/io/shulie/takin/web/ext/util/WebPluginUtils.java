@@ -580,6 +580,11 @@ public class WebPluginUtils {
     public static void fillCloudUserData(ContextExt traceContextExt) {
         if (Objects.nonNull(userApi)) {
             userApi.fillCloudUserData(traceContextExt);
+        }else {
+            traceContextExt.setUserId(DEFAULT_USER_ID);
+            traceContextExt.setEnvCode(DEFAULT_ENV_CODE);
+            traceContextExt.setTenantId(DEFAULT_TENANT_ID);
+            traceContextExt.setTenantCode(DEFAULT_TENANT_CODE);
         }
     }
 

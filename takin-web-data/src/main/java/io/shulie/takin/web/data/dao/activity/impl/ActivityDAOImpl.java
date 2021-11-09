@@ -447,6 +447,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         r.setIsChange(entity.getIsChange());
         r.setIsCore(entity.getIsCore());
         r.setIsDeleted(entity.getIsDeleted());
+        r.setEntrace(entity.getEntrace());
         r.setUserId(entity.getUserId());
         r.setCreateTime(entity.getCreateTime());
         r.setUpdateTime(entity.getUpdateTime());

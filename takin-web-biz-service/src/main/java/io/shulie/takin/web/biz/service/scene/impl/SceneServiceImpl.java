@@ -454,6 +454,8 @@ public class SceneServiceImpl implements SceneService {
         saveParam.setEntrance(sceneLinkRelateRequest.getEntrance());
         saveParam.setSceneId(sceneLinkRelateRequest.getBusinessFlowId().toString());
         saveParam.setBusinessLinkId(sceneLinkRelateRequest.getBusinessActivityId().toString());
+        saveParam.setScriptXpathMd5(sceneLinkRelateRequest.getXpathMd5());
+        saveParam.setScriptIdentification(sceneLinkRelateRequest.getIdentification());
         sceneLinkRelateDao.batchInsertOrUpdate(Collections.singletonList(saveParam));
 
         int linkRelateNum = sceneDetail.getLinkRelateNum();

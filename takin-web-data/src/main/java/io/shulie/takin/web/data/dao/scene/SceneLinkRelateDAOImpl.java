@@ -57,6 +57,9 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
         if (StringUtils.isNotBlank(query.getEntrance())) {
             wrapper.eq(SceneLinkRelateEntity::getEntrance, query.getEntrance());
         }
+        if (null != query.getSceneId()){
+            wrapper.eq(SceneLinkRelateEntity::getSceneId, query.getSceneId());
+        }
         wrapper.orderByDesc(SceneLinkRelateEntity::getId);
         List<SceneLinkRelateEntity> entities = this.list(wrapper);
         return toResult(entities);

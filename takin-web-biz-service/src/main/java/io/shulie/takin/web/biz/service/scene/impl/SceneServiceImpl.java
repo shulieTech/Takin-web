@@ -11,7 +11,9 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadRespon
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
+import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -477,8 +479,16 @@ public class SceneServiceImpl implements SceneService {
         } else {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "不是已知的业务活动类型！");
         }
-
+        SceneLinkRelateQuery sceneLinkRelateQuery = new SceneLinkRelateQuery();
+        sceneLinkRelateQuery.setSceneId(sceneLinkRelateRequest.getBusinessFlowId());
+        sceneLinkRelateQuery.setXpathMd5(sceneLinkRelateRequest.getXpathMd5());
         SceneLinkRelateSaveParam saveParam = LinkManageConvert.INSTANCE.ofSceneLinkRelateRequest(sceneLinkRelateRequest);
+
+        List<SceneLinkRelateResult> sceneLinkRelateResults = sceneLinkRelateDao.query(sceneLinkRelateQuery);
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)){
+            //一个业务流程中只会有一个XpathMd5
+            saveParam.setId(sceneLinkRelateResults.get(0).getId());
+        }
         saveParam.setEntrance(sceneLinkRelateRequest.getEntrance());
         saveParam.setSceneId(sceneLinkRelateRequest.getBusinessFlowId().toString());
         saveParam.setBusinessLinkId(sceneLinkRelateRequest.getBusinessActivityId().toString());
@@ -550,11 +560,21 @@ public class SceneServiceImpl implements SceneService {
         }
         //取之前脚本中关联的其他文件
         Long oldScriptDeployId = sceneResult.getScriptDeployId();
+        ScriptManageDeployResult scriptManageDeployResult = scriptManageDao.selectScriptManageDeployById(oldScriptDeployId);
+        if (scriptManageDeployResult == null){
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到业务流程对应的脚本！");
+        }
         ScriptManageDeployDetailResponse result = new ScriptManageDeployDetailResponse();
         result.setId(oldScriptDeployId);
         scriptManageService.setFileList(result);
         List<FileManageResponse> fileManageResponseList = result.getFileManageResponseList();
         ScriptManageDeployUpdateRequest updateRequest = new ScriptManageDeployUpdateRequest();
+        updateRequest.setId(oldScriptDeployId);
+        updateRequest.setMVersion(ScriptMVersionEnum.SCRIPT_M_1.getCode());
+        updateRequest.setType(ScriptTypeEnum.JMETER.getCode());
+        updateRequest.setRefType(ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE);
+        updateRequest.setRefValue(businessFlowId.toString());
+        updateRequest.setName(scriptManageDeployResult.getName());
         if (scriptFile == null) {
             List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
                 FileTypeEnum.SCRIPT.getCode().equals(o.getFileType())).collect(Collectors.toList());
@@ -585,6 +605,7 @@ public class SceneServiceImpl implements SceneService {
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
         //更新业务流程
         sceneUpdateParam.setScriptDeployId(scriptDeployId);
+        sceneUpdateParam.setId(businessFlowId);
         sceneDao.update(sceneUpdateParam);
 
     }

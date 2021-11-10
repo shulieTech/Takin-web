@@ -261,7 +261,7 @@ public class SceneServiceImpl implements SceneService {
         sceneQueryParam.setSceneName(testName);
         List<SceneResult> sceneResultList = sceneDao.selectListByName(sceneQueryParam);
         if (CollectionUtils.isNotEmpty(sceneResultList)) {
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "修改业务流程，业务流程名称已存在！");
+            throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "新增业务流程，业务流程名称已存在！");
         }
         //保存业务流程
         SceneCreateParam sceneCreateParam = new SceneCreateParam();

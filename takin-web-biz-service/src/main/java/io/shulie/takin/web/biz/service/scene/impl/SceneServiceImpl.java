@@ -503,6 +503,7 @@ public class SceneServiceImpl implements SceneService {
                 sceneLinkRelateRequest.setBusinessActivityId(activity);
             }
         } else if (BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
+            sceneLinkRelateRequest.setEntrance(sceneLinkRelateRequest.getIdentification());
             ActivityQueryParam queryParam = new ActivityQueryParam();
             queryParam.setBusinessType(sceneLinkRelateRequest.getBusinessType());
             queryParam.setEntrance(sceneLinkRelateRequest.getEntrance());

@@ -32,7 +32,6 @@ public class SceneLinkRelateRequest implements Serializable {
     @ApiModelProperty("应用名")
     private String applicationName;
 
-    @NotNull(message = "入口entrance 不能为空")
     @ApiModelProperty("入口entrance")
     private String entrance;
 

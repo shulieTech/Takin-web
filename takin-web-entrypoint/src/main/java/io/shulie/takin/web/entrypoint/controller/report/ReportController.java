@@ -50,7 +50,7 @@ public class ReportController {
     @GetMapping(value = "report/getReportByReportId")
     @ApiOperation("报告详情")
     @ApiImplicitParam(name = "reportId", value = "报告ID")
-    public WebResponse getReportByReportId(Long reportId) {
+    public ResponseResult<ReportDetailResp> getReportByReportId(Long reportId) {
         return reportService.getReportByReportId(reportId);
     }
 

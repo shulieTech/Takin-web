@@ -22,7 +22,7 @@ public interface ReportService {
 
     WebResponse listReport(ReportQueryParam param);
 
-    WebResponse getReportByReportId(Long reportId);
+    ResponseResult<ReportDetailResp> getReportByReportId(Long reportId);
 
     ResponseResult<ReportTrendResp> queryTempReportTrend(ReportTrendQueryParam param);
 

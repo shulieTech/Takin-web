@@ -18,6 +18,7 @@ import io.shulie.takin.cloud.open.req.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneManageWrapperReq;
 import io.shulie.takin.cloud.open.req.scenetask.TaskFlowDebugStartReq;
+import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
@@ -731,9 +732,10 @@ public class ActivityServiceImpl implements ActivityService {
         String reportId = redisClientUtils.getString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId);
         //2.根据taskId获取报告状态即任务状态
         if (!StringUtil.isBlank(reportId)) {
-            WebResponse webResponse = reportService.getReportByReportId(Long.valueOf(reportId));
-            if (Objects.nonNull(webResponse) && Objects.nonNull(webResponse.getData())) {
-                ReportDetailOutput reportDetailOutput = (ReportDetailOutput)webResponse.getData();
+            ResponseResult<ReportDetailResp> responseResult = reportService.getReportByReportId(
+                Long.valueOf(reportId));
+            if (Objects.nonNull(responseResult) && Objects.nonNull(responseResult.getData())) {
+                ReportDetailResp reportDetailOutput = responseResult.getData();
                 Integer verifyStatus = reportDetailOutput.getTaskStatus();
                 response.setVerifyStatus(verifyStatus);
                 response.setVerifiedFlag(

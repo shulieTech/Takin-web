@@ -18,6 +18,8 @@ import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.channel.bean.CommandPacket;
 import io.shulie.takin.channel.bean.CommandSend;
 import io.shulie.takin.channel.bean.CommandStatus;
+import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.agent.AgentCommandEnum;
 import io.shulie.takin.web.biz.agent.AgentCommandFactory;
@@ -84,7 +86,8 @@ public class TraceManageServiceImpl implements TraceManageService {
         if (traceManageCreateRequest.getReportId() == null) {
             throw new TakinWebException(ExceptionCode.TRACE_MANAGE_PARAM_VALID_ERROR, "报告id为空！");
         }
-        WebResponse reportDetail = reportService.getReportByReportId(traceManageCreateRequest.getReportId());
+        ResponseResult<ReportDetailResp> reportDetail = reportService.getReportByReportId(
+            traceManageCreateRequest.getReportId());
         if (reportDetail == null || !reportDetail.getSuccess() || reportDetail.getData() == null) {
             throw new TakinWebException(ExceptionCode.TRACE_MANAGE_VALID_ERROR, "找不到当前对应的报告！");
         }

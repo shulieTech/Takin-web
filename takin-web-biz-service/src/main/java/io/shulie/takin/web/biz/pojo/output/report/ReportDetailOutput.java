@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import io.shulie.takin.cloud.common.bean.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.common.bean.scenemanage.ScriptNodeSummaryBean;
 import io.shulie.takin.cloud.common.bean.scenemanage.StopReasonBean;
 import io.shulie.takin.cloud.common.bean.scenemanage.WarnBean;
 import io.shulie.takin.cloud.common.bean.sla.SlaBean;
@@ -98,6 +99,8 @@ public class ReportDetailOutput extends UserCommonExt {
     @ApiModelProperty(value = "业务活动链路概览")
     private List<BusinessActivitySummaryBean> businessActivity;
 
+    @ApiModelProperty(value = "节点链路详情")
+    private List<ScriptNodeSummaryBean> nodeDetail;
 
 
     @ApiModelProperty(name = "leakVerifyResult", value = "漏数验证结果")

@@ -10,6 +10,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportTrendDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
+import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -61,9 +62,8 @@ public class ReportOpenApi {
     @GetMapping(value = "report/getReportByReportId")
     @ApiOperation("报告详情")
     @ApiImplicitParam(name = "reportId", value = "报告ID")
-    public Response<ReportDetailOpenApiResp> getReportByReportId(Long reportId) {
-        WebResponse<ReportDetailDTO> reportByReportId = reportService.getReportByReportId(reportId);
-        return Response.success(ofReportDetailOpenApiResp(reportByReportId.getData()));
+    public ResponseResult<ReportDetailResp> getReportByReportId(Long reportId) {
+        return reportService.getReportByReportId(reportId);
     }
 
     //@GetMapping("report/queryReportTrend")

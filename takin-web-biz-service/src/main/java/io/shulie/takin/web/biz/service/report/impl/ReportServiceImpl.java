@@ -142,7 +142,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public WebResponse getReportByReportId(Long reportId) {
+    public ResponseResult<ReportDetailResp> getReportByReportId(Long reportId) {
         ReportDetailByIdReq req = new ReportDetailByIdReq();
         req.setReportId(reportId);
         ResponseResult<ReportDetailResp> result = reportApi.getReportByReportId(req);
@@ -158,7 +158,7 @@ public class ReportServiceImpl implements ReportService {
             //dealVirtualBusiness(output);
             //补充报告执行人
             fillExecuteMan(output);
-            return WebResponse.success(output);
+            return result;
         }
 
         throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR, "takin-cloud查询实况报告错误，原因为：" + result.getError().getMsg());
@@ -219,7 +219,7 @@ public class ReportServiceImpl implements ReportService {
         reportTrendQueryReq.setBusinessActivityId(param.getBusinessActivityId());
         reportTrendQueryReq.setStartTime(param.getStartTime());
         reportTrendQueryReq.setEndTime(param.getEndTime());
-        return reportApi.tmpReportTrend(reportTrendQueryReq);
+        return reportApi.reportTrend(reportTrendQueryReq);
     }
 
     //@Override

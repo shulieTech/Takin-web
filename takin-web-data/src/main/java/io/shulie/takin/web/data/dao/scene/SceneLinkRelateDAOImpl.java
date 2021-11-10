@@ -131,7 +131,7 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
         if (CollectionUtils.isEmpty(saveParams)) {
             return;
         }
-        //删除关联关系之后，将业务活动置为不能被删除
+        //新增关联关系之后，将业务活动置为不能被删除
         List<Long> businessLinkId = saveParams.stream().map(o -> NumberUtils.toLong(o.getBusinessLinkId())).
                 collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(businessLinkId)) {

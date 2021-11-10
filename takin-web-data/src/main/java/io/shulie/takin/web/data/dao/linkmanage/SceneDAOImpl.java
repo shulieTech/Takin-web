@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.excel.util.StringUtils;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
@@ -57,7 +58,7 @@ public class SceneDAOImpl implements SceneDAO {
     public int allocationUser(SceneUpdateParam param) {
         LambdaUpdateWrapper<SceneEntity> wrapper = new LambdaUpdateWrapper();
         wrapper.set(SceneEntity::getUserId, param.getUserId())
-                .eq(SceneEntity::getId, param.getId());
+            .eq(SceneEntity::getId, param.getId());
         return sceneMapper.update(null, wrapper);
     }
 
@@ -73,10 +74,10 @@ public class SceneDAOImpl implements SceneDAO {
         }
         queryWrapper.eq(SceneEntity::getIsDeleted, 0);
         queryWrapper.select(
-                SceneEntity::getId,
-                SceneEntity::getSceneName,
-                SceneEntity::getCustomerId,
-                SceneEntity::getUserId);
+            SceneEntity::getId,
+            SceneEntity::getSceneName,
+            SceneEntity::getCustomerId,
+            SceneEntity::getUserId);
         List<SceneEntity> sceneEntityList = sceneMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(sceneEntityList)) {
             sceneResultList = sceneEntityList.stream().map(sceneEntity -> {
@@ -103,10 +104,10 @@ public class SceneDAOImpl implements SceneDAO {
         }
         queryWrapper.eq(SceneEntity::getIsDeleted, 0);
         queryWrapper.select(
-                SceneEntity::getId,
-                SceneEntity::getSceneName,
-                SceneEntity::getCustomerId,
-                SceneEntity::getUserId);
+            SceneEntity::getId,
+            SceneEntity::getSceneName,
+            SceneEntity::getCustomerId,
+            SceneEntity::getUserId);
         List<SceneEntity> sceneEntityList = sceneMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(sceneEntityList)) {
             sceneResultList = sceneEntityList.stream().map(sceneEntity -> {
@@ -133,9 +134,8 @@ public class SceneDAOImpl implements SceneDAO {
     @Override
     public SceneResult getSceneDetail(Long id) {
         SceneEntity sceneEntity = sceneMapper.selectById(id);
-        SceneResult sceneResult = new SceneResult();
-        BeanUtils.copyProperties(sceneEntity, sceneResult);
-        return sceneResult;
+        if (sceneEntity == null) {return null;}
+        return BeanUtil.copyProperties(sceneEntity, SceneResult.class);
     }
 
     @Override

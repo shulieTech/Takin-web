@@ -1,34 +1,24 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.annotation.Resource;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
-
-import cn.hutool.core.bean.BeanUtil;
-import com.google.common.collect.Maps;
-import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.ext.content.enginecall.PtConfigExt;
-import io.shulie.takin.ext.content.enginecall.ThreadGroupConfigExt;
-import io.shulie.takin.ext.content.script.ScriptNode;
-import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.biz.convert.linkmanage.LinkManageConvert;
-import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.data.result.linkmange.SceneResult;
-import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.collections4.MapUtils;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
+
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.bean.BeanUtil;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,20 +26,30 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
+import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
-import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
+import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
+import io.shulie.takin.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneTaskStartReq;
 import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
-import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
+import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
+import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest.Content;
 import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
 
 /**
@@ -64,13 +64,13 @@ public class SceneController {
     @Resource
     SceneService sceneService;
     @Resource
-    SceneManageService sceneManageService;
-    @Resource
     FileManageDAO fileManageDao;
     @Resource
     MultipleSceneApi multipleSceneApi;
     @Resource
     ScriptFileRefDAO scriptFileRefDao;
+    @Resource
+    SceneManageService sceneManageService;
 
     /**
      * 创建压测场景 - 新
@@ -111,41 +111,59 @@ public class SceneController {
         return multipleSceneApi.update(sceneRequest);
     }
 
+    /**
+     * 生成场景请求入参-请求Cloud用
+     *
+     * @param request 前端入参
+     * @return 调用Cloud接口用的入参
+     */
     private SceneRequest buildSceneRequest(NewSceneRequest request) {
-        SceneRequest.BasicInfo basicInfo = request.getBasicInfo();
-        Long flowId = basicInfo.getBusinessFlowId();
+        // 1. 基本信息
         SceneRequest sceneRequest = BeanUtil.copyProperties(request, SceneRequest.class);
-        PtConfigExt ptConfig = BeanUtil.copyProperties(request.getConfig(), PtConfigExt.class);
-        Map<String, NewSceneRequest.ThreadGroupConfig> threadGroupConfigMap = request.getConfig().getThreadGroupConfigMap();
-        if (MapUtils.isNotEmpty(threadGroupConfigMap)) {
-            Map<String, ThreadGroupConfigExt> threadGroupMap = new HashMap<>();
-            for (Map.Entry<String, NewSceneRequest.ThreadGroupConfig> entry : threadGroupConfigMap.entrySet()) {
-                threadGroupMap.put(entry.getKey(), BeanUtil.copyProperties(entry.getValue(), ThreadGroupConfigExt.class));
-            }
-            ptConfig.setThreadGroupConfigMap(threadGroupMap);
+        // 2. 线程组施压配置 （字段相同，但是由于类型不同，导致的无法拷贝属性，需要手动转换）
+        {
+            // 1. 构建实例
+            PtConfigExt ptConfig = BeanUtil.copyProperties(request.getConfig(), PtConfigExt.class);
+            // 2. 构建实例内容
+            ptConfig.setThreadGroupConfigMap(new HashMap<>());
+            // 3. 填充实例内容
+            request.getConfig().getThreadGroupConfigMap().forEach((k, v) -> ptConfig.getThreadGroupConfigMap().put(
+                k, BeanUtil.copyProperties(v, ThreadGroupConfigExt.class)));
+            sceneRequest.setConfig(ptConfig);
         }
-        sceneRequest.setConfig(ptConfig);
-        sceneRequest.setFile(assembleFileList(basicInfo.getScriptId()));
-        SceneResult scene = sceneService.getScene(flowId);
-        if (null != scene && StringUtils.isNotBlank(scene.getScriptJmxNode())) {
-            sceneRequest.setAnalysisResult(JsonHelper.json2List(scene.getScriptJmxNode(), ScriptNode.class));
+        // 3. 填充脚本解析结果
+        {
+            SceneResult scene = sceneService.getScene(sceneRequest.getBasicInfo().getBusinessFlowId());
+            if (scene == null) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程");}
+            if (StrUtil.isBlank(scene.getScriptJmxNode())) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务流程未保存脚本解析结果");}
+            sceneRequest.setAnalysisResult(JSONObject.parseArray(scene.getScriptJmxNode(), ScriptNode.class));
         }
-        List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(flowId);
-        if (CollectionUtils.isNotEmpty(links)) {
-            Map<String, String> nodeNameMap = Maps.newHashMap();
+        // 4. 填充压测内容
+        {
+            // 1. 获取业务流程关联的业务活动
+            List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(sceneRequest.getBasicInfo().getBusinessFlowId());
+            if (CollectionUtils.isEmpty(links)) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程关联的业务活动");}
+            // 2. 转换业务活动为压测你日工
+            List<SceneRequest.Content> content = links.stream().map(t -> new SceneRequest.Content() {{
+                setPathMd5(t.getScriptXpathMd5());
+                setBusinessActivityId(Long.valueOf(t.getBusinessLinkId()));
+            }}).collect(Collectors.toList());
+            // 3. 根据脚本解析结果，填充压测内容
+            // 3.1. 脚本解析结果转换为一维数据
             List<ScriptNode> nodes = JmxUtil.toOneDepthList(sceneRequest.getAnalysisResult());
-            if (CollectionUtils.isNotEmpty(nodes)) {
-                for (ScriptNode node : nodes) {
-                    nodeNameMap.put(node.getXpathMd5(), node.getTestName());
-                }
+            if (CollectionUtils.isEmpty(nodes)) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果转换为一维数据失败");}
+            // 3.2. 一维数据转换为Map，获得xPathMD5 和 脚本节点名称的对应关系
+            Map<String, String> nodeMap = nodes.stream().collect(Collectors.toMap(ScriptNode::getXpathMd5, ScriptNode::getTestName));
+            // 3.3 遍历压测内容并从Map中填充数据
+            for (Content item : content) {
+                if (!nodeMap.containsKey(item.getPathMd5())) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果存在不能匹配的业务活动");}
+                item.setName(nodeMap.get(item.getPathMd5()));
+                item.setApplicationId(sceneManageService.getAppIdsByBusinessActivityId(item.getBusinessActivityId()));
             }
-            List<SceneRequest.Content> content = LinkManageConvert.INSTANCE.ofSceneLinkRelateResult(links);
-            content.forEach(d -> {
-                d.setApplicationId(sceneManageService.getAppIdsByBusinessActivityId(d.getBusinessActivityId()));
-                d.setName(nodeNameMap.get(d.getPathMd5()));
-            });
             sceneRequest.setContent(content);
         }
+        // 5. 填充压测文件
+        sceneRequest.setFile(assembleFileList(request.getBasicInfo().getScriptId()));
         return sceneRequest;
     }
 

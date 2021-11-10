@@ -68,7 +68,6 @@ public class NewSceneRequest {
         @NotNull(message = "压力模式不能为空")
         private Integer mode;
         @ApiModelProperty(value = "并发线程数")
-        @NotNull(message = "并发线程数不能为空")
         private Integer threadNum;
         @ApiModelProperty(value = "递增时长,施压模式为线性递增或阶梯递增时的递增时长")
         private Integer rampUp;

@@ -495,7 +495,7 @@ alter table t_probe
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 
--- t_quick_access 快速接入
+-- t_quick_access 快速接入 @乔治
 alter table t_quick_access
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
@@ -509,10 +509,11 @@ alter table t_report_application_summary
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 alter table t_report_application_summary
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+    ADD UNIQUE INDEX `unique_idx_report_appliacation_tenant_env` ( `report_id`,`application_name`,`tenant_id`,`env_code` );
+drop index `unique_idx_report_appliacation` on t_report_application_summary ;
 --  已有唯一索引 ：unique_idx_report_appliacation 报告id 应用名
 
--- t_report_bottleneck_interface 瓶颈接口
+-- t_report_bottleneck_interface 瓶颈接口 暂无数据
 ALTER TABLE t_report_bottleneck_interface comment '瓶颈接口';
 alter table t_report_bottleneck_interface
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
@@ -528,6 +529,10 @@ alter table t_report_machine
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 alter table t_report_machine
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+
+alter table t_report_machine
+    ADD UNIQUE INDEX `unique_idx_report_appliacation_machine_tenant_env` ( `report_id`,`application_name`, `machine_ip`,`tenant_id`,`env_code` );
+drop index `unique_report_application_machine` on t_report_machine ;
 -- 唯一索引 unique_report_application_machine 报告id,应用名，机器ip
 
 -- t_report_summary 报告数据汇总
@@ -539,7 +544,7 @@ alter table t_report_summary
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 -- 索引 idx_report_id 报告id
 
--- t_scene 场景表
+-- t_scene 场景表 @ 是否增加唯一索引
 alter table t_scene
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
@@ -556,7 +561,7 @@ alter table t_scene_link_relate
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 --  已有一个索引：T_LINK_MNT_INDEX2 链路入口
 
--- t_scene_manage
+-- t_scene_manage @无数据
 alter table t_scene_manage
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
@@ -564,7 +569,7 @@ alter table t_scene_manage
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 -- t_scene_scheduler_task
-alter table t_scene_scheduler_task
+alter table t_scene_scheduler_task @无数据
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 alter table t_scene_scheduler_task
@@ -590,7 +595,7 @@ ALTER TABLE `t_script_debug`
     MODIFY COLUMN `customer_id` bigint(20) UNSIGNED NULL COMMENT '租户id' AFTER `cloud_report_id`
 -- 已有索引 idx_si 快照id
 
--- t_script_execute_result  脚本执行结果
+-- t_script_execute_result  脚本执行结果 @无数据
 ALTER TABLE t_script_execute_result comment '脚本执行结果';
 alter table t_script_execute_result
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
@@ -615,7 +620,9 @@ alter table t_script_manage
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 alter table t_script_manage
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+    ADD UNIQUE INDEX `unique_name_tenant_env` ( `name`,`tenant_id`,`env_code` );
+drop index `name` on t_script_manage ;
+
 -- 唯一索引 name
 
 
@@ -626,11 +633,12 @@ alter table t_script_manage_deploy
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 alter table t_script_manage_deploy
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+    ADD UNIQUE INDEX `unique_name_version_tenant_env` ( `name`,`script_version`,`tenant_id`,`env_code` );
+drop index `name_version` on t_script_manage_deploy ;
 -- 唯一索引 name_version name和脚本版本
 
 
--- t_script_tag_ref  脚本标签关联表
+-- t_script_tag_ref  脚本标签关联表 @无数据
 ALTER TABLE t_script_tag_ref comment '脚本标签关联表';
 alter table t_script_tag_ref
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
@@ -658,7 +666,7 @@ alter table t_shadow_mq_consumer
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 
--- t_shadow_table_datasource  影子表数据源配置
+-- t_shadow_table_datasource  影子表数据源配置 @无数据
 alter table t_shadow_table_datasource
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
@@ -679,12 +687,12 @@ alter table t_tag_manage
 
 
 -- t_tc_sequence
-ALTER TABLE t_tc_sequence comment '特斯拉表，用于性能分析';
-alter table t_tc_sequence
-    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
-	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
-alter table t_tc_sequence
-    ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+--ALTER TABLE t_tc_sequence comment '特斯拉表，用于性能分析';
+--alter table t_tc_sequence
+    --ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
+	--ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
+--alter table t_tc_sequence
+   -- ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 -- t_trace_manage
 ALTER TABLE t_trace_manage comment '方法追踪表';
@@ -765,7 +773,7 @@ alter table t_tro_role_user_relation
     ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 --  已有索引 user_id role_id
 
--- t_tro_trace_entry
+-- t_tro_trace_entry @无数据
 alter table t_tro_trace_entry
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
@@ -788,7 +796,7 @@ alter table t_tro_user_dept_relation
 -- 已有索引 idx_user_id idx_dept_id
 
 
--- t_upload_interface_data
+-- t_upload_interface_data @无数据
 alter table t_upload_interface_data
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;

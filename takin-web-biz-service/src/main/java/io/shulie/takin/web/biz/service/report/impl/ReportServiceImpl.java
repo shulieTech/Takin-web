@@ -1,12 +1,9 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportIdVO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
@@ -15,11 +12,16 @@ import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
 import io.shulie.takin.cloud.common.bean.scenemanage.BusinessActivitySummaryBean;
 import io.shulie.takin.cloud.open.req.report.ReportDetailByIdReq;
 import io.shulie.takin.cloud.open.req.report.ReportDetailBySceneIdReq;
+import io.shulie.takin.cloud.open.req.report.ReportTrendQueryReq;
+import io.shulie.takin.cloud.open.req.report.ScriptNodeTreeQueryReq;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
+import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
+import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
@@ -210,46 +212,48 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public WebResponse queryReportTrend(ReportTrendQueryParam param) {
-        param.setRequestUrl(RemoteConstant.REPORT_TREND);
-        param.setHttpMethod(HttpMethod.GET);
-        WebResponse webResponse = httpWebClient.request(param);
-        HttpAssert.isOk(webResponse, param, "takin-cloud查询报告链路趋势");
-        return webResponse;
+    public ResponseResult<ReportTrendResp> queryReportTrend(ReportTrendQueryParam param) {
+        ReportTrendQueryReq reportTrendQueryReq = new ReportTrendQueryReq();
+        reportTrendQueryReq.setSceneId(param.getSceneId());
+        reportTrendQueryReq.setReportId(param.getReportId());
+        reportTrendQueryReq.setBusinessActivityId(param.getBusinessActivityId());
+        reportTrendQueryReq.setStartTime(param.getStartTime());
+        reportTrendQueryReq.setEndTime(param.getEndTime());
+        return reportApi.tmpReportTrend(reportTrendQueryReq);
     }
 
-    @Override
-    public WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery) {
-        // 获得 报告链路趋势
-        WebResponse<LinkedHashMap<String, Object>> webResponse = queryReportTrend(reportTrendQuery);
-        Long businessActivityId = reportTrendQuery.getBusinessActivityId();
-        if (businessActivityId.equals(0L)) { // 如果 活动ID 为0，则表示 全局趋势
-            return webResponse;
-        }
-
-        // 获取 `压测报告`的`请求流量明细`. 取最晚一条 traceId
-        PageInfo<ReportTraceDTO> reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
-                reportTrendQuery.getReportId(), null, 0, 1);
-        List<ReportTraceDTO> reportTraceDTOS = reportLinkListByReportId.getList();
-        if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-            return webResponse; // todo
-        }
-        String latestTraceIdStr = reportTraceDTOS.get(0).getTraceId();
-
-        // 取最早一条 traceId
-        int total = (int) reportLinkListByReportId.getTotal();
-        log.info("压测报告 report id = " + reportTrendQuery.getReportId() + " 总条数:" + total);
-        reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
-                reportTrendQuery.getReportId(), null, total, 1);
-        reportTraceDTOS = reportLinkListByReportId.getList();
-        if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-            return webResponse; // todo
-        }
-        String firstTraceId = reportTraceDTOS.get(0).getTraceId();
-
-        LinkedHashMap<String, Object> data = webResponse.getData();
-        return getWebResponse(webResponse, firstTraceId, latestTraceIdStr, businessActivityId, data);
-    }
+    //@Override
+    //public WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery) {
+    //    // 获得 报告链路趋势
+    //    ResponseResult<ReportTrendResp>  webResponse= queryReportTrend(reportTrendQuery);
+    //    Long businessActivityId = reportTrendQuery.getBusinessActivityId();
+    //    if (businessActivityId.equals(0L)) { // 如果 活动ID 为0，则表示 全局趋势
+    //        return webResponse;
+    //    }
+    //
+    //    // 获取 `压测报告`的`请求流量明细`. 取最晚一条 traceId
+    //    PageInfo<ReportTraceDTO> reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
+    //            reportTrendQuery.getReportId(), null, 0, 1);
+    //    List<ReportTraceDTO> reportTraceDTOS = reportLinkListByReportId.getList();
+    //    if (CollectionUtils.isEmpty(reportTraceDTOS)) {
+    //        return webResponse; // todo
+    //    }
+    //    String latestTraceIdStr = reportTraceDTOS.get(0).getTraceId();
+    //
+    //    // 取最早一条 traceId
+    //    int total = (int) reportLinkListByReportId.getTotal();
+    //    log.info("压测报告 report id = " + reportTrendQuery.getReportId() + " 总条数:" + total);
+    //    reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
+    //            reportTrendQuery.getReportId(), null, total, 1);
+    //    reportTraceDTOS = reportLinkListByReportId.getList();
+    //    if (CollectionUtils.isEmpty(reportTraceDTOS)) {
+    //        return webResponse; // todo
+    //    }
+    //    String firstTraceId = reportTraceDTOS.get(0).getTraceId();
+    //
+    //    LinkedHashMap<String, Object> data = webResponse.getData();
+    //    return getWebResponse(webResponse, firstTraceId, latestTraceIdStr, businessActivityId, data);
+    //}
 
     private LocalDateTime queryDataTimeByTraceId(String traceId) {
         String queryByTraceId =
@@ -271,12 +275,12 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public WebResponse tempReportDetail(Long sceneId) {
+    public ResponseResult<ReportDetailResp> tempReportDetail(Long sceneId) {
         ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
         req.setSceneId(sceneId);
         ResponseResult<ReportDetailResp> result = reportApi.tempReportDetail(req);
         if (!result.getSuccess()) {
-            return WebResponse.fail(result.getError().getCode(), result.getError().getMsg());
+            return ResponseResult.fail(result.getError().getCode(), result.getError().getMsg());
         }
         ReportDetailResp resp = result.getData();
         ReportDetailTempOutput output = new ReportDetailTempOutput();
@@ -294,50 +298,52 @@ public class ReportServiceImpl implements ReportService {
             output.setCanStartStop(Boolean.TRUE);
         }
         fillExecuteMan(output);
-        return WebResponse.success(output);
+        return ResponseResult.success(resp);
 
     }
 
     @Override
-    public WebResponse queryTempReportTrend(ReportTrendQueryParam param) {
-        param.setRequestUrl(RemoteConstant.REPORT_REALTIME_TREND);
-        param.setHttpMethod(HttpMethod.GET);
-        WebResponse webResponse = httpWebClient.request(param);
-        HttpAssert.isOk(webResponse, param, "takin-cloud查询实况报告链路趋势");
-        return webResponse;
+    public ResponseResult<ReportTrendResp> queryTempReportTrend(ReportTrendQueryParam param) {
+        ReportTrendQueryReq reportTrendQueryReq = new ReportTrendQueryReq();
+        reportTrendQueryReq.setSceneId(param.getSceneId());
+        reportTrendQueryReq.setReportId(param.getReportId());
+        reportTrendQueryReq.setBusinessActivityId(param.getBusinessActivityId());
+        reportTrendQueryReq.setStartTime(param.getStartTime());
+        reportTrendQueryReq.setEndTime(param.getEndTime());
+        return reportApi.tmpReportTrend(reportTrendQueryReq);
     }
 
-    @Override
-    public WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam param, ReportTraceQueryDTO queryDTO) {
-        // 获得 实况报告链路趋势
-        WebResponse<LinkedHashMap<String, Object>> webResponse = queryTempReportTrend(param);
-        Long businessActivityId = param.getBusinessActivityId();
-        if (businessActivityId.equals(0L)) { // 如果 活动ID 为0，则表示 全局趋势
-            return webResponse;
-        }
-
-        // 获取 `压测实况`的`请求流量明细`. 取最晚一条 traceId
-        PageInfo<ReportTraceDTO> reportLinkListByReportId =
-                reportRealTimeService.getReportLinkList(queryDTO.getReportId(), queryDTO.getSceneId(), queryDTO.getStartTime(), queryDTO.getType(), 0, 1);
-        List<ReportTraceDTO> reportTraceDTOS = reportLinkListByReportId.getList();
-        if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-            return webResponse; // todo
-        }
-        String latestTraceIdStr = reportTraceDTOS.get(0).getTraceId();
-
-        // 取最早一条 traceId
-        int total = (int) reportLinkListByReportId.getTotal();
-        reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
-                queryDTO.getReportId(), null, total, 1);
-        reportTraceDTOS = reportLinkListByReportId.getList();
-        if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-            return webResponse; // todo
-        }
-        String firstTraceId = reportTraceDTOS.get(0).getTraceId();
-
-        LinkedHashMap<String, Object> data = webResponse.getData();
-        return getWebResponse(webResponse, firstTraceId, latestTraceIdStr, businessActivityId, data);
-    }
+    //@Override
+    //public WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam param, ReportTraceQueryDTO queryDTO) {
+    //    // 获得 实况报告链路趋势
+    //    ResponseResult<ReportTrendResp> reportTrendRespResponseResult = queryTempReportTrend(param);
+    //    Long businessActivityId = param.getBusinessActivityId();
+    //    if (businessActivityId.equals(0L)) { // 如果 活动ID 为0，则表示 全局趋势
+    //        return webResponse;
+    //    }
+    //
+    //    // 获取 `压测实况`的`请求流量明细`. 取最晚一条 traceId
+    //    PageInfo<ReportTraceDTO> reportLinkListByReportId =
+    //            reportRealTimeService.getReportLinkList(queryDTO.getReportId(), queryDTO.getSceneId(), queryDTO.getStartTime(), queryDTO.getType(), 0, 1);
+    //    List<ReportTraceDTO> reportTraceDTOS = reportLinkListByReportId.getList();
+    //    if (CollectionUtils.isEmpty(reportTraceDTOS)) {
+    //        return webResponse; // todo
+    //    }
+    //    String latestTraceIdStr = reportTraceDTOS.get(0).getTraceId();
+    //
+    //    // 取最早一条 traceId
+    //    int total = (int) reportLinkListByReportId.getTotal();
+    //    reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
+    //            queryDTO.getReportId(), null, total, 1);
+    //    reportTraceDTOS = reportLinkListByReportId.getList();
+    //    if (CollectionUtils.isEmpty(reportTraceDTOS)) {
+    //        return webResponse; // todo
+    //    }
+    //    String firstTraceId = reportTraceDTOS.get(0).getTraceId();
+    //
+    //    LinkedHashMap<String, Object> data = webResponse.getData();
+    //    return getWebResponse(webResponse, firstTraceId, latestTraceIdStr, businessActivityId, data);
+    //}
 
     private WebResponse getWebResponse(WebResponse<LinkedHashMap<String, Object>> webResponse, String firstTraceId, String lastTraceId, Long businessActivityId, LinkedHashMap<String, Object> data) {
         LocalDateTime now = LocalDateTime.now();
@@ -490,11 +496,15 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public WebResponse queryNodeTree(ReportTrendQueryParam param) {
-        param.setRequestUrl(RemoteConstant.REPORT_NODE_TREE);
-        param.setHttpMethod(HttpMethod.GET);
-        WebResponse webResponse = httpWebClient.request(param);
-        HttpAssert.isOk(webResponse, param, "takin-cloud查询报告节点树");
-        return webResponse;
+    public ResponseResult<List<ScriptNodeTreeResp>> queryNodeTree(ReportQueryRequest request) {
+        ResponseResult<List<ScriptNodeTreeResp>> listResponseResult = reportApi.scriptNodeTree(
+            new ScriptNodeTreeQueryReq() {{
+                setSceneId(request.getSceneId());
+                setReportId(request.getReportId());
+            }});
+        if (listResponseResult.getSuccess()){
+            return  listResponseResult;
+        }
+        return null;
     }
 }

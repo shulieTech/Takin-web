@@ -10,7 +10,9 @@ import com.pamirs.takin.entity.domain.dto.report.ReportTrendDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
+import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.WarnDetailResponse;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
@@ -64,13 +66,17 @@ public class ReportOpenApi {
         return Response.success(ofReportDetailOpenApiResp(reportByReportId.getData()));
     }
 
-    @GetMapping("report/queryReportTrend")
-    @ApiOperation("报告链路趋势")
-    public Response<ReportTrendOpenApiResp> queryReportTrend(ReportTrendQueryOpenApiReq reportTrendQueryOpenApiReq) {
-        ReportTrendQueryParam reportTrendQuery = ReportOpenApiConverter.INSTANCE.ofReportTrendQueryOpenApiReq(reportTrendQueryOpenApiReq);
-        WebResponse<ReportTrendDTO> webResponse = reportService.queryReportTrend(reportTrendQuery);
-        return Response.success(ofReportTrendOpenApiResp(webResponse.getData()));
-    }
+    //@GetMapping("report/queryReportTrend")
+    //@ApiOperation("报告链路趋势")
+    //public Response<ReportTrendOpenApiResp> queryReportTrend(ReportTrendQueryOpenApiReq reportTrendQueryOpenApiReq) {
+    //    ReportTrendQueryParam reportTrendQuery = ReportOpenApiConverter.INSTANCE.ofReportTrendQueryOpenApiReq(reportTrendQueryOpenApiReq);
+    //    ResponseResult<ReportTrendResp> reportTrendRespResponseResult = reportService.queryReportTrend(
+    //        reportTrendQuery);
+    //    if (reportTrendRespResponseResult.getSuccess()){
+    //        return reportTrendRespResponseResult.getData()
+    //    }
+    //    return Response.success(ofReportTrendOpenApiResp(webResponse.getData()));
+    //}
 
     @GetMapping("/report/listWarn")
     @ApiOperation("警告列表")

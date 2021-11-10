@@ -4,6 +4,11 @@ import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
+import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
+import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
+import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.common.domain.WebResponse;
 
 import java.util.List;
@@ -19,14 +24,16 @@ public interface ReportService {
 
     WebResponse getReportByReportId(Long reportId);
 
-    WebResponse queryReportTrend(ReportTrendQueryParam param);
-    WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery);
+    ResponseResult<ReportTrendResp> queryTempReportTrend(ReportTrendQueryParam param);
 
-    WebResponse tempReportDetail(Long sceneId);
+    ResponseResult<ReportTrendResp> queryReportTrend(ReportTrendQueryParam param);
 
-    WebResponse queryTempReportTrend(ReportTrendQueryParam param);
-    WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,
-                                                 ReportTraceQueryDTO queryDTO);
+    //WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery);
+
+    ResponseResult<ReportDetailResp> tempReportDetail(Long sceneId);
+
+
+    //WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,ReportTraceQueryDTO queryDTO);
 
     WebResponse listWarn(WarnQueryParam param);
 
@@ -65,9 +72,9 @@ public interface ReportService {
 
     /**
      * 查询脚本节点树
-     * @param param 查询参数
+     * @param request 查询参数
      * @return
      */
-    WebResponse queryNodeTree(ReportTrendQueryParam param);
+    ResponseResult<List<ScriptNodeTreeResp>> queryNodeTree(ReportQueryRequest request);
 
 }

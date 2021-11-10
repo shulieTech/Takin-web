@@ -50,7 +50,6 @@ import io.shulie.takin.cloud.open.req.scenemanage.SceneTaskStartReq;
 import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
 import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
-import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
 
 /**

@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -531,9 +532,10 @@ public class SceneServiceImpl implements SceneService {
     public List<SceneEntity> businessActivityFlowList() {
         // 查询所有业务流程
         // TODO 租户隔离
-        return sceneMapper.selectList(
-            Wrappers.lambdaQuery(SceneEntity.class)
-                .ne(SceneEntity::getIsDeleted, false));
+        LambdaQueryWrapper<SceneEntity> wrapper = Wrappers
+            .lambdaQuery(SceneEntity.class)
+            .eq(SceneEntity::getIsDeleted, false);
+        return sceneMapper.selectList(wrapper);
     }
 
     @Override

@@ -26,10 +26,9 @@ import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -174,7 +174,7 @@ public class SceneController {
      */
     @GetMapping("business_activity_flow")
     @ApiOperation("获取业务流程列表 - 压测场景用")
-    public ResponseResult<List<BusinessLinkManageTableEntity>> businessActivityFlow() {
+    public ResponseResult<List<SceneEntity>> businessActivityFlow() {
         return ResponseResult.success(sceneService.businessActivityFlowList());
     }
 

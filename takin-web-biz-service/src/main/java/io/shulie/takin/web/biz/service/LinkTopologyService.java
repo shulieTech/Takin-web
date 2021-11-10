@@ -411,6 +411,8 @@ public class LinkTopologyService extends CommonService {
     private void fillMetrixFromDB(ActivityInfoQueryRequest request, LocalDateTime startDateTime, LocalDateTime endDateTime, long startMilli, long endMilli, long realSeconds, Boolean metricsType, AppProvider appProvider) {
         appProvider.setContainRealAppProvider(new ArrayList<>());
 
+        HashMap<String, Boolean> isContainSame = new HashMap<>();
+
         for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
             String eagleId = linkEdgeDTO.getEagleId();
             String beforeApps = appProvider.getBeforeAppsMap().get(linkEdgeDTO.getSourceId());
@@ -418,7 +420,7 @@ public class LinkTopologyService extends CommonService {
             // 根据服务边，查询指标
             AppProvider appProviderFromDb;
             if (request.isTempActivity()) {
-                appProviderFromDb = queryMetricsFromAMDB(beforeApps, appProvider.getOwnerApps(), appProvider.getServiceName(), request, startDateTime, endDateTime);
+                appProviderFromDb = queryMetricsFromAMDB(isContainSame, beforeApps, appProvider.getOwnerApps(), appProvider.getMiddlewareName(), appProvider.getServiceName(), request, startDateTime, endDateTime);
             } else {
                 appProviderFromDb = queryMetricsFromDb(startMilli, endMilli, realSeconds, metricsType, eagleId);
             }
@@ -443,17 +445,28 @@ public class LinkTopologyService extends CommonService {
     }
 
     private AppProvider queryMetricsFromAMDB(
-            String beforeApps, String appName, String serviceName, ActivityInfoQueryRequest request, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+            HashMap<String, Boolean> isContainSame, String beforeApps, String toAppName, String middlewareName, String serviceName, ActivityInfoQueryRequest request, LocalDateTime startDateTime, LocalDateTime endDateTime) {
 
         String[] split = serviceName.split("#");
         String service = split[0];
         String method = split[1];
 
+        // 如果 有 key 相同的边时，不调用大数据
+        String key = beforeApps + toAppName + middlewareName + service + method;
+        Boolean aBoolean = isContainSame.get(key);
+        if (null == aBoolean) {
+            isContainSame.put(key, true);
+        } else {
+            // 之前有相同的
+            return getAppProvider(0L, Collections.emptyList());
+        }
+
+        // step 1
         String startTime = DateUtils.formatLocalDateTime(startDateTime.plusHours(8));
         String endTime = DateUtils.formatLocalDateTime(endDateTime.plusHours(8));
 
         TempTopologyQuery1 query1 = TempTopologyQuery1.builder()
-                .inAppName(appName)
+                .inAppName(toAppName)
                 .inService(service)
                 .inMethod(method)
                 .startTime(startTime)
@@ -462,13 +475,15 @@ public class LinkTopologyService extends CommonService {
 
         String response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
 
+        // step 2
         ArrayList<TraceMetricsResult> traceMetricsResultList = new ArrayList<>();
         Integer realSeconds = 0;
 
         if (StringUtils.isNotBlank(response1)) {
             TempTopologyQuery2 query2 = TempTopologyQuery2.builder()
                     .fromAppName(beforeApps)
-                    .appName(appName)
+                    .appName(toAppName)
+                    .middlewareName(middlewareName)
                     .service(service)
                     .method(method)
                     .entranceStr(response1)
@@ -707,7 +722,7 @@ public class LinkTopologyService extends CommonService {
         return appProvider;
     }
 
-    public AppProvider getAppProvider(long realSeconds, ArrayList<TraceMetricsResult> allTotalTpsAndRtCountResults) {
+    public AppProvider getAppProvider(long realSeconds, List<TraceMetricsResult> allTotalTpsAndRtCountResults) {
         AppProvider appProvider = new AppProvider();
 
         // 指标 初始化

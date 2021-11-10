@@ -5,7 +5,6 @@ import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import io.shulie.takin.web.data.model.mysql.NewBaseEntity;
 import lombok.ToString;
 
 /**
@@ -60,15 +59,5 @@ public class PluginDependentEntity extends NewBaseEntity implements Serializable
      * 备注
      */
     private String remark;
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
 }

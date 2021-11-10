@@ -56,13 +56,13 @@ public class AgentReportEntity extends NewBaseEntity implements Serializable {
     private Integer status;
 
     /**
-     * 租户id
+     * 环境标识
      */
-    private Long customerId;
+    private String envCode;
 
     /**
-     * 用户id
+     * 租户Id
      */
-    private Long userId;
+    private Long tenantId;
 
 }

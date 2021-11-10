@@ -39,4 +39,7 @@ public class BusinessFlowListResponse  extends AuthQueryResponseCommonExt implem
 
     @ApiModelProperty(name = "totalNodeNum", value = "脚本总节点数")
     private Integer totalNodeNum;
+
+    @ApiModelProperty(name = "scriptDeployId", value = "脚本实例id")
+    private Long scriptDeployId;
 }

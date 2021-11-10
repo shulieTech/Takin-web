@@ -86,9 +86,5 @@ public enum AppRemoteCallTypeV2Enum {
         return DESC_INSTANCES.get(desc);
     }
 
-    public static void main(String[] args) {
-        AppRemoteCallTypeV2Enum enumByDesc = getEnumByDesc("");
-        System.out.println(enumByDesc);
-    }
 
 }

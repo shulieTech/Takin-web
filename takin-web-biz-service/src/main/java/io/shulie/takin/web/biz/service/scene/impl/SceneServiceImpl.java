@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
+import io.shulie.takin.cloud.open.request.scene.manage.SynchronizeRequest;
 import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
@@ -20,6 +22,7 @@ import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.apache.commons.compress.utils.Lists;
@@ -124,6 +127,8 @@ public class SceneServiceImpl implements SceneService {
     private ScriptManageService scriptManageService;
     @Resource
     private FileManageDAO fileManageDAO;
+    @Resource
+    private MultipleSceneApi multipleSceneApi;
 
     @Value("${file.upload.tmp.path:/tmp/takin/}")
     private String tmpFilePath;
@@ -454,10 +459,26 @@ public class SceneServiceImpl implements SceneService {
         sceneDao.update(updateParam);
         //匹配数量符合，修改压测成就
         if (matchNum == nodeNumByType) {
-            //TODO 修改压测场景
-
+            syncSceneManege(sceneResult);
         }
         return result;
+    }
+
+    private void syncSceneManege(SceneResult sceneResult){
+        SynchronizeRequest synchronizeRequest = new SynchronizeRequest();
+        synchronizeRequest.setScriptId(sceneResult.getScriptDeployId());
+        synchronizeRequest.setAnalysisResult(JsonHelper.json2List(sceneResult.getScriptJmxNode(),ScriptNode.class));
+
+        SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
+        sceneLinkRelateParam.setSceneIds(Collections.singletonList(sceneResult.getId().toString()));
+        List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
+        if (CollectionUtils.isEmpty(sceneLinkRelateList)){
+            return;
+        }
+        Map<String, Long> businessActivityRef = sceneLinkRelateList.stream().filter(o -> o.getBusinessLinkId() != null).
+                collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5, o -> NumberUtils.toLong(o.getBusinessLinkId())));
+        synchronizeRequest.setBusinessActivityRef(businessActivityRef);
+        multipleSceneApi.synchronize(synchronizeRequest);
     }
 
     @Override
@@ -528,7 +549,7 @@ public class SceneServiceImpl implements SceneService {
 
         //匹配数量符合，修改压测场景
         if (sceneDetail.getTotalNodeNum() == linkRelateNum) {
-            //TODO 修改压测场景
+            syncSceneManege(sceneDetail);
         }
     }
 

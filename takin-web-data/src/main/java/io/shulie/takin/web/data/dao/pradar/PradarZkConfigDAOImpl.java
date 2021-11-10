@@ -77,7 +77,7 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
         queryWrapper.in(PradarZkConfigEntity::getZkPath, zkPathList);
         queryWrapper.in(PradarZkConfigEntity::getTenantId, tenantIdList);
         queryWrapper.in(PradarZkConfigEntity::getEnvCode, envCodeList);
-        queryWrapper.in(PradarZkConfigEntity::getIsDeleted, 0);
+        queryWrapper.eq(PradarZkConfigEntity::getIsDeleted, 0);
         final List<PradarZkConfigEntity> list = pradarZkConfigMapper.selectList(queryWrapper);
 
         //3. 当前租户的配置
@@ -92,7 +92,7 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
             .collect(Collectors.toMap(PradarZkConfigEntity::getZkPath, Function.identity()));
 
         //5. 整合
-        List<PradarZKConfigResult> pradarZkConfigResultList = zkPathList.stream().map(t -> {
+        List<PradarZKConfigResult> pradarZkConfigResultList = zkPathList.stream().filter(t->Objects.nonNull(zkMap.get(t.getZkPath())) || Objects.nonNull(sysZkMap.get(t.getZkPath()))).map(t -> {
             String zkPath = t.getZkPath();
             PradarZkConfigEntity entity = zkMap.get(t.getZkPath());
             if (Objects.isNull(entity)) {

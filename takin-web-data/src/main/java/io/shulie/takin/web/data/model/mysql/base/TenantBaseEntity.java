@@ -1,5 +1,7 @@
 package io.shulie.takin.web.data.model.mysql.base;
 
+import java.io.Serializable;
+
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
@@ -14,7 +16,7 @@ import lombok.ToString;
  */
 @Data
 @ToString(callSuper = true)
-public class TenantBaseEntity {
+public class TenantBaseEntity implements Serializable {
 
     /**
      * 租户id

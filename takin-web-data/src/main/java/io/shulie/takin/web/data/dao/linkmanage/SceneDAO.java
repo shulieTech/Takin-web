@@ -26,7 +26,7 @@ public interface SceneDAO {
 
     List<SceneResult> selectList(SceneQueryParam queryParam);
 
-
+    List<SceneResult> selectListByName(SceneQueryParam queryParam);
 
     int update(SceneUpdateParam sceneUpdateParam);
 

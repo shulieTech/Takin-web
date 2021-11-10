@@ -33,12 +33,6 @@ public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
     List<SceneLinkRelateResult> getByEntrance(String entrance);
 
 
-    /**
-     * 批量插入或更新关联关系
-     * @param saveParams
-     */
-    void batchInsertOrUpdate(List<SceneLinkRelateSaveParam> saveParams);
-
     void deleteByIds(List<Long> oldIds);
 
     void batchInsert(List<SceneLinkRelateSaveParam> ofSceneLinkRelateResults);

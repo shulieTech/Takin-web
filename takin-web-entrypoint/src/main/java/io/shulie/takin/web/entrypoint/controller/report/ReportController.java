@@ -1,12 +1,19 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
+import java.util.List;
+
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
+import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
+import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
+import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.common.domain.WebResponse;
@@ -47,13 +54,6 @@ public class ReportController {
         return reportService.getReportByReportId(reportId);
     }
 
-    @GetMapping("report/queryReportTrend")
-    @ApiOperation("报告链路趋势")
-    public WebResponse queryReportTrend(ReportTrendQueryParam reportTrendQuery) {
-//        return reportService.queryReportTrendWithTopology(reportTrendQuery);
-        return reportService.queryReportTrend(reportTrendQuery);
-    }
-
     /**
      * 实况报表
      */
@@ -64,28 +64,47 @@ public class ReportController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
         needAuth = ActionTypeEnum.START_STOP
     )
-    public WebResponse tempReportDetail(Long sceneId) {
+    public ResponseResult<ReportDetailResp> tempReportDetail(Long sceneId) {
         return reportService.tempReportDetail(sceneId);
     }
 
     @GetMapping("/report/queryTempReportTrend")
     @ApiOperation("实况报告链路趋势")
-    public WebResponse queryTempReportTrend(ReportTrendQueryParam reportTrendQuery) {
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+        needAuth = ActionTypeEnum.START_STOP
+    )
+    public ResponseResult<ReportTrendResp> queryTempReportTrend(ReportTrendQueryParam reportTrendQuery) {
         return reportService.queryTempReportTrend(reportTrendQuery);
     }
 
-    @GetMapping("/report/queryNodeTree")
-    @ApiOperation("脚本节点树")
-    public WebResponse queryNodeTree(ReportTrendQueryParam param){
-        return reportService.queryNodeTree(param);
+    @GetMapping("report/queryReportTrend")
+    @ApiOperation("报告链路趋势")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+        needAuth = ActionTypeEnum.START_STOP
+    )
+    public ResponseResult<ReportTrendResp> queryReportTrend(ReportTrendQueryParam reportTrendQuery) {
+        return reportService.queryReportTrend(reportTrendQuery);
     }
 
-    @GetMapping("/report/queryTempReportTrendWithTopology")
-    @ApiOperation("实况报告链路趋势 拓扑图")
-    public WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,
-                                                        ReportTraceQueryDTO queryDTO) {
-        return reportService.queryTempReportTrendWithTopology(reportTrendQuery, queryDTO);
+
+    @GetMapping("/report/queryNodeTree")
+    @ApiOperation("脚本节点树")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+        needAuth = ActionTypeEnum.START_STOP
+    )
+    public ResponseResult<List<ScriptNodeTreeResp>> queryNodeTree(ReportQueryRequest request ){
+        return reportService.queryNodeTree(request);
     }
+
+    //@GetMapping("/report/queryTempReportTrendWithTopology")
+    //@ApiOperation("实况报告链路趋势 拓扑图")
+    //public WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,
+    //                                                    ReportTraceQueryDTO queryDTO) {
+    //    return reportService.queryTempReportTrendWithTopology(reportTrendQuery, queryDTO);
+    //}
 
     @GetMapping("/report/listWarn")
     @ApiOperation("警告列表")

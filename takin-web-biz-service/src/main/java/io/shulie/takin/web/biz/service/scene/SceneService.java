@@ -53,11 +53,20 @@ public interface SceneService {
     PagingList<BusinessFlowListResponse> getBusinessFlowList(BusinessFlowPageQueryRequest queryRequest);
 
     /**
-     * 获取业务活动
+     * 获取业务活动列表
      *
      * @return 业务流程列表
      */
     List<SceneEntity> businessActivityFlowList();
+
+    /**
+     * 获取业务活动详情
+     * <p>主要返回脚本解析结果</p>
+     *
+     * @param id 业务活动主键
+     * @return 业务流程详情
+     */
+    SceneEntity businessActivityFlowDetail(long id);
 
     void updateBusinessFlow(BusinessFlowUpdateRequest businessFlowUpdateRequest);
 }

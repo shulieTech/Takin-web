@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.shulie.takin.web.common.exception.ExceptionCode;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -536,6 +537,22 @@ public class SceneServiceImpl implements SceneService {
             .lambdaQuery(SceneEntity.class)
             .eq(SceneEntity::getIsDeleted, false);
         return sceneMapper.selectList(wrapper);
+    }
+
+    /**
+     * 获取业务活动详情
+     * <p>主要返回脚本解析结果</p>
+     *
+     * @param id 业务活动主键
+     * @return 业务流程详情
+     */
+    @Override
+    public SceneEntity businessActivityFlowDetail(long id) {
+        SceneEntity scene = sceneMapper.selectById(id);
+        if (scene == null) {
+            throw new TakinWebException(ExceptionCode.SERVLET_ERROR, "未获取到业务流程");
+        }
+        return scene;
     }
 
     @Override

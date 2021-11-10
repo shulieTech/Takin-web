@@ -168,14 +168,26 @@ public class SceneController {
     }
 
     /**
-     * 获取业务流程
+     * 获取业务流程列表
      *
      * @return 业务流程列表
      */
     @GetMapping("business_activity_flow")
     @ApiOperation("获取业务流程列表 - 压测场景用")
-    public ResponseResult<List<SceneEntity>> businessActivityFlow() {
+    public ResponseResult<List<SceneEntity>> listBusinessActivityFlow() {
         return ResponseResult.success(sceneService.businessActivityFlowList());
+    }
+
+    /**
+     * 获取业务流程详情
+     *
+     * @return 业务流程详情
+     */
+    @GetMapping("business_activity_flow/detail")
+    @ApiOperation("获取业务流程列表 - 压测场景用")
+    public ResponseResult<SceneEntity> businessActivityFlowDetail(
+        @RequestParam(name = "id", required = false) Long id) {
+        return ResponseResult.success(sceneService.businessActivityFlowDetail(id));
     }
 
     /**

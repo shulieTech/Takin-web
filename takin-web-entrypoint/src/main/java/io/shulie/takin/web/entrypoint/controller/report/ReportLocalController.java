@@ -20,6 +20,7 @@ import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
 import com.pamirs.takin.entity.domain.vo.report.ReportLocalQueryParam;
+import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
@@ -94,7 +95,7 @@ public class ReportLocalController {
 
     @GetMapping("/report/businessActivity/summary/list")
     @ApiOperation("压测明细")
-    public WebResponse getBusinessActivitySummaryList(Long reportId) {
+    public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
         return reportService.querySummaryList(reportId);
     }
 

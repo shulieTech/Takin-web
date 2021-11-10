@@ -51,10 +51,10 @@ public class ErrorLogQueryDTO extends PageBaseDTO {
     /**
      * 开始时间
      */
-    private Date startDate;
+    private Long startDate;
 
     /**
      * 结束时间
      */
-    private Date endDate;
+    private Long endDate;
 }

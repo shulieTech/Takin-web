@@ -5,7 +5,6 @@ import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import io.shulie.takin.web.data.model.mysql.NewBaseEntity;
 import lombok.ToString;
 
 /**
@@ -42,6 +41,11 @@ public class PluginLibraryEntity extends NewBaseEntity implements Serializable {
     private Long versionNum;
 
     /**
+     * 是否为定制插件 0:否 1:是
+     */
+    private Integer isCustomMode;
+
+    /**
      * 更新说明
      */
     private String updateDescription;
@@ -60,15 +64,5 @@ public class PluginLibraryEntity extends NewBaseEntity implements Serializable {
      * jar包配置文件原始数据,当前是主版本时填
      */
     private String ext;
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
 }

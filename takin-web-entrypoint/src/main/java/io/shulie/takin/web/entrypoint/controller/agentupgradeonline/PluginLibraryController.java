@@ -1,14 +1,19 @@
 package io.shulie.takin.web.entrypoint.controller.agentupgradeonline;
 
+import javax.annotation.Resource;
+import javax.validation.constraints.NotNull;
+
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
+import io.shulie.takin.web.biz.service.agentupgradeonline.PluginLibraryService;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 插件版本库(PluginLibrary)controller
@@ -18,17 +23,18 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(APIUrls.TAKIN_API_URL + "pluginLibrary")
-@Api(tags = "")
+@Api(tags = "接口：agent插件管理")
+@Validated
+@Slf4j
 public class PluginLibraryController {
 
-    @ApiOperation("")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", value = "id", required = true,
-            dataType = "long", paramType = "query")
-    })
-    @GetMapping
-    public void index(@RequestParam Long id) {
+    @Resource
+    private PluginLibraryService pluginLibraryService;
 
+    @ApiOperation("|_ 上传插件包，三种类型0、modules包，1、simulator包，2、agent包")
+    @PutMapping("/upload")
+    public AgentPluginUploadResponse uploadFile(@NotNull(message = "文件不能为空") MultipartFile file) {
+        return pluginLibraryService.upload(file);
     }
 
 }

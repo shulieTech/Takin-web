@@ -7,8 +7,12 @@ import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.pamirs.takin.common.util.NumberUtil;
+import com.pamirs.takin.entity.dao.linkmanage.TBusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.convert.linkmanage.BusinessLinkManageConvert;
+import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.SceneLinkRelateMapper;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.SceneLinkRelateEntity;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
@@ -17,8 +21,12 @@ import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * @author 无涯
@@ -27,6 +35,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, SceneLinkRelateEntity>
     implements SceneLinkRelateDAO, MPUtil<SceneLinkRelateEntity> {
+
+    @Resource
+    private BusinessLinkManageTableMapper businessLinkManageTableMapper;
 
     @Override
     public List<SceneLinkRelateResult> getList(SceneLinkRelateParam param) {
@@ -75,17 +86,27 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
         return query(query);
     }
 
-    @Override
-    public void batchInsertOrUpdate(List<SceneLinkRelateSaveParam> saveParams) {
-        if (CollectionUtils.isEmpty(saveParams)){
-            return;
-        }
-        List<SceneLinkRelateEntity> sceneLinkRelateEntities = BusinessLinkManageConvert.INSTANCE.ofSceneLinkRelateSaveParams(saveParams);
-        this.saveOrUpdateBatch(sceneLinkRelateEntities);
-    }
 
     @Override
     public void deleteByIds(List<Long> oldIds) {
+        if (CollectionUtils.isEmpty(oldIds)){
+            return;
+        }
+        List<SceneLinkRelateEntity> sceneLinkRelateEntities = this.listByIds(oldIds);
+        if (CollectionUtils.isEmpty(sceneLinkRelateEntities)){
+            return;
+        }
+        //删除关联关系之后，将业务活动置为可以被删除
+        List<Long> businessLinkId = sceneLinkRelateEntities.stream().map(o -> NumberUtils.toLong(o.getBusinessLinkId())).
+                collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(businessLinkId)){
+            BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
+            businessLinkManageTableEntity.setCanDelete(0);
+            LambdaQueryWrapper<BusinessLinkManageTableEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.in(BusinessLinkManageTableEntity::getLinkId,businessLinkId);
+            businessLinkManageTableMapper.update(businessLinkManageTableEntity,wrapper);
+        }
+
         if (CollectionUtils.isNotEmpty(oldIds)){
             this.removeByIds(oldIds);
         }
@@ -95,6 +116,16 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
     public void batchInsert(List<SceneLinkRelateSaveParam> saveParams) {
         if (CollectionUtils.isEmpty(saveParams)){
             return;
+        }
+        //删除关联关系之后，将业务活动置为不能被删除
+        List<Long> businessLinkId = saveParams.stream().map(o -> NumberUtils.toLong(o.getBusinessLinkId())).
+                collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(businessLinkId)){
+            BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
+            businessLinkManageTableEntity.setCanDelete(1);
+            LambdaQueryWrapper<BusinessLinkManageTableEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.in(BusinessLinkManageTableEntity::getLinkId,businessLinkId);
+            businessLinkManageTableMapper.update(businessLinkManageTableEntity,wrapper);
         }
         List<SceneLinkRelateEntity> sceneLinkRelateEntities = BusinessLinkManageConvert.INSTANCE.ofSceneLinkRelateSaveParams(saveParams);
         this.saveBatch(sceneLinkRelateEntities);

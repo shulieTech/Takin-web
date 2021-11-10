@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 业务流程dao
+ *
  * @author fanxx
  * @date 2020/11/4 2:57 下午
  */
@@ -56,7 +57,7 @@ public class SceneDAOImpl implements SceneDAO {
     public int allocationUser(SceneUpdateParam param) {
         LambdaUpdateWrapper<SceneEntity> wrapper = new LambdaUpdateWrapper();
         wrapper.set(SceneEntity::getUserId, param.getUserId())
-            .eq(SceneEntity::getId, param.getId());
+                .eq(SceneEntity::getId, param.getId());
         return sceneMapper.update(null, wrapper);
     }
 
@@ -72,10 +73,40 @@ public class SceneDAOImpl implements SceneDAO {
         }
         queryWrapper.eq(SceneEntity::getIsDeleted, 0);
         queryWrapper.select(
-            SceneEntity::getId,
-            SceneEntity::getSceneName,
-            SceneEntity::getCustomerId,
-            SceneEntity::getUserId);
+                SceneEntity::getId,
+                SceneEntity::getSceneName,
+                SceneEntity::getCustomerId,
+                SceneEntity::getUserId);
+        List<SceneEntity> sceneEntityList = sceneMapper.selectList(queryWrapper);
+        if (CollectionUtils.isNotEmpty(sceneEntityList)) {
+            sceneResultList = sceneEntityList.stream().map(sceneEntity -> {
+                SceneResult sceneResult = new SceneResult();
+                sceneResult.setId(sceneEntity.getId());
+                sceneResult.setSceneName(sceneEntity.getSceneName());
+                sceneResult.setCustomerId(sceneEntity.getCustomerId());
+                sceneResult.setUserId(sceneEntity.getUserId());
+                return sceneResult;
+            }).collect(Collectors.toList());
+        }
+        return sceneResultList;
+    }
+
+    @Override
+    public List<SceneResult> selectListByName(SceneQueryParam queryParam) {
+        List<SceneResult> sceneResultList = Lists.newArrayList();
+        LambdaQueryWrapper<SceneEntity> queryWrapper = new LambdaQueryWrapper<>();
+        if (CollectionUtils.isNotEmpty(queryParam.getUserIdList())) {
+            queryWrapper.in(SceneEntity::getUserId, queryParam.getUserIdList());
+        }
+        if (!StringUtils.isEmpty(queryParam.getSceneName())) {
+            queryWrapper.eq(SceneEntity::getSceneName, queryParam.getSceneName());
+        }
+        queryWrapper.eq(SceneEntity::getIsDeleted, 0);
+        queryWrapper.select(
+                SceneEntity::getId,
+                SceneEntity::getSceneName,
+                SceneEntity::getCustomerId,
+                SceneEntity::getUserId);
         List<SceneEntity> sceneEntityList = sceneMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(sceneEntityList)) {
             sceneResultList = sceneEntityList.stream().map(sceneEntity -> {
@@ -95,7 +126,7 @@ public class SceneDAOImpl implements SceneDAO {
         SceneEntity entity = new SceneEntity();
         BeanUtils.copyProperties(sceneUpdateParam, entity);
         LambdaQueryWrapper<SceneEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SceneEntity::getId,sceneUpdateParam.getId());
+        queryWrapper.eq(SceneEntity::getId, sceneUpdateParam.getId());
         return sceneMapper.update(entity, queryWrapper);
     }
 
@@ -123,10 +154,10 @@ public class SceneDAOImpl implements SceneDAO {
         lambdaQueryWrapper.eq(SceneEntity::getIsDeleted, 0);
         lambdaQueryWrapper.orderByDesc(SceneEntity::getUpdateTime);
         Page<SceneEntity> sceneEntityPage = sceneMapper.selectPage(page, lambdaQueryWrapper);
-        if (sceneEntityPage == null || CollectionUtils.isEmpty(sceneEntityPage.getRecords())){
-            return PagingList.of(Lists.newArrayList(),0);
+        if (sceneEntityPage == null || CollectionUtils.isEmpty(sceneEntityPage.getRecords())) {
+            return PagingList.of(Lists.newArrayList(), 0);
         }
         List<SceneResult> sceneResultList = BusinessLinkManageConvert.INSTANCE.ofSceneEntityList(sceneEntityPage.getRecords());
-        return PagingList.of(sceneResultList,sceneEntityPage.getTotal());
+        return PagingList.of(sceneResultList, sceneEntityPage.getTotal());
     }
 }

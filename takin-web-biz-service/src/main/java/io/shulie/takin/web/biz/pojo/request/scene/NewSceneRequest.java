@@ -19,7 +19,7 @@ import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
  */
 @Data
 @ApiModel(value = "创建/修改 场景 - 新")
-public class CreateSceneRequest {
+public class NewSceneRequest {
     @ApiModelProperty(value = "基础信息")
     @NotNull(message = "场景基础信息不能为空")
     private SceneRequest.BasicInfo basicInfo;
@@ -42,6 +42,7 @@ public class CreateSceneRequest {
     @NotNull(message = "数据验证配置不能为空")
     private SceneRequest.DataValidation dataValidation;
 
+    @Data
     public static class PtConfig {
         @ApiModelProperty(value = "启动的POD数")
         @NotNull(message = "POD数不能为空")
@@ -58,6 +59,7 @@ public class CreateSceneRequest {
         private Map<String, ThreadGroupConfig> threadGroupConfigMap;
     }
 
+    @Data
     public static class ThreadGroupConfig {
         @ApiModelProperty(value = "压力模式：0并发、1TPS、2自定义等")
         @NotNull(message = "压力模式不能为空")

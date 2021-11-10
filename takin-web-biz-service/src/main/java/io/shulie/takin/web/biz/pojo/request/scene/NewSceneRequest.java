@@ -28,7 +28,7 @@ public class NewSceneRequest {
 //    private List<?> analysisResult;
 //    @ApiModelProperty(value = "压测内容")
 //    @NotNull(message = "压测目标不能为空")
-    private List<SceneRequest.Content> content;
+//    private List<SceneRequest.Content> content;
     @ApiModelProperty(value = "施压配置")
     @NotNull(message = "施压配置不能为空")
     private PtConfig config;

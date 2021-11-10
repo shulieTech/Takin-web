@@ -261,6 +261,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<Long> queryListRunningReport() {
         CloudCommonInfoWrapperReq req = new CloudCommonInfoWrapperReq();
+        WebPluginUtils.fillCloudUserData(req);
         ResponseResult<List<Long>> result = reportApi.queryListRunningReport(req);
         if (result == null || !result.getSuccess()) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR,

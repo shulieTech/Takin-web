@@ -51,7 +51,7 @@ UPDATE t_script_manage t1
     ) t2 ON t2.id = t1.user_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
--- 	t_leakcheck_config
+-- t_leakcheck_config
 UPDATE t_leakcheck_config t1
     LEFT JOIN (
     SELECT
@@ -128,7 +128,7 @@ UPDATE t_tro_dbresource t1
 
 -- t_application_ds_manage
 UPDATE t_application_ds_manage t1
-    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.id
+    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- t_application_node_probe
@@ -143,7 +143,7 @@ UPDATE t_application_plugins_config t1
 
 -- t_black_list
 UPDATE t_black_list t1
-    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.id
+    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- t_exception_info 无需订正 就取默认的test
@@ -168,11 +168,11 @@ UPDATE t_file_manage t1
     LEFT JOIN t_script_file_ref t2 ON t1.id = t2.file_id
     LEFT JOIN t_script_manage_deploy t3 ON t3.id = t2.script_deploy_id
     LEFT JOIN t_script_manage t4 ON t4.id = t3.script_id
-    SET t1.env_code = t4.env_code;
+    SET t1.env_code = IFNULL(t4.env_code,'test');
 
 -- t_link_guard
 UPDATE t_link_guard t1
-    LEFT JOIN t_application_mnt t2 ON t1.application_id = t2.id
+    LEFT JOIN t_application_mnt t2 ON t1.application_id = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- t_link_manage_table
@@ -187,18 +187,87 @@ UPDATE t_application_focus t1
 
 -- t_application_middleware
 UPDATE t_application_middleware t1
-    LEFT JOIN t_application_mnt t2 ON t1.application_id = t2.id
+    LEFT JOIN t_application_mnt t2 ON t1.application_id = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- t_data_build
 UPDATE t_data_build t1
-    LEFT JOIN t_application_mnt t2 ON t1.application_id = t2.id
+    LEFT JOIN t_application_mnt t2 ON t1.application_id = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- t_datasource_tag_ref
 UPDATE t_datasource_tag_ref t1
     LEFT JOIN t_tro_dbresource t2 ON t1.datasource_id = t2.id
     SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_fast_debug_stack_info
+UPDATE t_fast_debug_stack_info t1
+    LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_leakverify_result
+UPDATE t_leakverify_result t1
+    LEFT JOIN (
+    SELECT
+    `name`,
+    id,
+    CASE
+    WHEN LOCATE( 'test', `name` ) > 0 THEN
+    'test' ELSE 'prod'
+    END env_code
+    FROM
+    t_tro_user
+    ) t2 ON t2.id = t1.user_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_leakverify_detail
+UPDATE t_leakverify_detail t1
+    LEFT JOIN t_leakverify_result t2 ON t1.result_id = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_link_detection
+UPDATE t_link_detection t1
+    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.APPLICATION_ID
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_login_record
+UPDATE t_login_record t1
+    LEFT JOIN (
+    SELECT
+    `user_name`,
+    CASE
+    WHEN LOCATE( 'test', `user_name` ) > 0 THEN
+    'test' ELSE 'prod'
+    END env_code
+    FROM
+    t_login_record
+    ) t2 ON t2.user_name = t1.user_name
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+-- t_ops_script_batch_no
+UPDATE t_ops_script_batch_no t1
+    LEFT JOIN t_ops_script_manage t2 ON t1.ops_script_id = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+-- t_ops_script_execute_result
+UPDATE t_ops_script_execute_result t1
+    LEFT JOIN t_ops_script_manage t2 ON t1.ops_script_id = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+-- t_ops_script_file
+UPDATE t_ops_script_file t1
+    LEFT JOIN t_ops_script_manage t2 ON t1.ops_script_id = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+-- t_performance_base_data
+UPDATE t_performance_base_data t1
+    LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+-- t_performance_criteria_config
+UPDATE t_performance_criteria_config t1
+    LEFT JOIN t_application_mnt t2 ON t1.app_id = t2.APPLICATION_ID
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+-- t_performance_thread_data
+-- UPDATE t_performance_criteria_config t1
+--     LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
+--     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 
 -- tenant_id
@@ -222,18 +291,17 @@ update t_operation_log set tenant_id=customer_id;
 update t_ops_script_manage set tenant_id=customer_id;
 update t_tro_dbresource set tenant_id=customer_id;
 update t_application_focus set tenant_id=(select tenant_id from t_application_mnt where APPLICATION_NAME = app_name);
-update t_application_middleware set tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = application_id);
+update t_application_middleware t set tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = t.application_id);
 update t_data_build t set t.tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = t.APPLICATION_ID);
-update t_datasource_tag_ref t set t.tenant_id=(select tenant_id from t_tro_dbresource where id = t.datasource_id)
-update t_fast_debug_result f set f.tenant_id=(SELECT customer_id from t_fast_debug_config_info WHERE id = f.config_id AND is_deleted=0);
+update t_datasource_tag_ref t set t.tenant_id=(select tenant_id from t_tro_dbresource where id = t.datasource_id);
 update t_fast_debug_machine_performance f set f.tenant_id=(SELECT t.tenant_id from t_fast_debug_result t  WHERE  t.trace_id = f.trace_id AND t.is_deleted=0);
 update t_fast_debug_stack_info f set f.tenant_id=(SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0);
-update t_leakverify_detail t set t.tenant_id=(SELECT tenant_id FROM t_leakverify_result WHERE id=t.result_id and is_deleted=0;
+update t_leakverify_detail t set t.tenant_id=(SELECT tenant_id FROM t_leakverify_result WHERE id=t.result_id and is_deleted=0);
 update t_link_detection t set t.tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = t.APPLICATION_ID);
 update t_login_record t set t.tenant_id=(select tenant_id from t_tro_user WHERE name=t.user_name and is_delete=0);
-update t_ops_script_batch_no t set t.tenant_id=(select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_delete=0);
-update t_ops_script_execute_result t set t.tenant_id=(select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_delete=0);
-update t_ops_script_file t set t.tenant_id=(select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_delete=0);
+update t_ops_script_batch_no t set t.tenant_id=(select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_deleted=0);
+update t_ops_script_execute_result t set t.tenant_id=(select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_deleted=0);
+update t_ops_script_file t set t.tenant_id=(select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_deleted=0);
 update t_performance_base_data t set t.tenant_id= (select tenant_id from t_application_mnt where APPLICATION_NAME = t.app_name);
 update t_performance_criteria_config t set t.tenant_id= (select tenant_id from t_application_mnt where APPLICATION_ID = t.app_id);
 update t_performance_thread_data t set t.tenant_id= (select tenant_id from t_application_mnt where APPLICATION_NAME = t.app_name);

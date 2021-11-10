@@ -352,6 +352,7 @@ public class ApplicationClientImpl implements ApplicationClient {
             queryDTO.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             queryDTO.setEnvCode(WebPluginUtils.traceEnvCode());
 
+
             AmdbResult<List<AgentInfoDTO>> amdbResponse = AmdbHelper.builder().httpMethod(
                 HttpMethod.POST)
                 .url(url)

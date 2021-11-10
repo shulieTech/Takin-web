@@ -95,6 +95,8 @@ public class SceneTaskController {
             }
             param.setResourceName(sceneData.getPressureTestSceneName());
             SceneActionResp startTaskResponse = sceneTaskService.startTask(param);
+            // 开启漏数
+            startCheckLeakTask(param,sceneData);
             return WebResponse.success(startTaskResponse);
         } catch (TakinWebException ex) {
             // 解除 场景锁

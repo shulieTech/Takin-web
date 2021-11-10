@@ -1,5 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,9 +12,24 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.google.common.collect.Maps;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.ext.content.enginecall.PtConfigExt;
+import io.shulie.takin.ext.content.enginecall.ThreadGroupConfigExt;
+import io.shulie.takin.ext.content.script.ScriptNode;
+import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.biz.convert.linkmanage.LinkManageConvert;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
+import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,8 +48,7 @@ import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneTaskStartReq;
 import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
-import io.shulie.takin.web.biz.pojo.request.scene.CreateSceneRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.UpdateSceneRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
@@ -49,6 +64,8 @@ import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
 public class SceneController {
     @Resource
     SceneService sceneService;
+    @Resource
+    SceneManageService sceneManageService;
     @Resource
     FileManageDAO fileManageDao;
     @Resource
@@ -69,9 +86,8 @@ public class SceneController {
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_CREATE
     )
     @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
-    public ResponseResult<Long> create(@RequestBody @Valid CreateSceneRequest request) {
-        SceneRequest sceneRequest = BeanUtil.copyProperties(request, SceneRequest.class);
-        sceneRequest.setFile(assembleFileList(request.getBasicInfo().getScriptId()));
+    public ResponseResult<Long> create(@RequestBody @Valid NewSceneRequest request) {
+        SceneRequest sceneRequest = buildSceneRequest(request);
         return multipleSceneApi.create(sceneRequest);
     }
 
@@ -88,10 +104,50 @@ public class SceneController {
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_UPDATE
     )
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
-    public ResponseResult<Boolean> update(@RequestBody @Valid UpdateSceneRequest request) {
-        SceneRequest sceneRequest = BeanUtil.copyProperties(request, SceneRequest.class);
-        sceneRequest.setFile(assembleFileList(request.getBasicInfo().getScriptId()));
+    public ResponseResult<Boolean> update(@RequestBody @Valid NewSceneRequest request) {
+        if (null == request.getBasicInfo().getSceneId()) {
+            return ResponseResult.fail(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR.getErrorCode(), "压测场景ID不能为空");
+        }
+        SceneRequest sceneRequest = buildSceneRequest(request);
         return multipleSceneApi.update(sceneRequest);
+    }
+
+    private SceneRequest buildSceneRequest(NewSceneRequest request) {
+        SceneRequest.BasicInfo basicInfo = request.getBasicInfo();
+        Long flowId = basicInfo.getBusinessFlowId();
+        SceneRequest sceneRequest = BeanUtil.copyProperties(request, SceneRequest.class);
+        PtConfigExt ptConfig = BeanUtil.copyProperties(request.getConfig(), PtConfigExt.class);
+        Map<String, NewSceneRequest.ThreadGroupConfig> threadGroupConfigMap = request.getConfig().getThreadGroupConfigMap();
+        if (MapUtils.isNotEmpty(threadGroupConfigMap)) {
+            Map<String, ThreadGroupConfigExt> threadGroupMap = new HashMap<>();
+            for (Map.Entry<String, NewSceneRequest.ThreadGroupConfig> entry : threadGroupConfigMap.entrySet()) {
+                threadGroupMap.put(entry.getKey(), BeanUtil.copyProperties(entry.getValue(), ThreadGroupConfigExt.class));
+            }
+            ptConfig.setThreadGroupConfigMap(threadGroupMap);
+        }
+        sceneRequest.setConfig(ptConfig);
+        sceneRequest.setFile(assembleFileList(basicInfo.getScriptId()));
+        SceneResult scene = sceneService.getScene(flowId);
+        if (null != scene && StringUtils.isNotBlank(scene.getScriptJmxNode())) {
+            sceneRequest.setAnalysisResult(JsonHelper.json2List(scene.getScriptJmxNode(), ScriptNode.class));
+        }
+        List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(flowId);
+        if (CollectionUtils.isNotEmpty(links)) {
+            Map<String, String> nodeNameMap = Maps.newHashMap();
+            List<ScriptNode> nodes = JmxUtil.toOneDepthList(sceneRequest.getAnalysisResult());
+            if (CollectionUtils.isNotEmpty(nodes)) {
+                for (ScriptNode node : nodes) {
+                    nodeNameMap.put(node.getXpathMd5(), node.getTestName());
+                }
+            }
+            List<SceneRequest.Content> content = LinkManageConvert.INSTANCE.ofSceneLinkRelateResult(links);
+            content.forEach(d -> {
+                d.setApplicationId(sceneManageService.getAppIdsByBusinessActivityId(d.getBusinessActivityId()));
+                d.setName(nodeNameMap.get(d.getPathMd5()));
+            });
+            sceneRequest.setContent(content);
+        }
+        return sceneRequest;
     }
 
     /**

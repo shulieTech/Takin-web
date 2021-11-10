@@ -541,6 +541,15 @@ public class SceneManageServiceImpl implements SceneManageService {
     }
 
     /**
+     * 通过业务活动id关联出应用id列表
+     * @param businessActivityId 业务活动id
+     * @return 应用id列表
+     */
+    public List<String> getAppIdsByBusinessActivityId(Long businessActivityId) {
+        return getAppIdsByNameAndUser(getAppsbyId(businessActivityId), null);
+    }
+
+    /**
      * 业务活动列表 转换
      *
      * @param voList 业务活动

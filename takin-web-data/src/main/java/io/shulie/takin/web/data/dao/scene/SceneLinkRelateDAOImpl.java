@@ -57,6 +57,9 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
         if (StringUtils.isNotBlank(query.getEntrance())) {
             wrapper.eq(SceneLinkRelateEntity::getEntrance, query.getEntrance());
         }
+        if (null != query.getSceneId()){
+            wrapper.eq(SceneLinkRelateEntity::getSceneId, query.getSceneId());
+        }
         wrapper.orderByDesc(SceneLinkRelateEntity::getId);
         List<SceneLinkRelateEntity> entities = this.list(wrapper);
         return toResult(entities);
@@ -86,6 +89,15 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
         if (CollectionUtils.isNotEmpty(oldIds)){
             this.removeByIds(oldIds);
         }
+    }
+
+    @Override
+    public void batchInsert(List<SceneLinkRelateSaveParam> saveParams) {
+        if (CollectionUtils.isEmpty(saveParams)){
+            return;
+        }
+        List<SceneLinkRelateEntity> sceneLinkRelateEntities = BusinessLinkManageConvert.INSTANCE.ofSceneLinkRelateSaveParams(saveParams);
+        this.saveBatch(sceneLinkRelateEntities);
     }
 
     private List<SceneLinkRelateResult> toResult(List<SceneLinkRelateEntity> entities) {

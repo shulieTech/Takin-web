@@ -11,6 +11,7 @@ import io.shulie.amdb.common.dto.link.topology.*;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
@@ -21,7 +22,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopo
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.*;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
-import io.shulie.takin.web.common.enums.activity.info.RpcTypeEnum;
+
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;

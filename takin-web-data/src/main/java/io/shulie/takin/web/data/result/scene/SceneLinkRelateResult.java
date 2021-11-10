@@ -2,8 +2,6 @@ package io.shulie.takin.web.data.result.scene;
 
 import java.time.LocalDateTime;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 /**

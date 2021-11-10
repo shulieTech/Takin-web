@@ -25,6 +25,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -88,6 +89,7 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteByIds(List<Long> oldIds) {
         if (CollectionUtils.isEmpty(oldIds)) {
             return;
@@ -127,6 +129,7 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void batchInsert(List<SceneLinkRelateSaveParam> saveParams) {
         if (CollectionUtils.isEmpty(saveParams)) {
             return;

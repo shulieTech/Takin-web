@@ -575,6 +575,8 @@ update t_whitelist_effective_app set tenant_id = 10 and env_code = 'test' where 
 update t_application_mnt set tenant_id = 10 and env_code = 'test' where  customer_id = 9
 update t_application_ds_cache_manage set tenant_id = 10 and env_code = 'test' where  customer_id = 9
 update t_application_ds_db_manage set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+
+-- todo 申通
 -- 更新 t_scene_link_relate
 UPDATE t_scene_link_relate t1
     LEFT JOIN t_scene t2 ON t1.SCENE_ID = t2.id

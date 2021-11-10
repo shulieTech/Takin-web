@@ -7,6 +7,7 @@ import io.shulie.takin.cloud.open.req.report.ReportDetailByIdReq;
 import io.shulie.takin.cloud.open.req.report.ReportDetailBySceneIdReq;
 import io.shulie.takin.cloud.open.req.report.ReportTrendQueryReq;
 import io.shulie.takin.cloud.open.req.report.ScriptNodeTreeQueryReq;
+import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
 import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
@@ -49,6 +50,11 @@ public class ReportApiImpl implements ReportApi {
     @Override
     public ResponseResult<ReportTrendResp> reportTrend(ReportTrendQueryReq req) {
         return cloudReportApi.queryReportTrend(req);
+    }
+
+    @Override
+    public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId){
+        return cloudReportApi.getBusinessActivitySummaryList(new ReportDetailByIdReq(){{setReportId(reportId);}});
     }
 
 }

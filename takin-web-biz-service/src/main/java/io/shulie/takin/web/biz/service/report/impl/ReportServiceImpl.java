@@ -14,6 +14,7 @@ import io.shulie.takin.cloud.open.req.report.ReportDetailByIdReq;
 import io.shulie.takin.cloud.open.req.report.ReportDetailBySceneIdReq;
 import io.shulie.takin.cloud.open.req.report.ReportTrendQueryReq;
 import io.shulie.takin.cloud.open.req.report.ScriptNodeTreeQueryReq;
+import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
 import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
@@ -401,14 +402,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public WebResponse querySummaryList(Long reportId) {
-        ReportIdVO vo = new ReportIdVO();
-        vo.setReportId(reportId);
-        vo.setRequestUrl(RemoteConstant.REPORT_SUMMARY_LIST);
-        vo.setHttpMethod(HttpMethod.GET);
-        WebResponse webResponse = httpWebClient.request(vo);
-        HttpAssert.isOk(webResponse, vo, "takin-cloud查询压测明细");
-        return webResponse;
+    public ResponseResult<NodeTreeSummaryResp> querySummaryList(Long reportId) {
+       return reportApi.getBusinessActivitySummaryList(reportId);
     }
 
     @Override

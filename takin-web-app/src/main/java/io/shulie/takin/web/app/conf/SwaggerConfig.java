@@ -381,7 +381,7 @@ public class SwaggerConfig {
             .groupName("混合压测场景-压测报告")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex("/api(/report/queryReportTrend|/report/tempReportDetail|/report/queryTempReportTrend|/report/queryNodeTree|/report/getReportByReportId).*"))
+            .paths(getRegex("/api(/report/queryReportTrend|/report/tempReportDetail|/report/queryTempReportTrend|/report/queryNodeTree|/report/getReportByReportId|/report/businessActivity/summary/list).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

@@ -27,6 +27,9 @@ public class SceneLinkRelateRequest implements Serializable {
     @ApiModelProperty("脚本路径的MD5")
     private String xpathMd5;
 
+    @ApiModelProperty("节点上的名称")
+    private String testName;
+
     /*****业务活动相关*******/
 
     @ApiModelProperty("应用名")

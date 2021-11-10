@@ -374,6 +374,21 @@ public class SwaggerConfig {
                 ;
     }
 
+    @Bean
+    public Docket api_reportQuery(){
+        return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
+            .groupName("混合压测场景-压测报告")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(getRegex("/api(/report/queryReportTrend|/report/tempReportDetail|/report/queryTempReportTrend|/report/queryNodeTree).*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo())
+            ;
+    }
+
     /**
      * 两周迭代放在这里
      * @return

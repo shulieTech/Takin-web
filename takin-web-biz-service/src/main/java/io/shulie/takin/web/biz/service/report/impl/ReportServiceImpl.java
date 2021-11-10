@@ -218,6 +218,7 @@ public class ReportServiceImpl implements ReportService {
         return webResponse;
     }
 
+    @Override
     public WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery) {
         // 获得 报告链路趋势
         WebResponse<LinkedHashMap<String, Object>> webResponse = queryReportTrend(reportTrendQuery);
@@ -488,4 +489,12 @@ public class ReportServiceImpl implements ReportService {
         return httpWebClient.request(vo);
     }
 
+    @Override
+    public WebResponse queryNodeTree(ReportTrendQueryParam param) {
+        param.setRequestUrl(RemoteConstant.REPORT_NODE_TREE);
+        param.setHttpMethod(HttpMethod.GET);
+        WebResponse webResponse = httpWebClient.request(param);
+        HttpAssert.isOk(webResponse, param, "takin-cloud查询报告节点树");
+        return webResponse;
+    }
 }

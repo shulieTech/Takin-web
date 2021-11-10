@@ -560,6 +560,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             if (StringUtils.isNotBlank(fileExtend)) {
                 FileExtendVO fileExtendVO = JSONUtil.toBean(fileExtend, FileExtendVO.class);
                 uploadFileDTO.setIsSplit(fileExtendVO.getIsSplit());
+                //uploadFileDTO.setIsOrderSplit(fileExtendVO.getIsOrderSplit());
             }
             uploadFileDTO.setUploadedData(0L);
             uploadFileDTO.setUploadTime(DateUtil.format(file.getUploadTime(), AppConstants.DATE_FORMAT_STRING));

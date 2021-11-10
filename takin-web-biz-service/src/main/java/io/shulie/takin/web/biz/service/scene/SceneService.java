@@ -9,6 +9,7 @@ import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 
@@ -52,11 +53,20 @@ public interface SceneService {
     PagingList<BusinessFlowListResponse> getBusinessFlowList(BusinessFlowPageQueryRequest queryRequest);
 
     /**
-     * 获取业务活动
+     * 获取业务活动列表
      *
      * @return 业务流程列表
      */
-    List<BusinessLinkManageTableEntity> businessActivityFlowList();
+    List<SceneEntity> businessActivityFlowList();
+
+    /**
+     * 获取业务活动详情
+     * <p>主要返回脚本解析结果</p>
+     *
+     * @param id 业务活动主键
+     * @return 业务流程详情
+     */
+    SceneEntity businessActivityFlowDetail(long id);
 
     void updateBusinessFlow(BusinessFlowUpdateRequest businessFlowUpdateRequest);
 }

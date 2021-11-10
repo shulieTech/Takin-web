@@ -545,6 +545,7 @@ public class SceneManageServiceImpl implements SceneManageService {
      * @param businessActivityId 业务活动id
      * @return 应用id列表
      */
+    @Override
     public List<String> getAppIdsByBusinessActivityId(Long businessActivityId) {
         return getAppIdsByNameAndUser(getAppsbyId(businessActivityId), null);
     }

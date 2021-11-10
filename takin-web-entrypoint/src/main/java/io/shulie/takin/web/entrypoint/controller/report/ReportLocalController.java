@@ -93,11 +93,11 @@ public class ReportLocalController {
         return Response.success(reportLocalService.listRiskMachine(queryParam));
     }
 
-    @GetMapping("/report/businessActivity/summary/list")
-    @ApiOperation("压测明细")
-    public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
-        return reportService.querySummaryList(reportId);
-    }
+    //@GetMapping("/report/businessActivity/summary/list")
+    //@ApiOperation("压测明细")
+    //public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
+    //    return reportService.querySummaryList(reportId);
+    //}
 
     @GetMapping("/report/machine/detail")
     @ApiOperation("性能详情")

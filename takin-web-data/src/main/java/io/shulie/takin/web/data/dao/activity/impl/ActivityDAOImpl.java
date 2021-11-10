@@ -148,7 +148,9 @@ public class ActivityDAOImpl implements ActivityDAO {
             // 虚拟业务活动
             businessLinkManageTableEntity.setBindBusinessId(param.getBindBusinessId());
         }
-        return businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
+        int insert = businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
+        param.setLinkId(businessLinkManageTableEntity.getLinkId());
+        return insert;
     }
 
     @Override

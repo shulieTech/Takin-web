@@ -6,6 +6,7 @@ import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.util.TenantUtils;
 import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
@@ -60,13 +61,25 @@ public class TenantController {
     @GetMapping("/config")
     @ApiOperation("获取租户配置，无需登录")
     public List<TenantConfigExt> getConfig() {
-
         // 先从缓存获取
         String tenantConfigRedisKey = TenantUtils.getTenantConfigRedisKey();
         if (redisTemplate.hasKey(tenantConfigRedisKey)) {
             return (List<TenantConfigExt>)redisTemplate.opsForValue().get(tenantConfigRedisKey);
         }
         List<TenantConfigExt> exts =WebPluginUtils.getTenantConfig();
+        redisTemplate.opsForValue().set(tenantConfigRedisKey,exts);
+        return exts;
+    }
+
+    @GetMapping("/config/all")
+    @ApiOperation("获取租户配置，无需登录")
+    public List<TenantInfoConfigExt> getAllConfig() {
+        // 先从缓存获取
+        String tenantConfigRedisKey = TenantUtils.getAllTenantConfigRedisKey();
+        if (redisTemplate.hasKey(tenantConfigRedisKey)) {
+            return (List<TenantInfoConfigExt>)redisTemplate.opsForValue().get(tenantConfigRedisKey);
+        }
+        List<TenantInfoConfigExt> exts =WebPluginUtils.getAllTenantConfig();
         redisTemplate.opsForValue().set(tenantConfigRedisKey,exts);
         return exts;
     }

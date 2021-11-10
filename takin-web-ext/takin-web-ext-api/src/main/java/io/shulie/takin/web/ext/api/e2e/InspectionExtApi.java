@@ -18,9 +18,9 @@ import java.util.Map;
 public interface InspectionExtApi extends ExtensionPoint {
 
     /**
-     * 根据租户ID 获取 e2e 模块的异常配置信息
+     * 根据租户、环境 获取 e2e 模块的异常配置信息
      */
-    List<E2eExceptionConfigInfoExt> getExceptionConfig(Long customerId);
+    List<E2eExceptionConfigInfoExt> getExceptionConfig(Long tenantId,String envCode);
 
     /**
      * 瓶颈计算

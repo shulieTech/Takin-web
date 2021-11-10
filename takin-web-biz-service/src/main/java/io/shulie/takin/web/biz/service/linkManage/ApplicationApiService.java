@@ -17,7 +17,20 @@ public interface ApplicationApiService {
 
     Response registerApi(Map<String, List<String>> register);
 
+    /**
+     * 老版
+     * @param appName
+     * @return
+     */
     Response pullApi(String appName);
+
+    /**
+     * 新版
+     * @param appName
+     * @return
+     */
+    Response pullApiV1(String appName);
+
 
     Response delete(String id);
 
@@ -30,4 +43,5 @@ public interface ApplicationApiService {
     Response queryDetail(String id);
 
     Map<Long,List<ApplicationApiManageVO>> selectListGroupByAppId();
+
 }

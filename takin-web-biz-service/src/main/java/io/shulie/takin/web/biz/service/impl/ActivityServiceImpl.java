@@ -158,8 +158,8 @@ public class ActivityServiceImpl implements ActivityService {
         createParam.setExtend(request.getExtend());
         createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
         createParam.setEntrance(
-                ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
-                        request.getRpcType()));
+            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
+                request.getRpcType()));
         createParam.setPersistence(request.isPersistence());
         activityDAO.createActivity(createParam);
     }
@@ -400,7 +400,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityDAO.deleteActivity(activityId);
         //记录业务活动删除事件
         redisClientUtils.hmset(Vars.ACTIVITY_DELETE_EVENT,
-                String.valueOf(activityId), 0);
+            String.valueOf(activityId), 0);
         // 正常业务活动
         if (oldActivity.getBusinessType().equals(BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
             notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(),
@@ -446,15 +446,18 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public ActivityBottleneckResponse getBottleneckByActivityList(ApplicationVisualInfoResponse applicationVisualInfoResponse,
-                                                                  LocalDateTime startDateTime, LocalDateTime endTime) {
+    public ActivityBottleneckResponse getBottleneckByActivityList(
+        ApplicationVisualInfoResponse applicationVisualInfoResponse,
+        LocalDateTime startDateTime, LocalDateTime endTime) {
         // 查询 瓶颈阈值 配置
         List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
         if (WebPluginUtils.checkUserPlugin() && E2ePluginUtils.checkE2ePlugin()) {
-            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId());
+            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId(),
+                WebPluginUtils.traceEnvCode());
         }
 
-        ApplicationEntranceTopologyResponse.AppProvider provider = new ApplicationEntranceTopologyResponse.AppProvider();
+        ApplicationEntranceTopologyResponse.AppProvider provider
+            = new ApplicationEntranceTopologyResponse.AppProvider();
         provider.setServiceAvgRt(applicationVisualInfoResponse.getResponseConsuming());
         provider.setServiceAllSuccessRate(applicationVisualInfoResponse.getSuccessRatio());
         provider.setOwnerApps(applicationVisualInfoResponse.getAppName());
@@ -503,7 +506,7 @@ public class ActivityServiceImpl implements ActivityService {
 
         // 非正常业务活动时，直接返回
         if (!activity.getBusinessType().equals(
-                BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
+            BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
             return activity;
         }
 
@@ -518,7 +521,7 @@ public class ActivityServiceImpl implements ActivityService {
             startTime = endTime.minusMinutes(5);
 
             // line : 总调用量 startTime, 最近5 min
-//            allTotalCountStartDateTime = endTime.minusDays(1);
+            //            allTotalCountStartDateTime = endTime.minusDays(1);
             allTotalCountStartDateTime = startTime;
         } else {
             startTime.minusHours(8);
@@ -526,18 +529,18 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         linkTopologyService.fillMetrics(
-                request,
-                activity.getTopology(),
-                startTime, endTime,
-                allTotalCountStartDateTime);
+            request,
+            activity.getTopology(),
+            startTime, endTime,
+            allTotalCountStartDateTime);
 
         return activity;
     }
 
     @Override
     public ActivityResponse getActivityWithMetricsByIdForReport(Long activityId,
-                                                                LocalDateTime startDateTime,
-                                                                LocalDateTime endDateTime) {
+        LocalDateTime startDateTime,
+        LocalDateTime endDateTime) {
 
         ActivityResponse activity = getActivityById(activityId);
 
@@ -550,11 +553,11 @@ public class ActivityServiceImpl implements ActivityService {
         request.setFlowTypeEnum(FlowTypeEnum.BLEND);
 
         linkTopologyService.fillMetrics(
-                request,
-                activity.getTopology(),
-                startDateTime, endDateTime,
-                //默认不区分流量类型，按照混合流量查询
-                startDateTime);
+            request,
+            activity.getTopology(),
+            startDateTime, endDateTime,
+            //默认不区分流量类型，按照混合流量查询
+            startDateTime);
 
         return activity;
     }
@@ -784,7 +787,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     /**
-     * @param activityId 业务ID
+     * @param activityId  业务ID
      * @param ownerApps   应用名称
      * @param serviceName 服务名称
      * @param state       开关状态
@@ -799,8 +802,8 @@ public class ActivityServiceImpl implements ActivityService {
         try {
             String key = ActivityCacheAspect.REDIS_PREFIX_KEY + activityId + "::*";
             Set keys = redisTemplate.keys(key);
-            keys.forEach(k->redisTemplate.delete(k));
-        }catch (Exception e){
+            keys.forEach(k -> redisTemplate.delete(k));
+        } catch (Exception e) {
             //Ignore
         }
     }
@@ -817,8 +820,10 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request) {
-        String entrance = ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(), request.getRpcType());
-        List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(request.getApplicationName(), entrance);
+        String entrance = ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(),
+            request.getServiceName(), request.getRpcType());
+        List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(request.getApplicationName(),
+            entrance);
         if (CollectionUtils.isEmpty(serviceList)) {
             return null;
         }

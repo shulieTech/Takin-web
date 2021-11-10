@@ -52,11 +52,32 @@ public class ApplicationApiController {
     //    }
     //}
 
+    /**
+     * 老版
+     * @param appName
+     * @return
+     */
     @ApiOperation("storm拉取api")
     @GetMapping(value = "/api/pull")
     public Response pull(@RequestParam(value = "appName", required = false) String appName) {
         try {
             return apiService.pullApi(appName);
+
+        } catch (Exception e) {
+            return Response.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * 新版
+     * @param appName
+     * @return
+     */
+    @ApiOperation("storm拉取api")
+    @GetMapping(value = "/v1/api/pull")
+    public Response pullV1(@RequestParam(value = "appName", required = false) String appName) {
+        try {
+            return apiService.pullApiV1(appName);
 
         } catch (Exception e) {
             return Response.fail(e.getMessage());

@@ -664,7 +664,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             String ipSql = "select distinct(app_ip) as app_ip from app_base_data where app_name = '" + appName
                     + "' and time > " + firstTime + " and time <= " + lastTime +
                 // 增加租户
-                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and tenant_app_Key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                 " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
             Collection<BaseServerResult> ipList = influxDatabaseManager.query(BaseServerResult.class, ipSql);
             if (CollectionUtils.isNotEmpty(ipList)) {
@@ -678,7 +678,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                                     + " where tag_app_name = '" + appName + "' and tag_app_ip = '" + ip.getAppIp()
                                     + "' and time > " + firstTime + " and time <= " + lastTime +
                                     // 增加租户
-                                    " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                                    " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                                     " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
                                     + " group by time(5s) order by time";
                     Collection<BaseServerResult> voList = influxDatabaseManager.query(BaseServerResult.class, tmpSql);

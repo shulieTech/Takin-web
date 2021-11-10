@@ -131,7 +131,7 @@ public class ReportDataCache {
         }
 
         // 指标 map
-        List<MetricesResponse> metricsList = reportService.queryMetrics(reportId, reportDetail.getSceneId(), reportDetail.getTenantId());
+        List<MetricesResponse> metricsList = reportService.queryMetrics(reportId, reportDetail.getSceneId());
 
         if (CollectionUtils.isEmpty(metricsList)) {
             log.error("ReportDataCache Cache Jmeter Metric is null");

@@ -54,7 +54,7 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public List<MenuResponseExt> queryUserMenuList() {
         // 获取全部菜单项
-        List<MenuResponseExt> menus = queryMenuList();
+        List<MenuResponseExt> menus = this.queryMenuList();
         // 加载拓展插件
         WebMenuAuthExtApi menuAuthExtApi = pluginManager.getExtension(WebMenuAuthExtApi.class);
         //      如果没有拓展插件，则默认返回数据库配置的全部菜单项

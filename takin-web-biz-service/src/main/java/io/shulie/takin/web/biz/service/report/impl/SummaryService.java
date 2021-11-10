@@ -161,7 +161,7 @@ public class SummaryService {
             String searchAppIdSql = "select distinct(app_ip) as app_ip from app_base_data " +
                 "where time>=" + minTime + "ms and time <= " + maxTime + "ms and app_name = '" + applicationName + "'" +
                 // 增加租户
-                " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                 " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
 
             Collection<BaseServerResult> appIds = influxDatabaseManager.query(BaseServerResult.class, searchAppIdSql);
@@ -176,7 +176,7 @@ public class SummaryService {
                     " from app_base_data where time>=" + minTime + "ms and time <= " + maxTime
                     + "ms and app_name = '" + applicationName + "'" + " and app_ip = '" + host + "'" +
                     // 增加租户
-                    " and tenant_id = '" + WebPluginUtils.traceTenantId() + "'" +
+                    " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                     " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
                 Collection<BaseServerResult> bases = influxDatabaseManager.query(BaseServerResult.class, searchBaseSql);
                 log.info("search baseSql :{},cost time = {} ", searchBaseSql, System.currentTimeMillis() - baseTime);

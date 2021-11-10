@@ -9,10 +9,8 @@ import io.shulie.takin.web.data.common.InfluxDatabaseWriter;
 import io.shulie.takin.web.data.param.machine.PressureMachineLogInsertParam;
 import io.shulie.takin.web.data.param.machine.PressureMachineLogQueryParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineLogResult;
-import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineStatisticsResult;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -64,6 +62,9 @@ public class PressureMachineLogDaoImpl implements PressureMachineLogDao {
 
         Map<String, String> tags = Maps.newHashMap();
         tags.put("machine_id", String.valueOf(param.getMachineId()));
+        tags.put("tenant_id", String.valueOf(WebPluginUtils.traceTenantId()));
+        tags.put("tenant_app_key", WebPluginUtils.traceTenantAppKey() + "");
+        tags.put("env_code", String.valueOf(WebPluginUtils.traceEnvCode()));
         influxDatabaseWriter.insert("t_pressure_machine_log", tags, fields, System.currentTimeMillis());
 
 
@@ -76,6 +77,9 @@ public class PressureMachineLogDaoImpl implements PressureMachineLogDao {
                 " from t_pressure_machine_log" +
                 " where " +
                 "  time >= " + "'" + param.getStartTime() + "'" +
+                " and time <= " + "'" + param.getEndTime() + "'" +
+                " and tenant_id = " + "'" + WebPluginUtils.traceTenantId() + "'" +
+                " and env_code = " + "'" + WebPluginUtils.traceEnvCode() + "'" +
                 " and time <= " + "'" + param.getEndTime() + "'" +
                 " and machine_id =" + "'" + param.getMachineId() + "'" +
                 " TZ('Asia/Shanghai')";

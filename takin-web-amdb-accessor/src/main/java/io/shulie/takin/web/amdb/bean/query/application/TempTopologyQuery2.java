@@ -8,6 +8,7 @@ import lombok.Data;
 public class TempTopologyQuery2 {
     private String fromAppName;
     private String appName;
+    private String middlewareName;
     private String service;
     private String method;
     private String entranceStr;

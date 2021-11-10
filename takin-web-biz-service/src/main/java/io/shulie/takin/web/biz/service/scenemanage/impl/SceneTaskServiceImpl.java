@@ -152,7 +152,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     @Override
     public SceneActionResp startTask(SceneActionParam param) {
         //探针总开关关闭状态禁止启动压测
-        if(applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.traceTenantId(),AppSwitchEnum.CLOSED)){
+        if (applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.traceTenantId(), AppSwitchEnum.CLOSED)) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_VALIDATE_ERROR, "启动压测场景失败，探针总开关已关闭");
         }
 
@@ -230,9 +230,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     /**
      * 返回cloud 数据
      *
-     * @param code
-     * @param errorMsg
-     * @return
+     * @param code     错误编码
+     * @param errorMsg 错误信息
+     * @return 拼接后的错误信息
      */
     private String getCloudMessage(String code, String errorMsg) {
         return String.format("takin-cloud启动场景失败，异常代码【%s】,异常原因【%s】", code, errorMsg);
@@ -254,9 +254,10 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             paramNew.setContinueRead(param.getContinueRead().equals("1"));
         } catch (Exception e) {
             log.error("未知异常", e);
-        } finally {
-            //            redisTemplate.delete("hasUnread_" + param.getSceneId());
         }
+        //finally {
+        //            redisTemplate.delete("hasUnread_" + param.getSceneId());
+        //}
         return paramNew;
     }
 
@@ -272,6 +273,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         // 停止先删除 redis中的
         SceneManageIdReq req = new SceneManageIdReq();
         req.setId(param.getSceneId());
+        WebPluginUtils.fillCloudUserData(req);
         ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(req);
         if (!response.getSuccess()) {
             throw new TakinWebException(ExceptionCode.SCENE_STOP_ERROR, response.getError());
@@ -287,6 +289,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         SceneManageIdReq req = new SceneManageIdReq();
         req.setId(sceneId);
         req.setReportId(frontReportId);
+        WebPluginUtils.fillCloudUserData(req);
         ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(req);
         if (!response.getSuccess()) {
             throw new TakinWebException(ExceptionCode.SCENE_CHECK_ERROR, response.getError());
@@ -495,7 +498,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         String scriptCorrelation = this.checkScriptCorrelation(sceneData);
         errorMsg.append(scriptCorrelation == null ? "" : scriptCorrelation);
         if (errorMsg.length() > 0) {
-            String msg = "";
+            String msg;
             if (errorMsg.toString().endsWith(Constants.SPLIT)) {
                 msg = StringUtils.substring(errorMsg.toString(), 0, errorMsg.toString().length() - 1);
             } else {

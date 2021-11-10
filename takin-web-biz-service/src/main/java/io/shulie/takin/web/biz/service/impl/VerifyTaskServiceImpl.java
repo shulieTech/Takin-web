@@ -22,6 +22,7 @@ import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.cloud.sdk.model.common.SlaBean;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
@@ -98,6 +99,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                 Long sceneId = Long.parseLong(tmpRefId);
                 SceneManageIdReq req = new SceneManageIdReq();
                 req.setId(sceneId);
+                WebPluginUtils.fillCloudUserData(req);
                 ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(req);
                 if (!Objects.isNull(response.getData())) {
                     SceneActionResp resp = JSONObject.parseObject(JSON.toJSONString(response.getData()),
@@ -375,6 +377,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                         if (VerifyResultStatusEnum.LEAKED.getCode().equals(count)) {
                             SceneManageIdReq queryReq = new SceneManageIdReq();
                             queryReq.setId(refId);
+                            WebPluginUtils.fillCloudUserData(queryReq);
                             ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(queryReq);
                             if (!Objects.isNull(response.getData())) {
                                 SceneActionResp resp = JSONObject.parseObject(JSON.toJSONString(response.getData()),

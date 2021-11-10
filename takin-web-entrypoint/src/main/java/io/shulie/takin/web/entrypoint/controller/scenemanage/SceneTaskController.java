@@ -21,6 +21,7 @@ import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
@@ -70,8 +71,9 @@ public class SceneTaskController {
 
     /**
      * 启动场景
-     * @param param
-     * @return
+     *
+     * @param param 入参
+     * @return 启动结果
      */
     @PostMapping("/start")
     @ApiOperation(value = "开始场景测试")
@@ -96,7 +98,7 @@ public class SceneTaskController {
             param.setResourceName(sceneData.getPressureTestSceneName());
             SceneActionResp startTaskResponse = sceneTaskService.startTask(param);
             // 开启漏数
-            startCheckLeakTask(param,sceneData);
+            startCheckLeakTask(param, sceneData);
             return WebResponse.success(startTaskResponse);
         } catch (TakinWebException ex) {
             // 解除 场景锁
@@ -116,6 +118,7 @@ public class SceneTaskController {
             //查询报告id
             SceneManageIdReq req = new SceneManageIdReq();
             req.setId(param.getSceneId());
+            WebPluginUtils.fillCloudUserData(req);
             ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(req);
             SceneActionResp resp = JsonHelper.json2Bean(JsonHelper.bean2Json(response.getData()),
                 SceneActionResp.class);
@@ -137,8 +140,9 @@ public class SceneTaskController {
 
     /**
      * 停止压测
-     * @param param
-     * @return
+     *
+     * @param param 入参
+     * @return 停止结果
      */
     @PostMapping("/stop")
     @ApiOperation(value = "结束场景测试")
@@ -172,9 +176,10 @@ public class SceneTaskController {
 
     /**
      * 检查压测场景启动状态
-     * @param sceneId
-     * @param reportId
-     * @return
+     *
+     * @param sceneId  场景主键
+     * @param reportId 报告主键
+     * @return 启动状态
      */
     @GetMapping("/checkStartStatus")
     @ApiOperation(value = "检查启动状态")

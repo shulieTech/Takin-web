@@ -14,6 +14,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -46,6 +47,7 @@ import net.sf.jsqlparser.statement.update.Update;
 @AllArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
+@Slf4j
 public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor {
     /**
      * 没有tenant_id 的表
@@ -143,6 +145,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         if (CollectionUtils.isNotEmpty(joins)) {
             processJoins(joins);
         }
+        log.debug("组装select的sql【{}】", plainSelect.toString());
     }
 
     private void processJoins(List<Join> joins) {
@@ -243,6 +246,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             return;
         }
         update.setWhere(this.andExpression(table, update.getWhere()));
+        log.debug("组装update的sql【{}】", update.toString());
     }
 
     /**
@@ -255,6 +259,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             return;
         }
         delete.setWhere(this.andExpression(delete.getTable(), delete.getWhere()));
+        log.debug("组装update的sql【{}】", delete.toString());
     }
 
     /**

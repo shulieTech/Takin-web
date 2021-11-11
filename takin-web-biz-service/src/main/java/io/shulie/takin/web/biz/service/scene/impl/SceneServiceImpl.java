@@ -11,7 +11,6 @@ import io.shulie.takin.cloud.open.request.scene.manage.SynchronizeRequest;
 import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
-import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
@@ -23,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,14 +41,11 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.ext.content.script.ScriptNode;
-import io.shulie.takin.web.common.vo.WebOptionEntity;
-import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.common.enums.scene.SceneTypeEnum;
@@ -58,7 +53,6 @@ import io.shulie.takin.web.common.enums.script.FileTypeEnum;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
 import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
-import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.common.enums.script.ScriptTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
@@ -66,33 +60,26 @@ import io.shulie.takin.web.data.param.scene.ScenePageQueryParam;
 import io.shulie.takin.web.common.constant.ScriptManageConstant;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
-import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.enums.script.ScriptMVersionEnum;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
-import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.biz.convert.linkmanage.LinkManageConvert;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateSaveParam;
 import io.shulie.takin.cloud.open.req.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
-import io.shulie.takin.cloud.open.req.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
-import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
-import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.shulie.takin.cloud.open.req.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
@@ -225,6 +212,8 @@ public class SceneServiceImpl implements SceneService {
             fileCreateByStringParamReq.setFilePath(tempFile);
             String fileMd5 = fileApi.createFileByPathAndString(fileCreateByStringParamReq);
             fileManageCreateRequest.setMd5(fileMd5);
+            fileManageCreateRequest.setId(null);
+            fileManageCreateRequest.setScriptContent(null);
         }
         ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
         analyzeRequest.setScriptFile(tmpFilePath + "/" + fileManageCreateRequest.getUploadId() + "/" + fileManageCreateRequest.getFileName());
@@ -426,7 +415,10 @@ public class SceneServiceImpl implements SceneService {
         List<SceneLinkRelateResult> sceneLinkRelateResults = sceneService.nodeLinkToBusinessActivity(scriptNodes, id);
         if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
             sceneLinkRelateResults = sceneLinkRelateResults.stream().filter(Objects::nonNull)
-                    .filter(o -> StringUtils.isNotBlank(o.getBusinessLinkId())).collect(Collectors.toList());
+                    .filter(o -> StringUtils.isNotBlank(o.getBusinessLinkId())).peek(o -> {
+                        o.setId(null);
+                        o.setSceneId(id.toString());
+                    }).collect(Collectors.toList());
         }
 
         //查询已有的匹配关系,删除现在没有关联的节点
@@ -689,7 +681,7 @@ public class SceneServiceImpl implements SceneService {
 
     private void toBusinessFlowDetailResponse(SceneResult sceneResult, BusinessFlowDetailResponse result) {
         result.setSceneLevel(sceneResult.getSceneLevel());
-        result.setIsCode(sceneResult.getIsCore());
+        result.setIsCore(sceneResult.getIsCore());
         result.setBusinessProcessName(sceneResult.getSceneName());
         result.setId(sceneResult.getId());
         result.setScriptDeployId(sceneResult.getScriptDeployId());

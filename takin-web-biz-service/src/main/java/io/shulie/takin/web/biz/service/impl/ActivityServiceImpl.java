@@ -575,7 +575,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setActivityLevel(result.getActivityLevel());
-        activityResponse.setIsCore(String.valueOf(result.getIsCore()));
+        activityResponse.setIsCore(result.getIsCore() == null ? "" : result.getIsCore().toString());
         activityResponse.setBusinessDomain(result.getBusinessDomain());
 
         // 拓扑图查询
@@ -625,7 +625,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setServiceName(result.getServiceName());
         activityResponse.setActivityLevel(result.getActivityLevel());
-        activityResponse.setIsCore(String.valueOf(result.getIsCore()));
+        activityResponse.setIsCore(result.getIsCore() == null ? "" : result.getIsCore().toString());
         activityResponse.setBusinessDomain(result.getBusinessDomain());
         activityResponse.setLinkId(ActivityUtil.createLinkId(result.getServiceName(), result.getMethod(),
             result.getApplicationName(), result.getRpcType(), result.getExtend()));

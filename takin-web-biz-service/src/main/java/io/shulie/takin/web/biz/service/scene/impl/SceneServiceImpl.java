@@ -212,6 +212,8 @@ public class SceneServiceImpl implements SceneService {
             fileCreateByStringParamReq.setFilePath(tempFile);
             String fileMd5 = fileApi.createFileByPathAndString(fileCreateByStringParamReq);
             fileManageCreateRequest.setMd5(fileMd5);
+            fileManageCreateRequest.setId(null);
+            fileManageCreateRequest.setScriptContent(null);
         }
         ScriptAnalyzeRequest analyzeRequest = new ScriptAnalyzeRequest();
         analyzeRequest.setScriptFile(tmpFilePath + "/" + fileManageCreateRequest.getUploadId() + "/" + fileManageCreateRequest.getFileName());

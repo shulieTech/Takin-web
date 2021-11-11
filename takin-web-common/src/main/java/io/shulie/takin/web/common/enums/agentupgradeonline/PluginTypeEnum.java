@@ -12,9 +12,9 @@ import lombok.Getter;
 @Getter
 public enum PluginTypeEnum {
 
-    MIDDLEWARE(0, "中间件探针", "plugins/agent"),
+    MIDDLEWARE(0, "中间件探针", "plugins/middleware"),
     SIMULATOR(1, "simulator包", "plugins/simulator"),
-    AGENT(2, "agent包", "plugins/middleware"),
+    AGENT(2, "agent包", "plugins/agent"),
     ;
 
     /**

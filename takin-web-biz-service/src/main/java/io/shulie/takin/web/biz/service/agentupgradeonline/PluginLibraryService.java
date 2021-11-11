@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline;
 
+import java.io.File;
+
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,5 +20,13 @@ public interface PluginLibraryService {
      * @return AgentPluginUploadResponse对象
      */
     AgentPluginUploadResponse upload(MultipartFile file);
+
+    /**
+     * 根据插件ID查询对应的插件文件
+     *
+     * @param pluginId 插件Id
+     * @return 插件文件
+     */
+    File getPluginFile(Long pluginId);
 
 }

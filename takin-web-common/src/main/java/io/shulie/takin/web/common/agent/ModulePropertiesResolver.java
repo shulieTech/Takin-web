@@ -5,6 +5,7 @@ import java.util.List;
 
 import io.shulie.takin.web.common.pojo.bo.agent.AgentModuleInfo;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @Description 解析module.properties文件
@@ -87,7 +88,7 @@ public class ModulePropertiesResolver {
      * @param dependsInfo 依赖信息
      * @return List<AgentModuleInfo>
      */
-    private static List<AgentModuleInfo> dealDependsInfo(String dependsInfo) {
+    public static List<AgentModuleInfo> dealDependsInfo(String dependsInfo) {
         List<AgentModuleInfo> result = new ArrayList<>();
         if (StringUtils.isBlank(dependsInfo)) {
             return result;
@@ -101,6 +102,23 @@ public class ModulePropertiesResolver {
             result.add(agentModuleInfo);
         }
         return result;
+    }
+
+    /**
+     * 将插件的依赖拼接成String 如 kafka@2.0.0,redisson@1.0.1
+     *
+     * @param moduleInfo AgentModuleInfo对象
+     * @return 返回 kafka@2.0.0,redisson@1.0.1 字符串
+     */
+    public static String joinDependenciesInfo(AgentModuleInfo moduleInfo) {
+        if (moduleInfo == null || CollectionUtils.isEmpty(moduleInfo.getDependenciesInfo())) {
+            return null;
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        moduleInfo.getDependenciesInfo().forEach(item -> stringBuilder.append(item.getModuleId()).append("@")
+            .append(item.getModuleVersion()).append(","));
+
+        return stringBuilder.substring(0, stringBuilder.toString().length() - 1);
     }
 
 }

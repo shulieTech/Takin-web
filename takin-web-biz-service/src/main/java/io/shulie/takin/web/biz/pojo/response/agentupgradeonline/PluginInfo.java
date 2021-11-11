@@ -23,12 +23,22 @@ public class PluginInfo {
     private Integer pluginType;
 
     /**
+     * 依赖包
+     */
+    private String dependenciesInfo;
+
+    /**
      * 插件版本
      */
     private String pluginVersion;
 
     /**
-     * 是否定制 0：否 1：是
+     * 是否定制 false:非定制 true:定制
      */
-    private Integer isCustomMode;
+    private Boolean isCustomMode;
+
+    /**
+     * 更新内容
+     */
+    private String updateInfo;
 }

@@ -2,6 +2,7 @@ package io.shulie.takin.web.common.agent;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -41,6 +42,45 @@ public abstract class AgentZipResolverSupport implements IAgentZipResolver {
             errorMessages.addAll(checkFile0(filePath));
         }
         return errorMessages;
+    }
+
+    @Override
+    public String readModuleInfo(String filePath) {
+        if (StringUtils.isBlank(filePath)) {
+            return null;
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        ZipFile zipFile = null;
+        InputStream is = null;
+        try {
+            zipFile = new ZipFile(new File(filePath));
+            ZipEntry entry = zipFile.getEntry(getZipBaseDirName() + File.separator + "module.properties");
+            is = zipFile.getInputStream(entry);
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = is.read(buf)) > 0) {
+                stringBuilder.append(new String(buf, 0, len));
+            }
+        } catch (IOException e) {
+            // ignore
+        } finally {
+            if (zipFile != null) {
+                try {
+                    zipFile.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+        return stringBuilder.toString();
     }
 
     /**

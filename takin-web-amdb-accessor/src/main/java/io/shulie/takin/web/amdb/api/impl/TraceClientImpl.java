@@ -57,12 +57,6 @@ public class TraceClientImpl implements TraceClient {
      */
     private static final String ENTRY_TRACE_LOG_PATH = "/amdb/trace/getAllTraceList";
 
-    /**
-     * 根据压测任务 id 获得对应的请求流量明细
-     * 路由
-     */
-    private static final String ENTRY_TRACE_BY_TASK_ID_PATH = "/amdb/trace/getEntryTraceListByTaskId";
-
     @Autowired
     private AmdbClientProperties properties;
 
@@ -79,7 +73,7 @@ public class TraceClientImpl implements TraceClient {
         dto.setEntranceList(this.getEntryListString(dto.getEntranceRuleDTOS()));
         dto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         dto.setEnvCode(WebPluginUtils.traceEnvCode());
-        String url = properties.getUrl().getAmdb() + ENTRY_TRACE_BY_TASK_ID_PATH;
+        String url = properties.getUrl().getAmdb() + ENTRY_TRACE_BY_TASK_ID_PATH_V2;
         try {
             AmdbResult<List<EntryTraceInfoDTO>> result = AmdbHelper.builder().url(url)
                     .param(dto)

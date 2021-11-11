@@ -3,6 +3,7 @@ package com.pamirs.takin.entity.domain.entity.linkmanage;
 import java.io.Serializable;
 import java.util.Date;
 
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
@@ -11,7 +12,7 @@ import lombok.Data;
  * @author
  */
 @Data
-public class Scene implements Serializable {
+public class Scene extends UserBaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * 主键id
@@ -49,6 +50,5 @@ public class Scene implements Serializable {
      * 变更时间
      */
     private Date updateTime;
-    private Long customerId;
-    private Long userId;
+
 }

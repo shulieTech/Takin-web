@@ -154,7 +154,7 @@ public enum ConfigServerKeyEnum implements AppConstants {
     /**
      * 租户 id
      */
-    TAKIN_CUSTOMER_ID("customer.id", "takin.customer.id", NO),
+    TAKIN_TENANT_ID("customer.id", "takin.customer.id", NO),
 
     /**
      * 最大CPU使用率

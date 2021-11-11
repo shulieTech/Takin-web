@@ -11,11 +11,13 @@
         <result column="IS_DELETED" jdbcType="TINYINT" property="isDeleted"/>
         <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime"/>
-        <result column="CUSTOMER_ID" jdbcType="BIGINT" property="customerId"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
+
         <result column="USER_ID" jdbcType="BIGINT" property="userId"/>
     </resultMap>
     <sql id="Base_Column_List">
-        ID, SCENE_NAME, BUSINESS_LINK, SCENE_LEVEL, IS_CORE, IS_CHANGED, IS_DELETED, CREATE_TIME,UPDATE_TIME,CUSTOMER_ID,USER_ID
+        ID, SCENE_NAME, BUSINESS_LINK, SCENE_LEVEL, IS_CORE, IS_CHANGED, IS_DELETED, CREATE_TIME,UPDATE_TIME,tenant_id,env_code,USER_ID
     </sql>
 
     <resultMap id="BusinessFlowIdAndNameDtoMap"

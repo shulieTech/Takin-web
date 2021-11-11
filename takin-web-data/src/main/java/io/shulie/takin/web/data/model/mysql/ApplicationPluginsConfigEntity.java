@@ -3,10 +3,11 @@ package io.shulie.takin.web.data.model.mysql;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.shulie.takin.web.data.model.mysql.base.BaseEntity;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -19,9 +20,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_application_plugins_config")
-public class ApplicationPluginsConfigEntity extends BaseEntity implements Serializable {
+public class ApplicationPluginsConfigEntity extends UserBaseEntity implements Serializable {
     private static final long serialVersionUID = -20702119464891307L;
 
+    @TableId(type = IdType.AUTO)
     private Long id;
     /**
      * 应用id
@@ -53,17 +55,6 @@ public class ApplicationPluginsConfigEntity extends BaseEntity implements Serial
      */
     private String configValue;
 
-    /**
-     * 用户Id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
-
-    /**
-     * 租户ID
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
 
     /**
      * 创建时间
@@ -84,5 +75,13 @@ public class ApplicationPluginsConfigEntity extends BaseEntity implements Serial
      * 修改人ID
      */
     private Long modifierId;
+
+
+    /**
+     * 删除
+     * 1 删除, 0 未删除
+     */
+    @TableLogic
+    private Integer isDeleted;
 
 }

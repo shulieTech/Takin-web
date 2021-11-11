@@ -89,7 +89,7 @@ public interface ApplicationDAO {
      *
      * @return
      */
-    ApplicationDetailResult getApplicationByCustomerIdAndName(String appName);
+    ApplicationDetailResult getApplicationByTenantIdAndName(String appName);
 
     /**
      * 指定责任人-应用管理
@@ -105,7 +105,7 @@ public interface ApplicationDAO {
      * @param applicationNames 应用名称列表
      * @return 应用列表
      */
-    List<ApplicationMntEntity> listByApplicationNamesAndCustomerId(List<String> applicationNames);
+    List<ApplicationMntEntity> listByApplicationNamesAndTenantId(List<String> applicationNames);
 
     /**
      * 通过名称获得应用
@@ -132,9 +132,9 @@ public interface ApplicationDAO {
      * 批量更新应用节点数
      *
      * @param paramList  参数集合
-     * @param customerId 租户id
+     * @param tenantId 租户id
      */
-    void batchUpdateAppNodeNum(List<NodeNumParam> paramList, Long customerId);
+    void batchUpdateAppNodeNum(List<NodeNumParam> paramList, Long tenantId);
 
     List<ApplicationAttentionListEntity> getAttentionList(ApplicationAttentionParam param);
 

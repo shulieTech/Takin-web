@@ -286,7 +286,7 @@ public class ScriptManageDAOImpl
             ScriptManageEntity::getName,
             ScriptManageEntity::getGmtUpdate,
             ScriptManageEntity::getScriptVersion,
-            ScriptManageEntity::getCustomerId,
+            ScriptManageEntity::getTenantId,
             ScriptManageEntity::getUserId
         );
         wrapper.in(ScriptManageEntity::getId, scriptIdList);
@@ -323,7 +323,7 @@ public class ScriptManageDAOImpl
                 .stream()
                 .filter(scriptManageEntity -> scriptManageEntity.getId().equals(result.getScriptId()))
                 .findFirst().get();
-            result.setCustomerId(entity.getCustomerId());
+            result.setTenantId(entity.getTenantId());
             result.setUserId(entity.getUserId());
         }
         return PagingList.of(scriptManageDeploys, scriptManageEntityPage.getTotal());

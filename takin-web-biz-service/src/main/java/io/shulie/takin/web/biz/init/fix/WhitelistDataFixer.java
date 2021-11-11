@@ -51,12 +51,12 @@ public class WhitelistDataFixer {
         WhitelistSearchParam param = new WhitelistSearchParam();
         List<WhitelistResult> whitelistResults = whiteListDAO.getList(param);
 
-        if (whitelistResults.stream().noneMatch(t -> t.getCustomerId() == null)) {
+        if (whitelistResults.stream().noneMatch(t -> t.getTenantId() == null)) {
             log.info("没有可订正白名单租户的数据");
             return;
         }
         // 找到租户字段为空的数据
-        List<WhitelistResult> fixWhitelistResults = whitelistResults.stream().filter(t -> t.getCustomerId() == null).collect(Collectors.toList());
+        List<WhitelistResult> fixWhitelistResults = whitelistResults.stream().filter(t -> t.getTenantId() == null).collect(Collectors.toList());
         List<Long> ids = fixWhitelistResults.stream().map(WhitelistResult::getApplicationId).distinct().collect(Collectors.toList());
 
         List<ApplicationDetailResult> applications = applicationDAO.getApplicationByIds(ids);

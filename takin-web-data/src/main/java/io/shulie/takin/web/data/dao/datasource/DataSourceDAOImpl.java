@@ -45,8 +45,6 @@ public class DataSourceDAOImpl implements DataSourceDAO {
             TakinDbresourceEntity::getName,
             TakinDbresourceEntity::getJdbcUrl,
             TakinDbresourceEntity::getUsername,
-            TakinDbresourceEntity::getCustomerId,
-            TakinDbresourceEntity::getUserId,
             TakinDbresourceEntity::getCreateTime,
             TakinDbresourceEntity::getUpdateTime);
         if (!Objects.isNull(queryParam.getType())) {
@@ -130,7 +128,6 @@ public class DataSourceDAOImpl implements DataSourceDAO {
             dataSourceResult.setPassword(datasourceEntity.getPassword());
             dataSourceResult.setCreateTime(datasourceEntity.getCreateTime());
             dataSourceResult.setUpdateTime(datasourceEntity.getUpdateTime());
-            dataSourceResult.setCustomerId(datasourceEntity.getCustomerId());
             dataSourceResult.setUserId(datasourceEntity.getUserId());
             return dataSourceResult;
         }

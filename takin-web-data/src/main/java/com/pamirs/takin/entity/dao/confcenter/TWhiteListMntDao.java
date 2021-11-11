@@ -202,7 +202,7 @@ public interface TWhiteListMntDao {
      */
     List<TWList> queryDistinctWhiteListTotalByApplicationId(
         @Param("applicationId") Long applicationId,
-        @Param("customerId") Long customerId);
+        @Param("teanntId") Long tenantId);
 
     /**
      * 说明: 根据白名单id查询是否在基础链路中使用

@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.result.whitelist;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2021/4/12 4:18 下午
  */
 @Data
-public class WhitelistResult {
+public class WhitelistResult extends UserCommonExt {
     /**
      * 主键id
      */
@@ -42,15 +43,6 @@ public class WhitelistResult {
      */
     private Integer useYn;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     /**
      * 插入时间

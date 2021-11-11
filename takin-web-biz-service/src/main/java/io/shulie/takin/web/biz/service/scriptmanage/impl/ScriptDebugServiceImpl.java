@@ -341,7 +341,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }
 
         // 查询应用列表
-        List<ApplicationMntEntity> applications = applicationDAO.listByApplicationNamesAndCustomerId(applicationNames);
+        List<ApplicationMntEntity> applications = applicationDAO.listByApplicationNamesAndTenantId(applicationNames);
         if (applications.isEmpty()) {
             return "业务活动对应的应用程序不存在!";
         }

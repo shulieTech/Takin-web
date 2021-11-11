@@ -11,14 +11,16 @@
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
         <result column="is_deleted" jdbcType="BIT" property="isDeleted"/>
         <result column="is_enable" jdbcType="BIT" property="isEnable"></result>
-        <result column="customer_id" jdbcType="BIGINT" property="customerId"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
+
         <result column="user_id" jdbcType="BIGINT" property="userId"/>
         <result column="remark" jdbcType="VARCHAR" property="remark"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id, application_name,application_id, method_info,
-    groovy, create_time, update_time, is_deleted,is_enable,customer_id,user_id,remark
+    groovy, create_time, update_time, is_deleted,is_enable,tenant_id,env_code,user_id,remark
     </sql>
 
     <update id="update" parameterType="com.pamirs.takin.entity.domain.entity.LinkGuardEntity">

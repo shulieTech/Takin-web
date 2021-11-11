@@ -155,7 +155,7 @@ public class ConfCenterService extends CommonService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void saveApplication(TApplicationMnt tApplicationMnt) throws TakinModuleException {
-        int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(
+        int applicationExist = tApplicationMntDao.applicationExistByTenantIdAndAppName(
             WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),tApplicationMnt.getApplicationName());
         if (applicationExist > 0) {
             throw new TakinModuleException(TakinErrorEnum.CONFCENTER_ADD_APPLICATION_DUPICATE_EXCEPTION);
@@ -174,14 +174,15 @@ public class ConfCenterService extends CommonService {
         param.setConfigValue("-1");
         param.setApplicationName(applicationMnt.getApplicationName());
         param.setApplicationId(applicationMnt.getApplicationId());
-        param.setCustomerId(applicationMnt.getCustomerId());
+        param.setTenantId(applicationMnt.getTenantId());
+        param.setEnvCode(applicationMnt.getEnvCode());
         param.setUserId(applicationMnt.getUserId());
         pluginsConfigService.add(param);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void saveAgentRegisteApplication(TApplicationMnt tApplicationMnt) {
-        int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(
+        int applicationExist = tApplicationMntDao.applicationExistByTenantIdAndAppName(
             WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), tApplicationMnt.getApplicationName());
         if (applicationExist > 0) {
             OperationLogContextHolder.ignoreLog();

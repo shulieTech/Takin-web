@@ -42,8 +42,6 @@ public class SceneManageOpenApi {
     @ApiOperation(value = "压测场景列表")
     public Response<List<SceneManageListOutput>> getList(@ApiParam(name = "current", value = "页码", required = true) Integer current,
         @ApiParam(name = "pageSize", value = "页大小", required = true) Integer pageSize,
-        @ApiParam(name = "customName", value = "客户名称") String customerName,
-        @ApiParam(name = "customId", value = "客户ID") Long customerId,
         @ApiParam(name = "sceneId", value = "压测场景ID") Long sceneId,
         @ApiParam(name = "sceneName", value = "压测场景名称") String sceneName,
         @ApiParam(name = "status", value = "压测状态") Integer status) {

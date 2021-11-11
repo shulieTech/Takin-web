@@ -75,7 +75,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                     continue;
                 }
 
-                ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByCustomerIdAndName(appName);
+                ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByTenantIdAndName(appName);
                 if (applicationDetailResult == null) {
                     throw new TakinWebException(TakinWebExceptionEnum.AGENT_REGISTER_API,
                         String.format("应用不存在, 应用名称: %s", appName));
@@ -266,7 +266,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
         createParam.setIsDeleted((byte)0);
         createParam.setUpdateTime(new Date());
         createParam.setCreateTime(new Date());
-        ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByCustomerIdAndName(
+        ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByTenantIdAndName(
             vo.getApplicationName());
         //4.8.0.4以后入口规则的所属用户跟着应用走
         createParam.setTenantId(applicationDetailResult.getTenantId());

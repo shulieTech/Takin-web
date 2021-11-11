@@ -3,7 +3,7 @@ package io.shulie.takin.web.data.model.mysql;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
+import io.shulie.takin.web.data.model.mysql.base.CommonWithUserIdAndTenantIdEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_http_client_config_template")
 @ToString(callSuper = true)
-public class HttpClientConfigTemplateEntity extends NewBaseEntity implements Serializable {
+public class HttpClientConfigTemplateEntity extends CommonWithUserIdAndTenantIdEntity implements Serializable {
     private static final long serialVersionUID = 321777498580060382L;
 
     /**
@@ -81,15 +81,7 @@ public class HttpClientConfigTemplateEntity extends NewBaseEntity implements Ser
      */
     private String commit;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
-    /**
-     * 用户id
-     */
-    private Long userId;
 
 
 }

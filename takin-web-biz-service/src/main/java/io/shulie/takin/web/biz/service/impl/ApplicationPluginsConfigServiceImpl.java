@@ -62,8 +62,8 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         if (Objects.isNull(param) || Objects.isNull(param.getApplicationId())) {
             throw new TakinWebException(ExceptionCode.POD_NUM_EMPTY, "缺少参数");
         }
-        Long customerId = WebPluginUtils.traceTenantId();
-        param.setCustomerId(customerId);
+        Long tenantId = WebPluginUtils.traceTenantId();
+        param.setTenantId(tenantId);
         IPage<ApplicationPluginsConfigEntity> listPage = applicationPluginsConfigDAO.findListPage(param);
         List<ApplicationPluginsConfigEntity> records = listPage.getRecords();
         List<ApplicationPluginsConfigVO> configVos = Lists.newArrayList();
@@ -116,14 +116,14 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             throw new TakinWebException(ExceptionCode.POD_NUM_EMPTY, "配置值不能为空！");
         }
         //优先取参数内的 否则从restcontext取
-        if (param.getUserId() != null && param.getCustomerId() != null) {
+        if (param.getUserId() != null && param.getTenantId() != null) {
             entity.setCreatorId(param.getUserId());
             entity.setModifierId(param.getUserId());
-            entity.setCustomerId(param.getCustomerId());
+            entity.setTenantId(param.getTenantId());
         } else {
             entity.setCreatorId(WebPluginUtils.traceUserId());
             entity.setModifierId(WebPluginUtils.traceUserId());
-            entity.setCustomerId(WebPluginUtils.traceTenantId());
+            entity.setTenantId(WebPluginUtils.traceTenantId());
         }
 
         Date now = new Date();
@@ -152,7 +152,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             entity.setModifieTime(now);
             entity.setCreatorId(WebPluginUtils.traceUserId());
             entity.setModifierId(WebPluginUtils.traceUserId());
-            entity.setCustomerId(WebPluginUtils.traceTenantId());
+            entity.setTenantId(WebPluginUtils.traceTenantId());
         });
 
         return applicationPluginsConfigDAO.updateBatchById(entitys);
@@ -176,7 +176,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         entity.setModifieTime(now);
         entity.setCreatorId(WebPluginUtils.traceUserId());
         entity.setModifierId(WebPluginUtils.traceUserId());
-        entity.setCustomerId(WebPluginUtils.traceTenantId());
+        entity.setTenantId(WebPluginUtils.traceTenantId());
         applicationPluginsConfigMapper.updateById(entity);
         return true;
     }
@@ -221,7 +221,8 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             configParam.setApplicationName(applicationMnt.getApplicationName());
             configParam.setApplicationId(applicationMnt.getApplicationId());
             configParam.setUserId(applicationMnt.getUserId());
-            configParam.setCustomerId(applicationMnt.getCustomerId());
+            configParam.setTenantId(applicationMnt.getTenantId());
+            configParam.setEnvCode(applicationMnt.getEnvCode());
             this.add(configParam);
         });
     }

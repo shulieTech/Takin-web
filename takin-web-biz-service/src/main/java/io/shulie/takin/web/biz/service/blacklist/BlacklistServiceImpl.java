@@ -174,7 +174,8 @@ public class BlacklistServiceImpl implements BlacklistService {
         BeanUtils.copyProperties(input, param);
         UserExt user = WebPluginUtils.traceUser();
         if (user != null) {
-            param.setCustomerId(WebPluginUtils.traceTenantId());
+            param.setTenantId(WebPluginUtils.traceTenantId());
+            param.setEnvCode(WebPluginUtils.traceEnvCode());
             param.setUserId(user.getId());
         }
         List<BlacklistResult> results = blackListDAO.selectList(param);

@@ -179,17 +179,17 @@ public class AgentServiceImpl implements AgentService {
 
         String userAppKey = getFileRequest.getUserAppKey();
         if (StrUtil.isBlank(userAppKey)) {
-            // 因为此接口 controller 没有做登录拦截, 所以可能没有 customer_id, 所以 customer_id 倒序查找第一个
+            // 因为此接口 controller 没有做登录拦截, 所以可能没有 tenant_id, 所以 tenantId 倒序查找第一个
             // 可能有一个问题就是 admin 操作, 其他租户没操作, 导致探针包不一样
-            // 根据应用名称, agentId 查出节点探针的操作记录, customer_id 倒序查找第一个
-            return applicationNodeProbeDAO.getByApplicationNameAndAgentIdAndMaxCustomerId(applicationName, agentId, null);
+            // 根据应用名称, agentId 查出节点探针的操作记录, tenant_id 倒序查找第一个
+            return applicationNodeProbeDAO.getByApplicationNameAndAgentIdAndMaxTenantId(applicationName, agentId, null);
         }
 
         // 根据 userAppKey 查出用户
-        // 然后根据用户的 customerId 去查询操作
+        // 然后根据用户的 tenantId 去查询操作
         TenantInfoExt tenant = WebPluginUtils.getTenantInfo(userAppKey, null);
         this.isGetFileError(tenant == null, "userAppKey 对应的租户不存在!");
-        return applicationNodeProbeDAO.getByApplicationNameAndAgentIdAndMaxCustomerId(applicationName, agentId, tenant.getTenantId());
+        return applicationNodeProbeDAO.getByApplicationNameAndAgentIdAndMaxTenantId(applicationName, agentId, tenant.getTenantId());
     }
 
 }

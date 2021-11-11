@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class CommonWithUserIdAndTenantKeyEntity extends NewBaseEntity {
+public class CommonWithUserIdAndTenantIdEntity extends NewBaseEntity {
 
     private static final long serialVersionUID = 1L;
 

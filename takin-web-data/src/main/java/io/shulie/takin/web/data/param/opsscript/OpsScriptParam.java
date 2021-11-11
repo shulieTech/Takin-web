@@ -22,7 +22,7 @@ public class OpsScriptParam implements Serializable {
     /**
      * 租户ID
      */
-    private Long customerId;
+    private Long tenantId;
 
     /**
      * 脚本名称

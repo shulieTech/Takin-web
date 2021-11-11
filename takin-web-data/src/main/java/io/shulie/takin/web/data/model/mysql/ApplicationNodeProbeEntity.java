@@ -2,8 +2,6 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.io.Serializable;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
@@ -21,11 +19,6 @@ import lombok.EqualsAndHashCode;
 public class ApplicationNodeProbeEntity extends NewBaseEntity implements Serializable {
     private static final long serialVersionUID = 621811300794225122L;
 
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
 
     /**
      * 应用名称

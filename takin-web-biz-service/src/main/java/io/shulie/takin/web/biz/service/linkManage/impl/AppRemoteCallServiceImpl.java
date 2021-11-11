@@ -485,7 +485,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     }
 
     private List<AgentBlacklistVO> getNewBlackList(String appName) {
-        ApplicationDetailResult detailResult = applicationDAO.getApplicationByCustomerIdAndName(appName);
+        ApplicationDetailResult detailResult = applicationDAO.getApplicationByTenantIdAndName(appName);
         if (detailResult == null) {
             return Lists.newArrayList();
         }

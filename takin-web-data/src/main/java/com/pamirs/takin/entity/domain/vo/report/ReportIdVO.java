@@ -17,6 +17,4 @@ public class ReportIdVO extends WebRequest implements Serializable {
     private Long reportId;
 
     private Long sceneId;
-
-    private Long customerId;
 }

@@ -505,11 +505,11 @@ public class WhiteListServiceImpl implements WhiteListService {
     public PageInfo<WhiteListVO> queryWhitelist(WhiteListQueryVO vo) {
         Map<String, WhiteListVO> totalResult = Maps.newHashMap();
         // 如果是超级管理员
-        Long customerId = WebPluginUtils.traceTenantId();
+        Long tenantId = WebPluginUtils.traceTenantId();
         if (WebPluginUtils.validateSuperAdmin()) {
-            customerId = null;
+            tenantId = null;
         }
-        List<TWList> dbResult = tWhiteListMntDao.queryDistinctWhiteListTotalByApplicationId(vo.getApplicationId(), customerId);
+        List<TWList> dbResult = tWhiteListMntDao.queryDistinctWhiteListTotalByApplicationId(vo.getApplicationId(), tenantId);
         String applicationName = applicationMntDao.selectApplicationName(String.valueOf(vo.getApplicationId()));
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(vo.getApplicationId());
         if (applicationName == null) {

@@ -30,24 +30,24 @@ public class ApplicationRegisterCache {
     @Autowired
     protected RedisTemplate redisTemplate;
 
-    public Integer queryValue(Long customerId,String applicationName) {
-        String key = getKey(customerId,applicationName);
+    public Integer queryValue(Long tenantId,String applicationName) {
+        String key = getKey(tenantId,applicationName);
         Object obj = redisTemplate.opsForValue().get(key);
         if (obj != null){
             return (Integer)obj;
         }
-        int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(
-            customerId, WebPluginUtils.traceEnvCode(), applicationName);
+        int applicationExist = tApplicationMntDao.applicationExistByTenantIdAndAppName(
+            tenantId, WebPluginUtils.traceEnvCode(), applicationName);
         redisTemplate.opsForValue().set(key,applicationExist);
         return applicationExist;
     }
 
     //RedisKey改造增加tenantId,envCode
-    String getKey(Long customerId, String applicationName){
+    String getKey(Long tenantId, String applicationName){
         StringBuilder builder = new StringBuilder();
         builder.append(CACHE_NAME).append(":");
         builder.append(TenantKeyUtils.getTenantKey());
-        builder.append(customerId).append(":").append(applicationName);
+        builder.append(tenantId).append(":").append(applicationName);
         return builder.toString();
     }
 

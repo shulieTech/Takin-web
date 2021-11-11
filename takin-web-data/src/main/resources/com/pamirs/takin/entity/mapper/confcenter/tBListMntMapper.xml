@@ -34,7 +34,7 @@
         USE_YN,
         CREATE_TIME,
         UPDATE_TIME,
-        CUSTOMER_ID,
+        tenant_id,
         USER_ID
         from
         t_black_list
@@ -53,7 +53,7 @@
                USE_YN,
                CREATE_TIME,
                UPDATE_TIME,
-                CUSTOMER_ID,
+                TENANT_ID,
                 USER_ID
         from t_black_list
         where BLIST_ID = #{blistId}

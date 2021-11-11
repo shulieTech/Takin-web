@@ -67,7 +67,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -142,8 +141,8 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
         }
         fileManageCreateParam.setFileType(input.getFileType());
 
-        Long customerId = Long.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_CUSTOMER_ID));
-        fileManageCreateParam.setCustomerId(customerId);
+        Long tenantId = Long.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_TENANT_ID));
+        fileManageCreateParam.setTenantId(tenantId);
         String uploadPath = String.format("%s/shell/%s/%s/%s",
             ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH) + WebPluginUtils
                 .traceTenantCode() + Separator.Separator1.getValue(),

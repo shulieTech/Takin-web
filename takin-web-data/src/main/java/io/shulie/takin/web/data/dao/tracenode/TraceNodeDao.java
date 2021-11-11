@@ -16,46 +16,46 @@ public interface TraceNodeDao {
     void batchInsert(List<TraceNodeInfoParam> params);
 
     /**
-     * 获取节点信息根据 traceId,与rpcId 与 customerId
+     * 获取节点信息根据 traceId,与rpcId 与 tenantId
      *
      * @return
      */
-    TraceNodeInfoResult getNode(String traceId, String rpcId, Long customerId, Integer logType, String agentId, String appName);
+    TraceNodeInfoResult getNode(String traceId, String rpcId, Long teanntId, Integer logType, String agentId, String appName);
 
     /**
      * 获取节点信息List
      *
      * @return
      */
-    List<TraceNodeInfoResult> getNodeList(String traceId, Long customerId);
+    List<TraceNodeInfoResult> getNodeList(String traceId, Long tenantId);
 
     /**
      * 节点个数
      *
      * @return
      */
-    Long getNodeCount(String traceId, Long customerId);
+    Long getNodeCount(String traceId, Long tenantId);
 
     /**
      * 异常节点个数
      *
      * @return
      */
-    Long getExceptionNodeCount(String traceId, Long customerId);
+    Long getExceptionNodeCount(String traceId, Long tenantId);
 
     /**
      * 未知节点个数
      *
      * @return
      */
-    Long getUnknownNodeCount(String traceId, Long customerId);
+    Long getUnknownNodeCount(String traceId, Long tenantId);
 
     /**
      * 未知节点list
      *
      * @return
      */
-    List<TraceNodeInfoResult> getUnknownNodes(String traceId, Long customerId);
+    List<TraceNodeInfoResult> getUnknownNodes(String traceId, Long tenantId);
 
     /**
      * 根据id获取

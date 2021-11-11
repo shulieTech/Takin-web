@@ -48,7 +48,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
         entity.setUrl(createParam.getUrl());
         entity.setConfig(createParam.getConfig());
         entity.setParseConfig(createParam.getParseConfig());
-        entity.setCustomerId(createParam.getTenantId());
+        entity.setTenantId(createParam.getTenantId());
         entity.setUserId(createParam.getUserId());
         entity.setStatus(createParam.getStatus());
 
@@ -140,7 +140,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
         dsResult.setUpdateTime(entity.getUpdateTime());
         dsResult.setConfig(entity.getConfig());
         dsResult.setParseConfig(entity.getParseConfig());
-        dsResult.setCustomerId(entity.getCustomerId());
+        dsResult.setTenantId(entity.getTenantId());
         dsResult.setUserId(entity.getUserId());
 
         return dsResult;
@@ -181,7 +181,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
                 dsResult.setUpdateTime(entity.getUpdateTime());
                 dsResult.setConfig(entity.getConfig());
                 dsResult.setParseConfig(entity.getParseConfig());
-                dsResult.setCustomerId(entity.getCustomerId());
+                dsResult.setTenantId(entity.getTenantId());
                 dsResult.setUserId(entity.getUserId());
                 applicationDsResultList.add(dsResult);
             }

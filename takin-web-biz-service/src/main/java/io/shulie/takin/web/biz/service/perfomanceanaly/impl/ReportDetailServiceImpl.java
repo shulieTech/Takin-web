@@ -87,8 +87,9 @@ public class ReportDetailServiceImpl implements ReportDetailService {
                 reportParam.setConfigType(global.getBizType());
                 reportParam.setConfigKey(global.getKey());
                 reportParam.setConfigValue(global.getValue());
-                reportParam.setCustomerId(tenantId);
-                reportParam.setUserId(tenantId);
+                reportParam.setTenantId(WebPluginUtils.traceTenantId());
+                reportParam.setEnvCode(WebPluginUtils.traceEnvCode());
+                reportParam.setUserId(WebPluginUtils.traceUserId());
                 saveList.add(reportParam);
             });
         }
@@ -102,8 +103,9 @@ public class ReportDetailServiceImpl implements ReportDetailService {
                 reportParam.setConfigType(appConfig.getBizType());
                 reportParam.setConfigKey(appConfig.getKey());
                 reportParam.setConfigValue(appConfig.getValue());
-                reportParam.setCustomerId(tenantId);
-                reportParam.setUserId(tenantId);
+                reportParam.setTenantId(WebPluginUtils.traceTenantId());
+                reportParam.setEnvCode(WebPluginUtils.traceEnvCode());
+                reportParam.setUserId(WebPluginUtils.traceUserId());
                 saveList.add(reportParam);
             });
         }

@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.param.leakverify;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -7,7 +8,7 @@ import lombok.Data;
  * @date 2021/1/5 8:16 下午
  */
 @Data
-public class LeakVerifyResultCreateParam {
+public class LeakVerifyResultCreateParam extends UserCommonExt {
     private Long id;
 
     /**
@@ -45,13 +46,4 @@ public class LeakVerifyResultCreateParam {
      */
 //    private Integer status;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 }

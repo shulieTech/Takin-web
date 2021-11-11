@@ -180,7 +180,6 @@ public class ProbeServiceImpl implements ProbeService, ProbeConstants, AppConsta
         CreateProbeParam createProbeParam = new CreateProbeParam();
         createProbeParam.setVersion(version);
         createProbeParam.setPath(path);
-        //createProbeParam.setCustomerId(TakinRestContext.getCustomerId());
         createProbeParam.setGmtUpdate(new Date());
         this.isCreateError(!probeDAO.save(createProbeParam), "探针记录创建失败!");
         return createProbeParam.getId();

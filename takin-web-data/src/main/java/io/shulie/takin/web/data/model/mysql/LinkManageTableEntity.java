@@ -133,7 +133,6 @@ public class LinkManageTableEntity extends UserBaseEntity {
 
     public static final String COL_IS_JOB = "IS_JOB";
 
-    public static final String COL_CUSTOMER_ID = "CUSTOMER_ID";
 
     public static final String COL_USER_ID = "USER_ID";
 

@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.param.linkmanage;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -11,7 +12,7 @@ import lombok.Data;
  * @date 2020/11/5 17:38
  */
 @Data
-public class BusinessLinkManageUpdateParam {
+public class BusinessLinkManageUpdateParam extends UserCommonExt {
     /**
      * 主键
      */
@@ -65,21 +66,9 @@ public class BusinessLinkManageUpdateParam {
      */
     private Integer canDelete;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     public BusinessLinkManageUpdateParam() {
     }
 
-    public BusinessLinkManageUpdateParam(Long linkId, Long userId) {
-        this.linkId = linkId;
-        this.userId = userId;
-    }
 }

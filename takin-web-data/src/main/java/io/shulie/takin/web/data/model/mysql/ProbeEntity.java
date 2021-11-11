@@ -2,8 +2,6 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.io.Serializable;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
@@ -30,11 +28,5 @@ public class ProbeEntity extends NewBaseEntity implements Serializable {
      * 上传地址
      */
     private String path;
-
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
 
 }

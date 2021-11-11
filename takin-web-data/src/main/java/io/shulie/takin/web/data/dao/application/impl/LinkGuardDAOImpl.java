@@ -45,7 +45,7 @@ public class LinkGuardDAOImpl extends ServiceImpl<LinkGuardMapper, LinkGuardEnti
         List<LinkGuardResult> results = new ArrayList<>();
         LambdaQueryWrapper<LinkGuardEntity> wrapper = new LambdaQueryWrapper<>();
         if (WebPluginUtils.checkUserPlugin()) {
-            wrapper.eq(LinkGuardEntity::getCustomerId, WebPluginUtils.traceTenantId());
+            wrapper.eq(LinkGuardEntity::getTenantId, WebPluginUtils.traceTenantId());
         }
         wrapper.eq(LinkGuardEntity::getApplicationName, appName);
         List<LinkGuardEntity> linkGuardEntities = this.getBaseMapper().selectList(wrapper);

@@ -349,7 +349,7 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    public ApplicationDetailResult getApplicationByCustomerIdAndName(String appName) {
+    public ApplicationDetailResult getApplicationByTenantIdAndName(String appName) {
         if (!StringUtils.isEmpty(appName)) {
             LambdaQueryWrapper<ApplicationMntEntity> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(ApplicationMntEntity::getApplicationName, appName);
@@ -377,7 +377,7 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    public List<ApplicationMntEntity> listByApplicationNamesAndCustomerId(List<String> applicationNames) {
+    public List<ApplicationMntEntity> listByApplicationNamesAndTenantId(List<String> applicationNames) {
         LambdaQueryWrapper<ApplicationMntEntity> wrapper = this.getLambdaQueryWrapper().select(
                 ApplicationMntEntity::getApplicationId,
                 ApplicationMntEntity::getApplicationName, ApplicationMntEntity::getAccessStatus,
@@ -425,8 +425,8 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    public void batchUpdateAppNodeNum(List<NodeNumParam> paramList, Long customerId) {
-        applicationMntMapper.batchUpdateAppNodeNum(paramList, customerId);
+    public void batchUpdateAppNodeNum(List<NodeNumParam> paramList, Long tenantId) {
+        applicationMntMapper.batchUpdateAppNodeNum(paramList, tenantId);
     }
 
     @Override

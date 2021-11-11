@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.param.application;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -11,7 +12,7 @@ import lombok.Data;
  * @date 2020/11/5 17:29
  */
 @Data
-public class ApplicationUpdateParam {
+public class ApplicationUpdateParam extends UserCommonExt {
 
     /**
      * 主键
@@ -43,21 +44,9 @@ public class ApplicationUpdateParam {
     private Byte isDeleted;
     private String requestMethod;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     public ApplicationUpdateParam() {
     }
 
-    public ApplicationUpdateParam(Long id, Long userId) {
-        this.id = id;
-        this.userId = userId;
-    }
+
 }

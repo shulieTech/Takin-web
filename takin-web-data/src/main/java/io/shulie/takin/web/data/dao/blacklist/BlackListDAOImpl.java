@@ -136,8 +136,8 @@ public class BlackListDAOImpl implements BlackListDAO {
             wrapper.eq(BlackListEntity::getApplicationId, param.getApplicationId());
         }
         // 数据权限放开
-        //if (param.getCustomerId() != null) {
-        //    wrapper.eq(BlackListEntity::getCustomerId, param.getCustomerId());
+        //if (param.getTenantId() != null) {
+        //    wrapper.eq(BlackListEntity::getTenantId, param.getTenantId());
         //}
         //if (param.getUserId() != null) {
         //    wrapper.eq(BlackListEntity::getUserId, param.getUserId());

@@ -45,15 +45,6 @@ public class BlacklistVO extends AuthQueryResponseCommonExt {
      */
     private Integer useYn;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
 
 }

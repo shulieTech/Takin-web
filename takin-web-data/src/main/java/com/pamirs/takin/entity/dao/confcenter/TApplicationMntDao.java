@@ -37,7 +37,7 @@ public interface TApplicationMntDao {
      * @param applicationName
      * @return
      */
-    int applicationExistByCustomerIdAndAppName(@Param("tenantId") Long tenantId, @Param("envCode") String envCode,
+    int applicationExistByTenantIdAndAppName(@Param("tenantId") Long tenantId, @Param("envCode") String envCode,
         @Param("applicationName") String applicationName);
 
     /**
@@ -95,7 +95,7 @@ public interface TApplicationMntDao {
     TApplicationMnt queryApplicationinfoById(@Param("applicationId") long applicationId);
 
     public TApplicationMnt queryApplicationinfoByIdAndRole(@Param("applicationId") long applicationId,
-        @Param("role") Integer role, @Param("userId") Integer userId);
+        @Param("role") Integer role, @Param("tenantId") Long tenantId);
 
     /**
      * 说明: 根据应用id查询应用信息接口

@@ -1,6 +1,5 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;

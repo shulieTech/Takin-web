@@ -18,4 +18,12 @@
         id, zk_path, `type`, `value`, `remark`, is_deleted, create_time,
         modify_time
     </sql>
+
+    <select id="selectListByZkPath"
+            resultType="io.shulie.takin.web.data.result.pradarzkconfig.PradarZKConfigResult">
+        select id, zk_path, `type`, `value`, remark, tenant_id, env_code from t_pradar_zk_config where is_deleted = 0 and tenant_id = #{tenantId} and env_code = #{envCode} and zk_path = #{zkPath}
+        UNION ALL
+        select id, zk_path, `type`, `value`, remark, tenant_id, env_code from t_pradar_zk_config where is_deleted = 0 and tenant_id = -1 and env_code = 'system' and zk_path = #{zkPath}
+    </select>
+
 </mapper>

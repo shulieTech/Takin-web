@@ -32,4 +32,14 @@ public interface PradarZkConfigDAO {
     List<PradarZKConfigResult> selectList();
 
     PradarZKConfigResult selectById(Long id);
+
+    /**
+     * 通过 zk path 获得配置
+     * 如果自己的存在， 就使用自己的， 不存在， 就使用
+     *
+     * @param zkPath zk路径
+     * @return 配置
+     */
+    PradarZKConfigResult getByZkPath(String zkPath);
+
 }

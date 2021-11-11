@@ -193,6 +193,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
         param = new ActivityExistsQueryParam();
         param.setVirtualEntrance(request.getVirtualEntrance());
+        param.setMethod(request.getMethodName());
         // rpc转化
         param.setRpcType(EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType());
         exists = activityDAO.exists(param);
@@ -232,6 +233,7 @@ public class ActivityServiceImpl implements ActivityService {
     private ActivityResult checkVirtualActivityUpdate(VirtualActivityUpdateRequest request) {
         ActivityResult oldActivity = getActivityResult(request.getActivityId(), request.getActivityName());
         ActivityExistsQueryParam param = new ActivityExistsQueryParam();
+        param.setMethod(request.getMethodName());
         param.setVirtualEntrance(request.getVirtualEntrance());
         // rpc转化
         param.setRpcType(EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType());
@@ -573,7 +575,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setActivityLevel(result.getActivityLevel());
-        activityResponse.setIsCore(String.valueOf(result.getIsCore()));
+        activityResponse.setIsCore(result.getIsCore() == null ? "" : result.getIsCore().toString());
         activityResponse.setBusinessDomain(result.getBusinessDomain());
 
         // 拓扑图查询
@@ -623,7 +625,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setServiceName(result.getServiceName());
         activityResponse.setActivityLevel(result.getActivityLevel());
-        activityResponse.setIsCore(String.valueOf(result.getIsCore()));
+        activityResponse.setIsCore(result.getIsCore() == null ? "" : result.getIsCore().toString());
         activityResponse.setBusinessDomain(result.getBusinessDomain());
         activityResponse.setLinkId(ActivityUtil.createLinkId(result.getServiceName(), result.getMethod(),
             result.getApplicationName(), result.getRpcType(), result.getExtend()));

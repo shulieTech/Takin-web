@@ -13,14 +13,14 @@ import lombok.Data;
  */
 @Data
 @ApiModel
-public class ReportTrendQueryParam extends WebRequest implements Serializable {
+public class ReportTrendQueryParam implements Serializable {
 
     private static final long serialVersionUID = -8391664190402372494L;
 
     /**
      * 报表ID
      */
-    @ApiModelProperty(value = "报表ID")
+    @ApiModelProperty(value = "报告ID")
     private Long reportId;
 
     /**

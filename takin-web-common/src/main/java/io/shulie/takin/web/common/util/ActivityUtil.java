@@ -117,6 +117,7 @@ public class ActivityUtil {
             // 服务入口
             entranceJoinEntity.setMethodName(split[0]);
             entranceJoinEntity.setVirtualEntrance(split[1]);
+            entranceJoinEntity.setServiceName(split[1]);
             entranceJoinEntity.setRpcType(split[2]);
         } else {
             entranceJoinEntity.setVirtualEntrance(dbEntrance);

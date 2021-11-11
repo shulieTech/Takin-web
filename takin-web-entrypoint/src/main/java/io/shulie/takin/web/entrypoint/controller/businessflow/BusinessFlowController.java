@@ -76,7 +76,7 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.UPDATE
     )
-    public ResponseResult<BusinessFlowMatchResponse> autoMatchActivity(@RequestBody BusinessFlowAutoMatchRequest businessFlowAutoMatchRequest) {
+    public ResponseResult<BusinessFlowMatchResponse> autoMatchActivity(@RequestBody @Valid BusinessFlowAutoMatchRequest businessFlowAutoMatchRequest) {
         BusinessFlowMatchResponse sceneDetailDto = sceneService.autoMatchActivity(businessFlowAutoMatchRequest.getId());
         return ResponseResult.success(sceneDetailDto);
     }
@@ -114,7 +114,7 @@ public class BusinessFlowController {
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
             needAuth = ActionTypeEnum.QUERY
     )
-    public ResponseResult<Boolean> getSceneDetail(@Valid BusinessFlowUpdateRequest businessFlowUpdateRequest) {
+    public ResponseResult<Boolean> getSceneDetail(@Valid @RequestBody BusinessFlowUpdateRequest businessFlowUpdateRequest) {
         sceneService.updateBusinessFlow(businessFlowUpdateRequest);
         return ResponseResult.success(Boolean.TRUE);
     }

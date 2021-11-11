@@ -71,7 +71,13 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
             return PagingList.of(Lists.newArrayList(), configs.getTotal());
         }
         //2. 通过zkpath查询
-        final List<PradarZkConfigEntity> zkPathList = configs.getRecords();
+        final List<PradarZkConfigEntity> zkPathEntityList = configs.getRecords();
+        List<String> zkPathList;
+        if (zkPathEntityList == null){
+            zkPathList = Lists.newArrayList();
+        }
+        zkPathList = zkPathEntityList.stream().filter(t->Objects.nonNull(t) && Objects.nonNull(t.getZkPath())).map(PradarZkConfigEntity::getZkPath).collect(
+            Collectors.toList());
         final LambdaQueryWrapper<PradarZkConfigEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(PradarZkConfigEntity::getZkPath, zkPathList);
         queryWrapper.in(PradarZkConfigEntity::getTenantId, tenantIdList);
@@ -91,9 +97,8 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
             .collect(Collectors.toMap(PradarZkConfigEntity::getZkPath, Function.identity()));
 
         //5. 整合
-        List<PradarZKConfigResult> pradarZkConfigResultList = zkPathList.stream().filter(t->Objects.nonNull(zkMap.get(t.getZkPath())) || Objects.nonNull(sysZkMap.get(t.getZkPath()))).map(t -> {
-            String zkPath = t.getZkPath();
-            PradarZkConfigEntity entity = zkMap.get(t.getZkPath());
+        List<PradarZKConfigResult> pradarZkConfigResultList = zkPathList.stream().filter(zkPath->Objects.nonNull(zkMap.get(zkPath)) || Objects.nonNull(sysZkMap.get(zkPath))).map(zkPath -> {
+            PradarZkConfigEntity entity = zkMap.get(zkPath);
             if (Objects.isNull(entity)) {
                 entity = sysZkMap.get(zkPath);
             }

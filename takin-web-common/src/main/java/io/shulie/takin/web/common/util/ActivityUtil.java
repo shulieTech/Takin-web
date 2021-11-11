@@ -56,7 +56,10 @@ public class ActivityUtil {
      * @param rpcType
      * @return
      */
-    public static String buildVirtualEntrance(String virtualEntrance, String rpcType) {
+    public static String buildVirtualEntrance(String methodName,String virtualEntrance, String rpcType) {
+        if (StringUtils.isNotBlank(methodName)){
+            return StringUtils.join(Lists.newArrayList(methodName,virtualEntrance, rpcType), "|");
+        }
         if(StringUtils.isNotBlank(rpcType)) {
             return StringUtils.join(Lists.newArrayList(virtualEntrance, rpcType), "|");
         }else {
@@ -110,7 +113,13 @@ public class ActivityUtil {
             // 服务入口
             entranceJoinEntity.setVirtualEntrance(split[0]);
             entranceJoinEntity.setRpcType(split[1]);
-        }else {
+        }else if (split.length == 3){
+            // 服务入口
+            entranceJoinEntity.setMethodName(split[0]);
+            entranceJoinEntity.setVirtualEntrance(split[1]);
+            entranceJoinEntity.setServiceName(split[1]);
+            entranceJoinEntity.setRpcType(split[2]);
+        } else {
             entranceJoinEntity.setVirtualEntrance(dbEntrance);
             entranceJoinEntity.setRpcType("-1");
         }

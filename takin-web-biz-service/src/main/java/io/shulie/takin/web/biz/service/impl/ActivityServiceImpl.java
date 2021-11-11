@@ -175,7 +175,7 @@ public class ActivityServiceImpl implements ActivityService {
         // rpcType 修改
         createParam.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
         createParam.setEntrance(
-            ActivityUtil.buildVirtualEntrance(request.getVirtualEntrance(),
+            ActivityUtil.buildVirtualEntrance(request.getMethodName(),request.getVirtualEntrance(),
                 EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType()));
         //单独字段存中间软件类型
         createParam.setServerMiddlewareType(request.getType());
@@ -193,6 +193,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
         param = new ActivityExistsQueryParam();
         param.setVirtualEntrance(request.getVirtualEntrance());
+        param.setMethod(request.getMethodName());
         // rpc转化
         param.setRpcType(EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType());
         exists = activityDAO.exists(param);
@@ -219,7 +220,7 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setServerMiddlewareType(request.getType());
         // rpcType
         updateParam.setEntrance(
-            ActivityUtil.buildVirtualEntrance(request.getVirtualEntrance(),
+            ActivityUtil.buildVirtualEntrance(request.getMethodName(),request.getVirtualEntrance(),
                 EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType()));
         activityDAO.updateActivityNew(updateParam);
     }
@@ -232,6 +233,7 @@ public class ActivityServiceImpl implements ActivityService {
     private ActivityResult checkVirtualActivityUpdate(VirtualActivityUpdateRequest request) {
         ActivityResult oldActivity = getActivityResult(request.getActivityId(), request.getActivityName());
         ActivityExistsQueryParam param = new ActivityExistsQueryParam();
+        param.setMethod(request.getMethodName());
         param.setVirtualEntrance(request.getVirtualEntrance());
         // rpc转化
         param.setRpcType(EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType());

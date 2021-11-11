@@ -33,7 +33,7 @@ public class NewSceneRequest {
     @NotNull(message = "施压配置不能为空")
     private PtConfig config;
     @ApiModelProperty(value = "压测目标")
-    @NotNull(message = "业压测目标不能为空")
+    @NotNull(message = "业压测目标不能为空,key节点的xpathMd5，value是配置信息")
     private Map<String, SceneRequest.Goal> goal;
     @ApiModelProperty(value = "SLA配置")
     @NotNull(message = "SLA配置不能为空")

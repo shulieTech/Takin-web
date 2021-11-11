@@ -11,7 +11,7 @@ import java.io.Serializable;
 @ApiModel(value = "BusinessFlowUpdateRequest", description = "业务流程更新入参")
 public class BusinessFlowUpdateRequest implements Serializable {
 
-    @NotNull
+    @NotNull(message = "业务流程id不能为空")
     @ApiModelProperty(name = "id", value = "业务流程id")
     private Long id;
 

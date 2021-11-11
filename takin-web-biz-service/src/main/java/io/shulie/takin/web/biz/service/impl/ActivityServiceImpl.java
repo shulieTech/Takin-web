@@ -193,6 +193,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
         param = new ActivityExistsQueryParam();
         param.setVirtualEntrance(request.getVirtualEntrance());
+        param.setMethod(request.getMethodName());
         // rpc转化
         param.setRpcType(EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType());
         exists = activityDAO.exists(param);

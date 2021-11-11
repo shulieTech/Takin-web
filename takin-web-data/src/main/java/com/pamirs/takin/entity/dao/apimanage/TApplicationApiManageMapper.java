@@ -5,7 +5,6 @@ import java.util.List;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.pamirs.takin.entity.domain.entity.ApplicationApiManage;
 import com.pamirs.takin.entity.domain.query.ApplicationApiParam;
-import io.shulie.takin.web.common.annocation.DataAuth;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -30,8 +29,7 @@ public interface TApplicationApiManageMapper {
 
     List<ApplicationApiManage> querySimpleWithTenant(ApplicationApiParam apiParam);
 
-    @DataAuth()
-    List<ApplicationApiManage> selectBySelective(ApplicationApiManage record);
+    List<ApplicationApiManage> selectBySelective(@Param("record") ApplicationApiManage record,@Param("userIds") List<Long> userIds);
 
     int insertBatch(@Param("list") List<ApplicationApiManage> list);
 

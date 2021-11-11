@@ -315,7 +315,7 @@ public class ConfCenterService extends CommonService {
             PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
         }
         List<TApplicationMnt> queryApplicationList = tApplicationMntDao.queryApplicationList(applicationName,
-            applicationIds);
+            applicationIds,WebPluginUtils.getQueryAllowUserIdList());
 
         return new PageInfo<>(queryApplicationList.isEmpty() ? Lists.newArrayList() : queryApplicationList);
     }
@@ -754,7 +754,7 @@ public class ConfCenterService extends CommonService {
         paramMap.put("pageSize", bListQueryParam.getPageSize());
         String redisKey = bListQueryParam.getRedisKey();
         PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
-        List<TBList> queryBlackList = tBListMntDao.queryBList(redisKey, "");
+        List<TBList> queryBlackList = tBListMntDao.queryBList(redisKey, "",WebPluginUtils.getQueryAllowUserIdList());
         if (CollectionUtils.isNotEmpty(queryBlackList)) {
             for (TBList tbList : queryBlackList) {
                 List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();
@@ -2058,7 +2058,7 @@ public class ConfCenterService extends CommonService {
         paramMap.put("pageSize", bListQueryParam.getPageSize());
         String redisKey = bListQueryParam.getRedisKey();
         PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
-        List<TBList> queryBList = tBListMntDao.queryBList(redisKey, "");
+        List<TBList> queryBList = tBListMntDao.queryBList(redisKey, "",WebPluginUtils.getQueryAllowUserIdList());
         if (CollectionUtils.isNotEmpty(queryBList)) {
             for (TBList tbList : queryBList) {
                 List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();

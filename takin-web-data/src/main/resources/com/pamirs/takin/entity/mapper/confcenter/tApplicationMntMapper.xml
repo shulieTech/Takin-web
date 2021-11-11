@@ -191,6 +191,12 @@
                 #{applicationId}
             </foreach>
         </if>
+        <if test="userIds != null and userIds.size > 0">
+            AND tam.user_id IN
+            <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                #{userId}
+            </foreach>
+        </if>
         order by tam.APPLICATION_ID desc
     </select>
 

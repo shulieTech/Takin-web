@@ -30,8 +30,8 @@ public class BusinessFlowDetailResponse implements Serializable {
     @ApiModelProperty(name = "businessProcessName", value = "业务流程名字")
     private String businessProcessName;
 
-    @ApiModelProperty(name = "isCode", value = "是否核心流程")
-    private Integer isCode;
+    @ApiModelProperty(name = "isCore", value = "是否核心流程")
+    private Integer isCore;
 
     @ApiModelProperty(name = "sceneLevel", value = "业务流程等级")
     private String sceneLevel;

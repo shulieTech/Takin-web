@@ -171,7 +171,6 @@ public class ApplicationApiController {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.APPLICATION_NAME, vo.getApplicationName());
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ENTRY_API, vo.getApi());
-        // TODO: 2020/6/15
         try {
             return apiService.create(vo);
         } catch (Exception e) {

@@ -10,7 +10,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.mapper.mysql.TakinDbresourceMapper;
 import io.shulie.takin.web.data.model.mysql.TakinDbresourceEntity;
 import io.shulie.takin.web.data.param.datasource.DataSourceCreateParam;
@@ -114,9 +113,7 @@ public class DataSourceDAOImpl implements DataSourceDAO {
         if (StringUtils.isNotBlank(queryParam.getJdbcUrl())) {
             queryWrapper.eq(TakinDbresourceEntity::getJdbcUrl, queryParam.getJdbcUrl());
         }
-        if (WebPluginUtils.checkUserPlugin() && WebPluginUtils.traceTenantId() != null) {
-            queryWrapper.eq(TakinDbresourceEntity::getCustomerId, WebPluginUtils.traceTenantId());
-        }
+
         queryWrapper.eq(TakinDbresourceEntity::getIsDeleted, 0);
         List<TakinDbresourceEntity> datasourceEntityList = datasourceMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(datasourceEntityList)) {

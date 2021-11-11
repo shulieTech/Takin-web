@@ -5,7 +5,6 @@ import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import io.shulie.takin.web.data.model.mysql.NewBaseEntity;
 import lombok.ToString;
 
 /**
@@ -42,13 +41,13 @@ public class ApplicationTagRefEntity extends NewBaseEntity implements Serializab
     private String tagName;
 
     /**
-     * 租户id
+     * 环境标识
      */
-    private Long customerId;
+    private String envCode;
 
     /**
-     * 用户id
+     * 租户Id
      */
-    private Long userId;
+    private Long tenantId;
 
 }

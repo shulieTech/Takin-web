@@ -76,7 +76,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         }
         if (StringUtils.isNotBlank(param.getVirtualEntrance())) {
             wrapper.eq(BusinessLinkManageTableEntity::getEntrace,
-                ActivityUtil.buildVirtualEntrance(param.getVirtualEntrance(), param.getRpcType()));
+                ActivityUtil.buildVirtualEntrance(param.getMethod(),param.getVirtualEntrance(), param.getRpcType()));
         }
 
         wrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
@@ -148,7 +148,9 @@ public class ActivityDAOImpl implements ActivityDAO {
             // 虚拟业务活动
             businessLinkManageTableEntity.setBindBusinessId(param.getBindBusinessId());
         }
-        return businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
+        int insert = businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
+        param.setLinkId(businessLinkManageTableEntity.getLinkId());
+        return insert;
     }
 
     @Override

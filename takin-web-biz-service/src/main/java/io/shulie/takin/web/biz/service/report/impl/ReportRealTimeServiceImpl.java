@@ -26,7 +26,9 @@ import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDetailDTO;
 import com.pamirs.takin.entity.domain.entity.linkmanage.figure.RpcType;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageIdVO;
+import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
@@ -97,7 +99,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     public PageInfo<ReportTraceDTO> getReportLinkListByReportId(Long reportId, Integer type, int current,
                                                                 int pageSize) {
         ReportDetailDTO reportDetail = null;
-        WebResponse<HashMap> response = reportService.getReportByReportId(reportId);
+        ResponseResult<ReportDetailResp> response = reportService.getReportByReportId(reportId);
         if (response != null && response.getData() != null) {
             reportDetail = JSON.parseObject(JSON.toJSONString(response.getData()), ReportDetailDTO.class);
             log.info("Report Id={}, Status={}", reportId, reportDetail.getTaskStatus());

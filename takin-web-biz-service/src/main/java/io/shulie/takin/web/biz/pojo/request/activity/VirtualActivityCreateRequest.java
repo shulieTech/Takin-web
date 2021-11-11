@@ -44,4 +44,7 @@ public class VirtualActivityCreateRequest {
 
     @ApiModelProperty(name = "bindBusinessId", value = "绑定业务活动id")
     private String bindBusinessId;
+
+    @ApiModelProperty(name = "methodName", value = "请求方式：GET,PSOT")
+    private String methodName;
 }

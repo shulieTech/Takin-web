@@ -20,6 +20,9 @@ import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
 import com.pamirs.takin.entity.domain.vo.report.ReportLocalQueryParam;
+import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
+import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
@@ -90,11 +93,11 @@ public class ReportLocalController {
         return Response.success(reportLocalService.listRiskMachine(queryParam));
     }
 
-    @GetMapping("/report/businessActivity/summary/list")
-    @ApiOperation("压测明细")
-    public WebResponse getBusinessActivitySummaryList(Long reportId) {
-        return reportService.querySummaryList(reportId);
-    }
+    //@GetMapping("/report/businessActivity/summary/list")
+    //@ApiOperation("压测明细")
+    //public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
+    //    return reportService.querySummaryList(reportId);
+    //}
 
     @GetMapping("/report/machine/detail")
     @ApiOperation("性能详情")
@@ -140,7 +143,7 @@ public class ReportLocalController {
             // initReportLink(lists);
             return Response.success(Lists.newArrayList());
         } else {
-            WebResponse<HashMap> response = reportService.getReportByReportId(reportId);
+            ResponseResult<ReportDetailResp> response = reportService.getReportByReportId(reportId);
             if (response == null || response.getData() == null) {
                 return Response.fail("500", "Not Found Report, id=" + reportId);
             }

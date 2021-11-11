@@ -6,6 +6,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
+import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
 import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
@@ -50,7 +51,7 @@ public class ReportController {
     @GetMapping(value = "report/getReportByReportId")
     @ApiOperation("报告详情")
     @ApiImplicitParam(name = "reportId", value = "报告ID")
-    public WebResponse getReportByReportId(Long reportId) {
+    public ResponseResult<ReportDetailResp> getReportByReportId(Long reportId) {
         return reportService.getReportByReportId(reportId);
     }
 
@@ -122,6 +123,12 @@ public class ReportController {
     @ApiOperation("报告的业务活动")
     public WebResponse queryReportActivityBySceneId(Long sceneId) {
         return reportService.queryReportActivityBySceneId(sceneId);
+    }
+
+    @GetMapping("/report/businessActivity/summary/list")
+    @ApiOperation("压测明细")
+    public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
+        return reportService.querySummaryList(reportId);
     }
 
 }

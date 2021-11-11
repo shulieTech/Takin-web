@@ -4,6 +4,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
 import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
 import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
+import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
 import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
@@ -22,7 +23,7 @@ public interface ReportService {
 
     WebResponse listReport(ReportQueryParam param);
 
-    WebResponse getReportByReportId(Long reportId);
+    ResponseResult<ReportDetailResp> getReportByReportId(Long reportId);
 
     ResponseResult<ReportTrendResp> queryTempReportTrend(ReportTrendQueryParam param);
 
@@ -41,7 +42,7 @@ public interface ReportService {
 
     WebResponse queryReportActivityBySceneId(Long sceneId);
 
-    WebResponse querySummaryList(Long reportId);
+    ResponseResult<NodeTreeSummaryResp> querySummaryList(Long reportId);
 
     WebResponse queryMetrices(Long reportId, Long sceneId, Long customerId);
 

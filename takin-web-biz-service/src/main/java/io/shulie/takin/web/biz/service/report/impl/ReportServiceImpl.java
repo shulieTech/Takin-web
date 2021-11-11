@@ -119,7 +119,8 @@ public class ReportServiceImpl implements ReportService {
         if (!webResponse.getSuccess()) {
             ErrorInfo error = webResponse.getError();
             String errorMsg = Objects.isNull(error) ? "" : error.getMsg();
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR, "takin-cloud查询报告出错！原因：" + errorMsg);
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR,
+                "takin-cloud查询报告出错！原因：" + errorMsg);
         }
         List<Map> webRespData = (List<Map>)webResponse.getData();
         if (webRespData == null) {
@@ -162,7 +163,8 @@ public class ReportServiceImpl implements ReportService {
             return result;
         }
 
-        throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR, "takin-cloud查询实况报告错误，原因为：" + result.getError().getMsg());
+        throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR,
+            "takin-cloud查询实况报告错误，原因为：" + result.getError().getMsg());
     }
 
     private void fillExecuteMan(ReportDetailOutput output) {
@@ -176,11 +178,13 @@ public class ReportServiceImpl implements ReportService {
      * todo 不做需要修改
      */
     private void dealVirtualBusiness(ReportDetailOutput output) {
-        List<Long> ids = output.getBusinessActivity().stream().map(BusinessActivitySummaryBean::getBusinessActivityId).collect(Collectors.toList());
+        List<Long> ids = output.getBusinessActivity().stream().map(BusinessActivitySummaryBean::getBusinessActivityId)
+            .collect(Collectors.toList());
         ActivityQueryParam param = new ActivityQueryParam();
         param.setActivityIds(ids);
         List<ActivityListResult> result = activityDAO.getActivityList(param);
-        Map<Long, List<ActivityListResult>> map = result.stream().collect(Collectors.groupingBy(ActivityListResult::getActivityId));
+        Map<Long, List<ActivityListResult>> map = result.stream().collect(
+            Collectors.groupingBy(ActivityListResult::getActivityId));
         List<BusinessActivitySummaryBean> beans = output.getBusinessActivity();
         for (BusinessActivitySummaryBean bean : output.getBusinessActivity()) {
             List<ActivityListResult> activityResults = map.get(bean.getBusinessActivityId());
@@ -258,13 +262,14 @@ public class ReportServiceImpl implements ReportService {
 
     private LocalDateTime queryDataTimeByTraceId(String traceId) {
         String queryByTraceId =
-                "SELECT" +
-                        " time, totalTps" +
-                        " FROM trace_metrics" +
-                        " where" +
-                        " traceId = '" + traceId + "'";
+            "SELECT" +
+                " time, totalTps" +
+                " FROM trace_metrics" +
+                " where" +
+                " traceId = '" + traceId + "'";
 
-        Collection<TraceMetricsResult> results = influxDBManager.query(TraceMetricsResult.class, queryByTraceId, pradarDatabase);
+        Collection<TraceMetricsResult> results = influxDBManager.query(TraceMetricsResult.class, queryByTraceId,
+            pradarDatabase);
         ArrayList<TraceMetricsResult> queryByTraceIdList = new ArrayList<>(results);
 
         LocalDateTime localDateTime = null;
@@ -325,7 +330,8 @@ public class ReportServiceImpl implements ReportService {
     //
     //    // 获取 `压测实况`的`请求流量明细`. 取最晚一条 traceId
     //    PageInfo<ReportTraceDTO> reportLinkListByReportId =
-    //            reportRealTimeService.getReportLinkList(queryDTO.getReportId(), queryDTO.getSceneId(), queryDTO.getStartTime(), queryDTO.getType(), 0, 1);
+    //            reportRealTimeService.getReportLinkList(queryDTO.getReportId(), queryDTO.getSceneId(), queryDTO
+    //           .getStartTime(), queryDTO.getType(), 0, 1);
     //    List<ReportTraceDTO> reportTraceDTOS = reportLinkListByReportId.getList();
     //    if (CollectionUtils.isEmpty(reportTraceDTOS)) {
     //        return webResponse; // todo
@@ -346,7 +352,8 @@ public class ReportServiceImpl implements ReportService {
     //    return getWebResponse(webResponse, firstTraceId, latestTraceIdStr, businessActivityId, data);
     //}
 
-    private WebResponse getWebResponse(WebResponse<LinkedHashMap<String, Object>> webResponse, String firstTraceId, String lastTraceId, Long businessActivityId, LinkedHashMap<String, Object> data) {
+    private WebResponse getWebResponse(WebResponse<LinkedHashMap<String, Object>> webResponse, String firstTraceId,
+        String lastTraceId, Long businessActivityId, LinkedHashMap<String, Object> data) {
         LocalDateTime now = LocalDateTime.now();
 
         LocalDateTime startDateTime = queryDataTimeByTraceId(firstTraceId);
@@ -361,7 +368,7 @@ public class ReportServiceImpl implements ReportService {
 
         // 查询 链路拓扑图
         ActivityResponse activity = activityService
-                .getActivityWithMetricsByIdForReport(businessActivityId, startDateTime, endDateTime);
+            .getActivityWithMetricsByIdForReport(businessActivityId, startDateTime, endDateTime);
         // 响应中 加入 链路拓扑图
         data.put("activity", activity);
         data.put("isCompletion", isCompletion);
@@ -403,7 +410,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ResponseResult<NodeTreeSummaryResp> querySummaryList(Long reportId) {
-       return reportApi.getBusinessActivitySummaryList(reportId);
+        return reportApi.getBusinessActivitySummaryList(reportId);
     }
 
     @Override
@@ -497,9 +504,6 @@ public class ReportServiceImpl implements ReportService {
                 setSceneId(request.getSceneId());
                 setReportId(request.getReportId());
             }});
-        if (listResponseResult.getSuccess()){
-            return  listResponseResult;
-        }
-        return null;
+        return listResponseResult;
     }
 }

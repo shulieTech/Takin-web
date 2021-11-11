@@ -181,7 +181,7 @@ public class ConfCenterService extends CommonService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveAgentRegisteApplication(TApplicationMnt tApplicationMnt) {
+    public void saveAgentRegisterApplication(TApplicationMnt tApplicationMnt) {
         int applicationExist = tApplicationMntDao.applicationExistByTenantIdAndAppName(
             WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), tApplicationMnt.getApplicationName());
         if (applicationExist > 0) {

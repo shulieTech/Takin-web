@@ -539,7 +539,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             param.setNodeNum(1);
         }
 
-        confCenterService.saveAgentRegisteApplication(voToAppEntity(param));
+        confCenterService.saveAgentRegisterApplication(voToAppEntity(param));
         OperationLogContextHolder.ignoreLog();
 
         return Response.success();

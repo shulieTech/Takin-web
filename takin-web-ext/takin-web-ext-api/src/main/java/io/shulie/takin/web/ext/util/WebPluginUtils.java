@@ -689,11 +689,7 @@ public class WebPluginUtils {
      */
     public static String traceTenantAppKey() {
         if (userApi != null) {
-            String tenantAppKey = userApi.traceTenantAppKey();
-            if (StringUtils.isBlank(tenantAppKey)){
-                throw new RuntimeException("上下文中获取不到 tenantAppKey ！");
-            }
-            return tenantAppKey;
+            return userApi.traceTenantAppKey();
         }
         // 返回一个默认
         return DEFAULT_TENANT_APP_KEY;
@@ -705,11 +701,7 @@ public class WebPluginUtils {
      */
     public static String traceEnvCode() {
         if (userApi != null) {
-            final String envCode = userApi.traceEnvCode();
-            if (StringUtils.isBlank(envCode)){
-                throw new RuntimeException("上下文中获取不到 envCode ！");
-            }
-            return envCode;
+            return userApi.traceEnvCode();
         }
         return DEFAULT_ENV_CODE;
     }

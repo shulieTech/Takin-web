@@ -31,6 +31,8 @@ public class AmdbHelper {
     }
 
     public static class AmdbBuilder {
+        private final String tenantAppKey = "tenantAppKey";
+        private final String envCode = "envCode";
         /**
          * HTTP请求 默认GET请求
          */
@@ -63,6 +65,15 @@ public class AmdbHelper {
         }
 
         public AmdbBuilder param(Object param) {
+            final String str = JSON.toJSONString(param);
+            if (str.contains("{") && str.contains("}")) {
+                if (!str.contains(tenantAppKey)) {
+                    throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, tenantAppKey + " 不能为空！");
+                }
+                if (!str.contains(envCode)) {
+                    throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, envCode + " 不能为空！");
+                }
+            }
             this.param = param;
             return this;
         }
@@ -124,36 +135,36 @@ public class AmdbHelper {
             return amdbResponse;
         }
 
-
         /**
-        * 返回amdb的数据集合
-        *
-        * @param clazz 需要被转化的VO class
-        * @param <T>
-        * @return
-        */
+         * 返回amdb的数据集合
+         *
+         * @param clazz 需要被转化的VO class
+         * @param <T>
+         * @return
+         */
         public <T> AmdbResult<List<T>> list(Class<T> clazz) {
-        Assert.notNull(this.url, "url 不能为空！");
-        Assert.notNull(this.exception, "exception 不能为空！");
-        Assert.notNull(this.eventName, "eventName 不能为空！");
-        if (this.httpMethod == null) {
-            this.httpMethod = HttpMethod.GET;
-        }
-        String responseEntity = "";
-        if (this.httpMethod.equals(HttpMethod.GET)) {
-            responseEntity = (this.param == null ? HttpClientUtil.sendGet(url) : HttpClientUtil.sendGet(url, this.param));
-            this.eventName += "【GET】";
-        } else if (this.httpMethod.equals(HttpMethod.POST)) {
-            Assert.notNull(this.param, "param 不能为空！");
-            responseEntity = HttpClientUtil.sendPost(url, this.param);
-            this.eventName += "【POST】";
-        }
-        this.eventName = "AMDB" + this.eventName;
-        if (StringUtils.isBlank(responseEntity)) {
-            log.error("{}返回为空,请求地址：{}，请求参数：{}", this.eventName, this.url, JSON.toJSONString(this.param));
-            throw new TakinWebException(this.exception, this.eventName + "返回为空！");
-        }
-        AmdbResult<List<T>> amdbResponse = JSONUtil.toBean(responseEntity,
+            Assert.notNull(this.url, "url 不能为空！");
+            Assert.notNull(this.exception, "exception 不能为空！");
+            Assert.notNull(this.eventName, "eventName 不能为空！");
+            if (this.httpMethod == null) {
+                this.httpMethod = HttpMethod.GET;
+            }
+            String responseEntity = "";
+            if (this.httpMethod.equals(HttpMethod.GET)) {
+                responseEntity = (this.param == null ? HttpClientUtil.sendGet(url) : HttpClientUtil.sendGet(url,
+                    this.param));
+                this.eventName += "【GET】";
+            } else if (this.httpMethod.equals(HttpMethod.POST)) {
+                Assert.notNull(this.param, "param 不能为空！");
+                responseEntity = HttpClientUtil.sendPost(url, this.param);
+                this.eventName += "【POST】";
+            }
+            this.eventName = "AMDB" + this.eventName;
+            if (StringUtils.isBlank(responseEntity)) {
+                log.error("{}返回为空,请求地址：{}，请求参数：{}", this.eventName, this.url, JSON.toJSONString(this.param));
+                throw new TakinWebException(this.exception, this.eventName + "返回为空！");
+            }
+            AmdbResult<List<T>> amdbResponse = JSONUtil.toBean(responseEntity,
                 new TypeReference<AmdbResult<List<T>>>() {
                 }, true);
 
@@ -175,9 +186,6 @@ public class AmdbHelper {
             return amdbResponse;
         }
     }
-
-
-
 
     /**
      * 用于单元测试调试amdb返回json 排查问题

@@ -67,6 +67,10 @@ public class ApplicationVisualInfoResponse implements Serializable {
      */
     private boolean isAttend;
 
+    private String startTime;
+    private String endTime;
+    private int timeGap;
+
     /**
      * 健康检查结果
      */

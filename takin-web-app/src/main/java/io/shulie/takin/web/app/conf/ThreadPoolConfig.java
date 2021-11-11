@@ -157,4 +157,15 @@ public class ThreadPoolConfig {
         return new ThreadPoolExecutor(coreSize, coreSize * 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
+
+    /**
+     * e2e线程池
+     * @return
+     */
+    @Bean(name = "e2eThreadPool")
+    public ThreadPoolExecutor e2eThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("e2e-job-%d").build();
+        return new ThreadPoolExecutor(16, 1000, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
 }

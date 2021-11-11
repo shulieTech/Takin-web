@@ -413,7 +413,7 @@ public class SwaggerConfig {
             .paths(PathSelectors
                 .regex(
                     "/api/(agentReport|applicationPluginUpgrade|applicationPluginUpgradeRef|applicationTagRef"
-                        + "|pluginDependent|pluginLibrary|pluginTenantRef).*"))
+                        + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/command).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

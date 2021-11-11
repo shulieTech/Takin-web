@@ -139,6 +139,12 @@
             #{param.methodInfo,jdbcType=VARCHAR}
         </if>
         <if test="param.isEnable != null ">and is_enable = #{param.isEnable,jdbcType=BOOLEAN}</if>
+        <if test="userIds != null and userIds.size > 0">
+            AND user_id IN
+            <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                #{userId}
+            </foreach>
+        </if>
         order by create_time desc
         <!--        <if test="param.pageSize!= null  and param.pageSize!= null ">-->
         <!--            <bind name="key_offset" value="(param.currentPage)*param.pageSize"></bind>-->

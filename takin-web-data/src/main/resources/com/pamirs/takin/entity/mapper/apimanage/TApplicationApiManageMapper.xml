@@ -185,11 +185,17 @@
         select
         <include refid="Base_Column_List"/>
         from t_application_api_manage where IS_DELETED=0
-        <if test="api != null">
-            and api = #{api}
+        <if test="record != null and record.api != null">
+            and api = #{record.api}
         </if>
-        <if test="applicationName != null">
-            and APPLICATION_NAME = #{applicationName}
+        <if test="record != null and record.applicationName != null">
+            and APPLICATION_NAME = #{record.applicationName}
+        </if>
+        <if test="userIds != null and userIds.size > 0">
+            AND user_id IN
+            <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                #{userId}
+            </foreach>
         </if>
     </select>
 

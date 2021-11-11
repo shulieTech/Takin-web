@@ -152,6 +152,7 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
     @Override
     public PradarZKConfigResult selectById(Long id) {
         PradarZKConfigResult configResult = new PradarZKConfigResult();
+
         PradarZkConfigEntity entity = pradarZkConfigMapper.selectById(id);
         BeanUtils.copyProperties(entity, configResult);
         return configResult;

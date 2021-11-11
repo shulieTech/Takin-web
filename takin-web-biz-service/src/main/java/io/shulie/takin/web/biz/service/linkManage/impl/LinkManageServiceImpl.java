@@ -353,7 +353,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         queryVo.setIsChange(vo.getIschange());
         queryVo.setSystemProcessName(vo.getTechLinkName());
         queryVo.setDomain(vo.getDomain());
-        List<BusinessLinkDto> queryResult = tBusinessLinkManageTableMapper.selectBussinessLinkListBySelective2(queryVo);
+        List<BusinessLinkDto> queryResult = tBusinessLinkManageTableMapper.selectBussinessLinkListBySelective2(queryVo,WebPluginUtils.getQueryAllowUserIdList());
         //用户ids
         List<Long> userIds = queryResult.stream()
             .map(BusinessLinkDto::getUserId)
@@ -542,7 +542,7 @@ public class LinkManageServiceImpl implements LinkManageService {
 
     @Override
     public Response<List<SceneDto>> getScenes(SceneQueryVo vo) {
-        List<SceneDto> sceneDtos = tSceneMapper.selectByRelatedQuery(vo);
+        List<SceneDto> sceneDtos = tSceneMapper.selectByRelatedQuery(vo,WebPluginUtils.getQueryAllowUserIdList());
         List<SceneDto> pageData = PageUtils.getPage(true, vo.getCurrentPage(), vo.getPageSize(), sceneDtos);
 
         //查询业务活动是否存在虚拟业务活动

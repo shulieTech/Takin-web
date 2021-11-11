@@ -348,32 +348,38 @@
         on middleware.ID = relate.MIDDLEWARE_ID left join t_link_manage_table tech
         on manage.RELATED_TECH_LINK = tech.LINK_ID
         <trim prefix="where" prefixOverrides="and | or">
-            <if test="name != null">
-                and manage.LINK_NAME = #{name}
+            <if test="query != null and query.name != null">
+                and manage.LINK_NAME = #{query.name}
             </if>
-            <if test="entrance !=null">
-                and manage.ENTRACE = #{entrance,jdbcType=VARCHAR}
+            <if test="query != null and query.entrance !=null">
+                and manage.ENTRACE = #{query.entrance,jdbcType=VARCHAR}
             </if>
-            <if test="isChange !=null">
-                and manage.IS_CHANGE = #{isChange,jdbcType=TINYINT}
+            <if test="query != null and query.isChange !=null">
+                and manage.IS_CHANGE = #{query.isChange,jdbcType=TINYINT}
             </if>
-            <if test="systemProcessName != null">
-                and tech.LINK_NAME = #{systemProcessName}
+            <if test="query != null and query.systemProcessName != null">
+                and tech.LINK_NAME = #{query.systemProcessName}
             </if>
-            <if test="middleWareType !=null">
-                and middleware.MIDDLEWARE_TYPE = #{middleWareType}
+            <if test="query != null and query.middleWareType !=null">
+                and middleware.MIDDLEWARE_TYPE = #{query.middleWareType}
             </if>
-            <if test="middleWareName !=null">
-                and middleware.MIDDLEWARE_NAME = #{middleWareName}
+            <if test="query != null and query.middleWareName !=null">
+                and middleware.MIDDLEWARE_NAME = #{query.middleWareName}
             </if>
-            <if test="middleWareVersion !=null">
-                and middleware.MIDDLEWARE_VERSION = #{middleWareVersion}
+            <if test="query != null and query.middleWareVersion !=null">
+                and middleware.MIDDLEWARE_VERSION = #{query.middleWareVersion}
             </if>
-            <if test="id != null">
-                and manage.LINK_ID = #{id}
+            <if test="query != null and query.id != null">
+                and manage.LINK_ID = #{query.id}
             </if>
-            <if test="domain != null">
-                and manage.BUSINESS_DOMAIN = #{domain}
+            <if test="query != null and query.domain != null">
+                and manage.BUSINESS_DOMAIN = #{query.domain}
+            </if>
+            <if test="userIds != null and userIds.size > 0">
+                AND manage.user_id IN
+                <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
             </if>
             and manage.IS_DELETED = 0
         </trim>

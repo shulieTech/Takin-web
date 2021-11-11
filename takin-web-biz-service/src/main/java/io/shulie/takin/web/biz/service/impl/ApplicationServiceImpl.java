@@ -1035,7 +1035,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public void uninstallAllAgent(List<String> appIds) {
         try {
             // 查询所有应用
-            List<TApplicationMnt> applicationList = tApplicationMntDao.queryApplicationList(null, appIds);
+            List<TApplicationMnt> applicationList = tApplicationMntDao.queryApplicationList(null, appIds,WebPluginUtils.getQueryAllowUserIdList());
             if (CollectionUtil.isEmpty(applicationList)) {
                 return;
             }
@@ -2115,7 +2115,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public void resumeAllAgent(List<String> appIds) {
         try {
             // 查询所有应用
-            List<TApplicationMnt> applicationList = tApplicationMntDao.queryApplicationList(null, appIds);
+            List<TApplicationMnt> applicationList = tApplicationMntDao.queryApplicationList(null, appIds,WebPluginUtils.getQueryAllowUserIdList());
             if (CollectionUtil.isEmpty(applicationList)) {
                 return;
             }

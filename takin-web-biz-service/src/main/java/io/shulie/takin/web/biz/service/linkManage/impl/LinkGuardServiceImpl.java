@@ -75,7 +75,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         if (vo.getApplicationId() != null && !vo.getApplicationId().isEmpty()) {
             param.setAppId(Long.valueOf(vo.getApplicationId()));
         }
-        List<LinkGuardEntity> dbList = tLinkGuardMapper.selectByExample(param);
+        List<LinkGuardEntity> dbList = tLinkGuardMapper.selectByExample(param,WebPluginUtils.getQueryAllowUserIdList());
         if (dbList != null && dbList.size() > 0) {
             return Response.fail(FALSE_CORE, "同一个methodInfo只能设置一个挡板");
         }
@@ -165,7 +165,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
                     }
                 }
             }
-            list = tLinkGuardMapper.selectByExample(param);
+            list = tLinkGuardMapper.selectByExample(param,WebPluginUtils.getQueryAllowUserIdList());
 
             if (null != list && list.size() > 0) {
                 if (param.getCurrentPage() == null || param.getPageSize() == null) {
@@ -200,7 +200,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         try {
             LinkGuardQueryParam param = new LinkGuardQueryParam();
             param.setIsEnable(true);
-            list = tLinkGuardMapper.selectByExample(param);
+            list = tLinkGuardMapper.selectByExample(param,WebPluginUtils.getQueryAllowUserIdList());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Response.fail(FALSE_CORE, "查询挡板失败", null);

@@ -193,29 +193,35 @@
         left join t_business_link_manage_table business_manage on business_manage.LINK_ID=scene_relate.BUSINESS_LINK_ID
         left join t_link_manage_table tech_manage on scene_relate.TECH_LINK_ID=tech_manage.LINK_ID
         <trim prefix="where" prefixOverrides="and | or">
-            <if test="sceneName != null">
-                and scene.SCENE_NAME = #{sceneName}
+            <if test="vo != null and vo.sceneName != null">
+                and scene.SCENE_NAME = #{vo.sceneName}
             </if>
-            <if test="entrace !=null">
-                and tech_manage.ENTRACE = #{entrace,jdbcType=VARCHAR}
+            <if test="vo != null and vo.entrace !=null">
+                and tech_manage.ENTRACE = #{vo.entrace,jdbcType=VARCHAR}
             </if>
-            <if test="ischanged !=null">
-                and scene.IS_CHANGED = #{ischanged,jdbcType=TINYINT}
+            <if test="vo != null and vo.ischanged !=null">
+                and scene.IS_CHANGED = #{vo.ischanged,jdbcType=TINYINT}
             </if>
-            <if test="businessName !=null">
-                and business_manage.LINK_NAME = #{businessName}
+            <if test="vo != null and vo.businessName !=null">
+                and business_manage.LINK_NAME = #{vo.businessName}
             </if>
-            <if test="middleWareType !=null">
-                and middleware.MIDDLEWARE_TYPE = #{middleWareType}
+            <if test="vo != null and vo.middleWareType !=null">
+                and middleware.MIDDLEWARE_TYPE = #{vo.middleWareType}
             </if>
-            <if test="middleWareName !=null">
-                and middleware.MIDDLEWARE_NAME = #{middleWareName}
+            <if test="vo != null and vo.middleWareName !=null">
+                and middleware.MIDDLEWARE_NAME = #{vo.middleWareName}
             </if>
-            <if test="middleWareVersion !=null">
-                and middleware.MIDDLEWARE_VERSION = #{middleWareVersion}
+            <if test="vo != null and vo.middleWareVersion !=null">
+                and middleware.MIDDLEWARE_VERSION = #{vo.middleWareVersion}
             </if>
-            <if test="sceneId != null">
-                and scene.ID = #{sceneId}
+            <if test="vo != null and vo.sceneId != null">
+                and scene.ID = #{vo.sceneId}
+            </if>
+            <if test="userIds != null and userIds.size > 0">
+                AND scene.user_id IN
+                <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
             </if>
             and scene.IS_DELETED = 0
         </trim>

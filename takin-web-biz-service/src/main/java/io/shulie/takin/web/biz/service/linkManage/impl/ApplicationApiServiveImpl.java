@@ -203,7 +203,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
         manage.setApplicationName(vo.getApplicationName());
         manage.setApi(vo.getApi());
 
-        List<ApplicationApiManage> reocords = manageMapper.selectBySelective(manage);
+        List<ApplicationApiManage> reocords = manageMapper.selectBySelective(manage,WebPluginUtils.getQueryAllowUserIdList());
 
         reocords.sort(Comparator.comparing(ApplicationApiManage::getCreateTime).reversed());
         List<ApplicationApiManage> pageData =

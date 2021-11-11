@@ -5,7 +5,6 @@ import java.util.Map;
 
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.vo.TLinkApplicationInterface;
-import io.shulie.takin.web.common.annocation.DataAuth;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -66,9 +65,9 @@ public interface TApplicationMntDao {
      * @return 应用列表
      * @author shulie
      */
-    @DataAuth
-    public List<TApplicationMnt> queryApplicationList(@Param("applicationName") String applicationName,
-        @Param("applicationIds") List<String> applicationIds);
+
+    List<TApplicationMnt> queryApplicationList(@Param("applicationName") String applicationName,
+        @Param("applicationIds") List<String> applicationIds,@Param("userIds") List<Long> userIds);
 
     /**
      * 说明: 根据id列表批量查询应用和白名单信息

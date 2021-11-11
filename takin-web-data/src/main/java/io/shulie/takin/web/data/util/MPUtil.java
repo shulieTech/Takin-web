@@ -81,7 +81,7 @@ public interface MPUtil<T> {
      * @return query 普通包装类, 带有租户id
      */
     default QueryWrapper<T> getCustomerQueryWrapper() {
-        return this.getQueryWrapper().eq("customer_id", WebPluginUtils.traceTenantId());
+        return this.getQueryWrapper().eq("tenant_id", WebPluginUtils.traceTenantId());
     }
 
     /**

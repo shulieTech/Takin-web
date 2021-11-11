@@ -49,7 +49,7 @@ public class FileManageDAOImpl implements FileManageDAO {
             fileManageResult.setFileExt(fileManageEntity.getFileExt());
             fileManageResult.setFileType(fileManageEntity.getFileType());
             fileManageResult.setFileExtend(fileManageEntity.getFileExtend());
-            fileManageResult.setCustomerId(fileManageEntity.getCustomerId());
+            fileManageResult.setTenantId(fileManageEntity.getTenantId());
             fileManageResult.setUploadTime(fileManageEntity.getUploadTime());
             fileManageResult.setUploadPath(fileManageEntity.getUploadPath());
             fileManageResult.setIsDeleted(fileManageEntity.getIsDeleted());

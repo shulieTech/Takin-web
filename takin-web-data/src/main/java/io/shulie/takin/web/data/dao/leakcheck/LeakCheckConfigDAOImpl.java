@@ -122,7 +122,7 @@ public class LeakCheckConfigDAOImpl implements LeakCheckConfigDAO {
             result.setBusinessActivityId(entity.getBusinessActivityId());
             result.setDatasourceId(entity.getDatasourceId());
             result.setLeakcheckSqlIds(entity.getLeakcheckSqlIds());
-            result.setCustomerId(entity.getCustomerId());
+            result.setTenantId(entity.getTenantId());
             result.setUserId(entity.getUserId());
             return result;
         }
@@ -148,7 +148,7 @@ public class LeakCheckConfigDAOImpl implements LeakCheckConfigDAO {
                 result.setBusinessActivityId(entity.getBusinessActivityId());
                 result.setDatasourceId(entity.getDatasourceId());
                 result.setLeakcheckSqlIds(entity.getLeakcheckSqlIds());
-                result.setCustomerId(entity.getCustomerId());
+                result.setTenantId(entity.getTenantId());
                 result.setUserId(entity.getUserId());
                 return result;
             }).collect(Collectors.toList());

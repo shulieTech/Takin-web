@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.result.leakverify;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2021/1/6 4:20 下午
  */
 @Data
-public class LeakVerifyResultResult {
+public class LeakVerifyResultResult extends UserCommonExt {
     private Long id;
 
     /**
@@ -47,15 +48,7 @@ public class LeakVerifyResultResult {
      */
 //    private Integer status;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     /**
      * 备注

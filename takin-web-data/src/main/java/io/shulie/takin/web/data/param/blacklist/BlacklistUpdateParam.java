@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.param.blacklist;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2021/4/6 2:22 下午
  */
 @Data
-public class BlacklistUpdateParam {
+public class BlacklistUpdateParam extends UserCommonExt {
 
     /**
      * 主键id
@@ -48,15 +49,7 @@ public class BlacklistUpdateParam {
      */
     private Integer useYn;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     public BlacklistUpdateParam() {
         gmtModified = new Date();

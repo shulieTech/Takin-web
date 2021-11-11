@@ -11,7 +11,9 @@
         <result column="dbresource_id" jdbcType="BIGINT" property="dbresourceId"/>
         <result column="dbresource_name" jdbcType="VARCHAR" property="dbresourceName"/>
         <result column="dbresource_url" jdbcType="VARCHAR" property="dbresourceUrl"/>
-        <result column="customer_id" jdbcType="BIGINT" property="customerId"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
+
         <result column="user_id" jdbcType="BIGINT" property="userId"/>
         <result column="remark" jdbcType="VARCHAR" property="remark"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
@@ -21,6 +23,6 @@
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         id, ref_type, ref_id,report_id, dbresource_id, dbresource_name, dbresource_url,
-        customer_id, user_id, remark, create_time, update_time, is_deleted
+        tenant_id,env_code, user_id, remark, create_time, update_time, is_deleted
     </sql>
 </mapper>

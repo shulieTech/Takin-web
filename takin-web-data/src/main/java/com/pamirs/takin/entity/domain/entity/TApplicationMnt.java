@@ -78,8 +78,6 @@ public class TApplicationMnt extends BaseEntity {
     //告警人，在链路探活中使用
     private String alarmPerson;
     private String pradarVersion;
-    private Long customerId;
-    private Long userId;
 
     public TApplicationMnt() {
         super();
@@ -370,14 +368,6 @@ public class TApplicationMnt extends BaseEntity {
         return this;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
     /**
      * 2018年5月17日
      *
@@ -455,11 +445,5 @@ public class TApplicationMnt extends BaseEntity {
         return true;
     }
 
-    public Long getCustomerId() {
-        return customerId;
-    }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
 }

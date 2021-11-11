@@ -30,7 +30,7 @@ public class LeakCheckConfigResult {
     /**
      * 租户id
      */
-    private Long customerId;
+    private Long tenantId;
 
     /**
      * 用户id

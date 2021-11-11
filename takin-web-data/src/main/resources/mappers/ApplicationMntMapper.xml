@@ -36,7 +36,7 @@
     <update id="batchUpdateAppNodeNum">
         <foreach collection="list" item="item" separator=";">
             UPDATE t_application_mnt SET node_num = #{item.nodeNum,jdbcType=INTEGER} WHERE application_name =
-            #{item.appName,jdbcType=VARCHAR} AND customer_id = #{customerId,jdbcType=BIGINT}
+            #{item.appName,jdbcType=VARCHAR} AND tenant_id = #{teanntId,jdbcType=BIGINT}
         </foreach>
     </update>
 </mapper>

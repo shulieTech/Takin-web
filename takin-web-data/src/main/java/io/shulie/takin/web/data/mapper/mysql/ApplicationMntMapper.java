@@ -14,6 +14,6 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
      *
      * @param paramList 参数集合
      */
-    void batchUpdateAppNodeNum(@Param("list") List<NodeNumParam> paramList, @Param("customerId") Long customerId);
+    void batchUpdateAppNodeNum(@Param("list") List<NodeNumParam> paramList, @Param("tenantId") Long tenantId);
 
 }

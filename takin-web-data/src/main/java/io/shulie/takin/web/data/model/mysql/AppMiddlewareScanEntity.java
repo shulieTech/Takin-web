@@ -80,11 +80,6 @@
 //    @TableField(value = "is_deleted")
 //    private Boolean isDeleted;
 //
-//    /**
-//     * 租户id
-//     */
-//    @TableField(value = "customer_id")
-//    private Long customerId;
 //
 //    /**
 //     * 创建人

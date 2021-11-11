@@ -23,8 +23,5 @@ public class DataSourceSingleQueryParam extends UserCommonExt {
      */
     private String jdbcUrl;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
+
 }

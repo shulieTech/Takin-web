@@ -2,7 +2,7 @@ package io.shulie.takin.web.data.result.middleware;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.TableField;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -10,7 +10,7 @@ import lombok.Data;
  * @date 2021/2/24 5:08 下午
  */
 @Data
-public class AppMiddlewareScanResult {
+public class AppMiddlewareScanResult extends TenantCommonExt {
     /**
      * 主键
      */
@@ -63,11 +63,6 @@ public class AppMiddlewareScanResult {
      * 软删
      */
     private Boolean isDeleted;
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
     /**
      * 创建人

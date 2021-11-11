@@ -166,7 +166,8 @@
         USE_YN,
         GMT_CREATE,
         GMT_MODIFIED,
-        CUSTOMER_ID,
+        TENANT_ID,
+        ENV_CODE,
         USER_ID,
         IS_GLOBAL,
         IS_HANDWORK
@@ -174,8 +175,8 @@
         <if test="applicationId != null">
             and APPLICATION_ID= #{applicationId,jdbcType=BIGINT}
         </if>
-        <if test="customerId != null">
-            and CUSTOMER_ID= #{customerId,jdbcType=BIGINT}
+        <if test="tenantId != null">
+            and TENANT_ID= #{tenantId}
         </if>
         and IS_DELETED = 0
     </select>
@@ -538,7 +539,7 @@
         JOB_INTERVAL,
         GMT_CREATE,
         GMT_MODIFIED,
-        CUSTOMER_ID,
+        tenant_id,
         USER_ID,
         IS_GLOBAL
         )values
@@ -557,7 +558,7 @@
             #{twList.jobInterval},
             now(),
             now(),
-            #{twList.customerId},
+            #{twList.tenantId},
             #{twList.userId},
             #{twList.isGlobal}
             )
@@ -620,7 +621,7 @@
                twl.APPLICATION_ID as applicationId,
                twl.PRINCIPAL_NO   as principalNo,
                twl.USE_YN         as useYn,
-               twl.CUSTOMER_ID    as customerId,
+               twl.tenant_id    as tenantId,
                USER_ID            as userId,
                QUEUE_NAME         as queueName,
                MQ_TYPE            as mqType,

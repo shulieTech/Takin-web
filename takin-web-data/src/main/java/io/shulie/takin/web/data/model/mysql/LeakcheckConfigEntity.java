@@ -2,11 +2,11 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
@@ -15,7 +15,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_leakcheck_config")
-public class LeakcheckConfigEntity {
+public class LeakcheckConfigEntity extends UserBaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -36,18 +36,6 @@ public class LeakcheckConfigEntity {
      */
     @TableField(value = "leakcheck_sql_ids")
     private String leakcheckSqlIds;
-
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 备注
@@ -78,8 +66,6 @@ public class LeakcheckConfigEntity {
     public static final String COL_REF_ID = "ref_id";
 
     public static final String COL_LEAKCHECK_SQL_IDS = "leakcheck_sql_ids";
-
-    public static final String COL_CUSTOMER_ID = "customer_id";
 
     public static final String COL_USER_ID = "user_id";
 

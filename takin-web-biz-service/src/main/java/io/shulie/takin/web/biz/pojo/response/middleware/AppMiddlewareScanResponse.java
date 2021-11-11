@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.pojo.response.middleware;
 
 import java.util.List;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -10,7 +11,7 @@ import lombok.Data;
  * @date 2021/2/24 5:08 下午
  */
 @Data
-public class AppMiddlewareScanResponse {
+public class AppMiddlewareScanResponse extends TenantCommonExt {
     /**
      * 主键
      */
@@ -73,11 +74,7 @@ public class AppMiddlewareScanResponse {
      */
     private Boolean isDeleted;
 
-    /**
-     * 租户id
-     */
-    @ApiModelProperty("租户id")
-    private Long customerId;
+
 
     /**
      * 创建人

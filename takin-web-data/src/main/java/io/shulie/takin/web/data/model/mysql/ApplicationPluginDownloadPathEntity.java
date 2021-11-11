@@ -1,7 +1,5 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -57,18 +55,30 @@ public class ApplicationPluginDownloadPathEntity extends NewBaseEntity implement
    */  
     private String password;
 
+    private String salt;
+
     private Integer validStatus;
 
-    /**
-     * 租户id
-     */
-    @TableField(value = "CUSTOMER_ID", fill = FieldFill.INSERT)
-    private Long customerId;
+//    /**
+//     * 租户id
+//     */
+//    @TableField(value = "CUSTOMER_ID", fill = FieldFill.INSERT)
+//    private Long customerId;
+//
+//    /**
+//     * 用户id
+//     */
+//    @TableField(value = "USER_ID", fill = FieldFill.INSERT)
+//    private Long userId;
 
     /**
-     * 用户id
+     * 环境标识
      */
-    @TableField(value = "USER_ID", fill = FieldFill.INSERT)
-    private Long userId;
+    private String envCode;
+
+    /**
+     * 租户Id
+     */
+    private Long tenantId;
     
 }

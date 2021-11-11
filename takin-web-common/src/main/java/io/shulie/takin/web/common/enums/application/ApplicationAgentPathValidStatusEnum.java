@@ -14,16 +14,19 @@ import java.util.Map;
 @AllArgsConstructor
 @Getter
 public enum ApplicationAgentPathValidStatusEnum {
-    TO_BE_CHECKED(0, "待检查"),
-    CHECK_PASSED(1, "检查通过"),
-    CHECK_FAILED(2, "检查失败"),
+    TO_BE_CHECKED(0, "待检查",null),
+    CHECK_PASSED(2, "检查通过",true),
+    CHECK_FAILED(1, "检查失败",false),
     ;
 
     private Integer val;
     private String desc;
+    private Boolean state;
+
 
     private static final Map<Integer, ApplicationAgentPathValidStatusEnum> INSTANCES = Maps.newHashMap();
     private static final Map<String, ApplicationAgentPathValidStatusEnum> DESC_INSTANCES = Maps.newHashMap();
+    private static final Map<Boolean, ApplicationAgentPathValidStatusEnum> STATE_INSTANCES = Maps.newHashMap();
 
     static {
         for (ApplicationAgentPathValidStatusEnum pathTypeEnum : ApplicationAgentPathValidStatusEnum.values()) {
@@ -31,6 +34,9 @@ public enum ApplicationAgentPathValidStatusEnum {
         }
         for (ApplicationAgentPathValidStatusEnum pathTypeEnum : ApplicationAgentPathValidStatusEnum.values()) {
             DESC_INSTANCES.put(pathTypeEnum.getDesc(), pathTypeEnum);
+        }
+        for (ApplicationAgentPathValidStatusEnum pathTypeEnum : ApplicationAgentPathValidStatusEnum.values()) {
+            STATE_INSTANCES.put(pathTypeEnum.getState(), pathTypeEnum);
         }
     }
 
@@ -46,5 +52,12 @@ public enum ApplicationAgentPathValidStatusEnum {
             return null;
         }
         return INSTANCES.get(val);
+    }
+
+    public static Integer getValByState(Boolean state) {
+        if(!STATE_INSTANCES.containsKey(state)){
+            return null;
+        }
+        return INSTANCES.get(state).getVal();
     }
 }

@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.dao.application;
 
+import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidStatusEnum;
 import io.shulie.takin.web.data.param.application.CreateApplicationPluginDownloadPathParam;
 import io.shulie.takin.web.data.param.application.UpdateApplicationPluginDownloadPathParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
@@ -18,5 +19,8 @@ public interface ApplicationPluginDownloadPathDAO {
 
     void updateConfig(UpdateApplicationPluginDownloadPathParam updateParam);
 
+    void saveValidState(Boolean state,Long recordId);
+
+    ApplicationPluginDownloadPathDetailResult queryDetailByCustomerId(ApplicationAgentPathValidStatusEnum statusEnum);
 }
 

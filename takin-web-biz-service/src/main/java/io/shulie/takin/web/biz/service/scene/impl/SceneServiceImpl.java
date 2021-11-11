@@ -413,7 +413,10 @@ public class SceneServiceImpl implements SceneService {
         List<SceneLinkRelateResult> sceneLinkRelateResults = sceneService.nodeLinkToBusinessActivity(scriptNodes, id);
         if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
             sceneLinkRelateResults = sceneLinkRelateResults.stream().filter(Objects::nonNull)
-                    .filter(o -> StringUtils.isNotBlank(o.getBusinessLinkId())).collect(Collectors.toList());
+                    .filter(o -> StringUtils.isNotBlank(o.getBusinessLinkId())).peek(o -> {
+                        o.setId(null);
+                        o.setSceneId(id.toString());
+                    }).collect(Collectors.toList());
         }
 
         //查询已有的匹配关系,删除现在没有关联的节点

@@ -4,127 +4,72 @@ update t_application_ds_cache_manage set tenant_id=customer_id;
 update t_application_ds_db_manage set tenant_id=customer_id;
 update t_application_ds_db_table set tenant_id=customer_id;
 
+-- 记录userid和envCode
+CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE`
+(
+    `id`             bigint(20)     NOT NULL AUTO_INCREMENT,
+    `user_Id`    bigint(20)     		NOT NULL COMMENT '用户ID',
+    `env_code`       varchar(512)   NOT NULL COMMENT '环境代码，测试环境：test,生产环境：prod',
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+INSERT INTO DATA_FIX_TABLE (`user_id`,`env_code`) VALUES(1,'test');
+INSERT INTO DATA_FIX_TABLE (`user_id`,`env_code`) VALUES(3,'prod');
+INSERT INTO DATA_FIX_TABLE (`user_id`,`env_code`) VALUES(4,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(5 ,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(12,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(13,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(7 ,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(8 ,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(17,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(19,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(20,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(21,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(22,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(23,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(25,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(26,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(27,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(28,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(29,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(30,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(31,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(32,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(33,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(9 ,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(10,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(24,'prod');
+
 -- caijy
 -- env_code
 -- 应用表 t_application_mnt
-UPDATE t_application_mnt t1
-    LEFT JOIN (
-    SELECT
-    `name`,
-    id,
-    CASE
-    WHEN LOCATE( 'test', `name` ) > 0 THEN
-    'test' ELSE 'prod'
-    END env_code
-    FROM
-    t_tro_user
-    ) t2 ON t2.id = t1.USER_ID
-    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_application_mnt t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
 
 -- t_business_link_manage_table
-UPDATE t_business_link_manage_table t1
-    LEFT JOIN (
-    SELECT
-    `name`,
-    id,
-    CASE
-    WHEN LOCATE( 'test', `name` ) > 0 THEN
-    'test' ELSE 'prod'
-    END env_code
-    FROM
-    t_tro_user
-    ) t2 ON t2.id = t1.USER_ID
-    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_business_link_manage_table t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
 
 -- t_script_manage
-UPDATE t_script_manage t1
-    LEFT JOIN (
-    SELECT
-    `name`,
-    id,
-    CASE
-    WHEN LOCATE( 'test', `name` ) > 0 THEN
-    'test' ELSE 'prod'
-    END env_code
-    FROM
-    t_tro_user
-    ) t2 ON t2.id = t1.user_id
-    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_script_manage t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
 
 -- t_leakcheck_config
-UPDATE t_leakcheck_config t1
-    LEFT JOIN (
-    SELECT
-    `name`,
-    id,
-    CASE
-    WHEN LOCATE( 'test', `name` ) > 0 THEN
-    'test' ELSE 'prod'
-    END env_code
-    FROM
-    t_tro_user
-    ) t2 ON t2.id = t1.user_id
-    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_leakcheck_config t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
 
 -- t_leakcheck_config_detail
-UPDATE t_leakcheck_config_detail t1
-    LEFT JOIN (
-    SELECT
-    `name`,
-    id,
-    CASE
-    WHEN LOCATE( 'test', `name` ) > 0 THEN
-    'test' ELSE 'prod'
-    END env_code
-    FROM
-    t_tro_user
-    ) t2 ON t2.id = t1.user_id
-    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_leakcheck_config_detail t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
 
 -- t_operation_log
-UPDATE t_operation_log t1
-    LEFT JOIN (
-    SELECT
-    `name`,
-    id,
-    CASE
-    WHEN LOCATE( 'test', `name` ) > 0 THEN
-    'test' ELSE 'prod'
-    END env_code
-    FROM
-    t_tro_user
-    ) t2 ON t2.id = t1.user_id
-    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_operation_log t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
 
 -- t_ops_script_manage
-UPDATE t_ops_script_manage t1
-    LEFT JOIN (
-    SELECT
-    `name`,
-    id,
-    CASE
-    WHEN LOCATE( 'test', `name` ) > 0 THEN
-    'test' ELSE 'prod'
-    END env_code
-    FROM
-    t_tro_user
-    ) t2 ON t2.id = t1.user_id
-    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_ops_script_manage t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
 
 -- t_tro_dbresource
-UPDATE t_tro_dbresource t1
-    LEFT JOIN (
-    SELECT
-    `name`,
-    id,
-    CASE
-    WHEN LOCATE( 'test', `name` ) > 0 THEN
-    'test' ELSE 'prod'
-    END env_code
-    FROM
-    t_tro_user
-    ) t2 ON t2.id = t1.user_id
-    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_tro_dbresource t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
+
+-- t_login_record
+UPDATE t_login_record t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
+
+-- t_leakverify_result
+UPDATE t_leakverify_result t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
 
 -- t_application_ds_manage
 UPDATE t_application_ds_manage t1
@@ -133,12 +78,12 @@ UPDATE t_application_ds_manage t1
 
 -- t_application_node_probe
 UPDATE t_application_node_probe t1
-    LEFT JOIN t_application_mnt t2 ON t1.application_name = t2.APPLICATION_NAME
+    LEFT JOIN t_application_mnt t2 ON t1.application_name = t2.APPLICATION_NAME AND t1.customer_id = t2.customer_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- t_application_plugins_config
 UPDATE t_application_plugins_config t1
-    LEFT JOIN t_application_mnt t2 ON t1.application_name = t2.APPLICATION_NAME
+    LEFT JOIN t_application_mnt t2 ON t1.application_id = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- t_black_list
@@ -155,12 +100,12 @@ UPDATE t_fast_debug_config_info t1
 
 -- t_fast_debug_exception
 UPDATE t_fast_debug_exception t1
-    LEFT JOIN t_application_mnt t2 ON t1.application_Name = t2.APPLICATION_NAME
+    LEFT JOIN t_application_mnt t2 ON t1.application_Name = t2.APPLICATION_NAME AND t1.customer_id=t2.customer_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- t_fast_debug_result t_business_link_manage_table
 UPDATE t_fast_debug_result t1
-    LEFT JOIN t_business_link_manage_table t2 ON t1.business_link_name = t2.LINK_NAME
+    LEFT JOIN t_business_link_manage_table t2 ON t1.business_link_name = t2.LINK_NAME AND t1.customer_id=t2.customer_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- t_file_manage
@@ -177,10 +122,10 @@ UPDATE t_link_guard t1
 
 -- t_link_manage_table
 UPDATE t_link_manage_table t1
-    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_NAME = t2.APPLICATION_NAME
+    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_NAME = t2.APPLICATION_NAME AND t1.CUSTOMER_ID=t2.customer_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
--- t_application_focus
+-- t_application_focus TODO 有问题
 UPDATE t_application_focus t1
     LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
     SET t1.env_code = IFNULL(t2.env_code,'test');
@@ -205,21 +150,6 @@ UPDATE t_fast_debug_stack_info t1
     LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
--- t_leakverify_result
-UPDATE t_leakverify_result t1
-    LEFT JOIN (
-    SELECT
-    `name`,
-    id,
-    CASE
-    WHEN LOCATE( 'test', `name` ) > 0 THEN
-    'test' ELSE 'prod'
-    END env_code
-    FROM
-    t_tro_user
-    ) t2 ON t2.id = t1.user_id
-    SET t1.env_code = IFNULL(t2.env_code,'test');
-
 -- t_leakverify_detail
 UPDATE t_leakverify_detail t1
     LEFT JOIN t_leakverify_result t2 ON t1.result_id = t2.id
@@ -230,19 +160,6 @@ UPDATE t_link_detection t1
     LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
--- t_login_record
-UPDATE t_login_record t1
-    LEFT JOIN (
-    SELECT
-    `user_name`,
-    CASE
-    WHEN LOCATE( 'test', `user_name` ) > 0 THEN
-    'test' ELSE 'prod'
-    END env_code
-    FROM
-    t_login_record
-    ) t2 ON t2.user_name = t1.user_name
-    SET t1.env_code = IFNULL(t2.env_code,'test');
 -- t_ops_script_batch_no
 UPDATE t_ops_script_batch_no t1
     LEFT JOIN t_ops_script_manage t2 ON t1.ops_script_id = t2.id
@@ -260,14 +177,11 @@ UPDATE t_ops_script_file t1
 UPDATE t_performance_base_data t1
     LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
     SET t1.env_code = IFNULL(t2.env_code,'test');
+
 -- t_performance_criteria_config
 UPDATE t_performance_criteria_config t1
     LEFT JOIN t_application_mnt t2 ON t1.app_id = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
--- t_performance_thread_data
--- UPDATE t_performance_criteria_config t1
---     LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
---     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 
 -- tenant_id

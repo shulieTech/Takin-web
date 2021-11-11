@@ -542,10 +542,10 @@ public class SceneServiceImpl implements SceneService {
         sceneLinkRelateDao.batchInsert(Collections.singletonList(saveParam));
 
         int linkRelateNum = sceneDetail.getLinkRelateNum();
-        //更新匹配数量
-        if (sceneLinkRelateRequest.getId() == null) {
+        //sceneLinkRelateResults为空，新增的匹配，更新匹配数量
+        if (CollectionUtils.isEmpty(sceneLinkRelateResults)) {
             SceneUpdateParam updateParam = new SceneUpdateParam();
-            updateParam.setId(sceneLinkRelateRequest.getId());
+            updateParam.setId(sceneLinkRelateRequest.getBusinessFlowId());
             linkRelateNum = sceneDetail.getLinkRelateNum() + 1;
             updateParam.setLinkRelateNum(linkRelateNum);
             sceneDao.update(updateParam);

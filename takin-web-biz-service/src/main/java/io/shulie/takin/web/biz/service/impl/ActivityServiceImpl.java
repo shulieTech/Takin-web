@@ -233,6 +233,7 @@ public class ActivityServiceImpl implements ActivityService {
     private ActivityResult checkVirtualActivityUpdate(VirtualActivityUpdateRequest request) {
         ActivityResult oldActivity = getActivityResult(request.getActivityId(), request.getActivityName());
         ActivityExistsQueryParam param = new ActivityExistsQueryParam();
+        param.setMethod(request.getMethodName());
         param.setVirtualEntrance(request.getVirtualEntrance());
         // rpc转化
         param.setRpcType(EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType());

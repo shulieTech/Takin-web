@@ -63,7 +63,7 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
         wrapper.in("tenant_id", tenantIdList);
         wrapper.in("env_code", envCodeList);
         wrapper.eq("is_deleted", 0);
-
+        wrapper.orderByDesc("create_time");
         //1. 先获取到符合条件的zkpath
         Page<PradarZkConfigEntity> page = new Page<>(param.getCurrent(), param.getPageSize());
         final Page<PradarZkConfigEntity> configs = pradarZkConfigMapper.selectPage(page, wrapper);

@@ -348,12 +348,10 @@ public class ApplicationClientImpl implements ApplicationClient {
         String url = properties.getUrl().getAmdb() + ERROR_LOG_PAGE;
         try {
             // 因为tro-web的分页从0开始大数据的分页从1开始，所以这里需要加1
-            queryDTO.setCurrentPage(queryDTO.getRealCurrent());
             queryDTO.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             queryDTO.setEnvCode(WebPluginUtils.traceEnvCode());
 
-            AmdbResult<List<AgentInfoDTO>> amdbResponse = AmdbHelper.builder().httpMethod(
-                HttpMethod.POST)
+            AmdbResult<List<AgentInfoDTO>> amdbResponse = AmdbHelper.builder().httpMethod(HttpMethod.POST)
                 .url(url)
                 .param(queryDTO)
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)

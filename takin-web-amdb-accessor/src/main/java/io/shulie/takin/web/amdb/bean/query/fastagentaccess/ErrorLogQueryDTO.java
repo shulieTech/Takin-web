@@ -12,9 +12,8 @@ import lombok.EqualsAndHashCode;
  * @author ocean_wll
  * @date 2021/8/18 4:05 下午
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class ErrorLogQueryDTO extends PageBaseDTO {
+public class ErrorLogQueryDTO {
 
     private static final long serialVersionUID = -6512502356697415777L;
 
@@ -57,4 +56,11 @@ public class ErrorLogQueryDTO extends PageBaseDTO {
      * 结束时间
      */
     private Long endDate;
+
+    private Integer pageSize;
+    private Integer currentPage;
+
+    public void setCurrentPage(Integer currentPage) {
+        this.currentPage = currentPage + 1;
+    }
 }

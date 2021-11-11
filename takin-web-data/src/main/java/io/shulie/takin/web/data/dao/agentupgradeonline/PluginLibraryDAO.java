@@ -1,5 +1,10 @@
 package io.shulie.takin.web.data.dao.agentupgradeonline;
 
+import java.util.List;
+
+import io.shulie.takin.web.data.param.agentupgradeonline.PluginLibraryQueryParam;
+import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
+
 /**
  * 插件版本库(PluginLibrary)表数据库 dao 层
  *
@@ -8,5 +13,20 @@ package io.shulie.takin.web.data.dao.agentupgradeonline;
  */
 public interface PluginLibraryDAO {
 
+    /**
+     * 查询插件列表
+     *
+     * @param queryParam 查询条件
+     * @return PluginLibraryDetailResult集合
+     */
+    List<PluginLibraryDetailResult> queryList(List<PluginLibraryQueryParam> queryParam);
+
+    /**
+     * 根据插件Id查询详情
+     *
+     * @param pluginId 插件Id
+     * @return PluginLibraryDetailResult
+     */
+    PluginLibraryDetailResult queryById(Long pluginId);
 }
 

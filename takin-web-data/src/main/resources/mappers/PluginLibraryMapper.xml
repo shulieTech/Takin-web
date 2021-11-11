@@ -2,4 +2,31 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.shulie.takin.web.data.mapper.mysql.PluginLibraryMapper">
 
+    <resultMap id="BASE_MAP" type="io.shulie.takin.web.data.model.mysql.PluginLibraryEntity">
+        <result column="id" jdbcType="BIGINT" property="id"/>
+        <result column="plugin_name" jdbcType="VARCHAR" property="pluginName"/>
+        <result column="plugin_type" jdbcType="VARCHAR" property="pluginType"/>
+        <result column="version" jdbcType="VARCHAR" property="version"/>
+        <result column="version_num" jdbcType="BIGINT" property="versionNum"/>
+        <result column="is_custom_mode" jdbcType="TINYINT" property="isCustomMode"/>
+        <result column="update_description" jdbcType="VARCHAR" property="updateDescription"/>
+        <result column="download_path" jdbcType="VARCHAR" property="downloadPath"/>
+    </resultMap>
+
+    <select id="queryList" resultMap="BASE_MAP">
+        select id,
+        plugin_name,
+        plugin_type,
+        version,
+        version_num,
+        is_custom_mode,
+        update_description,
+        download_path
+        from t_plugin_library
+        where
+        <foreach collection="list" item="item" separator="or">
+            (version = #{item.version} and plugin_name = #{item.pluginName})
+        </foreach>
+
+    </select>
 </mapper>

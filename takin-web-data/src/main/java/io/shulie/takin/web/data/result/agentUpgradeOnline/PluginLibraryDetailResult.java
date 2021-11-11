@@ -1,4 +1,4 @@
-package io.shulie.takin.web.data.result.application;
+package io.shulie.takin.web.data.result.agentUpgradeOnline;
 
 import lombok.ToString;
 import lombok.Data;

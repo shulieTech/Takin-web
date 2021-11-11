@@ -8,7 +8,6 @@ package io.shulie.takin.web.common.constant;
  */
 public interface ConfigServerKeyConstants {
 
-    String TAKIN_FAST_WATCH_TIME_SECOND = "takin.fast.watch.time.second";
     String TAKIN_REMOTE_CALL_SYNC = "takin.remote-call.sync";
     String TAKIN_REPORT_OPEN_TASK = "takin.report.open.task";
 

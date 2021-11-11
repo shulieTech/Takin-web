@@ -402,7 +402,7 @@ public class ActivityServiceImpl implements ActivityService {
         redisClientUtils.hmset(Vars.ACTIVITY_DELETE_EVENT,
             String.valueOf(activityId), 0);
         // 正常业务活动
-        if (oldActivity.getBusinessType().equals(BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
+        if (oldActivity.getApplicationName()!=null && oldActivity.getBusinessType().equals(BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
             notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(),
                 oldActivity.getServiceName(),
                 oldActivity.getMethod(), oldActivity.getRpcType(), oldActivity.getExtend());

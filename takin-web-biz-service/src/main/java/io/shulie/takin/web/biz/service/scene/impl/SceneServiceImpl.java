@@ -517,6 +517,7 @@ public class SceneServiceImpl implements SceneService {
                 createRequest.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getSamplerType().getType()));
                 ActivityUtil.EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertVirtualEntrance(sceneLinkRelateRequest.getEntrance());
                 createRequest.setVirtualEntrance(entranceJoinEntity.getVirtualEntrance());
+                createRequest.setMethodName(entranceJoinEntity.getMethodName());
                 Long virtualActivity = activityService.createVirtualActivity(createRequest);
                 sceneLinkRelateRequest.setBusinessActivityId(virtualActivity);
             }

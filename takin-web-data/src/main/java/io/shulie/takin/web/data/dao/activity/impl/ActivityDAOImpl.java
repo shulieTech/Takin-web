@@ -76,7 +76,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         }
         if (StringUtils.isNotBlank(param.getVirtualEntrance())) {
             wrapper.eq(BusinessLinkManageTableEntity::getEntrace,
-                ActivityUtil.buildVirtualEntrance(param.getVirtualEntrance(), param.getRpcType()));
+                ActivityUtil.buildVirtualEntrance(param.getMethod(),param.getVirtualEntrance(), param.getRpcType()));
         }
 
         wrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);

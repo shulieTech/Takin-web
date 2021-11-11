@@ -175,7 +175,7 @@ public class ActivityServiceImpl implements ActivityService {
         // rpcType 修改
         createParam.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
         createParam.setEntrance(
-            ActivityUtil.buildVirtualEntrance(request.getVirtualEntrance(),
+            ActivityUtil.buildVirtualEntrance(request.getMethodName(),request.getVirtualEntrance(),
                 EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType()));
         //单独字段存中间软件类型
         createParam.setServerMiddlewareType(request.getType());
@@ -219,7 +219,7 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setServerMiddlewareType(request.getType());
         // rpcType
         updateParam.setEntrance(
-            ActivityUtil.buildVirtualEntrance(request.getVirtualEntrance(),
+            ActivityUtil.buildVirtualEntrance(request.getMethodName(),request.getVirtualEntrance(),
                 EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType()));
         activityDAO.updateActivityNew(updateParam);
     }

@@ -29,4 +29,10 @@ public class ReportTrendQueryParam implements Serializable {
     @ApiModelProperty(value = "场景ID")
     private Long sceneId;
 
+    /**
+     * 节点MD5值
+     */
+    @ApiModelProperty(value = "节点MD5值")
+    private String xpathMd5;
+
 }

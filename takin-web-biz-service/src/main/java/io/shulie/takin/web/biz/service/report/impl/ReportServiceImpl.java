@@ -221,6 +221,7 @@ public class ReportServiceImpl implements ReportService {
         ReportTrendQueryReq reportTrendQueryReq = new ReportTrendQueryReq();
         reportTrendQueryReq.setSceneId(param.getSceneId());
         reportTrendQueryReq.setReportId(param.getReportId());
+        reportTrendQueryReq.setXpathMd5(param.getXpathMd5());
         return reportApi.reportTrend(reportTrendQueryReq);
     }
 
@@ -310,6 +311,7 @@ public class ReportServiceImpl implements ReportService {
         ReportTrendQueryReq reportTrendQueryReq = new ReportTrendQueryReq();
         reportTrendQueryReq.setSceneId(param.getSceneId());
         reportTrendQueryReq.setReportId(param.getReportId());
+        reportTrendQueryReq.setXpathMd5(param.getXpathMd5());
         return reportApi.tmpReportTrend(reportTrendQueryReq);
     }
 

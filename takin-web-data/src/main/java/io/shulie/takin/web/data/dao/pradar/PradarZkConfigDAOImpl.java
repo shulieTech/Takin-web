@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -152,4 +151,12 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
         BeanUtils.copyProperties(entity, configResult);
         return configResult;
     }
+
+    @Override
+    public PradarZKConfigResult getByZkPath(String zkPath) {
+        List<PradarZKConfigResult> configList = pradarZkConfigMapper.selectListByZkPath(zkPath,
+            WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode());
+        return configList.isEmpty() ? null : configList.get(0);
+    }
+
 }

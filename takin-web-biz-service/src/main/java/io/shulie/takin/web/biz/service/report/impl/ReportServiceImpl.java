@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.bean.BeanUtil;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
@@ -73,15 +74,11 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
         // 前端查询条件 传用户
+        final StringBuilder userIdListString = new StringBuilder();
         if (StringUtils.isNotBlank(param.getUserName())) {
             List<UserExt> userList = WebPluginUtils.selectByName(param.getUserName());
             if (CollectionUtils.isNotEmpty(userList)) {
-                List<Long> userIds = userList.stream().map(UserExt::getId).collect(Collectors.toList());
-                if (CollectionUtils.isEmpty(userIds)) {
-                    //param.setUserIdStr(null);
-                } else {
-                    //param.setUserIdStr(StringUtils.join(userIds, ","));
-                }
+                userList.forEach(t -> userIdListString.append(StrUtil.format("'{}'", t.getId())));
             } else {
                 return ResponseResult.success(new ArrayList<>(0), 0L);
             }
@@ -92,6 +89,7 @@ public class ReportServiceImpl implements ReportService {
             setEndTime(param.getEndTime());
             setPageSize(param.getPageSize());
             setPageNumber(param.getCurrentPage() + 1);
+            setFilterSql(userIdListString.toString());
         }});
         List<Long> userIds = reportResponseList.getData().stream().map(ContextExt::getUserId)
             .filter(Objects::nonNull).collect(Collectors.toList());

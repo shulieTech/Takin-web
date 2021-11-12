@@ -30,7 +30,7 @@ public class AgentModuleInfo {
     /**
      * 是否定制化插件
      */
-    private boolean customized;
+    private Boolean customized;
 
     /**
      * 更新内容

@@ -21,11 +21,6 @@ public class PluginDependentEntity extends NewBaseEntity implements Serializable
     private static final long serialVersionUID = 887180013380812378L;
 
     /**
-     * 插件id
-     */
-    private Long pluginId;
-
-    /**
      * 插件名称
      */
     private String pluginName;
@@ -34,11 +29,6 @@ public class PluginDependentEntity extends NewBaseEntity implements Serializable
      * 插件版本
      */
     private String pluginVersion;
-
-    /**
-     * 依赖插件id
-     */
-    private Long dependentPluginId;
 
     /**
      * 插件名称

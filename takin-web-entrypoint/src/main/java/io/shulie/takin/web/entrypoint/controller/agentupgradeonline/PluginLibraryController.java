@@ -1,17 +1,21 @@
 package io.shulie.takin.web.entrypoint.controller.agentupgradeonline;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
 import io.shulie.takin.web.biz.service.agentupgradeonline.PluginLibraryService;
+import io.shulie.takin.web.biz.utils.fastagentaccess.ResponseFileUtil;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +39,12 @@ public class PluginLibraryController {
     @PutMapping("/upload")
     public AgentPluginUploadResponse uploadFile(@NotNull(message = "文件不能为空") MultipartFile file) {
         return pluginLibraryService.upload(file);
+    }
+
+    @ApiOperation("|_ 下载插件")
+    @GetMapping("/download")
+    public void getProjectFile(@RequestParam("pluginId") Long pluginId, HttpServletResponse response) {
+        ResponseFileUtil.transfer(pluginLibraryService.getPluginFile(pluginId), false, "simulator.zip", true, response);
     }
 
 }

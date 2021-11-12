@@ -16,4 +16,12 @@ public interface IAgentZipResolver {
      * @return 错误信息
      */
     List<String> checkFile(String filePath);
+
+    /**
+     * 读取module.properties文件内容
+     *
+     * @param filePath 文件路径
+     * @return module.properties文件内容
+     */
+    String readModuleInfo(String filePath);
 }

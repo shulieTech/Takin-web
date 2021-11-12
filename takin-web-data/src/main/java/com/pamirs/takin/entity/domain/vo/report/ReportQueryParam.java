@@ -41,6 +41,6 @@ public class ReportQueryParam extends PagingDevice implements Serializable {
      * 前端传
      */
     @ApiModelProperty(value = "负责人姓名")
-    private String userName;
+    private String managerName;
 
 }

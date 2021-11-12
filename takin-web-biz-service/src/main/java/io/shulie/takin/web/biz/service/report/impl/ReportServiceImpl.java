@@ -75,8 +75,8 @@ public class ReportServiceImpl implements ReportService {
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
         // 前端查询条件 传用户
         final List<String> userIdList = new ArrayList<>(0);
-        if (StringUtils.isNotBlank(param.getUserName())) {
-            List<UserExt> userList = WebPluginUtils.selectByName(param.getUserName());
+        if (StringUtils.isNotBlank(param.getManagerName())) {
+            List<UserExt> userList = WebPluginUtils.selectByName(param.getManagerName());
             if (CollectionUtils.isNotEmpty(userList)) {
                 userList.forEach(t -> userIdList.add(StrUtil.format("'{}'", t.getId())));
             } else {

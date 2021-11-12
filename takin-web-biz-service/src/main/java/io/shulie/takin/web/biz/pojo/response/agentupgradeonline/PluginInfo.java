@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.pojo.response.agentupgradeonline;
 
+import java.util.Date;
+
 import lombok.Data;
 
 /**
@@ -41,4 +43,14 @@ public class PluginInfo {
      * 更新内容
      */
     private String updateInfo;
+
+    /**
+     * 创建时间
+     */
+    private Date gmtCreate;
+
+    /**
+     * 更新时间
+     */
+    private Date gmtUpdate;
 }

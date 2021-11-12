@@ -28,6 +28,11 @@ public class AgentModuleInfo {
     private List<AgentModuleInfo> dependenciesInfo;
 
     /**
+     * 原始的依赖模块信息
+     */
+    private String dependenciesInfoStr;
+
+    /**
      * 是否定制化插件
      */
     private Boolean customized;

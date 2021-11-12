@@ -1,10 +1,17 @@
 package io.shulie.takin.web.entrypoint.controller.agentupgradeonline;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginLibraryListResponse;
 import io.shulie.takin.web.biz.service.agentupgradeonline.PluginLibraryService;
 import io.shulie.takin.web.biz.utils.fastagentaccess.ResponseFileUtil;
 import io.shulie.takin.web.common.constant.APIUrls;
@@ -45,6 +52,24 @@ public class PluginLibraryController {
     @GetMapping("/download")
     public void getProjectFile(@RequestParam("pluginId") Long pluginId, HttpServletResponse response) {
         ResponseFileUtil.transfer(pluginLibraryService.getPluginFile(pluginId), false, "simulator.zip", true, response);
+    }
+
+    @ApiOperation("|_ 当前插件所有的历史版本")
+    @GetMapping("/query/history")
+    public List<PluginInfo> queryHistory(@NotBlank(message = "插件名不能为空") @RequestParam("pluginName") String pluginName) {
+        return pluginLibraryService.queryByPluginName(pluginName);
+    }
+
+    @ApiOperation("|_ 查询所有的插件名(下拉框使用)")
+    @GetMapping("/query/all/pluginNames")
+    public List<String> queryAllPluginNames() {
+        return pluginLibraryService.queryAllPluginNames();
+    }
+
+    @ApiOperation("|_ 列表分页查询")
+    @GetMapping("/list")
+    public PagingList<PluginLibraryListResponse> pluginList(PluginLibraryListQueryRequest queryRequest) {
+        return pluginLibraryService.list(queryRequest);
     }
 
 }

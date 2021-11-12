@@ -3,6 +3,7 @@ package io.shulie.takin.web.common.util;
 import java.util.UUID;
 
 import com.google.common.collect.Lists;
+import io.shulie.takin.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +48,9 @@ public class ActivityUtil {
     }
 
     public static String buildEntrance(String methodName, String serviceName, String rpcType) {
+        if (RpcTypeEnum.MQ.getValue().equals(rpcType)){
+            return StringUtils.join(Lists.newArrayList(serviceName, rpcType), "|");
+        }
         return StringUtils.join(Lists.newArrayList( methodName, serviceName, rpcType), "|");
     }
 

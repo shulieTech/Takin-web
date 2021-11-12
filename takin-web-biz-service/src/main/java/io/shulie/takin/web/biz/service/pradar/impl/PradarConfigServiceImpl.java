@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigCreateRequest;
@@ -13,6 +14,7 @@ import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
 import io.shulie.takin.web.biz.service.pradar.PradarConfigService;
+import io.shulie.takin.web.biz.utils.ZkHelper;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.pradar.PradarZkConfigDAO;
@@ -21,6 +23,7 @@ import io.shulie.takin.web.data.model.mysql.PradarZkConfigEntity;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigQueryParam;
 import io.shulie.takin.web.data.result.pradarzkconfig.PradarZKConfigResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
@@ -52,6 +55,14 @@ public class PradarConfigServiceImpl implements PradarConfigService {
     @Autowired
     private PradarZkConfigMapper pradarZkConfigMapper;
 
+    @Autowired
+    private ZkHelper zkHelper;
+
+    /**
+     * pradarConfig 配置前缀
+     */
+    private static String pradarConfigZkPrefix = "/pradar/config/";
+
     @PostConstruct
     public void init() {
         client = CuratorFrameworkFactory
@@ -61,6 +72,18 @@ public class PradarConfigServiceImpl implements PradarConfigService {
             .retryPolicy(new ExponentialBackoffRetry(1000, 3))
             .build();
         client.start();
+    }
+
+    @Override
+    public void initZooKeeperData() {
+        for (PradarZKConfigResult config : pradarZkConfigDAO.listSystemConfig()) {
+            String pradarConfigZkPath = this.getPradarConfigZkPath(config.getZkPath(),
+                WebPluginUtils.SYS_DEFAULT_TENANT_ID, WebPluginUtils.SYS_DEFAULT_ENV_CODE);
+            // 不存在则创建
+            if (!zkHelper.isNodeExists(pradarConfigZkPath)) {
+                zkHelper.addPersistentNode(pradarConfigZkPath, config.getValue());
+            }
+        }
     }
 
     @Override
@@ -74,21 +97,12 @@ public class PradarConfigServiceImpl implements PradarConfigService {
                 config.getId().intValue(),
                 config.getZkPath(),
                 config.getType(),
-                getNode(stat, config.getZkPath()),
+                this.getValueByPathWithStat(stat, config.getZkPath()),
                 config.getRemark(),
                 stat.getCtime(),
                 stat.getMtime()
             )).collect(Collectors.toList());
         return PagingList.of(responseList, pagingList.getTotal());
-    }
-
-    @Override
-    public void initZooKeeperData() {
-        pradarZkConfigDAO.selectList().forEach(config -> {
-            if (!checkNodeExists(config.getZkPath())) {
-                addNode(config.getZkPath(), config.getValue());
-            }
-        });
     }
 
     @Override
@@ -165,19 +179,6 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         }
     }
 
-    private String getNode(Stat stat, String path) {
-        if (!checkNodeExists(path)) {
-            return null;
-        }
-        byte[] bytes = new byte[0];
-        try {
-            bytes = client.getData().storingStatIn(stat).forPath(CommonUtil.getZkTenantAndEnvPath(path));
-        } catch (Exception e) {
-            log.error("读取zk数据节点失败;path={}", CommonUtil.getZkTenantAndEnvPath(path), e);
-        }
-        return new String(bytes);
-    }
-
     private boolean checkNodeExists(String path) {
         try {
             return client.checkExists().forPath(CommonUtil.getZkTenantAndEnvPath(path)) != null;
@@ -202,6 +203,54 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         } catch (Exception e) {
             log.error("删除zk数据节点失败;path={}", CommonUtil.getZkTenantAndEnvPath(path), e);
         }
+    }
+
+    /**
+     * 根据路径获得值，先获得自己的，没有就取系统的
+     *
+     * @param path 路径
+     * @return 值
+     */
+    private String getValueByPathWithStat(Stat stat, String path) {
+        // 先取自己的， 没有的再取系统的
+        String value = zkHelper.getNodeValueWithStat(stat,
+            this.getPradarConfigZkPath(path, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode()));
+        if (StrUtil.isBlank(value)) {
+            value = zkHelper.getNodeValueWithStat(stat,
+                this.getPradarConfigZkPath(path, WebPluginUtils.SYS_DEFAULT_TENANT_ID, WebPluginUtils.SYS_DEFAULT_ENV_CODE));
+        }
+        return value;
+    }
+
+    /**
+     * 根据路径获得值，先获得自己的，没有就取系统的
+     *
+     * @param path 路径
+     * @return 值
+     */
+    private String getValueByPath(String path) {
+        // 先取自己的， 没有的再取系统的
+        String value = zkHelper.getNodeValue(this.getPradarConfigZkPath(path, WebPluginUtils.traceTenantId(),
+            WebPluginUtils.traceEnvCode()));
+        if (StrUtil.isBlank(value)) {
+            value = zkHelper.getNodeValue(
+                this.getPradarConfigZkPath(path, WebPluginUtils.SYS_DEFAULT_TENANT_ID, WebPluginUtils.SYS_DEFAULT_ENV_CODE));
+        }
+
+        return value;
+    }
+
+    /**
+     * pradarConfig zkPath
+     *
+     * @param path 基础路径
+     * @param tenantId 租户id
+     * @param envCode 环境
+     * @return 最终路径，租户id + 环境 + path
+     */
+    private String getPradarConfigZkPath(String path, Long tenantId, String envCode) {
+        return String.format("%s%d/%s/%s", pradarConfigZkPrefix, tenantId, envCode,
+            path.substring(pradarConfigZkPrefix.length()));
     }
 
 }

@@ -7,16 +7,20 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.mapper.mysql.PradarZkConfigMapper;
 import io.shulie.takin.web.data.model.mysql.PradarZkConfigEntity;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigQueryParam;
 import io.shulie.takin.web.data.result.pradarzkconfig.PradarZKConfigResult;
+import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -29,60 +33,38 @@ import org.springframework.stereotype.Component;
  * @date 2021/07/08 3:20 下午
  */
 @Component
-public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
+public class PradarZkConfigDAOImpl implements PradarZkConfigDAO, MPUtil<PradarZkConfigEntity> {
 
     @Autowired
     private PradarZkConfigMapper pradarZkConfigMapper;
 
     @Override
     public PagingList<PradarZKConfigResult> selectPage(PradarConfigQueryParam param) {
-
-        QueryWrapper<PradarZkConfigEntity> wrapper = new QueryWrapper();
-        wrapper.select("distinct zk_path");
-        if (StringUtils.isNotBlank(param.getStartTime())) {
-            wrapper.ge("create_time", param.getStartTime());
-        }
-        if (StringUtils.isNotBlank(param.getEndTime())) {
-            wrapper.le("create_time", param.getEndTime());
-        }
-        if (StringUtils.isNotBlank(param.getZkPath())) {
-            wrapper.eq("zk_path", param.getZkPath());
-        }
-        if (StringUtils.isNotBlank(param.getValue())) {
-            wrapper.eq("value", param.getValue());
-        }
-        if (StringUtils.isNotBlank(param.getRemark())) {
-            wrapper.like("remark", param.getRemark());
-        }
-        final String envCode = WebPluginUtils.traceEnvCode();
-        final String sysEnvCode = WebPluginUtils.SYS_DEFAULT_ENV_CODE;
-        final List<String> envCodeList = Lists.newArrayList(envCode, sysEnvCode);
-        final Long tenantId = WebPluginUtils.traceTenantId();
-        final Long sysTenantId = WebPluginUtils.SYS_DEFAULT_TENANT_ID;
-        final List<Long> tenantIdList = Lists.newArrayList(tenantId, sysTenantId);
-        wrapper.in("tenant_id", tenantIdList);
-        wrapper.in("env_code", envCodeList);
-        wrapper.eq("is_deleted", 0);
+        QueryWrapper<PradarZkConfigEntity> wrapper = new QueryWrapper<>();
+        wrapper.ge(StringUtils.isNotBlank(param.getStartTime()), "create_time", param.getStartTime())
+            .le(StringUtils.isNotBlank(param.getEndTime()), "create_time", param.getEndTime())
+            .eq(StringUtils.isNotBlank(param.getZkPath()), "zk_path", param.getZkPath())
+            .eq(StringUtils.isNotBlank(param.getValue()), "value", param.getValue())
+            .like(StringUtils.isNotBlank(param.getRemark()), "remark", param.getRemark())
+            .select("zk_path")
+            .eq("tenant_id", WebPluginUtils.traceTenantId())
+            .eq("env_code", WebPluginUtils.traceEnvCode());
 
         //1. 先获取到符合条件的zkpath
-        Page<PradarZkConfigEntity> page = new Page<>(param.getCurrent(), param.getPageSize());
-        final Page<PradarZkConfigEntity> configs = pradarZkConfigMapper.selectPage(page, wrapper);
-        if (CollectionUtils.isEmpty(configs.getRecords())) {
-            return PagingList.of(Lists.newArrayList(), configs.getTotal());
+        IPage<PradarZkConfigEntity> page = new Page<>(param.getRealCurrent(), param.getPageSize());
+        IPage<PradarZkConfigEntity> configs = pradarZkConfigMapper.selectPage(page, wrapper);
+        List<PradarZkConfigEntity> zkPathEntityList = configs.getRecords();
+        if (CollectionUtils.isEmpty(zkPathEntityList)) {
+            return PagingList.of(new ArrayList<>(0), configs.getTotal());
         }
+
         //2. 通过zkpath查询
-        final List<PradarZkConfigEntity> zkPathEntityList = configs.getRecords();
-        List<String> zkPathList;
-        if (zkPathEntityList == null){
-            zkPathList = Lists.newArrayList();
-        }
-        zkPathList = zkPathEntityList.stream().filter(t->Objects.nonNull(t) && Objects.nonNull(t.getZkPath())).map(PradarZkConfigEntity::getZkPath).collect(
-            Collectors.toList());
-        final LambdaQueryWrapper<PradarZkConfigEntity> queryWrapper = new LambdaQueryWrapper<>();
+        List<String> zkPathList = zkPathEntityList.stream().map(PradarZkConfigEntity::getZkPath)
+            .filter(StrUtil::isNotBlank).collect(Collectors.toList());
+        LambdaQueryWrapper<PradarZkConfigEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(PradarZkConfigEntity::getZkPath, zkPathList);
         queryWrapper.in(PradarZkConfigEntity::getTenantId, tenantIdList);
         queryWrapper.in(PradarZkConfigEntity::getEnvCode, envCodeList);
-        queryWrapper.eq(PradarZkConfigEntity::getIsDeleted, 0);
         final List<PradarZkConfigEntity> list = pradarZkConfigMapper.selectList(queryWrapper);
 
         //3. 当前租户的配置
@@ -111,17 +93,12 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
     }
 
     @Override
-    public List<PradarZKConfigResult> selectList() {
-        LambdaQueryWrapper<PradarZkConfigEntity> wrapper = new LambdaQueryWrapper<>();
-        List<PradarZkConfigEntity> result = pradarZkConfigMapper.selectList(wrapper);
-        if (CollectionUtils.isEmpty(result)) {
-            return new ArrayList<>();
-        }
-        return result.stream().map(entity -> {
-            PradarZKConfigResult configResult = new PradarZKConfigResult();
-            BeanUtils.copyProperties(entity, configResult);
-            return configResult;
-        }).collect(Collectors.toList());
+    public List<PradarZKConfigResult> listSystemConfig() {
+        List<PradarZkConfigEntity> result = pradarZkConfigMapper.selectList(this.getLambdaQueryWrapper()
+            .select(PradarZkConfigEntity::getZkPath, PradarZkConfigEntity::getValue)
+            .eq(PradarZkConfigEntity::getTenantId, WebPluginUtils.SYS_DEFAULT_TENANT_ID)
+            .eq(PradarZkConfigEntity::getEnvCode, WebPluginUtils.SYS_DEFAULT_ENV_CODE));
+        return CommonUtil.list2list(result, PradarZKConfigResult.class);
     }
 
     @Override
@@ -151,10 +128,7 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO {
 
     @Override
     public PradarZKConfigResult selectById(Long id) {
-        PradarZKConfigResult configResult = new PradarZKConfigResult();
-        PradarZkConfigEntity entity = pradarZkConfigMapper.selectById(id);
-        BeanUtils.copyProperties(entity, configResult);
-        return configResult;
+        return CommonUtil.copyBeanPropertiesWithNull(pradarZkConfigMapper.selectById(id), PradarZKConfigResult.class);
     }
 
     @Override

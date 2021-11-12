@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -215,7 +214,7 @@ public class CommonUtil implements AppConstants {
      * @return 另一个对象的list
      */
     public static <T> List<T> list2list(List<?> sourceList, Class<T> targetClazz) {
-        return CollectionUtils.isEmpty(sourceList) ? Collections.emptyList()
+        return CollectionUtils.isEmpty(sourceList) ? new ArrayList<>(0)
             : JsonUtil.json2List(JsonUtil.bean2Json(sourceList), targetClazz);
     }
 

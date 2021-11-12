@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.dao.pradar;
 
 import java.util.List;
 
+import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import io.shulie.takin.common.beans.page.PagingList;
 
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
@@ -21,6 +22,7 @@ public interface PradarZkConfigDAO {
      * @param queryParam
      * @return
      */
+    @InterceptorIgnore(tenantLine = "true")
     PagingList<PradarZKConfigResult> selectPage(@Param("queryParam") PradarConfigQueryParam queryParam);
 
     int insert(PradarConfigCreateParam createParam);
@@ -29,7 +31,13 @@ public interface PradarZkConfigDAO {
 
     int delete(PradarConfigCreateParam deleteParam);
 
-    List<PradarZKConfigResult> selectList();
+    /**
+     * 系统配置的列表
+     *
+     * @return pradarConfig 系统配置的列表
+     */
+    @InterceptorIgnore(tenantLine = "true")
+    List<PradarZKConfigResult> listSystemConfig();
 
     PradarZKConfigResult selectById(Long id);
 

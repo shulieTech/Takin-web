@@ -49,7 +49,6 @@ public class PradarConfigController {
     )
     public PagingList<PradarZKConfigResponse> pageList(PradarZKConfigQueryRequest queryRequest) {
         PageUtils.clearPageHelper();
-        queryRequest.setCurrent(queryRequest.getCurrent() + 1);
         return pradarConfigService.list(queryRequest);
     }
 

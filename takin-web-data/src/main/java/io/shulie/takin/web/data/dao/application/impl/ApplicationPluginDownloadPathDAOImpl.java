@@ -1,7 +1,8 @@
 package io.shulie.takin.web.data.dao.application.impl;
 
 import cn.hutool.core.convert.Convert;
-import cn.hutool.crypto.digest.BCrypt;
+import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidStatusEnum;
@@ -15,6 +16,7 @@ import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -27,23 +29,24 @@ import java.util.Objects;
 public class ApplicationPluginDownloadPathDAOImpl extends ServiceImpl<ApplicationPluginDownloadPathMapper, ApplicationPluginDownloadPathEntity>
         implements ApplicationPluginDownloadPathDAO, MPUtil<ApplicationPluginDownloadPathEntity> {
 
-    private LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> buildQuery(LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> LambdaQueryWrapper){
-        if(Objects.isNull(LambdaQueryWrapper)){
-            return this.getLambdaQueryWrapper().eq(ApplicationPluginDownloadPathEntity::getIsDeleted,0);
-        }else{
-           return LambdaQueryWrapper.eq(ApplicationPluginDownloadPathEntity::getIsDeleted,0);
+    private LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> buildQuery(LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> LambdaQueryWrapper) {
+        if (Objects.isNull(LambdaQueryWrapper)) {
+            return this.getLambdaQueryWrapper().eq(ApplicationPluginDownloadPathEntity::getIsDeleted, 0);
+        } else {
+            return LambdaQueryWrapper.eq(ApplicationPluginDownloadPathEntity::getIsDeleted, 0);
         }
     }
 
-    private ApplicationPluginDownloadPathDetailResult convertResult(ApplicationPluginDownloadPathEntity entity){
-        return Convert.convert(ApplicationPluginDownloadPathDetailResult.class,entity);
+    private ApplicationPluginDownloadPathDetailResult convertResult(ApplicationPluginDownloadPathEntity entity) {
+        return Convert.convert(ApplicationPluginDownloadPathDetailResult.class, entity);
     }
 
-    private void createOrUpdate(ApplicationPluginDownloadPathEntity entity){
-        if(StringUtils.isNotBlank(entity.getPassword())){
-            String salt = BCrypt.gensalt();
-            String encryptPassword = BCrypt.hashpw(entity.getPassword(), salt);
-            entity.setSalt(salt);
+    private void createOrUpdate(ApplicationPluginDownloadPathEntity entity) {
+        if (StringUtils.isNotBlank(entity.getPassword())) {
+            byte[] encoded  = StringUtils.isNotBlank(entity.getSalt())?
+                    entity.getSalt().getBytes() : SecureUtil.generateKey(SymmetricAlgorithm.AES.getValue()).getEncoded();
+            String encryptPassword = SecureUtil.aes(encoded).encryptHex(entity.getPassword());
+            entity.setSalt(Arrays.toString(encoded));
             entity.setPassword(encryptPassword);
         }
         this.saveOrUpdate(entity);
@@ -60,7 +63,7 @@ public class ApplicationPluginDownloadPathDAOImpl extends ServiceImpl<Applicatio
     @Override
     public ApplicationPluginDownloadPathDetailResult queryDetailByCustomerId(ApplicationAgentPathValidStatusEnum statusEnum) {
         LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
-        queryWrapper.eq(ApplicationPluginDownloadPathEntity::getValidStatus,statusEnum.getVal());
+        queryWrapper.eq(ApplicationPluginDownloadPathEntity::getValidStatus, statusEnum.getVal());
         return this.convertResult(this.getOne(queryWrapper));
     }
 
@@ -77,7 +80,7 @@ public class ApplicationPluginDownloadPathDAOImpl extends ServiceImpl<Applicatio
     }
 
     @Override
-    public void saveValidState(Boolean state,Long recordId) {
+    public void saveValidState(Boolean state, Long recordId) {
         ApplicationPluginDownloadPathEntity entity = new ApplicationPluginDownloadPathEntity();
         entity.setId(recordId);
         entity.setValidStatus(ApplicationAgentPathValidStatusEnum.getValByState(state));

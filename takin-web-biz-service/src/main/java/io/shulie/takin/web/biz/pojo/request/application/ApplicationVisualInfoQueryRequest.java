@@ -66,4 +66,7 @@ public class ApplicationVisualInfoQueryRequest extends PagingDevice {
     private Boolean attend;
 
     private String nameActivity;
+
+    private String tenantAppKey;
+    private String envCode;
 }

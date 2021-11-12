@@ -30,6 +30,7 @@ import io.shulie.takin.web.biz.pojo.response.leakcheck.SingleSqlDetailResponse;
 import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.datasource.DataSourceDAO;
 import io.shulie.takin.web.data.dao.leakcheck.LeakCheckConfigDAO;
 import io.shulie.takin.web.data.dao.leakcheck.LeakCheckConfigDetailDAO;
@@ -478,7 +479,7 @@ public class LeakSqlServiceImpl implements LeakSqlService {
             return;
         }
         if (!SqlParseUtil.checkIsSelect(sql) || !SqlParseUtil.checkHasLimit(sql)) {
-            throw new TakinWebException(ExceptionCode.LEAK_SQL_REF_INVALID_ERROR, "验证命令格式不符合要求，请按照模板填写");
+            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "验证命令格式不符合要求，请按照模板填写");
         }
     }
 }

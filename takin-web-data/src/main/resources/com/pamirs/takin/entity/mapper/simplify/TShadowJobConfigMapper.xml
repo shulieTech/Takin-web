@@ -156,23 +156,23 @@
     </update>
     <sql id="Data_Where_Clause">
         <where>
-            <if test="query != null and query.id != null">
-                and id = #{query.id,jdbcType=BIGINT}
+            <if test="id != null">
+                and id = #{id,jdbcType=BIGINT}
             </if>
-            <if test="query != null and query.applicationId != null">
-                and application_id = #{query.applicationId,jdbcType=BIGINT}
+            <if test="applicationId != null">
+                and application_id = #{applicationId,jdbcType=BIGINT}
             </if>
-            <if test="query != null and query.name != null">
-                and `name` = #{query.name,jdbcType=VARCHAR}
+            <if test="name != null">
+                and `name` = #{name,jdbcType=VARCHAR}
             </if>
-            <if test="query != null and query.type != null">
-                and `type` = #{query.type,jdbcType=VARCHAR}
+            <if test="type != null">
+                and `type` = #{type,jdbcType=VARCHAR}
             </if>
-            <if test="query != null and query.status != null">
-                and status = #{query.status,jdbcType=BIT}
+            <if test="status != null">
+                and status = #{status,jdbcType=BIT}
             </if>
-            <if test="query != null and query.configCode != null">
-                and config_code = #{query.configCode,jdbcType=LONGVARCHAR}
+            <if test="configCode != null">
+                and config_code = #{configCode,jdbcType=LONGVARCHAR}
             </if>
             <if test="userIds != null and userIds.size > 0">
                 AND user_id IN

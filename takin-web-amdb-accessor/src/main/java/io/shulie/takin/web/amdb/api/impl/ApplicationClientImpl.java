@@ -443,6 +443,8 @@ public class ApplicationClientImpl implements ApplicationClient {
         paramMap.put("appName",appName);
         paramMap.put("pageSize",Integer.MAX_VALUE);
         paramMap.put("dataSource",dataSource);
+        paramMap.put("envCode",WebPluginUtils.traceEnvCode());
+        paramMap.put("tenantAppKey",WebPluginUtils.traceTenantAppKey());
         AmdbResult<List<AppShadowDatabaseDTO>> amdbResponse = AmdbHelper.builder().httpMethod(HttpMethod.GET)
                 .url(url)
                 .param(paramMap)
@@ -469,6 +471,8 @@ public class ApplicationClientImpl implements ApplicationClient {
         paramMap.put("appName",appName);
         paramMap.put("dataSource",dataSource);
         paramMap.put("tableUser",userName);
+        paramMap.put("envCode",WebPluginUtils.traceEnvCode());
+        paramMap.put("tenantAppKey",WebPluginUtils.traceTenantAppKey());
         AmdbResult<List<ApplicationBizTableDTO>> amdbResponse = AmdbHelper.builder().httpMethod(HttpMethod.GET)
                 .url(url)
                 .param(paramMap)

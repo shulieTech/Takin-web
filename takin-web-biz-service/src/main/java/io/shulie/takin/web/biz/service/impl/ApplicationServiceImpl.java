@@ -1079,7 +1079,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         // 2.根据应用名称查询大数据性能数据
         List<String> attentionInterfaces = attentionList.stream().map(ApplicationAttentionListEntity::getInterfaceName).collect(Collectors.toList());
         request.setAttentionList(attentionInterfaces);
-        request.setTenantAppkey(WebPluginUtils.traceTenantAppKey());
+        request.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         request.setEnvCode(WebPluginUtils.traceEnvCode());
         Map<List<ApplicationVisualInfoResponse>, Integer> infoResponseMap = doGetAppDataByAppName(request);
         List<ApplicationVisualInfoResponse> infoDTOList = new ArrayList<>();

@@ -9,15 +9,18 @@ import lombok.Getter;
 @Getter
 public enum BooleanEnum {
 
-    TRUE(true, "是"),
-    FALSE(false, "否");
+    TRUE(true, 1, "是"),
+    FALSE(false, 0, "否");
 
     private Boolean value;
 
+    private Integer code;
+
     private String desc;
 
-    BooleanEnum(Boolean value, String desc) {
+    BooleanEnum(Boolean value, Integer code, String desc) {
         this.value = value;
+        this.code = code;
         this.desc = desc;
     }
 

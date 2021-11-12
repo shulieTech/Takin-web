@@ -1,7 +1,9 @@
 package io.shulie.takin.web.biz.pojo.response.agentupgradeonline;
 
+import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -38,5 +40,9 @@ public class AgentPluginUploadResponse {
 
     @ApiModelProperty("校验包的错误信息")
     private List<String> errorMessages;
+
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty("最后更新时间")
+    private Date lastUpdateDate = new Date();
 
 }

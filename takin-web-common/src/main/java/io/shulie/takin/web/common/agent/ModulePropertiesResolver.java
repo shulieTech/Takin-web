@@ -74,6 +74,7 @@ public class ModulePropertiesResolver {
             } else if (moduleInfoItem.startsWith(UPDATE_INFO)) {
                 agentModuleInfo.setUpdateInfo(moduleInfoItem.substring(UPDATE_INFO.length() + 1));
             } else if (moduleInfoItem.startsWith(DEPENDENCIES_INFO)) {
+                agentModuleInfo.setDependenciesInfoStr(moduleInfoItem.substring(DEPENDENCIES_INFO.length() + 1));
                 agentModuleInfo.setDependenciesInfo(
                     dealDependsInfo(moduleInfoItem.substring(DEPENDENCIES_INFO.length() + 1)));
             }

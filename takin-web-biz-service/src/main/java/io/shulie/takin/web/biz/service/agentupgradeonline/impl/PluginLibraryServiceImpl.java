@@ -8,10 +8,14 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.file.FileUploadRequest;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginLibraryListResponse;
 import io.shulie.takin.web.biz.pojo.response.common.FileUploadResponse;
 import io.shulie.takin.web.biz.service.ApiService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.PluginLibraryService;
@@ -19,10 +23,13 @@ import io.shulie.takin.web.common.agent.IAgentZipResolver;
 import io.shulie.takin.web.common.agent.ModulePropertiesResolver;
 import io.shulie.takin.web.common.enums.agentupgradeonline.PluginTypeEnum;
 import io.shulie.takin.web.common.pojo.bo.agent.AgentModuleInfo;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.agentupgradeonline.PluginLibraryDAO;
+import io.shulie.takin.web.data.param.agentupgradeonline.PluginLibraryListQueryParam;
 import io.shulie.takin.web.data.param.agentupgradeonline.PluginLibraryQueryParam;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -114,7 +121,7 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
             pluginInfo.setPluginVersion(item.getModuleVersion());
             pluginInfo.setIsCustomMode(item.getCustomized());
             pluginInfo.setUpdateInfo(item.getUpdateInfo());
-            pluginInfo.setDependenciesInfo(ModulePropertiesResolver.joinDependenciesInfo(item));
+            pluginInfo.setDependenciesInfo(item.getDependenciesInfoStr());
             return pluginInfo;
         }).collect(Collectors.toList()));
 
@@ -125,6 +132,29 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
     public File getPluginFile(Long pluginId) {
         PluginLibraryDetailResult pluginLibraryDetailResult = pluginLibraryDAO.queryById(pluginId);
         return pluginLibraryDetailResult == null ? null : new File(pluginLibraryDetailResult.getDownloadPath());
+    }
+
+    @Override
+    public List<PluginInfo> queryByPluginName(String pluginName) {
+        return CommonUtil.list2list(pluginLibraryDAO.queryByPluginName(pluginName), PluginInfo.class);
+    }
+
+    @Override
+    public List<String> queryAllPluginNames() {
+        return pluginLibraryDAO.queryAllPluginName();
+    }
+
+    @Override
+    public PagingList<PluginLibraryListResponse> list(PluginLibraryListQueryRequest query) {
+        PluginLibraryListQueryParam queryParam = new PluginLibraryListQueryParam();
+        BeanUtils.copyProperties(query, queryParam);
+        PagingList<PluginLibraryDetailResult> resultPage = pluginLibraryDAO.page(queryParam);
+        List<PluginLibraryDetailResult> results = resultPage.getList();
+        if (CollectionUtil.isEmpty(results)) {
+            return PagingList.empty();
+        }
+
+        return PagingList.of(CommonUtil.list2list(results, PluginLibraryListResponse.class), resultPage.getTotal());
     }
 
     /**

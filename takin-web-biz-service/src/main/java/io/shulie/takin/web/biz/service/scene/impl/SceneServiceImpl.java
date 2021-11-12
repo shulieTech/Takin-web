@@ -653,7 +653,7 @@ public class SceneServiceImpl implements SceneService {
             }
             businessFlowDataFileRequest.getFileManageUpdateRequests().addAll(LinkManageConvert.INSTANCE
                     .ofFileManageResponseList(dataFileManageResponseList));
-            //脚本后续会把文件和附件放到一起，这里就不差分出来了
+            //脚本后续会把文件和附件放到一起，这里就不分出来了
             updateRequest.setFileManageUpdateRequests(businessFlowDataFileRequest.getFileManageUpdateRequests());
             updateRequest.setPluginConfigUpdateRequests(businessFlowDataFileRequest.getPluginConfigUpdateRequests());
 

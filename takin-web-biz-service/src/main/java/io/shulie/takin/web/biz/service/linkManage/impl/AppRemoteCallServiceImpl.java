@@ -313,7 +313,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             result.setTypeSelectVO(new SelectVO(callConfigEnum.getConfigName(), String.valueOf(callConfigEnum.getType())));
             // 支持类型
             result.setInterfaceTypeSelectVO(getSelectVO(result.getInterfaceType(), voList));
-            result.setCanRemove(result.getIsManual());
+            // 补充权限
+            WebPluginUtils.fillQueryResponse(result);
         });
         return PagingList.of(results.stream().sorted(Comparator.comparing(AppRemoteCallListVO::getSort)).collect(Collectors.toList()),
             dbPagingList.getTotal() + amdbPagingList.getTotal());

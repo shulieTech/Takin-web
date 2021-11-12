@@ -3,7 +3,7 @@ package io.shulie.takin.web.common.vo.application;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -12,7 +12,7 @@ import lombok.Data;
  * @date 2021/5/29 12:35 上午
  */
 @Data
-public class AppRemoteCallVO extends UserCommonExt {
+public class AppRemoteCallVO extends AuthQueryResponseCommonExt {
     /**
      * 接口名称
      */

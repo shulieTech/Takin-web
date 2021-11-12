@@ -20,7 +20,7 @@ public interface TShadowJobConfigMapper {
     TShadowJobConfig selectOneById(ShadowJobConfigQuery query);
 
 
-    List<TShadowJobConfig> selectList(@Param("query")ShadowJobConfigQuery query,@Param("userIds") List<Long> userIds);
+    List<TShadowJobConfig> selectList(ShadowJobConfigQuery query);
 
     int update(TShadowJobConfig record);
 

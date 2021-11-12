@@ -196,7 +196,8 @@ public class ShadowJobConfigService {
         if (StringUtils.isBlank(query.getOrderBy())) {
             query.setOrderBy("id desc");
         }
-        List<TShadowJobConfig> tShadowJobConfigs = tShadowJobConfigMapper.selectList(query,WebPluginUtils.getQueryAllowUserIdList());
+        query.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
+        List<TShadowJobConfig> tShadowJobConfigs = tShadowJobConfigMapper.selectList(query);
         PageInfo<TShadowJobConfig> pageInfo = new PageInfo<>(tShadowJobConfigs);
         List<ShadowJobConfigVo> configVos = new ArrayList<>();
         pageInfo.getList().forEach(tShadowJobConfig -> {

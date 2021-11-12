@@ -74,11 +74,11 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
         // 前端查询条件 传用户
-        final StringBuilder userIdListString = new StringBuilder();
+        final List<String> userIdList = new ArrayList<>(0);
         if (StringUtils.isNotBlank(param.getUserName())) {
             List<UserExt> userList = WebPluginUtils.selectByName(param.getUserName());
             if (CollectionUtils.isNotEmpty(userList)) {
-                userList.forEach(t -> userIdListString.append(StrUtil.format("'{}'", t.getId())));
+                userList.forEach(t -> userIdList.add(StrUtil.format("'{}'", t.getId())));
             } else {
                 return ResponseResult.success(new ArrayList<>(0), 0L);
             }
@@ -89,7 +89,7 @@ public class ReportServiceImpl implements ReportService {
             setEndTime(param.getEndTime());
             setPageSize(param.getPageSize());
             setPageNumber(param.getCurrentPage() + 1);
-            setFilterSql(userIdListString.toString());
+            setFilterSql(String.join(",", userIdList));
         }});
         List<Long> userIds = reportResponseList.getData().stream().map(ContextExt::getUserId)
             .filter(Objects::nonNull).collect(Collectors.toList());

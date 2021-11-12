@@ -3,6 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.scenemanage;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -48,7 +49,6 @@ import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
 import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
-import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest.Content;
 import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
 
 /**
@@ -135,6 +135,7 @@ public class SceneController {
             SceneResult scene = sceneService.getScene(sceneRequest.getBasicInfo().getBusinessFlowId());
             if (scene == null) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程");}
             if (StrUtil.isBlank(scene.getScriptJmxNode())) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务流程未保存脚本解析结果");}
+            if (!scene.getLinkRelateNum().equals(scene.getTotalNodeNum())) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务流程尚未匹配完成");}
             sceneRequest.setAnalysisResult(JSONObject.parseArray(scene.getScriptJmxNode(), ScriptNode.class));
         }
         // 4. 填充压测内容
@@ -154,14 +155,32 @@ public class SceneController {
             // 3.2. 一维数据转换为Map，获得xPathMD5 和 脚本节点名称的对应关系
             Map<String, String> nodeMap = nodes.stream().collect(Collectors.toMap(ScriptNode::getXpathMd5, ScriptNode::getTestName));
             // 3.3 遍历压测内容并从Map中填充数据
-            for (Content item : content) {
+            for (SceneRequest.Content item : content) {
                 if (!nodeMap.containsKey(item.getPathMd5())) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果存在不能匹配的业务活动");}
                 item.setName(nodeMap.get(item.getPathMd5()));
                 item.setApplicationId(sceneManageService.getAppIdsByBusinessActivityId(item.getBusinessActivityId()));
             }
             sceneRequest.setContent(content);
         }
-        // 5. 填充压测文件
+        // 5. 填充SLA
+        {
+            // 1. 销毁的监控目标
+            List<SceneRequest.MonitoringGoal> destroyMonitoringGoal = request.getDestroyMonitoringGoal().stream()
+                .map(t -> BeanUtil.copyProperties(t, SceneRequest.MonitoringGoal.class))
+                .peek(t -> t.setType(0)).collect(Collectors.toList());
+            // 2. 警告的监控目标
+            List<SceneRequest.MonitoringGoal> warnMonitoringGoal = request.getDestroyMonitoringGoal().stream()
+                .map(t -> BeanUtil.copyProperties(t, SceneRequest.MonitoringGoal.class))
+                .peek(t -> t.setType(1)).collect(Collectors.toList());
+            // 3. 组合警告目标
+            List<SceneRequest.MonitoringGoal> monitoringGoal =
+                new ArrayList<>(destroyMonitoringGoal.size() + warnMonitoringGoal.size());
+            monitoringGoal.addAll(destroyMonitoringGoal);
+            monitoringGoal.addAll(warnMonitoringGoal);
+            // 4. 填充
+            sceneRequest.setMonitoringGoal(monitoringGoal);
+        }
+        // 6. 填充压测文件
         sceneRequest.setFile(assembleFileList(request.getBasicInfo().getScriptId()));
         return sceneRequest;
     }
@@ -200,7 +219,7 @@ public class SceneController {
      * @return 业务流程详情
      */
     @GetMapping("business_activity_flow/detail")
-    @ApiOperation("获取业务流程列表 - 压测场景用")
+    @ApiOperation("获取业务流程详情 - 压测场景用")
     public ResponseResult<SceneEntity> businessActivityFlowDetail(
         @RequestParam(name = "id", required = false) Long id) {
         return ResponseResult.success(sceneService.businessActivityFlowDetail(id));

@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -23,21 +24,18 @@ public class NewSceneRequest {
     @ApiModelProperty(value = "基础信息")
     @NotNull(message = "场景基础信息不能为空")
     private SceneRequest.BasicInfo basicInfo;
-//    @ApiModelProperty(value = "脚本解析结果")
-//    @NotNull(message = "脚本解析结果不能为空")
-//    private List<?> analysisResult;
-//    @ApiModelProperty(value = "压测内容")
-//    @NotNull(message = "压测目标不能为空")
-//    private List<SceneRequest.Content> content;
     @ApiModelProperty(value = "施压配置")
     @NotNull(message = "施压配置不能为空")
     private PtConfig config;
     @ApiModelProperty(value = "压测目标")
     @NotNull(message = "业压测目标不能为空,key节点的xpathMd5，value是配置信息")
     private Map<String, SceneRequest.Goal> goal;
-    @ApiModelProperty(value = "SLA配置")
-    @NotNull(message = "SLA配置不能为空")
-    private List<SceneRequest.MonitoringGoal> monitoringGoal;
+    @ApiModelProperty(value = "SLA配置-终止")
+    @NotNull(message = "【SLA配置-终止】不能为空")
+    private List<MonitoringGoal> destroyMonitoringGoal;
+    @ApiModelProperty(value = "SLA配置-警告")
+    @NotNull(message = "【SLA配置-警告】不能为空")
+    private List<MonitoringGoal> warnMonitoringGoal;
     @ApiModelProperty(value = "数据验证配置")
     @NotNull(message = "数据验证配置不能为空")
     private SceneRequest.DataValidation dataValidation;
@@ -77,5 +75,31 @@ public class NewSceneRequest {
         private Integer steps;
         @ApiModelProperty(value = "预估流量")
         private Double estimateFlow;
+    }
+
+    /**
+     * 监控目标
+     */
+    @Data
+    @ApiModel(value = "监控目标")
+    public static class MonitoringGoal {
+        @ApiModelProperty(value = "名称")
+        @NotBlank(message = "名称不能为空")
+        private String name;
+        @ApiModelProperty(value = "对象(MD5值)")
+        @NotNull(message = "对象不能为空")
+        private List<String> target;
+        @ApiModelProperty(value = "算式目标")
+        @NotNull(message = "条件规则指标不能为空")
+        private Integer formulaTarget;
+        @ApiModelProperty(value = "算式符号")
+        @NotNull(message = "条件规则判断条件不能为空")
+        private Integer formulaSymbol;
+        @ApiModelProperty(value = "算式数值")
+        @NotNull(message = "条件规则判断数据不能为空")
+        private Double formulaNumber;
+        @ApiModelProperty(value = "忽略次数")
+        @NotNull(message = "连续出现次数不能为空")
+        private Integer numberOfIgnore;
     }
 }

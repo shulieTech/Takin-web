@@ -215,8 +215,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         //新版本位点
         SceneActionParamNew paramNew = this.getNewParam(param);
         //设置租户
-        paramNew.setEnvCode(WebPluginUtils.checkAndTraceEnvCode());
-        paramNew.setTenantId(WebPluginUtils.checkAndTraceTenantId());
+        paramNew.setEnvCode(WebPluginUtils.traceEnvCode());
+        paramNew.setTenantId(WebPluginUtils.traceTenantId());
 
         SceneActionResp startResult;
         try {

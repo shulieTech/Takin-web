@@ -671,17 +671,12 @@ public class WebPluginUtils {
      */
     public static Long traceTenantId() {
         if (userApi != null) {
-            return userApi.traceTenantId();
+            Long tenantId = userApi.traceTenantId();
+            if (Objects.isNull(tenantId)){
+                throw new RuntimeException("租户ID不能为空！");
+            }
         }
         return DEFAULT_TENANT_ID;
-    }
-
-    public static Long checkAndTraceTenantId() {
-        final Long tenantId = traceTenantId();
-        if (Objects.isNull(tenantId)){
-            throw new RuntimeException("租户ID不能为空！");
-        }
-        return tenantId;
     }
 
     /**
@@ -713,7 +708,10 @@ public class WebPluginUtils {
      */
     public static String traceEnvCode() {
         if (userApi != null) {
-            return userApi.traceEnvCode();
+            String envCode = userApi.traceEnvCode();
+            if (StringUtils.isBlank(envCode)){
+                throw new RuntimeException("环境编码不能为空！");
+            }
         }
         return DEFAULT_ENV_CODE;
     }

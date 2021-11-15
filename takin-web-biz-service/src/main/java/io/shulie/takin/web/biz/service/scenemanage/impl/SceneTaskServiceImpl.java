@@ -214,6 +214,10 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         }
         //新版本位点
         SceneActionParamNew paramNew = this.getNewParam(param);
+        //设置租户
+        paramNew.setEnvCode(WebPluginUtils.checkAndTraceEnvCode());
+        paramNew.setTenantId(WebPluginUtils.checkAndTraceTenantId());
+
         SceneActionResp startResult;
         try {
             startResult = cloudTaskApi.start(BeanUtil.copyProperties(paramNew, SceneTaskStartReq.class));

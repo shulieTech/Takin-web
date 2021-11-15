@@ -47,8 +47,9 @@ public class SyncMachineDataJob implements SimpleJob {
     @Override
     public void execute(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
-        List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-        if (CollectionUtils.isEmpty(tenantInfoExts)) {
+        //List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
+        final Boolean openVersion = WebPluginUtils.isOpenVersion();
+        if (openVersion) {
             if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                 return;
             }
@@ -63,6 +64,7 @@ public class SyncMachineDataJob implements SimpleJob {
                 }
             }
         } else {
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             // saas 根据租户进行分片
             for (TenantInfoExt ext : tenantInfoExts) {
                 // 开始数据层分片

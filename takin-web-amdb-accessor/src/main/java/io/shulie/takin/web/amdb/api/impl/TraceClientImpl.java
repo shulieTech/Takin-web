@@ -196,7 +196,8 @@ public class TraceClientImpl implements TraceClient {
 
         param.setCurrentPage(query.getCurrentPage() + 1);
         param.setPageSize(query.getPageSize());
-
+        param.setTenantAppKey(query.getTenantAppKey());
+        param.setEnvCode(query.getEnvCode());
         try {
             AmdbResult<List<TTrackClickhouseModel>> response = AmdbHelper.builder().url(url)
                 .httpMethod(HttpMethod.POST)

@@ -34,5 +34,15 @@ public class TraceLogQueryDTO extends PagingDevice {
     @ApiModelProperty("traceId")
     private String traceId;
 
+    /**
+     * tenantAppKey
+     */
+    private String tenantAppKey;
+
+    /**
+     * 环境编码
+     */
+    private String envCode;
+
 
 }

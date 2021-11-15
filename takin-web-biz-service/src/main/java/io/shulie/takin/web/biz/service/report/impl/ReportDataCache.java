@@ -80,7 +80,9 @@ public class ReportDataCache {
      */
     private void queryReportDetail(Long reportId) {
         ReportApplicationDTO reportApplication = reportApplicationService.getReportApplication(reportId);
+        final ReportDetailDTO reportDetail = reportApplication.getReportDetail();
         if (reportApplication.getReportDetail() != null) {
+            WebPluginUtils.setTraceTenantContext(reportDetail.getTenantId(),null,reportDetail.getEnvCode(),null);
             redisTemplate.opsForValue().set(getReportDetailKey(reportId), reportApplication.getReportDetail());
             log.info("Report Id={}, Status={}，endTime = {}", reportId, reportApplication.getReportDetail().getTaskStatus(),
                 reportApplication.getReportDetail().getEndTime());

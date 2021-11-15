@@ -479,6 +479,10 @@ public class WebPluginUtils {
         return getDefaultTenantInfoList();
     }
 
+    public static Boolean isOpenVersion(){
+        return Objects.isNull(tenantExtApi) && Objects.isNull(userApi);
+    }
+
     /**
      * 根据租户code 查询租户数据
      * @param tenantCode
@@ -672,6 +676,14 @@ public class WebPluginUtils {
         return DEFAULT_TENANT_ID;
     }
 
+    public static Long checkAndTraceTenantId() {
+        final Long tenantId = traceTenantId();
+        if (Objects.isNull(tenantId)){
+            throw new RuntimeException("租户ID不能为空！");
+        }
+        return tenantId;
+    }
+
     /**
      * 返回租户id
      * 租户依赖于用户
@@ -711,6 +723,14 @@ public class WebPluginUtils {
      */
     public static List<String> traceEnvCodeForSystem() {
         return Lists.newArrayList(SYS_DEFAULT_ENV_CODE, traceEnvCode());
+    }
+
+    public static String checkAndTraceEnvCode() {
+        final String envCode = traceEnvCode();
+        if (StringUtils.isBlank(envCode)){
+            throw new RuntimeException("环境编码不能为空！");
+        }
+        return envCode;
     }
 
     /**

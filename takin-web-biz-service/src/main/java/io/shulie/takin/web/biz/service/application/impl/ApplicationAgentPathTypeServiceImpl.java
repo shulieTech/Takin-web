@@ -34,9 +34,8 @@ public class ApplicationAgentPathTypeServiceImpl implements ApplicationAgentPath
     @Override
     public List<SelectVO> supportType() {
         List<SelectVO> list = new ArrayList<>();
-        Arrays.stream(ApplicationAgentPathTypeEnum.values()).peek(typeEnum -> {
-            list.add(new SelectVO(typeEnum.getDesc(),String.valueOf(typeEnum.getVal())));
-        });
+         Arrays.stream(ApplicationAgentPathTypeEnum.values()).forEach(typeEnum ->
+                 list.add(new SelectVO(typeEnum.getDesc(), String.valueOf(typeEnum.getVal()))));
         return list;
     }
 
@@ -66,5 +65,11 @@ public class ApplicationAgentPathTypeServiceImpl implements ApplicationAgentPath
         updateParam.setValidStatus(ApplicationAgentPathValidStatusEnum.TO_BE_CHECKED.getVal());
         pathDAO.updateConfig(updateParam);
         return Response.success();
+    }
+
+    @Override
+    public Response validEfficient() {
+        ApplicationPluginDownloadPathDetailResult result = pathDAO.queryDetailByCustomerId();
+        return Response.success(ApplicationAgentPathValidStatusEnum.CHECK_PASSED.getVal().equals(result.getValidStatus()));
     }
 }

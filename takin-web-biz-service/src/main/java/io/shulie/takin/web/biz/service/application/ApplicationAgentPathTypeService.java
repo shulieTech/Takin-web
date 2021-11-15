@@ -21,4 +21,6 @@ public interface ApplicationAgentPathTypeService {
     Response createConfig(ApplicationPluginDownloadPathInput createInput);
 
     Response updateConfig(ApplicationPluginDownloadPathUpdateInput updateInput);
+
+    Response validEfficient();
 }

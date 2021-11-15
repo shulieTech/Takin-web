@@ -545,10 +545,13 @@
     <select id="getApplicationsByUserIdList"
             resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
         select application_id,application_name
-        from t_application_mnt where user_id in
-        <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
-            #{userId}
-        </foreach>
+        from t_application_mnt
+        <if test="userIdList != null and userIdList.size()>0">
+            where user_id in
+            <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+                #{userId}
+            </foreach>
+        </if>
     </select>
 
     <select id="getIdByName" resultType="java.lang.String">

@@ -23,7 +23,7 @@ import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 public class NewSceneRequest {
     @ApiModelProperty(value = "基础信息")
     @NotNull(message = "场景基础信息不能为空")
-    private SceneRequest.BasicInfo basicInfo;
+    private BasicInfo basicInfo;
     @ApiModelProperty(value = "施压配置")
     @NotNull(message = "施压配置不能为空")
     private PtConfig config;
@@ -39,6 +39,18 @@ public class NewSceneRequest {
     @ApiModelProperty(value = "数据验证配置")
     @NotNull(message = "数据验证配置不能为空")
     private SceneRequest.DataValidation dataValidation;
+
+    @Data
+    public static class BasicInfo {
+        @ApiModelProperty("场景主键")
+        private Long sceneId;
+        @ApiModelProperty(value = "压测场景名称")
+        @NotBlank(message = "压测场景名称不能为空")
+        private String name;
+        @NotNull(message = "业务流程主键不能为空")
+        @ApiModelProperty(value = "业务流程主键")
+        private Long businessFlowId;
+    }
 
     @Data
     public static class PtConfig {

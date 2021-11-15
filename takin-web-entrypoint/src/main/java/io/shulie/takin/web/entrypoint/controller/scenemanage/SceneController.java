@@ -137,6 +137,9 @@ public class SceneController {
             if (StrUtil.isBlank(scene.getScriptJmxNode())) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务流程未保存脚本解析结果");}
             if (!scene.getLinkRelateNum().equals(scene.getTotalNodeNum())) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务流程尚未匹配完成");}
             sceneRequest.setAnalysisResult(JSONObject.parseArray(scene.getScriptJmxNode(), ScriptNode.class));
+            sceneRequest.getBasicInfo().setType(0);
+            sceneRequest.getBasicInfo().setScriptType(0);
+            sceneRequest.getBasicInfo().setScriptId(scene.getScriptDeployId());
         }
         // 4. 填充压测内容
         {
@@ -181,7 +184,7 @@ public class SceneController {
             sceneRequest.setMonitoringGoal(monitoringGoal);
         }
         // 6. 填充压测文件
-        sceneRequest.setFile(assembleFileList(request.getBasicInfo().getScriptId()));
+        sceneRequest.setFile(assembleFileList(sceneRequest.getBasicInfo().getScriptId()));
         return sceneRequest;
     }
 

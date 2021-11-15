@@ -131,9 +131,6 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     private ApplicationDAO applicationDAO;
 
     @Autowired
-    private ReportRealTimeService reportRealTimeService;
-
-    @Autowired
     private TraceClient traceClient;
 
     @Autowired
@@ -814,11 +811,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         if (!StringUtils.isEmpty(remark) && remark.length() > 490) {
             scriptDebug.setRemark(remark.substring(0, 490));
         }
-
-        if (!scriptDebugDAO.updateById(scriptDebug)) {
-            log.error("检查压测结果 --> 更新调试记录状态失败! 状态为: {}", scriptDebug.getStatus());
-            throw ScriptDebugExceptionUtil.getCheckStatusError("更新调试记录状态失败!");
-        }
+        scriptDebugDAO.updateById(scriptDebug);
     }
 
     /**

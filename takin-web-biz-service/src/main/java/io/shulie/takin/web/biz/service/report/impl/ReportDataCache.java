@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.report.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.util.RedisHelper;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -81,8 +83,15 @@ public class ReportDataCache {
     private void queryReportDetail(Long reportId) {
         ReportApplicationDTO reportApplication = reportApplicationService.getReportApplication(reportId);
         final ReportDetailDTO reportDetail = reportApplication.getReportDetail();
+        final TenantCommonExt commonExt = WebPluginUtils.fillTenantCommonExt(reportDetail.getTenantId(),
+            reportDetail.getEnvCode());
+        if (Objects.isNull(commonExt) || StringUtils.isBlank(commonExt.getTenantAppKey())){
+            log.error("租户AppKey 不能为空！");
+            return;
+        }
+        String tenantAppKey = commonExt.getTenantAppKey();
         if (reportApplication.getReportDetail() != null) {
-            WebPluginUtils.setTraceTenantContext(reportDetail.getTenantId(),null,reportDetail.getEnvCode(),null);
+            WebPluginUtils.setTraceTenantContext(reportDetail.getTenantId(),tenantAppKey,reportDetail.getEnvCode(),commonExt.getTenantCode());
             redisTemplate.opsForValue().set(getReportDetailKey(reportId), reportApplication.getReportDetail());
             log.info("Report Id={}, Status={}，endTime = {}", reportId, reportApplication.getReportDetail().getTaskStatus(),
                 reportApplication.getReportDetail().getEndTime());

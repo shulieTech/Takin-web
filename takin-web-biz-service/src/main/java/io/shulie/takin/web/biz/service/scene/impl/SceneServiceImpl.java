@@ -470,6 +470,7 @@ public class SceneServiceImpl implements SceneService {
         Map<String, Long> businessActivityRef = sceneLinkRelateList.stream().filter(o -> o.getBusinessLinkId() != null).
                 collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5, o -> NumberUtils.toLong(o.getBusinessLinkId())));
         synchronizeRequest.setBusinessActivityRef(businessActivityRef);
+        WebPluginUtils.fillCloudUserData(synchronizeRequest);
         multipleSceneApi.synchronize(synchronizeRequest);
     }
 

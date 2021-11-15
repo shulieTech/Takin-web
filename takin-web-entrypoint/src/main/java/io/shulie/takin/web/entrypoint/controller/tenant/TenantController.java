@@ -1,16 +1,24 @@
 package io.shulie.takin.web.entrypoint.controller.tenant;
 
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.util.TenantUtils;
 import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantApplicationExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -35,6 +43,9 @@ public class TenantController {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private ApplicationService applicationService;
 
     @GetMapping
     @ApiOperation("获取租户列表 以及 环境列表")
@@ -67,7 +78,7 @@ public class TenantController {
             return (List<TenantConfigExt>)redisTemplate.opsForValue().get(tenantConfigRedisKey);
         }
         List<TenantConfigExt> exts =WebPluginUtils.getTenantConfig();
-        redisTemplate.opsForValue().set(tenantConfigRedisKey,exts);
+        redisTemplate.opsForValue().set(tenantConfigRedisKey,exts,5,TimeUnit.MINUTES);
         return exts;
     }
 
@@ -80,8 +91,41 @@ public class TenantController {
             return (List<TenantInfoConfigExt>)redisTemplate.opsForValue().get(tenantConfigRedisKey);
         }
         List<TenantInfoConfigExt> exts =WebPluginUtils.getAllTenantConfig();
-        redisTemplate.opsForValue().set(tenantConfigRedisKey,exts);
+        redisTemplate.opsForValue().set(tenantConfigRedisKey,exts,5, TimeUnit.MINUTES);
         return exts;
     }
+
+
+    @GetMapping("/tenant/app/all")
+    @ApiOperation("获取租户配置，无需登录")
+    public List<TenantApplicationExt> getAllTenantApp() {
+        String key = "appSynchronizeToAmdb";
+        // 先从缓存获取
+        List<TenantInfoConfigExt> allConfig = this.getAllConfig();
+        // 找到配置，需要获取应用的配置
+        List<TenantCommonExt> commonExts = Lists.newArrayList();
+        for (TenantInfoConfigExt ext : allConfig) {
+            for(Entry<String,List<TenantConfigExt>> map: ext.getConfigs().entrySet()) {
+                if(CollectionUtils.isEmpty(map.getValue())) {
+                    continue;
+                }
+                List<TenantConfigExt> collect = map.getValue().stream().filter(configExt -> key.equals(configExt.getConfigKey())).collect(Collectors.toList());
+                if(CollectionUtils.isEmpty(collect)){
+                    continue;
+                }
+                TenantConfigExt tenantConfigExt = collect.get(0);
+                if(Boolean.parseBoolean(tenantConfigExt.getConfigValue())) {
+                    TenantCommonExt tenantCommonExt = new TenantCommonExt();
+                    tenantCommonExt.setTenantCode(ext.getTenantCode());
+                    tenantCommonExt.setTenantAppKey(ext.getTenantAppKey());
+                    tenantCommonExt.setEnvCode(map.getKey());
+                    commonExts.add(tenantCommonExt);
+                }
+            }
+        }
+
+        return  applicationService.getAllTenantApp(commonExts);
+    }
+
 
 }

@@ -128,10 +128,14 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void fillExecuteMan(ReportDetailOutput output) {
-        if (output == null || output.getUserId() == null) {
-            return;
+        if (output == null) {return;}
+        // 获取用户信息
+        Map<Long, UserExt> userInfo = WebPluginUtils.getUserMapByIds(
+            new ArrayList<Long>(1) {{add(output.getUserId());}});
+        // 填充用户信息
+        if (userInfo.containsKey(output.getUserId())) {
+            output.setUserName(userInfo.get(output.getUserId()).getName());
         }
-        WebPluginUtils.fillUserData(output);
     }
 
     /**

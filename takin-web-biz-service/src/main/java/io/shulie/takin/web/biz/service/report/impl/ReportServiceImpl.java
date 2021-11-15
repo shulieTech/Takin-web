@@ -113,9 +113,11 @@ public class ReportServiceImpl implements ReportService {
     public ReportDetailOutput getReportByReportId(Long reportId) {
         ReportDetailByIdReq req = new ReportDetailByIdReq();
         req.setReportId(reportId);
-        ReportDetailResp detailResponse = cloudReportApi.detail(new ReportDetailByIdReq() {{
+        final ReportDetailByIdReq idReq = new ReportDetailByIdReq() {{
             setReportId(reportId);
-        }});
+        }};
+        WebPluginUtils.fillCloudUserData(idReq);
+        ReportDetailResp detailResponse = cloudReportApi.detail(idReq);
         ReportDetailOutput output = new ReportDetailOutput();
         BeanUtils.copyProperties(detailResponse, output);
         assembleVerifyResult(output);

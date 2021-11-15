@@ -5,7 +5,6 @@ import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import io.shulie.takin.web.data.model.mysql.NewBaseEntity;
 import lombok.ToString;
 
 /**
@@ -20,11 +19,6 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class PluginTenantRefEntity extends NewBaseEntity implements Serializable {
     private static final long serialVersionUID = -81964620322886913L;
-
-    /**
-     * 插件id
-     */
-    private Long pluginId;
 
     /**
      * 插件名称

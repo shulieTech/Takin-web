@@ -1,8 +1,13 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline;
 
 import java.io.File;
+import java.util.List;
 
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginLibraryListResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -28,5 +33,28 @@ public interface PluginLibraryService {
      * @return 插件文件
      */
     File getPluginFile(Long pluginId);
+
+    /**
+     * 根据插件名查询列表
+     *
+     * @param pluginName 插件名称
+     * @return PluginInfo
+     */
+    List<PluginInfo> queryByPluginName(String pluginName);
+
+    /**
+     * 查询所有的插件列表名称
+     *
+     * @return PluginInfo集合
+     */
+    List<String> queryAllPluginNames();
+
+    /**
+     * 列表查询
+     *
+     * @param query 查询条件
+     * @return PluginLibraryListResponse集合
+     */
+    PagingList<PluginLibraryListResponse> list(PluginLibraryListQueryRequest query);
 
 }

@@ -11,6 +11,8 @@
         <result column="is_custom_mode" jdbcType="TINYINT" property="isCustomMode"/>
         <result column="update_description" jdbcType="VARCHAR" property="updateDescription"/>
         <result column="download_path" jdbcType="VARCHAR" property="downloadPath"/>
+        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="gmt_update" jdbcType="TIMESTAMP" property="gmtUpdate"/>
     </resultMap>
 
     <select id="queryList" resultMap="BASE_MAP">
@@ -21,7 +23,9 @@
         version_num,
         is_custom_mode,
         update_description,
-        download_path
+        download_path,
+        gmt_create,
+        gmt_update
         from t_plugin_library
         where
         <foreach collection="list" item="item" separator="or">

@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
@@ -86,6 +87,7 @@ public class SceneController {
     @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<Long> create(@RequestBody @Valid NewSceneRequest request) {
         SceneRequest sceneRequest = buildSceneRequest(request);
+        WebPluginUtils.fillCloudUserData(sceneRequest);
         return multipleSceneApi.create(sceneRequest);
     }
 
@@ -107,6 +109,7 @@ public class SceneController {
             return ResponseResult.fail(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR.getErrorCode(), "压测场景ID不能为空");
         }
         SceneRequest sceneRequest = buildSceneRequest(request);
+        WebPluginUtils.fillCloudUserData(sceneRequest);
         return multipleSceneApi.update(sceneRequest);
     }
 
@@ -202,7 +205,9 @@ public class SceneController {
     )
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<SceneDetailResponse> detail(@RequestParam(required = false) Long sceneId) {
-        return multipleSceneApi.detail(new SceneTaskStartReq() {{setSceneId(sceneId);}});
+        SceneTaskStartReq request = new SceneTaskStartReq() {{setSceneId(sceneId);}};
+        WebPluginUtils.fillCloudUserData(request);
+        return multipleSceneApi.detail(request);
     }
 
     /**

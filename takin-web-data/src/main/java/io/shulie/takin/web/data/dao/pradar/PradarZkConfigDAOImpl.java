@@ -14,9 +14,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.mapper.mysql.PradarZkConfigMapper;
 import io.shulie.takin.web.data.model.mysql.PradarZkConfigEntity;
+import io.shulie.takin.web.data.param.pradarconfig.PagePradarZkConfigParam;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigQueryParam;
 import io.shulie.takin.web.data.result.pradarzkconfig.PradarZKConfigResult;
@@ -136,6 +138,11 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO, MPUtil<PradarZk
         List<PradarZKConfigResult> configList = pradarZkConfigMapper.selectListByZkPath(zkPath,
             WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode());
         return configList.isEmpty() ? null : configList.get(0);
+    }
+
+    @Override
+    public IPage<PradarZKConfigResult> page(PagePradarZkConfigParam param, PageBaseDTO pageBaseDTO) {
+        return pradarZkConfigMapper.selectPageByTenantIdAndEnvCode(this.setPage(pageBaseDTO), param);
     }
 
 }

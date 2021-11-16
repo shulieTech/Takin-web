@@ -28,7 +28,7 @@ public class AgentPkgUtil {
     /**
      * 线程池迁移agent包
      */
-    private static ThreadPoolExecutor middlewareAggregationThreadPool;
+    private static final ThreadPoolExecutor middlewareAggregationThreadPool;
 
     static {
         final int coreSize = Runtime.getRuntime().availableProcessors();

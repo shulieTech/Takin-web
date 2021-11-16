@@ -138,7 +138,7 @@ public class DataSourceServiceImpl implements DataSourceService {
         }
         // 3、判断当前登录用户是否有更新权限
         if (!checkUpdatePermission(idResult.getUserId())) {
-            throw new TakinWebException(ExceptionCode.DATASOURCE_UPDATE_ERROR, "数据权限不足");
+            throw new TakinWebException(ExceptionCode.DATASOURCE_UPDATE_ERROR, "更新权限不足");
         }
         // 4、除过本id外，检查名称是否重复
         if (!idResult.getName().equals(name) && checkIsExistName(name)) {
@@ -295,6 +295,8 @@ public class DataSourceServiceImpl implements DataSourceService {
                     response.setTags(tagManageResponseList);
                 }
             }
+            // 补充权限
+            WebPluginUtils.fillQueryResponse(response);
             return response;
         }).collect(Collectors.toList());
         return PagingList.of(responseList, pagingList.getTotal());

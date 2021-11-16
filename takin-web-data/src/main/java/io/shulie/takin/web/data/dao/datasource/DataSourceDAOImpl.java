@@ -18,6 +18,7 @@ import io.shulie.takin.web.data.param.datasource.DataSourceQueryParam;
 import io.shulie.takin.web.data.param.datasource.DataSourceSingleQueryParam;
 import io.shulie.takin.web.data.param.datasource.DataSourceUpdateParam;
 import io.shulie.takin.web.data.result.datasource.DataSourceResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -58,6 +59,10 @@ public class DataSourceDAOImpl implements DataSourceDAO {
         }
         if (CollectionUtils.isNotEmpty(queryParam.getDataSourceIdList())) {
             wrapper.in(TakinDbresourceEntity::getId, queryParam.getDataSourceIdList());
+        }
+        // 数据权限
+        if(CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
+            wrapper.in(TakinDbresourceEntity::getUserId, WebPluginUtils.getQueryAllowUserIdList());
         }
         Page<TakinDbresourceEntity> page = new Page<>(queryParam.getCurrent(), queryParam.getPageSize());
         wrapper.orderByDesc(TakinDbresourceEntity::getUpdateTime);

@@ -9,10 +9,7 @@ import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 
 /**
@@ -159,13 +156,6 @@ public interface WebUserExtApi extends ExtensionPoint {
 
     //********************************http线程上下文模块**********************************//
 
-
-    /**
-     * 获取企业版默认租户
-     * @return
-     */
-    List<TenantInfoExt> getTenantInfoList();
-
     /**
      * 根据userappkey获取用户信息
      * @param userAppKey
@@ -174,27 +164,8 @@ public interface WebUserExtApi extends ExtensionPoint {
     UserExt queryUserFromCache(String userAppKey);
 
     /**
-     * 切换租户
-     * @param ext
-     * @return  TenantInfoExt
-     */
-    TenantInfoExt switchTenant(SwitchTenantExt ext);
-
-    /**
-     * 切换环境
-     * @param ext
-     */
-    void switchEnv(SwitchTenantExt ext);
-
-    /**
-     * 获取租户配置
+     * 获取默认租户列表
      * @return
      */
-    List<TenantConfigExt> getTenantConfig();
-
-    /**
-     * 获取所有租户的配置
-     * @return
-     */
-    List<TenantInfoConfigExt> getAllTenantConfig();
+    List<TenantInfoExt> getTenantInfoList();
 }

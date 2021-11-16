@@ -19,10 +19,7 @@ import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.entity.tenant.SwitchTenantExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import lombok.AllArgsConstructor;
@@ -405,19 +402,14 @@ public class WebPluginUtils {
         }
         if(userApi != null) {
             // 只是带用户插件
-            if(StringUtils.isNotBlank(tenantCode)) {
-                return tenantCode.equals(DEFAULT_TENANT_APP_KEY);
-            }else {
-                List<TenantInfoExt> tenantInfoList = userApi.getTenantInfoList();
-                if (CollectionUtils.isEmpty(tenantInfoList)) {
-                    return Boolean.FALSE;
-                }
-                TenantInfoExt tenantInfoExt = tenantInfoList.get(0);
-                if (tenantAppKey.equals(tenantInfoExt.getTenantAppKey())) {
-                    return Boolean.TRUE;
-                }
+            List<TenantInfoExt> tenantInfoList = userApi.getTenantInfoList();
+            if (CollectionUtils.isEmpty(tenantInfoList)) {
+                return Boolean.FALSE;
             }
-
+            TenantInfoExt tenantInfoExt = tenantInfoList.get(0);
+            if (tenantAppKey.equals(tenantInfoExt.getTenantAppKey())) {
+                return Boolean.TRUE;
+            }
         }
         return Boolean.FALSE;
     }
@@ -482,82 +474,6 @@ public class WebPluginUtils {
     public static Boolean isOpenVersion(){
         return Objects.isNull(tenantExtApi) && Objects.isNull(userApi);
     }
-
-    /**
-     * 根据租户code 查询租户数据
-     * @param tenantCode
-     * @return
-     */
-    public static List<TenantInfoExt> getTenantInfoListByTenantCode(String tenantCode) {
-        if (Objects.nonNull(tenantExtApi)) {
-            return tenantExtApi.getTenantInfoListByTenantCode(tenantCode);
-        }
-        // 默认一个租户
-        if(Objects.nonNull(userApi)) {
-            // 企业版
-            return userApi.getTenantInfoList();
-        }
-        // 开源版本
-        return getDefaultTenantInfoList();
-    }
-
-    /**
-     * 切换租户
-     * @param ext
-     * @return  TenantInfoExt
-     */
-    public static TenantInfoExt switchTenant(SwitchTenantExt ext) {
-        if(Objects.nonNull(userApi)) {
-           return userApi.switchTenant(ext);
-        }
-        return getDefaultTenantInfoList().get(0);
-    }
-
-    /**
-     * 切换环境
-     * @param ext
-     */
-    public static void switchEnv(SwitchTenantExt ext) {
-        if(Objects.nonNull(userApi)) {
-            userApi.switchEnv(ext);
-        }
-    }
-
-    /**
-     * 获取租户配置
-     * @return
-     */
-    public static List<TenantConfigExt> getTenantConfig() {
-
-        if (Objects.nonNull(tenantExtApi)) {
-            return tenantExtApi.getTenantConfig();
-        }
-        // 默认一个租户
-        if(Objects.nonNull(userApi)) {
-            // 企业版
-            return userApi.getTenantConfig();
-        }
-        // 开源版本
-        return Lists.newArrayList();
-    }
-
-    /**
-     * 获取全部租户配置
-     * @return
-     */
-    public static List<TenantInfoConfigExt> getAllTenantConfig() {
-        if (Objects.nonNull(tenantExtApi)) {
-            return tenantExtApi.getAllTenantConfig();
-        }
-        // 默认一个租户
-        if(Objects.nonNull(userApi)) {
-            // 企业版
-            return userApi.getAllTenantConfig();
-        }
-        // 开源版本
-        return Lists.newArrayList();
-    }
-
 
     /**
      * 租户参数传递

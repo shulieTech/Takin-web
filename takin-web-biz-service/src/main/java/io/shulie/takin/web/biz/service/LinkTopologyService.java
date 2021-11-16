@@ -93,14 +93,15 @@ public class LinkTopologyService extends CommonService {
      * 拓扑图查询, 处理
      *
      * @param request 请求入参
-     *
+     * @param tempActivity 是否是临时拓扑图
      * @return 拓扑图相关
      */
     public ApplicationEntranceTopologyResponse getApplicationEntrancesTopology(
-            ApplicationEntranceTopologyQueryRequest request) {
+            ApplicationEntranceTopologyQueryRequest request, boolean tempActivity) {
 
         // 大数据查询拓扑图
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
+                tempActivity,
                 request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
                 request.getRpcType(), request.getExtend());
 
@@ -462,8 +463,8 @@ public class LinkTopologyService extends CommonService {
         }
 
         // step 1
-        String startTime = DateUtils.formatLocalDateTime(startDateTime.plusHours(8));
-        String endTime = DateUtils.formatLocalDateTime(endDateTime.plusHours(8));
+        String startTime = DateUtils.formatLocalDateTime(request.getStartTime());
+        String endTime = DateUtils.formatLocalDateTime(request.getEndTime());
 
         TempTopologyQuery1 query1 = TempTopologyQuery1.builder()
                 .inAppName(toAppName)
@@ -471,6 +472,7 @@ public class LinkTopologyService extends CommonService {
                 .inMethod(method)
                 .startTime(startTime)
                 .endTime(endTime)
+                .timeGap(request.getTimeGap())
                 .build();
 
         String response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
@@ -490,6 +492,7 @@ public class LinkTopologyService extends CommonService {
                     .clusterTest(request.getFlowTypeEnum().getType())
                     .startTime(startTime)
                     .endTime(endTime)
+                    .timeGap(request.getTimeGap())
                     .build();
 
             JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);

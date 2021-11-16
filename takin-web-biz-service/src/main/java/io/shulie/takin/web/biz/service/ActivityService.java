@@ -69,10 +69,9 @@ public interface ActivityService {
     /**
      * 获取业务活动详情
      *
-     * @param activityId 业务活动id
      * @return 详情
      */
-    ActivityResponse getActivityById(Long activityId);
+    ActivityResponse getActivityById(ActivityInfoQueryRequest activityInfoQueryRequest);
     ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request);
     ActivityResponse getActivityWithMetricsByIdForReport(Long activityId, LocalDateTime start, LocalDateTime end);
     ActivityBottleneckResponse getBottleneckByActivityList(ApplicationVisualInfoResponse applicationVisualInfoResponse, LocalDateTime startTime, LocalDateTime endTime);

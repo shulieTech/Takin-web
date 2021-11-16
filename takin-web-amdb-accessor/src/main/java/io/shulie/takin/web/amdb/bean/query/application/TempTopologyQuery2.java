@@ -16,4 +16,5 @@ public class TempTopologyQuery2 {
     private int clusterTest;
     private String startTime;
     private String endTime;
+    private int timeGap;
 }

@@ -11,4 +11,5 @@ public class TempTopologyQuery1 {
     private String inMethod;
     private String startTime;
     private String endTime;
+    private int timeGap;
 }

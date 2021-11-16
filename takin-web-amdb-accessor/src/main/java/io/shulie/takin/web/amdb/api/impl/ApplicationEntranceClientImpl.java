@@ -36,6 +36,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     public static final String APPLICATION_ENTRANCES_PATH = "/amdb/link/getServiceList";
 
     public static final String APPLICATION_ENTRANCES_TOPOLOGY_PATH = "/amdb/link/getLinkTopology";
+    public static final String APPLICATION_ENTRANCES_TOPOLOGY_PATH_TEMP = "/amdb/link/getLinkTopologyForTemp";
 
     public static final String APPLICATION_ENTRANCES_UNKNOWN_UPDATE_TO_OUTER = "/amdb/link/updateUnKnowNode";
 
@@ -128,9 +129,14 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     }
 
     @Override
-    public LinkTopologyDTO getApplicationEntrancesTopology(String applicationName, String linkId, String serviceName,
-        String method, String rpcType, String extend) {
-        String url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_TOPOLOGY_PATH;
+    public LinkTopologyDTO getApplicationEntrancesTopology(boolean tempActivity, String applicationName, String linkId, String serviceName,
+                                                           String method, String rpcType, String extend) {
+        String url;
+        if (tempActivity) {
+            url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_TOPOLOGY_PATH_TEMP;
+        } else {
+            url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_TOPOLOGY_PATH;
+        }
         TopologyQueryParam topologyQueryParam = new TopologyQueryParam();
         topologyQueryParam.setAppName(applicationName);
         if (method != null) {

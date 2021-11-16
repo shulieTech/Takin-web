@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginLibraryList
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginLibraryListResponse;
+import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -64,5 +65,14 @@ public interface PluginLibraryService {
      * @return PluginLibraryListResponse集合
      */
     PagingList<PluginLibraryListResponse> list(PluginLibraryListQueryRequest query);
+
+    List<PluginLibraryDetailResult> list(List<Long> pluginIds);
+
+    /**
+     * 查询所有的插件列表
+     *
+     * @return PluginInfo集合
+     */
+    List<PluginLibraryListResponse> queryAllPlugin();
 
 }

@@ -345,6 +345,16 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
         return PagingList.of(listResList, resultPage.getTotal());
     }
 
+    @Override
+    public List<PluginLibraryDetailResult> list(List<Long> pluginIds) {
+        return pluginLibraryDAO.list(pluginIds);
+    }
+
+    @Override
+    public List<PluginLibraryListResponse> queryAllPlugin() {
+        return null;
+    }
+
     /**
      * 根据文件名获取插件类型
      *

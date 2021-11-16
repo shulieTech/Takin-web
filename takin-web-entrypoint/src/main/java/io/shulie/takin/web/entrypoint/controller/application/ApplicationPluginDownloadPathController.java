@@ -77,4 +77,14 @@ public class ApplicationPluginDownloadPathController {
     public Response updateConfig(@Validated @RequestBody ApplicationPluginDownloadPathUpdateInput updateInput) {
         return  pathTypeService.updateConfig(updateInput);
     }
+
+    @ApiOperation("检查探针存放根目录配置有效性")
+    @GetMapping("/config/effectiveness")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response queryConfigEffectiveness() {
+        return pathTypeService.validEfficient();
+    }
 }

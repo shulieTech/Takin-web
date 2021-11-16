@@ -79,5 +79,8 @@ public interface PluginLibraryDAO {
      */
     List<PluginLibraryDetailResult> queryMaxVersionPlugin(Integer pluginType);
 
+    List<PluginLibraryDetailResult> list(List<Long> pluginIds);
+
+
 }
 

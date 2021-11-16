@@ -266,4 +266,9 @@ public interface TApplicationMntDao {
 
     List<TApplicationMnt> getApplicationMntByUserIdsAndKeyword(@Param("userIds") List<Long> userIds,
         @Param("keyword") String keyword);
+
+    List<TApplicationMnt> getListByAppIdAndNotEqualsNodeNum(@Param("map") Map<Long,Integer> map);
+
+    List<TApplicationMnt> getListByAppIdAndEqualsNodeNum(@Param("map") Map<Long,Integer> map);
+
 }

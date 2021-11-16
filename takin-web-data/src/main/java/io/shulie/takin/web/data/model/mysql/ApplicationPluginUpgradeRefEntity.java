@@ -21,9 +21,9 @@ public class ApplicationPluginUpgradeRefEntity extends NewBaseEntity implements 
     private static final long serialVersionUID = 261194342901298625L;
 
     /**
-     * 升级批次 存时间戳
+     * 升级批次
      */
-    private Long upgradeBatch;
+    private String upgradeBatch;
 
     /**
      * 插件id

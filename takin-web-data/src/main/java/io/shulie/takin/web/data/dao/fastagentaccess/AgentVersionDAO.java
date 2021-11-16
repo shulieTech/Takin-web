@@ -75,4 +75,6 @@ public interface AgentVersionDAO {
      * @return AgentVersionDetailResult对象
      */
     AgentVersionDetailResult findMaxVersionAgent();
+
+
 }

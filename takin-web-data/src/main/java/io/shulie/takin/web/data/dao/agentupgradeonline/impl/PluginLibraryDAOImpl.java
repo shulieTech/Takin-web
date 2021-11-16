@@ -129,5 +129,19 @@ public class PluginLibraryDAOImpl extends ServiceImpl<PluginLibraryMapper, Plugi
     public List<PluginLibraryDetailResult> queryMaxVersionPlugin(Integer pluginType) {
         return CommonUtil.list2list(pluginLibraryMapper.queryMaxVersionPlugin(pluginType), PluginLibraryDetailResult.class);
     }
+
+
+    @Override
+    public List<PluginLibraryDetailResult> list(List<Long> pluginIds) {
+        List<PluginLibraryEntity> entityList = pluginLibraryMapper.selectList(
+                this.getLambdaQueryWrapper()
+                        .in(PluginLibraryEntity::getId, pluginIds)
+        );
+        if (CollectionUtils.isEmpty(entityList)) {
+            return Collections.emptyList();
+        }
+
+        return CommonUtil.list2list(entityList, PluginLibraryDetailResult.class);
+    }
 }
 

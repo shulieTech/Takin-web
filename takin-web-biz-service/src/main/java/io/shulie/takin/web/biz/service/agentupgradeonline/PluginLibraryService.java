@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentLibraryCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
@@ -26,6 +27,13 @@ public interface PluginLibraryService {
      * @return AgentPluginUploadResponse对象
      */
     AgentPluginUploadResponse upload(MultipartFile file);
+
+    /**
+     * 发布新版本
+     *
+     * @param createRequest 请求参数
+     */
+    void release(AgentLibraryCreateRequest createRequest);
 
     /**
      * 根据插件ID查询对应的插件文件

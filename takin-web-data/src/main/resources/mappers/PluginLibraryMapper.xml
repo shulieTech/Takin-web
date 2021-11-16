@@ -33,4 +33,33 @@
         </foreach>
 
     </select>
+
+    <select id="queryMaxVersionPlugin" resultMap="BASE_MAP">
+        select id,
+        plugin_name,
+        plugin_type,
+        version,
+        version_num,
+        is_custom_mode,
+        update_description,
+        download_path,
+        gmt_create,
+        gmt_update
+        from t_plugin_library
+        where (plugin_name,version_num) in(
+        select plugin_name,max(version_num)
+        from t_plugin_library
+        where
+        <choose>
+            <when test="pluginType == 0">
+                plugin_type = #{pluginType} and is_custom_mode = 0
+            </when>
+            <otherwise>
+                plugin_type = #{pluginType}
+            </otherwise>
+        </choose>
+        group by plugin_name
+        )
+
+    </select>
 </mapper>

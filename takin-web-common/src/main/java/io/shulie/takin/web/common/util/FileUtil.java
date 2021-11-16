@@ -14,6 +14,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -24,6 +25,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileUtil {
 
     public static final int READ_SIZE = 10 * 1024;
+
+    /**
+     * 文件权限 读写
+     */
+    public static final String FILE_PERMISSION_RW = "rw";
 
     public static List<File> convertMultipartFileList(List<MultipartFile> multipartFiles) {
         if (multipartFiles == null || multipartFiles.size() == 0) {
@@ -105,7 +111,8 @@ public class FileUtil {
      */
     public static File rename(File file, String newName, boolean isOverride) {
         final Path path = file.toPath();
-        final CopyOption[] options = isOverride ? new CopyOption[] {StandardCopyOption.REPLACE_EXISTING} : new CopyOption[] {};
+        final CopyOption[] options = isOverride ? new CopyOption[] {StandardCopyOption.REPLACE_EXISTING}
+            : new CopyOption[] {};
         try {
             return Files.move(path, path.resolveSibling(newName), options).toFile();
         } catch (IOException e) {
@@ -114,4 +121,126 @@ public class FileUtil {
         return file;
     }
 
+    /**
+     * 删除文件
+     *
+     * @param filePath 文件路径
+     * @return 是否删除成功
+     */
+    public static boolean deleteFile(String filePath) {
+        if (StringUtils.isBlank(filePath)) {
+            return false;
+        }
+        boolean flag = false;
+        File file = new File(filePath);
+        if (!file.exists()) {
+            return false;
+        }
+        if (file.isDirectory()) {
+            return deleteDirectory(filePath);
+        }
+
+        try {
+            flag = file.delete();
+        } catch (SecurityException exception) {
+            file.deleteOnExit();
+        }
+        return flag;
+    }
+
+    /**
+     * 删除文件夹
+     *
+     * @param dir 文件夹地址
+     * @return 是否删除成功
+     */
+    public static boolean deleteDirectory(String dir) {
+        // 如果dir不以文件分隔符结尾，自动添加文件分隔符
+        if (!dir.endsWith(File.separator)) {
+            dir = dir + File.separator;
+        }
+        File dirFile = new File(dir);
+        // 如果dir对应的文件不存在，或者不是一个目录，则退出
+        if ((!dirFile.exists()) || (!dirFile.isDirectory())) {
+            return false;
+        }
+        boolean flag = true;
+        // 删除文件夹中的所有文件包括子目录
+        File[] files = dirFile.listFiles();
+        if (files == null) {
+            return false;
+        }
+        for (File file : files) {
+            // 删除子文件
+            if (file.isFile()) {
+                flag = deleteFile(file.getAbsolutePath());
+                if (!flag) {
+                    break;
+                }
+            }
+            // 删除子目录
+            else if (file.isDirectory()) {
+                flag = deleteDirectory(file.getAbsolutePath());
+                if (!flag) {
+                    break;
+                }
+            }
+        }
+        if (!flag) {
+            return false;
+        }
+        // 删除当前目录
+        return dirFile.delete();
+    }
+
+    /**
+     * 文件拷贝
+     *
+     * @param src  源文件
+     * @param dest 目标文件
+     */
+    public static void copyFile(File src, File dest) {
+        deleteFile(dest.getAbsolutePath());
+        try {
+            // 创建文件夹
+            File destDir = dest.getParentFile();
+            if (!destDir.exists()) {
+                destDir.mkdirs();
+            }
+
+            Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            log.error("文件拷贝异常", e);
+        }
+    }
+
+    /**
+     * 文件夹拷贝
+     *
+     * @param sourcePath 源文件夹
+     * @param destPath   目标文件夹
+     */
+    public static void copyDir(String sourcePath, String destPath) {
+        File start = new File(sourcePath);
+        File end = new File(destPath);
+        // 获取该文件夹下的所有文件以及目录的名字
+        String[] filePath = start.list();
+        if (filePath == null) {
+            return;
+        }
+        if (!end.exists()) {
+            end.mkdir();
+        }
+        for (String temp : filePath) {
+            //查看其数组中每一个是文件还是文件夹
+            File sourceFile = new File(start.getAbsolutePath() + File.separator + temp);
+            if (sourceFile.isDirectory()) {
+                //为文件夹，进行递归
+                copyDir(sourcePath + File.separator + temp, destPath + File.separator + temp);
+            } else {
+                //为文件则进行拷贝
+                copyFile(sourceFile, new File(destPath + File.separator + temp));
+            }
+        }
+    }
 }

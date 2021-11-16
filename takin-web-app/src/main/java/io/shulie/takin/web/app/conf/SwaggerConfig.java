@@ -407,13 +407,13 @@ public class SwaggerConfig {
     @Bean
     public Docket agent_upgrade_online() {
         return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
             .groupName("探针在线升级")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(PathSelectors
-                .regex(
-                    "/api/(agentReport|applicationPluginUpgrade|applicationPluginUpgradeRef|applicationTagRef"
-                        + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/command).*"))
+            .paths(getRegex(
+                "/api/(agentReport|applicationPluginUpgrade|applicationPluginUpgradeRef|applicationTagRef"
+                    + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/command).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

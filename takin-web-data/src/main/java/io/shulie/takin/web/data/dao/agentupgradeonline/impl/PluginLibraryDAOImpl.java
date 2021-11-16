@@ -7,14 +7,18 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.common.enums.agentupgradeonline.PluginTypeEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.agentupgradeonline.PluginLibraryDAO;
 import io.shulie.takin.web.data.mapper.mysql.PluginLibraryMapper;
 import io.shulie.takin.web.data.mapper.mysql.PluginTenantRefMapper;
 import io.shulie.takin.web.data.model.mysql.PluginLibraryEntity;
+import io.shulie.takin.web.data.param.agentupgradeonline.CreatePluginLibraryParam;
 import io.shulie.takin.web.data.param.agentupgradeonline.PluginLibraryListQueryParam;
 import io.shulie.takin.web.data.param.agentupgradeonline.PluginLibraryQueryParam;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
@@ -30,7 +34,8 @@ import org.springframework.util.CollectionUtils;
  * @date 2021-11-09 20:47:19
  */
 @Service
-public class PluginLibraryDAOImpl implements PluginLibraryDAO, MPUtil<PluginLibraryEntity> {
+public class PluginLibraryDAOImpl extends ServiceImpl<PluginLibraryMapper, PluginLibraryEntity>
+    implements PluginLibraryDAO, MPUtil<PluginLibraryEntity> {
 
     @Resource
     private PluginLibraryMapper pluginLibraryMapper;
@@ -96,6 +101,35 @@ public class PluginLibraryDAOImpl implements PluginLibraryDAO, MPUtil<PluginLibr
         }
         return PagingList.of(CommonUtil.list2list(records, PluginLibraryDetailResult.class), entityList.getTotal());
     }
+
+    @Override
+    public void batchInsert(List<CreatePluginLibraryParam> list) {
+        List<PluginLibraryEntity> collect = list.stream()
+            .map(item -> Convert.convert(PluginLibraryEntity.class, item))
+            .collect(Collectors.toList());
+        this.saveBatch(collect);
+    }
+
+    @Override
+    public Integer queryCountByPluginType(Integer pluginType) {
+        // 如果是查询中间件的，只需查询非定制的数量
+        if (PluginTypeEnum.MIDDLEWARE.getCode().equals(pluginType)) {
+            return pluginLibraryMapper.selectCount(
+                this.getLambdaQueryWrapper()
+                    .eq(PluginLibraryEntity::getPluginType, PluginTypeEnum.MIDDLEWARE.getCode())
+                    .eq(PluginLibraryEntity::getIsCustomMode, 0)
+            );
+        }
+        return pluginLibraryMapper.selectCount(
+            this.getLambdaQueryWrapper().eq(PluginLibraryEntity::getPluginType, pluginType)
+        );
+    }
+
+    @Override
+    public List<PluginLibraryDetailResult> queryMaxVersionPlugin(Integer pluginType) {
+        return CommonUtil.list2list(pluginLibraryMapper.queryMaxVersionPlugin(pluginType), PluginLibraryDetailResult.class);
+    }
+
 
     @Override
     public List<PluginLibraryDetailResult> list(List<Long> pluginIds) {

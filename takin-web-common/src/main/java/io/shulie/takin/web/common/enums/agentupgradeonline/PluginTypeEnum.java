@@ -1,5 +1,9 @@
 package io.shulie.takin.web.common.enums.agentupgradeonline;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -31,4 +35,14 @@ public enum PluginTypeEnum {
      * 包上传根目录
      */
     private String baseDir;
+
+    private static final Map<Integer, PluginTypeEnum> PLUGIN_TYPE_ENUM_MAP = new HashMap<>();
+
+    static {
+        Arrays.stream(PluginTypeEnum.values()).forEach(item -> PLUGIN_TYPE_ENUM_MAP.put(item.getCode(), item));
+    }
+
+    public static PluginTypeEnum valueOf(Integer code) {
+        return PLUGIN_TYPE_ENUM_MAP.get(code);
+    }
 }

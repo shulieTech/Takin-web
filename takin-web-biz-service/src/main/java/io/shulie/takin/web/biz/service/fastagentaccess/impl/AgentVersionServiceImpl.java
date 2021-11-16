@@ -8,6 +8,7 @@ import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.LoginConstant;
 import io.shulie.takin.web.biz.pojo.bo.ConfigListQueryBO;
@@ -510,6 +511,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     private List<Long> buildParamAppIds(AgentInfoListQueryRequest queryRequest) {
         List<Long> applicationIds = new ArrayList<>();
+
+        //按插件查
         if (!StringUtils.isEmpty(queryRequest.getPluginId())) {
             List<ApplicationPluginUpgradeRefDetailResult> list = pluginUpgradeRefService.getList(queryRequest.getPluginId());
             List<String> upgradeBatchs = CollStreamUtil.toList(list, ApplicationPluginUpgradeRefDetailResult::getUpgradeBatch);
@@ -523,7 +526,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             applicationIds.addAll(CollStreamUtil.toList(upgradeDetails, ApplicationPluginUpgradeDetailResult::getApplicationId));
         }
 
-
+        //按标签查
         if (!StringUtils.isEmpty(queryRequest.getTagId())) {
             List<ApplicationTagRefDetailResult> list = tagRefService.getList(queryRequest.getTagId());
             List<Long> ids = CollStreamUtil.toList(list, ApplicationTagRefDetailResult::getApplicationId);
@@ -535,6 +538,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
                     CollStreamUtil.toList(list, ApplicationTagRefDetailResult::getApplicationId));
         }
 
+        //按业务活动查
         if (!StringUtils.isEmpty(queryRequest.getBusinessActivityId())) {
             List<Long> ids = activityRefDAO.getAppIdList(queryRequest.getBusinessActivityId());
             if (CollectionUtils.isEmpty(ids)) {
@@ -544,16 +548,16 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
         }
 
-        //todo nf
+        //按接入状态查
         if (Objects.nonNull(queryRequest.getAccessStatus())) {
             Map<Long, Integer> appId2Count = agentReportService.appId2Count();
             Integer accessStatus = queryRequest.getAccessStatus();
             if (AgentShowStatusEnum.ERROR.getVal().equals(accessStatus)) {
-                List<Integer>  statusList = Collections.singletonList(accessStatus);
+                List<Integer> statusList = Collections.singletonList(accessStatus);
                 List<AgentReportDetailResult> listByStatus = agentReportService.getListByStatus(statusList);
-                List<TApplicationMnt>  list = mntDao.getListByAppIdAndNotEqualsNodeNum(appId2Count);
-                applicationIds.addAll(CollStreamUtil.toList(list, TApplicationMnt::getApplicationId));
-                applicationIds.addAll(CollStreamUtil.toList(listByStatus, AgentReportDetailResult::getApplicationId));
+                List<TApplicationMnt> list = mntDao.getListByAppIdAndNotEqualsNodeNum(appId2Count);
+                return this.intersection(applicationIds, listByStatus, list);
+
             }
 
             if (AgentShowStatusEnum.NORMAL.getVal().equals(accessStatus)) {
@@ -564,17 +568,15 @@ public class AgentVersionServiceImpl implements AgentVersionService {
                         AgentReportStatusEnum.UNINSTALL.getVal()
                 );
                 List<AgentReportDetailResult> listByStatus = agentReportService.getListByStatus(statusList);
-                List<TApplicationMnt>  list = mntDao.getListByAppIdAndEqualsNodeNum(appId2Count);
-                applicationIds.addAll(CollStreamUtil.toList(list, TApplicationMnt::getApplicationId));
-                applicationIds.addAll(CollStreamUtil.toList(listByStatus, AgentReportDetailResult::getApplicationId));
+                List<TApplicationMnt> list = mntDao.getListByAppIdAndEqualsNodeNum(appId2Count);
+                return this.intersection(applicationIds, listByStatus, list);
             }
 
             if (AgentShowStatusEnum.UPGRADE.getVal().equals(accessStatus)) {
                 List<ApplicationPluginUpgradeDetailResult> listByStatus = pluginUpgradeService.getListByStatus(0);
-                applicationIds.addAll(CollStreamUtil.toList(listByStatus, ApplicationPluginUpgradeDetailResult::getApplicationId));
+                List<Long> ids = CollStreamUtil.toList(listByStatus, ApplicationPluginUpgradeDetailResult::getApplicationId);
+                return (List<Long>) CollUtil.intersection(applicationIds, ids);
             }
-
-
         }
         return applicationIds;
     }
@@ -611,4 +613,22 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
 
+    private List<Long> intersection(List<Long> applicationIds, List<AgentReportDetailResult> listByStatus,
+                                    List<TApplicationMnt> list) {
+        List<Long> ids = CollStreamUtil.toList(list, TApplicationMnt::getApplicationId);
+        ids.addAll(CollStreamUtil.toList(listByStatus, AgentReportDetailResult::getApplicationId));
+
+        if (CollectionUtils.isEmpty(ids)) {
+            return null;
+        }
+        return (List<Long>) CollUtil.intersection(applicationIds, ids);
+    }
+
+
+    @Override
+    public List<SelectVO> getAccessStatusList() {
+        return Arrays.stream(AgentShowStatusEnum.values()).map(
+                statusEnum -> new SelectVO(statusEnum.getDesc(), String.valueOf(statusEnum.getVal()))
+        ).collect(Collectors.toList());
+    }
 }

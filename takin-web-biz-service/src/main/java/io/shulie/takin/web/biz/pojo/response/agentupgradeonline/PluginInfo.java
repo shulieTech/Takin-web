@@ -12,6 +12,8 @@ import lombok.Data;
 @Data
 public class PluginInfo {
 
+    private Long id;
+
     /**
      * 插件名称
      */

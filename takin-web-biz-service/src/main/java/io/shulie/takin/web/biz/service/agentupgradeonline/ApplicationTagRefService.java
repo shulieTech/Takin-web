@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline;
 
+import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.data.result.application.ApplicationTagRefDetailResult;
 
 import java.util.List;
@@ -16,5 +17,7 @@ public interface ApplicationTagRefService {
     List<ApplicationTagRefDetailResult> getList(List<Long> applicationIds);
 
     List<ApplicationTagRefDetailResult> getList(Long tagId);
+
+    List<SelectVO> getListByTenant();
 
 }

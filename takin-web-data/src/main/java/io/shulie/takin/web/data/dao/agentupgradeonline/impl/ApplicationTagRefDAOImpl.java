@@ -58,5 +58,11 @@ public class ApplicationTagRefDAOImpl extends ServiceImpl<ApplicationTagRefMappe
         queryWrapper.eq(ApplicationTagRefEntity::getTagId,tagId);
         return this.convertVos(this.list(queryWrapper));
     }
+
+    @Override
+    public List<ApplicationTagRefDetailResult> getListByTenant() {
+        LambdaQueryWrapper<ApplicationTagRefEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        return this.convertVos(this.list(queryWrapper));
+    }
 }
 

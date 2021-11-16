@@ -1,12 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.agentupgradeonline;
 
-import java.util.List;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentLibraryCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginLibraryListQueryRequest;
@@ -28,6 +21,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * 插件版本库(PluginLibrary)controller
@@ -80,5 +79,6 @@ public class PluginLibraryController {
     public PagingList<PluginLibraryListResponse> pluginList(PluginLibraryListQueryRequest queryRequest) {
         return pluginLibraryService.list(queryRequest);
     }
+
 
 }

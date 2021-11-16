@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.fastagentaccess;
 import java.io.File;
 import java.util.List;
 
+import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentInfoListQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentInfoStateListQueryRequest;
@@ -107,5 +108,7 @@ public interface AgentVersionService {
      * @return
      */
     PagingList<AgentInfoListResponse> getList(AgentInfoListQueryRequest queryRequest);
+
+    List<SelectVO> getAccessStatusList();
 
 }

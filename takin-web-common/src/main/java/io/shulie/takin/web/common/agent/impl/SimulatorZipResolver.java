@@ -9,35 +9,44 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import com.pamirs.takin.common.constant.Constants;
 import io.shulie.takin.web.common.agent.AgentZipResolverSupport;
+import io.shulie.takin.web.common.enums.agentupgradeonline.PluginTypeEnum;
+import io.shulie.takin.web.common.pojo.bo.agent.AgentModuleInfo;
+import io.shulie.takin.web.common.pojo.bo.agent.PluginCreateBO;
+import io.shulie.takin.web.common.util.FileUtil;
+import org.springframework.stereotype.Component;
 
 /**
  * @Description simulator zip包解析器
  * @Author ocean_wll
  * @Date 2021/11/10 8:49 下午
  */
+@Component
 public class SimulatorZipResolver extends AgentZipResolverSupport {
-
-    private final static String SIMULATOR_HOME = "simulator";
 
     private final static Map<String, String> NEED_EXIST = new HashMap<String, String>();
 
     static {
-        NEED_EXIST.put(joinFileSeparator(SIMULATOR_HOME, "bootstrap", "instrument-simulator-messager.jar"),
+        NEED_EXIST.put(
+            joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "bootstrap", "instrument-simulator-messager.jar"),
             "instrument-simulator-messager.jar 缺失!");
-        NEED_EXIST.put(joinFileSeparator(SIMULATOR_HOME, "bootstrap", "simulator-bootstrap-api-1.0.0.jar"),
+        NEED_EXIST.put(
+            joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "bootstrap", "simulator-bootstrap-api-1.0.0.jar"),
             "simulator-bootstrap-api-1.0.0.jar 缺失!");
-        NEED_EXIST.put(joinFileSeparator(SIMULATOR_HOME, "bootstrap", "simulator-internal-bootstrap-api-1.0.0.jar"),
+        NEED_EXIST.put(joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "bootstrap",
+                "simulator-internal-bootstrap-api-1.0.0.jar"),
             "simulator-internal-bootstrap-api-1.0.0.jar 缺失!");
-        NEED_EXIST.put(joinFileSeparator(SIMULATOR_HOME, "instrument-simulator-agent.jar"),
+        NEED_EXIST.put(joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "instrument-simulator-agent.jar"),
             "instrument-simulator-agent.jar 缺失!");
-        NEED_EXIST.put(joinFileSeparator(SIMULATOR_HOME, "config", "simulator.properties"),
+        NEED_EXIST.put(joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "config", "simulator.properties"),
             "配置文件 simulator.properties 缺失!");
-        NEED_EXIST.put(joinFileSeparator(SIMULATOR_HOME, "config", "version"),
+        NEED_EXIST.put(joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "config", "version"),
             "缺失版本文件!");
-        NEED_EXIST.put(joinFileSeparator(SIMULATOR_HOME, "lib", "instrument-simulator-core.jar"),
+        NEED_EXIST.put(joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "lib", "instrument-simulator-core.jar"),
             "instrument-simulator-core.jar 缺失!");
-        NEED_EXIST.put(joinFileSeparator(SIMULATOR_HOME, "provider", "instrument-simulator-management-provider.jar"),
+        NEED_EXIST.put(joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "provider",
+                "instrument-simulator-management-provider.jar"),
             "instrument-simulator-management-provider.jar 缺失!");
     }
 
@@ -59,8 +68,33 @@ public class SimulatorZipResolver extends AgentZipResolverSupport {
     }
 
     @Override
+    public List<PluginCreateBO> processFile0(String agentPkgPath, List<AgentModuleInfo> dependenciesInfo) {
+        List<PluginCreateBO> resultList = new ArrayList<>();
+        // agent模块只有一个包，所有只取第一条记录
+        PluginCreateBO pluginCreateBO = new PluginCreateBO();
+        AgentModuleInfo agentModuleInfo = dependenciesInfo.get(0);
+        pluginCreateBO.setPluginName(agentModuleInfo.getModuleId());
+        pluginCreateBO.setPluginType(PluginTypeEnum.SIMULATOR.getCode());
+        pluginCreateBO.setDependenciesInfo(agentModuleInfo.getDependenciesInfoStr());
+        pluginCreateBO.setPluginVersion(agentModuleInfo.getModuleVersion());
+        pluginCreateBO.setIsCustomMode(agentModuleInfo.getCustomized());
+
+        //数据转存
+        String destFilePath = getUploadPath(pluginCreateBO) + "simulator.zip";
+        FileUtil.copyFile(new File(agentPkgPath), new File(destFilePath));
+        pluginCreateBO.setDownloadPath(destFilePath);
+        resultList.add(pluginCreateBO);
+        return resultList;
+    }
+
+    @Override
+    public PluginTypeEnum getPluginType() {
+        return PluginTypeEnum.SIMULATOR;
+    }
+
+    @Override
     public String getZipBaseDirName() {
-        return SIMULATOR_HOME;
+        return Constants.SIMULATOR_ZIP_BASE_DIR;
     }
 
     /**

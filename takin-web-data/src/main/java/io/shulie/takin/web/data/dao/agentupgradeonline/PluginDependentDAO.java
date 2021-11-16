@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.dao.agentupgradeonline;
 
 import java.util.List;
 
+import io.shulie.takin.web.data.param.agentupgradeonline.CreatePluginDependentParam;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginDependentDetailResult;
 
 /**
@@ -20,6 +21,13 @@ public interface PluginDependentDAO {
      * @return PluginDependentDetailResult
      */
     List<PluginDependentDetailResult> queryPluginDependentDetailList(String pluginName, String pluginVersion);
+
+    /**
+     * 批量插入
+     *
+     * @param list 插入数据
+     */
+    void batchInsert(List<CreatePluginDependentParam> list);
 
 }
 

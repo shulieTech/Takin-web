@@ -22,5 +22,13 @@ public interface PluginLibraryMapper extends BaseMapper<PluginLibraryEntity> {
      */
     List<PluginLibraryEntity> queryList(List<PluginLibraryQueryParam> queryParamList);
 
+    /**
+     * 查询当前插件类型最大版本的数据
+     *
+     * @param pluginType 插件类型
+     * @return PluginLibraryEntity集合
+     */
+    List<PluginLibraryEntity> queryMaxVersionPlugin(Integer pluginType);
+
 }
 

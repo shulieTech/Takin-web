@@ -26,11 +26,11 @@ public class AgentPluginUploadResponse {
     @ApiModelProperty("上传时文件的名称, 非上传后的真名称")
     private String originalName;
 
+    @ApiModelProperty("插件类型,0:中间件包，1:simulator包，2:agent包")
+    private Integer pluginType;
+
     @ApiModelProperty("升级版本信息")
     private List<PluginInfo> pluginInfoList;
-
-    @ApiModelProperty("版本，不一定有")
-    private String version;
 
     @ApiModelProperty("是否允许新增配置")
     private Boolean allowAddConfig;

@@ -36,7 +36,7 @@ public class SceneLinkRelateResult {
     private LocalDateTime updateTime;
 
     /**
-     * 业务链路ID
+     * 业务链路ID，业务活动ID
      */
     private String businessLinkId;
 

@@ -84,7 +84,7 @@ public class FinishReportJob implements SimpleJob {
             WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据分片
-            fastDebugThreadPool.execute(() ->reportTaskService.finishReport(reportId));
+            fastDebugThreadPool.execute(() -> reportTaskService.finishReport(reportId));
         }
 
     }

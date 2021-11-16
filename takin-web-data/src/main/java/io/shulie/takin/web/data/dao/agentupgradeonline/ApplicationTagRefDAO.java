@@ -14,5 +14,7 @@ public interface ApplicationTagRefDAO {
 
 
     List<ApplicationTagRefDetailResult> getList(List<Long> applicationIds);
+
+    List<ApplicationTagRefDetailResult> getList(Long tagId);
 }
 

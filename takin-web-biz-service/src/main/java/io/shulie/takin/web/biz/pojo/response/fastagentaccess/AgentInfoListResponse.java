@@ -25,7 +25,7 @@ public class AgentInfoListResponse  {
     private String applicationName;
 
     @ApiModelProperty("节点数量")
-    private String mntNodeNum;
+    private Integer mntNodeNum;
 
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty("更新时间")
@@ -44,7 +44,7 @@ public class AgentInfoListResponse  {
     @ApiModelProperty("标签")
     private List<String> tags;
 
-    @ApiModelProperty("探针状态")
+    @ApiModelProperty("探针状态信息")
     private AgentStateInfo agentState;
 
     /**
@@ -61,14 +61,19 @@ public class AgentInfoListResponse  {
     private Boolean canAssign = true;
 
 
+    @ApiModelProperty(name = "version", value = "探针主版本")
+    private String version;
+
+
     @Data
     public static class AgentStateInfo {
 
-        @ApiModelProperty("应用id")
-        private Long applicationId;
 
         @ApiModelProperty(name = "accessStatus", value = "接入状态； 0：正常 ； 1；异常 ；2：升级中")
         private Integer accessStatus;
+
+        @ApiModelProperty(name = "errorMsg", value = "异常原因")
+        private String errorReason;
 
         @ApiModelProperty(name = "nodeNum", value = "应用实际总节点数量")
         private Integer nodeNum;
@@ -85,9 +90,21 @@ public class AgentInfoListResponse  {
         @ApiModelProperty(name = "runningNum", value = "运行中节点数量")
         private Integer runningNum;
 
-        @ApiModelProperty(name = "version", value = "探针主版本")
-        private String version;
+        @ApiModelProperty(name = "agentId", value = "agentId")
+        private String agentId;
 
+
+        public AgentStateInfo(Integer nodeNum, Integer errorNum, Integer waitRestartNum, Integer sleepNum, Integer runningNum,String agentId) {
+            this.accessStatus = errorNum>0?1:0;
+            this.nodeNum = nodeNum;
+            this.errorNum = errorNum;
+            this.waitRestartNum = waitRestartNum;
+            this.sleepNum = sleepNum;
+            this.runningNum = runningNum;
+            this.agentId = agentId;
+        }
+
+        public AgentStateInfo() {
+        }
     }
-
 }

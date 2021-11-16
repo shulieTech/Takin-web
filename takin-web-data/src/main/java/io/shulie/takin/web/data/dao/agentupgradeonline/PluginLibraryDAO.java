@@ -54,5 +54,7 @@ public interface PluginLibraryDAO {
      */
     PagingList<PluginLibraryDetailResult> page(PluginLibraryListQueryParam query);
 
+    List<PluginLibraryDetailResult> list(List<Long> pluginIds);
+
 }
 

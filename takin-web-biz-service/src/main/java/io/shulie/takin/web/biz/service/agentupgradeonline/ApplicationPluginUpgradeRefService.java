@@ -1,5 +1,9 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline;
 
+import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeRefDetailResult;
+
+import java.util.List;
+
 /**
  * 应用升级批次明细(ApplicationPluginUpgradeRef)service
  *
@@ -7,5 +11,9 @@ package io.shulie.takin.web.biz.service.agentupgradeonline;
  * @date 2021-11-09 20:31:15
  */
 public interface ApplicationPluginUpgradeRefService {
+
+    List<ApplicationPluginUpgradeRefDetailResult> getList(Long pluginId);
+
+    List<ApplicationPluginUpgradeRefDetailResult> getList(String upgradeBatch);
 
 }

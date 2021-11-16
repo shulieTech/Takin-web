@@ -15,4 +15,6 @@ public interface ApplicationTagRefService {
 
     List<ApplicationTagRefDetailResult> getList(List<Long> applicationIds);
 
+    List<ApplicationTagRefDetailResult> getList(Long tagId);
+
 }

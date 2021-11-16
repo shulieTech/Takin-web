@@ -25,7 +25,10 @@ public class AgentInfoListQueryRequest extends PageBaseDTO {
     @ApiModelProperty("插件id")
     private Long pluginId;
 
-    @ApiModelProperty("应用接入状态")
+    @ApiModelProperty("应用接入状态 1:正常 2:异常 0:升级中")
     private Integer accessStatus;
+
+    @ApiModelProperty("业务活动id")
+    private Long businessActivityId;
 
 }

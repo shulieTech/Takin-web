@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 应用标签表(ApplicationTagRef)service
@@ -29,5 +30,13 @@ public class ApplicationTagRefServiceImpl implements ApplicationTagRefService {
             return Collections.emptyList();
         }
         return refDAO.getList(applicationIds);
+    }
+
+    @Override
+    public List<ApplicationTagRefDetailResult> getList(Long tagId) {
+        if(Objects.isNull(tagId)){
+            return Collections.emptyList();
+        }
+        return refDAO.getList(tagId);
     }
 }

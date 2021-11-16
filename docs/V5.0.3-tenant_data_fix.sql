@@ -1,3 +1,4 @@
+BEGIN;
 -- 额外 租户期间增加的表
 update t_mq_config_template set tenant_id=customer_id;
 update t_application_ds_cache_manage set tenant_id=customer_id;
@@ -525,8 +526,6 @@ UPDATE t_script_manage_deploy t1
 ---无涯
 
 -- 流川
-BEGIN;
-
 -- t_activity_node_service_state 根据业务活动获得 租户id
 UPDATE t_activity_node_service_state a
     LEFT JOIN (SELECT IFNULL(u.tenant_id, 1) tid, b.LINK_ID bid, b.env_code

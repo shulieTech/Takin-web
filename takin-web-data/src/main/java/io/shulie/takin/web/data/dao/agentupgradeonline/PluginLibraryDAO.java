@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.dao.agentupgradeonline;
 import java.util.List;
 
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.data.param.agentupgradeonline.CreatePluginLibraryParam;
 import io.shulie.takin.web.data.param.agentupgradeonline.PluginLibraryListQueryParam;
 import io.shulie.takin.web.data.param.agentupgradeonline.PluginLibraryQueryParam;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
@@ -53,6 +54,30 @@ public interface PluginLibraryDAO {
      * @return PluginLibraryDetailResult集合
      */
     PagingList<PluginLibraryDetailResult> page(PluginLibraryListQueryParam query);
+
+    /**
+     * 批量插入数据
+     *
+     * @param pluginLibraryParamList 入参集合
+     * @return 插入记录数
+     */
+    void batchInsert(List<CreatePluginLibraryParam> pluginLibraryParamList);
+
+    /**
+     * 指定pluginType查询数据数量
+     *
+     * @param pluginType 插件类型
+     * @return 数量
+     */
+    Integer queryCountByPluginType(Integer pluginType);
+
+    /**
+     * 查询当前插件类型最大版本的数据
+     *
+     * @param pluginType 插件类型
+     * @return PluginLibraryDetailResult集合
+     */
+    List<PluginLibraryDetailResult> queryMaxVersionPlugin(Integer pluginType);
 
 }
 

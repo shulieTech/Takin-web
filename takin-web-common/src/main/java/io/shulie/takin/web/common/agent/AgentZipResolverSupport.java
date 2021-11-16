@@ -2,13 +2,16 @@ package io.shulie.takin.web.common.agent;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import io.shulie.takin.web.common.pojo.bo.agent.AgentModuleInfo;
+import io.shulie.takin.web.common.pojo.bo.agent.PluginCreateBO;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @Description 抽象类agent解析器
@@ -16,6 +19,12 @@ import org.apache.commons.lang.StringUtils;
  * @Date 2021/11/10 8:04 下午
  */
 public abstract class AgentZipResolverSupport implements IAgentZipResolver {
+
+    /**
+     * 上传文件的路径
+     */
+    @Value("${data.path}")
+    protected String uploadPath;
 
     /**
      * 抽象方法，不同实现类去检查不同的文件
@@ -26,11 +35,13 @@ public abstract class AgentZipResolverSupport implements IAgentZipResolver {
     public abstract List<String> checkFile0(String filePath);
 
     /**
-     * 获取zip包根文件夹名称
+     * 处理已上传的zip包
      *
-     * @return 根文件夹名称
+     * @param agentPkgPath     文件地址
+     * @param dependenciesInfo 模块依赖信息
+     * @return PluginCreateBO集合
      */
-    public abstract String getZipBaseDirName();
+    public abstract List<PluginCreateBO> processFile0(String agentPkgPath, List<AgentModuleInfo> dependenciesInfo);
 
     @Override
     public List<String> checkFile(String filePath) {
@@ -45,42 +56,12 @@ public abstract class AgentZipResolverSupport implements IAgentZipResolver {
     }
 
     @Override
-    public String readModuleInfo(String filePath) {
-        if (StringUtils.isBlank(filePath)) {
-            return null;
+    public List<PluginCreateBO> processFile(String agentPkgPath) {
+        if (StringUtils.isBlank(agentPkgPath)) {
+            return Collections.emptyList();
         }
-
-        StringBuilder stringBuilder = new StringBuilder();
-        ZipFile zipFile = null;
-        InputStream is = null;
-        try {
-            zipFile = new ZipFile(new File(filePath));
-            ZipEntry entry = zipFile.getEntry(getZipBaseDirName() + File.separator + "module.properties");
-            is = zipFile.getInputStream(entry);
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                stringBuilder.append(new String(buf, 0, len));
-            }
-        } catch (IOException e) {
-            // ignore
-        } finally {
-            if (zipFile != null) {
-                try {
-                    zipFile.close();
-                } catch (IOException e) {
-                    // ignore
-                }
-            }
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    // ignore
-                }
-            }
-        }
-        return stringBuilder.toString();
+        List<AgentModuleInfo> dependenciesInfo = ModulePropertiesResolver.resolver(agentPkgPath, getZipBaseDirName());
+        return processFile0(agentPkgPath, dependenciesInfo);
     }
 
     /**
@@ -94,7 +75,7 @@ public abstract class AgentZipResolverSupport implements IAgentZipResolver {
             return false;
         }
 
-        try (ZipFile zip = new ZipFile(new File(filePath));) {
+        try (ZipFile zip = new ZipFile(new File(filePath))) {
             ZipEntry zipEntry = zip.getEntry(getZipBaseDirName() + File.separator + "module.properties");
             if (zipEntry != null) {
                 result = true;
@@ -104,5 +85,15 @@ public abstract class AgentZipResolverSupport implements IAgentZipResolver {
         }
 
         return result;
+    }
+
+    /**
+     * 获取需要上传的文件的根目录
+     *
+     * @return 根目录
+     */
+    protected String getUploadPath(PluginCreateBO createBO) {
+        return uploadPath + File.separator + getPluginType().getBaseDir() + File.separator + createBO.getPluginName()
+            + File.separator + createBO.getPluginVersion() + File.separator;
     }
 }

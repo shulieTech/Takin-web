@@ -9,6 +9,7 @@ import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
@@ -73,7 +74,8 @@ public class CalcTpsTargetJob implements SimpleJob {
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     // 根据环境 分线程
                     for (TenantEnv e : ext.getEnvs()) {
-                        WebPluginUtils.setTraceTenantContext(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),ext.getTenantCode());
+                        WebPluginUtils.setTraceTenantContext(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),ext.getTenantCode(),
+                            ContextSourceEnum.JOB.getCode());
                         if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                             continue;
                         }

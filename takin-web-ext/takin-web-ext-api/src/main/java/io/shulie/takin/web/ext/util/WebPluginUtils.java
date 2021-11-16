@@ -538,13 +538,14 @@ public class WebPluginUtils {
      * @param tenantAppKey appKey
      * @param envCode 环境
      */
-    public static void setTraceTenantContext(Long tenantId, String tenantAppKey, String envCode,String tenantCode) {
+    public static void setTraceTenantContext(Long tenantId, String tenantAppKey, String envCode,String tenantCode,Integer source) {
         if (Objects.nonNull(userApi)) {
             TenantCommonExt tenantCommonExt = new TenantCommonExt();
             tenantCommonExt.setTenantId(tenantId);
             tenantCommonExt.setTenantAppKey(tenantAppKey);
             tenantCommonExt.setEnvCode(envCode);
             tenantCommonExt.setTenantCode(tenantCode);
+            tenantCommonExt.setSource(source);
             userApi.setTraceTenantContext(tenantCommonExt);
         }
     }
@@ -587,13 +588,15 @@ public class WebPluginUtils {
      */
     public static Long traceTenantId() {
         if (userApi != null) {
-            if(userApi.traceUser() == null) {
-                return DEFAULT_TENANT_ID;
+            // 未登录
+            if(userApi.traceSource() == null) {
+                return null;
             }
             Long tenantId = userApi.traceTenantId();
             if (Objects.isNull(tenantId)){
                 throw new RuntimeException("租户ID不能为空！");
             }
+            return tenantId;
         }
         return DEFAULT_TENANT_ID;
     }
@@ -615,9 +618,6 @@ public class WebPluginUtils {
      */
     public static String traceTenantAppKey() {
         if (userApi != null) {
-            if(userApi.traceUser() == null) {
-                return DEFAULT_TENANT_APP_KEY;
-            }
             return userApi.traceTenantAppKey();
         }
         // 返回一个默认
@@ -630,14 +630,14 @@ public class WebPluginUtils {
      */
     public static String traceEnvCode() {
         if (userApi != null) {
-            // todo
-            if(userApi.traceUser() == null) {
-                return DEFAULT_ENV_CODE;
+            if(userApi.traceSource() == null) {
+                return "-1";
             }
             String envCode = userApi.traceEnvCode();
             if (StringUtils.isBlank(envCode)){
                 throw new RuntimeException("环境编码不能为空！");
             }
+            return envCode;
         }
         return DEFAULT_ENV_CODE;
     }
@@ -657,9 +657,10 @@ public class WebPluginUtils {
      */
     public static Long traceUserId() {
         if (userApi != null) {
-            if (userApi.traceUser() != null) {
-                return userApi.traceUser().getId();
+            if (userApi.traceUser() == null) {
+                return null ;
             }
+            return userApi.traceUser().getId();
         }
         return DEFAULT_USER_ID;
     }

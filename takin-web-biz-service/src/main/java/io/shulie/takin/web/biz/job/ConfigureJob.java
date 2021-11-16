@@ -7,6 +7,7 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -45,7 +46,7 @@ public class ConfigureJob implements SimpleJob {
                 ext.getEnvs().forEach(e ->
                     jobThreadPool.execute(() -> {
                         WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                            ext.getTenantCode()));
+                            ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
                         applicationService.configureTasks();
                         WebPluginUtils.removeTraceContext();
                     }));

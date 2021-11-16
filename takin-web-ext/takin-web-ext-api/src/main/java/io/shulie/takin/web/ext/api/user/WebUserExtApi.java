@@ -154,6 +154,13 @@ public interface WebUserExtApi extends ExtensionPoint {
      */
     String traceTenantCode();
 
+    /**
+     * 来源
+     *
+     * @return
+     */
+    Integer traceSource();
+
     //********************************http线程上下文模块**********************************//
 
     /**

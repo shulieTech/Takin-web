@@ -30,4 +30,10 @@ public class TenantCommonExt extends PagingDevice {
 
     @ApiModelProperty(value = "租户code")
     private String tenantCode;
+
+    /**
+     * 记录来源 哪里赋值
+     */
+    @ApiModelProperty(value = "来源")
+    private Integer source;
 }

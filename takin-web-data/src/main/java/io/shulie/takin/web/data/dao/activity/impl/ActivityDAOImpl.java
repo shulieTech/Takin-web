@@ -262,15 +262,10 @@ public class ActivityDAOImpl implements ActivityDAO {
     public int updateActivityNew(ActivityUpdateParam updateParam) {
         BusinessLinkManageTableEntity businessLinkManageTableEntity = businessLinkManageTableMapper.selectById(
             updateParam.getActivityId());
-        if (StringUtils.isNotBlank(updateParam.getActivityLevel())) {
-            businessLinkManageTableEntity.setLinkLevel(updateParam.getActivityLevel());
-        }
-        if (StringUtils.isNotBlank(updateParam.getBusinessDomain())) {
-            businessLinkManageTableEntity.setBusinessDomain(updateParam.getBusinessDomain());
-        }
-        if (updateParam.getIsCore() != null) {
-            businessLinkManageTableEntity.setIsCore(updateParam.getIsCore());
-        }
+        //可以被修改为空
+        businessLinkManageTableEntity.setLinkLevel(updateParam.getActivityLevel());
+        businessLinkManageTableEntity.setBusinessDomain(updateParam.getBusinessDomain());
+        businessLinkManageTableEntity.setIsCore(updateParam.getIsCore());
         if (updateParam.getEntrance() != null) {
             businessLinkManageTableEntity.setEntrace(updateParam.getEntrance());
         }

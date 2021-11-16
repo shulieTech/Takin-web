@@ -241,7 +241,7 @@ public class SceneServiceImpl implements SceneService {
             Long businessFlowId = saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest);
             businessFlowParseRequest.setId(businessFlowId);
         } else {
-            updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null);
+            updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data);
         }
 
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
@@ -255,7 +255,7 @@ public class SceneServiceImpl implements SceneService {
         sceneQueryParam.setSceneName(testName);
         List<SceneResult> sceneResultList = sceneDao.selectListByName(sceneQueryParam);
         if (CollectionUtils.isNotEmpty(sceneResultList)) {
-            throw new TakinWebException(TakinWebExceptionEnum.LINK_UPDATE_ERROR, "新增业务流程，业务流程名称已存在！");
+            testName = testName + "_" + DateUtils.dateToString(new Date(),"yyyyMMddHHmmss");
         }
         //保存业务流程
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
@@ -350,7 +350,7 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public BusinessFlowDetailResponse uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest) {
-        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest);
+        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest, null);
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
         result.setId(businessFlowDataFileRequest.getId());
         return result;
@@ -428,14 +428,7 @@ public class SceneServiceImpl implements SceneService {
 
         if (CollectionUtils.isNotEmpty(sceneLinkRelateList)) {
             List<Long> oldIds = sceneLinkRelateList.stream().map(SceneLinkRelateResult::getId).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
-                List<Long> longList = sceneLinkRelateResults.stream().map(SceneLinkRelateResult::getId)
-                        .filter(Objects::nonNull).collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(longList)) {
-                    oldIds = oldIds.stream().filter(o -> !longList.contains(o)).collect(Collectors.toList());
-                }
-                sceneLinkRelateDao.deleteByIds(oldIds);
-            }
+            sceneLinkRelateDao.deleteByIds(oldIds);
         }
 
         if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
@@ -623,7 +616,7 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void updateBusinessFlow(Long businessFlowId, FileManageUpdateRequest scriptFile, BusinessFlowDataFileRequest businessFlowDataFileRequest) {
+    public void updateBusinessFlow(Long businessFlowId, FileManageUpdateRequest scriptFile, BusinessFlowDataFileRequest businessFlowDataFileRequest,List<ScriptNode> data) {
         SceneResult sceneResult = sceneDao.getSceneDetail(businessFlowId);
         if (sceneResult == null) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到对应的业务流程！");
@@ -645,6 +638,7 @@ public class SceneServiceImpl implements SceneService {
         updateRequest.setRefType(ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE);
         updateRequest.setRefValue(businessFlowId.toString());
         updateRequest.setName(scriptManageDeployResult.getName());
+
         if (scriptFile == null) {
             List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
                     FileTypeEnum.SCRIPT.getCode().equals(o.getFileType())).collect(Collectors.toList());
@@ -658,8 +652,6 @@ public class SceneServiceImpl implements SceneService {
             updateRequest.setFileManageUpdateRequests(businessFlowDataFileRequest.getFileManageUpdateRequests());
             updateRequest.setPluginConfigUpdateRequests(businessFlowDataFileRequest.getPluginConfigUpdateRequests());
 
-            //自动匹配
-            autoMatchActivity(businessFlowId);
 
         } else {
             List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
@@ -673,11 +665,18 @@ public class SceneServiceImpl implements SceneService {
         //更新脚本
         Long scriptDeployId = scriptManageService.updateScriptManage(updateRequest);
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
+        if (CollectionUtils.isNotEmpty(data)){
+            sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
+        }
         //更新业务流程
         sceneUpdateParam.setScriptDeployId(scriptDeployId);
         sceneUpdateParam.setId(businessFlowId);
         sceneDao.update(sceneUpdateParam);
-
+        //脚本节点有改动，重新自动匹配
+        if (CollectionUtils.isNotEmpty(data)){
+            //自动匹配
+            autoMatchActivity(businessFlowId);
+        }
     }
 
     private void toBusinessFlowDetailResponse(SceneResult sceneResult, BusinessFlowDetailResponse result) {

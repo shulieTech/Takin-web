@@ -285,6 +285,8 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
             return Collections.EMPTY_MAP;
         }
         List<ApplicationApiManageVO> voList = apiManageList.stream()
+                .filter(Objects::nonNull)
+                .filter(d -> Objects.nonNull(d.getApplicationId()))
                 .map(apiManage -> Convert.convert(ApplicationApiManageVO.class, apiManage))
                 .collect(Collectors.toList());
         return CollStreamUtil.groupByKey(voList, ApplicationApiManageVO::getApplicationId);

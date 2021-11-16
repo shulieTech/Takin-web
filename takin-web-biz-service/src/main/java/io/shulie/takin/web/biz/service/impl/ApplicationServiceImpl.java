@@ -154,6 +154,7 @@ import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.DocumentException;
@@ -1122,10 +1123,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         activityService.createActivityWithoutAMDB(request);
     }
 
-    //@Override
-    //public List<TenantApplicationExt> getAllTenantApp(List<TenantCommonExt> commonExts) {
-    //    return null;
-    //}
+    @Override
+    public List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts) {
+       return applicationDAO.getAllTenantApp(commonExts);
+    }
 
     /**
      * 关注列表

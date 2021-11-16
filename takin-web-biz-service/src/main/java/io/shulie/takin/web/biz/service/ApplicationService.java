@@ -20,6 +20,7 @@ import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQue
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -263,10 +264,10 @@ public interface ApplicationService {
 
     void gotoActivityInfo(ActivityCreateRequest request);
 
-    ///**
-    // * 获取租户应用，用于amdb
-    // * @param commonExts
-    // * @return
-    // */
-    //List<TenantApplicationExt> getAllTenantApp(List<TenantCommonExt> commonExts);
+    /**
+     * 获取租户应用，用于amdb
+     * @param commonExts
+     * @return
+     */
+    List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts);
 }

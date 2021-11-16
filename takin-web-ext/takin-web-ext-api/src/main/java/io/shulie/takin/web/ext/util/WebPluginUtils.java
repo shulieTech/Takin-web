@@ -671,6 +671,9 @@ public class WebPluginUtils {
      */
     public static Long traceTenantId() {
         if (userApi != null) {
+            if(userApi.traceUser() == null) {
+                return DEFAULT_TENANT_ID;
+            }
             Long tenantId = userApi.traceTenantId();
             if (Objects.isNull(tenantId)){
                 throw new RuntimeException("租户ID不能为空！");
@@ -696,6 +699,9 @@ public class WebPluginUtils {
      */
     public static String traceTenantAppKey() {
         if (userApi != null) {
+            if(userApi.traceUser() == null) {
+                return DEFAULT_TENANT_APP_KEY;
+            }
             return userApi.traceTenantAppKey();
         }
         // 返回一个默认
@@ -708,6 +714,10 @@ public class WebPluginUtils {
      */
     public static String traceEnvCode() {
         if (userApi != null) {
+            // todo
+            if(userApi.traceUser() == null) {
+                return DEFAULT_ENV_CODE;
+            }
             String envCode = userApi.traceEnvCode();
             if (StringUtils.isBlank(envCode)){
                 throw new RuntimeException("环境编码不能为空！");

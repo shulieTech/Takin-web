@@ -649,13 +649,6 @@ public class WebPluginUtils {
         return Lists.newArrayList(SYS_DEFAULT_ENV_CODE, traceEnvCode());
     }
 
-    public static String checkAndTraceEnvCode() {
-        final String envCode = traceEnvCode();
-        if (StringUtils.isBlank(envCode)){
-            throw new RuntimeException("环境编码不能为空！");
-        }
-        return envCode;
-    }
 
     /**
      * 返回用户id

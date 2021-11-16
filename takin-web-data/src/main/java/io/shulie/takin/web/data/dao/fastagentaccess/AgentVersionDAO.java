@@ -5,6 +5,7 @@ import java.util.List;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentVersionQueryParam;
 import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
+import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentVersionParam;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionListResult;
 
@@ -45,6 +46,14 @@ public interface AgentVersionDAO {
      * @return 影响的记录数
      */
     Integer insert(CreateAgentVersionParam createParam);
+
+    /**
+     * 更新记录
+     *
+     * @param updateParam UpdateAgentVersionParam实体对象
+     * @return 是否更新成功
+     */
+    Boolean update(UpdateAgentVersionParam updateParam);
 
     /**
      * 获取大版本集合

@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentLibraryCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
@@ -20,7 +21,9 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,6 +49,12 @@ public class PluginLibraryController {
     @PutMapping("/upload")
     public AgentPluginUploadResponse uploadFile(@NotNull(message = "文件不能为空") MultipartFile file) {
         return pluginLibraryService.upload(file);
+    }
+
+    @ApiOperation("|_ 发布新版本")
+    @PostMapping("/release")
+    public void release(@Validated @RequestBody AgentLibraryCreateRequest createRequest) {
+        pluginLibraryService.release(createRequest);
     }
 
     @ApiOperation("|_ 下载插件")

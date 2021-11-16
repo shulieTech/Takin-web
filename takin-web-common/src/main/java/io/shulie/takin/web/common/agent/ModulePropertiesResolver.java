@@ -1,7 +1,12 @@
 package io.shulie.takin.web.common.agent;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import io.shulie.takin.web.common.pojo.bo.agent.AgentModuleInfo;
 import org.apache.commons.lang.StringUtils;
@@ -42,6 +47,17 @@ public class ModulePropertiesResolver {
             }
         }
         return result;
+    }
+
+    /**
+     * 解析module.properties文件内容
+     *
+     * @param filePath    文件路径
+     * @param baseDirPath 基础路径
+     * @return AgentModuleInfo集合
+     */
+    public static List<AgentModuleInfo> resolver(String filePath, String baseDirPath) {
+        return resolver(readModuleInfo(filePath, baseDirPath));
     }
 
     /**
@@ -96,6 +112,9 @@ public class ModulePropertiesResolver {
         }
         String[] moduleInfos = dependsInfo.split(",");
         for (String moduleInfo : moduleInfos) {
+            if (!moduleInfo.contains("@")) {
+                continue;
+            }
             AgentModuleInfo agentModuleInfo = new AgentModuleInfo();
             String[] moduleInfoArray = moduleInfo.split("@");
             agentModuleInfo.setModuleId(moduleInfoArray[0]);
@@ -120,6 +139,51 @@ public class ModulePropertiesResolver {
             .append(item.getModuleVersion()).append(","));
 
         return stringBuilder.substring(0, stringBuilder.toString().length() - 1);
+    }
+
+    /**
+     * 读取module.properties文件内容
+     *
+     * @param filePath    文件路径
+     * @param baseDirName 基础目录
+     * @return module.properties文件内容
+     */
+    public static String readModuleInfo(String filePath, String baseDirName) {
+        if (StringUtils.isBlank(filePath) || StringUtils.isBlank(baseDirName)) {
+            return null;
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        ZipFile zipFile = null;
+        InputStream is = null;
+        try {
+            zipFile = new ZipFile(new File(filePath));
+            ZipEntry entry = zipFile.getEntry(baseDirName + File.separator + "module.properties");
+            is = zipFile.getInputStream(entry);
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = is.read(buf)) > 0) {
+                stringBuilder.append(new String(buf, 0, len));
+            }
+        } catch (IOException e) {
+            // ignore
+        } finally {
+            if (zipFile != null) {
+                try {
+                    zipFile.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+        return stringBuilder.toString();
     }
 
 }

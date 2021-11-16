@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.utils;
+package io.shulie.takin.web.common.util;
 
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;

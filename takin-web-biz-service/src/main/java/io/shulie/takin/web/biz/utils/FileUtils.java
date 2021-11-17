@@ -18,9 +18,12 @@ import java.io.LineNumberReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Objects;
 
 import com.alibaba.fastjson.JSONObject;
 
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
@@ -32,6 +35,22 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class FileUtils {
     private static final Logger logger = LoggerFactory.getLogger(FileUtils.class);
+
+    public static boolean isAbsoluteUploadPath(List<SceneScriptRefDTO> files, final String uploadDir) {
+        if (CollectionUtils.isEmpty(files)) {
+            return false;
+        }
+        String scriptFile = files.stream().filter(Objects::nonNull)
+                .filter(f -> Objects.nonNull(f.getFileType()))
+                .filter(f -> f.getFileType() == 0)
+                .map(SceneScriptRefDTO::getUploadPath)
+                .findAny()
+                .orElse("");
+        return isAbsoluteUploadPath(scriptFile, uploadDir);
+    }
+    public static boolean isAbsoluteUploadPath(String filePath, final String uploadDir) {
+        return filePath.startsWith(uploadDir);
+    }
 
     public static File createFileDoNotExists(String filePathName) {
         File file = new File(filePathName);

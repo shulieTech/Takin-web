@@ -70,6 +70,7 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
+import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
 import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.biz.utils.exception.ScriptDebugExceptionUtil;
@@ -132,6 +133,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      */
     @Value("${takin-web.script-debug.rpcType:KAFKA}")
     private String supportRpcType;
+    @Value("${file.upload.script.path:/nfs/takin/script/}")
+    private String scriptFilePath;
 
     @Autowired
     private LeakSqlService leakSqlService;
@@ -351,7 +354,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }).collect(Collectors.toList());
 
         sceneData.setBusinessActivityConfig(businessActivityConfigDTOList);
-        sceneData.setIsAbsoluteScriptPath(false);
+        sceneData.setIsAbsoluteScriptPath(FileUtils.isAbsoluteUploadPath(sceneData.getUploadFile(), scriptFilePath));
         String result = sceneTaskService.checkScriptCorrelation(sceneData);
         return Arrays.asList(StrUtil.split(result, Constants.SPLIT));
     }

@@ -58,6 +58,7 @@ import io.shulie.takin.cloud.open.resp.scenemanage.ScriptCheckResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
+import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
 import io.shulie.takin.utils.string.StringUtil;
@@ -111,6 +112,7 @@ import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptTagRefDAO;
 import io.shulie.takin.web.data.dao.tagmanage.TagManageDAO;
+import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import io.shulie.takin.web.data.param.filemanage.FileManageCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.LinkManageQueryParam;
 import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployCreateParam;
@@ -136,6 +138,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 /**
  * @author zhaoyong
@@ -941,6 +944,26 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         }
 
         return Collections.singletonList(Long.valueOf(scriptDeploy.getRefValue()));
+    }
+
+    @Override
+    public String getZipFileNameByScriptDeployId(Long scriptDeployId) {
+        // TODO 查询脚本是否存在
+        ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDeployId);
+        Assert.notNull(scriptDeploy, "脚本不存在！");
+
+        // 根据脚本名称组装，查看zip文件是否存在
+        String zipFileName = scriptDeploy.getName() + ".zip";
+
+        // 存在就返回，不存在就压缩
+        if (!new File(zipFileName).exists()) {return zipFileName;}
+
+        // 压缩
+        FileManagerHelper.zipFiles(fileZipParamDTO.getSourcePaths(), fileZipParamDTO.getTargetPath()
+            , zipFileName, false);
+
+        // 返回
+        return null;
     }
 
     private List<FileManageResult> addScriptFile(WebPartRequest partRequest, Long takinScriptId) {

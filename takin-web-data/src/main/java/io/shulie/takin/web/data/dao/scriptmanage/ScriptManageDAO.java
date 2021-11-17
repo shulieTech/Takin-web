@@ -44,22 +44,6 @@ public interface ScriptManageDAO extends IService<ScriptManageEntity> {
     ScriptManageDeployResult selectScriptManageDeployByVersion(Long scriptId, Integer scriptVersion);
 
     /**
-     * 删除脚本发布实例，如果一个脚本的所有实例都被删除，删除这个脚本
-     *
-     * @param scriptDeployId
-     */
-    void deleteScriptManageDeployById(Long scriptDeployId);
-
-    /**
-     * 分页查询脚本发布实例列表
-     *
-     * @param scriptManageDeployPageQueryParam
-     * @return
-     */
-    PagingList<ScriptManageDeployResult> pageQueryScriptManageDeploy(
-        ScriptManageDeployPageQueryParam scriptManageDeployPageQueryParam);
-
-    /**
      * 新增脚本发布实例，同时如果没有脚本id的话，新增脚本
      *
      * @param scriptManageDeployCreateParam 创建所需要的参数

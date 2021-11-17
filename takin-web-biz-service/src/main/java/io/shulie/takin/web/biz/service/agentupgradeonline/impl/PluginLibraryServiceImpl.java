@@ -298,8 +298,11 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
                 CreatePluginDependentParam dependentParam = new CreatePluginDependentParam();
                 dependentParam.setPluginName(pluginCreateBO.getPluginName());
                 dependentParam.setPluginVersion(pluginCreateBO.getPluginVersion());
+                dependentParam.setPluginVersionNum(AgentVersionUtil.string2Int(pluginCreateBO.getPluginVersion()));
                 dependentParam.setDependentPluginName(agentModuleInfo.getModuleId());
                 dependentParam.setDependentPluginVersion(agentModuleInfo.getModuleVersion());
+                dependentParam.setDependentPluginVersionNum(
+                    AgentVersionUtil.string2Int(agentModuleInfo.getModuleVersion()));
                 dependentParams.add(dependentParam);
             }
 

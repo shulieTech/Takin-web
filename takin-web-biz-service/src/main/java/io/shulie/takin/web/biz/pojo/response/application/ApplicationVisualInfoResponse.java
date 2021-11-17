@@ -19,6 +19,8 @@ public class ApplicationVisualInfoResponse implements Serializable {
     /**
      * 服务名称
      */
+    private String service;
+    private String method;
     private String serviceAndMethod;
     /**
      * 请求量
@@ -36,6 +38,8 @@ public class ApplicationVisualInfoResponse implements Serializable {
      * 成功率
      */
     private double successRatio;
+
+    private int rpcType;
     /**
      * 中间件类型
      */
@@ -45,13 +49,27 @@ public class ApplicationVisualInfoResponse implements Serializable {
      */
     private String[] activeList;
     /**
+     * 关联关联业务活动名称
+     */
+    private String[] allActiveList;
+
+    /**
      * 关联业务活动名称
      */
     private Map activeIdAndName;
     /**
+     * 关联业务活动名称
+     */
+    private Map allActiveIdAndName;
+    /**
      * 是否关注
      */
     private boolean isAttend;
+
+    private String startTime;
+    private String endTime;
+    private int timeGap;
+
     /**
      * 健康检查结果
      */

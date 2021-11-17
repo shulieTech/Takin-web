@@ -1,6 +1,9 @@
 package io.shulie.takin.web.entrypoint.controller.confcenter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +29,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -305,6 +309,27 @@ public class ApplicationController {
             return;
         }
         applicationService.attendApplicationService(request);
+    }
+
+    @GetMapping("/application/center/app/activityList")
+    @ApiOperation("关联业务活动")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response getApplicationActivityList(@Valid ApplicationVisualInfoQueryRequest request) {
+        Response<List<ApplicationVisualInfoResponse>> response = applicationService.getApplicationVisualInfo(request);
+        List<ApplicationVisualInfoResponse> data = response.getData();
+        if (CollectionUtils.isNotEmpty(data)) {
+            Map allActiveIdAndName = data.get(0).getAllActiveIdAndName();
+            ArrayList<Map.Entry> activityList = new ArrayList<>();
+            if (null != allActiveIdAndName && !allActiveIdAndName.isEmpty()) {
+                Set<Map.Entry> set = allActiveIdAndName.entrySet();
+                set.forEach(entry->activityList.add(entry));
+            }
+            return Response.success(activityList);
+        }
+        return null;
     }
 
 }

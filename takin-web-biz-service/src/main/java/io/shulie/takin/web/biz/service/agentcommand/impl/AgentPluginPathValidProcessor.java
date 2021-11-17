@@ -1,7 +1,10 @@
 package io.shulie.takin.web.biz.service.agentcommand.impl;
 
+import java.util.Objects;
+
 import com.alibaba.fastjson.JSONObject;
-import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentCommandRequest;
+
+import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
 import io.shulie.takin.web.biz.service.agentcommand.AgentCommandSupport;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandDStateEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
@@ -12,8 +15,6 @@ import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPath
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 /**
  * @Description agent插件存储路径校验器
@@ -29,14 +30,14 @@ public class AgentPluginPathValidProcessor extends AgentCommandSupport {
     private ApplicationPluginDownloadPathDAO pathDAO;
 
     @Override
-    public Object process0(AgentCommandRequest commandRequest) {
+    public Object process(AgentCommandBO commandParam) {
         ApplicationPluginDownloadPathDetailResult result = pathDAO.queryDetailByCustomerId();
-        if(Objects.isNull(result) || StringUtils.isBlank(commandRequest.getCommandParam())){
+        if (Objects.isNull(result) || StringUtils.isBlank(commandParam.getExtras())) {
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_COMMAND_VALID_ERROR,
-                    "agent command operate error. commandId:"+commandRequest.getCommandId());
+                "agent command operate error. commandId:" + commandParam.getId());
         }
-        JSONObject obj = JSONObject.parseObject(commandRequest.getCommandParam());
-        pathDAO.saveValidState(AgentCommandDStateEnum.getState(obj.getString(VALID_STATUS_FIELD)),result.getId());
+        JSONObject obj = JSONObject.parseObject(commandParam.getExtras());
+        pathDAO.saveValidState(AgentCommandDStateEnum.getState(obj.getString(VALID_STATUS_FIELD)), result.getId());
         return null;
     }
 

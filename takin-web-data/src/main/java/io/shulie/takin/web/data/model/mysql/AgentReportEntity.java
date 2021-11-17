@@ -46,6 +46,11 @@ public class AgentReportEntity extends NewBaseEntity implements Serializable {
     private String progressId;
 
     /**
+     * agent版本
+     */
+    private String agentVersion;
+
+    /**
      * 升级批次 根据升级内容生成MD5
      */
     private String curUpgradeBatch;
@@ -54,6 +59,16 @@ public class AgentReportEntity extends NewBaseEntity implements Serializable {
      * 节点状态 0:未知,1:运行中,2:异常,3:待重启,4:休眠,5:卸载
      */
     private Integer status;
+
+    /**
+     * agent错误信息
+     */
+    private String agentErrorInfo;
+
+    /**
+     * simulator错误信息
+     */
+    private String simulatorErrorInfo;
 
     /**
      * 环境标识

@@ -12,11 +12,12 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum AgentReportStatusEnum {
     UNKNOWN(0, "未知"),
-    RUNNING(1, "运行中"),
-    ERROR(2,"异常"),
-    WAIT_RESTART(3,"待重启"),
-    SLEEP(4,"休眠"),
-    UNINSTALL(5,"卸载"),
+    STARTING(1, "启动中"),
+    WAIT_RESTART(2,"升级待重启"),
+    RUNNING(3, "运行中"),
+    ERROR(4,"异常"),
+    SLEEP(5,"休眠"),
+    UNINSTALL(6,"卸载"),
     ;
 
     private Integer val;

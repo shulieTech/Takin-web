@@ -47,11 +47,14 @@ public interface ApplicationMiddlewareMapper extends BaseMapper<ApplicationMiddl
      * 应用名称列表, 状态列表 查询 状态统计,
      * 根据 应用名称, 状态值分组
      *
-     * @param applicationNameList 应用名称列表
+     * @param applicationIds 应用名称列表
      * @param statusList 状态列表
+     * @param customerId 租户id
      * @return 状态统计列表
      */
     List<ApplicationMiddlewareStatusAboutCountResult> selectStatusCountByAndGroupByApplicationNameListAndStatusList(
-        @Param("applicationNameList") List<String> applicationNameList, @Param("statusList") List<Integer> statusList);
+        @Param("applicationIds") List<Long> applicationIds, @Param("statusList") List<Integer> statusList,
+        @Param("customerId") Long customerId);
+
 }
 

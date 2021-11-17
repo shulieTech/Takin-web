@@ -15,6 +15,12 @@
 
 package io.shulie.takin.web.data.dao.application;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.excel.util.StringUtils;
 
@@ -29,9 +35,10 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.InstanceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.LibraryDTO;
+import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
-import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
@@ -46,12 +53,6 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -401,4 +402,12 @@ public class ApplicationDAOImpl
     public void attendApplicationService(Map<String, String> param) {
         applicationAttentionListMapper.attendApplicationService(param);
     }
+
+    @Override
+    public List<Long> listIdsByNameListAndCustomerId(List<String> applicationNameList) {
+        return CommonUtil.list2list(applicationMntMapper.selectObjs(this.getCustomerLambdaQueryWrapper()
+            .select(ApplicationMntEntity::getApplicationId)
+            .in(ApplicationMntEntity::getApplicationName, applicationNameList)), Long.class);
+    }
+
 }

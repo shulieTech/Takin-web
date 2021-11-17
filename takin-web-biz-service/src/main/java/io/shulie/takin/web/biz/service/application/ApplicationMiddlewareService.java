@@ -59,9 +59,9 @@ public interface ApplicationMiddlewareService {
     /**
      * 根据应用名称列表, 获得名称对应的get中状态统计
      *
-     * @param applicationNameList 应用名称列表
+     * @param applicationIds 应用ids
      * @return 名称对应的get中状态统计
      */
-    Map<String, Map<Integer, Integer>> getApplicationNameAboutStatusCountMap(List<String> applicationNameList);
+    Map<String, Map<Integer, Integer>> getApplicationNameAboutStatusCountMap(List<Long> applicationIds);
 
 }

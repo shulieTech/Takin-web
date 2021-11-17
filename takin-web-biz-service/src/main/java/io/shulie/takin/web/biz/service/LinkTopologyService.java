@@ -1593,9 +1593,15 @@ public class LinkTopologyService extends CommonService {
             return Collections.emptyList();
         }
 
+        // 根据应用名称搜索该租户下这些应用名称的应用id
+        List<Long> applicationIds = applicationDAO.listIdsByNameListAndCustomerId(applicationNameList);
+        if (applicationIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         // 查询出所有的 名称对应的中间件状态
         Map<String, Map<Integer, Integer>> applicationNameAboutStatusCountMap = applicationMiddlewareService
-                .getApplicationNameAboutStatusCountMap(applicationNameList);
+                .getApplicationNameAboutStatusCountMap(applicationIds);
         if (applicationNameAboutStatusCountMap.isEmpty()) {
             return Collections.emptyList();
         }

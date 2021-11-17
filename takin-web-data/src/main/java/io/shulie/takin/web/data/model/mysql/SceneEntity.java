@@ -2,11 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 /**
@@ -36,13 +32,13 @@ public class SceneEntity {
     /**
      * 场景等级 :p0/p1/02/03
      */
-    @TableField(value = "SCENE_LEVEL")
+    @TableField(value = "SCENE_LEVEL", updateStrategy = FieldStrategy.IGNORED)
     private String sceneLevel;
 
     /**
      * 是否核心场景 0:不是;1:是
      */
-    @TableField(value = "IS_CORE")
+    @TableField(value = "IS_CORE", updateStrategy = FieldStrategy.IGNORED)
     private Integer isCore;
 
     /**

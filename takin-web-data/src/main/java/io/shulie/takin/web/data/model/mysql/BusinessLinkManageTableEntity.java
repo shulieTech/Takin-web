@@ -44,7 +44,7 @@ public class BusinessLinkManageTableEntity {
     /**
      * 业务链路级别: p0/p1/p2/p3
      */
-    @TableField(value = "LINK_LEVEL")
+    @TableField(value = "LINK_LEVEL", updateStrategy = FieldStrategy.IGNORED)
     private String linkLevel;
 
     /**
@@ -98,7 +98,7 @@ public class BusinessLinkManageTableEntity {
     /**
      * 业务域: 0:订单域", "1:运单域", "2:结算域
      */
-    @TableField(value = "BUSINESS_DOMAIN")
+    @TableField(value = "BUSINESS_DOMAIN", updateStrategy = FieldStrategy.IGNORED)
     private String businessDomain;
 
     /**

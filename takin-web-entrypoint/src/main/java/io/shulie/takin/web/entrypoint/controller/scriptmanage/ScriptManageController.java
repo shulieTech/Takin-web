@@ -59,17 +59,6 @@ public class ScriptManageController {
     @Autowired
     private ScriptManageService scriptManageService;
 
-    @GetMapping("/downloadZip")
-    @ApiOperation("打包下载脚本")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
-        needAuth = ActionTypeEnum.DOWNLOAD
-    )
-    public void downloadZip(@RequestParam Long scriptDeployId) {
-        scriptManageService.getZipFileNameByScriptDeployId(scriptDeployId);
-
-    }
-
     @GetMapping("/getZipFileUrl")
     @ApiOperation(value = "打包下载脚本实例所有文件")
     @AuthVerification(
@@ -77,8 +66,7 @@ public class ScriptManageController {
         needAuth = ActionTypeEnum.DOWNLOAD
     )
     public ScriptManageStringResponse getZipFileUrl(@RequestParam("scriptId") @Valid Long scriptDeployId) {
-        String zipFileUrl = scriptManageService.getZipFileUrl(scriptDeployId);
-        return new ScriptManageStringResponse(zipFileUrl);
+        return new ScriptManageStringResponse(scriptManageService.getZipFileNameByScriptDeployId(scriptDeployId));
     }
 
     @PutMapping

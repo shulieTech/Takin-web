@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.scriptmanage;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -90,6 +91,7 @@ import io.shulie.takin.web.biz.utils.exception.ScriptManageExceptionUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.common.constant.FileManageConstant;
+import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.ScriptManageConstant;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.script.FileTypeEnum;
@@ -112,7 +114,6 @@ import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptTagRefDAO;
 import io.shulie.takin.web.data.dao.tagmanage.TagManageDAO;
-import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import io.shulie.takin.web.data.param.filemanage.FileManageCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.LinkManageQueryParam;
 import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployCreateParam;
@@ -121,6 +122,7 @@ import io.shulie.takin.web.data.param.tagmanage.TagManageParam;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptDeployDetailResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
@@ -161,6 +163,9 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     @Value("${file.upload.user.data.dir:/data/tmp}")
     private String fileDir;
+
+    @Value("${data.path}")
+    private String dataPath;
 
     @Autowired
     private DiffFileApi fileApi;
@@ -948,22 +953,31 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     @Override
     public String getZipFileNameByScriptDeployId(Long scriptDeployId) {
-        // TODO 查询脚本是否存在
-        ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDeployId);
+        // 查询脚本是否存在
+        ScriptDeployDetailResult scriptDeploy = scriptManageDAO.getScriptDeployByDeployId(scriptDeployId);
         Assert.notNull(scriptDeploy, "脚本不存在！");
 
         // 根据脚本名称组装，查看zip文件是否存在
-        String zipFileName = scriptDeploy.getName() + ".zip";
+        String zipFileName = String.format("%s.%s", scriptDeploy.getName() + ProbeConstants.FILE_TYPE_ZIP);
 
         // 存在就返回，不存在就压缩
         if (!new File(zipFileName).exists()) {return zipFileName;}
 
-        // 压缩
-        FileManagerHelper.zipFiles(fileZipParamDTO.getSourcePaths(), fileZipParamDTO.getTargetPath()
-            , zipFileName, false);
+        // 脚本对应的列表
+        List<String> filePathList = scriptManageDAO.listFilePathByScriptDeployId(scriptDeployId);
 
-        // 返回
-        return null;
+        // 压缩目标地址
+        String zipTargetPath = dataPath + File.separator + scriptDeploy.getId() + File.separator +
+            scriptDeploy.getScriptVersion();
+
+        try {
+            // 压缩
+            FileManagerHelper.zipFiles(filePathList, zipTargetPath, zipFileName, true);
+        } catch (IOException e) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "压缩文件失败！");
+        }
+
+        return zipFileName;
     }
 
     private List<FileManageResult> addScriptFile(WebPartRequest partRequest, Long takinScriptId) {

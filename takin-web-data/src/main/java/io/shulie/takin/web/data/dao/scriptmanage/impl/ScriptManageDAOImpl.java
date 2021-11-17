@@ -17,9 +17,11 @@ import io.shulie.takin.common.beans.page.PagingList;
 
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.mapper.mysql.ScriptExecuteResultMapper;
 import io.shulie.takin.web.common.enums.script.ScriptManageDeployStatusEnum;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
+import io.shulie.takin.web.data.mapper.mysql.ScriptFileRefMapper;
 import io.shulie.takin.web.data.mapper.mysql.ScriptManageDeployMapper;
 import io.shulie.takin.web.data.mapper.mysql.ScriptManageMapper;
 import io.shulie.takin.web.data.model.mysql.ScriptExecuteResultEntity;
@@ -29,6 +31,7 @@ import io.shulie.takin.web.data.param.scriptmanage.ScriptExecuteResultCreatePara
 import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployCreateParam;
 import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployPageQueryParam;
 import io.shulie.takin.web.data.param.scriptmanage.shell.ShellExecuteParam;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptDeployDetailResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptExecuteResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
@@ -54,6 +57,9 @@ public class ScriptManageDAOImpl
     private ScriptManageDeployMapper scriptManageDeployMapper;
     @Autowired
     private ScriptExecuteResultMapper scriptExecuteResultMapper;
+
+    @Autowired
+    private ScriptFileRefMapper scriptFileRefMapper;
 
     @Override
     public ScriptManageResult selectScriptManageById(Long scriptId) {
@@ -355,6 +361,12 @@ public class ScriptManageDAOImpl
     }
 
     @Override
+    public ScriptDeployDetailResult getScriptDeployByDeployId(Long scriptDeployId) {
+        return CommonUtil.copyBeanPropertiesWithNull(this.getDeployByDeployId(scriptDeployId),
+            ScriptDeployDetailResult.class);
+    }
+
+    @Override
     public Map<Long, Long> selectScriptDeployNumResult() {
         LambdaQueryWrapper<ScriptManageDeployEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.select(
@@ -396,4 +408,10 @@ public class ScriptManageDAOImpl
         }).collect(Collectors.toList());
         return PagingList.of(results, pageList.getTotal());
     }
+
+    @Override
+    public List<String> listFilePathByScriptDeployId(Long scriptDeployId) {
+        return scriptFileRefMapper.listUploadPathByScriptDeployId(scriptDeployId);
+    }
+
 }

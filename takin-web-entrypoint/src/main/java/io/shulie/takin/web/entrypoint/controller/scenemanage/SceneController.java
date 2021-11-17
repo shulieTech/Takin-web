@@ -273,7 +273,7 @@ public class SceneController {
      * @param request 请求体
      * @return 最大/最小Pod数
      */
-    @GetMapping("pod_number")
+    @PostMapping("pod_number")
     @ApiOperation("获取建议Pod数 - 压测场景用")
     public ResponseResult<StrategyResp> getPodNumber(@RequestBody Map<String, Map<String, String>> request) {
         AtomicInteger tpsNum = new AtomicInteger(0);

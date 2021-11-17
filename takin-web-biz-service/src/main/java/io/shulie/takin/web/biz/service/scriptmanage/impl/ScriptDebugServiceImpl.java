@@ -62,7 +62,6 @@ import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
-import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
@@ -212,7 +211,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 businessLinkManageDAO.listByIds(businessActivityIds);
             ScriptDebugExceptionUtil.isDebugError(businessActivities.isEmpty(), "脚本对应的业务活动不存在!");
 
-            // 检查应用相关, rpc 检查
+            // 检查应用相关, rpc 检查api/console/application/cente
             log.info("调试 --> 检测所有业务活动的配置!");
             String applicationErrorMessage = this.checkBusinessActivityCorrelationAndGetError(businessActivities);
             if (StrUtil.isNotBlank(applicationErrorMessage)) {

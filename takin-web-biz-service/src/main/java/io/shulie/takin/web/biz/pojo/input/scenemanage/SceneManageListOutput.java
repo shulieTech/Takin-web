@@ -47,4 +47,7 @@ public class SceneManageListOutput extends AuthQueryResponseCommonExt {
     @ApiModelProperty(name = "scheduleExecuteTime", value = "定时压测时间")
     private String scheduleExecuteTime;
 
+    @ApiModelProperty(value = "是否存在脚本解析结果")
+    private Boolean hasAnalysisResult;
+
 }

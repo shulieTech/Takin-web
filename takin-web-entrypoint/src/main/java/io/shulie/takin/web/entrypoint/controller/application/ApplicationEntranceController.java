@@ -108,8 +108,7 @@ public class ApplicationEntranceController {
                     applicationEntrancesResponse.setRpcType(item.getRpcType());
                     applicationEntrancesResponse.setExtend(item.getExtend());
                     applicationEntrancesResponse.setServiceName(item.getServiceName());
-                    applicationEntrancesResponse.setLabel(
-                            ActivityUtil.buildEntrance(item.getMethodName(),item.getServiceName(),item.getRpcType()));
+                    applicationEntrancesResponse.setLabel(item.getMethodName() + "|" + item.getServiceName());
                     applicationEntrancesResponse.setValue(
                             ActivityUtil.buildEntrance(item.getMethodName(),item.getServiceName(),item.getRpcType()));
                     return applicationEntrancesResponse;

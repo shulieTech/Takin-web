@@ -104,6 +104,7 @@ public class SceneManageApiImpl implements SceneManageApi {
      */
     @Override
     public ResponseResult<EnginePluginDetailResp> getEnginePluginDetails(EnginePluginDetailsWrapperReq wrapperReq) {
+        WebPluginUtils.fillCloudUserData(wrapperReq);
         return cloudEngineApi.getEnginePluginDetails(wrapperReq);
     }
 
@@ -115,6 +116,7 @@ public class SceneManageApiImpl implements SceneManageApi {
 
     @Override
     public ResponseResult<List<ScriptNode>> scriptAnalyze(ScriptAnalyzeRequest request) {
+        WebPluginUtils.fillCloudUserData(request);
         return cloudSceneApi.scriptAnalyze(request);
     }
 }

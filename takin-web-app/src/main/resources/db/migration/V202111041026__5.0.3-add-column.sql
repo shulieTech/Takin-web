@@ -36,8 +36,17 @@ BEGIN
     IF NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 't_scene' AND column_name = 'script_jmx_node')
     THEN
         ALTER TABLE t_scene
-            ADD script_jmx_node text COMMENT '存储树状结构';
+            ADD script_jmx_node longtext COMMENT '存储树状结构';
     END IF;
+
+    IF NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 't_scene' AND column_name = 'IS_CORE')
+    THEN
+        ALTER TABLE t_scene
+            MODIFY COLUMN `IS_CORE` tinyint(4) NULL DEFAULT NULL COMMENT '是否核心场景 0:不是;1:是';
+    END IF;
+
+
+
 
     IF NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 't_scene' AND column_name = 'script_deploy_id')
     THEN

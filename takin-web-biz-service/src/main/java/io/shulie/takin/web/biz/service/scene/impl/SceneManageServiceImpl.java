@@ -59,6 +59,7 @@ import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneTagRefResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
+import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTagService;
@@ -77,7 +78,9 @@ import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -101,39 +104,26 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     @Autowired
     private HttpWebClient httpWebClient;
-
     @Value("${script.check:true}")
     private Boolean scriptCheck;
-
-    @Value("${script.check.perfomancetype:false}")
-    private Boolean scriptPreTypeCheck;
-
     @Resource
     private TApplicationMntDao tApplicationMntDao;
-
     @Autowired
     private ApplicationBusinessActivityService applicationBusinessActivityService;
-
     @Autowired
     private ScriptManageService scriptManageService;
-
     @Autowired
     private SceneManageApi sceneManageApi;
-
     @Autowired
     private SceneSchedulerTaskService sceneSchedulerTaskService;
-
     @Autowired
     private SceneTagService sceneTagService;
-
     @Autowired
     private BusinessLinkManageDAO businessLinkManageDAO;
-
     @Autowired
     private SceneTaskApi sceneTaskApi;
-
-    @Autowired
-    private RedisTemplate redisTemplate;
+    @Resource
+    private SceneService sceneService;
 
     @Override
     public ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req) {
@@ -371,6 +361,15 @@ public class SceneManageServiceImpl implements SceneManageService {
             scriptId);
         if (scriptManageDeployDetail == null) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "脚本实例不存在!");
+        }
+        // 关联业务流程, 查出关联的业务流程
+        if (ScriptManageUtil.deployRefBusinessFlowType(scriptManageDeployDetail.getRefType())) {
+            // 业务流程id
+            Long businessFlowId = Long.valueOf(scriptManageDeployDetail.getRefValue());
+            SceneResult scene = sceneService.getScene(businessFlowId);
+            if (null != scene) {
+                dto.setScriptAnalysisResult(scene.getScriptJmxNode());
+            }
         }
 
         // 设置脚本类型

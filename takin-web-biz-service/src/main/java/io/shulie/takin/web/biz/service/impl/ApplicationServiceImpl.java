@@ -2385,21 +2385,17 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response userAppSilenceSwitchInfo() {
         ApplicationSwitchStatusDTO result = new ApplicationSwitchStatusDTO();
-        UserExt user = WebPluginUtils.getUser();
-        if (user == null) {
-            String userAppKey = WebPluginUtils.getTenantUserAppKey();
-            user = WebPluginUtils.getUserByAppKey(userAppKey);
-        }
-        if (user == null) {
-            return Response.fail(FALSE_CORE);
-        }
-        //体验用户默认状态为开启
-        if (user.getRole() != null && user.getRole() == 1) {
-            result.setSwitchStatus(AppSwitchEnum.OPENED.getCode());
+        Long uid;
+        if (WebPluginUtils.checkUserData()) {
+            UserExt user = WebPluginUtils.getUser();
+            if (user == null) {
+                return Response.fail(FALSE_CORE, "当前用户为空", null);
+            }
+            uid = user.getCustomerId();
         } else {
-            result.setSwitchStatus(getUserSilenceSwitchStatusForVo(user.getCustomerId()));
+            uid = WebPluginUtils.getCustomerId();
         }
-
+        result.setSwitchStatus(getUserSilenceSwitchStatusForVo(uid));
         return Response.success(result);
     }
 

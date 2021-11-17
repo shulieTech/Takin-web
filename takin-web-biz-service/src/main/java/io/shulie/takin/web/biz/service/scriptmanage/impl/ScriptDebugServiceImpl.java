@@ -1,10 +1,7 @@
 package io.shulie.takin.web.biz.service.scriptmanage.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -15,6 +12,7 @@ import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.base.Joiner;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
@@ -23,24 +21,29 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDT
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
+import com.pamirs.takin.entity.domain.entity.scenemanage.SceneBusinessActivityRef;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import io.shulie.amdb.common.enums.RpcType;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.open.req.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneScriptRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.ScriptAssetBalanceReq;
 import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskCheckReq;
 import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskStartReq;
+import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStartResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStatusResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.plugin.framework.core.PluginManager;
+import io.shulie.takin.ext.content.script.ScriptNode;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
+import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.constant.ScriptDebugConstants;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
@@ -62,6 +65,8 @@ import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
+import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
@@ -92,12 +97,15 @@ import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import io.shulie.takin.web.data.param.scriptmanage.PageScriptDebugParam;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
+import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -173,6 +181,10 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
 
     @Autowired
     private ApplicationService applicationService;
+    @Resource
+    private SceneService sceneService;
+    @Resource
+    private SceneManageService sceneManageService;
 
     @Override
     public ScriptDebugResponse debug(ScriptDebugDoDebugRequest request) {
@@ -201,17 +213,25 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             ScriptDebugExceptionUtil.isDebugError(scriptDebugDAO.hasUnfinished(scriptDeployId),
                 "该脚本有未完成的调试, 请等待调试结束再进行调试!");
 
-            // 根据脚本发布实例类型, 查询业务活动或者业务流程下的业务活动
-            // 判断业务流程是否存在, 判断活动是否存在
-            List<Long> businessActivityIds = this.listBusinessActivityIdsByScriptDeploy(scriptDeploy);
-            ScriptDebugExceptionUtil.isDebugError(businessActivityIds.isEmpty(), "脚本对应的业务活动不存在!");
-
-            // 查出所有的业务活动
-            // 根据业务活动ids, 获得业务活动
-            List<BusinessLinkManageTableEntity> businessActivities =
-                businessLinkManageDAO.listByIds(businessActivityIds);
-            ScriptDebugExceptionUtil.isDebugError(businessActivities.isEmpty(), "脚本对应的业务活动不存在!");
-
+            // 业务流程id
+            Long flowId = null;
+            // 关联业务流程, 查出关联的业务流程
+            if (ScriptManageUtil.deployRefBusinessFlowType(scriptDeploy.getRefType())) {
+                flowId = Long.valueOf(scriptDeploy.getRefValue());
+            }
+            SceneResult scene = sceneService.getScene(flowId);
+            // 1. 获取业务流程关联的业务活动
+            List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(flowId);
+            ScriptDebugExceptionUtil.isDebugError(CollectionUtils.isEmpty(links), "脚本对应的业务活动不存在!");
+            // 2. 转换业务活动为压测你日工
+            List<Long> activityIds = links.stream().filter(Objects::nonNull)
+                    .map(SceneLinkRelateResult::getBusinessLinkId)
+                    .filter(StringUtils::isNotBlank)
+                    .map(NumberUtils::toLong)
+                    .distinct()
+                    .collect(Collectors.toList());
+            List<BusinessLinkManageTableEntity> businessActivities = businessLinkManageDAO.listByIds(activityIds);
+            ScriptDebugExceptionUtil.isDebugError(CollectionUtils.isEmpty(businessActivities), "脚本对应的业务活动不存在!");
             // 检查应用相关, rpc 检查
             log.info("调试 --> 检测所有业务活动的配置!");
             String applicationErrorMessage = this.checkBusinessActivityCorrelationAndGetError(businessActivities);
@@ -220,12 +240,17 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 return response;
             }
 
+            Map<Long, BusinessLinkManageTableEntity> map = businessActivities.stream().filter(Objects::nonNull)
+                    .collect(Collectors.toMap(BusinessLinkManageTableEntity::getLinkId, d -> d, (o1,o2)-> o1));
+            List<SceneBusinessActivityRefOpen> sceneBusinessActivityRefs = links.stream().filter(Objects::nonNull)
+                    .map(t -> this.toSceneBusinessActivityRefOpen(t, map))
+                    .collect(Collectors.toList());
+
             // 构建启动调试入参
             log.info("调试 --> 构建 调用 cloud 启动 入参!");
             Integer requestNum = request.getRequestNum();
             Integer concurrencyNum = request.getConcurrencyNum();
-            SceneTryRunTaskStartReq debugCloudRequest =
-                this.getDebugParams(scriptDeploy, businessActivities, requestNum, concurrencyNum);
+            SceneTryRunTaskStartReq debugCloudRequest = this.getDebugParams(scriptDeploy, scene, sceneBusinessActivityRefs, requestNum, concurrencyNum);
 
             // 脚本检查
             log.info("调试 --> 脚本校验!");
@@ -246,8 +271,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             // 创建调试记录
             log.info("调试 --> 创建调试记录!");
             response = new ScriptDebugResponse();
-            scriptDebug = this.createScriptDebugAndGet(scriptDeployId, requestNum, concurrencyNum, cloudResponse,
-                businessActivityIds);
+            scriptDebug = this.createScriptDebugAndGet(scriptDeployId, requestNum, concurrencyNum, cloudResponse, activityIds);
             response.setScriptDebugId(scriptDebug.getId());
 
             //回写调试记录ID到流量账户
@@ -265,6 +289,26 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         } finally {
             distributedLock.unLockSafely(lockKey);
         }
+    }
+
+    private SceneBusinessActivityRefOpen toSceneBusinessActivityRefOpen(SceneLinkRelateResult link, Map<Long, BusinessLinkManageTableEntity> map) {
+        Long activityId = NumberUtils.toLong(link.getBusinessLinkId());
+        BusinessLinkManageTableEntity blmte = map.get(activityId);
+        SceneBusinessActivityRefOpen ref = new SceneBusinessActivityRefOpen();
+        ref.setBindRef(link.getScriptXpathMd5());
+        ref.setBusinessActivityId(activityId);
+        if (null != blmte) {
+            ref.setBusinessActivityName(blmte.getLinkName());
+        }
+        List<String> appIds = sceneManageService.getAppIdsByBusinessActivityId(activityId);
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(appIds)) {
+            ref.setApplicationIds(Joiner.on(",").skipNulls().join(appIds));
+        }
+        ref.setTargetRT(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_DEFAULT_TARGET_RT);
+        ref.setTargetTPS(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_DEFAULT_TARGET_TPS);
+        ref.setTargetSA(new BigDecimal(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_DEFAULT_TARGET_RT));
+        ref.setTargetSuccessRate(new BigDecimal(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_DEFAULT_TARGET_RT));
+        return ref;
     }
 
     private void callBackToWriteBalance(SceneTryRunTaskStartResp cloudResponse, Long scriptDebugId) {
@@ -995,12 +1039,12 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * 构建启动调试的入参
      *
      * @param scriptDeploy       脚本发布对象
-     * @param businessActivities 业务活动列表
+     * @param sceneBusinessActivityRefs 业务活动和业务场景关联关系列表
      * @param requestNum         请求条数
      * @return 入参
      */
-    private SceneTryRunTaskStartReq getDebugParams(ScriptManageDeployEntity scriptDeploy,
-        List<BusinessLinkManageTableEntity> businessActivities, Integer requestNum, Integer concurrencyNum) {
+    private SceneTryRunTaskStartReq getDebugParams(ScriptManageDeployEntity scriptDeploy, SceneResult scene,
+        List<SceneBusinessActivityRefOpen> sceneBusinessActivityRefs, Integer requestNum, Integer concurrencyNum) {
         // cloud 调试请求参数拼接
         SceneTryRunTaskStartReq debugCloudRequest = new SceneTryRunTaskStartReq();
         // 脚本发布id
@@ -1012,6 +1056,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         debugCloudRequest.setScriptId(scriptDeploy.getScriptId());
         debugCloudRequest.setScriptType(scriptDeploy.getType());
         debugCloudRequest.setScriptName(scriptDeploy.getName());
+        if (null != scene) {
+            debugCloudRequest.setScriptAnalysisResult(scene.getScriptJmxNode());
+        }
         // 插件ids
         List<PluginConfigDetailResponse> pluginConfigs = ScriptManageUtil.listPluginConfigs(scriptDeploy.getFeature());
         if (CollectionUtils.isNotEmpty(pluginConfigs)) {
@@ -1027,8 +1074,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }
 
         // 业务活动配置
-        debugCloudRequest.setBusinessActivityConfig(
-            this.listBusinessActivityConfigList(scriptDeployId, businessActivities));
+        debugCloudRequest.setBusinessActivityConfig(sceneBusinessActivityRefs);
 
         // 上传文件
         debugCloudRequest.setUploadFile(this.listUploadPathList(scriptDeployId));
@@ -1050,28 +1096,6 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         scriptDeployResponse.setId(scriptDeployId);
         scriptManageService.setFileList(scriptDeployResponse);
         return ScriptManageUtil.buildScriptRef(scriptDeployResponse);
-    }
-
-    /**
-     * 获得脚本发布下的业务活动配置
-     *
-     * @param scriptDeployId     脚本发布id
-     * @param businessActivities 业务活动列表
-     * @return 业务活动配置列表
-     */
-    private List<SceneBusinessActivityRefOpen> listBusinessActivityConfigList(Long scriptDeployId,
-        List<BusinessLinkManageTableEntity> businessActivities) {
-        // vo
-        List<SceneBusinessActivityRefVO> voList = businessActivities.stream().map(businessActivity -> {
-            SceneBusinessActivityRefVO vo = new SceneBusinessActivityRefVO();
-            vo.setBusinessActivityId(businessActivity.getLinkId());
-            vo.setBusinessActivityName(businessActivity.getLinkName());
-            vo.setScriptId(scriptDeployId);
-            return vo;
-        }).collect(Collectors.toList());
-
-        // 2. 组合
-        return ScriptManageUtil.buildCloudBusinessActivityConfigList(voList);
     }
 
     /**

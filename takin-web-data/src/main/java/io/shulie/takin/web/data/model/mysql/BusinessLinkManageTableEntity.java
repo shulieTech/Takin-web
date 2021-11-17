@@ -2,11 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 /**
@@ -64,9 +60,9 @@ public class BusinessLinkManageTableEntity {
     private Integer isChange;
 
     /**
-     * 业务链路是否否核心链路 0:不是;1:是
+     * 业务链路是否否核心链路 0:不是;1:是,null表示未知，更新时可能被设置为null
      */
-    @TableField(value = "IS_CORE")
+    @TableField(value = "IS_CORE", updateStrategy = FieldStrategy.IGNORED)
     private Integer isCore;
 
     /**

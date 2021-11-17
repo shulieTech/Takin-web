@@ -181,7 +181,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         String jsonString = JsonHelper.bean2Json(resp.getData());
         SceneManageWrapperDTO sceneData = JsonHelper.json2Bean(jsonString, SceneManageWrapperDTO.class);
         //脚本路径是否是绝对值，不知道是谁加的这个
-        sceneData.setIsAbsoluteScriptPath(true);
+        sceneData.setIsAbsoluteScriptPath(false);
 
         // 校验该场景是否正在压测中
         if (redisClientUtils.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))) {

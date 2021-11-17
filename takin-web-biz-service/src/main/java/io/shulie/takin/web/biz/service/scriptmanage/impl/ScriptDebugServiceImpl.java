@@ -351,7 +351,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }).collect(Collectors.toList());
 
         sceneData.setBusinessActivityConfig(businessActivityConfigDTOList);
-        sceneData.setIsAbsoluteScriptPath(true);
+        sceneData.setIsAbsoluteScriptPath(false);
         String result = sceneTaskService.checkScriptCorrelation(sceneData);
         return Arrays.asList(StrUtil.split(result, Constants.SPLIT));
     }

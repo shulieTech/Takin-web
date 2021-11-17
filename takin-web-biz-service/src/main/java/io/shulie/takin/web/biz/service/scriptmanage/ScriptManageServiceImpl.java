@@ -965,8 +965,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         File parentFile = file.getParentFile();
 
         // 根据脚本名称组装
-        String zipFileName = String.format("%s.%s", scriptDeploy.getName(), ProbeConstants.FILE_TYPE_ZIP);
-        String absoluteZipName = parentFile.getParent() + File.separator + zipFileName;
+        String absoluteZipName = String.format("%s%s%s.%s", parentFile.getParent(),
+            File.separator, scriptDeploy.getName(), ProbeConstants.FILE_TYPE_ZIP);
         ZipUtil.zip(parentFile.getAbsolutePath(), absoluteZipName);
         return absoluteZipName;
     }

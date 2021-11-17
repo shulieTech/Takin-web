@@ -44,8 +44,8 @@
         <takin.web.version>takin-web-tenant-SNAPSHOT</takin.web.version>
         <takin.cloud.sdk.version>takin-cloud-sdk-tenant-SNAPSHOT</takin.cloud.sdk.version>
         <takin.cloud.version>takin-cloud-tenant-SNAPSHOT</takin.cloud.version>
-        <takin.common.version>common-1.7.4</takin.common.version>
-        <command.channel>common-1.7.4</command.channel>
+        <takin.common.version>common-2.0.0-SNAPSHOT</takin.common.version>
+        <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.4.2</pardar.log.protocol.version>
         <instrument.core.version>1.0.0</instrument.core.version>
 

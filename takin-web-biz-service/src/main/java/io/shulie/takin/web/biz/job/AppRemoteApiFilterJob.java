@@ -57,13 +57,16 @@ public class AppRemoteApiFilterJob implements SimpleJob {
             List<AppRemoteCallResult> appRemoteCallListVOS = appRemoteCallGroupByAppId.get(appId);
             List<AppRemoteCallResult> appRemoteCallFilterList = Lists.newArrayList();
             manageVOS.forEach(apiManage -> {
-                appRemoteCallListVOS.forEach(appRemoteCall -> {
-                    boolean match = antPathMatcher.match(apiManage.getApi(), appRemoteCall.getInterfaceName());
-                    boolean equals = apiManage.getApi().equals(appRemoteCall.getInterfaceName());
-                    if (match && !equals) {
-                        appRemoteCallFilterList.add(appRemoteCall);
-                    }
-                });
+                //防止空指针
+                if (CollectionUtils.isNotEmpty(appRemoteCallListVOS)) {
+                    appRemoteCallListVOS.forEach(appRemoteCall -> {
+                        boolean match = antPathMatcher.match(apiManage.getApi(), appRemoteCall.getInterfaceName());
+                        boolean equals = apiManage.getApi().equals(appRemoteCall.getInterfaceName());
+                        if (match && !equals) {
+                            appRemoteCallFilterList.add(appRemoteCall);
+                        }
+                    });
+                }
                 delList.addAll(appRemoteCallFilterList);
                 filterMap.put(apiManage.getApi(), appRemoteCallFilterList);
             });

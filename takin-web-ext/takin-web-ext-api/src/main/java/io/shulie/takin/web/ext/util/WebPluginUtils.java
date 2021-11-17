@@ -532,10 +532,11 @@ public class WebPluginUtils {
      * @param tenantAppKey appKey
      * @param envCode      环境
      */
-    public static void setTraceTenantContext(Long tenantId, String tenantAppKey, String envCode, String tenantCode,
+    public static TenantCommonExt setTraceTenantContext(Long tenantId, String tenantAppKey, String envCode, String tenantCode,
         Integer source) {
+        TenantCommonExt tenantCommonExt = null;
         if (Objects.nonNull(userApi)) {
-            TenantCommonExt tenantCommonExt = new TenantCommonExt();
+            tenantCommonExt = new TenantCommonExt();
             tenantCommonExt.setTenantId(tenantId);
             tenantCommonExt.setTenantAppKey(tenantAppKey);
             tenantCommonExt.setEnvCode(envCode);
@@ -543,6 +544,7 @@ public class WebPluginUtils {
             tenantCommonExt.setSource(source);
             userApi.setTraceTenantContext(tenantCommonExt);
         }
+        return tenantCommonExt;
     }
 
     /**

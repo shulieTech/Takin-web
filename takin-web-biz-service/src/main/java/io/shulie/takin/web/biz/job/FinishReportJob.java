@@ -81,6 +81,10 @@ public class FinishReportJob implements SimpleJob {
 
     private void finishReport() {
         List<Long> reportIds = reportService.queryListRunningReport();
+        if (CollectionUtils.isEmpty(reportIds)){
+            log.warn("暂无压测中的报告！");
+            return;
+        }
         log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(),
             WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {

@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.fastjson.JSON;
 
+import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
@@ -23,6 +24,7 @@ import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -80,6 +82,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     @Override
     public List<Long> getRunningReport() {
         List<Long> reportIds = reportService.queryListRunningReport();
+        if (CollectionUtils.isEmpty(reportIds)){
+            log.warn("暂无压测中的报告！");
+            return Lists.newArrayList();
+        }
         log.info("获取租户【{}】，环境【{}】的正在压测中的报告:{}",
             WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
         return reportIds;

@@ -1,46 +1,38 @@
 package io.shulie.takin.web.entrypoint.controller.file;
 
 import java.io.File;
-import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
-import io.shulie.takin.web.common.common.Separator;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-
-import lombok.extern.slf4j.Slf4j;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
-
-import io.shulie.takin.web.common.util.FileUtil;
+import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
+import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
+import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
+import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
 import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.web.common.domain.WebResponse;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
-import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
-import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
-
-import org.springframework.web.multipart.MultipartFile;
+import io.shulie.takin.web.common.util.FileUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author qianshui
@@ -52,8 +44,51 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Slf4j
 public class FileController {
 
-    @Resource
+    @Autowired
     private CloudFileApi cloudFileApi;
+
+    @Value("${file.upload.user.data.dir:/data/tmp}")
+    private String fileDir;
+
+    /**
+     * 上传文件临时地址
+     */
+    @Value("${file.upload.tmp.path}")
+    private String uploadTempPath;
+
+    /**
+     * 脚本上传地址
+     */
+    @Value("${file.upload.script.path}")
+    private String uploadScriptPath;
+
+    /**
+     * 文件保存地址
+     */
+    @Value("${data.path}")
+    private String dataPath;
+
+    @ApiOperation("|_ 文件下载")
+    @GetMapping("/download")
+    public void download(@RequestParam("filePath") String filePath, HttpServletResponse response) {
+        try {
+            if (!this.filePathValidate(filePath)) {
+                log.warn("非法下载路径文件，禁止下载：{}", filePath);
+                return;
+            }
+
+            if (!new File(filePath).exists()) {return;}
+
+            ServletOutputStream outputStream = response.getOutputStream();
+            Files.copy(Paths.get(filePath), outputStream);
+            response.setContentType("application/octet-stream");
+            String saveName = filePath.substring(filePath.lastIndexOf("/") + 1);
+            response.setHeader("Content-Disposition",
+                "attachment;filename=" + new String(saveName.getBytes("UTF-8"), "iso-8859-1"));
+        } catch (Exception e) {
+            log.error("文件下载错误: 文件地址: {}, 错误信息: {}", filePath, e.getMessage(), e);
+        }
+    }
 
     @PostMapping("/upload")
     @ApiOperation(value = "文件上传")
@@ -94,36 +129,33 @@ public class FileController {
     @ApiOperation("文件下载")
     @GetMapping("/downloadFileByPath")
     public void downloadFileByPath(@RequestParam("filePath") String filePath, HttpServletResponse response) {
-        try {
-            if (!filePathValidate(filePath)) {
-                log.warn("非法下载路径文件，禁止下载：{}", filePath);
-                return;
-            }
-
-            if (new File(filePath).exists()) {
-                ServletOutputStream outputStream = response.getOutputStream();
-                Files.copy(Paths.get(filePath), outputStream);
-                response.setContentType("application/octet-stream");
-                String saveName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
-                response.setHeader("Content-Disposition",
-                    "attachment;filename=" + new String(saveName.getBytes("UTF-8"), "iso-8859-1"));
-            }
-            // 最后删除文件
-            FileManagerHelper.deleteFilesByPath(filePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.download(filePath, response);
+        // 删除文件
+        FileManagerHelper.deleteFilesByPath(filePath);
     }
 
     /**
      * 文件路径是否管理策略
      *
      * @param filePath 文件路径
-     * @return 是否是正确的
+     * @return 是否
      */
     private boolean filePathValidate(String filePath) {
-        return filePath.startsWith(
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR)+ WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue());
+        return this.pathInit().stream().anyMatch(filePath::startsWith);
+    }
+
+    /**
+     * 文件路径初始化
+     *
+     * @return 文件路径列表
+     */
+    private List<String> pathInit() {
+        List<String> arrayList = new ArrayList<>();
+        arrayList.add(fileDir);
+        arrayList.add(uploadTempPath);
+        arrayList.add(uploadScriptPath);
+        arrayList.add(dataPath);
+        return arrayList;
     }
 
 }

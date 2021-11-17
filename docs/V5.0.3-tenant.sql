@@ -542,6 +542,8 @@ ALTER TABLE e_patrol_scene_check ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_c
 -- 兮曦 --
 
 
+
+
 -- 索引
 ALTER TABLE t_activity_node_service_state ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_agent_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -550,6 +552,8 @@ ALTER TABLE t_app_business_table_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`
 ALTER TABLE t_app_middleware_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_app_remote_call ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_application_api_manage ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_application_api_manage ADD UNIQUE KEY `idx_app_api_method_tenant_env` ( `APPLICATION_NAME`,`api`,`method`,`tenant_id`,`env_code` );
+ALTER TABLE t_application_api_manage DROP KEY `APPLICATION_NAME`;
 ALTER TABLE `t_application_ds_manage` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_application_mnt ADD INDEX `idx_application_id` ( `application_id` );
 ALTER TABLE t_application_mnt
@@ -563,12 +567,16 @@ ALTER TABLE `t_black_list` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` )
 ALTER TABLE `t_business_link_manage_table` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_data_build` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_datasource_tag_ref` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_datasource_tag_ref ADD UNIQUE KEY `idx_datasource_tag_tenant_env` ( `datasource_id`,`tag_id`,`tenant_id`,`env_code` );
+ALTER TABLE t_datasource_tag_ref DROP KEY `index_datasourceId_tagId`;
 ALTER TABLE `t_dictionary_data`
 DROP PRIMARY KEY,
 ADD PRIMARY KEY(`ID`,`tenant_id`,`env_code`) USING BTREE;
 ALTER TABLE `t_dictionary_type` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_exception_info` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_fast_debug_config_info` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_fast_debug_config_info ADD UNIQUE KEY `idx_name_tenant_env` ( `name`,`tenant_id`,`env_code` );
+ALTER TABLE t_fast_debug_config_info DROP KEY `name`;
 ALTER TABLE `t_fast_debug_exception` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_fast_debug_machine_performance` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_fast_debug_result` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );

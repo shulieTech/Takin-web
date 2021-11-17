@@ -60,5 +60,12 @@ public class ApplicationPluginUpgradeRefDAOImpl extends ServiceImpl<ApplicationP
         queryWrapper.eq(ApplicationPluginUpgradeRefEntity::getUpgradeBatch,upgradeBatch);
         return this.convertVos(this.list(queryWrapper));
     }
+
+    @Override
+    public List<ApplicationPluginUpgradeRefDetailResult> getList(List<String> upgradeBatchs) {
+        LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        queryWrapper.in(ApplicationPluginUpgradeRefEntity::getUpgradeBatch,upgradeBatchs);
+        return this.convertVos(this.list(queryWrapper));
+    }
 }
 

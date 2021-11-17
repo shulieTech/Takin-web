@@ -16,7 +16,6 @@ import java.util.Map;
 public enum ApplicationAgentPathTypeEnum {
     OSS(0, "OSS"),
     FTP(1, "FTP"),
-    NGINX(2, "Nginx"),
     ;
 
     private Integer val;

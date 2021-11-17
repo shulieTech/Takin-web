@@ -1,11 +1,9 @@
 package io.shulie.takin.web.entrypoint.controller.v2.fastagentaccess;
 
 import io.shulie.takin.cloud.common.constants.APIUrls;
-import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentInfoListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentInfoListResponse;
-import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationTagRefService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -13,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * agent版本管理(AgentVersion)controller
@@ -39,12 +35,12 @@ public class AgentVersionController {
         return agentVersionService.getList(queryRequest);
     }
 
-    @ApiOperation("获取应用接入状态枚举")
-    @GetMapping("/status")
-    public List<SelectVO> status() {
-        return agentVersionService.getAccessStatusList();
-    }
-
+//    @ApiOperation("获取应用接入状态枚举")
+//    @GetMapping("/status")
+//    public List<SelectVO> status() {
+//        return agentVersionService.getAccessStatusList();
+//    }
+//
 
 
 

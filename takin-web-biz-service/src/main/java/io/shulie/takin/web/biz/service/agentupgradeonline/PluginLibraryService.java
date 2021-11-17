@@ -5,10 +5,12 @@ import java.util.List;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentLibraryCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginAllowUpgradeLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginLibraryListResponse;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -74,5 +76,12 @@ public interface PluginLibraryService {
      * @return PluginInfo集合
      */
     List<PluginLibraryListResponse> queryAllPlugin();
+
+    /**
+     * 确定当前插件可升级的版本列表
+     *
+     * @return PluginInfo
+     */
+    Response<List<PluginInfo>> queryByPluginName(PluginAllowUpgradeLibraryListQueryRequest queryRequest);
 
 }

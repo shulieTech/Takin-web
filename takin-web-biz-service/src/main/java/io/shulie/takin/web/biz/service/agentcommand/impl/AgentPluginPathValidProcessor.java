@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.service.agentcommand.impl;
 import com.alibaba.fastjson.JSONObject;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentCommandRequest;
 import io.shulie.takin.web.biz.service.agentcommand.AgentCommandSupport;
-import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandDStateEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -36,7 +35,8 @@ public class AgentPluginPathValidProcessor extends AgentCommandSupport {
                     "agent command operate error. commandId:"+commandRequest.getCommandId());
         }
         JSONObject obj = JSONObject.parseObject(commandRequest.getCommandParam());
-        pathDAO.saveValidState(AgentCommandDStateEnum.getState(obj.getString(VALID_STATUS_FIELD)),result.getId());
+
+        pathDAO.saveValidState(obj.getBoolean(VALID_STATUS_FIELD),result.getId());
         return null;
     }
 

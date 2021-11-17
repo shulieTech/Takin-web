@@ -8,7 +8,6 @@ import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.LoginConstant;
 import io.shulie.takin.web.biz.pojo.bo.ConfigListQueryBO;
@@ -26,13 +25,13 @@ import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationTagRefServi
 import io.shulie.takin.web.biz.service.agentupgradeonline.PluginLibraryService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
-import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentDownloadUrlVerifyUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectTypeEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentReportStatusEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentShowStatusEnum;
+import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentVersionDAO;
 import io.shulie.takin.web.data.dao.scene.SceneBusinessActivityRefDAO;
@@ -438,7 +437,10 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         ApplicationQueryParam param = Convert.convert(ApplicationQueryParam.class, queryRequest);
         //通过搜索条件过滤出需要的所有appId
         List<Long> applicationIds = this.buildParamAppIds(queryRequest);
-        //todo
+        if (applicationIds == null) {
+            //没有符合条件的应用
+            return PagingList.of(Collections.emptyList(), 0);
+        }
         param.setApplicationIds(applicationIds);
         Response<List<ApplicationVo>> applicationList = applicationService.getApplicationList(param);
 
@@ -582,13 +584,27 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
 
-    private Map<Long, String> findMaxMainVersion(List<AgentReportDetailResult> agentReportList) {
+    public Map<Long, String> findMaxMainVersion(List<AgentReportDetailResult> agentReportList) {
+        Map<Long, String> appId2NewVersion = new HashMap<>();
+        Map<Long, List<PluginLibraryDetailResult>> appPluginList = this.findAppPluginList(agentReportList);
+        appPluginList.forEach((appId, plugins) -> {
+            plugins.forEach(plugin -> {
+                if (plugin.getPluginType() == 1) {
+                    appId2NewVersion.put(appId, plugin.getVersion());
+                }
+            });
+        });
+        return appId2NewVersion;
+    }
+
+    @Override
+    public Map<Long, List<PluginLibraryDetailResult>> findAppPluginList(List<AgentReportDetailResult> agentReportList) {
         //查找当前探针所有节点存在的最高批次版本
         Map<Long, List<AgentReportDetailResult>> appId2Detail = CollStreamUtil.groupByKey(agentReportList,
                 AgentReportDetailResult::getApplicationId);
 
         Map<Long, String> appId2UpgradeBatch = new HashMap<>();
-        Map<Long, String> appId2NewVersion = new HashMap<>();
+        Map<Long, List<PluginLibraryDetailResult>> appId2Plugins = new HashMap<>();
         appId2Detail.forEach((k, v) -> {
             List<String> upgradeBatchs = CollStreamUtil.toList(v, AgentReportDetailResult::getCurUpgradeBatch);
             Set<String> set = new HashSet<>(upgradeBatchs);
@@ -602,14 +618,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             List<ApplicationPluginUpgradeRefDetailResult> upgradeRefs = pluginUpgradeRefService.getList(v);
             List<Long> pluginIds = CollStreamUtil.toList(upgradeRefs, ApplicationPluginUpgradeRefDetailResult::getPluginId);
             List<PluginLibraryDetailResult> plugins = pluginLibraryService.list(pluginIds);
-            plugins.forEach(x -> {
-                if (x.getPluginType() == 1) {
-                    appId2NewVersion.put(k, x.getVersion());
-                }
-            });
+            appId2Plugins.put(k, plugins);
         });
-
-        return appId2NewVersion;
+        return appId2Plugins;
     }
 
 
@@ -625,10 +636,10 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     }
 
 
-    @Override
-    public List<SelectVO> getAccessStatusList() {
-        return Arrays.stream(AgentShowStatusEnum.values()).map(
-                statusEnum -> new SelectVO(statusEnum.getDesc(), String.valueOf(statusEnum.getVal()))
-        ).collect(Collectors.toList());
-    }
+//    @Override
+//    public List<SelectVO> getAccessStatusList() {
+//        return Arrays.stream(AgentShowStatusEnum.values()).map(
+//                statusEnum -> new SelectVO(statusEnum.getDesc(), String.valueOf(statusEnum.getVal()))
+//        ).collect(Collectors.toList());
+//    }
 }

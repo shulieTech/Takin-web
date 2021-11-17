@@ -31,13 +31,13 @@ public class ApplicationAgentPathTypeServiceImpl implements ApplicationAgentPath
     @Autowired
     private ApplicationPluginDownloadPathDAO pathDAO;
 
-    @Override
-    public List<SelectVO> supportType() {
-        List<SelectVO> list = new ArrayList<>();
-         Arrays.stream(ApplicationAgentPathTypeEnum.values()).forEach(typeEnum ->
-                 list.add(new SelectVO(typeEnum.getDesc(), String.valueOf(typeEnum.getVal()))));
-        return list;
-    }
+//    @Override
+//    public List<SelectVO> supportType() {
+//        List<SelectVO> list = new ArrayList<>();
+//         Arrays.stream(ApplicationAgentPathTypeEnum.values()).forEach(typeEnum ->
+//                 list.add(new SelectVO(typeEnum.getDesc(), String.valueOf(typeEnum.getVal()))));
+//        return list;
+//    }
 
     @Override
     public Response<ApplicationPluginPathDetailResponse> queryConfigDetail() {

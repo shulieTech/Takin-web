@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.ext.content.script.ScriptNode;
+import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
@@ -51,6 +52,8 @@ import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
+import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
+import io.shulie.takin.web.biz.pojo.response.leakcheck.LeakSqlBatchRefsResponse;
 
 /**
  * 场景管理控制器 - 新
@@ -65,6 +68,8 @@ public class SceneController {
     SceneService sceneService;
     @Resource
     FileManageDAO fileManageDao;
+    @Resource
+    LeakSqlService leakSqlService;
     @Resource
     MultipleSceneApi multipleSceneApi;
     @Resource
@@ -224,6 +229,7 @@ public class SceneController {
     /**
      * 获取业务流程详情
      *
+     * @param id 业务流程主键
      * @return 业务流程详情
      */
     @GetMapping("business_activity_flow/detail")
@@ -231,6 +237,32 @@ public class SceneController {
     public ResponseResult<SceneEntity> businessActivityFlowDetail(
         @RequestParam(name = "id", required = false) Long id) {
         return ResponseResult.success(sceneService.businessActivityFlowDetail(id));
+    }
+
+    /**
+     * 获取业务流程下的漏数脚本
+     *
+     * @param id 业务流程主键
+     * @return 漏数校验脚本
+     */
+    @GetMapping("business_activity_flow/leak_sql")
+    @ApiOperation("获取业务流程详情 - 压测场景用")
+    public ResponseResult<List<LeakSqlBatchRefsResponse>> businessActivityFlowLeakSql(
+        @RequestParam(name = "id", required = false) Long id) {
+        // 1. 获取业务流程关联的业务活动
+        List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(id);
+        // 2. 组装业务活动主键
+        List<Long> collect = links.stream().map(t -> Long.valueOf(t.getBusinessLinkId()))
+            .collect(Collectors.toList());
+        // 3. 提前返回
+        if (collect.size() == 0) {return ResponseResult.success(new ArrayList<>(0));}
+        // 4. 调用原有业务逻辑
+        List<LeakSqlBatchRefsResponse> batchLeakCheckConfig =
+            leakSqlService.getBatchLeakCheckConfig(new LeakSqlBatchRefsRequest() {{
+                setBusinessActivityIds(collect);
+            }});
+        // 5. 返回数据
+        return ResponseResult.success(batchLeakCheckConfig);
     }
 
     /**

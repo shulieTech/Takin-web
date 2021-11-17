@@ -93,12 +93,12 @@ public class SyncMachineDataJob implements SimpleJob {
 
     private void syncMachineData(TenantCommonExt tenantCommonExt) {
         List<Long> reportIds = reportTaskService.getRunningReport();
-        log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),
-            JsonHelper.bean2Json(reportIds));
         if (CollectionUtils.isEmpty(reportIds)){
             log.warn("暂无压测中的报告！");
             return ;
         }
+        log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),
+            JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             fastDebugThreadPool.execute(() -> {
                 WebPluginUtils.setTraceTenantContext(tenantCommonExt);

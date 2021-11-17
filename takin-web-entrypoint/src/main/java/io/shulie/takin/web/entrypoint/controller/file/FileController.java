@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
 import com.pamirs.takin.entity.domain.vo.file.FileDeleteVO;
-import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.WebResponse;
@@ -138,7 +137,7 @@ public class FileController {
     public void downloadFileByPath(@RequestParam("filePath") String filePath, HttpServletResponse response) {
         this.download(filePath, response);
         // 删除文件
-        FileManagerHelper.deleteFilesByPath(filePath);
+        cn.hutool.core.io.FileUtil.del(filePath);
     }
 
     /**

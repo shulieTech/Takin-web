@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.service.scriptmanage;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -25,6 +24,7 @@ import com.alibaba.fastjson.JSON;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.ZipUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -59,7 +59,6 @@ import io.shulie.takin.cloud.open.resp.scenemanage.ScriptCheckResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
-import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
 import io.shulie.takin.utils.string.StringUtil;
@@ -957,27 +956,19 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         ScriptDeployDetailResult scriptDeploy = scriptManageDAO.getScriptDeployByDeployId(scriptDeployId);
         Assert.notNull(scriptDeploy, "脚本不存在！");
 
-        // 根据脚本名称组装，查看zip文件是否存在
-        String zipFileName = String.format("%s.%s", scriptDeploy.getName() + ProbeConstants.FILE_TYPE_ZIP);
-
-        // 存在就返回，不存在就压缩
-        if (!new File(zipFileName).exists()) {return zipFileName;}
-
         // 脚本对应的列表
         List<String> filePathList = scriptManageDAO.listFilePathByScriptDeployId(scriptDeployId);
+        Assert.notEmpty(filePathList, "脚本文件不存在！");
+        String aFile = filePathList.get(0);
+        File file = new File(aFile);
+        Assert.isTrue(file.exists(), "脚本文件不存在！");
+        File parentFile = file.getParentFile();
 
-        // 压缩目标地址
-        String zipTargetPath = dataPath + File.separator + scriptDeploy.getId() + File.separator +
-            scriptDeploy.getScriptVersion();
-
-        try {
-            // 压缩
-            FileManagerHelper.zipFiles(filePathList, zipTargetPath, zipFileName, true);
-        } catch (IOException e) {
-            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "压缩文件失败！");
-        }
-
-        return zipFileName;
+        // 根据脚本名称组装
+        String zipFileName = String.format("%s.%s", scriptDeploy.getName(), ProbeConstants.FILE_TYPE_ZIP);
+        String absoluteZipName = parentFile.getParent() + File.separator + zipFileName;
+        ZipUtil.zip(parentFile.getAbsolutePath(), absoluteZipName);
+        return absoluteZipName;
     }
 
     private List<FileManageResult> addScriptFile(WebPartRequest partRequest, Long takinScriptId) {

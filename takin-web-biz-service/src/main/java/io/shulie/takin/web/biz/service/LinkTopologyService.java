@@ -1,14 +1,43 @@
 package io.shulie.takin.web.biz.service;
 
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.alibaba.fastjson.JSON;
+
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.MiddlewareType;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.MD5Util;
-import io.shulie.amdb.common.dto.link.topology.*;
+import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
+import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
+import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoBaseDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForCacheDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForDBDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForMQDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForOSSDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForSearchDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -22,7 +51,27 @@ import io.shulie.takin.web.biz.common.CommonService;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.*;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppCallDatasourceInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppCallInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppProvider;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppProviderInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.ApplicationEntranceTopologyEdgeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.DbInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.ExceptionListResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.MqInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.NodeDetailDatasourceInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.NodeTypeResponseEnum;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.OssInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyAppNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyCacheNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyDbNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyMqNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyOssNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyOtherNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologySearchNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyUnknownNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyVirtualNodeResponse;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.activity.info.RpcTypeEnum;
@@ -44,17 +93,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 
 /**
  * 链路拓扑图 接口--拓扑图信息从AMDB获取
@@ -67,7 +105,6 @@ public class LinkTopologyService extends CommonService {
 
     @Autowired
     private ApplicationMiddlewareService applicationMiddlewareService;
-
 
     @Autowired
     private ApplicationClient applicationClient;
@@ -88,19 +125,19 @@ public class LinkTopologyService extends CommonService {
 
     public static final double INIT = 0.0; // db 没有数据的初始值
 
-
     /**
      * 拓扑图查询, 处理
      *
      * @param request 请求入参
-     *
+     * @param tempActivity 是否是临时拓扑图
      * @return 拓扑图相关
      */
     public ApplicationEntranceTopologyResponse getApplicationEntrancesTopology(
-            ApplicationEntranceTopologyQueryRequest request) {
+            ApplicationEntranceTopologyQueryRequest request, boolean tempActivity) {
 
         // 大数据查询拓扑图
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
+                tempActivity,
                 request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
                 request.getRpcType(), request.getExtend());
 
@@ -463,8 +500,8 @@ public class LinkTopologyService extends CommonService {
         }
 
         // step 1
-        String startTime = DateUtils.formatLocalDateTime(startDateTime.plusHours(8));
-        String endTime = DateUtils.formatLocalDateTime(endDateTime.plusHours(8));
+        String startTime = DateUtils.formatLocalDateTime(request.getStartTime());
+        String endTime = DateUtils.formatLocalDateTime(request.getEndTime());
 
         TempTopologyQuery1 query1 = TempTopologyQuery1.builder()
                 .inAppName(toAppName)
@@ -472,6 +509,7 @@ public class LinkTopologyService extends CommonService {
                 .inMethod(method)
                 .startTime(startTime)
                 .endTime(endTime)
+                .timeGap(request.getTimeGap())
                 .build();
 
         String response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
@@ -491,6 +529,7 @@ public class LinkTopologyService extends CommonService {
                     .clusterTest(request.getFlowTypeEnum().getType())
                     .startTime(startTime)
                     .endTime(endTime)
+                    .timeGap(request.getTimeGap())
                     .build();
 
             JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);

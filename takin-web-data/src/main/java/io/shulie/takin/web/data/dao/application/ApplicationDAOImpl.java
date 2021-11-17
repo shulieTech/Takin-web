@@ -36,6 +36,7 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.InstanceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.LibraryDTO;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
@@ -50,6 +51,7 @@ import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.data.result.application.LibraryResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -437,5 +439,17 @@ public class ApplicationDAOImpl
     @Override
     public void attendApplicationService(Map<String, String> param) {
         applicationAttentionListMapper.attendApplicationService(param);
+    }
+
+    @Override
+    public List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts) {
+        List<ApplicationDetailResult> detailResults = Lists.newArrayList();
+        commonExts.forEach(ext -> {
+            List<ApplicationMntEntity> entities = applicationMntMapper.getAllTenantApp(ext);
+            if (!entities.isEmpty()) {
+                detailResults.addAll(CommonUtil.list2list(entities,ApplicationDetailResult.class));
+            }
+        });
+        return detailResults;
     }
 }

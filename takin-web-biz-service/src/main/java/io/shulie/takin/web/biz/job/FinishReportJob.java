@@ -9,6 +9,7 @@ import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -68,7 +69,7 @@ public class FinishReportJob implements SimpleJob {
                     ext.getEnvs().forEach(e ->
                         jobThreadPool.execute(() -> {
                             WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),
-                                ext.getTenantCode()));
+                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
                             this.finishReport();
                             WebPluginUtils.removeTraceContext();
                         }));
@@ -84,7 +85,7 @@ public class FinishReportJob implements SimpleJob {
             WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据分片
-            fastDebugThreadPool.execute(() ->reportTaskService.finishReport(reportId));
+            fastDebugThreadPool.execute(() -> reportTaskService.finishReport(reportId));
         }
 
     }

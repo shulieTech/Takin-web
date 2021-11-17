@@ -18,6 +18,7 @@ import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -91,7 +92,8 @@ public class ReportDataCache {
         }
         String tenantAppKey = commonExt.getTenantAppKey();
         if (reportApplication.getReportDetail() != null) {
-            WebPluginUtils.setTraceTenantContext(reportDetail.getTenantId(),tenantAppKey,reportDetail.getEnvCode(),commonExt.getTenantCode());
+            WebPluginUtils.setTraceTenantContext(reportDetail.getTenantId(),tenantAppKey,reportDetail.getEnvCode(),commonExt.getTenantCode(),
+                ContextSourceEnum.JOB.getCode());
             redisTemplate.opsForValue().set(getReportDetailKey(reportId), reportApplication.getReportDetail());
             log.info("Report Id={}, Status={}，endTime = {}", reportId, reportApplication.getReportDetail().getTaskStatus(),
                 reportApplication.getReportDetail().getEndTime());

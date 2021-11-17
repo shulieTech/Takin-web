@@ -27,6 +27,7 @@ import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * application_mnt dao 层
@@ -139,4 +140,11 @@ public interface ApplicationDAO {
     List<ApplicationAttentionListEntity> getAttentionList(ApplicationAttentionParam param);
 
     void attendApplicationService(Map<String, String> param);
+
+    /**
+     * 根据租户获取相关应用
+     * @param commonExts
+     * @return
+     */
+    List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts);
 }

@@ -39,4 +39,11 @@
             #{item.appName,jdbcType=VARCHAR} AND tenant_id = #{teanntId,jdbcType=BIGINT}
         </foreach>
     </update>
+
+    <select id="getAllTenantApp" resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">
+        select APPLICATION_NAME,tenant_id,env_code from  t_application_mnt
+        where tenant_id = #{tenantId,jdbcType=VARCHAR}  and env_code = #{envCode,jdbcType=VARCHAR}
+    </select>
+
+
 </mapper>

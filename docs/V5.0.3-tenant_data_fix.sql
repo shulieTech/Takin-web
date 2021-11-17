@@ -1,3 +1,4 @@
+BEGIN;
 -- 额外 租户期间增加的表
 update t_mq_config_template set tenant_id=customer_id;
 update t_application_ds_cache_manage set tenant_id=customer_id;
@@ -12,32 +13,32 @@ CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE`
     `env_code`       varchar(512)   NOT NULL COMMENT '环境代码，测试环境：test,生产环境：prod',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB;
-INSERT INTO DATA_FIX_TABLE (`user_id`,`env_code`) VALUES(1,'test');
-INSERT INTO DATA_FIX_TABLE (`user_id`,`env_code`) VALUES(3,'prod');
-INSERT INTO DATA_FIX_TABLE (`user_id`,`env_code`) VALUES(4,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(5 ,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(12,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(13,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(7 ,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(8 ,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(17,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(19,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(20,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(21,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(22,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(23,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(25,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(26,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(27,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(28,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(29,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(30,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(31,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(32,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(33,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(9 ,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(10,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)values(24,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(1,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(3,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(4,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(5 ,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(12,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(13,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(7 ,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(8 ,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(17,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(19,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(20,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(21,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(22,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(23,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(25,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(26,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(27,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(28,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(29,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(30,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(31,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(32,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(33,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(9 ,'test');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(10,'prod');
+INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(24,'prod');
 
 -- caijy
 -- env_code
@@ -125,7 +126,7 @@ UPDATE t_link_manage_table t1
     LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_NAME = t2.APPLICATION_NAME AND t1.CUSTOMER_ID=t2.customer_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
--- t_application_focus TODO 有问题
+-- t_application_focus 按理说用应用名称查会可能查出来多条 但是现在都是一条，所以目前这样迁移
 UPDATE t_application_focus t1
     LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
     SET t1.env_code = IFNULL(t2.env_code,'test');
@@ -523,4 +524,32 @@ UPDATE t_script_manage_deploy t1
 
 
 ---无涯
+
+-- 流川
+-- t_activity_node_service_state 根据业务活动获得 租户id
+UPDATE t_activity_node_service_state a
+    LEFT JOIN (SELECT IFNULL(u.tenant_id, 1) tid, b.LINK_ID bid, b.env_code
+    FROM t_business_link_manage_table b LEFT JOIN t_tro_user u ON u.id = b.USER_ID) t
+ON t.bid = a.activity_id
+    SET a.tenant_id = t.tid, a.env_code = t.env_code;
+
+-- t_agent_config 根据 key, 获得用户id, 然后获得 租户id
+-- 需要单独给 env_code
+UPDATE t_agent_config m LEFT JOIN t_tro_user u ON u.`key` = m.user_app_key SET m.tenant_id = u.tenant_id;
+
+-- t_app_business_table_info 根据用户id查到租户id, 然后赋值
+UPDATE t_app_business_table_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.customer_id;
+UPDATE t_app_business_table_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
+
+-- t_app_middleware_info 根据用户id查到租户id, 然后赋值
+UPDATE t_app_middleware_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.customer_id;
+UPDATE t_app_middleware_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
+
+UPDATE t_app_remote_call m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.customer_id;
+UPDATE t_app_remote_call m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
+
+UPDATE t_app_agent_config_report m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.customer_id;
+UPDATE t_app_agent_config_report m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.application_id SET m.env_code = u.env_code;
+
+COMMIT;
 

@@ -2,8 +2,6 @@ package io.shulie.takin.web.ext.api.tenant;
 
 import java.util.List;
 
-import io.shulie.takin.web.ext.entity.tenant.TenantConfigExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoConfigExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import org.pf4j.ExtensionPoint;
 
@@ -59,23 +57,4 @@ public interface WebTenantExtApi extends ExtensionPoint {
      * @return
      */
     Long getDefaultUserId(String userAppKey, String tenantCode);
-
-    /**
-     * 根据租户code 获取租户列表
-     * @param tenantCode
-     * @return
-     */
-    List<TenantInfoExt> getTenantInfoListByTenantCode(String tenantCode);
-
-    /**
-     * 返回租户配置
-     * @return
-     */
-    List<TenantConfigExt> getTenantConfig();
-
-    /**
-     * 获取所以租户的配置
-     * @return
-     */
-    List<TenantInfoConfigExt> getAllTenantConfig();
 }

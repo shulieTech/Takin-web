@@ -7,8 +7,9 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ThreadAnalyService;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -51,7 +52,7 @@ public class PerformanceAnalyzeJob implements SimpleJob {
                     jobThreadPool.execute(() -> {
                         WebPluginUtils.setTraceTenantContext(
                             new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                ext.getTenantCode()));
+                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
                         threadAnalyService.clearData(second);
                         WebPluginUtils.removeTraceContext();
                     }));

@@ -220,7 +220,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
         SceneActionResp startResult;
         try {
-            startResult = cloudTaskApi.start(BeanUtil.copyProperties(paramNew, SceneTaskStartReq.class));
+            startResult = cloudTaskApi.start(CopyUtils.copyFields(paramNew, SceneTaskStartReq.class));
         } catch (Exception e) {
             log.error("takin-cloud启动压测场景返回错误，id={}", param.getSceneId(), e);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, e);

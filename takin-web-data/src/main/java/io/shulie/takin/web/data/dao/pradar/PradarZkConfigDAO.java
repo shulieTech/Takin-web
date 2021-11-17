@@ -8,9 +8,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.shulie.takin.web.data.param.pradarconfig.PagePradarZkConfigParam;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
-import io.shulie.takin.web.data.param.pradarconfig.PradarConfigQueryParam;
-import io.shulie.takin.web.data.result.pradarzkconfig.PradarZKConfigResult;
-import org.apache.ibatis.annotations.Param;
+import io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult;
 
 /**
  * @author junshao
@@ -18,18 +16,16 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface PradarZkConfigDAO {
 
-    /**
-     * 分页查询zk配置列表
-     *
-     * @param queryParam
-     * @return
-     */
-    @InterceptorIgnore(tenantLine = "true")
-    PagingList<PradarZKConfigResult> selectPage(@Param("queryParam") PradarConfigQueryParam queryParam);
-
     int insert(PradarConfigCreateParam createParam);
 
-    int update(PradarConfigCreateParam updateParam);
+    /**
+     * 只更新系统的配置
+     *
+     * @param updateParam 更新所需数据
+     * @return 是否更新成功
+     */
+    @InterceptorIgnore(tenantLine = "true")
+    boolean updateOnlySystem(PradarConfigCreateParam updateParam);
 
     int delete(PradarConfigCreateParam deleteParam);
 
@@ -39,9 +35,16 @@ public interface PradarZkConfigDAO {
      * @return pradarConfig 系统配置的列表
      */
     @InterceptorIgnore(tenantLine = "true")
-    List<PradarZKConfigResult> listSystemConfig();
+    List<PradarZkConfigResult> listSystemConfig();
 
-    PradarZKConfigResult selectById(Long id);
+    /**
+     * 通过id获得详情
+     *
+     * @param id 主键id
+     * @return 配置详情
+     */
+    @InterceptorIgnore(tenantLine = "true")
+    PradarZkConfigResult getById(Long id);
 
     /**
      * 通过 zk path 获得配置
@@ -50,7 +53,7 @@ public interface PradarZkConfigDAO {
      * @param zkPath zk路径
      * @return 配置
      */
-    PradarZKConfigResult getByZkPath(String zkPath);
+    PradarZkConfigResult getByZkPath(String zkPath);
 
     /**
      * pradarZkConfig 分页列表
@@ -61,6 +64,17 @@ public interface PradarZkConfigDAO {
      * @return 分页列表
      */
     @InterceptorIgnore(tenantLine = "true")
-    IPage<PradarZKConfigResult> page(PagePradarZkConfigParam param, PageBaseDTO pageBaseDTO);
+    IPage<PradarZkConfigResult> page(PagePradarZkConfigParam param, PageBaseDTO pageBaseDTO);
+
+    /**
+     * pradarZkConfig 分页列表
+     *
+     * @param sysDefaultTenantId 系统租户id
+     * @param sysDefaultEnvCode  系统环境
+     * @param pageBaseDTO        分页参数
+     * @return pradarZkConfig 分页列表
+     */
+    @InterceptorIgnore(tenantLine = "true")
+    PagingList<PradarZkConfigResult> page(Long sysDefaultTenantId, String sysDefaultEnvCode, PageBaseDTO pageBaseDTO);
 
 }

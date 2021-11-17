@@ -1,42 +1,26 @@
 package io.shulie.takin.web.biz.service.pradar.impl;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
-import javax.annotation.PostConstruct;
-
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import cn.hutool.core.bean.BeanUtil;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
 import io.shulie.takin.web.biz.service.pradar.PradarConfigService;
 import io.shulie.takin.web.biz.utils.ZkHelper;
-import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.pradar.PradarZkConfigDAO;
-import io.shulie.takin.web.data.mapper.mysql.PradarZkConfigMapper;
-import io.shulie.takin.web.data.model.mysql.PradarZkConfigEntity;
-import io.shulie.takin.web.data.param.pradarconfig.PagePradarZkConfigParam;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
-import io.shulie.takin.web.data.result.pradarzkconfig.PradarZKConfigResult;
+import io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.CreateMode;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 @Slf4j
 @Component
@@ -46,15 +30,12 @@ public class PradarConfigServiceImpl implements PradarConfigService {
     private PradarZkConfigDAO pradarZkConfigDAO;
 
     @Autowired
-    private PradarZkConfigMapper pradarZkConfigMapper;
-
-    @Autowired
     private ZkHelper zkHelper;
 
     @Override
     public void initZooKeeperData() {
         // 放入zk，只放入系统的
-        for (PradarZKConfigResult config : pradarZkConfigDAO.listSystemConfig()) {
+        for (PradarZkConfigResult config : pradarZkConfigDAO.listSystemConfig()) {
             if (!zkHelper.isNodeExists(config.getZkPath())) {
                 zkHelper.addPersistentNode(config.getZkPath(), config.getValue());
             }
@@ -62,48 +43,32 @@ public class PradarConfigServiceImpl implements PradarConfigService {
     }
 
     @Override
-    public PagingList<PradarZKConfigResponse> list(PradarZKConfigQueryRequest queryRequest) {
-        PagePradarZkConfigParam param = new PagePradarZkConfigParam();
-        param.setTenantIds(Arrays.asList(WebPluginUtils.traceTenantId(), WebPluginUtils.SYS_DEFAULT_TENANT_ID));
-        param.setEnvCodeList(Arrays.asList(WebPluginUtils.traceEnvCode(), WebPluginUtils.SYS_DEFAULT_ENV_CODE));
-        IPage<PradarZKConfigResult> page = pradarZkConfigDAO.page(param, queryRequest);
+    public PagingList<PradarZKConfigResponse> page(PradarZKConfigQueryRequest queryRequest) {
+        PagingList<PradarZkConfigResult> page = pradarZkConfigDAO.page(WebPluginUtils.SYS_DEFAULT_TENANT_ID,
+            WebPluginUtils.SYS_DEFAULT_ENV_CODE, queryRequest);
         if (page.getTotal() == 0) {
             return PagingList.empty();
         }
-
-        List<PradarZKConfigResult> records = page.getRecords();
-        List<PradarZKConfigResponse> responseList = records.stream().map(record -> {
-            PradarZKConfigResponse response = new PradarZKConfigResponse();
-            response.setId(record.getId());
-            response.setZkPath(record.getZkPath());
-            response.setRemark(record.getRemark());
-            response.setValue(record.getValue());
-            response.setModifyTime(DateFormatUtils.format(record.getModifyTime(), "yyyy-MM-dd HH:mm:ss"));
-            return response;
-        }).collect(Collectors.toList());
-        return PagingList.of(responseList, page.getTotal());
+        return PagingList.of(CommonUtil.list2list(page.getList(), PradarZKConfigResponse.class), page.getTotal());
     }
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public int updateConfig(PradarZKConfigUpdateRequest updateRequest) {
-        //try {
-        //    PradarConfigCreateParam updateParam = new PradarConfigCreateParam();
-        //    BeanUtils.copyProperties(updateRequest, updateParam);
-        //    int rows = pradarZkConfigDAO.update(updateParam);
-        //    PradarZKConfigResult result = pradarZkConfigDAO.selectById(updateParam.getId());
-        //    if (result != null) {
-        //        updateNode(result.getZkPath(), result.getValue());
-        //    }
-        //    return rows;
-        //} catch (TakinWebException e) {
-        //    throw new TakinWebException(e.getEx(), "更新zk配置异常");
-        //}
+    public void updateConfig(PradarZkConfigUpdateRequest updateRequest) {
+        PradarConfigCreateParam updateParam = BeanUtil.copyProperties(updateRequest, PradarConfigCreateParam.class);
+        PradarZkConfigResult config = pradarZkConfigDAO.getById(updateRequest.getId());
+        Assert.notNull(config, "配置不存在！");
+
+        // 更新db， 更新zk， 只更新system的
+        if (pradarZkConfigDAO.updateOnlySystem(updateParam)
+            && Objects.equals(WebPluginUtils.SYS_DEFAULT_TENANT_ID, config.getTenantId())) {
+            zkHelper.updateNode(config.getZkPath(), updateRequest.getValue());
+        }
     }
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public int addConfig(PradarZKConfigCreateRequest createRequest) {
+    public void addConfig(PradarZKConfigCreateRequest createRequest) {
         //try {
         //    if (StringUtils.isBlank(createRequest.getZkPath()) ||
         //        StringUtils.isBlank(createRequest.getType()) ||
@@ -134,8 +99,7 @@ public class PradarConfigServiceImpl implements PradarConfigService {
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public int deleteConfig(PradarZKConfigDeleteRequest deleteRequest) {
-
+    public void deleteConfig(PradarZKConfigDeleteRequest deleteRequest) {
         //try {
         //    PradarConfigCreateParam deleteParam = new PradarConfigCreateParam();
         //    BeanUtils.copyProperties(deleteRequest, deleteParam);

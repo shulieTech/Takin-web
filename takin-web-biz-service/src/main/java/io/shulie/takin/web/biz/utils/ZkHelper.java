@@ -110,4 +110,19 @@ public class ZkHelper {
         }
     }
 
+    /**
+     * 更新节点的值
+     *
+     * @param path 路径
+     * @param value 值
+     */
+    public void updateNode(String path, String value) {
+        try {
+            client.setData().forPath(path, value.getBytes());
+        } catch (Exception e) {
+            log.error("创建zk数据节点失败;path={},data={}", path, value, e);
+            throw new RuntimeException(String.format("更新节点失败, 错误信息: %s", e.getMessage()));
+        }
+    }
+
 }

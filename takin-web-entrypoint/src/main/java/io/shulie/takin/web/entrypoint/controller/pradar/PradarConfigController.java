@@ -12,7 +12,7 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.swagger.annotations.Api;
@@ -49,7 +49,7 @@ public class PradarConfigController {
     )
     public PagingList<PradarZKConfigResponse> pageList(PradarZKConfigQueryRequest queryRequest) {
         PageUtils.clearPageHelper();
-        return pradarConfigService.list(queryRequest);
+        return pradarConfigService.page(queryRequest);
     }
 
     @RequestMapping(value = "/update", method = {RequestMethod.PUT, RequestMethod.POST})
@@ -63,7 +63,7 @@ public class PradarConfigController {
         moduleCode = BizOpConstants.ModuleCode.PRADAR_CONFIG,
         needAuth = ActionTypeEnum.UPDATE
     )
-    public void update(@Validated @RequestBody PradarZKConfigUpdateRequest request) {
+    public void update(@Validated @RequestBody PradarZkConfigUpdateRequest request) {
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
         pradarConfigService.updateConfig(request);
     }

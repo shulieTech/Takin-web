@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.shulie.takin.web.data.model.mysql.PradarZkConfigEntity;
 import io.shulie.takin.web.data.param.pradarconfig.PagePradarZkConfigParam;
-import io.shulie.takin.web.data.result.pradarzkconfig.PradarZKConfigResult;
+import io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult;
 import org.apache.ibatis.annotations.Param;
 
 public interface PradarZkConfigMapper extends BaseMapper<PradarZkConfigEntity> {
@@ -21,7 +21,7 @@ public interface PradarZkConfigMapper extends BaseMapper<PradarZkConfigEntity> {
      * @return 配置
      */
     @InterceptorIgnore(tenantLine = "true")
-    List<PradarZKConfigResult> selectListByZkPath(@Param("zkPath") String zkPath, @Param("tenantId") Long tenantId,
+    List<PradarZkConfigResult> selectListByZkPath(@Param("zkPath") String zkPath, @Param("tenantId") Long tenantId,
         @Param("envCode") String  envCode);
 
     /**
@@ -32,7 +32,7 @@ public interface PradarZkConfigMapper extends BaseMapper<PradarZkConfigEntity> {
      * @param param 筛选条件
      * @return 分页列表
      */
-    IPage<PradarZKConfigResult> selectPageByTenantIdAndEnvCode(@Param("page") IPage<PradarZkConfigEntity> page,
+    IPage<PradarZkConfigResult> selectPageByTenantIdAndEnvCode(@Param("page") IPage<PradarZkConfigEntity> page,
         @Param("param") PagePradarZkConfigParam param);
 
 }

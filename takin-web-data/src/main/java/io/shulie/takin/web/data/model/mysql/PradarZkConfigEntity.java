@@ -29,13 +29,13 @@ public class PradarZkConfigEntity extends TenantBaseEntity {
     /**
      * 类型
      */
-    @TableField(value = "type")
+    @TableField("`type`")
     private String type;
 
     /**
      * 数值
      */
-    @TableField(value = "value")
+    @TableField("`value`")
     private String value;
 
     /**

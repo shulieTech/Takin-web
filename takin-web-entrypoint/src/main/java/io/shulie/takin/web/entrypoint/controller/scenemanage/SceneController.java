@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Valid;
 import javax.annotation.Resource;
@@ -38,6 +39,7 @@ import io.shulie.takin.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
+import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
@@ -246,7 +248,7 @@ public class SceneController {
      * @return 漏数校验脚本
      */
     @GetMapping("business_activity_flow/leak_sql")
-    @ApiOperation("获取业务流程详情 - 压测场景用")
+    @ApiOperation("获取业务流程下的漏数脚本 - 压测场景用")
     public ResponseResult<List<LeakSqlBatchRefsResponse>> businessActivityFlowLeakSql(
         @RequestParam(name = "id", required = false) Long id) {
         // 1. 获取业务流程关联的业务活动
@@ -263,6 +265,26 @@ public class SceneController {
             }});
         // 5. 返回数据
         return ResponseResult.success(batchLeakCheckConfig);
+    }
+
+    /**
+     * 获取建议Pod数
+     *
+     * @param request 请求体
+     * @return 最大/最小Pod数
+     */
+    @GetMapping("pod_number")
+    @ApiOperation("获取建议Pod数 - 压测场景用")
+    public ResponseResult<StrategyResp> getPodNumber(@RequestBody Map<String, Map<String, String>> request) {
+        AtomicInteger tpsNum = new AtomicInteger(0);
+        AtomicInteger concurrenceNum = new AtomicInteger(0);
+        request.forEach((k, v) -> {
+            // 并发模式
+            if ("0".equals(v.get("type"))) {concurrenceNum.updateAndGet(t -> t + Integer.parseInt(v.get("threadNum")));}
+            // TPS模式
+            if ("1".equals(v.get("type"))) {tpsNum.updateAndGet(t -> t + Integer.parseInt(v.get("tpsSum")));}
+        });
+        return sceneManageService.getIpNum(concurrenceNum.get(), tpsNum.get());
     }
 
     /**

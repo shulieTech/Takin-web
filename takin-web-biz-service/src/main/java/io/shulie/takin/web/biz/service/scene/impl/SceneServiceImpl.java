@@ -554,8 +554,8 @@ public class SceneServiceImpl implements SceneService {
         List<BusinessFlowListResponse> responses = LinkManageConvert.INSTANCE.ofSceneResultList(pageList.getList());
         List<Long> userIds = CommonUtil.getList(responses, BusinessFlowListResponse::getUserId);
         //用户信息Map key:userId  value:user对象
-        Map<Long, UserExt> userMap = CollectionUtils.isNotEmpty(userIds) ? WebPluginUtils.getUserMapByIds(userIds) : null;
-        if (null != userMap) {
+        Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
+        if (CollectionUtils.isNotEmpty(responses)) {
             responses.forEach(r -> {
                 UserExt user = userMap.get(r.getUserId());
                 r.setUserName(user.getName());

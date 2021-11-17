@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -94,7 +95,13 @@ public class WebPluginUtils {
      */
     public static Map<Long, UserExt> getUserMapByIds(List<Long> userIds) {
         if (CollectionUtils.isNotEmpty(userIds) && Objects.nonNull(userApi)) {
-            return userApi.getUserMapByIds(userIds);
+            userIds = userIds.stream().filter(Objects::nonNull)
+                    .distinct()
+                    .collect(Collectors.toList());
+            Map<Long, UserExt> userMap = userApi.getUserMapByIds(userIds);
+            if (null != userMap) {
+                return userMap;
+            }
         }
         return Maps.newHashMap();
     }

@@ -175,7 +175,7 @@ public class SceneController {
                 .map(t -> BeanUtil.copyProperties(t, SceneRequest.MonitoringGoal.class))
                 .peek(t -> t.setType(0)).collect(Collectors.toList());
             // 2. 警告的监控目标
-            List<SceneRequest.MonitoringGoal> warnMonitoringGoal = request.getDestroyMonitoringGoal().stream()
+            List<SceneRequest.MonitoringGoal> warnMonitoringGoal = request.getWarnMonitoringGoal().stream()
                 .map(t -> BeanUtil.copyProperties(t, SceneRequest.MonitoringGoal.class))
                 .peek(t -> t.setType(1)).collect(Collectors.toList());
             // 3. 组合警告目标

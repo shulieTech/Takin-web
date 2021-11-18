@@ -15,21 +15,22 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AgentCommandEnum {
-    HEARTBEAT("100000", "心跳"),
-    REPORT_AGENT_UPLOAD_PATH_STATUS("100100", "检测用户配置的存放插件地址是否有效"),
-    DOWNLOAD_SIMULATOR_ZIP("110000", "下载simulator包"),
+    HEARTBEAT(100000L, "心跳"),
+    //DOWNLOAD_SIMULATOR_ZIP("110000", "下载simulator包"),
+    REPORT_AGENT_UPLOAD_PATH_STATUS(100100L, "检测用户配置的存放插件地址是否有效"),
+    REPORT_UPGRADE_RESULT(100110L,"上报升级状态"),
     ;
 
-    private String command;
+    private Long command;
     private String desc;
 
-    private static final Map<String, AgentCommandEnum> COMMAND_ENUM_MAP = new HashMap<>();
+    private static final Map<Long, AgentCommandEnum> COMMAND_ENUM_MAP = new HashMap<>();
 
     static {
         Arrays.stream(AgentCommandEnum.values()).forEach(item -> COMMAND_ENUM_MAP.put(item.getCommand(), item));
     }
 
-    public static AgentCommandEnum getEnum(String command) {
+    public static AgentCommandEnum getEnum(Long command) {
         return COMMAND_ENUM_MAP.get(command);
     }
 }

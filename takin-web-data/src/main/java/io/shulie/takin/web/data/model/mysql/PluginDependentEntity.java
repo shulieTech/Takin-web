@@ -31,14 +31,24 @@ public class PluginDependentEntity extends NewBaseEntity implements Serializable
     private String pluginVersion;
 
     /**
-     * 插件名称
+     * 插件版本对应数值
+     */
+    private Long pluginVersionNum;
+
+    /**
+     * 依赖插件名称
      */
     private String dependentPluginName;
 
     /**
-     * 插件版本
+     * 依赖插件版本
      */
     private String dependentPluginVersion;
+
+    /**
+     * 依赖插件版本对应的数值
+     */
+    private Long dependentPluginVersionNum;
 
     /**
      * 是否必须 0:必须 1:非必须

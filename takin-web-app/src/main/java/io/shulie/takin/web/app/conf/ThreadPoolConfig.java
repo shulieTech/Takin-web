@@ -167,7 +167,7 @@ public class ThreadPoolConfig {
     }
 
     /**
-     * 定义单线程线程池
+     * 中间件文件解析线程池
      *
      * @return
      */
@@ -175,6 +175,19 @@ public class ThreadPoolConfig {
     public ThreadPoolExecutor middlewareResolverThreadPool() {
         final int coreSize = Runtime.getRuntime().availableProcessors();
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("middleware-resolver-%d").build();
+        return new ThreadPoolExecutor(coreSize, coreSize * 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100),
+            nameThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * agent心跳命令处理线程池
+     *
+     * @return
+     */
+    @Bean(name = "agentHeartbeatThreadPool")
+    public ThreadPoolExecutor agentHeartbeatThreadPool() {
+        final int coreSize = Runtime.getRuntime().availableProcessors();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("agent-heartbeat-%d").build();
         return new ThreadPoolExecutor(coreSize, coreSize * 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100),
             nameThreadFactory, new ThreadPoolExecutor.AbortPolicy());
     }

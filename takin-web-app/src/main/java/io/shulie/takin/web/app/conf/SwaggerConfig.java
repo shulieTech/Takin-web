@@ -413,7 +413,7 @@ public class SwaggerConfig {
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
             .paths(getRegex(
                 "/api/(agentReport|applicationPluginUpgrade|applicationPluginUpgradeRef|applicationTagRef"
-                    + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/command).*"))
+                    + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/heartbeat).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

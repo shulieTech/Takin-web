@@ -11,10 +11,11 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AgentStatusEnum {
-    INSTALLED(0, "安装成功"),
-    INSTALL_FAILED(4, "安装失败"),
+    INSTALLED(0, "INSTALLED", "安装成功"),
+    INSTALL_FAILED(4, "INSTALL_FAILED", "安装失败"),
     ;
 
     private Integer val;
+    private String code;
     private String desc;
 }

@@ -43,6 +43,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 
 /**
  * The type Swagger config.
+ *
  * @author shulie
  */
 @Configuration
@@ -55,12 +56,11 @@ public class SwaggerConfig {
     @Value("${server.servlet.context-path:}")
     private String servletContextPath;
 
-
     private ObjectMapper objectMapper;
-
 
     /**
      * v4.* 版本的都放在这里
+     *
      * @return 文档
      */
     @Bean
@@ -69,13 +69,14 @@ public class SwaggerConfig {
             .pathProvider(this.pathProvider())
             .groupName("压测平台-V4版本")
             .select().apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex("/api/(scriptDebug|scriptManage|v2/file|config|probe|v2/application/node|agent/application/node/probe|application/middleware|login).*|/agent.*")).build()
+            .paths(getRegex(
+                "/api/(scriptDebug|scriptManage|v2/file|config|probe|v2/application/node|agent/application/node/probe"
+                    + "|application/middleware|login).*|/agent.*"))
+            .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
             .apiInfo(this.apiInfo()).enable(true);
     }
-
-    
 
     @Bean
     public Docket apiV41() {
@@ -170,9 +171,6 @@ public class SwaggerConfig {
             ;
     }
 
-
-
-
     @Bean
     public Docket apiV461() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -188,7 +186,6 @@ public class SwaggerConfig {
             ;
     }
 
-
     @Bean
     public Docket apiV470() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -203,6 +200,7 @@ public class SwaggerConfig {
             .apiInfo(apiInfo())
             ;
     }
+
     @Bean
     public Docket apiV471() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -317,8 +315,8 @@ public class SwaggerConfig {
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
             .paths(getRegex("/api/(application/center/app/config|datasource|fastdebug/debug/callStack/node/locate|"
-                        + "fastdebug/debug/callStack/exception|link/ds/manage|application/plugins/config|opsScriptManage|sys|"
-                        + "pradar/switch|application/center/app).*"))
+                + "fastdebug/debug/callStack/exception|link/ds/manage|application/plugins/config|opsScriptManage|sys|"
+                + "pradar/switch|application/center/app).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
@@ -334,9 +332,9 @@ public class SwaggerConfig {
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
             .paths(getRegex("/api/patrol/manager(/board/create|/board/get|/board/delete|/board/update|"
-                        + "/scene/create|/scene/get|/scene/detail|/scene/delete|/scene/update|/scene/exception|/scene/start|"
-                        + "/init|/exception|/exception_config|/exception_notice|/assert/createOrUpdate|/assert/get|/node/get"
-                        + "|/node/add|/node/delete|/error/get).*"))
+                + "/scene/create|/scene/get|/scene/detail|/scene/delete|/scene/update|/scene/exception|/scene/start|"
+                + "/init|/exception|/exception_config|/exception_notice|/assert/createOrUpdate|/assert/get|/node/get"
+                + "|/node/add|/node/delete|/error/get).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
@@ -361,6 +359,7 @@ public class SwaggerConfig {
 
     /**
      * 两周迭代放在这里
+     *
      * @return
      */
     @Bean
@@ -370,7 +369,9 @@ public class SwaggerConfig {
             .groupName("6.4版本")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex("/api/(application/remote/call|/application/remote/call/list|activities/virtual|activities|activities/activity|link/scene/manage).*"))
+            .paths(getRegex(
+                "/api/(application/remote/call|/application/remote/call/list|activities/virtual|activities|activities"
+                    + "/activity|link/scene/manage).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
@@ -380,21 +381,44 @@ public class SwaggerConfig {
 
     /**
      * 快速接入一期测试用 nf
+     *
      * @return
      */
     @Bean
     public Docket api_webTest_nf() {
         return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("快速接入一期测试用")
-                .select()
-                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-                .paths(PathSelectors
-                        .regex("/api/(v2/application/remote/call|v2/consumers|v2/link/ds|/application/remote/call/list).*"))
-                .build()
-                .directModelSubstitute(LocalDate.class, String.class)
-                .useDefaultResponseMessages(false)
-                .apiInfo(apiInfo())
-                ;
+            .groupName("快速接入一期测试用")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(PathSelectors
+                .regex("/api/(v2/application/remote/call|v2/consumers|v2/link/ds|/application/remote/call/list).*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo())
+            ;
+    }
+
+    /**
+     * 探针在线升级 nf
+     *
+     * @return
+     */
+    @Bean
+    public Docket agent_upgrade_online() {
+        return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
+            .groupName("探针在线升级")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(getRegex(
+                "/api/(agentReport|applicationPluginUpgrade|applicationPluginUpgradeRef|applicationTagRef"
+                    + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/heartbeat).*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo())
+            ;
     }
 
     /**
@@ -410,6 +434,7 @@ public class SwaggerConfig {
 
     /**
      * 重写 PathProvider ,解决 context-path 重复问题
+     *
      * @return
      */
     private PathProvider pathProvider() {
@@ -420,6 +445,7 @@ public class SwaggerConfig {
                 UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromPath("/");
                 return Paths.removeAdjacentForwardSlashes(uriComponentsBuilder.path(operationPath).build().toString());
             }
+
             @Override
             public String getResourceListingPath(String groupName, String apiDeclaration) {
                 apiDeclaration = super.getResourceListingPath(groupName, apiDeclaration);
@@ -429,7 +455,7 @@ public class SwaggerConfig {
     }
 
     private Predicate<String> getRegex(String regex) {
-        return PathSelectors.regex(servletContextPath +  regex);
+        return PathSelectors.regex(servletContextPath + regex);
     }
 
 }

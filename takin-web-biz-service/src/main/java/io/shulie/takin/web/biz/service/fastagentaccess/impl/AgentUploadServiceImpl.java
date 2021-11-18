@@ -19,7 +19,7 @@ import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentVersionListRes
 import io.shulie.takin.web.biz.service.ApiService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentUploadService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
+import io.shulie.takin.web.common.util.AppCommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

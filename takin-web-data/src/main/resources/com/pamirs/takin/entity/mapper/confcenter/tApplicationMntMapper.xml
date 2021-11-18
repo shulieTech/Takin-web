@@ -545,4 +545,32 @@
             </if>
         </where>
     </select>
+
+    <select id="getListByAppIdAndNotEqualsNodeNum" parameterType="Map"
+            resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
+        select *
+        from t_application_mnt
+        where 1=1
+        <if test="map.appId != null">
+            and APPLICATION_ID = #{map.appId}
+        </if>
+        <if test="map.num !=null" >
+            and NODE_NUM != #{map.num}
+        </if>
+
+    </select>
+
+    <select id="getListByAppIdAndEqualsNodeNum" parameterType="Map"
+            resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
+        select *
+        from t_application_mnt
+        where 1=1
+        <if test="map.appId != null">
+            and APPLICATION_ID = #{map.appId}
+        </if>
+        <if test="map.num !=null" >
+            and NODE_NUM = #{map.num}
+        </if>
+
+    </select>
 </mapper>

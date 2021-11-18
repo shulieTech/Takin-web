@@ -137,8 +137,13 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 影子配置
      */
     SHADOW_CONFIG_CREATE_ERROR("1400-"+ErrorConstant.VALIDATE_ERROR,"新增影子配置异常"),
-    ;
 
+
+    /**
+     *  agent指令操作
+     */
+    AGENT_COMMAND_VALID_ERROR("1500-"+ErrorConstant.VALIDATE_ERROR,"Agent 指令操作 数据校验异常"),
+    ;
     private final String errorCode;
 
     private final String defaultValue;

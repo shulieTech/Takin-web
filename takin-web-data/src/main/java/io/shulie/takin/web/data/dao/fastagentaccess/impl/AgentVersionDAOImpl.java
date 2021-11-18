@@ -2,6 +2,8 @@ package io.shulie.takin.web.data.dao.fastagentaccess.impl;
 
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -11,12 +13,12 @@ import io.shulie.takin.web.data.mapper.mysql.AgentVersionMapper;
 import io.shulie.takin.web.data.model.mysql.AgentVersionEntity;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentVersionQueryParam;
 import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
+import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentVersionParam;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionListResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,7 +29,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersionEntity> {
 
-    @Autowired
+    @Resource
     private AgentVersionMapper agentVersionMapper;
 
     @Override
@@ -74,6 +76,13 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
         AgentVersionEntity entity = new AgentVersionEntity();
         BeanUtils.copyProperties(createParam, entity);
         return agentVersionMapper.insert(entity);
+    }
+
+    @Override
+    public Boolean update(UpdateAgentVersionParam updateParam) {
+        AgentVersionEntity entity = new AgentVersionEntity();
+        BeanUtils.copyProperties(updateParam, entity);
+        return agentVersionMapper.updateById(entity) > 0;
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 /**
@@ -13,7 +14,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_shadow_table_config")
-public class ShadowTableConfigEntity {
+public class ShadowTableConfigEntity extends TenantBaseEntity {
     /**
      * 影子表配置id
      */

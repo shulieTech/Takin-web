@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 /**
@@ -11,7 +12,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_takin_trace_entry")
-public class TakinTraceEntryEntity {
+public class TakinTraceEntryEntity extends TenantBaseEntity {
     /**
      * id
      */

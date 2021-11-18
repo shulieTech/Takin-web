@@ -279,7 +279,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ResponseResult<ReportDetailResp> tempReportDetail(Long sceneId) {
+    public ResponseResult<ReportDetailTempOutput> tempReportDetail(Long sceneId) {
         ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
         req.setSceneId(sceneId);
         ResponseResult<ReportDetailResp> result = reportApi.tempReportDetail(req);
@@ -301,8 +301,7 @@ public class ReportServiceImpl implements ReportService {
         } else {
             output.setCanStartStop(Boolean.TRUE);
         }
-        fillExecuteMan(output);
-        return ResponseResult.success(resp);
+        return ResponseResult.success(output);
 
     }
 

@@ -13,6 +13,7 @@ import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.constant.APIUrls;
@@ -64,7 +65,7 @@ public class ReportController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
         needAuth = ActionTypeEnum.START_STOP
     )
-    public ResponseResult<ReportDetailResp> tempReportDetail(Long sceneId) {
+    public ResponseResult<ReportDetailTempOutput> tempReportDetail(Long sceneId) {
         return reportService.tempReportDetail(sceneId);
     }
 

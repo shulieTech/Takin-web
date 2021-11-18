@@ -9,6 +9,7 @@ import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
 import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.common.domain.WebResponse;
 
@@ -31,7 +32,7 @@ public interface ReportService {
 
     //WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery);
 
-    ResponseResult<ReportDetailResp> tempReportDetail(Long sceneId);
+    ResponseResult<ReportDetailTempOutput> tempReportDetail(Long sceneId);
 
 
     //WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,ReportTraceQueryDTO queryDTO);

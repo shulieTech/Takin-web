@@ -72,18 +72,21 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
         if (null != query.getSceneId()) {
             wrapper.eq(SceneLinkRelateEntity::getSceneId, query.getSceneId());
         }
+        if (StringUtils.isNotBlank(query.getScriptIdentification())){
+            wrapper.eq(SceneLinkRelateEntity::getScriptIdentification, query.getScriptIdentification());
+        }
         wrapper.orderByDesc(SceneLinkRelateEntity::getId);
         List<SceneLinkRelateEntity> entities = this.list(wrapper);
         return toResult(entities);
     }
 
     @Override
-    public List<SceneLinkRelateResult> getByEntrance(String entrance) {
-        if (StringUtils.isBlank(entrance)) {
+    public List<SceneLinkRelateResult> getByIdentification(String scriptIdentification) {
+        if (StringUtils.isBlank(scriptIdentification)) {
             return null;
         }
         SceneLinkRelateQuery query = new SceneLinkRelateQuery();
-        query.setEntrance(entrance);
+        query.setScriptIdentification(scriptIdentification);
         return query(query);
     }
 

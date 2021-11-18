@@ -12,7 +12,6 @@ import io.shulie.takin.cloud.open.request.scene.manage.SynchronizeRequest;
 import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
-import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
@@ -36,7 +35,6 @@ import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 
 import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.biz.utils.DataUtil;
 import io.shulie.takin.web.diff.api.DiffFileApi;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -138,7 +136,7 @@ public class SceneServiceImpl implements SceneService {
      * 节点和业务活动匹配
      */
     public SceneLinkRelateResult nodeLinkToBusinessActivity(ScriptNode node, Long sceneId) {
-        List<SceneLinkRelateResult> links = sceneLinkRelateDao.getByEntrance(node.getIdentification());
+        List<SceneLinkRelateResult> links = sceneLinkRelateDao.getByIdentification(node.getIdentification());
         SceneLinkRelateResult link = null;
         ActivityListResult activity = null;
         boolean isManyMatch = false;

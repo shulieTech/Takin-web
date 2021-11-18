@@ -28,9 +28,9 @@ public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
     List<SceneLinkRelateResult> query(SceneLinkRelateQuery query);
 
     /**
-     * 通过entrance查找匹配的记录
+     * 通过scriptIdentification查找匹配的记录
      */
-    List<SceneLinkRelateResult> getByEntrance(String entrance);
+    List<SceneLinkRelateResult> getByIdentification(String scriptIdentification);
 
 
     void deleteByIds(List<Long> oldIds);

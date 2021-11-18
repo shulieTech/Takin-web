@@ -505,6 +505,8 @@ public class LinkTopologyService extends CommonService {
             .inMethod(method)
             .startTime(startTime)
             .endTime(endTime)
+            .envCode(WebPluginUtils.traceEnvCode())
+            .tenantId(WebPluginUtils.traceTenantId())
             .build();
 
         String response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
@@ -522,6 +524,8 @@ public class LinkTopologyService extends CommonService {
                 .clusterTest(request.getFlowTypeEnum().getType())
                 .startTime(startTime)
                 .endTime(endTime)
+                .envCode(WebPluginUtils.traceEnvCode())
+                .tenantId(WebPluginUtils.traceTenantId())
                 .build();
 
             JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);

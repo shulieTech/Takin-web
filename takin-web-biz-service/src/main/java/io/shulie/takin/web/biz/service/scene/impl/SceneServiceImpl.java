@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.shulie.takin.cloud.common.utils.CommonUtil;
 import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
 import io.shulie.takin.cloud.open.request.scene.manage.SynchronizeRequest;
 import io.shulie.takin.ext.content.enums.NodeTypeEnum;
@@ -18,6 +19,7 @@ import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
+import io.shulie.takin.web.ext.entity.UserExt;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -550,6 +552,15 @@ public class SceneServiceImpl implements SceneService {
         queryParam.setPageSize(queryRequest.getPageSize());
         PagingList<SceneResult> pageList = sceneDao.selectPageList(queryParam);
         List<BusinessFlowListResponse> responses = LinkManageConvert.INSTANCE.ofSceneResultList(pageList.getList());
+        List<Long> userIds = CommonUtil.getList(responses, BusinessFlowListResponse::getUserId);
+        //用户信息Map key:userId  value:user对象
+        Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
+        if (CollectionUtils.isNotEmpty(responses)) {
+            responses.forEach(r -> {
+                UserExt user = userMap.get(r.getUserId());
+                r.setUserName(user.getName());
+            });
+        }
         return PagingList.of(responses, pageList.getTotal());
     }
 
@@ -615,6 +626,7 @@ public class SceneServiceImpl implements SceneService {
 
         }
 
+
         //更新业务流程
         sceneUpdateParam.setId(businessFlowUpdateRequest.getId());
         sceneUpdateParam.setSceneLevel(businessFlowUpdateRequest.getSceneLevel());
@@ -673,6 +685,8 @@ public class SceneServiceImpl implements SceneService {
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
         if (CollectionUtils.isNotEmpty(data)) {
             sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
+            List<ScriptNode> samplerNodes = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);
+            sceneUpdateParam.setTotalNodeNum(null == samplerNodes ? 0 : samplerNodes.size());
         }
         //更新业务流程
         sceneUpdateParam.setScriptDeployId(scriptDeployId);

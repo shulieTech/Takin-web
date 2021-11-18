@@ -21,23 +21,17 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDT
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
-import com.pamirs.takin.entity.domain.entity.scenemanage.SceneBusinessActivityRef;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import io.shulie.amdb.common.enums.RpcType;
-import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.open.req.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneScriptRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.ScriptAssetBalanceReq;
 import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskCheckReq;
 import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskStartReq;
-import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStartResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStatusResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.ext.content.script.ScriptNode;
-import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
@@ -70,6 +64,7 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
+import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
 import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.biz.utils.exception.ScriptDebugExceptionUtil;
@@ -132,6 +127,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      */
     @Value("${takin-web.script-debug.rpcType:KAFKA}")
     private String supportRpcType;
+    @Value("${file.upload.script.path:/nfs/takin/script/}")
+    private String scriptFilePath;
 
     @Autowired
     private LeakSqlService leakSqlService;
@@ -351,7 +348,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }).collect(Collectors.toList());
 
         sceneData.setBusinessActivityConfig(businessActivityConfigDTOList);
-        sceneData.setIsAbsoluteScriptPath(true);
+        sceneData.setIsAbsoluteScriptPath(FileUtils.isAbsoluteUploadPath(sceneData.getUploadFile(), scriptFilePath));
         String result = sceneTaskService.checkScriptCorrelation(sceneData);
         return Arrays.asList(StrUtil.split(result, Constants.SPLIT));
     }

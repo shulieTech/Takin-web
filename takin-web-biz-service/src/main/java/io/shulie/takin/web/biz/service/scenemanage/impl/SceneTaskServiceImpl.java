@@ -62,6 +62,7 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
+import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.ErrorInfo;
@@ -76,7 +77,6 @@ import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -102,6 +102,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     @Value("${takin.cloud.url}")
     private String cloudUrl;
+    @Value("${file.upload.script.path:/nfs/takin/script/}")
+    private String scriptFilePath;
 
     @Autowired
     private LeakSqlService leakSqlService;
@@ -155,6 +157,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     @Autowired
     private BaseConfigService baseConfigService;
 
+
     /**
      * 查询场景业务活动信息，校验业务活动
      *
@@ -180,8 +183,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         }
         String jsonString = JsonHelper.bean2Json(resp.getData());
         SceneManageWrapperDTO sceneData = JsonHelper.json2Bean(jsonString, SceneManageWrapperDTO.class);
-        //脚本路径是否是绝对值，不知道是谁加的这个
-        sceneData.setIsAbsoluteScriptPath(true);
+        sceneData.setIsAbsoluteScriptPath(FileUtils.isAbsoluteUploadPath(sceneData.getUploadFile(), scriptFilePath));
 
         // 校验该场景是否正在压测中
         if (redisClientUtils.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))) {

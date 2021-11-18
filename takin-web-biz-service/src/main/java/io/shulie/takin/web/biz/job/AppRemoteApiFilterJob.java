@@ -78,6 +78,9 @@ public class AppRemoteApiFilterJob implements SimpleJob {
 
         List<AppRemoteCallResult> save = Lists.newArrayList();
         filterMap.forEach((k, v) -> {
+            if (CollectionUtils.isEmpty(v)) {
+                return;
+            }
             //已经合并过的剔除
             List<AppRemoteCallResult> filterList = v.stream()
                 .filter(appRemoteCallResult -> appRemoteCallResult.getInterfaceName().equals(k))

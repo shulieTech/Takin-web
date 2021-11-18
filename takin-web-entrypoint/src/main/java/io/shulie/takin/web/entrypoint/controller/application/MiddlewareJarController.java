@@ -169,7 +169,7 @@ public class MiddlewareJarController {
 
         if (!collect.isEmpty()) {
             boolean tempCanEdit;
-            if (WebPluginUtils.validateSuperAdmin()) {
+            if (WebPluginUtils.validateAdmin()) {
                 tempCanEdit = true;
             } else {
                 tempCanEdit = WebPluginUtils.traceUser() == null || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.traceUser().getId());

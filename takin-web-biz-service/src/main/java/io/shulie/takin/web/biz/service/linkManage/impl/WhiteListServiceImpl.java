@@ -506,7 +506,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         Map<String, WhiteListVO> totalResult = Maps.newHashMap();
         // 如果是超级管理员
         Long tenantId = WebPluginUtils.traceTenantId();
-        if (WebPluginUtils.validateSuperAdmin()) {
+        if (WebPluginUtils.validateAdmin()) {
             tenantId = null;
         }
         List<TWList> dbResult = tWhiteListMntDao.queryDistinctWhiteListTotalByApplicationId(vo.getApplicationId(), tenantId);

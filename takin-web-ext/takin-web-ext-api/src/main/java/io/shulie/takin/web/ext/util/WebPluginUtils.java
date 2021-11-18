@@ -301,9 +301,9 @@ public class WebPluginUtils {
         return Lists.newArrayList();
     }
 
-    public static boolean validateSuperAdmin() {
+    public static boolean validateAdmin() {
         if (Objects.nonNull(dataAuthApi)) {
-            return userAuthExtApi.validateSuperAdmin();
+            return userAuthExtApi.validateAdmin();
         }
         return false;
     }

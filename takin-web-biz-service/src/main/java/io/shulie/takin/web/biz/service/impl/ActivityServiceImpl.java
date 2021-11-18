@@ -781,8 +781,8 @@ public class ActivityServiceImpl implements ActivityService {
         }
         ActivityQueryParam queryParam = new ActivityQueryParam();
         queryParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
-        if (StringUtil.isNotEmpty(request.getEntrance())){
-            queryParam.setEntrance(request.getEntrance());
+        if (StringUtil.isNotEmpty(request.getEntrancePath())){
+            queryParam.setEntrance(request.getEntrancePath());
         }
         if (StringUtil.isNotEmpty(request.getApplicationName())){
             queryParam.setApplicationName(request.getApplicationName());

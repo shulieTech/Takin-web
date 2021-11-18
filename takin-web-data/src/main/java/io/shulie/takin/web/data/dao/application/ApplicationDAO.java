@@ -86,6 +86,14 @@ public interface ApplicationDAO {
     ApplicationDetailResult getApplicationById(Long appId);
 
     /**
+     * 不用租户拦截查询 导出接口用
+     * @param appId
+     * @return
+     */
+    ApplicationDetailResult getApplicationByIdWithInterceptorIgnore(Long appId);
+
+
+    /**
      * 根据租户查询
      *
      * @return

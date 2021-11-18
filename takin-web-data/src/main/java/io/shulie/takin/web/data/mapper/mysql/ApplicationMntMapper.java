@@ -25,4 +25,12 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
      */
     @InterceptorIgnore(tenantLine = "true")
     List<ApplicationMntEntity> getAllTenantApp(TenantCommonExt ext);
+
+    /**
+     * 导出用
+     * @param appId
+     * @return
+     */
+    @InterceptorIgnore(tenantLine = "true")
+    ApplicationMntEntity getApplicationByIdWithInterceptorIgnore(@Param("appId") Long appId);
 }

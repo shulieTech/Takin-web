@@ -37,4 +37,15 @@ public class AgentConfigQueryParam {
      * 配置生效最低版本对应的数值
      */
     private Long effectMinVersionNum;
+
+    /**
+     * 租户id
+     */
+    private Long tenantId;
+
+    /**
+     * 环境编码
+     */
+    private String envCode;
+
 }

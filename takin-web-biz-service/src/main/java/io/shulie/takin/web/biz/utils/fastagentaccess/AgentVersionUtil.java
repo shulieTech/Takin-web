@@ -15,7 +15,7 @@ public class AgentVersionUtil {
      * @param version x.x.x.x
      * @return int值
      */
-    public static Long string2Int(String version) {
+    public static Long string2Long(String version) {
         String[] arr = version.split("\\.");
         if (arr.length < 1) {
             return -1L;
@@ -28,4 +28,5 @@ public class AgentVersionUtil {
         }
         return rs;
     }
+
 }

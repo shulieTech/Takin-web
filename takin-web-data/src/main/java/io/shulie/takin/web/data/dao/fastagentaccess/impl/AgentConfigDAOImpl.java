@@ -141,15 +141,15 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
 
     @Override
     public List<AgentConfigDetailResult> findGlobalList(AgentConfigQueryParam queryParam) {
-        List<AgentConfigEntity> entityList = agentConfigMapper.selectList(
-            this.getLambdaQueryWrapper()
+        List<AgentConfigEntity> entityList = agentConfigMapper.selectList(this.getLambdaQueryWrapper()
+                .eq(AgentConfigEntity::getTenantId, queryParam.getTenantId())
+                .eq(AgentConfigEntity::getEnvCode, queryParam.getEnvCode())
                 .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.GLOBAL.getVal())
                 .eq(queryParam.getEffectMechanism() != null, AgentConfigEntity::getEffectMechanism,
                     queryParam.getEffectMechanism())
                 .eq(StringUtils.isNotBlank(queryParam.getEnKey()), AgentConfigEntity::getEnKey, queryParam.getEnKey())
                 .le(queryParam.getEffectMinVersionNum() != null, AgentConfigEntity::getEffectMinVersionNum,
-                    queryParam.getEffectMinVersionNum())
-        );
+                    queryParam.getEffectMinVersionNum()));
         return CommonUtil.list2list(entityList, AgentConfigDetailResult.class);
     }
 

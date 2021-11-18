@@ -123,7 +123,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             throw AppCommonUtil.getCommonError("版本号格式错误！");
         }
         createParam.setFirstVersion(items[0] + "." + items[1]);
-        createParam.setVersionNum(AgentVersionUtil.string2Int(createParam.getVersion()));
+        createParam.setVersionNum(AgentVersionUtil.string2Long(createParam.getVersion()));
         return agentVersionDAO.insert(createParam);
     }
 
@@ -191,7 +191,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         // 2、获取当前project对应的应用配置
         ConfigListQueryBO queryBO = new ConfigListQueryBO();
         queryBO.setProjectName(projectName);
-        queryBO.setEffectMinVersionNum(AgentVersionUtil.string2Int(version));
+        queryBO.setEffectMinVersionNum(AgentVersionUtil.string2Long(version));
         queryBO.setUserAppKey(tenantAppKey);
         Map<String, AgentConfigDetailResult> configMap = agentConfigService.getConfigList(queryBO);
 

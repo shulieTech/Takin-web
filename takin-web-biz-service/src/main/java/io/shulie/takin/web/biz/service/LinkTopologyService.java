@@ -505,6 +505,8 @@ public class LinkTopologyService extends CommonService {
             .inMethod(method)
             .startTime(startTime)
             .endTime(endTime)
+            .envCode(WebPluginUtils.traceEnvCode())
+            .tenantId(WebPluginUtils.traceTenantId())
             .build();
 
         String response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
@@ -522,6 +524,8 @@ public class LinkTopologyService extends CommonService {
                 .clusterTest(request.getFlowTypeEnum().getType())
                 .startTime(startTime)
                 .endTime(endTime)
+                .envCode(WebPluginUtils.traceEnvCode())
+                .tenantId(WebPluginUtils.traceTenantId())
                 .build();
 
             JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);
@@ -653,6 +657,10 @@ public class LinkTopologyService extends CommonService {
         // 应用详情模块使用时，不传这两个值
         baseStorageParam.setEdgeId(appProvider.getEagleId());
         baseStorageParam.setActivityId(activityId);
+        // 租户相关
+        baseStorageParam.setTenantId(WebPluginUtils.traceTenantId());
+        baseStorageParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        baseStorageParam.setUserId(WebPluginUtils.traceUserId());
 
         // 卡慢 rt
         if (RpcTypeEnum.APP.getValue().equals(baseStorageParam.getRpcType())) {

@@ -2,11 +2,9 @@ package io.shulie.takin.web.biz.utils;
 
 import javax.annotation.PostConstruct;
 
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.CommonUtil;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -111,7 +109,6 @@ public final class AgentZkClientUtil {
             client.delete().guaranteed().deletingChildrenIfNeeded().forPath(CommonUtil.getZkTenantAndEnvPath(path));
         } catch (Exception e) {
             throw new TakinWebException(ExceptionCode.ZK_ERROR, String.format("删除zk数据节点失败;path=[%s]", CommonUtil.getZkTenantAndEnvPath(path)));
-
         }
     }
 }

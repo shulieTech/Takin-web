@@ -15,7 +15,6 @@ import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
 import io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,26 +29,20 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO, MPUtil<PradarZk
     private PradarZkConfigMapper pradarZkConfigMapper;
 
     @Override
-    public List<PradarZkConfigResult> listSystemConfig() {
+    public List<PradarZkConfigResult> list() {
         List<PradarZkConfigEntity> result = pradarZkConfigMapper.selectList(this.getLambdaQueryWrapper()
-            .select(PradarZkConfigEntity::getZkPath, PradarZkConfigEntity::getValue)
-            .eq(PradarZkConfigEntity::getTenantId, WebPluginUtils.SYS_DEFAULT_TENANT_ID)
-            .eq(PradarZkConfigEntity::getEnvCode, WebPluginUtils.SYS_DEFAULT_ENV_CODE));
+            .select(PradarZkConfigEntity::getZkPath, PradarZkConfigEntity::getValue));
         return CommonUtil.list2list(result, PradarZkConfigResult.class);
     }
 
     @Override
-    public int insert(PradarConfigCreateParam createParam) {
-        PradarZkConfigEntity entity = new PradarZkConfigEntity();
-        BeanUtils.copyProperties(createParam, entity);
-        return pradarZkConfigMapper.insert(entity);
+    public boolean insert(PradarConfigCreateParam createParam) {
+        return SqlHelper.retBool(pradarZkConfigMapper.insert(createParam));
     }
 
     @Override
-    public boolean updateOnlySystem(PradarConfigCreateParam updateParam) {
-        PradarZkConfigEntity entity = new PradarZkConfigEntity();
-        BeanUtils.copyProperties(updateParam, entity);
-        return SqlHelper.retBool(pradarZkConfigMapper.updateById(entity));
+    public boolean update(PradarConfigCreateParam updateParam) {
+        return SqlHelper.retBool(pradarZkConfigMapper.updateById(updateParam));
     }
 
     @Override
@@ -82,15 +75,18 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO, MPUtil<PradarZk
         PageBaseDTO pageBaseDTO) {
         IPage<PradarZkConfigEntity> page = pradarZkConfigMapper.selectPage(this.setPage(pageBaseDTO),
             this.getLambdaQueryWrapper().select(PradarZkConfigEntity::getId, PradarZkConfigEntity::getZkPath,
-                    PradarZkConfigEntity::getValue, PradarZkConfigEntity::getType, PradarZkConfigEntity::getRemark,
-                    PradarZkConfigEntity::getModifyTime)
-                .eq(PradarZkConfigEntity::getTenantId, tenantId)
-                .eq(PradarZkConfigEntity::getEnvCode, envCode));
+                PradarZkConfigEntity::getValue, PradarZkConfigEntity::getType, PradarZkConfigEntity::getRemark,
+                PradarZkConfigEntity::getModifyTime)
+                .orderByDesc(PradarZkConfigEntity::getId));
         if (page.getTotal() == 0) {
             return PagingList.empty();
         }
-
         return PagingList.of(CommonUtil.list2list(page.getRecords(), PradarZkConfigResult.class), page.getTotal());
+    }
+
+    @Override
+    public boolean deleteById(Long id) {
+        return SqlHelper.retBool(pradarZkConfigMapper.deleteById(id));
     }
 
 }

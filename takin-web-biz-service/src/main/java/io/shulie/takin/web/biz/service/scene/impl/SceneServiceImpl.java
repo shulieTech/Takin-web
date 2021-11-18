@@ -571,7 +571,9 @@ public class SceneServiceImpl implements SceneService {
         if (CollectionUtils.isNotEmpty(responses)) {
             responses.forEach(r -> {
                 UserExt user = userMap.get(r.getUserId());
-                r.setUserName(user.getName());
+                if (user != null){
+                    r.setUserName(user.getName());
+                }
             });
         }
         return PagingList.of(responses, pageList.getTotal());

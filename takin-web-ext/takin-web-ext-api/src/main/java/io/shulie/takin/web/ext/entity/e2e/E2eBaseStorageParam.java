@@ -48,4 +48,18 @@ public class E2eBaseStorageParam {
      * 业务RPC类型
      */
     private String rpcType;
+
+    /**
+     * 租户ID
+     */
+    private Long tenantId;
+    /**
+     * 环境编码
+     */
+    private String envCode;
+    /**
+     * 用户ID
+     */
+    private Long userId;
+
 }

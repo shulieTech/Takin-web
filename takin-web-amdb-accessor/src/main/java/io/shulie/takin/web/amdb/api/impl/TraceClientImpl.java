@@ -172,7 +172,7 @@ public class TraceClientImpl implements TraceClient {
     public PagingList<TTrackClickhouseModel> listTraceLog(TraceLogQueryDTO query) {
         String url = properties.getUrl().getAmdb() + ENTRY_TRACE_LOG_PATH;
         EntryTraceQueryParam param = new EntryTraceQueryParam();
-        //param.setAppNames(query.getAppNames());
+        param.setAppNames(query.getAppNames());
         if(StringUtils.isNotBlank(query.getAppName())) {
             param.setAppName(query.getAppName());
         }

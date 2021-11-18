@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -78,6 +79,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         }
 
         wrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
+        wrapper.eq(BusinessLinkManageTableEntity::getCustomerId,WebPluginUtils.getCustomerId());
         List<BusinessLinkManageTableEntity> businessLinkManageTableEntities = businessLinkManageTableMapper.selectList(
             wrapper);
         if (CollectionUtils.isEmpty(businessLinkManageTableEntities)) {
@@ -108,6 +110,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         map.put(FeaturesConstants.SERVICE_NAME_KEY, param.getServiceName());
         map.put(FeaturesConstants.SERVER_MIDDLEWARE_TYPE_KEY, param.getType().getType());
         linkManageTableEntity.setFeatures(JSON.toJSONString(map));
+        linkManageTableEntity.setPersistence(param.isPersistence());
 
         // 再创建业务链路
         int insert1 = linkManageTableMapper.insert(linkManageTableEntity);
@@ -145,6 +148,7 @@ public class ActivityDAOImpl implements ActivityDAO {
             // 虚拟业务活动
             businessLinkManageTableEntity.setBindBusinessId(param.getBindBusinessId());
         }
+        businessLinkManageTableEntity.setPersistence(param.isPersistence());
         return businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
     }
 
@@ -320,6 +324,7 @@ public class ActivityDAOImpl implements ActivityDAO {
             lambdaQueryWrapper.in(BusinessLinkManageTableEntity::getUserId, param.getUserIdList());
         }
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
+        lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::isPersistence, 1);
 
         Page<BusinessLinkManageTableEntity> tableEntityPage = businessLinkManageTableMapper
             .selectPage(page, lambdaQueryWrapper);
@@ -444,4 +449,16 @@ public class ActivityDAOImpl implements ActivityDAO {
         return activityNodeStateTableMapper.findActivityIdByServiceName(customerId,appName,entrance);
     }
 
+    @Override
+    public BusinessLinkManageTableEntity getActivityByName(String activityName) {
+        LambdaQueryWrapper<BusinessLinkManageTableEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getLinkName,activityName);
+        return businessLinkManageTableMapper.selectOne(lambdaQueryWrapper);
+    }
+
+    @Override
+    public List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace) {
+        Long customerId = WebPluginUtils.getCustomerId();
+        return businessLinkManageTableMapper.findActivityAppName(appName,entrace,customerId);
+    }
 }

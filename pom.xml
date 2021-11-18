@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-5.0.2</version>
+    <version>takin-web-5.0.4.6</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -39,7 +39,7 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-5.0.2</takin.web.version>
+        <takin.web.version>takin-web-5.0.4.6</takin.web.version>
         <takin.cloud.open.version>takin-cloud-open-5.0.1</takin.cloud.open.version>
         <takin.cloud.version>takin-cloud-5.0.1</takin.cloud.version>
         <takin.common.version>common-1.7.4</takin.common.version>
@@ -360,7 +360,7 @@
             <dependency>
                 <groupId>io.shulie.amdb</groupId>
                 <artifactId>amdb-common</artifactId>
-                <version>1.0.2.1</version>
+                <version>1.0.2.2</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.mapstruct</groupId>
@@ -429,6 +429,12 @@
                 <groupId>cn.afterturn</groupId>
                 <artifactId>easypoi-annotation</artifactId>
                 <version>${easypoi-annotation.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.shulie.surge.data</groupId>
+                <artifactId>surge-deploy-pradar-link</artifactId>
+                <version>1.0.2.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

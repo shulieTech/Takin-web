@@ -110,9 +110,9 @@ public class ApplicationNodeDAOImpl implements ApplicationNodeDAO {
                 List<String> subList = null;
                 //批量处理
                 if (param.getApplicationNames().size() > i * LOOP_NUM) {
-                    subList = param.getApplicationNames().subList((i - 1) * 20, i * LOOP_NUM);
+                    subList = param.getApplicationNames().subList((i - 1) * LOOP_NUM, i * LOOP_NUM);
                 } else {
-                    subList =  param.getApplicationNames().subList((i - 1) * 100,  param.getApplicationNames().size());
+                    subList =  param.getApplicationNames().subList((i - 1) * LOOP_NUM,  param.getApplicationNames().size());
                     loop = false;
                 }
                 i++;

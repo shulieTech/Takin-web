@@ -55,4 +55,9 @@ public class ActivityCreateRequest {
 
     @NotBlank
     private String serviceName;
+
+    private boolean persistence = true;
+
+    @ApiModelProperty(name = "label", value = "服务名称")
+    private String label;
 }

@@ -3,7 +3,7 @@ package io.shulie.takin.web.data.model.mysql;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.shulie.takin.web.data.model.mysql.base.CommonWithUserIdAndTenantIdEntity;
+import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_rpc_config_template")
 @ToString(callSuper = true)
-public class RpcConfigTemplateEntity extends CommonWithUserIdAndTenantIdEntity implements Serializable {
+public class RpcConfigTemplateEntity extends NewBaseEntity implements Serializable {
     private static final long serialVersionUID = 227014605826848792L;
 
     /**

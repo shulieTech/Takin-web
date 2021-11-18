@@ -353,6 +353,26 @@ public class WebPluginUtils {
     }
 
     /**
+     * 获取租户信息
+     * @param tenantId
+     * @return
+     */
+    public static TenantInfoExt getTenantInfo(Long tenantId) {
+        if (tenantExtApi != null) {
+            return tenantExtApi.getTenantInfo(tenantId);
+        }
+        if (userApi != null) {
+            // 只是带用户插件
+            List<TenantInfoExt> tenantInfoList = userApi.getTenantInfoList();
+            if (CollectionUtils.isEmpty(tenantInfoList)) {
+                return null;
+            }
+            return tenantInfoList.get(0);
+        }
+        return null;
+    }
+
+    /**
      * 返回默认的环境 目前给插件user-module使用
      *
      * @param userAppKey
@@ -407,6 +427,8 @@ public class WebPluginUtils {
         }
         return Boolean.FALSE;
     }
+
+
 
     /**
      * 根据租户id查询当前租户 key

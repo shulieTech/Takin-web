@@ -3,7 +3,7 @@ package io.shulie.takin.web.data.model.mysql;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.shulie.takin.web.data.model.mysql.base.CommonWithUserIdAndTenantIdEntity;
+import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_mq_config_template")
 @ToString(callSuper = true)
-public class MqConfigTemplateEntity extends CommonWithUserIdAndTenantIdEntity implements Serializable {
+public class MqConfigTemplateEntity extends NewBaseEntity implements Serializable {
     private static final long serialVersionUID = -52813831963978645L;
 
     /**

@@ -351,6 +351,18 @@ public class ApplicationDAOImpl
     }
 
     @Override
+    public ApplicationDetailResult getApplicationByIdWithInterceptorIgnore(Long appId) {
+        // 修改原因 ：分页插件与 mybatis-plus 污染线程
+        ApplicationMntEntity applicationMntEntity = applicationMntMapper.getApplicationByIdWithInterceptorIgnore(appId);;
+        if (!Objects.isNull(applicationMntEntity)) {
+            ApplicationDetailResult detailResult = new ApplicationDetailResult();
+            BeanUtils.copyProperties(applicationMntEntity, detailResult);
+            return detailResult;
+        }
+        return null;
+    }
+
+    @Override
     public ApplicationDetailResult getApplicationByTenantIdAndName(String appName) {
         if (!StringUtils.isEmpty(appName)) {
             LambdaQueryWrapper<ApplicationMntEntity> queryWrapper = new LambdaQueryWrapper<>();

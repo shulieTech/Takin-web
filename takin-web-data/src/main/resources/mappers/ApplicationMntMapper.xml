@@ -44,6 +44,10 @@
         select APPLICATION_NAME,tenant_id,env_code from  t_application_mnt
         where tenant_id = #{tenantId,jdbcType=VARCHAR}  and env_code = #{envCode,jdbcType=VARCHAR}
     </select>
+    <select id="getApplicationByIdWithInterceptorIgnore"
+            resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">
+        select * from  t_application_mnt where APPLICATION_ID = #{appId}
+    </select>
 
 
 </mapper>

@@ -3,7 +3,7 @@ package io.shulie.takin.web.data.model.mysql;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.shulie.takin.web.data.model.mysql.base.CommonWithUserIdAndTenantIdEntity;
+import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_app_remote_call_template_mapping")
 @ToString(callSuper = true)
-public class AppRemoteCallTemplateMappingEntity extends CommonWithUserIdAndTenantIdEntity implements Serializable {
+public class AppRemoteCallTemplateMappingEntity extends NewBaseEntity implements Serializable {
     private static final long serialVersionUID = -87494347952500936L;
 
     /**

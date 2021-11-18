@@ -214,7 +214,7 @@ public interface TApplicationMntDao {
      * @return 应用对象
      * @author shulie
      */
-    public TApplicationMnt queryApplicationinfoByName(@Param("applicationName") String applicationName);
+    TApplicationMnt queryApplicationinfoByName(@Param("applicationName") String applicationName);
 
     TApplicationMnt queryApplicationInfoByNameAndTenant(@Param("applicationName") String applicationName,
         @Param("tenantId") Long tenantId);

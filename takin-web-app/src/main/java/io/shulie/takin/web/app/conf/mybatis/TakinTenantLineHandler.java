@@ -53,10 +53,7 @@ public interface TakinTenantLineHandler extends TenantLineHandler {
             return false;
         }
         // 判断是否已经带了
-        if (expression.toString().toLowerCase().contains(columnName.toLowerCase())) {
-            return true;
-        }
-        return false;
+        return expression.toString().toLowerCase().contains(columnName.toLowerCase());
     }
 
 }

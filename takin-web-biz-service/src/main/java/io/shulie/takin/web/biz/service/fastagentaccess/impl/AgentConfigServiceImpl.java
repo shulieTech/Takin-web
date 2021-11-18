@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.fastagentaccess.impl;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +102,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
                 if (!CollectionUtils.isEmpty(item.getValueOptionList())) {
                     createAgentConfigParam.setValueOption(JSON.toJSONString(item.getValueOptionList()));
                 }
-                createAgentConfigParam.setEffectMinVersionNum(AgentVersionUtil.string2Int(item.getEffectMinVersion()));
+                createAgentConfigParam.setEffectMinVersionNum(AgentVersionUtil.string2Long(item.getEffectMinVersion()));
                 return createAgentConfigParam;
             })
             .collect(Collectors.toList());
@@ -232,7 +233,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
         ConfigListQueryBO queryBO = new ConfigListQueryBO();
         queryBO.setProjectName(queryRequest.getProjectName());
         queryBO.setEffectMechanism(queryRequest.getEffectMechanism());
-        queryBO.setEffectMinVersionNum(AgentVersionUtil.string2Int(queryRequest.getVersion()));
+        queryBO.setEffectMinVersionNum(AgentVersionUtil.string2Long(queryRequest.getVersion()));
         Map<String, AgentConfigDetailResult> configList = getConfigList(queryBO);
         return configList.values().stream().collect(
             Collectors.toMap(AgentConfigDetailResult::getEnKey, AgentConfigDetailResult::getDefaultValue));
@@ -243,11 +244,26 @@ public class AgentConfigServiceImpl implements AgentConfigService {
         // 1、查询符合条件的全局配置
         AgentConfigQueryParam queryParam = new AgentConfigQueryParam();
         BeanUtils.copyProperties(queryBO, queryParam);
+        queryParam.setTenantId(WebPluginUtils.SYS_DEFAULT_TENANT_ID);
+        queryParam.setEnvCode(WebPluginUtils.SYS_DEFAULT_ENV_CODE);
         List<AgentConfigDetailResult> globalConfigList = agentConfigDAO.findGlobalList(queryParam);
+        if (globalConfigList.isEmpty()) {
+            return new HashMap<>(0);
+        }
 
         // 将全局配置放入内存map中，因为后续要进行替换，key为配置key，value为AgentConfigDetailResult对象
         Map<String, AgentConfigDetailResult> configMap = globalConfigList.stream().collect(
-            Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x));
+            Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
+
+        // 租户下的全局配置
+        queryParam.setTenantId(WebPluginUtils.traceTenantId());
+        queryParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        List<AgentConfigDetailResult> tenantGlobalConfigList = agentConfigDAO.findGlobalList(queryParam);
+        if (!tenantGlobalConfigList.isEmpty()) {
+            Map<String, AgentConfigDetailResult> tenantConfigMap = tenantGlobalConfigList.stream().collect(
+                Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
+            configMap.putAll(tenantConfigMap);
+        }
 
         // 2、查询符合条件的应用配置
         if (StringUtils.isEmpty(queryBO.getUserAppKey())) {

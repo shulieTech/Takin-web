@@ -14,7 +14,6 @@ import io.shulie.takin.web.data.param.pradarconfig.PagePradarZkConfigParam;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
 import io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult;
 import io.shulie.takin.web.data.util.MPUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -60,9 +59,8 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO, MPUtil<PradarZk
 
     @Override
     public PradarZkConfigResult getByZkPath(String zkPath) {
-        List<PradarZkConfigResult> configList = pradarZkConfigMapper.selectListByZkPath(zkPath,
-            WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode());
-        return configList.isEmpty() ? null : configList.get(0);
+        return CommonUtil.copyBeanPropertiesWithNull(pradarZkConfigMapper.selectOne(this.getLimitOneLambdaQueryWrapper()
+            .eq(PradarZkConfigEntity::getZkPath, zkPath)), PradarZkConfigResult.class);
     }
 
     @Override

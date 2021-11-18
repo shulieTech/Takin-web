@@ -368,18 +368,30 @@ public class SceneServiceImpl implements SceneService {
         List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
         //将节点树处理成线程组在最外层的形式
         List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.THREAD_GROUP, scriptNodes);
-        int nodeNumByType = JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, scriptNodeByType);
-        List<ScriptJmxNode> scriptJmxNodes = LinkManageConvert.INSTANCE.ofScriptNodeList(scriptNodeByType);
-        List<ScriptJmxNode> threadJmxNode = scriptJmxNodes.stream().filter(o -> o.getXpathMd5().equals(xpathMd5)).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(threadJmxNode)) {
+        List<ScriptNode> scriptNodeList = scriptNodeByType.stream().filter(o -> o.getXpathMd5().equals(xpathMd5)).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(scriptNodeList)) {
             return response;
         }
+        List<ScriptNode> samplerScriptNodeList = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, scriptNodeList);
+        List<String> xpathMd5List = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(samplerScriptNodeList)){
+            xpathMd5List = samplerScriptNodeList.stream().map(ScriptNode::getXpathMd5).collect(Collectors.toList());
+        }
+
+        List<ScriptJmxNode> scriptJmxNodes = LinkManageConvert.INSTANCE.ofScriptNodeList(scriptNodeList);
+
         SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
         sceneLinkRelateParam.setSceneIds(Collections.singletonList(id.toString()));
         List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
-        dealScriptJmxNodes(sceneLinkRelateList, threadJmxNode);
-        response.setThreadScriptJmxNodes(threadJmxNode);
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateList) && CollectionUtils.isNotEmpty(xpathMd5List)){
+            List<String> finalXpathMd5List = xpathMd5List;
+            sceneLinkRelateList = sceneLinkRelateList.stream().filter(o -> finalXpathMd5List.contains(o.getScriptXpathMd5()))
+                    .collect(Collectors.toList());
+        }
+        dealScriptJmxNodes(sceneLinkRelateList, scriptJmxNodes);
+        response.setThreadScriptJmxNodes(scriptJmxNodes);
         response.setLinkRelateNum(CollectionUtils.isEmpty(sceneLinkRelateList) ? 0 : sceneLinkRelateList.size());
+        int nodeNumByType = JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, scriptNodeList);
         response.setTotalNodeNum(nodeNumByType);
         return response;
     }

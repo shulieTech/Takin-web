@@ -63,6 +63,7 @@ public class ActivityDAOImpl implements ActivityDAO {
     @Override
     public List<Long> exists(ActivityExistsQueryParam param) {
         LambdaQueryWrapper<BusinessLinkManageTableEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
         wrapper.select(
             BusinessLinkManageTableEntity::getLinkId
         );
@@ -79,7 +80,9 @@ public class ActivityDAOImpl implements ActivityDAO {
                 ActivityUtil.buildVirtualEntrance(param.getMethod(),param.getVirtualEntrance(), param.getRpcType()));
         }
 
-        wrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
+        if (StringUtils.isNotBlank(param.getApplicationName())){
+            wrapper.eq(BusinessLinkManageTableEntity::getApplicationName, param.getApplicationName());
+        }
         List<BusinessLinkManageTableEntity> businessLinkManageTableEntities = businessLinkManageTableMapper.selectList(
             wrapper);
         if (CollectionUtils.isEmpty(businessLinkManageTableEntities)) {

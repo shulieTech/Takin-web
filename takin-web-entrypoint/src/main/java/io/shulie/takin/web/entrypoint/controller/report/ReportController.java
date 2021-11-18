@@ -126,7 +126,11 @@ public class ReportController {
 
     @GetMapping("/report/businessActivity/summary/list")
     @ApiOperation("压测明细")
-    public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+        needAuth = ActionTypeEnum.START_STOP
+    )
+    public ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId) {
         return reportService.querySummaryList(reportId);
     }
 

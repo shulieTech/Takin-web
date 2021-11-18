@@ -55,10 +55,10 @@ public class ReportApiImpl implements ReportApi {
     }
 
     @Override
-    public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
+    public ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId) {
         ReportDetailByIdReq request = new ReportDetailByIdReq() {{setReportId(reportId);}};
         WebPluginUtils.fillCloudUserData(request);
-        return cloudReportApi.getBusinessActivitySummaryList(request);
+        return cloudReportApi.getSummaryList(request);
     }
 
 }

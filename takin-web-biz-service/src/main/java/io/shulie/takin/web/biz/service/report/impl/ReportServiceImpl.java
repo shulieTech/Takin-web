@@ -406,7 +406,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ResponseResult<NodeTreeSummaryResp> querySummaryList(Long reportId) {
-        return reportApi.getBusinessActivitySummaryList(reportId);
+        return reportApi.getSummaryList(reportId);
     }
 
     @Override

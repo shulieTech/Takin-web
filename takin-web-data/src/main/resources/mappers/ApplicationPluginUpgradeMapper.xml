@@ -2,4 +2,36 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.shulie.takin.web.data.mapper.mysql.ApplicationPluginUpgradeMapper">
 
+    <resultMap id="BASE_MAP" type="io.shulie.takin.web.data.model.mysql.ApplicationPluginUpgradeEntity">
+        <result property="id" column="id"/>
+        <result property="applicationId" column="application_id"/>
+        <result property="applicationName" column="application_name"/>
+        <result property="upgradeBatch" column="upgrade_batch"/>
+        <result property="upgradeContext" column="upgrade_context"/>
+        <result property="upgradeAgentId" column="upgrade_agent_id"/>
+        <result property="downloadPath" column="download_path"/>
+        <result property="pluginUpgradeStatus" column="plugin_upgrade_status"/>
+        <result property="remark" column="remark"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtUpdate" column="gmt_update"/>
+    </resultMap>
+
+    <select id="queryLatestUpgradeByAppIdAndStatus" resultMap="BASE_MAP">
+        SELECT id,
+               application_id,
+               application_name,
+               upgrade_batch,
+               upgrade_context,
+               upgrade_agent_id,
+               download_path,
+               plugin_upgrade_status,
+               remark,
+               gmt_create,
+               gmt_update
+        FROM t_application_plugin_upgrade
+        WHERE id = (SELECT MAX(id)
+                    FROM t_application_plugin_upgrade
+                    WHERE application_id = #{applicationId}
+                      AND plugin_upgrade_status = #{pluginUpgradeStatus})
+    </select>
 </mapper>

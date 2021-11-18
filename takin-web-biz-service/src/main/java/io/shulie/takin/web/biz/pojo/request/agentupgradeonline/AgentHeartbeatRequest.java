@@ -64,8 +64,8 @@ public class AgentHeartbeatRequest {
     @NotBlank(message = "agent版本不能为空")
     private String agentVersion;
 
-    @ApiModelProperty(value = "是否需要升级单信息")
-    private Boolean needUpgradeInfo;
+    @ApiModelProperty(value = "agent依赖的版本信息")
+    private String dependencyInfo;
 
     @ApiModelProperty(value = "agent命令结果")
     private List<AgentCommandBO> commandResult;

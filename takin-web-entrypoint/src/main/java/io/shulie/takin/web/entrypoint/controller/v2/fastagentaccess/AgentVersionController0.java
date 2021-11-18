@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(APIUrls.TRO_API_URL + "v2/fast/agent/access")
 @Api(tags = "接口-v2：agent版本管理")
-public class AgentVersionController {
+public class AgentVersionController0 {
 
 
     @Autowired

@@ -80,4 +80,9 @@ public class AgentReportEntity extends NewBaseEntity implements Serializable {
      */
     private Long tenantId;
 
+    /**
+     * 逻辑删除
+     */
+    private Integer isDeleted;
+
 }

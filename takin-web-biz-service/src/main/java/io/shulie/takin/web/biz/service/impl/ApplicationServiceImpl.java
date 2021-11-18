@@ -96,6 +96,7 @@ import io.shulie.takin.web.common.constant.GuardEnableConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.WhiteListConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
@@ -155,6 +156,7 @@ import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.DocumentException;
@@ -805,8 +807,19 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public void exportApplicationConfig(HttpServletResponse response, Long applicationId) {
-        ApplicationDetailResult application = applicationDAO.getApplicationById(applicationId);
+        ApplicationDetailResult application = applicationDAO.getApplicationByIdWithInterceptorIgnore(applicationId);
         Assert.notNull(application, "应用不存在!");
+
+        TenantInfoExt tenantInfo = WebPluginUtils.getTenantInfo(application.getTenantId());
+        String tenantCode = "";
+        String tenantAppKey ="";
+        if(tenantInfo != null) {
+            tenantCode = tenantInfo.getTenantCode();
+            tenantAppKey = tenantInfo.getTenantAppKey();
+        }
+        // 复制上下问
+        WebPluginUtils.setTraceTenantContext(application.getTenantId(),
+            tenantAppKey, application.getEnvCode(),tenantCode, ContextSourceEnum.HREF.getCode());
 
         List<ExcelSheetVO<?>> sheets = new ArrayList<>();
 
@@ -933,9 +946,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      */
     private ExcelSheetVO<?> getShadowSheet(Long applicationId) {
         // 根据应用id, 查询 ds 列表
-        List<ApplicationDsManageEntity> applicationDsManages = applicationDsManageDao.listByApplicationId(
-                applicationId);
-
+        List<ApplicationDsManageEntity> applicationDsManages = applicationDsManageDao.listByApplicationId(applicationId);
         // 导出对象创建
         ExcelSheetVO<ApplicationDsManageExportVO> sheet = new ExcelSheetVO<>();
         sheet.setExcelModelClass(ApplicationDsManageExportVO.class);

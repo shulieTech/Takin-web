@@ -377,6 +377,8 @@ public class ScriptManageDAOImpl
         if (param.getScriptType() != null) {
             wrapper.eq(ScriptManageDeployEntity::getType, param.getScriptType());
         }
+
+
         wrapper.orderByDesc(ScriptManageDeployEntity::getGmtUpdate);
         List<ScriptManageDeployEntity> scriptManageDeployEntities = scriptManageDeployMapper.selectList(wrapper);
         if (CollectionUtils.isEmpty(scriptManageDeployEntities)) {

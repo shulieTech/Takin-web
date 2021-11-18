@@ -68,10 +68,9 @@ public class ReportDetailServiceImpl implements ReportDetailService {
         }
         TApplicationMnt info = tApplicationMntDao.queryApplicationinfoByName(inputParam.getApplicationName());
         if(Objects.isNull(info)){
-            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "应用不存在");
+            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "应用【"+inputParam.getApplicationName()+"】不存在");
         }
 
-        Long tenantId = WebPluginUtils.traceTenantId();
 
         List<CreateAppAgentConfigReportParam> saveList = new ArrayList<>();
 

@@ -1,9 +1,9 @@
 package io.shulie.takin.web.data.dao.application;
 
+import java.util.List;
+
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsManageEntity;
-
-import java.util.List;
 
 /**
  * 应用下 影子库/表 dao,
@@ -14,7 +14,7 @@ import java.util.List;
 public interface ApplicationDsManageDAO extends IService<ApplicationDsManageEntity> {
 
     /**
-     * 通过应用id, 获取 dsManage 列表
+     * 通过应用id, 获取 dsManage 列表 // 注意 ：导出使用，不能用于其他
      *
      * @param applicationId 应用id
      * @return dsManage 列表

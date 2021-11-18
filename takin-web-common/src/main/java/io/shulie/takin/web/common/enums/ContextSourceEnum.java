@@ -16,6 +16,7 @@ public enum ContextSourceEnum {
     FRONT(0,"前端"),
     AGENT(1,"第三方应用，agent,amdb"),
     JOB(2,"定时任务"),
+    HREF(3,"前端直接location.href"),
     ;
     private Integer code;
     private String source;

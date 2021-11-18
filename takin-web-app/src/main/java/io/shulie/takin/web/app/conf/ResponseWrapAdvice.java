@@ -54,6 +54,7 @@ public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
             header.set(takinAuthorityHeaderName, WebPluginUtils.checkUserPlugin().toString());
             header.set(takinTenantAuthorityHeaderName, WebPluginUtils.checkTenantPlugin().toString());
             headers.add(takinAuthorityHeaderName);
+            headers.add(takinTenantAuthorityHeaderName);
             headers.add(Response.PAGE_TOTAL_HEADER);
             header.set(accessControlExposeHeaderName, String.join(",", headers));
         }

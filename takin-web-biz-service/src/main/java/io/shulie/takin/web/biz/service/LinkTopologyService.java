@@ -506,7 +506,7 @@ public class LinkTopologyService extends CommonService {
             .startTime(startTime)
             .endTime(endTime)
             .envCode(WebPluginUtils.traceEnvCode())
-            .tenantId(WebPluginUtils.traceTenantId())
+            .traceTenantAppKey(WebPluginUtils.traceTenantAppKey())
             .build();
 
         String response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
@@ -525,7 +525,7 @@ public class LinkTopologyService extends CommonService {
                 .startTime(startTime)
                 .endTime(endTime)
                 .envCode(WebPluginUtils.traceEnvCode())
-                .tenantId(WebPluginUtils.traceTenantId())
+                .traceTenantAppKey(WebPluginUtils.traceTenantAppKey())
                 .build();
 
             JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);

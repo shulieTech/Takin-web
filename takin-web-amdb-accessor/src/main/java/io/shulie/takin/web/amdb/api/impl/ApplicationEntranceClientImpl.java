@@ -2,6 +2,7 @@ package io.shulie.takin.web.amdb.api.impl;
 
 import java.util.List;
 
+import cn.hutool.json.JSONObject;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.RpcType;
@@ -9,6 +10,8 @@ import io.shulie.amdb.common.request.link.ServiceQueryParam;
 import io.shulie.amdb.common.request.link.TopologyQueryParam;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeInfo;
+import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery1;
+import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery2;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
@@ -18,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,8 +36,12 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     public static final String APPLICATION_ENTRANCES_PATH = "/amdb/link/getServiceList";
 
     public static final String APPLICATION_ENTRANCES_TOPOLOGY_PATH = "/amdb/link/getLinkTopology";
+    public static final String APPLICATION_ENTRANCES_TOPOLOGY_PATH_TEMP = "/amdb/link/getLinkTopologyForTemp";
 
     public static final String APPLICATION_ENTRANCES_UNKNOWN_UPDATE_TO_OUTER = "/amdb/link/updateUnKnowNode";
+
+    public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP1 = "/amdb/db/api/metrics/entranceFromChickHouse";
+    public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP2 = "/amdb/db/api/metrics/metricFromChickHouse";
 
     @Autowired
     private AmdbClientProperties properties;
@@ -81,9 +89,54 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     }
 
     @Override
-    public LinkTopologyDTO getApplicationEntrancesTopology(String applicationName, String linkId, String serviceName,
-        String method, String rpcType, String extend) {
-        String url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_TOPOLOGY_PATH;
+    public String queryMetricsFromAMDB1(TempTopologyQuery1 tempTopologyQuery1) {
+        String url = properties.getUrl().getAmdb() + QUERY_TEMP_ACTIVITY_METRICS_STEP1;
+
+        try {
+            AmdbResult<String> amdbResponse = AmdbHelper.newInStance().url(url)
+                    .httpMethod(HttpMethod.POST)
+                    .param(tempTopologyQuery1)
+                    .eventName("查询临时业务活动指标step1")
+                    .exception(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP1_ERROR)
+                    .one(String.class);
+
+            String data = amdbResponse.getData();
+            return data;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP1_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
+    public JSONObject queryMetricsFromAMDB2(TempTopologyQuery2 tempTopologyQuery1) {
+        String url = properties.getUrl().getAmdb() + QUERY_TEMP_ACTIVITY_METRICS_STEP2;
+
+        try {
+            AmdbResult<JSONObject> amdbResponse = AmdbHelper.newInStance().url(url)
+                    .httpMethod(HttpMethod.POST)
+                    .param(tempTopologyQuery1)
+                    .eventName("查询临时业务活动指标step2")
+                    .exception(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP2_ERROR)
+                    .one(JSONObject.class);
+
+            JSONObject data = amdbResponse.getData();
+            return data;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP2_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
+    public LinkTopologyDTO getApplicationEntrancesTopology(boolean tempActivity, String applicationName, String linkId, String serviceName,
+                                                           String method, String rpcType, String extend) {
+        String url;
+        if (tempActivity) {
+            url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_TOPOLOGY_PATH_TEMP;
+        } else {
+            url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_TOPOLOGY_PATH;
+        }
         TopologyQueryParam topologyQueryParam = new TopologyQueryParam();
         topologyQueryParam.setAppName(applicationName);
         if (method != null) {

@@ -216,12 +216,12 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
 
     @Override
     public Map<String, Map<Integer, Integer>> getApplicationNameAboutStatusCountMap(
-        List<String> applicationNameList) {
+        List<Long> applicationIds) {
         List<Integer> statusList = Arrays.asList(ApplicationMiddlewareStatusEnum.NONE.getCode(),
             ApplicationMiddlewareStatusEnum.UNKNOWN.getCode(),
             ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode());
         List<ApplicationMiddlewareStatusAboutCountResult> results = applicationMiddlewareDAO
-            .listStatusCountByAndGroupByApplicationNameListAndStatus(applicationNameList, statusList);
+            .listStatusCountByAndGroupByApplicationNameListAndStatus(applicationIds, statusList);
         if (results.isEmpty()) {
             return Collections.emptyMap();
         }

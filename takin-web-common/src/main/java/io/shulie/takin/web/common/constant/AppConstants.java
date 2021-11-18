@@ -9,6 +9,11 @@ package io.shulie.takin.web.common.constant;
 public interface AppConstants {
 
     /**
+     * 500 响应码
+     */
+    int RESPONSE_CODE_FAIL = 500;
+
+    /**
      * 不能为 null
      */
     String MUST_NOT_BE_NULL = " must not be null!";

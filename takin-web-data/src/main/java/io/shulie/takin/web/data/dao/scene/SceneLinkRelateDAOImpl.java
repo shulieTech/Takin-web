@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.dao.scene;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,4 +41,19 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
             return result;
         }).collect(Collectors.toList());
     }
+
+    @Override
+    public List<Long> listBusinessLinkIdsByBusinessFlowId(Long businessFlowId) {
+        List<Object> businessLinkObjectIds = this.listObjs(this.getLambdaQueryWrapper()
+            .select(SceneLinkRelateEntity::getBusinessLinkId)
+            .eq(SceneLinkRelateEntity::getSceneId, businessFlowId));
+        if (businessLinkObjectIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return businessLinkObjectIds.stream()
+            .map(businessLinkObjectId -> Long.valueOf(businessLinkObjectId.toString()))
+            .collect(Collectors.toList());
+    }
+
 }

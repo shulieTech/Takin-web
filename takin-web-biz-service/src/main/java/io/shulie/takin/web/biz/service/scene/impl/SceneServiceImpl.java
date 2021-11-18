@@ -153,7 +153,6 @@ public class SceneServiceImpl implements SceneService {
             }
 
         } else {
-            Comparator<SceneLinkRelateResult> idDescComparator = Comparator.comparing(SceneLinkRelateResult::getId).reversed();
             //sceneId不为空，更新过程
             if (null != sceneId) {
                 //如果存在业务流程id相同情况，优先匹配业务流程相同的

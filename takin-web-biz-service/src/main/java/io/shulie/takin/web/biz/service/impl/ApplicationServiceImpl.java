@@ -1115,6 +1115,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         param.put("isAttend", Boolean.parseBoolean(String.valueOf(request.getAttend())));
         String key = MD5Tool.getMD5(applicationName + interfaceName);
         param.put("id", key);
+        param.put("tenantId",WebPluginUtils.traceTenantId());
         applicationDAO.attendApplicationService(param);
     }
 

@@ -1,8 +1,8 @@
 package io.shulie.takin.web.biz.service.pradar;
 
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigDeleteRequest;
+import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
@@ -18,7 +18,7 @@ public interface PradarConfigService {
 
     void updateConfig(PradarZkConfigUpdateRequest updateRequest);
 
-    void addConfig(PradarZKConfigCreateRequest createRequest);
+    void addConfig(PradarZkConfigCreateRequest createRequest);
 
-    void deleteConfig(PradarZKConfigDeleteRequest deleteRequest);
+    void deleteConfig(PradarZkConfigDeleteRequest deleteRequest);
 }

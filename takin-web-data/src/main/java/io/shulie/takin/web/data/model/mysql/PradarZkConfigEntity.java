@@ -8,12 +8,11 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 @TableName(value = "t_pradar_zk_config")
-public class PradarZkConfigEntity extends TenantBaseEntity {
+public class PradarZkConfigEntity  extends TenantBaseEntity {
+
     /**
      * id
      */

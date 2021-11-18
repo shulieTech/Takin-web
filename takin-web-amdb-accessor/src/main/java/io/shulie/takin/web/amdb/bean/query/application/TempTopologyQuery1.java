@@ -11,4 +11,13 @@ public class TempTopologyQuery1 {
     private String inMethod;
     private String startTime;
     private String endTime;
+
+    /**
+     * 租户ID
+     */
+    private String traceTenantAppKey;
+    /**
+     * 环境编码
+     */
+    private String envCode;
 }

@@ -15,9 +15,6 @@ public class PradarZkConfigUpdateRequest {
     @ApiModelProperty("配置ID")
     private Long id;
 
-    @ApiModelProperty("配置路径")
-    private String zkPath;
-
     @ApiModelProperty("值类型:[String,Int,Boolean]")
     private String value;
 

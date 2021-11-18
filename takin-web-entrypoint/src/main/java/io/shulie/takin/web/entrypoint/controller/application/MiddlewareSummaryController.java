@@ -121,7 +121,7 @@ public class MiddlewareSummaryController {
         if(WebPluginUtils.traceUser() == null) {
             collect.parallelStream().forEach(item -> item.setCanEdit(Boolean.TRUE));
         } else {
-            boolean canEdit =  WebPluginUtils.validateSuperAdmin() || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.traceUser().getId());
+            boolean canEdit =  WebPluginUtils.validateAdmin() || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.traceUser().getId());
             collect.parallelStream().forEach(item -> item.setCanEdit(canEdit));
         }
 

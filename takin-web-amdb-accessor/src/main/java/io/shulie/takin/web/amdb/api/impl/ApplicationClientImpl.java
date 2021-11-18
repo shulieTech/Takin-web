@@ -249,7 +249,12 @@ public class ApplicationClientImpl implements ApplicationClient {
         try {
             dto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             dto.setEnvCode(WebPluginUtils.traceEnvCode());
-            AmdbResult<List<ApplicationNodeDTO>> amdbResponse = AmdbHelper.builder().httpMethod(HttpMethod.GET)
+
+            HttpMethod httpMethod = HttpMethod.GET;
+            if (url.equals(this.getApplicationNodeQueryPathUrl())) {
+                httpMethod = HttpMethod.POST;
+            }
+            AmdbResult<List<ApplicationNodeDTO>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
                 .url(url)
                 .param(dto)
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)

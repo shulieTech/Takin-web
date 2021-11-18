@@ -201,7 +201,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
     @Override
     public void batchConfig(AppRemoteCallConfigRequest request) {
-        if(WebPluginUtils.validateSuperAdmin()) {
+        if(WebPluginUtils.validateAdmin()) {
             appRemoteCallDAO.updateListSelective(request.getType(), request.getAppIds(), null);
         } else {
             appRemoteCallDAO.updateListSelective(request.getType(), request.getAppIds(), WebPluginUtils.getUpdateAllowUserIdList());
@@ -354,7 +354,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         AppRemoteCallQueryParam param = new AppRemoteCallQueryParam();
         BeanUtils.copyProperties(input, param);
         // 如果是超级管理员
-        if (!WebPluginUtils.validateSuperAdmin()) {
+        if (!WebPluginUtils.validateAdmin()) {
             if (detailResult != null) {
                 param.setTenantId(detailResult.getTenantId());
             }

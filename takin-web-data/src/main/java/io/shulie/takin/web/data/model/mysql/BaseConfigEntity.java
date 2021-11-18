@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 /**
@@ -13,7 +14,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_base_config")
-public class BaseConfigEntity {
+public class BaseConfigEntity extends TenantBaseEntity {
     /**
      * 配置编码
      */
@@ -49,16 +50,4 @@ public class BaseConfigEntity {
      */
     @TableField(value = "UPDATE_TIME")
     private Date updateTime;
-
-    /**
-     * 租户ID
-     */
-    @TableField(value = "tenant_id")
-    private Long tenantId;
-
-    /**
-     * 环境编码
-     */
-    @TableField(value = "env_code")
-    private String envCode;
 }

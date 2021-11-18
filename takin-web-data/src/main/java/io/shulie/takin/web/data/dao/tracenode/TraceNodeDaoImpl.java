@@ -68,7 +68,7 @@ public class TraceNodeDaoImpl implements io.shulie.takin.web.data.dao.tracenode.
         if (StringUtils.isNotBlank(traceId)) {
             wrapper.eq(TraceNodeInfoEntity::getTraceId, traceId);
         }
-        wrapper.eq(TraceNodeInfoEntity::getTraceId, tenantId);
+        wrapper.eq(TraceNodeInfoEntity::getTenantId, tenantId);
         wrapper.orderByDesc(TraceNodeInfoEntity::getId);
         List<TraceNodeInfoEntity> entities = customTraceNodeInfoMapper.list(wrapper);
         if (entities == null || entities.size() == 0) {

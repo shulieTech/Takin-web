@@ -192,6 +192,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private static final String PRADAR_SILENCE_SWITCH_STATUS_VO = "PRADAR_SILENCE_SWITCH_STATUS_";
     private static final String PRADAR_SILENCE_SWITCH_STATUS = "PRADAR_SILENCE_SWITCH_STATUS_VO_";
     private static final List<String> CONFIGITEMLIST = Collections.singletonList("redis影子key有效期");
+    private static final String QUERY_METRIC_DATA="/amdb/db/api/metrics/metricsDetailes";
 
     @Autowired
     private ConfCenterService confCenterService;
@@ -1160,7 +1161,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      */
     private Map<List<ApplicationVisualInfoResponse>, Integer> doGetAppDataByAppName(ApplicationVisualInfoQueryRequest request) {
         //do 大数据接口未定义
-        String url = properties.getUrl().getAmdb() + "/amdb/db/api/metrics/metricsDetailes";
+        String url = properties.getUrl().getAmdb() + QUERY_METRIC_DATA;
         try {
             AmdbResult<List<ApplicationVisualInfoResponse>> appDataResult = AmdbHelper.builder().httpMethod(HttpMethod.POST)
                     .url(url)

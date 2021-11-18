@@ -39,4 +39,9 @@ public class ApplicationPluginUpgradeRefServiceImpl implements ApplicationPlugin
         }
         return null;
     }
+
+    @Override
+    public List<ApplicationPluginUpgradeRefDetailResult> getList(List<String> upgradeBatchs) {
+        return null;
+    }
 }

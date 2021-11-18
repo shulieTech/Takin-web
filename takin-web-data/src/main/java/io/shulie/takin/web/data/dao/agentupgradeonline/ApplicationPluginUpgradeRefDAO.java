@@ -16,5 +16,7 @@ public interface ApplicationPluginUpgradeRefDAO {
 
     List<ApplicationPluginUpgradeRefDetailResult> getList(String upgradeBatch);
 
+    List<ApplicationPluginUpgradeRefDetailResult> getList(List<String> upgradeBatchs);
+
 }
 

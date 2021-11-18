@@ -2,12 +2,14 @@ package io.shulie.takin.web.entrypoint.controller.agentupgradeonline;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentLibraryCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginAllowUpgradeLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.AgentPluginUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginLibraryListResponse;
 import io.shulie.takin.web.biz.service.agentupgradeonline.PluginLibraryService;
 import io.shulie.takin.web.biz.utils.fastagentaccess.ResponseFileUtil;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -80,5 +82,9 @@ public class PluginLibraryController {
         return pluginLibraryService.list(queryRequest);
     }
 
-
+    @ApiOperation("|_ 当前插件可升级的版本")
+    @GetMapping("/allow/upgrade/version")
+    public Response<List<PluginInfo>> upgradeAllowPluginList(@Validated @RequestBody PluginAllowUpgradeLibraryListQueryRequest queryRequest) {
+        return pluginLibraryService.queryByPluginName(queryRequest);
+    }
 }

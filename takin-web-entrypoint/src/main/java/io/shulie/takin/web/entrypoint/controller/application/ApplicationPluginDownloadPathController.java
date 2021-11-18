@@ -3,7 +3,6 @@ package io.shulie.takin.web.entrypoint.controller.application;
 import io.shulie.takin.cloud.common.constants.APIUrls;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationPluginDownloadPathInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationPluginDownloadPathUpdateInput;
@@ -20,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 /**
  * 探针根目录(ApplicationPluginDownloadPath)controller
  *
@@ -36,15 +33,15 @@ public class ApplicationPluginDownloadPathController {
     @Autowired
     private ApplicationAgentPathTypeService pathTypeService;
 
-    @ApiOperation("获取探针存放根目录类型")
-    @GetMapping("/type/support")
-    @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-            needAuth = ActionTypeEnum.QUERY
-    )
-    public List<SelectVO> supperType() {
-        return  pathTypeService.supportType();
-    }
+//    @ApiOperation("获取探针存放根目录类型")
+//    @GetMapping("/type/support")
+//    @AuthVerification(
+//            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+//            needAuth = ActionTypeEnum.QUERY
+//    )
+//    public List<SelectVO> supperType() {
+//        return  pathTypeService.supportType();
+//    }
 
 
     @ApiOperation("获取探针存放根目录配置")

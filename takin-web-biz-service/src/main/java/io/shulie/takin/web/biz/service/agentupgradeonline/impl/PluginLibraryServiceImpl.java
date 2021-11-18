@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.agentupgradeonline.impl;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentLibraryCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginAllowUpgradeLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.PluginLibraryListQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigCreateRequest;
@@ -23,12 +25,16 @@ import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginLibraryListResponse;
 import io.shulie.takin.web.biz.pojo.response.common.FileUploadResponse;
 import io.shulie.takin.web.biz.service.ApiService;
+import io.shulie.takin.web.biz.service.agentupgradeonline.AgentReportService;
+import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeRefService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.PluginLibraryService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
+import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
 import io.shulie.takin.web.biz.utils.agentupgradeonline.AgentPkgUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
 import io.shulie.takin.web.common.agent.IAgentZipResolver;
 import io.shulie.takin.web.common.agent.ModulePropertiesResolver;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.agentupgradeonline.PluginTypeEnum;
 import io.shulie.takin.web.common.pojo.bo.agent.AgentModuleInfo;
 import io.shulie.takin.web.common.pojo.bo.agent.PluginCreateBO;
@@ -46,9 +52,11 @@ import io.shulie.takin.web.data.param.agentupgradeonline.PluginLibraryQueryParam
 import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
 import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentVersionParam;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
+import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,6 +97,17 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
 
     @Resource
     private ThreadPoolExecutor agentAggregationThreadPool;
+
+    @Autowired
+    private AgentReportService agentReportService;
+
+    @Autowired
+    private AgentVersionService agentVersionService;
+
+    @Autowired
+    private ApplicationPluginUpgradeRefService upgradeRefService;
+
+
 
     private final Map<PluginTypeEnum, IAgentZipResolver> agentZipResolverMap = new HashMap<>();
 
@@ -378,4 +397,13 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
         return null;
     }
 
+    @Override
+    public Response<List<PluginInfo>> queryByPluginName(PluginAllowUpgradeLibraryListQueryRequest queryRequest) {
+        List<Long> applications = queryRequest.getApplications();
+        //确定当前应用的最高升级单
+        List<AgentReportDetailResult> list = agentReportService.getList(applications);
+        Map<Long, List<PluginLibraryDetailResult>> appPluginList = agentVersionService.findAppPluginList(list);
+        //确定当前应用的最高插件版本
+        return null;
+    }
 }

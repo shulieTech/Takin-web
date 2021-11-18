@@ -10,6 +10,5 @@ import io.shulie.takin.web.data.model.mysql.AgentConfigEntity;
  * @date 2021-08-12 18:57:00
  */
 public interface AgentConfigMapper extends BaseMapper<AgentConfigEntity> {
-
 }
 

@@ -40,6 +40,7 @@ import io.shulie.takin.web.data.param.fastagentaccess.AgentProjectConfigQueryPar
 import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentConfigParam;
 import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentConfigParam;
 import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
+import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +104,9 @@ public class AgentConfigServiceImpl implements AgentConfigService {
                     createAgentConfigParam.setValueOption(JSON.toJSONString(item.getValueOptionList()));
                 }
                 createAgentConfigParam.setEffectMinVersionNum(AgentVersionUtil.string2Long(item.getEffectMinVersion()));
+
+                createAgentConfigParam.setTenantId(WebPluginUtils.SYS_DEFAULT_TENANT_ID);
+                createAgentConfigParam.setEnvCode(WebPluginUtils.SYS_DEFAULT_ENV_CODE);
                 return createAgentConfigParam;
             })
             .collect(Collectors.toList());
@@ -437,6 +441,8 @@ public class AgentConfigServiceImpl implements AgentConfigService {
      * @return 操作人
      */
     private String getOperator() {
-        return WebPluginUtils.traceUser() == null ? LoginConstant.DEFAULT_OPERATOR : WebPluginUtils.traceUser().getName();
+        UserExt userExt = WebPluginUtils.traceUser();
+        return userExt == null ? LoginConstant.DEFAULT_OPERATOR : userExt.getName();
     }
+
 }

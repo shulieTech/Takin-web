@@ -131,10 +131,10 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     @Transactional(rollbackFor = Exception.class)
     public void release(AgentVersionCreateRequest createRequest) {
         // 如果当前发布版本已存在则先删除
-        if (createRequest.getExist()) {
-            deleteByVersion(createRequest.getVersion());
-        }
-        create(createRequest);
+        //if (createRequest.getExist()) {
+        //    deleteByVersion(createRequest.getVersion());
+        //}
+        //create(createRequest);
 
         List<AgentConfigCreateRequest> configCreateRequestList = createRequest.getConfigList();
         // 新增配置信息

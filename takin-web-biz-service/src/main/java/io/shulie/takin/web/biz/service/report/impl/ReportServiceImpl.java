@@ -135,7 +135,9 @@ public class ReportServiceImpl implements ReportService {
             new ArrayList<Long>(1) {{add(output.getUserId());}});
         // 填充用户信息
         if (userInfo.containsKey(output.getUserId())) {
+            output.setOperateId(output.getUserId().toString());
             output.setUserName(userInfo.get(output.getUserId()).getName());
+            output.setOperateName(userInfo.get(output.getUserId()).getName());
         }
     }
 

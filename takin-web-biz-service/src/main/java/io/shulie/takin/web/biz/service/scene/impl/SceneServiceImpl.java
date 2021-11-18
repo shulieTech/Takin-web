@@ -141,21 +141,43 @@ public class SceneServiceImpl implements SceneService {
         List<SceneLinkRelateResult> links = sceneLinkRelateDao.getByEntrance(node.getIdentification());
         SceneLinkRelateResult link = null;
         ActivityListResult activity = null;
+        boolean isManyMatch = false;
         if (CollectionUtils.isEmpty(links)) {
             ActivityQueryParam param = new ActivityQueryParam();
             param.setEntrance(node.getIdentification());
             List<ActivityListResult> activities = activityDao.getActivityList(param);
-            //noinspection unchecked
-            activity = DataUtil.getFirst(activities, Comparator.comparing(ActivityListResult::getActivityId).reversed());
+            //只有匹配到一个业务活动，才可以进行自动匹配
+            if (CollectionUtils.isNotEmpty(activities) && activities.size() == 1){
+                //noinspection unchecked
+                activity = activities.get(0);
+            }
+
         } else {
             Comparator<SceneLinkRelateResult> idDescComparator = Comparator.comparing(SceneLinkRelateResult::getId).reversed();
+            //sceneId不为空，更新过程
             if (null != sceneId) {
-                //noinspection unchecked
-                link = DataUtil.getFirst(links, idDescComparator, r -> String.valueOf(sceneId).equals(r.getSceneId()));
+                //如果存在业务流程id相同情况，优先匹配业务流程相同的
+                List<SceneLinkRelateResult> collect = links.stream().filter(o -> sceneId.equals(NumberUtils.toLong(o.getSceneId())))
+                        .collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(collect)){
+                    Map<String, List<SceneLinkRelateResult>> businessActivityMap = collect.stream().collect(Collectors.groupingBy(SceneLinkRelateResult::getBusinessLinkId));
+                    //即便业务流程相同，也不能匹配到两个业务活动
+                    if (businessActivityMap != null && businessActivityMap.keySet().size() == 1){
+                        link = collect.get(0);
+                    }
+                    if (businessActivityMap != null && businessActivityMap.keySet().size() > 1){
+                        isManyMatch = true;
+                    }
+                }
             }
-            if (null == link) {
+            //如果相同业务流程id中没有匹配到，并且没有多个匹配的情况
+            if (null == link && !isManyMatch) {
+                //没有匹配到
+                Map<String, List<SceneLinkRelateResult>> businessActivityMap = links.stream().collect(Collectors.groupingBy(SceneLinkRelateResult::getBusinessLinkId));
+                if (businessActivityMap != null && businessActivityMap.keySet().size() == 1){
+                    link = links.get(0);
+                }
                 //noinspection unchecked
-                link = DataUtil.getFirst(links, idDescComparator);
             }
         }
 

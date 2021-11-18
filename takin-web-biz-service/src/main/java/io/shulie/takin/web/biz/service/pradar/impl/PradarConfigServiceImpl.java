@@ -1,11 +1,9 @@
 package io.shulie.takin.web.biz.service.pradar.impl;
 
-import java.util.Objects;
-
 import cn.hutool.core.bean.BeanUtil;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigDeleteRequest;
+import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
@@ -35,7 +33,7 @@ public class PradarConfigServiceImpl implements PradarConfigService {
     @Override
     public void initZooKeeperData() {
         // 放入zk，只放入系统的
-        for (PradarZkConfigResult config : pradarZkConfigDAO.listSystemConfig()) {
+        for (PradarZkConfigResult config : pradarZkConfigDAO.list()) {
             if (!zkHelper.isNodeExists(config.getZkPath())) {
                 zkHelper.addPersistentNode(config.getZkPath(), config.getValue());
             }
@@ -58,59 +56,33 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         PradarConfigCreateParam updateParam = BeanUtil.copyProperties(updateRequest, PradarConfigCreateParam.class);
         PradarZkConfigResult config = pradarZkConfigDAO.getById(updateRequest.getId());
         Assert.notNull(config, "配置不存在！");
-
-        // 更新db， 更新zk， 只更新system的
-        if (pradarZkConfigDAO.updateOnlySystem(updateParam)
-            && Objects.equals(WebPluginUtils.SYS_DEFAULT_TENANT_ID, config.getTenantId())) {
+        if (pradarZkConfigDAO.update(updateParam)) {
             zkHelper.updateNode(config.getZkPath(), updateRequest.getValue());
         }
     }
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void addConfig(PradarZKConfigCreateRequest createRequest) {
-        //try {
-        //    if (StringUtils.isBlank(createRequest.getZkPath()) ||
-        //        StringUtils.isBlank(createRequest.getType()) ||
-        //        StringUtils.isBlank(createRequest.getValue())) {
-        //        throw new RuntimeException("保存失败，key|type|value不能为空！");
-        //    }
-        //    if (!createRequest.getZkPath().startsWith("/")) {
-        //        throw new RuntimeException("保存失败，key必须以'/'开始！");
-        //    }
-        //    if (createRequest.getZkPath().length() == 1) {
-        //        throw new RuntimeException("保存失败，请输入正确的key路径！");
-        //    }
-        //    LambdaQueryWrapper<PradarZkConfigEntity> wrapper = new LambdaQueryWrapper<>();
-        //    wrapper.eq(PradarZkConfigEntity::getZkPath, createRequest.getZkPath());
-        //    Long count = pradarZkConfigMapper.selectCount(wrapper);
-        //    if (count > 0) {
-        //        throw new RuntimeException(String.format("保存失败，[key:%s] 已被使用", createRequest.getZkPath()));
-        //    }
-        //    PradarConfigCreateParam addParam = new PradarConfigCreateParam();
-        //    BeanUtils.copyProperties(createRequest, addParam);
-        //    int rows = pradarZkConfigDAO.insert(addParam);
-        //    addNode(addParam.getZkPath(), addParam.getValue());
-        //    return rows;
-        //} catch (TakinWebException e) {
-        //    throw new TakinWebException(e.getEx(), "新增zk配置异常");
-        //}
+    public void addConfig(PradarZkConfigCreateRequest createRequest) {
+        String zkPath = createRequest.getZkPath();
+        Assert.isTrue(zkPath.startsWith("/"), "zkPath必须以'/'开头");
+        // 判断path是否存在
+        PradarZkConfigResult pradarZkConfig = pradarZkConfigDAO.getByZkPath(zkPath);
+        Assert.isNull(pradarZkConfig, "zkPath已存在！");
+        PradarConfigCreateParam createParam = BeanUtil.copyProperties(createRequest, PradarConfigCreateParam.class);
+        if (pradarZkConfigDAO.insert(createParam)) {
+            zkHelper.addPersistentNode(zkPath, createParam.getValue());
+        }
     }
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void deleteConfig(PradarZKConfigDeleteRequest deleteRequest) {
-        //try {
-        //    PradarConfigCreateParam deleteParam = new PradarConfigCreateParam();
-        //    BeanUtils.copyProperties(deleteRequest, deleteParam);
-        //    PradarZKConfigResult result = pradarZkConfigDAO.selectById(deleteParam.getId());
-        //    if (result != null) {
-        //        deleteNode(result.getZkPath());
-        //    }
-        //    return pradarZkConfigDAO.delete(deleteParam);
-        //} catch (TakinWebException e) {
-        //    throw new TakinWebException(e.getEx(), "删除zk配置异常");
-        //}
+    public void deleteConfig(PradarZkConfigDeleteRequest deleteRequest) {
+        PradarZkConfigResult config = pradarZkConfigDAO.getById(deleteRequest.getId());
+        Assert.notNull(config, "配置不存在！");
+        if (pradarZkConfigDAO.deleteById(deleteRequest.getId())) {
+            zkHelper.deleteNode(config.getZkPath());
+        }
     }
 
 }

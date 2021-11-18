@@ -16,7 +16,13 @@ import io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult;
  */
 public interface PradarZkConfigDAO {
 
-    int insert(PradarConfigCreateParam createParam);
+    /**
+     * 创建
+     *
+     * @param createParam 创建所需参数
+     * @return 是否成功
+     */
+    boolean insert(PradarConfigCreateParam createParam);
 
     /**
      * 只更新系统的配置
@@ -25,7 +31,7 @@ public interface PradarZkConfigDAO {
      * @return 是否更新成功
      */
     @InterceptorIgnore(tenantLine = "true")
-    boolean updateOnlySystem(PradarConfigCreateParam updateParam);
+    boolean update(PradarConfigCreateParam updateParam);
 
     int delete(PradarConfigCreateParam deleteParam);
 
@@ -35,7 +41,7 @@ public interface PradarZkConfigDAO {
      * @return pradarConfig 系统配置的列表
      */
     @InterceptorIgnore(tenantLine = "true")
-    List<PradarZkConfigResult> listSystemConfig();
+    List<PradarZkConfigResult> list();
 
     /**
      * 通过id获得详情
@@ -76,5 +82,13 @@ public interface PradarZkConfigDAO {
      */
     @InterceptorIgnore(tenantLine = "true")
     PagingList<PradarZkConfigResult> page(Long sysDefaultTenantId, String sysDefaultEnvCode, PageBaseDTO pageBaseDTO);
+
+    /**
+     * 根据id删除
+     *
+     * @param id        主键id
+     * @return 是否成功
+     */
+    boolean deleteById(Long id);
 
 }

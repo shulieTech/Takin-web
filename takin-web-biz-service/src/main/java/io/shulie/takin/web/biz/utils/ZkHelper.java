@@ -120,8 +120,22 @@ public class ZkHelper {
         try {
             client.setData().forPath(path, value.getBytes());
         } catch (Exception e) {
-            log.error("创建zk数据节点失败;path={},data={}", path, value, e);
+            log.error("更新zk数据节点失败;path={},data={}", path, value, e);
             throw new RuntimeException(String.format("更新节点失败, 错误信息: %s", e.getMessage()));
+        }
+    }
+
+    /**
+     * 删除节点的值
+     *
+     * @param path 路径
+     */
+    public void deleteNode(String path) {
+        try {
+            client.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
+        } catch (Exception e) {
+            log.error("删除zk数据节点失败;path={}", path, e);
+            throw new RuntimeException(String.format("删除节点失败, 错误信息: %s", e.getMessage()));
         }
     }
 

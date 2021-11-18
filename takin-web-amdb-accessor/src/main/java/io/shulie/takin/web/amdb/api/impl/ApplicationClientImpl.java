@@ -255,11 +255,6 @@ public class ApplicationClientImpl implements ApplicationClient {
                 httpMethod = HttpMethod.POST;
             }
             AmdbResult<List<ApplicationNodeDTO>> amdbResponse = AmdbHelper.builder().httpMethod(httpMethod)
-            HttpMethod httpMethod = HttpMethod.GET;
-            if (url.equals(this.getApplicationNodeQueryPathUrl())) {
-                httpMethod = HttpMethod.POST;
-            }
-            AmdbResult<List<ApplicationNodeDTO>> amdbResponse = AmdbHelper.newInStance().httpMethod(httpMethod)
                 .url(url)
                 .param(dto)
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)

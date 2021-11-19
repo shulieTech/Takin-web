@@ -26,9 +26,19 @@ public class ApplicationPluginUpgradeRefEntity extends NewBaseEntity implements 
     private String upgradeBatch;
 
     /**
-     * 插件id
+     * 插件名称
      */
-    private Long pluginId;
+    private String pluginName;
+
+    /**
+     * 插件版本
+     */
+    private String pluginVersion;
+
+    /**
+     * 插件版本对应的数值
+     */
+    private Long pluginVersionNum;
 
     /**
      * 备注

@@ -189,6 +189,6 @@ public class ThreadPoolConfig {
         final int coreSize = Runtime.getRuntime().availableProcessors();
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("agent-heartbeat-%d").build();
         return new ThreadPoolExecutor(coreSize, coreSize * 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100),
-            nameThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+            nameThreadFactory, new ThreadPoolExecutor.DiscardPolicy());
     }
 }

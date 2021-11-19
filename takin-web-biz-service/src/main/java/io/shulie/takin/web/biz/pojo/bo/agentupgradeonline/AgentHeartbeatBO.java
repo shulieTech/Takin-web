@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.bo.agentupgradeonline;
 
+import io.shulie.takin.web.common.enums.fastagentaccess.AgentReportStatusEnum;
 import lombok.Data;
 
 /**
@@ -76,7 +77,17 @@ public class AgentHeartbeatBO {
     private String agentVersion;
 
     /**
-     * 是否需要升级单信息
+     * agent依赖的模块版本信息
      */
-    private Boolean needUpgradeInfo;
+    private String dependencyInfo;
+
+    /**
+     * 是否企业版，开源版就是个空的值，企业版会给个shulieEnterprise
+     */
+    private String flag;
+
+    /**
+     * 节点当前状态
+     */
+    private AgentReportStatusEnum curStatus;
 }

@@ -209,7 +209,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
             }
 
             // 插入
-            CreateAgentConfigParam createParam = getCreateAgentConfigParam(detailResult,
+            CreateAgentConfigParam createParam = this.getCreateAgentConfigParam(detailResult,
                 updateRequest.getDefaultValue(), AgentConfigTypeEnum.PROJECT.getVal());
             createParam.setProjectName(updateRequest.getProjectName());
             createParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());

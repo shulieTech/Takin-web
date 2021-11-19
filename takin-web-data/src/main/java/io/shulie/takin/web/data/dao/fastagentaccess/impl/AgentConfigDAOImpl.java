@@ -141,7 +141,7 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
             return new ArrayList<>(0);
         }
         List<AgentConfigEntity> entityList = agentConfigMapper.selectList(
-            this.getLambdaQueryWrapper()
+            this.getTenantAndEnvLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.PROJECT.getVal())
                 .eq(AgentConfigEntity::getProjectName, queryParam.getProjectName())
                 .eq(AgentConfigEntity::getUserAppKey, queryParam.getUserAppKey())

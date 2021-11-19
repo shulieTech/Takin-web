@@ -163,7 +163,16 @@ public interface MPUtil<T> {
      * @return query lambda 包装类, 带有租户id
      */
     default LambdaQueryWrapper<T> getTenantAndEnvLimitOneLambdaQueryWrapper() {
-        return this.getTenantAndEnvQueryWrapper().lambda().last(LIMIT_ONE);
+        return this.getTenantAndEnvLambdaQueryWrapper().last(LIMIT_ONE);
+    }
+
+    /**
+     * 获得 query lambda 包装类, 带有租户id，环境
+     *
+     * @return query lambda 包装类, 带有租户id
+     */
+    default LambdaQueryWrapper<T> getTenantAndEnvLambdaQueryWrapper() {
+        return this.getTenantAndEnvQueryWrapper().lambda();
     }
 
     /**

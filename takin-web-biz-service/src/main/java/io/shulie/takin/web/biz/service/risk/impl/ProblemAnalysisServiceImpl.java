@@ -131,7 +131,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         ApplicationNodeQueryParam param = new ApplicationNodeQueryParam();
         param.setApplicationNames(appNameList);
         List<String> onlineAgentIds = applicationNodeDAO.getOnlineAgentIds(param);
-
+        final Long tenantId = WebPluginUtils.traceTenantId();
+        final String envCode = WebPluginUtils.traceEnvCode();
         appNameList.forEach(appName -> {
             Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(sTime, eTime, appName));
             if (CollectionUtils.isNotEmpty(baseList)) {
@@ -194,6 +195,9 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     baseAppVo.setAgentIp(null);
                     tmp.setMachineBaseConfig(JSON.toJSONString(baseAppVo));
 
+                    // 租户
+                    tmp.setEnvCode(envCode);
+                    tmp.setTenantId(tenantId);
                     insertList.add(tmp);
                 }
             });

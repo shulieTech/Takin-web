@@ -70,7 +70,8 @@ public class SummaryService {
         if (CollectionUtils.isEmpty(dataList)) {
             return;
         }
-
+        final String envCode = WebPluginUtils.traceEnvCode();
+        final Long tenantId = WebPluginUtils.traceTenantId();
         List<ReportApplicationSummary> applications = Lists.newArrayList();
         for (Map<String, Object> dataMap : dataList) {
             String applicationName = (String)dataMap.get("application_name");
@@ -85,7 +86,8 @@ public class SummaryService {
             application.setApplicationName(applicationName);
             application.setMachineTotalCount(totalCount);
             application.setMachineRiskCount(riskCount);
-
+            application.setEnvCode(envCode);
+            application.setTenantId(tenantId);
             applications.add(application);
         }
         if (CollectionUtils.isEmpty(applications)) {
@@ -130,6 +132,8 @@ public class SummaryService {
         reportSummary.setApplicationCount(appCount);
         reportSummary.setMachineCount(totalCount);
         reportSummary.setWarnCount(warnCount);
+        reportSummary.setEnvCode(WebPluginUtils.traceEnvCode());
+        reportSummary.setTenantId(WebPluginUtils.traceTenantId());
         ReportSummary summary = tReportSummaryMapper.selectOneByReportId(reportId);
         // todo 临时方案
         if (summary == null) {

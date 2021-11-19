@@ -57,7 +57,8 @@ public class FinishReportJob implements SimpleJob {
             for (Long reportId : reportIds) {
                 // 开始数据层分片
                 if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    fastDebugThreadPool.execute(() -> reportTaskService.finishReport(reportId));
+                    fastDebugThreadPool.execute(() -> reportTaskService.finishReport(reportId,WebPluginUtils.setTraceTenantContext(WebPluginUtils.traceTenantId(),WebPluginUtils.traceTenantAppKey(),WebPluginUtils.traceEnvCode(),
+                        WebPluginUtils.traceTenantCode(), ContextSourceEnum.JOB.getCode())));
                 }
             }
         }else {
@@ -68,9 +69,9 @@ public class FinishReportJob implements SimpleJob {
                     // 根据环境 分线程
                     ext.getEnvs().forEach(e ->
                         jobThreadPool.execute(() -> {
-                            WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),
-                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
-                            this.finishReport();
+                            TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),
+                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode());
+                            this.finishReport(commonExt);
                             WebPluginUtils.removeTraceContext();
                         }));
                 }
@@ -79,17 +80,20 @@ public class FinishReportJob implements SimpleJob {
         log.info("finishReport 执行时间:{}", System.currentTimeMillis() - start);
     }
 
-    private void finishReport() {
+    private void finishReport(TenantCommonExt commonExt) {
         List<Long> reportIds = reportService.queryListRunningReport();
         if (CollectionUtils.isEmpty(reportIds)){
             log.warn("暂无压测中的报告！");
             return;
         }
-        log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(),
-            WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
+        log.info("获取租户【{}】【{}】正在压测中的报告:{}", commonExt.getTenantId(),
+            commonExt.getEnvCode(), JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据分片
-            fastDebugThreadPool.execute(() -> reportTaskService.finishReport(reportId));
+            fastDebugThreadPool.execute(() -> {
+                WebPluginUtils.setTraceTenantContext(commonExt);
+                reportTaskService.finishReport(reportId,commonExt);
+            });
         }
 
     }

@@ -12,6 +12,7 @@ import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -75,14 +76,16 @@ public class CalcApplicationSummaryJob implements SimpleJob {
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     // 根据环境 分线程
                     for (TenantEnv e : ext.getEnvs()) {
-                        WebPluginUtils.setTraceTenantContext(
-                            ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),ext.getTenantCode(),
+                        final TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(
+                            ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(), ext.getTenantCode(),
                             ContextSourceEnum.JOB.getCode());
                         if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                             continue;
                         }
 
-                        jobThreadPool.execute(this::calcApplicationSummary);
+                        jobThreadPool.execute(()->{
+                            this.calcApplicationSummary(commonExt);
+                        });
                     }
                 }
             }
@@ -91,17 +94,20 @@ public class CalcApplicationSummaryJob implements SimpleJob {
         log.info("calcApplicationSummaryJob 执行时间:{}", System.currentTimeMillis() - start);
     }
 
-    private void calcApplicationSummary() {
+    private void calcApplicationSummary(TenantCommonExt commonExt) {
         List<Long> reportIds = reportService.queryListRunningReport();
         if (CollectionUtils.isEmpty(reportIds)){
             log.warn("暂无压测中的报告！");
             return;
         }
-        log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),
+        log.info("获取租户【{}】【{}】正在压测中的报告:{}", commonExt.getTenantId(), commonExt.getEnvCode(),
             JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据层分片
-            fastDebugThreadPool.execute(() -> reportTaskService.calcApplicationSummary(reportId));
+            fastDebugThreadPool.execute(() -> {
+                WebPluginUtils.setTraceTenantContext(commonExt);
+                reportTaskService.calcApplicationSummary(reportId);
+            });
         }
     }
 

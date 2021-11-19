@@ -18,6 +18,7 @@ import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
@@ -92,7 +93,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     }
 
     @Override
-    public void finishReport(Long reportId) {
+    public void finishReport(Long reportId,TenantCommonExt commonExt) {
         try {
             if (RUNNINT.get()) {
                 return;
@@ -131,7 +132,11 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 log.info("finish report，total data  Running Report :{}", reportId);
 
                 // 收集数据 单独线程收集
-                fastDebugThreadPool.execute(this.collectData(reportId));
+                fastDebugThreadPool.execute(()->{
+                    //添加租户上下文
+                    WebPluginUtils.setTraceTenantContext(commonExt);
+                    this.collectData(reportId);
+                });
 
                 // 停止报告
                 Boolean webResponse = reportService.finishReport(reportId);

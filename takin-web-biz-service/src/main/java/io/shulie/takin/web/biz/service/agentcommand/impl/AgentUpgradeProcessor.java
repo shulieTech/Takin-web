@@ -13,8 +13,13 @@ import io.shulie.takin.web.biz.service.agentupgradeonline.AgentReportService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
+import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidStatusEnum;
 import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -98,12 +103,38 @@ public class AgentUpgradeProcessor extends AgentCommandSupport {
 
     @Override
     public Object dealHeartbeat0(AgentHeartbeatBO agentHeartbeatBO) {
-        // TODO ocean_wll
-        return null;
+        // 查询当前应用当前未升级成功的最新批次号
+        ApplicationPluginUpgradeDetailResult upgradeDetailResult
+            = applicationPluginUpgradeService.queryLatestUpgradeByAppIdAndStatus(agentHeartbeatBO.getApplicationId(),
+            AgentUpgradeEnum.NOT_UPGRADE.getVal());
+
+        ApplicationPluginDownloadPathDetailResult downloadResult = getPluginDownloadPath(
+            ApplicationAgentPathValidStatusEnum.CHECK_PASSED);
+
+        UpgradeResult upgradeResult = new UpgradeResult();
+        BeanUtils.copyProperties(downloadResult, upgradeResult);
+        upgradeResult.setUpgradeBath(upgradeDetailResult.getUpgradeBatch());
+        upgradeResult.setDownloadPath(upgradeDetailResult.getDownloadPath());
+        return upgradeResult;
     }
 
     @Override
     public AgentCommandEnum getCommand() {
         return AgentCommandEnum.REPORT_UPGRADE_RESULT;
+    }
+
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    static class UpgradeResult extends ApplicationPluginDownloadPathDetailResult {
+
+        /**
+         * 升级批次号
+         */
+        private String upgradeBath;
+
+        /**
+         * 下载地址
+         */
+        private String downloadPath;
     }
 }

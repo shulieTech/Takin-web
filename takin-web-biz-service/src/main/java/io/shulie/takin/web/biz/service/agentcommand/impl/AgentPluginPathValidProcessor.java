@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentHeartbeatBO;
 import io.shulie.takin.web.biz.service.agentcommand.AgentCommandSupport;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
+import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidStatusEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginDownloadPathDAO;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,16 +37,14 @@ public class AgentPluginPathValidProcessor extends AgentCommandSupport {
 
     @Override
     public boolean needDealHeartbeat(AgentHeartbeatBO agentHeartbeatBO) {
-        //查库
-
-        // TODO ocean_wll
-        return false;
+        ApplicationPluginDownloadPathDetailResult result = getPluginDownloadPath(
+            ApplicationAgentPathValidStatusEnum.TO_BE_CHECKED);
+        return result != null;
     }
 
     @Override
     public Object dealHeartbeat0(AgentHeartbeatBO agentHeartbeatBO) {
-        // TODO ocean_wll
-        return null;
+        return getPluginDownloadPath(ApplicationAgentPathValidStatusEnum.TO_BE_CHECKED);
     }
 
     @Override

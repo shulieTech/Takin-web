@@ -175,23 +175,26 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
 
     @Override
     public ScriptDebugResponse debug(ScriptDebugDoDebugRequest request) {
+        // 增加并发数 与 试跑数判断
+        if (request.getConcurrencyNum() > request.getRequestNum()) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "并发数必须小于等于试跑次数");
+        }
+
         Long scriptDeployId = request.getScriptDeployId();
         String lockKey = String.format(LockKeyConstants.LOCK_SCRIPT_DEBUG, scriptDeployId);
         if (!distributedLock.tryLockZeroWait(lockKey)) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_DEBUG_REPEAT_ERROR, AppConstants.TOO_FREQUENTLY);
         }
-        // 增加并发数 与 试跑数判断
-        if (request.getConcurrencyNum() > request.getRequestNum()) {
-            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "并发数必须小于等于试跑次数");
-        }
+
         // 响应数据
         ScriptDebugResponse response = new ScriptDebugResponse();
         ScriptDebugEntity scriptDebug;
         try {
 
             //探针总开关关闭状态禁止启动压测
-            ScriptDebugExceptionUtil.isDebugError(applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.traceTenantId(), AppSwitchEnum.CLOSED),
-                    "脚本调试失败，探针总开关已关闭");
+            ScriptDebugExceptionUtil.isDebugError(
+                applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.traceTenantId(), AppSwitchEnum.CLOSED),
+                "脚本调试失败，探针总开关已关闭");
             // 脚本发布实例是否存在
             ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDeployId);
             ScriptDebugExceptionUtil.isDebugError(scriptDeploy == null, "脚本发布实例不存在!");

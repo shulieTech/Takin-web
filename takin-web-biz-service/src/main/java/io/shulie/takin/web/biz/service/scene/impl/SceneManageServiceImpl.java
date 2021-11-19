@@ -625,21 +625,23 @@ public class SceneManageServiceImpl implements SceneManageService {
         });
 
         ResponseResult<ScriptCheckResp> scriptCheckResp = sceneManageApi.checkAndUpdateScript(scriptCheckAndUpdateReq);
-        if (scriptCheckResp == null || !scriptCheckResp.getSuccess()) {
-            log.error("cloud检查并更新脚本出错：{}", sceneScriptRef.getUploadPath());
-            StringBuilder sb = new StringBuilder();
-            sb.append(String.format("cloud检查并更新【%s】脚本异常,异常内容【%s】", sceneScriptRef.getUploadPath(), scriptCheckResp.getError().getMsg()));
-            dto.setErrmsg("|");
+        if (scriptCheckResp == null) {
+            dto.setErrmsg("调用cloud检查脚本无响应内容！");
             return dto;
         }
+
+        if (!scriptCheckResp.getSuccess()) {
+            dto.setErrmsg(String.format("cloud检查并更新【%s】脚本异常,异常内容【%s】", sceneScriptRef.getUploadPath(), scriptCheckResp.getError().getMsg()));
+            return dto;
+        }
+
         if (scriptCheckResp.getData() != null && CollectionUtils.isNotEmpty(scriptCheckResp.getData().getErrorMsg())) {
             StringBuilder stringBuilder = new StringBuilder();
-            scriptCheckResp.getData().getErrorMsg().forEach(errorMsg -> {
-                stringBuilder.append(errorMsg).append("|");
-            });
+            scriptCheckResp.getData().getErrorMsg().forEach(errorMsg -> stringBuilder.append(errorMsg).append("|"));
             stringBuilder.substring(0, stringBuilder.length() - 1);
             dto.setErrmsg(stringBuilder.toString());
         }
+
         return dto;
     }
 

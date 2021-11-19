@@ -34,11 +34,12 @@ public class SceneSchedulerJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-        if (CollectionUtils.isEmpty(tenantInfoExts)) {
+
+        if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源
             sceneSchedulerTaskService.executeSchedulerPressureTask();
         } else {
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             // saas
             tenantInfoExts.forEach(ext -> {
                 // 根据环境 分线程

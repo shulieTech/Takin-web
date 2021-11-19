@@ -33,11 +33,12 @@ public class ShowdownVerifyJob implements SimpleJob {
     private ThreadPoolExecutor jobThreadPool;
     @Override
     public void execute(ShardingContext shardingContext) {
-        List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-        if(CollectionUtils.isEmpty(tenantInfoExts)) {
+
+        if(WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源
             verifyTaskService.showdownVerifyTask();
         }else {
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             // saas
             tenantInfoExts.forEach(ext -> {
                 // 根据环境 分线程

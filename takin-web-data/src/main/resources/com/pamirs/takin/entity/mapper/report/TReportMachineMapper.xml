@@ -81,17 +81,20 @@
     <insert id="insertOrUpdate" parameterType="com.pamirs.takin.entity.domain.entity.report.ReportMachine">
         insert into t_report_machine (report_id, application_name,
                                       machine_ip, agent_id, machine_base_config, risk_value,
-                                      risk_flag, risk_content, machine_tps_target_config)
+                                      risk_flag, risk_content, machine_tps_target_config,tenant_id,env_code)
         values (
                    #{reportId,jdbcType=BIGINT}, #{applicationName,jdbcType=VARCHAR},
                    #{machineIp,jdbcType=VARCHAR}, #{agentId,jdbcType=VARCHAR}, #{machineBaseConfig,jdbcType=VARCHAR},
                    #{riskValue,jdbcType=DECIMAL},#{riskFlag,jdbcType=TINYINT}, #{riskContent,jdbcType=VARCHAR},
-                   #{machineTpsTargetConfig,jdbcType=LONGVARCHAR}
+                   #{machineTpsTargetConfig,jdbcType=LONGVARCHAR},#{tenantId,jdbcType=BIGINT},#{envCode,jdbcType=VARCHAR}
                )
         on duplicate key update machine_base_config=#{machineBaseConfig,jdbcType=VARCHAR},
                                 agent_id=#{agentId,jdbcType=VARCHAR},
                                 risk_value=#{riskValue,jdbcType=DECIMAL},
-                                risk_content=#{riskContent,jdbcType=VARCHAR}
+                                risk_content=#{riskContent,jdbcType=VARCHAR},
+                                tenant_id=#{tenantId,jdbcType=BIGINT},
+                                env_code=#{envCode,jdbcType=VARCHAR}
+
     </insert>
 
     <select id="selectSimpleByExample" resultMap="BaseResultMap"

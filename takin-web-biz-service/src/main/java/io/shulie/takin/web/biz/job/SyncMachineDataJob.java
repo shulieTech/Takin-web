@@ -50,9 +50,7 @@ public class SyncMachineDataJob implements SimpleJob {
     @Override
     public void execute(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
-        //List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-        final Boolean openVersion = WebPluginUtils.isOpenVersion();
-        if (openVersion) {
+        if (WebPluginUtils.isOpenVersion()) {
             if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                 return;
             }

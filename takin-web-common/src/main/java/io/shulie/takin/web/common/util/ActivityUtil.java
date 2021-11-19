@@ -38,8 +38,10 @@ public class ActivityUtil {
         tags.append(serviceName)
             .append("|").append(methodName)
             .append("|").append(appName)
-            .append("|").append(rpcType)
-            .append("|").append(extend);
+            .append("|").append(rpcType);
+        if (StringUtils.isNotBlank(extend)){
+            tags.append("|").append(extend);
+        }
         try {
             return MD5Tool.getMD5(tags.toString());
         } catch (Exception e) {

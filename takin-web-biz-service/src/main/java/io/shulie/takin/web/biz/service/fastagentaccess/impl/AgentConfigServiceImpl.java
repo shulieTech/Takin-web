@@ -32,6 +32,7 @@ import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.biz.utils.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.TestZkConnUtils;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
+import io.shulie.takin.web.common.constant.CacheConstants;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectMechanismEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigValueTypeEnum;
@@ -44,6 +45,8 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -56,7 +59,10 @@ import org.springframework.util.StringUtils;
  * @date 2021-08-12 18:54:56
  */
 @Service
-public class AgentConfigServiceImpl implements AgentConfigService {
+public class AgentConfigServiceImpl implements AgentConfigService, CacheConstants {
+
+    @Autowired
+    private AgentConfigService agentConfigService;
 
     /**
      * 对应的zk地址key
@@ -72,6 +78,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
     @Autowired
     private AgentConfigClient agentConfigClient;
 
+    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
     @Override
     public void batchInsert(List<AgentConfigCreateRequest> createRequestList) {
         List<String> enConfigKeyList = new ArrayList<>();
@@ -156,16 +163,17 @@ public class AgentConfigServiceImpl implements AgentConfigService {
         queryBO.setEffectMechanism(queryRequest.getEffectMechanism());
         queryBO.setEnKey(queryRequest.getEnKey());
         queryBO.setReadProjectConfig(queryRequest.getReadProjectConfig());
-        List<AgentConfigListResponse> list = this.getConfigList(queryBO).values().stream().map(item -> {
+        List<AgentConfigListResponse> list = agentConfigService.getConfigList(queryBO).values().stream()
+            .map(item -> {
             AgentConfigListResponse agentConfigListResponse = new AgentConfigListResponse();
             BeanUtils.copyProperties(item, agentConfigListResponse);
             return agentConfigListResponse;
         }).collect(Collectors.toList());
-
         // 过滤是否生效配置
         return filterConfigEffect(list, queryRequest);
     }
 
+    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
     @Override
     public void update(AgentConfigUpdateRequest updateRequest) {
         AgentConfigDetailResult detailResult = agentConfigDAO.findById(updateRequest.getId());
@@ -220,7 +228,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
     /**
      * 更新配置
      *
-     * @param id 主键id
+     * @param id    主键id
      * @param value 修改的值
      */
     private void updateConfig(Long id, String value) {
@@ -237,7 +245,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
      * 当没有应用名称时的更新
      *
      * @param updateRequest 更新所需数据
-     * @param detailResult 配置详情
+     * @param detailResult  配置详情
      */
     private void updateWithoutProjectName(AgentConfigUpdateRequest updateRequest,
         AgentConfigDetailResult detailResult) {
@@ -272,7 +280,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
      *
      * @param detailResult 详情
      * @param defaultValue 默认值
-     * @param type 类型
+     * @param type         类型
      * @return 新增所需数据
      */
     private CreateAgentConfigParam getCreateAgentConfigParam(AgentConfigDetailResult detailResult,
@@ -311,11 +319,12 @@ public class AgentConfigServiceImpl implements AgentConfigService {
         queryBO.setProjectName(queryRequest.getProjectName());
         queryBO.setEffectMechanism(queryRequest.getEffectMechanism());
         queryBO.setEffectMinVersionNum(AgentVersionUtil.string2Long(queryRequest.getVersion()));
-        Map<String, AgentConfigDetailResult> configList = getConfigList(queryBO);
+        Map<String, AgentConfigDetailResult> configList = agentConfigService.getConfigList(queryBO);
         return configList.values().stream().collect(
             Collectors.toMap(AgentConfigDetailResult::getEnKey, AgentConfigDetailResult::getDefaultValue));
     }
 
+    @Cacheable(CACHE_KEY_AGENT_CONFIG)
     @Override
     public Map<String, AgentConfigDetailResult> getConfigList(ConfigListQueryBO queryBO) {
         // 1、查询符合条件的全局配置
@@ -337,7 +346,8 @@ public class AgentConfigServiceImpl implements AgentConfigService {
         queryParam.setTenantId(WebPluginUtils.traceTenantId());
         queryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         queryParam.setType(AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
-        List<AgentConfigDetailResult> tenantGlobalConfigList = agentConfigDAO.listByTypeAndTenantIdAndEnvCode(queryParam);
+        List<AgentConfigDetailResult> tenantGlobalConfigList = agentConfigDAO.listByTypeAndTenantIdAndEnvCode(
+            queryParam);
         if (!tenantGlobalConfigList.isEmpty()) {
             Map<String, AgentConfigDetailResult> tenantConfigMap = tenantGlobalConfigList.stream().collect(
                 Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));

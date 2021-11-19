@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentHeartbeatBO;
+import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidStatusEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentReportStatusEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginDownloadPathDAO;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
@@ -86,9 +87,11 @@ public abstract class AgentCommandSupport implements IAgentCommandProcessor {
     /**
      * 获取当前租户的插件上传信息
      *
+     * @param statusEnum 状态枚举
      * @return ApplicationPluginDownloadPathDetailResult对象
      */
-    protected ApplicationPluginDownloadPathDetailResult getPluginDownloadPath() {
-        return applicationPluginDownloadPathDAO.queryDetailByCustomerId();
+    protected ApplicationPluginDownloadPathDetailResult getPluginDownloadPath(
+        ApplicationAgentPathValidStatusEnum statusEnum) {
+        return applicationPluginDownloadPathDAO.queryDetailByCustomerId(statusEnum);
     }
 }

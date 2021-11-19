@@ -19,6 +19,7 @@ import io.shulie.takin.web.biz.service.agentcommand.IAgentCommandProcessor;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentHeartbeatService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentReportService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
+import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentReportStatusEnum;
@@ -71,7 +72,6 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
 
         // 检测状态
         AgentHeartbeatBO agentHeartbeatBO = buildAgentHeartBeatBO(commandRequest);
-        AgentReportStatusEnum statusEnum = getAgentReportStatus(agentHeartbeatBO);
 
         // 异步处理上报的命令数据
         if (!CollectionUtils.isEmpty(commandRequest.getCommandResult())) {
@@ -88,7 +88,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         CreateAgentReportParam createAgentReportParam = new CreateAgentReportParam();
         BeanUtils.copyProperties(agentHeartbeatBO, createAgentReportParam);
         createAgentReportParam.setApplicationName(agentHeartbeatBO.getProjectName());
-        createAgentReportParam.setStatus(statusEnum.getVal());
+        createAgentReportParam.setStatus(agentHeartbeatBO.getCurStatus().getVal());
 
         // 数据入库
         agentReportService.insertOrUpdate(createAgentReportParam);
@@ -123,9 +123,34 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
      * @return AgentCommandBO集合
      */
     private List<AgentCommandBO> filterCommand(List<AgentCommandBO> commandBOList) {
+        boolean haveAgentGetFileCommand = false;
+        boolean haveReportAgentUploadPathStatusCommand = false;
+        for (AgentCommandBO command : commandBOList) {
+            if (AgentCommandEnum.AGENT_START_GET_FILE.getCommand().equals(command.getId())) {
+                haveAgentGetFileCommand = true;
+            }
+            if (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())) {
+                haveReportAgentUploadPathStatusCommand = true;
+            }
+        }
 
-        // TODO ocean_wll 过滤指令
-        return commandBOList;
+        List<AgentCommandBO> result = new ArrayList<>();
+        // 如果有 200000 则不允许有 100110 和 100100
+        // 如果有 100100 就不允许有 100110
+        for (AgentCommandBO command : commandBOList) {
+            if (haveAgentGetFileCommand
+                && (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())
+                || AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId()))) {
+                continue;
+            }
+            if (haveReportAgentUploadPathStatusCommand
+                && AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId())) {
+                continue;
+            }
+            result.add(command);
+        }
+
+        return result;
     }
 
     /**
@@ -188,9 +213,15 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         if (applicationMnt == null) {
             throw new TakinWebException(ExceptionCode.AGENT_REGISTER_ERROR, "应用名不存在");
         }
-        AgentHeartbeatBO agentHeartBeatBO = new AgentHeartbeatBO();
-        agentHeartBeatBO.setApplicationId(applicationMnt.getApplicationId());
-        BeanUtils.copyProperties(commandRequest, agentHeartBeatBO);
-        return agentHeartBeatBO;
+
+        AgentHeartbeatBO agentHeartbeatBO = new AgentHeartbeatBO();
+        agentHeartbeatBO.setApplicationId(applicationMnt.getApplicationId());
+        BeanUtils.copyProperties(commandRequest, agentHeartbeatBO);
+
+        // 获取节点当前状态
+        AgentReportStatusEnum statusEnum = getAgentReportStatus(agentHeartbeatBO);
+        agentHeartbeatBO.setCurStatus(statusEnum);
+
+        return agentHeartbeatBO;
     }
 }

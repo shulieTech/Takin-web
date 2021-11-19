@@ -1,10 +1,15 @@
 package io.shulie.takin.web.biz.service.agentcommand;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentHeartbeatBO;
+import io.shulie.takin.web.common.enums.fastagentaccess.AgentReportStatusEnum;
+import io.shulie.takin.web.data.dao.application.ApplicationPluginDownloadPathDAO;
+import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -13,6 +18,14 @@ import org.apache.commons.lang3.StringUtils;
  * @Date 2021/11/11 2:45 下午
  */
 public abstract class AgentCommandSupport implements IAgentCommandProcessor {
+
+    @Resource
+    protected ApplicationPluginDownloadPathDAO applicationPluginDownloadPathDAO;
+
+    /**
+     * agent默认的升级批次号
+     */
+    protected final static String DEFAULT_UPGRADE_BATH = "-1";
 
     /**
      * 处理业务数据
@@ -53,7 +66,9 @@ public abstract class AgentCommandSupport implements IAgentCommandProcessor {
 
     @Override
     public AgentCommandBO dealHeartbeat(AgentHeartbeatBO agentHeartbeatBO) {
-        if (!needDealHeartbeat(agentHeartbeatBO)) {
+        // 当前节点不是运行中，并且心跳数据当前指令不需要处理则返回null
+        if (!AgentReportStatusEnum.RUNNING.equals(agentHeartbeatBO.getCurStatus())
+            || !needDealHeartbeat(agentHeartbeatBO)) {
             return null;
         }
 
@@ -66,5 +81,14 @@ public abstract class AgentCommandSupport implements IAgentCommandProcessor {
         }
 
         return commandBO;
+    }
+
+    /**
+     * 获取当前租户的插件上传信息
+     *
+     * @return ApplicationPluginDownloadPathDetailResult对象
+     */
+    protected ApplicationPluginDownloadPathDetailResult getPluginDownloadPath() {
+        return applicationPluginDownloadPathDAO.queryDetailByCustomerId();
     }
 }

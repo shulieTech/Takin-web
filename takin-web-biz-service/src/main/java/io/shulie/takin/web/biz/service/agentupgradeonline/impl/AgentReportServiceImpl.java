@@ -66,4 +66,14 @@ public class AgentReportServiceImpl implements AgentReportService {
     public void clearExpiredData() {
         agentReportDAO.clearExpiredData();
     }
+
+    @Override
+    public AgentReportDetailResult queryAgentReportDetail(Long applicationId, String agentId) {
+        return agentReportDAO.queryAgentReportDetail(applicationId, agentId);
+    }
+
+    @Override
+    public void updateAgentIdById(Long id, String agentId) {
+        agentReportDAO.updateAgentIdById(id, agentId);
+    }
 }

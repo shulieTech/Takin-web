@@ -22,13 +22,20 @@ public class AgentStartProcessor extends AgentCommandSupport {
 
     @Override
     public boolean needDealHeartbeat(AgentHeartbeatBO agentHeartbeatBO) {
-        // TODO ocean_wll
-        return false;
+        // 只要agent上报的当前批次号是-1就需要处理心跳数据
+        return DEFAULT_UPGRADE_BATH.equals(agentHeartbeatBO.getCurUpgradeBatch());
     }
 
     @Override
     public Object dealHeartbeat0(AgentHeartbeatBO agentHeartbeatBO) {
         // TODO ocean_wll
+
+        // 查询当前应用最新的升级成功的升级单批次号
+
+        // 没有升级记录，将dependencyInfo入库，并且将pathType设置为 -1
+
+        // 有升级记录，将升级单的批次号返回
+
         return null;
     }
 

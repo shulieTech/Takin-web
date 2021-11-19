@@ -32,7 +32,7 @@ public class AgentStartProcessor extends AgentCommandSupport {
 
         // 查询当前应用最新的升级成功的升级单批次号
 
-        // 没有升级记录，将dependencyInfo入库，并且将pathType设置为 -1
+        // 没有升级记录，将dependencyInfo入库，并且将pathType设置为 -1 要抢锁
 
         // 有升级记录，将升级单的批次号返回
 

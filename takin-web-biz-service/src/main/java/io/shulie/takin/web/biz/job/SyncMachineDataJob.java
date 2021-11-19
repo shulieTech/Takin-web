@@ -54,14 +54,20 @@ public class SyncMachineDataJob implements SimpleJob {
             if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                 return;
             }
-
+            final TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(WebPluginUtils.traceTenantId(),
+                WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+                WebPluginUtils.traceTenantCode(),
+                ContextSourceEnum.JOB.getCode());
             // 私有化 + 开源 根据 报告id进行分片
             List<Long> reportIds = reportTaskService.getRunningReport();
             log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
             for (Long reportId : reportIds) {
                 // 开始数据层分片
                 if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    fastDebugThreadPool.execute(() -> reportTaskService.syncMachineData(reportId));
+                    fastDebugThreadPool.execute(() -> {
+                        WebPluginUtils.setTraceTenantContext(commonExt);
+                        reportTaskService.syncMachineData(reportId);
+                    });
                 }
             }
         } else {
@@ -75,7 +81,7 @@ public class SyncMachineDataJob implements SimpleJob {
                         if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                             continue;
                         }
-                        jobThreadPool.execute(()->{
+                        jobThreadPool.execute(() -> {
                             TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(
                                 ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(), ext.getTenantCode(),
                                 ContextSourceEnum.JOB.getCode());

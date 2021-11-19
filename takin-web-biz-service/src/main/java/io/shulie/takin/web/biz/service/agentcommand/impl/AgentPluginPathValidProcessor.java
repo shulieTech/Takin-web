@@ -4,9 +4,15 @@ import com.alibaba.fastjson.JSONObject;
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentHeartbeatBO;
 import io.shulie.takin.web.biz.service.agentcommand.AgentCommandSupport;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginDownloadPathDAO;
+import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 /**
  * @Description agent插件存储路径校验器
@@ -23,19 +29,6 @@ public class AgentPluginPathValidProcessor extends AgentCommandSupport {
     @Autowired
     private ApplicationPluginDownloadPathDAO pathDAO;
 
-//    @Override
-//    public Object process(AgentCommandBO commandParam) {
-//        JSONObject obj = JSONObject.parseObject(commandParam.getExtras());
-//        long recordId = obj.getLongValue(ID_FIELD);
-//        ApplicationPluginDownloadPathDetailResult result = pathDAO.queryById(recordId);
-//        if (Objects.isNull(result) || StringUtils.isBlank(commandParam.getExtras())) {
-//            throw new TakinWebException(TakinWebExceptionEnum.AGENT_COMMAND_VALID_ERROR,
-//                    "agent command operate error. commandId:" + commandParam.getId());
-//        }
-//        pathDAO.saveValidState(obj.getBoolean(VALID_STATUS_FIELD),result.getId());
-//        return null;
-//    }
-//
     @Override
     public AgentCommandEnum getCommand() {
         return AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS;
@@ -43,11 +36,12 @@ public class AgentPluginPathValidProcessor extends AgentCommandSupport {
 
     @Override
     public void process0(AgentHeartbeatBO agentHeartbeatBO, JSONObject extras) {
-
+        pathDAO.saveValidState(extras.getBoolean(VALID_STATUS_FIELD),extras.getLongValue(ID_FIELD));
     }
 
     @Override
     public boolean needDealHeartbeat(AgentHeartbeatBO agentHeartbeatBO) {
+
         return false;
     }
 

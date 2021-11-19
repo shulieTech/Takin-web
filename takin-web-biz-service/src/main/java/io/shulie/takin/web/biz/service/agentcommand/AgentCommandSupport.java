@@ -92,6 +92,6 @@ public abstract class AgentCommandSupport implements IAgentCommandProcessor {
      */
     protected ApplicationPluginDownloadPathDetailResult getPluginDownloadPath(
         ApplicationAgentPathValidStatusEnum statusEnum) {
-        return applicationPluginDownloadPathDAO.queryDetailByCustomerId(statusEnum);
+        return applicationPluginDownloadPathDAO.queryDetailByTenant(statusEnum);
     }
 }

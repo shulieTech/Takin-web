@@ -3,7 +3,7 @@ package io.shulie.takin.web.data.model.mysql;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
+import io.shulie.takin.web.data.model.mysql.base.CommonEntityWithoutTenantIdAndEnvCode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_agent_version")
 @ToString(callSuper = true)
-public class AgentVersionEntity extends NewBaseEntity implements Serializable {
+public class AgentVersionEntity extends CommonEntityWithoutTenantIdAndEnvCode implements Serializable {
     private static final long serialVersionUID = 931570071748090483L;
 
     /**
@@ -50,11 +50,5 @@ public class AgentVersionEntity extends NewBaseEntity implements Serializable {
      * 版本特性
      */
     private String versionFeatures;
-
-    /**
-     * 删除
-     * 1 删除, 0 未删除
-     */
-    private Integer isDeleted;
 
 }

@@ -131,10 +131,10 @@ public class AgentVersionServiceImpl implements AgentVersionService {
     @Transactional(rollbackFor = Exception.class)
     public void release(AgentVersionCreateRequest createRequest) {
         // 如果当前发布版本已存在则先删除
-        //if (createRequest.getExist()) {
-        //    deleteByVersion(createRequest.getVersion());
-        //}
-        //create(createRequest);
+        if (createRequest.getExist()) {
+            deleteByVersion(createRequest.getVersion());
+        }
+        create(createRequest);
 
         List<AgentConfigCreateRequest> configCreateRequestList = createRequest.getConfigList();
         // 新增配置信息
@@ -157,7 +157,6 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     @Override
     public PagingList<AgentVersionListResponse> list(AgentVersionQueryRequest queryRequest) {
-
         AgentVersionQueryParam queryParam = new AgentVersionQueryParam();
         BeanUtils.copyProperties(queryRequest, queryParam);
         PagingList<AgentVersionListResult> resultPage = agentVersionDAO.page(queryParam);

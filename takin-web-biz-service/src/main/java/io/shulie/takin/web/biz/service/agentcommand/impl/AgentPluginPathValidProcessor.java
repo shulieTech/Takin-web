@@ -37,7 +37,7 @@ public class AgentPluginPathValidProcessor extends AgentCommandSupport {
         ApplicationPluginDownloadPathDetailResult result = pathDAO.queryById(recordId);
         if (Objects.isNull(result) || StringUtils.isBlank(commandParam.getExtras())) {
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_COMMAND_VALID_ERROR,
-                "agent command operate error. commandId:" + commandParam.getId());
+                    "agent command operate error. commandId:" + commandParam.getId());
         }
         pathDAO.saveValidState(obj.getBoolean(VALID_STATUS_FIELD),result.getId());
         return null;

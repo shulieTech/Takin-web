@@ -10,10 +10,8 @@ import javax.annotation.Resource;
 import cn.hutool.core.collection.CollStreamUtil;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentReportService;
 import io.shulie.takin.web.data.dao.agentupgradeonline.AgentReportDAO;
-import io.shulie.takin.web.data.model.mysql.AgentReportEntity;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
 import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -62,5 +60,20 @@ public class AgentReportServiceImpl implements AgentReportService {
     @Override
     public Integer insertOrUpdate(CreateAgentReportParam createAgentReportParam) {
         return agentReportDAO.insertOrUpdate(createAgentReportParam);
+    }
+
+    @Override
+    public void clearExpiredData() {
+        agentReportDAO.clearExpiredData();
+    }
+
+    @Override
+    public AgentReportDetailResult queryAgentReportDetail(Long applicationId, String agentId) {
+        return agentReportDAO.queryAgentReportDetail(applicationId, agentId);
+    }
+
+    @Override
+    public void updateAgentIdById(Long id, String agentId) {
+        agentReportDAO.updateAgentIdById(id, agentId);
     }
 }

@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.dao.agentupgradeonline.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -78,6 +79,34 @@ public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentRepo
         AgentReportEntity entity = new AgentReportEntity();
         BeanUtils.copyProperties(createAgentReportParam, entity);
         return agentReportMapper.insertOrUpdate(entity);
+    }
+
+    @Override
+    public void clearExpiredData() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        agentReportMapper.delete(this.getLambdaQueryWrapper()
+            .lt(AgentReportEntity::getGmtUpdate, simpleDateFormat.format(System.currentTimeMillis() - 5 * 60 * 1000)));
+    }
+
+    @Override
+    public AgentReportDetailResult queryAgentReportDetail(Long applicationId, String agentId) {
+        AgentReportEntity entity = agentReportMapper.selectOne(this.getLambdaQueryWrapper()
+            .eq(AgentReportEntity::getApplicationId, applicationId)
+            .eq(AgentReportEntity::getAgentId, agentId));
+        if (entity == null) {
+            return null;
+        }
+        AgentReportDetailResult result = new AgentReportDetailResult();
+        BeanUtils.copyProperties(entity, result);
+        return result;
+    }
+
+    @Override
+    public void updateAgentIdById(Long id, String agentId) {
+        AgentReportEntity entity = new AgentReportEntity();
+        entity.setId(id);
+        entity.setAgentId(agentId);
+        agentReportMapper.updateById(entity);
     }
 }
 

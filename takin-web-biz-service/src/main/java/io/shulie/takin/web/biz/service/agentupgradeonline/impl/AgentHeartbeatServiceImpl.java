@@ -1,9 +1,12 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -16,6 +19,7 @@ import io.shulie.takin.web.biz.service.agentcommand.IAgentCommandProcessor;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentHeartbeatService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentReportService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
+import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentReportStatusEnum;
@@ -38,6 +42,11 @@ import org.springframework.util.StringUtils;
 @Service
 public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
 
+    /**
+     * 企业版标识
+     */
+    private final static String ENTERPRISE_FLAG = "shulieEnterprise";
+
     @Resource
     private AgentReportService agentReportService;
 
@@ -57,35 +66,91 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
     }
 
     public List<AgentCommandBO> process(AgentHeartbeatRequest commandRequest) {
+
+        // TODO ocean_wll 加个判断是否企业版，根据企业版的不同，执行不同的对象
+        Boolean isEnterprise = ENTERPRISE_FLAG.equals(commandRequest.getFlag());
+
+        // 检测状态
+        AgentHeartbeatBO agentHeartbeatBO = buildAgentHeartBeatBO(commandRequest);
+
         // 异步处理上报的命令数据
         if (!CollectionUtils.isEmpty(commandRequest.getCommandResult())) {
             commandRequest.getCommandResult().forEach(commandResult ->
                 agentHeartbeatThreadPool.execute(() -> {
                     IAgentCommandProcessor processor = commandProcessorMap.get(commandResult.getId());
                     if (processor != null) {
-                        processor.process(commandResult);
+                        processor.process(agentHeartbeatBO, commandResult);
                     }
                 })
             );
         }
 
-        // 检测状态
-        AgentHeartbeatBO agentHeartbeatBO = buildAgentHeartBeatBO(commandRequest);
-        AgentReportStatusEnum statusEnum = getAgentReportStatus(agentHeartbeatBO);
-
         CreateAgentReportParam createAgentReportParam = new CreateAgentReportParam();
         BeanUtils.copyProperties(agentHeartbeatBO, createAgentReportParam);
         createAgentReportParam.setApplicationName(agentHeartbeatBO.getProjectName());
-        createAgentReportParam.setStatus(statusEnum.getVal());
+        createAgentReportParam.setStatus(agentHeartbeatBO.getCurStatus().getVal());
 
         // 数据入库
         agentReportService.insertOrUpdate(createAgentReportParam);
 
-        // 异步处理各种命令 TODO ocean_wll
+        List<Future<AgentCommandBO>> futures = new ArrayList<>();
 
+        // 异步处理各种命令
+        for (Map.Entry<Long, IAgentCommandProcessor> entry : commandProcessorMap.entrySet()) {
+            Future<AgentCommandBO> future = agentHeartbeatThreadPool.submit(
+                () -> entry.getValue().dealHeartbeat(agentHeartbeatBO));
+            futures.add(future);
+        }
+        List<AgentCommandBO> commandBOList = new ArrayList<>();
+        futures.forEach(future -> {
+            try {
+                AgentCommandBO agentCommandBO = future.get(60, TimeUnit.SECONDS);
+                if (agentCommandBO != null) {
+                    commandBOList.add(agentCommandBO);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        });
 
+        return filterCommand(commandBOList);
+    }
 
-        return null;
+    /**
+     * 过滤指令，有些指令不能同时返回
+     *
+     * @param commandBOList 指令集合
+     * @return AgentCommandBO集合
+     */
+    private List<AgentCommandBO> filterCommand(List<AgentCommandBO> commandBOList) {
+        boolean haveAgentGetFileCommand = false;
+        boolean haveReportAgentUploadPathStatusCommand = false;
+        for (AgentCommandBO command : commandBOList) {
+            if (AgentCommandEnum.AGENT_START_GET_FILE.getCommand().equals(command.getId())) {
+                haveAgentGetFileCommand = true;
+            }
+            if (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())) {
+                haveReportAgentUploadPathStatusCommand = true;
+            }
+        }
+
+        List<AgentCommandBO> result = new ArrayList<>();
+        // 如果有 200000 则不允许有 100110 和 100100
+        // 如果有 100100 就不允许有 100110
+        for (AgentCommandBO command : commandBOList) {
+            if (haveAgentGetFileCommand
+                && (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())
+                || AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId()))) {
+                continue;
+            }
+            if (haveReportAgentUploadPathStatusCommand
+                && AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId())) {
+                continue;
+            }
+            result.add(command);
+        }
+
+        return result;
     }
 
     /**
@@ -148,9 +213,15 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         if (applicationMnt == null) {
             throw new TakinWebException(ExceptionCode.AGENT_REGISTER_ERROR, "应用名不存在");
         }
-        AgentHeartbeatBO agentHeartBeatBO = new AgentHeartbeatBO();
-        agentHeartBeatBO.setApplicationId(applicationMnt.getApplicationId());
-        BeanUtils.copyProperties(commandRequest, agentHeartBeatBO);
-        return agentHeartBeatBO;
+
+        AgentHeartbeatBO agentHeartbeatBO = new AgentHeartbeatBO();
+        agentHeartbeatBO.setApplicationId(applicationMnt.getApplicationId());
+        BeanUtils.copyProperties(commandRequest, agentHeartbeatBO);
+
+        // 获取节点当前状态
+        AgentReportStatusEnum statusEnum = getAgentReportStatus(agentHeartbeatBO);
+        agentHeartbeatBO.setCurStatus(statusEnum);
+
+        return agentHeartbeatBO;
     }
 }

@@ -2,10 +2,11 @@ package com.pamirs.takin.entity.domain.entity.report;
 
 import java.math.BigDecimal;
 
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 @Data
-public class ReportMachine {
+public class ReportMachine extends TenantBaseEntity {
 
     private Long id;
 

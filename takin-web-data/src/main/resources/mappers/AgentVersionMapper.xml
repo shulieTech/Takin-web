@@ -25,6 +25,7 @@
         FROM t_agent_version
         ORDER BY version_num desc
     </select>
+
     <select id="findMaxVersionAgent" resultMap="base_map">
         SELECT *
         FROM t_agent_version

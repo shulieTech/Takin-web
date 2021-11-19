@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.dao.fastagentaccess.impl;
 
 import java.util.List;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -14,10 +15,7 @@ import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionListResult;
 import io.shulie.takin.web.data.util.MPUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,20 +33,15 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
 
     @Override
     public PagingList<AgentVersionListResult> page(AgentVersionQueryParam queryParam) {
-        final List<Long> tenantIdList = WebPluginUtils.traceTenantIdForSystem();
-        final List<String> envCodeList = WebPluginUtils.traceEnvCodeForSystem();
         Page<AgentVersionEntity> entityPage = agentVersionMapper.selectPage(this.setPage(queryParam),
             this.getLambdaQueryWrapper()
                 .eq(StringUtils.isNotBlank(queryParam.getVersion()), AgentVersionEntity::getVersion,
                     queryParam.getVersion())
                 .eq(StringUtils.isNotBlank(queryParam.getFirstVersion()), AgentVersionEntity::getFirstVersion,
                     queryParam.getFirstVersion())
-                .in(CollectionUtils.isNotEmpty(tenantIdList), AgentVersionEntity::getTenantId, tenantIdList)
-                .in(CollectionUtils.isNotEmpty(envCodeList), AgentVersionEntity::getEnvCode, envCodeList)
-                .orderByDesc(AgentVersionEntity::getTenantId));
-
+                .orderByDesc(AgentVersionEntity::getVersionNum));
         List<AgentVersionEntity> records = entityPage.getRecords();
-        if (records.isEmpty()) {
+        if (entityPage.getTotal() == 0) {
             return PagingList.empty();
         }
 
@@ -57,21 +50,11 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
 
     @Override
     public AgentVersionDetailResult selectByVersion(String version) {
-        final List<Long> tenantIdList = WebPluginUtils.traceTenantIdForSystem();
-        final List<String> envCodeList = WebPluginUtils.traceEnvCodeForSystem();
         LambdaQueryWrapper<AgentVersionEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(AgentVersionEntity::getVersion, version)
-            .in(CollectionUtils.isNotEmpty(tenantIdList), AgentVersionEntity::getTenantId, tenantIdList)
-            .in(CollectionUtils.isNotEmpty(envCodeList), AgentVersionEntity::getEnvCode, envCodeList)
-            .orderByDesc(AgentVersionEntity::getTenantId);
-        AgentVersionEntity entity = agentVersionMapper.selectOne(queryWrapper);
-        if (entity == null) {
-            return null;
-        }
-
-        AgentVersionDetailResult detailResult = new AgentVersionDetailResult();
-        BeanUtils.copyProperties(entity, detailResult);
-        return detailResult;
+            .orderByDesc(AgentVersionEntity::getVersionNum);
+        return CommonUtil.copyBeanPropertiesWithNull(agentVersionMapper.selectOne(queryWrapper),
+            AgentVersionDetailResult.class);
     }
 
     @Override
@@ -83,9 +66,7 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
 
     @Override
     public Integer insert(CreateAgentVersionParam createParam) {
-        AgentVersionEntity entity = new AgentVersionEntity();
-        BeanUtils.copyProperties(createParam, entity);
-        return agentVersionMapper.insert(entity);
+        return agentVersionMapper.insert(BeanUtil.copyProperties(createParam, AgentVersionEntity.class));
     }
 
     @Override

@@ -41,11 +41,6 @@ public class ApplicationPluginUpgradeEntity extends NewBaseEntity implements Ser
     private String upgradeContext;
 
     /**
-     * 升级单版本
-     */
-    private Integer upgradeVersion;
-
-    /**
      * 操作升级的agentId
      */
     private String upgradeAgentId;

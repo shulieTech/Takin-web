@@ -1,6 +1,9 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.Resource;
 
@@ -9,6 +12,7 @@ import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentHeartbeatBO;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentHeartbeatRequest;
 import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.biz.service.agentcommand.IAgentCommandProcessor;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentHeartbeatService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentReportService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
@@ -19,9 +23,11 @@ import io.shulie.takin.web.common.enums.fastagentaccess.AgentStatusEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.ProbeStatusEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -41,13 +47,43 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
     @Resource
     private ApplicationPluginUpgradeService applicationPluginUpgradeService;
 
+    @Resource
+    private ThreadPoolExecutor agentHeartbeatThreadPool;
+
+    private final Map<Long, IAgentCommandProcessor> commandProcessorMap = new HashMap<>();
+
+    public AgentHeartbeatServiceImpl(List<IAgentCommandProcessor> processorList) {
+        processorList.forEach(processor -> commandProcessorMap.put(processor.getCommand().getCommand(), processor));
+    }
+
     public List<AgentCommandBO> process(AgentHeartbeatRequest commandRequest) {
-        // TODO ocean_wll
+        // 异步处理上报的命令数据
+        if (!CollectionUtils.isEmpty(commandRequest.getCommandResult())) {
+            commandRequest.getCommandResult().forEach(commandResult ->
+                agentHeartbeatThreadPool.execute(() -> {
+                    IAgentCommandProcessor processor = commandProcessorMap.get(commandResult.getId());
+                    if (processor != null) {
+                        processor.process(commandResult);
+                    }
+                })
+            );
+        }
+
         // 检测状态
+        AgentHeartbeatBO agentHeartbeatBO = buildAgentHeartBeatBO(commandRequest);
+        AgentReportStatusEnum statusEnum = getAgentReportStatus(agentHeartbeatBO);
+
+        CreateAgentReportParam createAgentReportParam = new CreateAgentReportParam();
+        BeanUtils.copyProperties(agentHeartbeatBO, createAgentReportParam);
+        createAgentReportParam.setApplicationName(agentHeartbeatBO.getProjectName());
+        createAgentReportParam.setStatus(statusEnum.getVal());
 
         // 数据入库
+        agentReportService.insertOrUpdate(createAgentReportParam);
 
-        // 处理各种命令
+        // 异步处理各种命令 TODO ocean_wll
+
+
 
         return null;
     }

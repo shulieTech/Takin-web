@@ -15,10 +15,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AgentCommandEnum {
-    HEARTBEAT(100000L, "心跳"),
-    //DOWNLOAD_SIMULATOR_ZIP("110000", "下载simulator包"),
     REPORT_AGENT_UPLOAD_PATH_STATUS(100100L, "检测用户配置的存放插件地址是否有效"),
-    REPORT_UPGRADE_RESULT(100110L,"上报升级状态"),
+    REPORT_UPGRADE_RESULT(100110L, "上报升级状态"),
+    AGENT_START_GET_FILE(200000L, "agent启动获取文件"),
     ;
 
     private Long command;

@@ -1,5 +1,26 @@
 package io.shulie.takin.web.biz.service.fastagentaccess.impl;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
+
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
@@ -54,28 +75,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 
 /**
  * agent版本管理(AgentVersion)service
@@ -609,9 +608,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             List<String> upgradeBatchs = CollStreamUtil.toList(v, AgentReportDetailResult::getCurUpgradeBatch);
             Set<String> set = new HashSet<>(upgradeBatchs);
             List<ApplicationPluginUpgradeDetailResult> upgradeDetails = pluginUpgradeService.getList(set);
-            ApplicationPluginUpgradeDetailResult detail = upgradeDetails.stream()
-                    .max(Comparator.comparing(ApplicationPluginUpgradeDetailResult::getUpgradeVersion)).get();
-            appId2UpgradeBatch.put(k, detail.getUpgradeBatch());
+            //ApplicationPluginUpgradeDetailResult detail = upgradeDetails.stream()
+            //        .max(Comparator.comparing(ApplicationPluginUpgradeDetailResult::getUpgradeVersion)).get();
+            //appId2UpgradeBatch.put(k, detail.getUpgradeBatch());
         });
 
         appId2UpgradeBatch.forEach((k, v) -> {

@@ -1,9 +1,10 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline;
 
-import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
-
 import java.util.List;
 import java.util.Map;
+
+import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
+import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
 
 /**
  * 探针心跳数据(AgentReport)service
@@ -17,5 +18,13 @@ public interface AgentReportService {
 
     List<AgentReportDetailResult> getListByStatus(List<Integer> statusList);
 
-    Map<Long,Integer>  appId2Count();
+    Map<Long, Integer> appId2Count();
+
+    /**
+     * 不存在插入，存在更新
+     *
+     * @param createAgentReportParam CreateAgentReportParam 对象
+     * @return 影响记录数
+     */
+    Integer insertOrUpdate(CreateAgentReportParam createAgentReportParam);
 }

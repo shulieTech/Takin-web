@@ -2,4 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.shulie.takin.web.data.mapper.mysql.AgentReportMapper">
 
+    <insert id="insertOrUpdate" parameterType="io.shulie.takin.web.data.model.mysql.AgentReportEntity">
+        INSERT INTO t_agent_report (application_id, application_name, agent_id, ip_address, progress_id, agent_version,
+                                    cur_upgrade_batch, status, agent_error_info, simulator_error_info)
+            VALUE (#{applicationId}, #{applicationName}, #{agentId}, #{ipAddress}, #{progressId},
+            #{agentVersion}, #{curUpgradeBatch}, #{status}, #{agentErrorInfo},
+            #{simulatorErrorInfo})
+        ON DUPLICATE KEY
+        UPDATE status = #{status}
+    </insert>
 </mapper>

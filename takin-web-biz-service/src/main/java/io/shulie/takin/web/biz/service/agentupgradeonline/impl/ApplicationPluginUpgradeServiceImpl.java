@@ -26,7 +26,7 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
 
     @Override
     public List<ApplicationPluginUpgradeDetailResult> getList(Set<String> upgradeBatchs) {
-        if(CollectionUtils.isEmpty(upgradeBatchs)){
+        if (CollectionUtils.isEmpty(upgradeBatchs)) {
             return Collections.emptyList();
         }
         return upgradeDAO.getList(upgradeBatchs);
@@ -34,7 +34,7 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
 
     @Override
     public List<ApplicationPluginUpgradeDetailResult> getListByStatus(Integer status) {
-        if(Objects.isNull(status)){
+        if (Objects.isNull(status)) {
             return Collections.emptyList();
         }
         return null;
@@ -42,6 +42,6 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
 
     @Override
     public ApplicationPluginUpgradeDetailResult queryLatestUpgradeByAppIdAndStatus(Long applicationId, Integer status) {
-        return null;
+        return upgradeDAO.queryLatestUpgradeByAppIdAndStatus(applicationId, status);
     }
 }

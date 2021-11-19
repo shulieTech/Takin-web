@@ -17,6 +17,7 @@ public enum ContextSourceEnum {
     AGENT(1,"第三方应用，agent,amdb"),
     JOB(2,"定时任务"),
     HREF(3,"前端直接location.href"),
+    TENANT_SWITCH(4,"前端切换租户环境"),
     ;
     private Integer code;
     private String source;

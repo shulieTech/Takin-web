@@ -13,6 +13,7 @@ import com.alibaba.excel.util.CollectionUtils;
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
 import io.shulie.takin.web.data.dao.agentupgradeonline.ApplicationPluginUpgradeDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationPluginUpgradeMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationPluginUpgradeEntity;
@@ -81,6 +82,15 @@ public class ApplicationPluginUpgradeDAOImpl
         ApplicationPluginUpgradeDetailResult result = new ApplicationPluginUpgradeDetailResult();
         BeanUtils.copyProperties(entity, result);
         return result;
+    }
+
+    @Override
+    public void finishUpgrade(Long appId, String upgradeBatch) {
+        ApplicationPluginUpgradeEntity entity = new ApplicationPluginUpgradeEntity();
+        entity.setPluginUpgradeStatus(AgentUpgradeEnum.UPGRADE_SUCCESS.getVal());
+        applicationPluginUpgradeMapper.update(entity,
+            this.getLambdaQueryWrapper().eq(ApplicationPluginUpgradeEntity::getApplicationId, appId)
+                .eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch));
     }
 }
 

@@ -1,9 +1,12 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -38,6 +41,11 @@ import org.springframework.util.StringUtils;
 @Service
 public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
 
+    /**
+     * 企业版标识
+     */
+    private final static String ENTERPRISE_FLAG = "shulieEnterprise";
+
     @Resource
     private AgentReportService agentReportService;
 
@@ -57,21 +65,25 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
     }
 
     public List<AgentCommandBO> process(AgentHeartbeatRequest commandRequest) {
+
+        // TODO ocean_wll 加个判断是否企业版，根据企业版的不同，执行不同的对象
+        Boolean isEnterprise = ENTERPRISE_FLAG.equals(commandRequest.getFlag());
+
+        // 检测状态
+        AgentHeartbeatBO agentHeartbeatBO = buildAgentHeartBeatBO(commandRequest);
+        AgentReportStatusEnum statusEnum = getAgentReportStatus(agentHeartbeatBO);
+
         // 异步处理上报的命令数据
         if (!CollectionUtils.isEmpty(commandRequest.getCommandResult())) {
             commandRequest.getCommandResult().forEach(commandResult ->
                 agentHeartbeatThreadPool.execute(() -> {
                     IAgentCommandProcessor processor = commandProcessorMap.get(commandResult.getId());
                     if (processor != null) {
-                        processor.process(commandResult);
+                        processor.process(agentHeartbeatBO, commandResult);
                     }
                 })
             );
         }
-
-        // 检测状态
-        AgentHeartbeatBO agentHeartbeatBO = buildAgentHeartBeatBO(commandRequest);
-        AgentReportStatusEnum statusEnum = getAgentReportStatus(agentHeartbeatBO);
 
         CreateAgentReportParam createAgentReportParam = new CreateAgentReportParam();
         BeanUtils.copyProperties(agentHeartbeatBO, createAgentReportParam);
@@ -81,11 +93,39 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         // 数据入库
         agentReportService.insertOrUpdate(createAgentReportParam);
 
-        // 异步处理各种命令 TODO ocean_wll
+        List<Future<AgentCommandBO>> futures = new ArrayList<>();
 
+        // 异步处理各种命令
+        for (Map.Entry<Long, IAgentCommandProcessor> entry : commandProcessorMap.entrySet()) {
+            Future<AgentCommandBO> future = agentHeartbeatThreadPool.submit(
+                () -> entry.getValue().dealHeartbeat(agentHeartbeatBO));
+            futures.add(future);
+        }
+        List<AgentCommandBO> commandBOList = new ArrayList<>();
+        futures.forEach(future -> {
+            try {
+                AgentCommandBO agentCommandBO = future.get(60, TimeUnit.SECONDS);
+                if (agentCommandBO != null) {
+                    commandBOList.add(agentCommandBO);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        });
 
+        return filterCommand(commandBOList);
+    }
 
-        return null;
+    /**
+     * 过滤指令，有些指令不能同时返回
+     *
+     * @param commandBOList 指令集合
+     * @return AgentCommandBO集合
+     */
+    private List<AgentCommandBO> filterCommand(List<AgentCommandBO> commandBOList) {
+
+        // TODO ocean_wll 过滤指令
+        return commandBOList;
     }
 
     /**

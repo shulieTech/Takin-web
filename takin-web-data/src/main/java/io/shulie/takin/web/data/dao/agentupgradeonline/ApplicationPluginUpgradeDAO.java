@@ -26,5 +26,12 @@ public interface ApplicationPluginUpgradeDAO {
      */
     ApplicationPluginUpgradeDetailResult queryLatestUpgradeByAppIdAndStatus(Long applicationId, Integer status);
 
+    /**
+     * 将升级单状态置为完成
+     *
+     * @param appId        应用Id
+     * @param upgradeBatch 批次号
+     */
+    void finishUpgrade(Long appId, String upgradeBatch);
 }
 

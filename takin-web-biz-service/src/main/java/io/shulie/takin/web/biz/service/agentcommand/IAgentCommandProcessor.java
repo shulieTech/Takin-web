@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.agentcommand;
 
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
+import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentHeartbeatBO;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
 
 /**
@@ -20,8 +21,16 @@ public interface IAgentCommandProcessor {
     /**
      * 处理agent命令
      *
-     * @param commandParam 命令参数
-     * @return 每个命令处理器都需要返回一个响应
+     * @param agentHeartbeatBO agent心跳数据
+     * @param commandParam     命令参数
      */
-    Object process(AgentCommandBO commandParam);
+    void process(AgentHeartbeatBO agentHeartbeatBO, AgentCommandBO commandParam);
+
+    /**
+     * 处理心跳数据
+     *
+     * @param agentHeartbeatBO agent心跳数据
+     * @return AgentCommandBO对象
+     */
+    AgentCommandBO dealHeartbeat(AgentHeartbeatBO agentHeartbeatBO);
 }

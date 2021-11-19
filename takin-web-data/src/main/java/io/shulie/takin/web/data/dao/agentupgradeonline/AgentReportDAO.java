@@ -27,5 +27,10 @@ public interface AgentReportDAO {
      */
     Integer insertOrUpdate(CreateAgentReportParam createAgentReportParam);
 
+    /**
+     * 清理过期的心跳数据
+     */
+    void clearExpiredData();
+
 }
 

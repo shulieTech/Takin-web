@@ -57,30 +57,18 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
 
     @Override
     public AgentConfigDetailResult findGlobalConfigByEnKey(String enKey) {
-        AgentConfigDetailResult result = null;
-        AgentConfigEntity entity = agentConfigMapper.selectOne(
-            this.getLambdaQueryWrapper()
+        AgentConfigEntity entity = agentConfigMapper.selectOne(this.getLimitOneLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getEnKey, enKey)
                 .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.GLOBAL.getVal()));
-        if (entity != null) {
-            result = new AgentConfigDetailResult();
-            BeanUtils.copyProperties(entity, result);
-        }
-        return result;
+        return CommonUtil.copyBeanPropertiesWithNull(entity, AgentConfigDetailResult.class);
     }
 
     @Override
     public AgentConfigDetailResult findGlobalConfigByZhKey(String zhKey) {
-        AgentConfigDetailResult result = null;
-        AgentConfigEntity entity = agentConfigMapper.selectOne(
-            this.getLambdaQueryWrapper()
+        AgentConfigEntity entity = agentConfigMapper.selectOne(this.getLimitOneLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getZhKey, zhKey)
                 .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.GLOBAL.getVal()));
-        if (entity != null) {
-            result = new AgentConfigDetailResult();
-            BeanUtils.copyProperties(entity, result);
-        }
-        return result;
+        return CommonUtil.copyBeanPropertiesWithNull(entity, AgentConfigDetailResult.class);
     }
 
     @Override
@@ -103,21 +91,15 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
 
     @Override
     public List<AgentConfigDetailResult> getAllGlobalConfig() {
-        List<AgentConfigEntity> entityList = agentConfigMapper.selectList(
-            this.getLambdaQueryWrapper()
+        List<AgentConfigEntity> entityList = agentConfigMapper.selectList(this.getLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.GLOBAL.getVal()));
         return CommonUtil.list2list(entityList, AgentConfigDetailResult.class);
     }
 
     @Override
     public AgentConfigDetailResult findById(Long id) {
-        AgentConfigDetailResult result = new AgentConfigDetailResult();
         AgentConfigEntity entity = agentConfigMapper.selectById(id);
-        if (entity == null) {
-            return null;
-        }
-        BeanUtils.copyProperties(entity, result);
-        return result;
+        return CommonUtil.copyBeanPropertiesWithNull(entity, AgentConfigDetailResult.class);
     }
 
     @Override
@@ -140,11 +122,11 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
     }
 
     @Override
-    public List<AgentConfigDetailResult> findGlobalList(AgentConfigQueryParam queryParam) {
+    public List<AgentConfigDetailResult> listByTypeAndTenantIdAndEnvCode(AgentConfigQueryParam queryParam) {
         List<AgentConfigEntity> entityList = agentConfigMapper.selectList(this.getLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getTenantId, queryParam.getTenantId())
                 .eq(AgentConfigEntity::getEnvCode, queryParam.getEnvCode())
-                .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.GLOBAL.getVal())
+                .eq(AgentConfigEntity::getType, queryParam.getType())
                 .eq(queryParam.getEffectMechanism() != null, AgentConfigEntity::getEffectMechanism,
                     queryParam.getEffectMechanism())
                 .eq(StringUtils.isNotBlank(queryParam.getEnKey()), AgentConfigEntity::getEnKey, queryParam.getEnKey())
@@ -156,7 +138,7 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
     @Override
     public List<AgentConfigDetailResult> findProjectList(AgentConfigQueryParam queryParam) {
         if (StringUtils.isBlank(queryParam.getProjectName()) || StringUtils.isBlank(queryParam.getUserAppKey())) {
-            return new ArrayList<>();
+            return new ArrayList<>(0);
         }
         List<AgentConfigEntity> entityList = agentConfigMapper.selectList(
             this.getLambdaQueryWrapper()
@@ -173,17 +155,36 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
     }
 
     @Override
-    public Integer updateConfigValue(UpdateAgentConfigParam updateParam) {
+    public void updateConfigValue(UpdateAgentConfigParam updateParam) {
         AgentConfigEntity entity = new AgentConfigEntity();
         entity.setId(updateParam.getId());
         entity.setOperator(updateParam.getOperator());
         entity.setDefaultValue(updateParam.getDefaultValue());
-        return agentConfigMapper.updateById(entity);
+        agentConfigMapper.updateById(entity);
     }
 
     @Override
     public Integer deleteById(Long id) {
         return agentConfigMapper.deleteById(id);
     }
+
+    @Override
+    public AgentConfigDetailResult getByEnKeyAndTypeWithTenant(String enKey, Integer type) {
+        return CommonUtil.copyBeanPropertiesWithNull(
+            agentConfigMapper.selectOne(this.getTenantAndEnvLimitOneLambdaQueryWrapper()
+                .eq(AgentConfigEntity::getEnKey, enKey)
+                .eq(AgentConfigEntity::getType, type)), AgentConfigDetailResult.class);
+    }
+
+    @Override
+    public AgentConfigDetailResult getByEnKeyAndTypeAndProjectNameWithTenant(String enKey, Integer type,
+        String projectName) {
+        return CommonUtil.copyBeanPropertiesWithNull(
+            agentConfigMapper.selectOne(this.getTenantAndEnvLimitOneLambdaQueryWrapper()
+                .eq(AgentConfigEntity::getEnKey, enKey)
+                .eq(AgentConfigEntity::getProjectName, projectName)
+                .eq(AgentConfigEntity::getType, type)), AgentConfigDetailResult.class);
+    }
+
 }
 

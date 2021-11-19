@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 @Getter
 @AllArgsConstructor
 public enum AgentConfigTypeEnum {
+
     /**
      * 全局配置
      */
@@ -20,9 +21,44 @@ public enum AgentConfigTypeEnum {
      * 应用配置
      */
     PROJECT(1, "应用配置"),
+
+    /**
+     * 租户全局配置
+     */
+    TENANT_GLOBAL(6, "租户全局配置"),
     ;
 
-    private Integer val;
-    private String desc;
+    private final Integer val;
+    private final String desc;
+
+    /**
+     * 全局配置
+     *
+     * @param type 类型
+     * @return 是否是
+     */
+    public static boolean isGlobal(Integer type) {
+        return GLOBAL.getVal().equals(type);
+    }
+
+    /**
+     * 租户全局配置
+     *
+     * @param type 类型
+     * @return 是否是
+     */
+    public static boolean isTenantGlobal(Integer type) {
+        return TENANT_GLOBAL.getVal().equals(type);
+    }
+
+    /**
+     * 应用配置
+     *
+     * @param type 类型
+     * @return 是否是
+     */
+    public static boolean isProject(Integer type) {
+        return PROJECT.getVal().equals(type);
+    }
 
 }

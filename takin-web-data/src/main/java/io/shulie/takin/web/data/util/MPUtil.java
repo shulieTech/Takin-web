@@ -94,6 +94,16 @@ public interface MPUtil<T> {
     }
 
     /**
+     * 获得 query 包装类, 带有租户id，环境
+     *
+     * @return query 普通包装类, 带有租户id，环境
+     */
+    default QueryWrapper<T> getTenantAndEnvQueryWrapper() {
+        return this.getQueryWrapper().eq("tenant_id", WebPluginUtils.traceTenantId())
+            .eq("env_code", WebPluginUtils.traceEnvCode());
+    }
+
+    /**
      * 获得 query 包装类, 带有租户id, 环境
      *
      * @return query 普通包装类, 带有租户id
@@ -145,6 +155,15 @@ public interface MPUtil<T> {
      */
     default LambdaQueryWrapper<T> getTenantLimitOneLambdaQueryWrapper() {
         return this.getTenantQueryWrapper().lambda().last(LIMIT_ONE);
+    }
+
+    /**
+     * 获得 query lambda 包装类, 带有租户id，环境, limit 1 限制
+     *
+     * @return query lambda 包装类, 带有租户id
+     */
+    default LambdaQueryWrapper<T> getTenantAndEnvLimitOneLambdaQueryWrapper() {
+        return this.getTenantAndEnvQueryWrapper().lambda().last(LIMIT_ONE);
     }
 
     /**

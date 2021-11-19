@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.param.fastagentaccess;
 
+import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
 import lombok.Data;
 
 /**
@@ -47,5 +48,11 @@ public class AgentConfigQueryParam {
      * 环境编码
      */
     private String envCode;
+
+    /**
+     * 探针配置类型枚举
+     * @see AgentConfigTypeEnum
+     */
+    private Integer type;
 
 }

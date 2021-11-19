@@ -1,5 +1,6 @@
 package io.shulie.takin.web.app.conf.redis;
 
+import java.time.Duration;
 import java.util.Map;
 
 import com.alibaba.fastjson.parser.ParserConfig;
@@ -13,12 +14,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -30,6 +35,17 @@ public class RedisConfig {
      */
     @Autowired(required = false)
     private Map<String, MessageListener> messageListenerMap;
+
+    @Bean
+    public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+        // 自定义 redisCache 管理，指定key，带有过期时间，10分钟
+        // @Cacheable 使用
+        return new RedisCacheManager(
+            RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory),
+            this.getRedisCacheConfigurationWithTtl(600),
+            "agentConfig"
+        );
+    }
 
     @Bean("userRedisTemplate")
     public RedisTemplate<String, Object> userRedisTemplate(RedisConnectionFactory factory) {
@@ -57,12 +73,8 @@ public class RedisConfig {
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
         RedisTemplate<String, Object> template = new RedisTemplate<String, Object>();
         template.setConnectionFactory(factory);
-        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
-        ObjectMapper om = new ObjectMapper();
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-        om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        jackson2JsonRedisSerializer.setObjectMapper(om);
+        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer
+            = getJackson2JsonRedisSerializer();
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         // key采用String的序列化方式
         template.setKeySerializer(stringRedisSerializer);
@@ -103,4 +115,29 @@ public class RedisConfig {
         return container;
     }
 
+    /**
+     * cacheManage 缓存时间
+     *
+     * @param seconds 秒
+     * @return cacheConfig
+     */
+    private RedisCacheConfiguration getRedisCacheConfigurationWithTtl(Integer seconds) {
+        RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig();
+        redisCacheConfiguration = redisCacheConfiguration.serializeValuesWith(
+            RedisSerializationContext
+                .SerializationPair
+                .fromSerializer(this.getJackson2JsonRedisSerializer())
+        ).entryTtl(Duration.ofSeconds(seconds));
+        return redisCacheConfiguration;
+    }
+
+    private Jackson2JsonRedisSerializer<Object> getJackson2JsonRedisSerializer() {
+        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        ObjectMapper om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+        om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        jackson2JsonRedisSerializer.setObjectMapper(om);
+        return jackson2JsonRedisSerializer;
+    }
 }

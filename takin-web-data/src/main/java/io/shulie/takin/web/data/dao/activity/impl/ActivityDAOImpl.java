@@ -432,6 +432,7 @@ public class ActivityDAOImpl implements ActivityDAO {
         activityNodeState.setOwnerApp(ownerApps);
         activityNodeState.setServiceName(serviceName);
         activityNodeState.setState(state);
+        activityNodeState.setTenantId(WebPluginUtils.traceTenantId());
 
         //SY:如果限制节点下只允许一个服务为打开状态则先清空再新增
 //        activityNodeStateTableMapper.removeActivityNodeByActivityIdAndOwnerApp(activityNodeState);

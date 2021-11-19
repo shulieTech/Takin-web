@@ -12,8 +12,8 @@
     </resultMap>
 
     <insert id="setActivityNodeState" parameterType="io.shulie.takin.web.data.model.mysql.ActivityNodeState">
-        INSERT INTO t_activity_node_service_state (id,activity_id,service_name,owner_app,state)
-        VALUES (#{id},#{activityId},#{serviceName},#{ownerApp},#{state})
+        INSERT INTO t_activity_node_service_state (id,activity_id,service_name,owner_app,state,tenant_id)
+        VALUES (#{id},#{activityId},#{serviceName},#{ownerApp},#{state},#{tenantId})
         ON DUPLICATE KEY
         UPDATE state = #{state}
     </insert>

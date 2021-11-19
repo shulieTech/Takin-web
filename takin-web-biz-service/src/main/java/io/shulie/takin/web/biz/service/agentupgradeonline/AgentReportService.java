@@ -27,4 +27,9 @@ public interface AgentReportService {
      * @return 影响记录数
      */
     Integer insertOrUpdate(CreateAgentReportParam createAgentReportParam);
+
+    /**
+     * 清理过期的心跳数据
+     */
+    void clearExpiredData();
 }

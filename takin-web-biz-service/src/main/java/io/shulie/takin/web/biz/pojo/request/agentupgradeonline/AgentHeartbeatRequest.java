@@ -70,4 +70,7 @@ public class AgentHeartbeatRequest {
     @ApiModelProperty(value = "agent命令结果")
     private List<AgentCommandBO> commandResult;
 
+    @ApiModelProperty(value = "是否企业版，开源版就是个空的值，企业版会给个shulieEnterprise")
+    private String flag;
+
 }

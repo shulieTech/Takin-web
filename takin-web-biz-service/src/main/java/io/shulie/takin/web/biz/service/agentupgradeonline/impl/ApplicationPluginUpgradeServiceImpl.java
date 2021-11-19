@@ -44,4 +44,9 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
     public ApplicationPluginUpgradeDetailResult queryLatestUpgradeByAppIdAndStatus(Long applicationId, Integer status) {
         return upgradeDAO.queryLatestUpgradeByAppIdAndStatus(applicationId, status);
     }
+
+    @Override
+    public void finishUpgrade(Long appId, String upgradeBatch) {
+        upgradeDAO.finishUpgrade(appId, upgradeBatch);
+    }
 }

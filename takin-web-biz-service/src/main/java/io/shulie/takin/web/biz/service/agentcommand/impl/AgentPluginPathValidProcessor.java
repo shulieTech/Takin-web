@@ -4,14 +4,11 @@ import java.util.Objects;
 
 import com.alibaba.fastjson.JSONObject;
 
-import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
+import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentHeartbeatBO;
 import io.shulie.takin.web.biz.service.agentcommand.AgentCommandSupport;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginDownloadPathDAO;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,15 +26,25 @@ public class AgentPluginPathValidProcessor extends AgentCommandSupport {
     private ApplicationPluginDownloadPathDAO pathDAO;
 
     @Override
-    public Object process(AgentCommandBO commandParam) {
+    public void process0(AgentHeartbeatBO agentHeartbeatBO, JSONObject commandParam) {
         ApplicationPluginDownloadPathDetailResult result = pathDAO.queryDetailByCustomerId();
-        if (Objects.isNull(result) || StringUtils.isBlank(commandParam.getExtras())) {
-            throw new TakinWebException(TakinWebExceptionEnum.AGENT_COMMAND_VALID_ERROR,
-                "agent command operate error. commandId:" + commandParam.getId());
+        if (Objects.isNull(result)) {
+            return;
         }
-        JSONObject obj = JSONObject.parseObject(commandRequest.getCommandParam());
+        pathDAO.saveValidState(commandParam.getBoolean(VALID_STATUS_FIELD), result.getId());
+    }
 
-        pathDAO.saveValidState(obj.getBoolean(VALID_STATUS_FIELD),result.getId());
+    @Override
+    public boolean needDealHeartbeat(AgentHeartbeatBO agentHeartbeatBO) {
+        //查库
+
+        // TODO ocean_wll
+        return false;
+    }
+
+    @Override
+    public Object dealHeartbeat0(AgentHeartbeatBO agentHeartbeatBO) {
+        // TODO ocean_wll
         return null;
     }
 

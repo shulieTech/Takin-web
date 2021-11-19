@@ -26,4 +26,12 @@ public interface ApplicationPluginUpgradeService {
      */
     ApplicationPluginUpgradeDetailResult queryLatestUpgradeByAppIdAndStatus(Long applicationId, Integer status);
 
+    /**
+     * 将升级单状态置为完成
+     *
+     * @param appId        应用Id
+     * @param upgradeBatch 升级批次号
+     */
+    void finishUpgrade(Long appId, String upgradeBatch);
+
 }

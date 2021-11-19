@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -608,9 +609,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             List<String> upgradeBatchs = CollStreamUtil.toList(v, AgentReportDetailResult::getCurUpgradeBatch);
             Set<String> set = new HashSet<>(upgradeBatchs);
             List<ApplicationPluginUpgradeDetailResult> upgradeDetails = pluginUpgradeService.getList(set);
-            //ApplicationPluginUpgradeDetailResult detail = upgradeDetails.stream()
-            //        .max(Comparator.comparing(ApplicationPluginUpgradeDetailResult::getUpgradeVersion)).get();
-            //appId2UpgradeBatch.put(k, detail.getUpgradeBatch());
+            ApplicationPluginUpgradeDetailResult detail = upgradeDetails.stream()
+                    .max(Comparator.comparing(ApplicationPluginUpgradeDetailResult::getId)).get();
+            appId2UpgradeBatch.put(k, detail.getUpgradeBatch());
         });
 
         appId2UpgradeBatch.forEach((k, v) -> {

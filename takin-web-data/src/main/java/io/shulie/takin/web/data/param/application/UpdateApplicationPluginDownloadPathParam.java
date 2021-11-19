@@ -13,6 +13,6 @@ import io.shulie.takin.web.data.model.mysql.ApplicationPluginDownloadPathEntity;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class UpdateApplicationPluginDownloadPathParam extends ApplicationPluginDownloadPathEntity {
+public class UpdateApplicationPluginDownloadPathParam extends CreateApplicationPluginDownloadPathParam {
     
 }

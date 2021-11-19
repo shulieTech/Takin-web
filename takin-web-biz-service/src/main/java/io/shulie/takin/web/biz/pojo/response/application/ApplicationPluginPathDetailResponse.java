@@ -21,26 +21,13 @@ import java.io.Serializable;
 @ApiModel
 public class ApplicationPluginPathDetailResponse implements Serializable {
 
-//    @ApiModelProperty("应用id")
-//    private Long applicationId;
-//
-//    @ApiModelProperty("应用id")
-//    private String applicationName;
-
     private Long id;
 
     @ApiModelProperty("类型")
-    private SelectVO pathType;
+    private String pathType;
 
-    @ApiModelProperty("地址")
-    private String pathAddress;
+    @ApiModelProperty("配置内容")
+    private String context;
 
-    @ApiModelProperty("路径")
-    private String path;
 
-    @ApiModelProperty("用户名")
-    private String username;
-
-    @ApiModelProperty("密码")
-    private String password;
 }

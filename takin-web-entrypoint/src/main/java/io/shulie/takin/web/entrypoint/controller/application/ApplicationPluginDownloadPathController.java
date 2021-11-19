@@ -33,16 +33,6 @@ public class ApplicationPluginDownloadPathController {
     @Autowired
     private ApplicationAgentPathTypeService pathTypeService;
 
-//    @ApiOperation("获取探针存放根目录类型")
-//    @GetMapping("/type/support")
-//    @AuthVerification(
-//            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-//            needAuth = ActionTypeEnum.QUERY
-//    )
-//    public List<SelectVO> supperType() {
-//        return  pathTypeService.supportType();
-//    }
-
 
     @ApiOperation("获取探针存放根目录配置")
     @GetMapping("/config")

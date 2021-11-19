@@ -36,40 +36,14 @@ public class ApplicationPluginDownloadPathEntity extends NewBaseEntity implement
     private Integer pathType;
     
    /**
-   * 地址
+   * 配置内容
    */  
-    private String pathAddress;
-    
-   /**
-   * 路径
-   */  
-    private String path;
-    
-   /**
-   * 用户名
-   */  
-    private String username;
-    
-   /**
-   * 密码
-   */  
-    private String password;
+    private String context;
 
     private String salt;
 
     private Integer validStatus;
 
-//    /**
-//     * 租户id
-//     */
-//    @TableField(value = "CUSTOMER_ID", fill = FieldFill.INSERT)
-//    private Long customerId;
-//
-//    /**
-//     * 用户id
-//     */
-//    @TableField(value = "USER_ID", fill = FieldFill.INSERT)
-//    private Long userId;
 
     /**
      * 环境标识

@@ -26,18 +26,11 @@ public class ApplicationPluginDownloadPathInput {
     @NotNull
     private String pathType;
 
-    @ApiModelProperty("地址")
+
+    @ApiModelProperty("配置内容")
     @NotNull
-    private String pathAddress;
+    private String context;
 
-    @ApiModelProperty("路径")
-    @NotNull
-    private String path;
 
-    @ApiModelProperty("用户名")
-    private String username;
-
-    @ApiModelProperty("密码")
-    private String password;
 
 }

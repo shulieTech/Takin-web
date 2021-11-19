@@ -13,7 +13,7 @@ import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPath
  */
 public interface ApplicationPluginDownloadPathDAO {
 
-    ApplicationPluginDownloadPathDetailResult queryDetailByCustomerId();
+    ApplicationPluginDownloadPathDetailResult queryDetailByTenant();
 
     void createConfig(CreateApplicationPluginDownloadPathParam createParam);
 
@@ -21,6 +21,9 @@ public interface ApplicationPluginDownloadPathDAO {
 
     void saveValidState(Boolean state,Long recordId);
 
-    ApplicationPluginDownloadPathDetailResult queryDetailByCustomerId(ApplicationAgentPathValidStatusEnum statusEnum);
+    ApplicationPluginDownloadPathDetailResult queryDetailByTenant(ApplicationAgentPathValidStatusEnum statusEnum);
+
+    ApplicationPluginDownloadPathDetailResult queryById(Long id);
+
 }
 

@@ -41,27 +41,27 @@ public class ApplicationPluginDownloadPathDAOImpl extends ServiceImpl<Applicatio
         return Convert.convert(ApplicationPluginDownloadPathDetailResult.class, entity);
     }
 
-    private void createOrUpdate(ApplicationPluginDownloadPathEntity entity) {
-        if (StringUtils.isNotBlank(entity.getPassword())) {
-            byte[] encoded  = StringUtils.isNotBlank(entity.getSalt())?
-                    entity.getSalt().getBytes() : SecureUtil.generateKey(SymmetricAlgorithm.AES.getValue()).getEncoded();
-            String encryptPassword = SecureUtil.aes(encoded).encryptHex(entity.getPassword());
-            entity.setSalt(Arrays.toString(encoded));
-            entity.setPassword(encryptPassword);
-        }
-        this.saveOrUpdate(entity);
-    }
+//    private void createOrUpdate(ApplicationPluginDownloadPathEntity entity) {
+//        if (StringUtils.isNotBlank(entity.getPassword())) {
+//            byte[] encoded  = StringUtils.isNotBlank(entity.getSalt())?
+//                    entity.getSalt().getBytes() : SecureUtil.generateKey(SymmetricAlgorithm.AES.getValue()).getEncoded();
+//            String encryptPassword = SecureUtil.aes(encoded).encryptHex(entity.getPassword());
+//            entity.setSalt(Arrays.toString(encoded));
+//            entity.setPassword(encryptPassword);
+//        }
+//        this.saveOrUpdate(entity);
+//    }
 
 
     @Override
-    public ApplicationPluginDownloadPathDetailResult queryDetailByCustomerId() {
+    public ApplicationPluginDownloadPathDetailResult queryDetailByTenant() {
         LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
         return this.convertResult(this.getOne(queryWrapper));
     }
 
 
     @Override
-    public ApplicationPluginDownloadPathDetailResult queryDetailByCustomerId(ApplicationAgentPathValidStatusEnum statusEnum) {
+    public ApplicationPluginDownloadPathDetailResult queryDetailByTenant(ApplicationAgentPathValidStatusEnum statusEnum) {
         LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
         queryWrapper.eq(ApplicationPluginDownloadPathEntity::getValidStatus, statusEnum.getVal());
         return this.convertResult(this.getOne(queryWrapper));
@@ -70,13 +70,13 @@ public class ApplicationPluginDownloadPathDAOImpl extends ServiceImpl<Applicatio
 
     @Override
     public void createConfig(CreateApplicationPluginDownloadPathParam createParam) {
-        this.createOrUpdate(createParam);
+        this.save(createParam);
     }
 
 
     @Override
     public void updateConfig(UpdateApplicationPluginDownloadPathParam updateParam) {
-        this.createOrUpdate(updateParam);
+        this.updateById(updateParam);
     }
 
     @Override
@@ -87,6 +87,11 @@ public class ApplicationPluginDownloadPathDAOImpl extends ServiceImpl<Applicatio
         this.updateById(entity);
     }
 
-
+    @Override
+    public ApplicationPluginDownloadPathDetailResult queryById(Long id) {
+        LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        queryWrapper.eq(ApplicationPluginDownloadPathEntity::getId,id);
+        return this.convertResult(this.getOne(queryWrapper));
+    }
 }
 

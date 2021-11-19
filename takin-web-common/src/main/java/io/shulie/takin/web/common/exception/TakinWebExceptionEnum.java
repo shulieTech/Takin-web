@@ -143,6 +143,11 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      *  agent指令操作
      */
     AGENT_COMMAND_VALID_ERROR("1500-"+ErrorConstant.VALIDATE_ERROR,"Agent 指令操作 数据校验异常"),
+
+    /**
+     * 插件根目录
+     */
+    PLUGIN_PATH_VALID_ERROR("1600-"+ErrorConstant.VALIDATE_ERROR,"探针根目录数据校验异常"),
     ;
     private final String errorCode;
 

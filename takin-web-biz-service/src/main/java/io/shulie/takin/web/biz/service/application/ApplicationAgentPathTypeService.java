@@ -11,7 +11,6 @@ import io.shulie.takin.web.common.common.Response;
  */
 public interface ApplicationAgentPathTypeService {
 
-//    List<SelectVO> supportType();
 
     Response<ApplicationPluginPathDetailResponse> queryConfigDetail();
 

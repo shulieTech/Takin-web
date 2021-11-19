@@ -23,20 +23,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class AgentPluginPathValidProcessor extends AgentCommandSupport {
 
-    private static final String VALID_STATUS_FIELD = "validStatus";
+    private static final String VALID_STATUS_FIELD = "valid";
+
+    private static final String ID_FIELD = "id";
 
     @Autowired
     private ApplicationPluginDownloadPathDAO pathDAO;
 
     @Override
     public Object process(AgentCommandBO commandParam) {
-        ApplicationPluginDownloadPathDetailResult result = pathDAO.queryDetailByCustomerId();
+        JSONObject obj = JSONObject.parseObject(commandParam.getExtras());
+        long recordId = obj.getLongValue(ID_FIELD);
+        ApplicationPluginDownloadPathDetailResult result = pathDAO.queryById(recordId);
         if (Objects.isNull(result) || StringUtils.isBlank(commandParam.getExtras())) {
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_COMMAND_VALID_ERROR,
                 "agent command operate error. commandId:" + commandParam.getId());
         }
-        JSONObject obj = JSONObject.parseObject(commandRequest.getCommandParam());
-
         pathDAO.saveValidState(obj.getBoolean(VALID_STATUS_FIELD),result.getId());
         return null;
     }

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AgentPluginPathValidProcessor extends AgentCommandSupport {
 
-    private static final String VALID_STATUS_FIELD = "validStatus";
+    private static final String VALID_FIELD = "valid";
 
     @Autowired
     private ApplicationPluginDownloadPathDAO pathDAO;
@@ -31,7 +31,7 @@ public class AgentPluginPathValidProcessor extends AgentCommandSupport {
         if (Objects.isNull(result)) {
             return;
         }
-        pathDAO.saveValidState(commandParam.getBoolean(VALID_STATUS_FIELD), result.getId());
+        pathDAO.saveValidState(commandParam.getBoolean(VALID_FIELD), result.getId());
     }
 
     @Override

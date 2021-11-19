@@ -40,11 +40,12 @@ public class PerformanceAnalyzeJob implements SimpleJob {
         Integer second = Integer.valueOf(
             ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_PERFORMANCE_CLEAR_SECOND));
 
-        List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-        if (CollectionUtils.isEmpty(tenantInfoExts)) {
+
+        if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源
             threadAnalyService.clearData(second);
         } else {
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             // saas
             tenantInfoExts.forEach(ext -> {
                 // 根据环境 分线程

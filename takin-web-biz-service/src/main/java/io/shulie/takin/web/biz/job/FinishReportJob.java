@@ -48,9 +48,9 @@ public class FinishReportJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
+
         long start = System.currentTimeMillis();
-        if(CollectionUtils.isEmpty(tenantInfoExts)) {
+        if(WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源 根据 报告id进行分片
             List<Long> reportIds =  reportTaskService.getRunningReport();
             log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
@@ -62,6 +62,7 @@ public class FinishReportJob implements SimpleJob {
                 }
             }
         }else {
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             // saas 根据租户进行分片
             for (TenantInfoExt ext : tenantInfoExts) {
                 // 开始数据层分片

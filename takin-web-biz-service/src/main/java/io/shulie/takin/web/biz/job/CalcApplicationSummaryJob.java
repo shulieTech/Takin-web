@@ -53,8 +53,7 @@ public class CalcApplicationSummaryJob implements SimpleJob {
     @Override
     public void execute(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
-        List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-        if (CollectionUtils.isEmpty(tenantInfoExts)) {
+        if (WebPluginUtils.isOpenVersion()) {
             if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                 return;
             }
@@ -65,12 +64,18 @@ public class CalcApplicationSummaryJob implements SimpleJob {
             for (Long reportId : reportIds) {
                 // 开始数据层分片
                 if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    fastDebugThreadPool.execute(() -> reportTaskService.calcApplicationSummary(reportId));
+                    fastDebugThreadPool.execute(() -> {
+                        WebPluginUtils.setTraceTenantContext(
+                            WebPluginUtils.traceTenantId(), WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(), WebPluginUtils.traceTenantCode(),
+                            ContextSourceEnum.JOB.getCode());
+                        reportTaskService.calcApplicationSummary(reportId);
+                    });
                 }
             }
 
         } else {
             // saas 根据租户进行分片
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             for (TenantInfoExt ext : tenantInfoExts) {
                 // 开始数据层分片
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {

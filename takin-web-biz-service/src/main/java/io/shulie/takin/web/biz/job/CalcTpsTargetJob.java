@@ -52,8 +52,7 @@ public class CalcTpsTargetJob implements SimpleJob {
     @Override
     public void execute(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
-        List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-        if (CollectionUtils.isEmpty(tenantInfoExts)) {
+        if (WebPluginUtils.isOpenVersion()) {
             if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                 return;
             }
@@ -68,6 +67,7 @@ public class CalcTpsTargetJob implements SimpleJob {
                 }
             }
         } else {
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             // saas 根据租户进行分片
             for (TenantInfoExt ext : tenantInfoExts) {
                 // 开始数据层分片

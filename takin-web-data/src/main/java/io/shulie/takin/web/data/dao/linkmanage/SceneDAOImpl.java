@@ -146,7 +146,7 @@ public class SceneDAOImpl implements SceneDAO {
 
         LambdaQueryWrapper<SceneEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         if (!StringUtils.isEmpty(param.getSceneName())) {
-            lambdaQueryWrapper.likeRight(SceneEntity::getSceneName, param.getSceneName());
+            lambdaQueryWrapper.like(SceneEntity::getSceneName, param.getSceneName());
         }
         if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
             lambdaQueryWrapper.in(SceneEntity::getUserId, param.getUserIdList());

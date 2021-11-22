@@ -109,9 +109,6 @@ public class AgentUrls {
 
     public static final String ROCKETMQ_ISO_URL = "/isolation/query/rockemtMqIsoQuery";
 
-    public static final String FAST_DEBUG_STACK_UPLOAD_URL = "/fast/debug/stack/upload";
-
-    public static final String FAST_DEBUG_AGENT_LOG_UPLOAD_URL = "/fast/debug/log/upload";
 
     /**
      * 拉取ES Server配置的接口

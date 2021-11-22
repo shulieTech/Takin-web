@@ -23,10 +23,10 @@ public class SceneDto extends AuthQueryResponseCommonExt implements Serializable
     private String sceneName;
 
     @ApiModelProperty(name = "businessLinkCount", value = "业务活动条数")
-    private int businessLinkCount;
+    private long businessLinkCount;
 
     @ApiModelProperty(name = "techLinkCount", value = "系统流程条数")
-    private int techLinkCount;
+    private long techLinkCount;
 
     @ApiModelProperty(name = "ischange", value = "是否变更")
     private String ischange;

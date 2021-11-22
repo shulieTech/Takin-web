@@ -40,7 +40,6 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowIdAndNameDto;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
 import com.pamirs.takin.entity.domain.entity.linkmanage.BusinessLinkManageTable;
 import com.pamirs.takin.entity.domain.entity.linkmanage.Scene;
-import com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate;
 import io.shulie.amdb.common.enums.RpcType;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.sdk.model.common.UploadFileDTO;
@@ -124,6 +123,7 @@ import io.shulie.takin.web.data.param.tagmanage.TagManageParam;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
+import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
@@ -464,7 +464,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             return businessLinkManageDAO.getListByIds(Collections.singletonList(Long.valueOf(refValue)));
         }
         if (ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE.equals(refType)) {
-            List<SceneLinkRelate> sceneLinkRelates = tSceneLinkRelateMapper.selectBySceneId(Long.valueOf(refValue));
+            List<SceneLinkRelateResult> sceneLinkRelates = sceneLinkRelateDAO.selectBySceneId(Long.valueOf(refValue));
             if (CollectionUtils.isNotEmpty(sceneLinkRelates)) {
                 List<Long> businessActivityIds = sceneLinkRelates.stream().map(o -> Long.valueOf(o.getBusinessLinkId()))
                     .collect(Collectors.toList());

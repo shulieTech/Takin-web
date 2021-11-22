@@ -17,6 +17,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class ReportQueryParam extends WebRequest implements Serializable {
 
+    @ApiModelProperty(name = "sceneId", value = "场景ID")
+    private Long sceneId;
+
     /**
      * 场景名称
      */

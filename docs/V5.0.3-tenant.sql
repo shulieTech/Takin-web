@@ -504,49 +504,6 @@ ALTER TABLE e_patrol_scene_check ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1
 ALTER TABLE e_patrol_scene_check ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
 ALTER TABLE e_patrol_scene_check ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 -- 兮曦 --
-
--- 大表增加字段 t_fast_debug_stack_info
-CREATE TABLE IF NOT EXISTS `T_FAST_DEBUG_STACK_INFO_COPY` (
-    `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    `app_name` varchar(255) DEFAULT NULL,
-    `agent_id` varchar(255) DEFAULT NULL,
-    `trace_id` varchar(512) DEFAULT NULL COMMENT 'traceId',
-    `rpc_id` varchar(512) NOT NULL COMMENT 'rpcid',
-    `level` varchar(64) DEFAULT NULL COMMENT '日志级别',
-    `type` tinyint(4) DEFAULT NULL COMMENT '服务端，客户端',
-    `content` longtext COMMENT 'stack信息',
-    `is_stack` tinyint(1) DEFAULT NULL COMMENT '是否调用栈日志',
-    `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
-    `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `gmt_update` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-    `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
-    `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id',
-    PRIMARY KEY (`id`) USING BTREE,
-    KEY `index_traceId` (`trace_id`) USING BTREE,
-    KEY `idx_tenant_env` ( `tenant_id`,`env_code` ) USING BTREE
-    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
-
-BEGIN;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 0,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 50000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 100000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 150000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 200000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 250000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 300000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 350000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 40000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 450000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 500000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 550000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 600000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 650000,50000;
-INSERT INTO `T_FAST_DEBUG_STACK_INFO_COPY`(`id`,`app_name`,`agent_id`,`trace_id`,`rpc_id`,`level`,`type`,`content` ,`is_stack`,`is_deleted`,`gmt_create`,`gmt_update`) SELECT * FROM `t_fast_debug_stack_info` LIMIT 700000,50000;
-COMMIT;
-RENAME TABLE t_fast_debug_stack_info TO t_fast_debug_stack_info_old;
-RENAME TABLE T_FAST_DEBUG_STACK_INFO_COPY TO t_fast_debug_stack_info;
-
-
 -- DML开始
 BEGIN;
 INSERT IGNORE INTO  `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`is_default`) VALUES (1, 'test', '测试环境',1);
@@ -583,3 +540,12 @@ VALUES (510, NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, 
         '2021-01-14 11:19:50', 0);
 
 COMMIT;
+
+-- 大表操作 t_fast_debug_stack_info
+DELETE FROM t_fast_debug_stack_info WHERE id NOT IN (
+    SELECT * FROM (
+      SELECT t.id
+      FROM t_fast_debug_stack_info t
+      JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
+    )tmp
+);

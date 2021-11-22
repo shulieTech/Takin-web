@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.dao.agentupgradeonline;
 import java.util.List;
 import java.util.Set;
 
+import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
 
 /**
@@ -42,5 +43,12 @@ public interface ApplicationPluginUpgradeDAO {
      * @return ApplicationPluginUpgradeDetailResult对象
      */
     ApplicationPluginUpgradeDetailResult queryByAppIdAndUpgradeBatch(Long applicationId, String upgradeBatch);
+
+    /**
+     * 入库
+     *
+     * @param param CreateApplicationPluginUpgradeParam对象
+     */
+    void save(CreateApplicationPluginUpgradeParam param);
 }
 

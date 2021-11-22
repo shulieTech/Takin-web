@@ -20,42 +20,42 @@ public interface TraceNodeDao {
      *
      * @return
      */
-    TraceNodeInfoResult getNode(String traceId, String rpcId, Long teanntId, Integer logType, String agentId, String appName);
+    TraceNodeInfoResult getNode(String traceId, String rpcId,Integer logType, String agentId, String appName);
 
     /**
      * 获取节点信息List
-     *
+     * @param traceId
      * @return
      */
-    List<TraceNodeInfoResult> getNodeList(String traceId, Long tenantId);
+    List<TraceNodeInfoResult> getNodeList(String traceId);
 
     /**
      * 节点个数
-     *
+     * @param traceId
      * @return
      */
-    Long getNodeCount(String traceId, Long tenantId);
+    Long getNodeCount(String traceId);
 
     /**
      * 异常节点个数
-     *
+     * @param traceId
      * @return
      */
-    Long getExceptionNodeCount(String traceId, Long tenantId);
+    Long getExceptionNodeCount(String traceId);
 
     /**
      * 未知节点个数
-     *
+     * @param traceId
      * @return
      */
-    Long getUnknownNodeCount(String traceId, Long tenantId);
+    Long getUnknownNodeCount(String traceId);
 
     /**
      * 未知节点list
-     *
+     * @param traceId
      * @return
      */
-    List<TraceNodeInfoResult> getUnknownNodes(String traceId, Long tenantId);
+    List<TraceNodeInfoResult> getUnknownNodes(String traceId);
 
     /**
      * 根据id获取

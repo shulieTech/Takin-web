@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
  * @date 2020/12/29 12:13 下午
  */
 @Component
-public class TraceNodeDaoImpl implements io.shulie.takin.web.data.dao.tracenode.TraceNodeDao {
+public class TraceNodeDaoImpl implements TraceNodeDao {
     @Autowired
     private CustomTraceNodeInfoMapper customTraceNodeInfoMapper;
 
@@ -35,7 +35,7 @@ public class TraceNodeDaoImpl implements io.shulie.takin.web.data.dao.tracenode.
     }
 
     @Override
-    public TraceNodeInfoResult getNode(String traceId, String rpcId, Long teanntId, Integer logType, String agentId, String appName) {
+    public TraceNodeInfoResult getNode(String traceId, String rpcId,Integer logType, String agentId, String appName) {
         LambdaQueryWrapper<TraceNodeInfoEntity> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(traceId)) {
             wrapper.eq(TraceNodeInfoEntity::getTraceId, traceId);
@@ -43,7 +43,6 @@ public class TraceNodeDaoImpl implements io.shulie.takin.web.data.dao.tracenode.
         if (StringUtils.isNotBlank(rpcId)) {
             wrapper.eq(TraceNodeInfoEntity::getRpcId, rpcId);
         }
-        wrapper.eq(TraceNodeInfoEntity::getTraceId, teanntId);
         if (logType != null) {
             wrapper.eq(TraceNodeInfoEntity::getLogType, logType);
         }
@@ -63,12 +62,11 @@ public class TraceNodeDaoImpl implements io.shulie.takin.web.data.dao.tracenode.
     }
 
     @Override
-    public List<TraceNodeInfoResult> getNodeList(String traceId, Long tenantId) {
+    public List<TraceNodeInfoResult> getNodeList(String traceId) {
         LambdaQueryWrapper<TraceNodeInfoEntity> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(traceId)) {
             wrapper.eq(TraceNodeInfoEntity::getTraceId, traceId);
         }
-        wrapper.eq(TraceNodeInfoEntity::getTenantId, tenantId);
         wrapper.orderByDesc(TraceNodeInfoEntity::getId);
         List<TraceNodeInfoEntity> entities = customTraceNodeInfoMapper.list(wrapper);
         if (entities == null || entities.size() == 0) {
@@ -80,22 +78,20 @@ public class TraceNodeDaoImpl implements io.shulie.takin.web.data.dao.tracenode.
     }
 
     @Override
-    public Long getNodeCount(String traceId, Long tenantId) {
+    public Long getNodeCount(String traceId) {
         LambdaQueryWrapper<TraceNodeInfoEntity> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(traceId)) {
             wrapper.eq(TraceNodeInfoEntity::getTraceId, traceId);
         }
-        wrapper.eq(TraceNodeInfoEntity::getTenantId, tenantId);
         return customTraceNodeInfoMapper.count(wrapper);
     }
 
     @Override
-    public Long getExceptionNodeCount(String traceId, Long tenantId) {
+    public Long getExceptionNodeCount(String traceId) {
         LambdaQueryWrapper<TraceNodeInfoEntity> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(traceId)) {
             wrapper.eq(TraceNodeInfoEntity::getTraceId, traceId);
         }
-        wrapper.eq(TraceNodeInfoEntity::getTraceId, tenantId);
         List<TraceNodeInfoEntity> entities = customTraceNodeInfoMapper.list(wrapper);
         if (entities == null || entities.size() == 0) {
             return 0L;
@@ -108,8 +104,8 @@ public class TraceNodeDaoImpl implements io.shulie.takin.web.data.dao.tracenode.
     }
 
     @Override
-    public Long getUnknownNodeCount(String traceId, Long tenantId) {
-        List<TraceNodeInfoResult> results = getUnknownNodes(traceId, tenantId);
+    public Long getUnknownNodeCount(String traceId) {
+        List<TraceNodeInfoResult> results = this.getUnknownNodes(traceId);
         if (results == null || results.size() == 0) {
             return 0L;
         }
@@ -118,12 +114,11 @@ public class TraceNodeDaoImpl implements io.shulie.takin.web.data.dao.tracenode.
     }
 
     @Override
-    public List<TraceNodeInfoResult> getUnknownNodes(String traceId, Long tenantId) {
+    public List<TraceNodeInfoResult> getUnknownNodes(String traceId) {
         LambdaQueryWrapper<TraceNodeInfoEntity> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(traceId)) {
             wrapper.eq(TraceNodeInfoEntity::getTraceId, traceId);
         }
-        wrapper.eq(TraceNodeInfoEntity::getTenantId, tenantId);
         wrapper.eq(TraceNodeInfoEntity::getIsUpperUnknownNode, true);
         wrapper.orderByDesc(TraceNodeInfoEntity::getId);
         List<TraceNodeInfoEntity> entities = customTraceNodeInfoMapper.list(wrapper);

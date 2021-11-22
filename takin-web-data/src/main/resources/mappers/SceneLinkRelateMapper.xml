@@ -20,4 +20,13 @@
         ID, ENTRANCE, IS_DELETED, CREATE_TIME, UPDATE_TIME, BUSINESS_LINK_ID, TECH_LINK_ID,
         SCENE_ID, PARENT_BUSINESS_LINK_ID, FRONT_UUID_KEY
     </sql>
+    <select id="countByTechLinkIds" resultType="java.lang.Integer">
+        select count(1) from t_scene_link_relate where TECH_LINK_ID in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        and IS_DELETED = 0
+    </select>
+
+
 </mapper>

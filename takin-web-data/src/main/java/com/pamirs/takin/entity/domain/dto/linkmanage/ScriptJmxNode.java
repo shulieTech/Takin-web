@@ -97,7 +97,8 @@ public class ScriptJmxNode {
     @ApiModelProperty(name = "entrace", value = "链路入口")
     private String entrace;
 
-
+    @ApiModelProperty(name = "entracePath", value = "页面展示链路入口，不包含rpcType")
+    private String entracePath;
 
 
 }

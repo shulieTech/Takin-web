@@ -793,6 +793,7 @@ public class SceneServiceImpl implements SceneService {
                         scriptJmxNode.setBindBusinessId(activityListResult.getBindBusinessId());
                         scriptJmxNode.setTechLinkId(activityListResult.getTechLinkId());
                         scriptJmxNode.setEntrace(activityListResult.getEntrace());
+                        scriptJmxNode.setEntracePath(entranceJoinEntity.getMethodName() + "|" + entranceJoinEntity.getServiceName());
                         scriptJmxNode.setStatus(1);
                     }
 

@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.service.agentupgradeonline.impl;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeRefService;
 import io.shulie.takin.web.data.dao.agentupgradeonline.ApplicationPluginUpgradeRefDAO;
@@ -24,13 +23,13 @@ public class ApplicationPluginUpgradeRefServiceImpl implements ApplicationPlugin
     @Autowired
     private ApplicationPluginUpgradeRefDAO refDAO;
 
-    @Override
-    public List<ApplicationPluginUpgradeRefDetailResult> getList(Long pluginId) {
-        if (Objects.isNull(pluginId)) {
-            return Collections.emptyList();
-        }
-        return refDAO.getList(pluginId);
-    }
+    //@Override
+    //public List<ApplicationPluginUpgradeRefDetailResult> getList(Long pluginId) {
+    //    if (Objects.isNull(pluginId)) {
+    //        return Collections.emptyList();
+    //    }
+    //    return refDAO.getList(pluginId);
+    //}
 
     @Override
     public List<ApplicationPluginUpgradeRefDetailResult> getList(String upgradeBatch) {

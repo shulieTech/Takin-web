@@ -13,7 +13,7 @@ import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeRefDe
  */
 public interface ApplicationPluginUpgradeRefService {
 
-    List<ApplicationPluginUpgradeRefDetailResult> getList(Long pluginId);
+    //List<ApplicationPluginUpgradeRefDetailResult> getList(Long pluginId);
 
     List<ApplicationPluginUpgradeRefDetailResult> getList(String upgradeBatch);
 

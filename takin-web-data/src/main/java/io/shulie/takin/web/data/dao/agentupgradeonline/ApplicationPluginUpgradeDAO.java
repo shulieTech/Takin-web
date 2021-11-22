@@ -33,5 +33,14 @@ public interface ApplicationPluginUpgradeDAO {
      * @param upgradeBatch 批次号
      */
     void finishUpgrade(Long appId, String upgradeBatch);
+
+    /**
+     * 根据ApplicationId和批次号查询升级单
+     *
+     * @param applicationId 应用Id
+     * @param upgradeBatch  升级批次号
+     * @return ApplicationPluginUpgradeDetailResult对象
+     */
+    ApplicationPluginUpgradeDetailResult queryByAppIdAndUpgradeBatch(Long applicationId, String upgradeBatch);
 }
 

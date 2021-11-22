@@ -378,3 +378,111 @@ UPDATE t_app_agent_config_report m LEFT JOIN t_application_mnt u ON u.APPLICATIO
 
 COMMIT;
 
+
+-- 最后加索引
+ALTER TABLE t_activity_node_service_state ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_agent_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_app_agent_config_report ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_app_business_table_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_app_middleware_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_app_remote_call ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_application_api_manage ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_application_api_manage ADD UNIQUE KEY `idx_app_api_method_tenant_env` ( `APPLICATION_NAME`,`api`,`method`,`tenant_id`,`env_code` );
+ALTER TABLE t_application_api_manage DROP KEY `APPLICATION_NAME`;
+ALTER TABLE `t_application_ds_manage` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_application_mnt ADD INDEX `idx_application_id` ( `application_id` );
+ALTER TABLE t_application_mnt
+DROP KEY `index_identifier_application_name`,
+ADD UNIQUE KEY `idx_application_name_tenant_env` ( `APPLICATION_NAME`,`tenant_id`,`env_code`);
+ALTER TABLE `t_application_focus` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_application_middleware` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_application_node_probe` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_application_plugins_config` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_black_list` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_business_link_manage_table` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_data_build` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_datasource_tag_ref` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_datasource_tag_ref ADD UNIQUE KEY `idx_datasource_tag_tenant_env` ( `datasource_id`,`tag_id`,`tenant_id`,`env_code` );
+ALTER TABLE t_datasource_tag_ref DROP KEY `index_datasourceId_tagId`;
+ALTER TABLE `t_dictionary_data`
+DROP PRIMARY KEY,
+ADD PRIMARY KEY(`ID`,`tenant_id`,`env_code`) USING BTREE;
+ALTER TABLE `t_dictionary_type` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_exception_info` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_fast_debug_config_info` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_fast_debug_config_info ADD UNIQUE KEY `idx_name_tenant_env` ( `name`,`tenant_id`,`env_code` );
+ALTER TABLE t_fast_debug_config_info DROP KEY `name`;
+ALTER TABLE `t_fast_debug_exception` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_fast_debug_machine_performance` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_fast_debug_result` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_file_manage` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_leakcheck_config` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_leakcheck_config_detail` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_leakverify_detail` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_leakverify_result` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_detection` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_guard` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_manage_table` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_mnt` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_service_mnt` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_link_topology_info` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_login_record` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_middleware_info` ADD UNIQUE INDEX `idx_name_version_tenant_env` ( `MIDDLEWARE_NAME`, `MIDDLEWARE_VERSION`, `tenant_id`, `env_code` );
+ALTER TABLE `t_middleware_link_relate` ADD UNIQUE INDEX `idx_middleware_tech_link_tenant_env` ( `MIDDLEWARE_ID`,`TECH_LINK_ID`,`tenant_id`,`env_code` );
+ALTER TABLE `t_operation_log` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_ops_script_batch_no` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_ops_script_execute_result` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_ops_script_file` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_ops_script_manage` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_performance_base_data` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_performance_criteria_config` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_performance_thread_data` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_performance_thread_stack_data` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE `t_pessure_test_task_activity_config` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_pradar_zk_config ADD UNIQUE INDEX `idx_path_tenant_env` ( `zk_path`,`tenant_id`,`env_code` );
+DROP INDEX `idx_zk_path` on t_pradar_zk_config;
+ALTER TABLE t_pressure_machine ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_pressure_machine_statistics ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_pressure_time_record ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_probe ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_quick_access ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_report_application_summary ADD UNIQUE INDEX `unique_idx_report_appliacation_tenant_env` ( `report_id`,`application_name`,`tenant_id`,`env_code` );
+DROP index `unique_idx_report_appliacation` on t_report_application_summary ;
+ALTER TABLE t_report_bottleneck_interface ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_report_machine ADD UNIQUE INDEX `unique_idx_report_appliacation_machine_tenant_env` ( `report_id`,`application_name`, `machine_ip`,`tenant_id`,`env_code` );
+DROP index `unique_report_application_machine` ON t_report_machine ;
+ALTER TABLE t_report_machine ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_report_summary ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_scene ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_scene_link_relate ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_scene_manage ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_scene_scheduler_task ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_scene_tag_ref ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_script_debug ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_script_execute_result ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_script_file_ref ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_script_manage ADD UNIQUE INDEX `unique_name_tenant_env` ( `name`,`tenant_id`,`env_code` );
+DROP index `name` ON t_script_manage ;
+ALTER TABLE t_script_manage_deploy ADD UNIQUE INDEX `unique_name_version_tenant_env` ( `name`,`script_version`,`tenant_id`,`env_code` );
+DROP index `name_version` ON t_script_manage_deploy ;
+ALTER TABLE t_script_tag_ref ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_shadow_job_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_shadow_mq_consumer ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_shadow_table_datasource ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_tag_manage ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_trace_manage ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_trace_manage_deploy ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_trace_node_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_tro_authority ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_tro_dbresource ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_tro_dept ADD INDEX `idx_tenant` ( `tenant_id` );
+ALTER TABLE t_tro_role ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_tro_role_user_relation ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_tro_trace_entry ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_tro_user
+    ADD INDEX `idx_tenant` ( `tenant_id`),
+    ADD UNIQUE KEY `idx_name_tenant_id`(`tenant_id`,`name` );
+ALTER TABLE t_tro_user_dept_relation ADD INDEX `idx_tenant` ( `tenant_id`);
+ALTER TABLE t_upload_interface_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_white_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_whitelist_effective_app ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );

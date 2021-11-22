@@ -737,10 +737,10 @@ public class ActivityServiceImpl implements ActivityService {
         String reportId = redisClientUtils.getString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId);
         //2.根据taskId获取报告状态即任务状态
         if (!StringUtil.isBlank(reportId)) {
-            ResponseResult<ReportDetailResp> responseResult = reportService.getReportByReportId(
+            ResponseResult<ReportDetailOutput> responseResult = reportService.getReportByReportId(
                 Long.valueOf(reportId));
             if (Objects.nonNull(responseResult) && Objects.nonNull(responseResult.getData())) {
-                ReportDetailResp reportDetailOutput = responseResult.getData();
+                ReportDetailOutput reportDetailOutput = responseResult.getData();
                 Integer verifyStatus = reportDetailOutput.getTaskStatus();
                 response.setVerifyStatus(verifyStatus);
                 response.setVerifiedFlag(

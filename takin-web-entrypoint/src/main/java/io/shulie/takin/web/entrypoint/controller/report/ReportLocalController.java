@@ -1,7 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,16 +19,14 @@ import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
 import com.pamirs.takin.entity.domain.vo.report.ReportLocalQueryParam;
-import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
-import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.web.common.domain.WebResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
@@ -143,7 +140,7 @@ public class ReportLocalController {
             // initReportLink(lists);
             return Response.success(Lists.newArrayList());
         } else {
-            ResponseResult<ReportDetailResp> response = reportService.getReportByReportId(reportId);
+            ResponseResult<ReportDetailOutput> response = reportService.getReportByReportId(reportId);
             if (response == null || response.getData() == null) {
                 return Response.fail("500", "Not Found Report, id=" + reportId);
             }

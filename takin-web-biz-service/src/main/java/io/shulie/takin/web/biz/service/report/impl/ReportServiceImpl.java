@@ -144,7 +144,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ResponseResult<ReportDetailResp> getReportByReportId(Long reportId) {
+    public ResponseResult<ReportDetailOutput> getReportByReportId(Long reportId) {
         ReportDetailByIdReq req = new ReportDetailByIdReq();
         req.setReportId(reportId);
         ResponseResult<ReportDetailResp> result = reportApi.getReportByReportId(req);
@@ -160,7 +160,7 @@ public class ReportServiceImpl implements ReportService {
             //dealVirtualBusiness(output);
             //补充报告执行人
             fillExecuteMan(output);
-            return result;
+            return ResponseResult.success(output);
         }
 
         throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR,

@@ -13,6 +13,7 @@ import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.service.report.ReportService;
@@ -51,7 +52,7 @@ public class ReportController {
     @GetMapping(value = "report/getReportByReportId")
     @ApiOperation("报告详情")
     @ApiImplicitParam(name = "reportId", value = "报告ID")
-    public ResponseResult<ReportDetailResp> getReportByReportId(Long reportId) {
+    public ResponseResult<ReportDetailOutput> getReportByReportId(Long reportId) {
         return reportService.getReportByReportId(reportId);
     }
 

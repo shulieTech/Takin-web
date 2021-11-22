@@ -18,6 +18,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.domain.WebResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,7 @@ public class ReportApplicationService {
     private TApplicationMntDao tApplicationMntDao;
 
     public ReportDetailDTO getDetail(Long reportId) {
-        ResponseResult<ReportDetailResp> response = reportService.getReportByReportId(reportId);
+        ResponseResult<ReportDetailOutput> response = reportService.getReportByReportId(reportId);
         if (response != null && response.getData() != null) {
             return JSON.parseObject(JSON.toJSONString(response.getData()), ReportDetailDTO.class);
         }

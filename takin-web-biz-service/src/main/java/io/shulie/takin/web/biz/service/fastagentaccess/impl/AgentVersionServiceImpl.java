@@ -516,7 +516,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
         //按插件查
         if (!StringUtils.isEmpty(queryRequest.getPluginId())) {
-            List<ApplicationPluginUpgradeRefDetailResult> list = pluginUpgradeRefService.getList(queryRequest.getPluginId());
+            //List<ApplicationPluginUpgradeRefDetailResult> list = pluginUpgradeRefService.getList(queryRequest.getPluginId());
+            List<ApplicationPluginUpgradeRefDetailResult> list = new ArrayList<>();
+
             List<String> upgradeBatchs = CollStreamUtil.toList(list, ApplicationPluginUpgradeRefDetailResult::getUpgradeBatch);
             Set<String> set = new HashSet<>(upgradeBatchs);
             List<ApplicationPluginUpgradeDetailResult> upgradeDetails = pluginUpgradeService.getList(set);
@@ -616,7 +618,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
         appId2UpgradeBatch.forEach((k, v) -> {
             List<ApplicationPluginUpgradeRefDetailResult> upgradeRefs = pluginUpgradeRefService.getList(v);
-            List<Long> pluginIds = CollStreamUtil.toList(upgradeRefs, ApplicationPluginUpgradeRefDetailResult::getPluginId);
+            //List<Long> pluginIds = CollStreamUtil.toList(upgradeRefs, ApplicationPluginUpgradeRefDetailResult::getPluginId);
+            List<Long> pluginIds = new ArrayList<>();
             List<PluginLibraryDetailResult> plugins = pluginLibraryService.list(pluginIds);
             appId2Plugins.put(k, plugins);
         });

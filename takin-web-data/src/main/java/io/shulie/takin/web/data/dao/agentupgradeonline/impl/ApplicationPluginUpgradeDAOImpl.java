@@ -18,6 +18,7 @@ import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
 import io.shulie.takin.web.data.dao.agentupgradeonline.ApplicationPluginUpgradeDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationPluginUpgradeMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationPluginUpgradeEntity;
+import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.springframework.beans.BeanUtils;
@@ -104,6 +105,13 @@ public class ApplicationPluginUpgradeDAOImpl
             return null;
         }
         return BeanUtil.copyProperties(entity, ApplicationPluginUpgradeDetailResult.class);
+    }
+
+    @Override
+    public void save(CreateApplicationPluginUpgradeParam param) {
+        ApplicationPluginUpgradeEntity entity = new ApplicationPluginUpgradeEntity();
+        BeanUtils.copyProperties(param, entity);
+        applicationPluginUpgradeMapper.insert(entity);
     }
 }
 

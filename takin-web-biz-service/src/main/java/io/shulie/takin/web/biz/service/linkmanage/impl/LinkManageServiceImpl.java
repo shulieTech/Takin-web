@@ -47,6 +47,7 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.BusinessQueryVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.cloud.common.utils.NumberUtil;
 import io.shulie.takin.cloud.open.req.filemanager.FileCreateByStringParamReq;
 import io.shulie.takin.cloud.open.req.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -115,6 +116,7 @@ import io.shulie.takin.web.ext.entity.UserExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -494,17 +496,26 @@ public class LinkManageServiceImpl implements LinkManageService {
         return new BusinessLinkResponse();
     }
 
+    @Autowired
+    private ScriptManageService scriptManageService;
     @Override
     public Response deleteScene(String sceneId) {
         //手动控制事物,减小事物的范围
         if (null == sceneId) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "primary key cannot be null.");
         }
+        SceneResult sceneDetail = sceneDAO.getSceneDetail(NumberUtils.toLong(sceneId));
+        if (sceneDetail == null){
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "找不到对应的业务流程.");
+        }
+
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionStatus status = transactionManager.getTransaction(def);
-
         try {
+            if (sceneDetail.getScriptDeployId() != null){
+                scriptManageService.deleteScriptManage(sceneDetail.getScriptDeployId());
+            }
             tSceneMapper.deleteByPrimaryKey(Long.parseLong(sceneId));
 
             //取出关联的业务活动id是否可以被删除
@@ -526,7 +537,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         } catch (Exception e) {
             transactionManager.rollback(status);
             log.error(e.getMessage(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_DELETE_ERROR, "删除场景失败");
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_DELETE_ERROR, "删除场景失败:"+ e.getMessage());
         } finally {
         }
     }

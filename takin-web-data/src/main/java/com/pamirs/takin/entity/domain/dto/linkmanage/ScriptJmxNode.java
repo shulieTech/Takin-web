@@ -42,6 +42,9 @@ public class ScriptJmxNode {
     @ApiModelProperty(name = "identification", value = "url的拼接值")
     private String identification;
 
+    @ApiModelProperty(name = "requestPath", value = "请求路径")
+    private String requestPath;
+
     @ApiModelProperty(name = "samplerType", value = "采样器类型")
     private SamplerTypeEnum samplerType;
 
@@ -94,7 +97,8 @@ public class ScriptJmxNode {
     @ApiModelProperty(name = "entrace", value = "链路入口")
     private String entrace;
 
-
+    @ApiModelProperty(name = "entracePath", value = "页面展示链路入口，不包含rpcType")
+    private String entracePath;
 
 
 }

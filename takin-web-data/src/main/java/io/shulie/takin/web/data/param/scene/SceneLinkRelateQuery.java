@@ -25,4 +25,7 @@ public class SceneLinkRelateQuery extends AbstractEntry {
      * 业务流程id
      */
     private Long sceneId;
+
+    private String scriptIdentification;
+
 }

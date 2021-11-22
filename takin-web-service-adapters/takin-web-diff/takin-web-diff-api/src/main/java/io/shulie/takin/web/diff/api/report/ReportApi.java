@@ -39,11 +39,25 @@ public interface ReportApi {
      */
     ResponseResult<List<ScriptNodeTreeResp>> scriptNodeTree(ScriptNodeTreeQueryReq req);
 
-
+    /**
+     * 查询报告实况趋势
+     * @param req 请求参数
+     * @return
+     */
     ResponseResult<ReportTrendResp> tmpReportTrend(ReportTrendQueryReq req);
 
+    /**
+     * 查询报告趋势
+     * @param req 请求参数
+     * @return
+     */
     ResponseResult<ReportTrendResp> reportTrend(ReportTrendQueryReq req);
 
-    ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId);
+    /**
+     * 查询报告详情
+     * @param reportId 报告ID
+     * @return
+     */
+    ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId);
 
 }

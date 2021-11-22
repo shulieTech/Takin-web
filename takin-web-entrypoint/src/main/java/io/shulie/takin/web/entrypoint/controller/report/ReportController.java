@@ -13,6 +13,8 @@ import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.constant.APIUrls;
@@ -50,7 +52,7 @@ public class ReportController {
     @GetMapping(value = "report/getReportByReportId")
     @ApiOperation("报告详情")
     @ApiImplicitParam(name = "reportId", value = "报告ID")
-    public ResponseResult<ReportDetailResp> getReportByReportId(Long reportId) {
+    public ResponseResult<ReportDetailOutput> getReportByReportId(Long reportId) {
         return reportService.getReportByReportId(reportId);
     }
 
@@ -64,7 +66,7 @@ public class ReportController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
         needAuth = ActionTypeEnum.START_STOP
     )
-    public ResponseResult<ReportDetailResp> tempReportDetail(Long sceneId) {
+    public ResponseResult<ReportDetailTempOutput> tempReportDetail(Long sceneId) {
         return reportService.tempReportDetail(sceneId);
     }
 
@@ -126,7 +128,11 @@ public class ReportController {
 
     @GetMapping("/report/businessActivity/summary/list")
     @ApiOperation("压测明细")
-    public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+        needAuth = ActionTypeEnum.START_STOP
+    )
+    public ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId) {
         return reportService.querySummaryList(reportId);
     }
 

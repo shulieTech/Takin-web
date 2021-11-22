@@ -144,7 +144,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ResponseResult<ReportDetailResp> getReportByReportId(Long reportId) {
+    public ResponseResult<ReportDetailOutput> getReportByReportId(Long reportId) {
         ReportDetailByIdReq req = new ReportDetailByIdReq();
         req.setReportId(reportId);
         ResponseResult<ReportDetailResp> result = reportApi.getReportByReportId(req);
@@ -160,7 +160,7 @@ public class ReportServiceImpl implements ReportService {
             //dealVirtualBusiness(output);
             //补充报告执行人
             fillExecuteMan(output);
-            return result;
+            return ResponseResult.success(output);
         }
 
         throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR,
@@ -279,7 +279,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ResponseResult<ReportDetailResp> tempReportDetail(Long sceneId) {
+    public ResponseResult<ReportDetailTempOutput> tempReportDetail(Long sceneId) {
         ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
         req.setSceneId(sceneId);
         ResponseResult<ReportDetailResp> result = reportApi.tempReportDetail(req);
@@ -301,8 +301,7 @@ public class ReportServiceImpl implements ReportService {
         } else {
             output.setCanStartStop(Boolean.TRUE);
         }
-        fillExecuteMan(output);
-        return ResponseResult.success(resp);
+        return ResponseResult.success(output);
 
     }
 
@@ -406,7 +405,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ResponseResult<NodeTreeSummaryResp> querySummaryList(Long reportId) {
-        return reportApi.getBusinessActivitySummaryList(reportId);
+        return reportApi.getSummaryList(reportId);
     }
 
     @Override

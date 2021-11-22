@@ -33,6 +33,7 @@ import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
@@ -99,7 +100,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     public PageInfo<ReportTraceDTO> getReportLinkListByReportId(Long reportId, Integer type, int current,
                                                                 int pageSize) {
         ReportDetailDTO reportDetail = null;
-        ResponseResult<ReportDetailResp> response = reportService.getReportByReportId(reportId);
+        ResponseResult<ReportDetailOutput> response = reportService.getReportByReportId(reportId);
         if (response != null && response.getData() != null) {
             reportDetail = JSON.parseObject(JSON.toJSONString(response.getData()), ReportDetailDTO.class);
             log.info("Report Id={}, Status={}", reportId, reportDetail.getTaskStatus());

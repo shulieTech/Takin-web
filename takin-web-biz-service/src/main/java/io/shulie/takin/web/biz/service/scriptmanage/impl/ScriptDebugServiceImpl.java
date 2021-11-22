@@ -484,8 +484,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         queryLinkDetailDTO.setCurrentPage(request.getRealCurrent());
         queryLinkDetailDTO.setPageSize(request.getPageSize());
         queryLinkDetailDTO.setTaskId(scriptDebugEntity.getCloudReportId().toString());
-        queryLinkDetailDTO.setStartTime(scriptDebugEntity.getCreatedAt().getTime());
-        queryLinkDetailDTO.setEndTime(scriptDebugEntity.getUpdatedAt().getTime());
+        //queryLinkDetailDTO.setStartTime(scriptDebugEntity.getCreatedAt().getTime());
+        //queryLinkDetailDTO.setEndTime(scriptDebugEntity.getUpdatedAt().getTime());
 
         // 业务活动入参筛选
         Long businessActivityId = request.getBusinessActivityId();

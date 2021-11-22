@@ -2,19 +2,22 @@ package io.shulie.takin.web.diff.cloud.impl.report;
 
 import java.util.List;
 
-import io.shulie.takin.cloud.open.api.report.CloudReportApi;
-import io.shulie.takin.cloud.open.req.report.ReportDetailByIdReq;
-import io.shulie.takin.cloud.open.req.report.ReportDetailBySceneIdReq;
-import io.shulie.takin.cloud.open.req.report.ReportTrendQueryReq;
-import io.shulie.takin.cloud.open.req.report.ScriptNodeTreeQueryReq;
-import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
-import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
-import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
-import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
-import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.diff.api.report.ReportApi;
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Service;
+
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.diff.api.report.ReportApi;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.cloud.open.api.report.CloudReportApi;
+import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
+import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
+import io.shulie.takin.cloud.open.req.report.ReportDetailByIdReq;
+import io.shulie.takin.cloud.open.req.report.ReportTrendQueryReq;
+import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
+import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
+import io.shulie.takin.cloud.open.req.report.ScriptNodeTreeQueryReq;
+import io.shulie.takin.cloud.open.req.report.ReportDetailBySceneIdReq;
 
 /**
  * @author 无涯
@@ -23,9 +26,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReportApiImpl implements ReportApi {
 
-    @Autowired
+    @Resource(type = CloudReportApi.class)
     private CloudReportApi cloudReportApi;
-
 
     @Override
     public ResponseResult<ReportDetailResp> getReportByReportId(ReportDetailByIdReq req) {
@@ -53,8 +55,10 @@ public class ReportApiImpl implements ReportApi {
     }
 
     @Override
-    public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId){
-        return cloudReportApi.getBusinessActivitySummaryList(new ReportDetailByIdReq(){{setReportId(reportId);}});
+    public ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId) {
+        ReportDetailByIdReq request = new ReportDetailByIdReq() {{setReportId(reportId);}};
+        WebPluginUtils.fillCloudUserData(request);
+        return cloudReportApi.getSummaryList(request);
     }
 
 }

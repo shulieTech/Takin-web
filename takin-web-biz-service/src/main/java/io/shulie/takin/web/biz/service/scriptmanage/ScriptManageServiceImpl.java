@@ -568,6 +568,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         }).collect(Collectors.toList());
         request.setUploadFiles(uploadFiles);
 
+        log.info("脚本更新，调用同步压测场景接口。");
         // cloud 更新
         ResponseResult<Object> response = sceneManageApi.updateSceneFileByScriptId(request);
         if (!response.getSuccess()) {

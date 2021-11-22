@@ -27,4 +27,6 @@ public class ActivityExistsQueryParam {
     private String serviceName;
 
     private String virtualEntrance;
+
+    private Integer activityType;
 }

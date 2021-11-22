@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -15,8 +16,10 @@ import java.io.Serializable;
 public class ActivityResultQueryRequest implements Serializable {
 
     @ApiModelProperty("应用名")
+    @NotNull(message = "应用名不能为空")
     private String applicationName;
 
     @ApiModelProperty("入口entrance")
-    private String entrance;
+    @NotNull(message = "入口entrance不能为空")
+    private String entrancePath;
 }

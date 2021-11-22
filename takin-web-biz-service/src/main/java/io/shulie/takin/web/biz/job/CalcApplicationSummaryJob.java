@@ -101,7 +101,8 @@ public class CalcApplicationSummaryJob implements SimpleJob {
     }
 
     private void calcApplicationSummary(TenantCommonExt commonExt) {
-        List<Long> reportIds = reportService.queryListRunningReport();
+        WebPluginUtils.setTraceTenantContext(commonExt);
+        List<Long> reportIds = reportTaskService.getRunningReport();
         if (CollectionUtils.isEmpty(reportIds)){
             log.warn("暂无压测中的报告！");
             return;

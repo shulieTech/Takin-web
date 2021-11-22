@@ -12,6 +12,7 @@ import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -74,15 +75,16 @@ public class CalcTpsTargetJob implements SimpleJob {
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     // 根据环境 分线程
                     for (TenantEnv e : ext.getEnvs()) {
-                        WebPluginUtils.setTraceTenantContext(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),ext.getTenantCode(),
+                        TenantCommonExt tenantCommonExt = WebPluginUtils.setTraceTenantContext(ext.getTenantId(), ext.getTenantAppKey(),
+                            e.getEnvCode(), ext.getTenantCode(),
                             ContextSourceEnum.JOB.getCode());
+
                         if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                             continue;
                         }
 
                         jobThreadPool.execute(() -> {
-                            this.calcTpsTarget();
-                            WebPluginUtils.removeTraceContext();
+                            this.calcTpsTarget(tenantCommonExt);
                         });
                     }
                 }
@@ -91,8 +93,9 @@ public class CalcTpsTargetJob implements SimpleJob {
         log.info("calcTpsTargetJob 执行时间:{}", System.currentTimeMillis() - start);
     }
 
-    private void calcTpsTarget() {
-        List<Long> reportIds = reportService.queryListRunningReport();
+    private void calcTpsTarget(TenantCommonExt tenantCommonExt) {
+        WebPluginUtils.setTraceTenantContext(tenantCommonExt);
+        List<Long> reportIds = reportTaskService.getRunningReport();
         if (CollectionUtils.isEmpty(reportIds)){
             log.warn("暂无压测中的报告！");
             return;
@@ -101,7 +104,10 @@ public class CalcTpsTargetJob implements SimpleJob {
             JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据层分片
-            fastDebugThreadPool.execute(() -> reportTaskService.calcTpsTarget(reportId));
+            fastDebugThreadPool.execute(() -> {
+                WebPluginUtils.setTraceTenantContext(tenantCommonExt);
+                reportTaskService.calcTpsTarget(reportId);
+            });
         }
     }
 }

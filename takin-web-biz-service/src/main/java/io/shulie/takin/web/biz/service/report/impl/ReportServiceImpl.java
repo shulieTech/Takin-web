@@ -301,6 +301,7 @@ public class ReportServiceImpl implements ReportService {
         } else {
             output.setCanStartStop(Boolean.TRUE);
         }
+        fillExecuteMan(output);
         return ResponseResult.success(output);
 
     }

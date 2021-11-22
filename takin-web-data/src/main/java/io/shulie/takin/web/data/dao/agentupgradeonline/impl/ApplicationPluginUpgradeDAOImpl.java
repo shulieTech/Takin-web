@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 
 import com.alibaba.excel.util.CollectionUtils;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -91,6 +92,18 @@ public class ApplicationPluginUpgradeDAOImpl
         applicationPluginUpgradeMapper.update(entity,
             this.getLambdaQueryWrapper().eq(ApplicationPluginUpgradeEntity::getApplicationId, appId)
                 .eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch));
+    }
+
+    @Override
+    public ApplicationPluginUpgradeDetailResult queryByAppIdAndUpgradeBatch(Long applicationId, String upgradeBatch) {
+        ApplicationPluginUpgradeEntity entity = applicationPluginUpgradeMapper.selectOne(
+            this.getLambdaQueryWrapper().eq(ApplicationPluginUpgradeEntity::getApplicationId, applicationId)
+                .eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch));
+
+        if (entity == null) {
+            return null;
+        }
+        return BeanUtil.copyProperties(entity, ApplicationPluginUpgradeDetailResult.class);
     }
 }
 

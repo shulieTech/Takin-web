@@ -5,11 +5,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Resource;
+
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
 import io.shulie.takin.web.data.dao.agentupgradeonline.ApplicationPluginUpgradeDAO;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -21,7 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpgradeService {
 
-    @Autowired
+    @Resource
     private ApplicationPluginUpgradeDAO upgradeDAO;
 
     @Override
@@ -48,5 +49,10 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
     @Override
     public void finishUpgrade(Long appId, String upgradeBatch) {
         upgradeDAO.finishUpgrade(appId, upgradeBatch);
+    }
+
+    @Override
+    public ApplicationPluginUpgradeDetailResult queryByAppIdAndUpgradeBatch(Long applicationId, String upgradeBatch) {
+        return upgradeDAO.queryByAppIdAndUpgradeBatch(applicationId, upgradeBatch);
     }
 }

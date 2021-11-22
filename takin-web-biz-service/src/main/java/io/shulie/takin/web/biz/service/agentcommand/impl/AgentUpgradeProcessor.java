@@ -18,7 +18,6 @@ import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -123,9 +122,23 @@ public class AgentUpgradeProcessor extends AgentCommandSupport {
         return AgentCommandEnum.REPORT_UPGRADE_RESULT;
     }
 
-    @EqualsAndHashCode(callSuper = true)
     @Data
-    static class UpgradeResult extends ApplicationPluginDownloadPathDetailResult {
+    static class UpgradeResult {
+
+        /**
+         * 类型 0:oss;1:ftp;2:nginx
+         */
+        private Integer pathType;
+
+        /**
+         * 配置内容
+         */
+        private String context;
+
+        /**
+         * 盐
+         */
+        private String salt;
 
         /**
          * 升级批次号

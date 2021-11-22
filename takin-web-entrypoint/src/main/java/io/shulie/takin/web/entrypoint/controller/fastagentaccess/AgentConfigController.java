@@ -147,6 +147,4 @@ public class AgentConfigController {
         return agentConfigService.queryConfigEffectList(queryRequest);
     }
 
-
-
 }

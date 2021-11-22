@@ -302,6 +302,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         return createParam;
     }
 
+    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
     @Override
     public void useGlobal(Long id) {
         AgentConfigDetailResult detailResult = agentConfigDAO.findById(id);

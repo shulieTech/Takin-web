@@ -137,7 +137,6 @@ public class ActivityServiceImpl implements ActivityService {
      */
     private void checkActivity(ActivityCreateRequest request) {
         ActivityExistsQueryParam param = new ActivityExistsQueryParam();
-        param.setType(request.getType());
         param.setActivityName(request.getActivityName());
         List<Long> exists = activityDAO.exists(param);
         if (CollectionUtils.isNotEmpty(exists)) {
@@ -146,6 +145,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         param = new ActivityExistsQueryParam();
+        param.setActivityType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
         param.setType(request.getType());
         param.setEntranceName(request.getServiceName());
         param.setApplicationName(request.getApplicationName());
@@ -192,6 +192,7 @@ public class ActivityServiceImpl implements ActivityService {
                 String.format("保存失败，[名称:%s] 已被使用", request.getActivityName()));
         }
         param = new ActivityExistsQueryParam();
+        param.setActivityType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
         param.setVirtualEntrance(request.getVirtualEntrance());
         param.setMethod(request.getMethodName());
         // rpc转化
@@ -237,6 +238,7 @@ public class ActivityServiceImpl implements ActivityService {
         param.setVirtualEntrance(request.getVirtualEntrance());
         // rpc转化
         param.setRpcType(EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType());
+        param.setActivityType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
         List<Long> exists = activityDAO.exists(param);
         if (CollectionUtils.isNotEmpty(exists)) {
             Optional<Long> any = exists.stream().filter(item -> !item.equals(request.getActivityId())).findAny();
@@ -329,6 +331,7 @@ public class ActivityServiceImpl implements ActivityService {
             param.setMethod(request.getMethod());
             param.setRpcType(request.getRpcType());
             param.setServiceName(request.getServiceName());
+            param.setActivityType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
             List<Long> exists = activityDAO.exists(param);
             if (CollectionUtils.isNotEmpty(exists)) {
                 Optional<Long> any = exists.stream()

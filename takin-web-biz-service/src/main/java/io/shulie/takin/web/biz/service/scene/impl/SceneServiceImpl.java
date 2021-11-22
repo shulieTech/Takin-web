@@ -471,7 +471,7 @@ public class SceneServiceImpl implements SceneService {
         updateParam.setId(id);
         updateParam.setLinkRelateNum(matchNum);
         sceneDao.update(updateParam);
-        //匹配数量符合，修改压测成就
+        //匹配数量符合，修改压测场景
         if (matchNum == nodeNumByType) {
             syncSceneManege(sceneResult);
         }

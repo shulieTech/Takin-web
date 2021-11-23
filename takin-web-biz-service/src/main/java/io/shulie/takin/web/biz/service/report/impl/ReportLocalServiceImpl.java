@@ -15,10 +15,6 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.dao.report.TReportApplicationSummaryMapper;
-import com.pamirs.takin.entity.dao.report.TReportBottleneckInterfaceMapper;
-import com.pamirs.takin.entity.dao.report.TReportMachineMapper;
-import com.pamirs.takin.entity.dao.report.TReportSummaryMapper;
 import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
 import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
 import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
@@ -26,18 +22,21 @@ import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
-import com.pamirs.takin.entity.domain.entity.report.ReportApplicationSummary;
-import com.pamirs.takin.entity.domain.entity.report.ReportBottleneckInterface;
-import com.pamirs.takin.entity.domain.entity.report.ReportMachine;
-import com.pamirs.takin.entity.domain.entity.report.ReportSummary;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
-import com.pamirs.takin.entity.domain.vo.report.ReportLocalQueryParam;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
-import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
-import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
+import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
+import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
+import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
+import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
+import io.shulie.takin.web.data.param.report.ReportApplicationSummaryQueryParam;
+import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
+import io.shulie.takin.web.data.result.report.ReportApplicationSummaryResult;
+import io.shulie.takin.web.data.result.report.ReportBottleneckInterfaceResult;
+import io.shulie.takin.web.data.result.report.ReportMachineResult;
+import io.shulie.takin.web.data.result.report.ReportSummaryResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,18 +52,14 @@ import org.springframework.stereotype.Service;
 public class ReportLocalServiceImpl implements ReportLocalService {
 
     public static final BigDecimal ZERO = new BigDecimal("0");
-    @Resource
-    private TReportSummaryMapper tReportSummaryMapper;
-    @Resource
-    private TReportBottleneckInterfaceMapper tReportBottleneckInterfaceMapper;
-    @Resource
-    private TReportApplicationSummaryMapper tReportApplicationSummaryMapper;
-    @Resource
-    private TReportMachineMapper tReportMachineMapper;
-    @Resource
-    private ReportService reportService;
     @Autowired
-    private ApplicationNodeDAO applicationNodeDAO;
+    private ReportSummaryDAO reportSummaryDAO;
+    @Resource
+    private ReportBottleneckInterfaceDAO reportBottleneckInterfaceDAO;
+    @Resource
+    private ReportApplicationSummaryDAO reportApplicationSummaryDAO;
+    @Resource
+    private ReportMachineDAO reportMachineDAO;
 
     @Autowired
     private ReportRealTimeService reportRealTimeService;
@@ -84,7 +79,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Override
     public ReportCountDTO getReportCount(Long reportId) {
-        ReportSummary data = tReportSummaryMapper.selectOneByReportId(reportId);
+        ReportSummaryResult data = reportSummaryDAO.selectOneByReportId(reportId);
         if (data == null) {
             return new ReportCountDTO();
         }
@@ -94,7 +89,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Override
     public PageInfo<BottleneckInterfaceDTO> listBottleneckInterface(ReportLocalQueryParam queryParam) {
         Page page = PageHelper.startPage(queryParam.getCurrentPage() + 1, queryParam.getPageSize());
-        List<ReportBottleneckInterface> dataList = tReportBottleneckInterfaceMapper.selectByExample(queryParam);
+        List<ReportBottleneckInterfaceResult> dataList = reportBottleneckInterfaceDAO.selectByExample(queryParam);
         if (CollectionUtils.isEmpty(dataList)) {
             return new PageInfo<>(Lists.newArrayList());
         }
@@ -106,13 +101,13 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Override
     public RiskApplicationCountDTO listRiskApplication(Long reportId) {
-        ReportApplicationSummary param = new ReportApplicationSummary();
+        ReportApplicationSummaryQueryParam param = new ReportApplicationSummaryQueryParam();
         param.setReportId(reportId);
-        List<ReportApplicationSummary> dataList = tReportApplicationSummaryMapper.selectByParam(param);
+        List<ReportApplicationSummaryResult> dataList = reportApplicationSummaryDAO.selectByParam(param);
         if (CollectionUtils.isEmpty(dataList)) {
             return new RiskApplicationCountDTO();
         }
-        List<ReportApplicationSummary> resultList = dataList.stream().filter(
+        List<ReportApplicationSummaryResult> resultList = dataList.stream().filter(
                 data -> data.getMachineRiskCount() != null && data.getMachineRiskCount() > 0).sorted((o1, o2) -> {
             if (o1.getMachineRiskCount() > o2.getMachineRiskCount()) {
                 return -1;
@@ -126,7 +121,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
         //风险机器数从汇总表里取
         int riskMachineCount = 0;
-        ReportSummary data = tReportSummaryMapper.selectOneByReportId(reportId);
+        ReportSummaryResult data = reportSummaryDAO.selectOneByReportId(reportId);
         if (data != null) {
             riskMachineCount = data.getRiskMachineCount();
         }
@@ -137,7 +132,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     public PageInfo<RiskMacheineDTO> listRiskMachine(ReportLocalQueryParam queryParam) {
         Page page = PageHelper.startPage(queryParam.getCurrentPage() + 1, queryParam.getPageSize());
         queryParam.setRiskFlag(1);
-        List<ReportMachine> dataList = tReportMachineMapper.selectSimpleByExample(queryParam);
+        List<ReportMachineResult> dataList = reportMachineDAO.selectSimpleByExample(queryParam);
         if (CollectionUtils.isEmpty(dataList)) {
             return new PageInfo<>(Lists.newArrayList());
         }
@@ -156,16 +151,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         if ("全部".equals(machineIp) || "0".equals(machineIp) || "all".equalsIgnoreCase(machineIp)) {
             //只展示图表
             queryParam.setMachineIp(null);
-            List<ReportMachine> dataList = tReportMachineMapper.selectListByParam(queryParam);
+            List<ReportMachineResult> dataList = reportMachineDAO.selectListByParam(queryParam);
             if (CollectionUtils.isEmpty(dataList)) {
                 return new MachineDetailDTO();
             }
             MachineDetailDTO dto = new MachineDetailDTO();
             parseTpsConfig(dto, dataList.stream().filter(data -> data.getMachineTpsTargetConfig() != null)
-                    .map(ReportMachine::getMachineTpsTargetConfig).collect(Collectors.toList()));
+                    .map(ReportMachineResult::getMachineTpsTargetConfig).collect(Collectors.toList()));
             return dto;
         } else {
-            ReportMachine data = tReportMachineMapper.selectOneByParam(queryParam);
+            ReportMachineResult data = reportMachineDAO.selectOneByParam(queryParam);
             if (data == null) {
                 return new MachineDetailDTO();
             }
@@ -175,10 +170,10 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Override
     public List<ApplicationDTO> listApplication(Long reportId, String applicationName) {
-        ReportApplicationSummary param = new ReportApplicationSummary();
+        ReportApplicationSummaryQueryParam param = new ReportApplicationSummaryQueryParam();
         param.setReportId(reportId);
         param.setApplicationName(applicationName);
-        List<ReportApplicationSummary> dataList = tReportApplicationSummaryMapper.selectByParam(param);
+        List<ReportApplicationSummaryResult> dataList = reportApplicationSummaryDAO.selectByParam(param);
         if (CollectionUtils.isEmpty(dataList)) {
             return Lists.newArrayList();
         }
@@ -188,7 +183,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     @Override
     public PageInfo<MachineDetailDTO> listMachineDetail(ReportLocalQueryParam queryParam) {
         Page page = PageHelper.startPage(queryParam.getCurrentPage() + 1, queryParam.getPageSize());
-        List<ReportMachine> dataList = tReportMachineMapper.selectSimpleByExample(queryParam);
+        List<ReportMachineResult> dataList = reportMachineDAO.selectSimpleByExample(queryParam);
         if (CollectionUtils.isEmpty(dataList)) {
             return new PageInfo<>(Lists.newArrayList());
         }
@@ -242,21 +237,21 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return failedTotal + failedAssertTotal;
     }
 
-    private ReportCountDTO convert2ReportCountDTO(ReportSummary param) {
+    private ReportCountDTO convert2ReportCountDTO(ReportSummaryResult result) {
         ReportCountDTO dto = new ReportCountDTO();
-        dto.setBottleneckInterfaceCount(param.getBottleneckInterfaceCount());
-        dto.setRiskMachineCount(param.getRiskMachineCount());
-        dto.setBusinessActivityCount(param.getBusinessActivityCount());
-        dto.setNotpassBusinessActivityCount(param.getUnachieveBusinessActivityCount());
-        dto.setApplicationCount(param.getApplicationCount());
-        dto.setMachineCount(param.getMachineCount());
-        dto.setWarnCount(param.getWarnCount());
+        dto.setBottleneckInterfaceCount(result.getBottleneckInterfaceCount());
+        dto.setRiskMachineCount(result.getRiskMachineCount());
+        dto.setBusinessActivityCount(result.getBusinessActivityCount());
+        dto.setNotpassBusinessActivityCount(result.getUnachieveBusinessActivityCount());
+        dto.setApplicationCount(result.getApplicationCount());
+        dto.setMachineCount(result.getMachineCount());
+        dto.setWarnCount(result.getWarnCount());
         return dto;
     }
 
-    private List<BottleneckInterfaceDTO> convert2BottleneckInterfaceDTO(List<ReportBottleneckInterface> paramList) {
+    private List<BottleneckInterfaceDTO> convert2BottleneckInterfaceDTO(List<ReportBottleneckInterfaceResult> results) {
         List<BottleneckInterfaceDTO> dataList = Lists.newArrayList();
-        paramList.forEach(data -> {
+        results.forEach(data -> {
             BottleneckInterfaceDTO dto = new BottleneckInterfaceDTO();
             dto.setRank(data.getSortNo());
             dto.setApplicationName(data.getApplicationName());
@@ -269,11 +264,11 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return dataList;
     }
 
-    private RiskApplicationCountDTO convert2RiskApplicationCountDTO(List<ReportApplicationSummary> paramList,
+    private RiskApplicationCountDTO convert2RiskApplicationCountDTO(List<ReportApplicationSummaryResult> paramList,
                                                                     int riskMachineCount) {
         RiskApplicationCountDTO dto = new RiskApplicationCountDTO();
         List<ApplicationDTO> apps = Lists.newArrayList();
-        for (ReportApplicationSummary param : paramList) {
+        for (ReportApplicationSummaryResult param : paramList) {
             ApplicationDTO app = new ApplicationDTO();
             app.setApplicationName(param.getApplicationName());
             app.setRiskCount(param.getMachineRiskCount());
@@ -286,7 +281,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return dto;
     }
 
-    private List<RiskMacheineDTO> convert2RiskMacheineDTO(List<ReportMachine> paramList) {
+    private List<RiskMacheineDTO> convert2RiskMacheineDTO(List<ReportMachineResult> paramList) {
         List<RiskMacheineDTO> dataList = Lists.newArrayList();
         paramList.forEach(data -> {
             RiskMacheineDTO dto = new RiskMacheineDTO();
@@ -299,7 +294,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return dataList;
     }
 
-    private MachineDetailDTO convert2MachineDetailDTO(ReportMachine param) {
+    private MachineDetailDTO convert2MachineDetailDTO(ReportMachineResult param) {
         MachineDetailDTO dto = new MachineDetailDTO();
         dto.setId(param.getId());
         dto.setMachineIp(param.getMachineIp());
@@ -311,7 +306,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return dto;
     }
 
-    private List<ApplicationDTO> convert2ApplicationDTO(List<ReportApplicationSummary> paramList) {
+    private List<ApplicationDTO> convert2ApplicationDTO(List<ReportApplicationSummaryResult> paramList) {
         List<ApplicationDTO> dataList = Lists.newArrayList();
         paramList.forEach(data -> {
             ApplicationDTO dto = new ApplicationDTO();
@@ -323,7 +318,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         return dataList;
     }
 
-    private List<MachineDetailDTO> convert2MachineDetailDTO(List<ReportMachine> paramList) {
+    private List<MachineDetailDTO> convert2MachineDetailDTO(List<ReportMachineResult> paramList) {
         List<MachineDetailDTO> dataList = Lists.newArrayList();
         paramList.forEach(data -> {
             MachineDetailDTO dto = new MachineDetailDTO();

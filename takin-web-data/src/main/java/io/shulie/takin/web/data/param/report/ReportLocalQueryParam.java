@@ -1,4 +1,4 @@
-package com.pamirs.takin.entity.domain.vo.report;
+package io.shulie.takin.web.data.param.report;
 
 import java.io.Serializable;
 

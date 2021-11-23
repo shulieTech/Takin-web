@@ -157,6 +157,13 @@ public class SummaryService {
         if(CollectionUtils.isNotEmpty(metrics)) {
             minTime = metrics.stream().map(Metrices::getTime).min((Long::compareTo)).orElse(0L);
             maxTime = metrics.stream().map(Metrices::getTime).max((Long::compareTo)).orElse(0L);
+        }else {
+            if(reportDetailDTO.getEndTime() != null) {
+                maxTime = reportDetailDTO.getEndTime().getTime();
+            }else if(maxTime - minTime >= 5*60*1000L){
+                //追加最大时间查询 5分钟
+                maxTime = minTime + 5*60*1000;
+            }
         }
 
         //多往前选5秒

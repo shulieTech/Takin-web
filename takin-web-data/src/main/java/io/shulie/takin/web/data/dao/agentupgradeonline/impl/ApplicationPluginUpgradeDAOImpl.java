@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.dao.agentupgradeonline.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetai
 import io.shulie.takin.web.data.util.MPUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 应用升级单(ApplicationPluginUpgrade)表数据库 dao 层实现
@@ -127,6 +129,21 @@ public class ApplicationPluginUpgradeDAOImpl
 
     @Override
     public ApplicationPluginUpgradeDetailResult queryOneByUpgradeBatch(String upgradeBatch) {
+        return this.getList().get(0);
+    }
+
+    @Override
+    public List<ApplicationPluginUpgradeDetailResult> getList() {
+        LambdaQueryWrapper<ApplicationPluginUpgradeEntity> queryWrapper = this.buildQuery(
+                this.getLambdaQueryWrapper());
+        queryWrapper.eq(ApplicationPluginUpgradeEntity::getIsDeleted, 0)
+                .orderByDesc(ApplicationPluginUpgradeEntity::getId);
+        return this.convertVos(this.list(queryWrapper));
+    }
+
+
+    @Override
+    public List<ApplicationPluginUpgradeDetailResult> getList(String upgradeBatch) {
         LambdaQueryWrapper<ApplicationPluginUpgradeEntity> queryWrapper = this.buildQuery(
                 this.getLambdaQueryWrapper());
         queryWrapper.eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch);
@@ -134,7 +151,33 @@ public class ApplicationPluginUpgradeDAOImpl
         if(CollectionUtils.isEmpty(list)){
             return null;
         }
-        return this.convertVos(this.list(queryWrapper)).get(0);
+        return this.convertVos(this.list(queryWrapper));
+    }
+
+    @Override
+    public List<ApplicationPluginUpgradeDetailResult> getListByUpgradeBatchAndAppIdGtId(String upgradeBatch, Long appId,Long id) {
+        LambdaQueryWrapper<ApplicationPluginUpgradeEntity> queryWrapper = this.buildQuery(
+                this.getLambdaQueryWrapper());
+        queryWrapper.eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch)
+                .eq(ApplicationPluginUpgradeEntity::getApplicationId,appId)
+                .gt(ApplicationPluginUpgradeEntity::getId,id);
+        List<ApplicationPluginUpgradeEntity> list = this.list(queryWrapper);
+        if(CollectionUtils.isEmpty(list)){
+            return null;
+        }
+        return this.convertVos(this.list(queryWrapper));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchRollBack(List<Long> ids) {
+        List<ApplicationPluginUpgradeEntity> updateList = ids.stream().map(id -> {
+            ApplicationPluginUpgradeEntity entity = new ApplicationPluginUpgradeEntity();
+            entity.setId(id);
+            entity.setPluginUpgradeStatus(AgentUpgradeEnum.ROLLBACK.getVal());
+            return entity;
+        }).collect(Collectors.toList());
+        this.updateBatchById(updateList);
     }
 }
 

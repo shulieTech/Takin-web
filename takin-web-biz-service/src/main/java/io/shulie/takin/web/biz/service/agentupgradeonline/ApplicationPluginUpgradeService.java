@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeCreateRequest;
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.ApplicationPluginUpgradeHistoryResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
@@ -56,5 +57,18 @@ public interface ApplicationPluginUpgradeService {
     void createUpgradeOrder(CreateApplicationPluginUpgradeParam param);
 
     Response pluginUpgrade(ApplicationPluginUpgradeCreateRequest createRequest);
+
+    /**
+     * 查看升级历史信息
+     * @return
+     */
+    List<ApplicationPluginUpgradeHistoryResponse> history();
+
+    /**
+     * 回滚
+     * @param upgradeBatch
+     * @return 不能回滚的应用名集合
+     */
+    Response rollback(String upgradeBatch);
 
 }

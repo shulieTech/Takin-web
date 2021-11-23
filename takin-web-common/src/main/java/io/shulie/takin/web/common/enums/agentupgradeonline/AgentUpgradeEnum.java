@@ -15,6 +15,7 @@ public enum AgentUpgradeEnum {
     UPGRADE_SUCCESS(1, "升级成功"),
     UPGRADE_FILE(2, "升级失败"),
     ROLLBACK(3, "已回滚"),
+    UPGRADING(4,"升级中"),
     ;
 
     private Integer val;

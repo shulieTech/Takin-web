@@ -56,5 +56,13 @@ public interface ApplicationPluginUpgradeDAO {
     void batchSave(List<CreateApplicationPluginUpgradeParam> params);
 
     ApplicationPluginUpgradeDetailResult queryOneByUpgradeBatch(String upgradeBatch);
+
+    List<ApplicationPluginUpgradeDetailResult> getList();
+
+    List<ApplicationPluginUpgradeDetailResult> getList(String upgradeBatch);
+
+    List<ApplicationPluginUpgradeDetailResult> getListByUpgradeBatchAndAppIdGtId(String upgradeBatch,Long appId,Long id);
+
+    void batchRollBack(List<Long> ids);
 }
 

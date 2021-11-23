@@ -13,10 +13,12 @@ import com.alibaba.fastjson.JSON;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
+import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.report.TpsTarget;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
 import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
@@ -139,17 +141,24 @@ public class SummaryService {
     }
 
     public void calcTpsTarget(Long reportId) {
-        List<Metrices> metrics = reportDataCache.listAllMetricsData(reportId);
-        if (CollectionUtils.isEmpty(metrics)) {
+        ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
+        if(reportDetailDTO == null) {
+            log.error("calcTpsTarget 未找到报告【{}】",reportId);
             return;
         }
+        List<Metrices> metrics = reportDataCache.listAllMetricsData(reportId);
         List<String> applications = reportDataCache.getApplications(reportId);
         if (CollectionUtils.isEmpty(applications)) {
             return;
         }
-        //获取Min Max 压测时间
-        long minTime = metrics.stream().map(Metrices::getTime).min((Long::compareTo)).orElse(0L);
-        long maxTime = metrics.stream().map(Metrices::getTime).max((Long::compareTo)).orElse(0L);
+        //获取Min Max 压测时间 防止metrics 无数据
+        long minTime = DateUtil.parseSecondFormatter(reportDetailDTO.getStartTime()).getTime();
+        long maxTime = System.currentTimeMillis();
+        if(CollectionUtils.isNotEmpty(metrics)) {
+            minTime = metrics.stream().map(Metrices::getTime).min((Long::compareTo)).orElse(0L);
+            maxTime = metrics.stream().map(Metrices::getTime).max((Long::compareTo)).orElse(0L);
+        }
+
         //多往前选5秒
         minTime = minTime - 5 * 1000;
         //多往后选15s

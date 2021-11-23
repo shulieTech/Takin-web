@@ -129,15 +129,17 @@ public class LinkTopologyService extends CommonService {
      * 拓扑图查询, 处理
      *
      * @param request 请求入参
+     * @param tempActivity 是否是临时拓扑图
      * @return 拓扑图相关
      */
     public ApplicationEntranceTopologyResponse getApplicationEntrancesTopology(
-        ApplicationEntranceTopologyQueryRequest request) {
+            ApplicationEntranceTopologyQueryRequest request, boolean tempActivity) {
 
         // 大数据查询拓扑图
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
-            request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
-            request.getRpcType(), request.getExtend());
+                tempActivity,
+                request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
+                request.getRpcType(), request.getExtend());
 
         // final result
         ApplicationEntranceTopologyResponse applicationEntranceTopologyResponse
@@ -201,15 +203,15 @@ public class LinkTopologyService extends CommonService {
     }
 
     /**
-     * @param startDateTime              拓扑图的 开始时间
-     * @param endDateTime                拓扑图的 结束时间
-     * @param allTotalCountStartDateTime 拓扑图的 线上总调用量指标的 开始时间
+     * @param startTimeUseInInFluxDB 拓扑图的 开始时间
+     * @param endTimeUseInInFluxDB   拓扑图的 结束时间
+     * @param allTotalCountStartDateTimeUseInInFluxDB    拓扑图的 线上总调用量指标的 开始时间
      */
     public void fillMetrics(ActivityInfoQueryRequest request,
-        ApplicationEntranceTopologyResponse topologyResponse,
-        LocalDateTime startDateTime,
-        LocalDateTime endDateTime,
-        LocalDateTime allTotalCountStartDateTime) {
+                            ApplicationEntranceTopologyResponse topologyResponse,
+                            LocalDateTime startTimeUseInInFluxDB,
+                            LocalDateTime endTimeUseInInFluxDB,
+                            LocalDateTime allTotalCountStartDateTimeUseInInFluxDB) {
 
         Boolean metricsType = null;
         // 压测流量(true)，业务流量(false)，混合流量(null)
@@ -220,15 +222,15 @@ public class LinkTopologyService extends CommonService {
         }
 
         // startTime
-        long startMilli = startDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
-        long allTotalCountStartMilli = allTotalCountStartDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        long startMilliUseInInFluxDB = startTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        long allTotalCountStartMilliUseInInFluxDB = allTotalCountStartDateTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
 
         // endTime
-        long endMilli = endDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        long endMilliUseInInFluxDB = endTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
 
         // 由于 机器性能 / Trace数据量 等问题， 大数据在入库时 时间有延迟
-        // 这里要查询真实 Trace数据的时间范围，应该是小于 startMilli
-        long realSeconds = getTracePeriod(startMilli, endMilli, startDateTime, endDateTime);
+        // 这里要查询真实 Trace数据的时间范围，应该是小于 startMilliUseInInFluxDB
+        long realSeconds = getTracePeriod(startMilliUseInInFluxDB, endMilliUseInInFluxDB, startTimeUseInInFluxDB, endTimeUseInInFluxDB);
 
         /*
         填充 Node
@@ -252,10 +254,10 @@ public class LinkTopologyService extends CommonService {
             TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
             if (appnode.getProviderService() != null) {
                 List<AppProviderInfo> appProviderInfos =
-                    fillAppNodeServiceSuccessRateAndRt(
-                        request, appnode, startDateTime, endDateTime, startMilli,
-                        endMilli, realSeconds, metricsType, bottleneckConfig,
-                        dbActivityNodeServiceState);
+                        fillAppNodeServiceSuccessRateAndRt(
+                                request, appnode, startTimeUseInInFluxDB, endTimeUseInInFluxDB, startMilliUseInInFluxDB,
+                                endMilliUseInInFluxDB, realSeconds, metricsType, bottleneckConfig,
+                                dbActivityNodeServiceState);
 
                 // 设置 拓扑图中节点上显示哪一个服务性能指标
                 setTopologyNodeServiceMetrics(node, appProviderInfos);
@@ -386,10 +388,10 @@ public class LinkTopologyService extends CommonService {
     }
 
     private List<AppProviderInfo> fillAppNodeServiceSuccessRateAndRt(
-        ActivityInfoQueryRequest request, TopologyAppNodeResponse node, LocalDateTime startDateTime,
-        LocalDateTime endDateTime, long startMilli, long endMilli,
-        long realSeconds, Boolean metricsType, List<E2eExceptionConfigInfoExt> bottleneckConfig,
-        List<ActivityNodeState> dbActivityNodeServiceState) {
+            ActivityInfoQueryRequest request, TopologyAppNodeResponse node,
+            LocalDateTime startTimeUseInInFluxDB, LocalDateTime endTimeUseInInFluxDB, long startMilli, long endMilli,
+            long realSeconds, Boolean metricsType, List<E2eExceptionConfigInfoExt> bottleneckConfig,
+            List<ActivityNodeState> dbActivityNodeServiceState) {
 
         // 节点 所有有服务，包含 不同的中间件，不同的 serviceMethod
         List<AppProvider> allAppProviderServiceList = new ArrayList<>();
@@ -399,20 +401,19 @@ public class LinkTopologyService extends CommonService {
 
             for (AppProvider appProvider : appProviderInfo.getDataSource()) {
                 // 对服务包含的每条边，填充指标数据
-                fillMetrixFromDB(request, startDateTime, endDateTime, startMilli, endMilli, realSeconds, metricsType,
-                    appProvider);
+                fillMetrixFromDB(request, startMilli, endMilli, realSeconds, metricsType, appProvider);
 
                 // 合并 同一上游 的多条边
                 mergeSameBeforeApp(appProvider);
 
                 // 计算瓶颈
                 appProvider.getContainRealAppProvider().stream()
-                    // 如果不是初始值，再计算瓶颈
-                    .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT))
-                    .forEach(appProviderFromDb -> {
-                        // 瓶颈计算 and 落库
-                        computeBottleneck(startDateTime, request.getActivityId(), bottleneckConfig, appProviderFromDb);
-                    });
+                        // 如果不是初始值，再计算瓶颈
+                        .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT))
+                        .forEach(appProviderFromDb -> {
+                            // 瓶颈计算 and 落库
+                            computeBottleneck(startTimeUseInInFluxDB, request.getActivityId(), bottleneckConfig, appProviderFromDb);
+                        });
 
                 // 计算出每条真实边的指标后，再计算平均指标，用来对节点的某一服务赋值, 当开关打开时，在拓扑图中展示
                 fillNodeServiceMetrics(appProvider);
@@ -450,10 +451,10 @@ public class LinkTopologyService extends CommonService {
         appProvider.setContainRealAppProvider(new ArrayList(appProviderHashMap.values()));
     }
 
-    private void fillMetrixFromDB(ActivityInfoQueryRequest request, LocalDateTime startDateTime,
-        LocalDateTime endDateTime, long startMilli, long endMilli, long realSeconds, Boolean metricsType,
-        AppProvider appProvider) {
+    private void fillMetrixFromDB(ActivityInfoQueryRequest request, long startMilli, long endMilli, long realSeconds, Boolean metricsType, AppProvider appProvider) {
         appProvider.setContainRealAppProvider(new ArrayList<>());
+
+        HashMap<String, Boolean> isContainSame = new HashMap<>();
 
         for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
             String eagleId = linkEdgeDTO.getEagleId();
@@ -462,9 +463,7 @@ public class LinkTopologyService extends CommonService {
             // 根据服务边，查询指标
             AppProvider appProviderFromDb;
             if (request.isTempActivity()) {
-                if (StringUtils.isBlank(beforeApps)) { continue; }
-                appProviderFromDb = queryMetricsFromAMDB(beforeApps, appProvider.getOwnerApps(),
-                    appProvider.getServiceName(), request, startDateTime, endDateTime);
+                appProviderFromDb = queryMetricsFromAMDB(isContainSame, beforeApps, appProvider.getOwnerApps(), appProvider.getMiddlewareName(), appProvider.getServiceName(), request);
             } else {
                 appProviderFromDb = queryMetricsFromDb(startMilli, endMilli, realSeconds, metricsType, eagleId);
             }
@@ -489,44 +488,58 @@ public class LinkTopologyService extends CommonService {
     }
 
     private AppProvider queryMetricsFromAMDB(
-        String beforeApps, String appName, String serviceName, ActivityInfoQueryRequest request,
-        LocalDateTime startDateTime, LocalDateTime endDateTime) {
+            HashMap<String, Boolean> isContainSame, String beforeApps, String toAppName, String middlewareName, String serviceName, ActivityInfoQueryRequest request) {
 
         String[] split = serviceName.split("#");
         String service = split[0];
         String method = split[1];
 
-        String startTime = DateUtils.formatLocalDateTime(startDateTime.plusHours(8));
-        String endTime = DateUtils.formatLocalDateTime(endDateTime.plusHours(8));
+        // 如果 有 key 相同的边时，不调用大数据
+        String key = beforeApps + toAppName + middlewareName + service + method;
+        Boolean aBoolean = isContainSame.get(key);
+        if (null == aBoolean) {
+            isContainSame.put(key, true);
+        } else {
+            // 之前有相同的
+            return getAppProvider(0L, Collections.emptyList());
+        }
+
+        // step 1
+        String startTime = DateUtils.formatLocalDateTime(request.getStartTime());
+        String endTime = DateUtils.formatLocalDateTime(request.getEndTime());
 
         TempTopologyQuery1 query1 = TempTopologyQuery1.builder()
-            .inAppName(appName)
-            .inService(service)
-            .inMethod(method)
-            .startTime(startTime)
-            .endTime(endTime)
-            .envCode(WebPluginUtils.traceEnvCode())
-            .traceTenantAppKey(WebPluginUtils.traceTenantAppKey())
-            .build();
+                .inAppName(toAppName)
+                .inService(service)
+                .inMethod(method)
+                .startTime(startTime)
+                .endTime(endTime)
+                .timeGap(request.getTimeGap())
+                .envCode(WebPluginUtils.traceEnvCode())
+                .traceTenantAppKey(WebPluginUtils.traceTenantAppKey())
+                .build();
 
         String response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
 
+        // step 2
         ArrayList<TraceMetricsResult> traceMetricsResultList = new ArrayList<>();
         Integer realSeconds = 0;
 
         if (StringUtils.isNotBlank(response1)) {
             TempTopologyQuery2 query2 = TempTopologyQuery2.builder()
-                .fromAppName(beforeApps)
-                .appName(appName)
-                .service(service)
-                .method(method)
-                .entranceStr(response1)
-                .clusterTest(request.getFlowTypeEnum().getType())
-                .startTime(startTime)
-                .endTime(endTime)
-                .envCode(WebPluginUtils.traceEnvCode())
-                .traceTenantAppKey(WebPluginUtils.traceTenantAppKey())
-                .build();
+                    .fromAppName(beforeApps)
+                    .appName(toAppName)
+                    .middlewareName(middlewareName)
+                    .service(service)
+                    .method(method)
+                    .entranceStr(response1)
+                    .clusterTest(request.getFlowTypeEnum().getType())
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .timeGap(request.getTimeGap())
+                    .envCode(WebPluginUtils.traceEnvCode())
+                    .traceTenantAppKey(WebPluginUtils.traceTenantAppKey())
+                    .build();
 
             JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);
 
@@ -631,8 +644,8 @@ public class LinkTopologyService extends CommonService {
     }
 
     public void computeBottleneck(
-        LocalDateTime startDateTime, Long activityId,
-        List<E2eExceptionConfigInfoExt> bottleneckConfig, AppProvider appProvider) {
+            LocalDateTime startTimeUseInInFluxDB, Long activityId,
+            List<E2eExceptionConfigInfoExt> bottleneckConfig, AppProvider appProvider) {
 
         E2eStorageRequest storageRequest = new E2eStorageRequest();
         storageRequest.setRt(appProvider.getServiceAvgRt());
@@ -651,7 +664,7 @@ public class LinkTopologyService extends CommonService {
         E2eBaseStorageParam baseStorageParam = new E2eBaseStorageParam();
         baseStorageParam.setSuccessRate(appProvider.getServiceAllSuccessRate());
         baseStorageParam.setRt(appProvider.getServiceAvgRt()); // 预设
-        baseStorageParam.setStartTime(DateUtils.convertLocalDateTimeToUDate(startDateTime.plusHours(8)));
+        baseStorageParam.setStartTime(DateUtils.convertLocalDateTimeToUDate(startTimeUseInInFluxDB.plusHours(8)));
         baseStorageParam.setServiceName(appProvider.getOwnerApps() + "#" + appProvider.getServiceName());
         baseStorageParam.setRpcType(appProvider.getRpcType());
         // 应用详情模块使用时，不传这两个值
@@ -767,7 +780,7 @@ public class LinkTopologyService extends CommonService {
         return appProvider;
     }
 
-    public AppProvider getAppProvider(long realSeconds, ArrayList<TraceMetricsResult> allTotalTpsAndRtCountResults) {
+    public AppProvider getAppProvider(long realSeconds, List<TraceMetricsResult> allTotalTpsAndRtCountResults) {
         AppProvider appProvider = new AppProvider();
 
         // 指标 初始化
@@ -1609,9 +1622,16 @@ public class LinkTopologyService extends CommonService {
             return Collections.emptyList();
         }
 
+        // 根据应用名称搜索该租户下这些应用名称的应用id
+        List<Long> applicationIds = applicationDAO.listIdsByNameListAndCustomerId(applicationNameList);
+        if (applicationIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         // 查询出所有的 名称对应的中间件状态
         Map<String, Map<Integer, Integer>> applicationNameAboutStatusCountMap = applicationMiddlewareService
             .getApplicationNameAboutStatusCountMap(applicationNameList);
+                .getApplicationNameAboutStatusCountMap(applicationIds);
         if (applicationNameAboutStatusCountMap.isEmpty()) {
             return Collections.emptyList();
         }

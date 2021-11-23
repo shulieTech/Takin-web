@@ -504,7 +504,7 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request) {
-        ActivityResponse activity = getActivityById(request.getActivityId());
+        ActivityResponse activity = getActivityById(request);
 
         // 非正常业务活动时，直接返回
         if (!activity.getBusinessType().equals(
@@ -513,28 +513,26 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         // 正常业务活动时，才对 拓扑图处理
-        LocalDateTime startTime = request.getStartTime();
-        LocalDateTime endTime = request.getEndTime();
-        LocalDateTime allTotalCountStartDateTime = startTime;
 
-        if (null == startTime || null == endTime) {
-            // 如果 起始时间 和 结束时间 为空，默认 查询5分钟的数据
-            endTime = LocalDateTime.now().minusHours(8);
-            startTime = endTime.minusMinutes(5);
-
-            // line : 总调用量 startTime, 最近5 min
-            //            allTotalCountStartDateTime = endTime.minusDays(1);
-            allTotalCountStartDateTime = startTime;
-        } else {
-            startTime.minusHours(8);
-            endTime.minusHours(8);
+        // 如果 起始时间 或 结束时间 为空，默认 查询5分钟的数据
+        if (null == request.getStartTime() || null == request.getEndTime()) {
+            LocalDateTime now = LocalDateTime.now();
+            request.setEndTime(now);
+            request.setStartTime(now.minusMinutes(5));
         }
 
+        LocalDateTime startTimeUseInInFluxDB = request.getStartTime().minusHours(8);
+        LocalDateTime endTimeUseInInFluxDB = request.getEndTime().minusHours(8);
+        // line : 总调用量 startTimeUseInInFluxDB, 最近5 min
+//            allTotalCountStartDateTimeUseInInFluxDB = endTimeUseInInFluxDB.minusDays(1);
+        LocalDateTime allTotalCountStartDateTimeUseInInFluxDB = startTimeUseInInFluxDB;
+
+
         linkTopologyService.fillMetrics(
-            request,
-            activity.getTopology(),
-            startTime, endTime,
-            allTotalCountStartDateTime);
+                request,
+                activity.getTopology(),
+                startTimeUseInInFluxDB, endTimeUseInInFluxDB,
+                allTotalCountStartDateTimeUseInInFluxDB);
 
         return activity;
     }
@@ -544,7 +542,9 @@ public class ActivityServiceImpl implements ActivityService {
         LocalDateTime startDateTime,
         LocalDateTime endDateTime) {
 
-        ActivityResponse activity = getActivityById(activityId);
+        ActivityInfoQueryRequest activityInfoQueryRequest = new ActivityInfoQueryRequest();
+        activityInfoQueryRequest.setActivityId(activityId);
+        ActivityResponse activity = getActivityById(activityInfoQueryRequest);
 
         if (startDateTime == null || endDateTime == null) {
             return activity;
@@ -565,11 +565,11 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public ActivityResponse getActivityById(Long activityId) {
-        ActivityResult result = activityDAO.getActivityById(activityId);
+    public ActivityResponse getActivityById(ActivityInfoQueryRequest activityInfoQueryRequest) {
+        ActivityResult result = activityDAO.getActivityById(activityInfoQueryRequest.getActivityId());
         if (result == null) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
-                activityId + "对应的业务活动不存在");
+                    activityInfoQueryRequest.getActivityId() + "对应的业务活动不存在");
         }
         ActivityResponse activityResponse = new ActivityResponse();
         activityResponse.setActivityId(result.getActivityId());
@@ -637,10 +637,10 @@ public class ActivityServiceImpl implements ActivityService {
                 ConfigServerKeyEnum.TAKIN_LINK_FLOW_CHECK_ENABLE));
 
             // 拓扑图查询
-            activityResponse.setTopology(linkTopologyService.getApplicationEntrancesTopology(request));
+            activityResponse.setTopology(linkTopologyService.getApplicationEntrancesTopology(request, activityInfoQueryRequest.isTempActivity()));
         }
 
-        Integer verifyStatus = this.getVerifyStatus(activityId).getVerifyStatus();
+        Integer verifyStatus = this.getVerifyStatus(activityInfoQueryRequest.getActivityId()).getVerifyStatus();
         activityResponse.setVerifyStatus(verifyStatus);
         activityResponse.setVerifiedFlag(
             verifyStatus.equals(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFIED));

@@ -81,11 +81,12 @@ public interface ApplicationMiddlewareDAO {
      * 应用名称列表, 状态列表 查询 状态统计,
      * 根据 应用名称, 状态值分组
      *
-     * @param applicationNameList 应用名称列表
+     * @param applicationIds 应用名称列表
      * @param statusList 状态列表
      * @return 状态统计列表
      */
-    List<ApplicationMiddlewareStatusAboutCountResult> listStatusCountByAndGroupByApplicationNameListAndStatus(List<String> applicationNameList, List<Integer> statusList);
+    List<ApplicationMiddlewareStatusAboutCountResult> listStatusCountByAndGroupByApplicationNameListAndStatus(
+        List<Long> applicationIds, List<Integer> statusList);
 
 }
 

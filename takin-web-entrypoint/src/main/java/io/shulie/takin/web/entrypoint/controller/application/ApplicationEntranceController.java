@@ -111,7 +111,7 @@ public class ApplicationEntranceController {
         if (StringUtils.isEmpty(request.getApplicationName())) {
             throw new TakinWebException(ExceptionCode.APP_LINK_TOPOLOGY_ERROR, "没有应用名");
         }
-        return linkTopologyService.getApplicationEntrancesTopology(request);
+        return linkTopologyService.getApplicationEntrancesTopology(request, false);
     }
 
     @PostMapping("/updateUnknownNode")

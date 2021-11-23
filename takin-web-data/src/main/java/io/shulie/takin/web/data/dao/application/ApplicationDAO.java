@@ -155,4 +155,13 @@ public interface ApplicationDAO {
      * @return
      */
     List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts);
+
+    /**
+     * 根据应用名称， 获得该租户下的应用ids
+     *
+     * @param applicationNameList 应用名称列表
+     * @return 应用ids
+     */
+    List<Long> listIdsByNameListAndCustomerId(List<String> applicationNameList);
+
 }

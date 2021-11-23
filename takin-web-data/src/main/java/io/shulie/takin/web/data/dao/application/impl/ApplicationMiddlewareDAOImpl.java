@@ -91,9 +91,8 @@ public class ApplicationMiddlewareDAOImpl implements ApplicationMiddlewareDAO, M
 
     @Override
     public List<ApplicationMiddlewareStatusAboutCountResult> listStatusCountByAndGroupByApplicationNameListAndStatus(
-        List<String> applicationNameList, List<Integer> statusList) {
-        return applicationMiddlewareMapper.selectStatusCountByAndGroupByApplicationNameListAndStatusList(applicationNameList,
-            statusList);
+        List<Long> applicationIds, List<Integer> statusList) {
+        return applicationMiddlewareMapper.selectStatusCountByAndGroupByApplicationNameListAndStatusList(applicationIds, statusList);
     }
 
 }

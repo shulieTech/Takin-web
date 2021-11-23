@@ -50,11 +50,10 @@ public interface ApplicationNodeProbeDAO {
 
     /**
      * 根据appnames和操作id删除
-     * @param tenantId
      * @param operate
      * @param appNames
      */
-    void delByAppNamesAndOperate(Long tenantId, Integer operate, List<String> appNames);
+    void delByAppNamesAndOperate( Integer operate, List<String> appNames);
 
     /**
      * 通过拿到最大的 tenantId 的操作

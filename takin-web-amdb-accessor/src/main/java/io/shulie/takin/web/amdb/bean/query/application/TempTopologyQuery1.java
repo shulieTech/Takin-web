@@ -20,4 +20,5 @@ public class TempTopologyQuery1 {
      * 环境编码
      */
     private String envCode;
+    private int timeGap;
 }

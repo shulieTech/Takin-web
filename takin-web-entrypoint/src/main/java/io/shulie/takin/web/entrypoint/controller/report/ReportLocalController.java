@@ -18,7 +18,7 @@ import com.pamirs.takin.entity.domain.dto.report.ReportPradarLinkDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
-import com.pamirs.takin.entity.domain.vo.report.ReportLocalQueryParam;
+import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;

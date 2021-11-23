@@ -20,4 +20,51 @@
         id, report_id, application_name, machine_ip, agent_id, machine_base_config, machine_tps_target_config,
         risk_value, risk_flag, risk_content
     </sql>
+    <insert id="insertOrUpdate">
+        insert into t_report_machine (report_id, application_name,
+                                      machine_ip, agent_id, machine_base_config, risk_value,
+                                      risk_flag, risk_content, machine_tps_target_config,tenant_id,env_code)
+        values (
+                   #{reportId,jdbcType=BIGINT}, #{applicationName,jdbcType=VARCHAR},
+                   #{machineIp,jdbcType=VARCHAR}, #{agentId,jdbcType=VARCHAR}, #{machineBaseConfig,jdbcType=VARCHAR},
+                   #{riskValue,jdbcType=DECIMAL},#{riskFlag,jdbcType=TINYINT}, #{riskContent,jdbcType=VARCHAR},
+                   #{machineTpsTargetConfig,jdbcType=LONGVARCHAR},#{tenantId,jdbcType=BIGINT},#{envCode,jdbcType=VARCHAR}
+               )
+            on duplicate key update machine_base_config=#{machineBaseConfig,jdbcType=VARCHAR},
+                                 agent_id=#{agentId,jdbcType=VARCHAR},
+                                 risk_value=#{riskValue,jdbcType=DECIMAL},
+                                 risk_content=#{riskContent,jdbcType=VARCHAR},
+                                 tenant_id=#{tenantId,jdbcType=BIGINT},
+                                 env_code=#{envCode,jdbcType=VARCHAR}
+    </insert>
+
+    <select id="selectCountByReport" resultType="java.util.Map">
+        select count(id)      as `count`,
+               sum(risk_flag) as `riskSum`,
+               application_name
+        from t_report_machine
+        where report_id = #{reportId,jdbcType=BIGINT}
+        group by application_name
+    </select>
+
+    <update id="updateTpsTargetConfig">
+        update t_report_machine
+        set machine_tps_target_config = #{machineTpsTargetConfig,jdbcType=LONGVARCHAR}
+        where report_id = #{reportId,jdbcType=BIGINT}
+          and application_name = #{applicationName,jdbcType=VARCHAR}
+          and machine_ip = #{machineIp,jdbcType=VARCHAR}
+    </update>
+
+
+    <update id="updateRiskContent" >
+        update t_report_machine
+        set risk_flag    = #{riskFlag,jdbcType=TINYINT},
+            risk_value   = #{riskValue,jdbcType=DECIMAL},
+            risk_content = #{riskContent,jdbcType=VARCHAR}
+        where report_id = #{reportId,jdbcType=BIGINT}
+          and application_name = #{applicationName,jdbcType=VARCHAR}
+          and machine_ip = #{machineIp,jdbcType=VARCHAR}
+    </update>
+
+
 </mapper>

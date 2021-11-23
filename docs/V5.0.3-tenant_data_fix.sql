@@ -507,3 +507,8 @@ ALTER TABLE t_tro_user_dept_relation ADD INDEX `idx_tenant` ( `tenant_id`);
 ALTER TABLE t_upload_interface_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_white_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_whitelist_effective_app ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+
+-- 调试工具结果
+ALTER TABLE t_fast_debug_result ADD INDEX `idx_trace_id` ( `trace_id`);
+ALTER TABLE t_fast_debug_result ADD INDEX `idx_config_Id` (`config_Id`);
+

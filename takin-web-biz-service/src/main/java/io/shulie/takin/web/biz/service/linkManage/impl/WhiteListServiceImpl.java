@@ -33,7 +33,6 @@ import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.TakinDictTypeEnum;
 import com.pamirs.takin.common.constant.YNEnum;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
-import com.pamirs.takin.entity.dao.confcenter.TWhiteListMntDao;
 import com.pamirs.takin.entity.dao.dict.TDictionaryTypeMapper;
 import com.pamirs.takin.entity.domain.dto.linkmanage.InterfaceVo;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
@@ -104,7 +103,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class WhiteListServiceImpl implements WhiteListService {
 
     @Resource
-    private TWhiteListMntDao tWhiteListMntDao;
+    private WhiteListDAO whiteListDAO;
     @Resource
     private TDictionaryTypeMapper tDictionaryTypeMapper;
     @Resource
@@ -123,8 +122,7 @@ public class WhiteListServiceImpl implements WhiteListService {
     private WhiteListMapper whiteListMapper;
     @Autowired
     private WhitelistEffectiveAppDao whitelistEffectiveAppDao;
-    @Autowired
-    private WhiteListDAO whiteListDAO;
+
 
     /**
      * 是否开启校验白名单重名
@@ -280,7 +278,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(applicationId);
         //从数据库中查出该应用下所有白名单和新增白名单进行比对
 
-        List<TWList> twLists = tWhiteListMntDao.queryWhiteListTotalByApplicationId(applicationId);
+        List<TWList> twLists = whiteListDAO.queryWhiteListTotalByApplicationId(applicationId);
 
         List<String> armdString = twLists.stream().map(TWList::getInterfaceName).collect(Collectors.toList());
         // 重名白名单
@@ -367,7 +365,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
         if (CollectionUtils.isNotEmpty(toUpdateList)) {
             List<Long> wlistIdList = toUpdateList.stream().map(TWList::getWlistId).collect(Collectors.toList());
-            tWhiteListMntDao.batchEnableWhiteList(wlistIdList);
+            whiteListDAO.batchEnableWhiteList(wlistIdList);
         }
         whiteListFileService.writeWhiteListFile();
         TenantCommonExt commonExt = WebPluginUtils.fillTenantCommonExt(applicationDetailResult.getTenantId(), WebPluginUtils.traceEnvCode());
@@ -380,7 +378,7 @@ public class WhiteListServiceImpl implements WhiteListService {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_WHITELIST_VALIDATE_ERROR, "没有传入应用id");
         }
 
-        List<TWList> twLists = tWhiteListMntDao.getWhiteListByApplicationId(vo.getApplicationId());
+        List<TWList> twLists = whiteListDAO.getWhiteListByApplicationId(vo.getApplicationId());
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(vo.getApplicationId());
         Map<String, TWList> twMap = Maps.newHashMap();
         if (CollectionUtils.isNotEmpty(twLists)) {
@@ -424,10 +422,10 @@ public class WhiteListServiceImpl implements WhiteListService {
                     }
                 }
                 if (CollectionUtils.isNotEmpty(beAddList)) {
-                    tWhiteListMntDao.batchAddWhiteList(beAddList);
+                    whiteListDAO.batchAddWhiteList(beAddList);
                 }
                 if (CollectionUtils.isNotEmpty(beUpdateList)) {
-                    tWhiteListMntDao.batchEnableWhiteList(beUpdateList);
+                    whiteListDAO.batchEnableWhiteList(beUpdateList);
                 }
             }
         }
@@ -443,7 +441,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                     }
                 }
                 if (CollectionUtils.isNotEmpty(beList)) {
-                    tWhiteListMntDao.batchDisableWhiteList(beList);
+                    whiteListDAO.batchDisableWhiteList(beList);
                 }
             }
         }
@@ -504,12 +502,8 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Override
     public PageInfo<WhiteListVO> queryWhitelist(WhiteListQueryVO vo) {
         Map<String, WhiteListVO> totalResult = Maps.newHashMap();
-        // 如果是超级管理员
-        Long tenantId = WebPluginUtils.traceTenantId();
-        if (WebPluginUtils.validateAdmin()) {
-            tenantId = null;
-        }
-        List<TWList> dbResult = tWhiteListMntDao.queryDistinctWhiteListTotalByApplicationId(vo.getApplicationId(), tenantId);
+
+        List<TWList> dbResult = whiteListDAO.queryDistinctWhiteListTotalByApplicationId(vo.getApplicationId());
         String applicationName = applicationMntDao.selectApplicationName(String.valueOf(vo.getApplicationId()));
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(vo.getApplicationId());
         if (applicationName == null) {
@@ -717,7 +711,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     @Override
     public List<TWList> getAllEnableWhitelists(String applicationId) {
-        return tWhiteListMntDao.getAllEnableWhitelists(applicationId);
+        return whiteListDAO.getAllEnableWhitelists(applicationId);
     }
 
     @Override
@@ -737,7 +731,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                 whiteListEntity.getInterfaceName())) {
             // 有修改，需要判断是否有重名
             //从数据库中查出该应用下所有白名单和新增白名单进行比对
-            List<TWList> existWhiteLists = tWhiteListMntDao.queryWhiteListTotalByApplicationId(
+            List<TWList> existWhiteLists = whiteListDAO.queryWhiteListTotalByApplicationId(
                     whiteListEntity.getApplicationId());
             List<String> data = existWhiteLists.stream().map(
                     tw -> WhitelistUtil.buildWhiteId(tw.getType(), tw.getInterfaceName())).collect(
@@ -886,7 +880,7 @@ public class WhiteListServiceImpl implements WhiteListService {
     @Override
     public PagingList<WhiteListVO> pagingList(WhitelistSearchInput input) {
         // 获取应用
-        List<ApplicationDetailResult> appDetailResults = getApplicationDetailResults();
+        List<ApplicationDetailResult> appDetailResults = this.getApplicationDetailResults();
         // 从mysql查出数据
         PagingList<WhiteListVO> dbPagingList = getDbPagingList(input, appDetailResults);
         // 从amdb查出数据
@@ -918,6 +912,7 @@ public class WhiteListServiceImpl implements WhiteListService {
             return Lists.newArrayList();
         }
         queryParam.setTenantId(WebPluginUtils.traceTenantId());
+        queryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         return applicationDAO.getApplicationList(queryParam);
     }
 
@@ -997,16 +992,10 @@ public class WhiteListServiceImpl implements WhiteListService {
             List<String> interfaceNames = Lists.newArrayList(StringUtils.split(input.getInterfaceName(), ","));
             param.setInterfaceNames(interfaceNames);
         }
-        // 白名单租户数据隔离
-        UserExt user = WebPluginUtils.traceUser();
-        if (user != null) {
-            param.setTenantId(WebPluginUtils.traceTenantId());
-        }
         PagingList<WhiteListVO> pagingList = whiteListDAO.pagingList(param);
         // 生效应用
         // 获取所有生效效应，是否有局部应用
         WhitelistEffectiveAppSearchParam searchParam = new WhitelistEffectiveAppSearchParam();
-        searchParam.setTenantId(WebPluginUtils.traceTenantId());
         List<WhitelistEffectiveAppResult> effectiveAppDaoList = whitelistEffectiveAppDao.getList(searchParam);
         Map<Long, List<WhitelistEffectiveAppResult>> appResultsMap = effectiveAppDaoList.stream()
                 .collect(Collectors.groupingBy(WhitelistEffectiveAppResult::getWlistId));

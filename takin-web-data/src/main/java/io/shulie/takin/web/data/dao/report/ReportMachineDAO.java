@@ -5,7 +5,6 @@ import java.util.Map;
 
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
-import io.shulie.takin.web.data.param.report.ReportSummaryCreateParam;
 import io.shulie.takin.web.data.result.report.ReportMachineResult;
 
 /**
@@ -21,7 +20,7 @@ public interface ReportMachineDAO {
      * 插入
      * @param param
      */
-    void insert(ReportSummaryCreateParam param);
+    void insert(ReportMachineUpdateParam param);
 
 
     /**

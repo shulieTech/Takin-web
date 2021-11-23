@@ -35,6 +35,7 @@ import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.InstanceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.LibraryDTO;
 import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
@@ -463,4 +464,12 @@ public class ApplicationDAOImpl
         });
         return detailResults;
     }
+
+    @Override
+    public List<Long> listIdsByNameListAndCustomerId(List<String> applicationNameList) {
+        return CommonUtil.list2list(applicationMntMapper.selectObjs(this.getCustomerLambdaQueryWrapper()
+            .select(ApplicationMntEntity::getApplicationId)
+            .in(ApplicationMntEntity::getApplicationName, applicationNameList)), Long.class);
+    }
+
 }

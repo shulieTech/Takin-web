@@ -243,11 +243,6 @@ UPDATE t_datasource_tag_ref t1
     LEFT JOIN t_tro_dbresource t2 ON t1.datasource_id = t2.id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
--- t_fast_debug_stack_info
-UPDATE t_fast_debug_stack_info t1
-    LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
-    SET t1.env_code = IFNULL(t2.env_code,'test');
-
 -- t_leakverify_detail
 UPDATE t_leakverify_detail t1
     LEFT JOIN t_leakverify_result t2 ON t1.result_id = t2.id
@@ -318,8 +313,8 @@ update t_ops_script_file t set t.tenant_id=IFNULL((select tenant_id from t_ops_s
 update t_performance_base_data t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = t.app_name),1);
 update t_performance_criteria_config t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_ID = t.app_id),1);
 
--- caijy end
 COMMIT ;
+-- caijy end
 
 -- liuchuan
 BEGIN;
@@ -352,6 +347,12 @@ COMMIT;
 -- liuchuan end
 
 -- 兮曦 --
+-- 场景数据必须优先订正
+update e_patrol_scene set tenant_id=7,env_code='prod',user_id=7 where customer_id=7;
+update e_patrol_scene set tenant_id=7,env_code='test',user_id=8 where customer_id=8;
+update e_patrol_scene set tenant_id=1,env_code='test',user_id=1 where customer_id=1;
+update e_patrol_scene a,t_tenant_info b set a.tenant_app_key = b.`key` where a.tenant_id=b.id and a.tenant_id is not null;
+
 update e_patrol_activity_assert set env_code='test',tenant_id=1;
 
 update e_patrol_board set tenant_id=7,env_code='prod',user_id=7 where customer_id=7;
@@ -363,32 +364,26 @@ update e_patrol_board_scene set env_code='test',tenant_id=1;
 update e_patrol_exception set env_code='test',tenant_id=1;
 update e_patrol_exception a,e_patrol_scene b set a.user_id= b.user_id where a.scene_id=b.id and a.scene_id <> '-1';
 
+-- 必须先订正数据才能加索引，否则会有冲突
 update e_patrol_exception_config set tenant_id=7,env_code='test' where customer_id=7;
 update e_patrol_exception_config set tenant_id=7,env_code='prod' where customer_id=8;
 update e_patrol_exception_config set tenant_id=1,env_code='test' where customer_id=1;
-
 delete from e_patrol_exception_config where customer_id is null;
+ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `tenant_id`, `env_code`, `type_value`,`level_value` ) USING BTREE;
 
-INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 1, 1, 100.00, 1, '一般卡慢', -1, 'system');
-INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 1, 2, 230.00, 1, '严重卡慢', -1, 'system');
-INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 2, 1, 90.00, -1, '一般瓶颈', -1, 'system');
-INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 2, 2, 80.00, -1, '严重瓶颈', -1, 'system');
-INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 4, 1, 30.00, 1, '一般慢SQL', -1, 'system');
-INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 4, 2, 60.00, 1, '严重慢SQL', -1, 'system');
+INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 1, 1, 100.00, 1, '一般卡慢', -1, 'system');
+INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 1, 2, 230.00, 1, '严重卡慢', -1, 'system');
+INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 2, 1, 90.00, -1, '一般瓶颈', -1, 'system');
+INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 2, 2, 80.00, -1, '严重瓶颈', -1, 'system');
+INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 4, 1, 30.00, 1, '一般慢SQL', -1, 'system');
+INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 4, 2, 60.00, 1, '严重慢SQL', -1, 'system');
 
 update e_patrol_exception_notice_config set env_code='test',tenant_id=1;
 
-update e_patrol_scene set tenant_id=7,env_code='prod',user_id=7 where customer_id=7;
-update e_patrol_scene set tenant_id=7,env_code='test',user_id=8 where customer_id=8;
-update e_patrol_scene set tenant_id=1,env_code='test',user_id=1 where customer_id=1;
-update e_patrol_scene a,t_tenant_info b set a.tenant_app_key = b.`key` where a.tenant_id=b.id and a.tenant_id is not null;
-
 update e_patrol_scene_chain set env_code='test',tenant_id=1;
-
 update e_patrol_scene_check set env_code='test',tenant_id=1;
 
 -- 兮曦 --
-
 
 -- 额外 租户期间增加的表
 update t_mq_config_template set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
@@ -396,9 +391,17 @@ update t_application_ds_cache_manage set tenant_id=IFNULL((select tenant_id from
 update t_application_ds_db_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_application_ds_db_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 
--- TODO 大表最后数据迁移
-update t_fast_debug_machine_performance f set f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t  WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
-update t_fast_debug_stack_info f set f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
+-- 大表最后数据迁移
+-- t_fast_debug_stack_info
+UPDATE t_fast_debug_stack_info t1
+    LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_fast_debug_stack_info f SET f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
+-- t_fast_debug_machine_performance
+UPDATE t_fast_debug_machine_performance t1
+    LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_fast_debug_machine_performance f SET f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
 
 -- 最后加索引
 ALTER TABLE t_activity_node_service_state ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -507,7 +510,7 @@ ALTER TABLE t_tro_user_dept_relation ADD INDEX `idx_tenant` ( `tenant_id`);
 ALTER TABLE t_upload_interface_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_white_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_whitelist_effective_app ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-
+ALTER TABLE t_fast_debug_stack_info ADD INDEX `idx_tenant_env` (`tenant_id`,`env_code` );
 -- 调试工具结果
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_trace_id` ( `trace_id`);
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_config_Id` (`config_Id`);

@@ -1,11 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.agent;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import io.shulie.takin.web.biz.pojo.request.agent.GetFileRequest;
@@ -14,6 +10,7 @@ import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOper
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResultResponse;
 import io.shulie.takin.web.biz.service.AgentService;
 import io.shulie.takin.web.common.constant.AgentUrls;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -68,21 +65,7 @@ public class AgentApplicationNodeController {
             return;
         }
 
-        try {
-            // 响应头设置
-            response.setHeader("Content-Disposition", String.format("attachment;filename=%s", file.getName()));
-            response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
-            response.setHeader("Pragma", "no-cache");
-            response.setHeader("Expires", "0");
-
-            // 使用sendfile:读取磁盘文件，并网络发送
-            ServletOutputStream servletOutputStream = response.getOutputStream();
-            FileChannel channel = new FileInputStream(file).getChannel();
-            response.setHeader("Content-Length", String.valueOf(channel.size()));
-            channel.transferTo(0, channel.size(), Channels.newChannel(servletOutputStream));
-        } catch (Exception e) {
-            log.error("agent 下载探针包 --> 错误: {}", e.getMessage(), e);
-        }
+        CommonUtil.zeroCopyDownload(file, response);
     }
 
     @ApiOperation("|_ 探针操作结果")

@@ -485,7 +485,6 @@ ALTER TABLE e_patrol_exception_config ADD COLUMN `tenant_id` bigint(0) NULL DEFA
 ALTER TABLE e_patrol_exception_config ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
 alter table e_patrol_exception_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 alter table e_patrol_exception_config modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
-ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `tenant_id`, `env_code`, `type_value`,`level_value` ) USING BTREE;
 
 ALTER TABLE e_patrol_exception_notice_config ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_exception_notice_config ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
@@ -548,29 +547,69 @@ VALUES (510, NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, 
 COMMIT;
 
 -- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_stack_info
-CREATE TABLE if not EXISTS `tmp_stack_info` (
-    `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    `app_name` varchar(255) DEFAULT NULL,
-    `agent_id` varchar(255) DEFAULT NULL,
-    `trace_id` varchar(512) DEFAULT NULL COMMENT 'traceId',
-    `rpc_id` varchar(512) NOT NULL COMMENT 'rpcid',
-    `level` varchar(64) DEFAULT NULL COMMENT '日志级别',
-    `type` tinyint(4) DEFAULT NULL COMMENT '服务端，客户端',
-    `content` longtext COMMENT 'stack信息',
-    `is_stack` tinyint(1) DEFAULT NULL COMMENT '是否调用栈日志',
-    `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
-    `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `gmt_update` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-    PRIMARY KEY (`id`) USING BTREE,
-    KEY `index_traceId` (`trace_id`) USING BTREE
-    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
+-- 1. 创建临时表
+-- CREATE TABLE IF NOT EXISTS `tmp_stack_info` (
+--     `id` bigint(20) NOT NULL AUTO_INCREMENT,
+--     `app_name` varchar(255) DEFAULT NULL,
+--     `agent_id` varchar(255) DEFAULT NULL,
+--     `trace_id` varchar(512) DEFAULT NULL COMMENT 'traceId',
+--     `rpc_id` varchar(512) NOT NULL COMMENT 'rpcid',
+--     `level` varchar(64) DEFAULT NULL COMMENT '日志级别',
+--     `type` tinyint(4) DEFAULT NULL COMMENT '服务端，客户端',
+--     `content` longtext COMMENT 'stack信息',
+--     `is_stack` tinyint(1) DEFAULT NULL COMMENT '是否调用栈日志',
+--     `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
+--     `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+--     `gmt_update` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+--     `env_code` varchar(20) DEFAULT 'test' COMMENT '环境code',
+--     `tenant_id` bigint(20) DEFAULT '1' COMMENT '租户id',
+--     PRIMARY KEY (`id`) USING BTREE,
+--     KEY `index_traceId` (`trace_id`) USING BTREE
+--     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
+-- 2. 查询有用的数据 复制为insert语句 BEGIN;---COMMIT;
+-- SELECT t.*
+-- FROM t_fast_debug_stack_info t
+-- JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id;
+--
+-- 3.全局替换 t_fast_debug_stack_info -> tmp_stack_info
+-- 4.执行后比较 查询SQL和临时表的记录数是否一致
+-- 5.删除原表t_fast_debug_machine_performance 临时表 tmp_stack_info 重命名为 t_fast_debug_stack_info
+-- DROP TABLE IF EXISTS t_fast_debug_stack_info;
+-- RENAME TABLE tmp_stack_info TO t_fast_debug_stack_info;
 
+-- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_machine_performance
+-- 1. 创建临时表
+-- CREATE TABLE IF NOT EXISTS `tmp_machine` (
+--     `id` bigint(20) NOT NULL AUTO_INCREMENT,
+--     `trace_id` varchar(512) DEFAULT NULL COMMENT 'traceId',
+--     `rpc_id` varchar(512) DEFAULT NULL COMMENT 'rpcid',
+--     `log_type` tinyint(4) DEFAULT NULL COMMENT '服务端、客户端',
+--     `index` varchar(128) DEFAULT NULL COMMENT '性能类型，beforeFirst/beforeLast/afterFirst/afterLast/exceptionFirst/exceptionLast',
+--     `cpu_usage` decimal(10,4) DEFAULT '0.0000' COMMENT 'cpu利用率',
+--     `cpu_load` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT 'cpu load',
+--     `memory_usage` decimal(10,4) DEFAULT '0.0000' COMMENT '没存利用率',
+--     `memory_total` decimal(20,2) DEFAULT '0.00' COMMENT '堆内存总和',
+--     `io_wait` decimal(10,4) DEFAULT '0.0000' COMMENT 'io 等待率',
+--     `young_gc_count` bigint(20) DEFAULT NULL,
+--     `young_gc_time` bigint(20) DEFAULT NULL,
+--     `old_gc_count` bigint(20) DEFAULT NULL,
+--     `old_gc_time` bigint(20) DEFAULT NULL,
+--     `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
+--     `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+--     `gmt_update` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+--     `env_code` varchar(20) DEFAULT 'test' COMMENT '环境code',
+--     `tenant_id` bigint(20) DEFAULT '1' COMMENT '租户id',
+--     PRIMARY KEY (`id`) USING BTREE
+-- ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
+-- 2. 查询有用的数据 复制为insert语句 BEGIN;---COMMIT;
+-- SELECT t.*
+-- FROM t_fast_debug_machine_performance t
+-- JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id;
+--
+-- 3.全局替换 t_fast_debug_machine_performance -> tmp_machine
+-- 4.执行后比较 查询SQL和临时表的记录数是否一致
+-- 5.删除原表t_fast_debug_machine_performance 临时表 tmp_machine 重命名为 t_fast_debug_machine_performance
+-- DROP TABLE IF EXISTS t_fast_debug_machine_performance;
+-- RENAME TABLE tmp_machine TO t_fast_debug_machine_performance;
 
-DELETE FROM t_fast_debug_stack_info WHERE id NOT IN (
-    SELECT * FROM (
-      SELECT t.id
-      FROM t_fast_debug_stack_info t
-      JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
-    )tmp
-);
 

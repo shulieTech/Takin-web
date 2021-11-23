@@ -67,8 +67,8 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO, MPU
     }
 
     @Override
-    public void delByAppNamesAndOperate(Long tenantId, Integer operate, List<String> appNames) {
-        applicationNodeProbeMapper.delete(this.getCustomerLambdaQueryWrapper()
+    public void delByAppNamesAndOperate(Integer operate, List<String> appNames) {
+        applicationNodeProbeMapper.delete(this.getLambdaQueryWrapper()
             .eq(ApplicationNodeProbeEntity::getOperate, operate)
             .in(CollectionUtils.isNotEmpty(appNames), ApplicationNodeProbeEntity::getApplicationName, appNames));
     }

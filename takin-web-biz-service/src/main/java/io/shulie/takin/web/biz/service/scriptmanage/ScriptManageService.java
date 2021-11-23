@@ -174,4 +174,12 @@ public interface ScriptManageService {
      */
     List<Long> listBusinessActivityIdsByScriptDeployId(Long scriptDeployId);
 
+    /**
+     * 通过脚本， 获得压缩后的文件名称
+     *
+     * @param scriptDeployId 脚本发布id
+     * @return 压缩文件名称
+     */
+    String getZipFileNameByScriptDeployId(Long scriptDeployId);
+
 }

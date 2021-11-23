@@ -13,6 +13,7 @@ import io.shulie.takin.web.biz.service.agentcommand.AgentCommandSupport;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
+import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeTypeEnum;
 import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidStatusEnum;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
@@ -123,6 +124,7 @@ public class AgentStartProcessor extends AgentCommandSupport {
         upgradeParam.setUpgradeContext(agentHeartbeatBO.getDependencyInfo());
         upgradeParam.setUpgradeAgentId(agentHeartbeatBO.getAgentId());
         upgradeParam.setPluginUpgradeStatus(AgentUpgradeEnum.UPGRADE_SUCCESS.getVal());
+        upgradeParam.setType(AgentUpgradeTypeEnum.AGENT_REPORT.getVal());
         upgradeParam.setRemark("agent上报上来的依赖数据");
         applicationPluginUpgradeService.createUpgradeOrder(upgradeParam);
     }

@@ -34,6 +34,8 @@ public class AgentUpgradeProcessor extends AgentCommandSupport {
 
     private static final String STRING_UPGRADE_BATCH = "upgradeBatch";
 
+    private static final String STRING_ERROR_INFO = "errorInfo";
+
     private static final String UPGRADE_LOCK_TEMPLATE = "AGENT_UPGRADE:%s-%s";
 
     @Resource
@@ -49,10 +51,12 @@ public class AgentUpgradeProcessor extends AgentCommandSupport {
     public void process0(AgentHeartbeatBO agentHeartbeatBO, JSONObject commandParam) {
         Boolean finish = commandParam.getBoolean(STRING_FINISH);
         String upgradeBatch = commandParam.getString(STRING_UPGRADE_BATCH);
-        if (finish == null || !finish || StringUtils.isEmpty(upgradeBatch)) {
+        if (finish == null || StringUtils.isEmpty(upgradeBatch)) {
             return;
         }
-        applicationPluginUpgradeService.finishUpgrade(agentHeartbeatBO.getApplicationId(), upgradeBatch);
+        AgentUpgradeEnum upgradeEnum = finish ? AgentUpgradeEnum.UPGRADE_SUCCESS : AgentUpgradeEnum.UPGRADE_FILE;
+        applicationPluginUpgradeService.changeUpgradeStatus(agentHeartbeatBO.getApplicationId(), upgradeBatch,
+            upgradeEnum.getVal(), commandParam.getString(STRING_ERROR_INFO));
     }
 
     @Override

@@ -51,9 +51,19 @@ public class ApplicationPluginUpgradeEntity extends NewBaseEntity implements Ser
     private String downloadPath;
 
     /**
-     * 升级状态 0 未升级 1升级成功
+     * 升级状态 升级状态 0 未升级 1升级成功 2升级失败 3已回滚
      */
     private Integer pluginUpgradeStatus;
+
+    /**
+     * 错误信息
+     */
+    private String errorInfo;
+
+    /**
+     * 升级单类型 0 agent上报，1 主动升级
+     */
+    private Integer type;
 
     /**
      * 备注

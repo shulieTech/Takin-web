@@ -567,7 +567,7 @@ COMMIT;
 --     PRIMARY KEY (`id`) USING BTREE,
 --     KEY `index_traceId` (`trace_id`) USING BTREE
 --     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
--- 2. 查询有用的数据 复制为insert语句
+-- 2. 查询有用的数据 复制为insert语句 BEGIN;---COMMIT;
 -- SELECT t.*
 -- FROM t_fast_debug_stack_info t
 -- JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id;
@@ -602,7 +602,7 @@ COMMIT;
 --     `tenant_id` bigint(20) DEFAULT '1' COMMENT '租户id',
 --     PRIMARY KEY (`id`) USING BTREE
 -- ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
--- 2. 查询有用的数据 复制为insert语句
+-- 2. 查询有用的数据 复制为insert语句 BEGIN;---COMMIT;
 -- SELECT t.*
 -- FROM t_fast_debug_machine_performance t
 -- JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id;

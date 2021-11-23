@@ -261,7 +261,9 @@ ALTER TABLE `t_application_ds_manage` MODIFY COLUMN `customer_id` bigint(20) NUL
 ALTER TABLE `t_application_mnt` MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 
 CREATE VIEW APPLICATION_VIEW AS
-SELECT APPLICATION_ID,APPLICATION_NAME,tenant_id AS TENANT_ID,env_code as ENV_CODE FROM t_application_mnt;
+SELECT APPLICATION_ID,APPLICATION_NAME,tenant_id AS TENANT_ID,env_code as ENV_CODE,info.key AS TENANTAPPKEY
+FROM t_application_mnt app
+INNER JOIN t_tenant_info info ON info.id=app.tenant_id;
 
 -- 剑英
 
@@ -541,7 +543,25 @@ VALUES (510, NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, 
 
 COMMIT;
 
--- 大表操作 t_fast_debug_stack_info
+-- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_stack_info
+CREATE TABLE if not EXISTS `tmp_stack_info` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `app_name` varchar(255) DEFAULT NULL,
+    `agent_id` varchar(255) DEFAULT NULL,
+    `trace_id` varchar(512) DEFAULT NULL COMMENT 'traceId',
+    `rpc_id` varchar(512) NOT NULL COMMENT 'rpcid',
+    `level` varchar(64) DEFAULT NULL COMMENT '日志级别',
+    `type` tinyint(4) DEFAULT NULL COMMENT '服务端，客户端',
+    `content` longtext COMMENT 'stack信息',
+    `is_stack` tinyint(1) DEFAULT NULL COMMENT '是否调用栈日志',
+    `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 0: 正常 1： 删除',
+    `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `gmt_update` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    PRIMARY KEY (`id`) USING BTREE,
+    KEY `index_traceId` (`trace_id`) USING BTREE
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
+
+
 DELETE FROM t_fast_debug_stack_info WHERE id NOT IN (
     SELECT * FROM (
       SELECT t.id
@@ -549,3 +569,4 @@ DELETE FROM t_fast_debug_stack_info WHERE id NOT IN (
       JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
     )tmp
 );
+

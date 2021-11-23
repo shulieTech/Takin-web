@@ -245,7 +245,7 @@ UPDATE t_datasource_tag_ref t1
 
 -- t_fast_debug_stack_info
 UPDATE t_fast_debug_stack_info t1
-    LEFT JOIN t_application_mnt t2 ON t1.app_name = t2.APPLICATION_NAME
+    LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- t_leakverify_detail
@@ -397,7 +397,7 @@ update t_application_ds_db_manage set tenant_id=IFNULL((select tenant_id from t_
 update t_application_ds_db_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 
 -- TODO 大表最后数据迁移
-update t_fast_debug_machine_performance f set f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t  WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
+
 update t_fast_debug_stack_info f set f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
 
 -- 最后加索引
@@ -507,7 +507,8 @@ ALTER TABLE t_tro_user_dept_relation ADD INDEX `idx_tenant` ( `tenant_id`);
 ALTER TABLE t_upload_interface_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_white_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_whitelist_effective_app ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-
+ALTER TABLE t_fast_debug_machine_performance ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+ALTER TABLE t_fast_debug_stack_info ADD INDEX `idx_tenant_env` (`tenant_id`,`env_code` );
 -- 调试工具结果
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_trace_id` ( `trace_id`);
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_config_Id` (`config_Id`);

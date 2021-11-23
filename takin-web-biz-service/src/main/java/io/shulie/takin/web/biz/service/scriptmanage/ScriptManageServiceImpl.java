@@ -1224,15 +1224,21 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                 String userName = Optional.ofNullable(userMap.get(scriptManageDeployResult.getUserId()))
                     .map(UserExt::getName).orElse("");
                 scriptManageDeployResponse.setUserName(userName);
+
+                //m1版本不能在脚本管理页面进行编辑和删除操作
+                if (ScriptMVersionEnum.isM_1(scriptManageDeployResult.getMVersion())){
+                    scriptManageDeployResponse.setCanEdit(false);
+                    scriptManageDeployResponse.setCanRemove(false);
+                }
                 return scriptManageDeployResponse;
             }).collect(Collectors.toList());
+
         setFileList(scriptManageDeployResponses);
         setTagList(scriptManageDeployResponses);
         setRefName(scriptManageDeployResponses, scriptManageDeployResults);
 
         // canDebug 赋值
         this.setupCanDebug(scriptManageDeployResponses);
-
         return PagingList.of(scriptManageDeployResponses, scriptManageDeployResults.getTotal());
     }
 

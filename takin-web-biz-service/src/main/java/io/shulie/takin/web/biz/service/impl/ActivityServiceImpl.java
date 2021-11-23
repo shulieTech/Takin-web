@@ -21,6 +21,7 @@ import io.shulie.takin.cloud.open.req.scenetask.TaskFlowDebugStartReq;
 import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
@@ -121,9 +122,11 @@ public class ActivityServiceImpl implements ActivityService {
         createParam.setServiceName(request.getServiceName());
         createParam.setExtend(request.getExtend());
         createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+        if (RpcTypeEnum.HTTP.getValue().equals(request.getRpcType())){
+            request.setServiceName(JmxUtil.pathGuiYi(request.getServiceName()));
+        }
         createParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getMethod(), JmxUtil.pathGuiYi(request.getServiceName()),
-                request.getRpcType()));
+            ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
         activityDAO.createActivity(createParam);
         notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
             request.getMethod(), request.getRpcType(), request.getExtend());
@@ -305,9 +308,11 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setMethod(request.getMethod());
         updateParam.setServiceName(request.getServiceName());
         updateParam.setExtend(request.getExtend());
+        if (RpcTypeEnum.HTTP.getValue().equals(request.getRpcType())){
+            request.setServiceName(JmxUtil.pathGuiYi(request.getServiceName()));
+        }
         updateParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getMethod(), JmxUtil.pathGuiYi(request.getServiceName()),
-                request.getRpcType()));
+            ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
         // 技术链路id
         updateParam.setLinkId(oldActivity.getLinkId());
         activityDAO.updateActivity(updateParam);

@@ -43,8 +43,8 @@ public class CalcApplicationSummaryJob implements SimpleJob {
         }
         long start = System.currentTimeMillis();
         List<Object> reportIds = Lists.newArrayList();
-        WebResponse runningResponse = reportService.queryListRunningReport();
-        if (runningResponse.getSuccess() == true && runningResponse.getData() != null) {
+        WebResponse runningResponse = reportService.queryListPressuringReport();
+        if (runningResponse.getSuccess() && runningResponse.getData() != null) {
             reportIds.addAll((List)runningResponse.getData());
         }
         log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));

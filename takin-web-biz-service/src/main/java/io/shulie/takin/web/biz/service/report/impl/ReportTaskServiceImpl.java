@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.service.report.impl;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.fastjson.JSON;
 
@@ -48,7 +47,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ReportTaskServiceImpl implements ReportTaskService {
 
-    private static AtomicBoolean RUNNINT = new AtomicBoolean(false);
 
     @Autowired
     private ReportDataCache reportDataCache;
@@ -93,12 +91,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     @Override
     public void finishReport(Long reportId,TenantCommonExt commonExt) {
         try {
-            if (RUNNINT.get()) {
-                return;
-            }
-            if (!RUNNINT.compareAndSet(false, true)) {
-                return;
-            }
             try {
                 //Ready 数据准备
                 reportDataCache.readyCloudReportData(reportId);
@@ -162,8 +154,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             }
         } catch (Exception e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());
-        } finally {
-            RUNNINT.compareAndSet(true, false);
         }
     }
 

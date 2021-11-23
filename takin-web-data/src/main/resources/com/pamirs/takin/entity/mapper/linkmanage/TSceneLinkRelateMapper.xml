@@ -37,4 +37,9 @@
         </foreach>
     </insert>
 
+    <select id="selectBySceneId" resultType="com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate"
+            parameterType="java.lang.Long">
+        select * from t_scene_link_relate where SCENE_ID = #{sceneId} and IS_DELETED = 0
+    </select>
+
 </mapper>

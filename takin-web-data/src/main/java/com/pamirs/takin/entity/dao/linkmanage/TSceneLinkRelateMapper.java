@@ -13,4 +13,6 @@ public interface TSceneLinkRelateMapper {
     @InterceptorIgnore(tenantLine = "true")
     int batchInsert(@Param("list") List<SceneLinkRelate> records);
 
+    List<SceneLinkRelate> selectBySceneId(@Param("sceneId") Long sceneId);
+
 }

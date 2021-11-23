@@ -65,7 +65,7 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
         if(CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }
-        return CommonUtil.list2list(list,ReportMachineResult.class);
+        return DataTransformUtil.list2list(list,ReportMachineResult.class);
     }
 
     /**
@@ -86,7 +86,7 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
         if(CollectionUtils.isEmpty(list)) {
             return null;
         }
-        return CommonUtil.list2list(list,ReportMachineResult.class).get(0);
+        return DataTransformUtil.list2list(list,ReportMachineResult.class).get(0);
     }
 
     /**
@@ -106,7 +106,7 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
         if(CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }
-        return CommonUtil.list2list(list,ReportMachineResult.class);
+        return DataTransformUtil.list2list(list,ReportMachineResult.class);
     }
 
     /**

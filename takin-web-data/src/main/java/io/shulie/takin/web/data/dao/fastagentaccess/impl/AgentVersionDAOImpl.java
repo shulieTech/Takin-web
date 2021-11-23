@@ -6,7 +6,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentVersionDAO;
 import io.shulie.takin.web.data.mapper.mysql.AgentVersionMapper;
 import io.shulie.takin.web.data.model.mysql.AgentVersionEntity;
@@ -45,7 +45,7 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
             return PagingList.empty();
         }
 
-        return PagingList.of(CommonUtil.list2list(records, AgentVersionListResult.class), entityPage.getTotal());
+        return PagingList.of(DataTransformUtil.list2list(records, AgentVersionListResult.class), entityPage.getTotal());
     }
 
     @Override
@@ -53,7 +53,7 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
         LambdaQueryWrapper<AgentVersionEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(AgentVersionEntity::getVersion, version)
             .orderByDesc(AgentVersionEntity::getVersionNum);
-        return CommonUtil.copyBeanPropertiesWithNull(agentVersionMapper.selectOne(queryWrapper),
+        return DataTransformUtil.copyBeanPropertiesWithNull(agentVersionMapper.selectOne(queryWrapper),
             AgentVersionDetailResult.class);
     }
 

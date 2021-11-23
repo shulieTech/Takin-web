@@ -6,13 +6,16 @@ update t_application_ds_db_manage set tenant_id=customer_id;
 update t_application_ds_db_table set tenant_id=customer_id;
 
 -- 记录userid和envCode
-CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE`
-(
-    `id`             bigint(20)     NOT NULL AUTO_INCREMENT,
-    `user_Id`    bigint(20)     		NOT NULL COMMENT '用户ID',
-    `env_code`       varchar(512)   NOT NULL COMMENT '环境代码，测试环境：test,生产环境：prod',
-    PRIMARY KEY (`id`)
-) ENGINE = InnoDB;
+CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
+SELECT id as user_id,tenant_id,
+CASE
+   WHEN customer_id <> tenant_id THEN
+       'test'
+   ELSE
+       'prod'
+   END AS env_code
+FROM t_tro_user;
+
 INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(1,'test');
 INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(3,'prod');
 INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(4,'test');
@@ -67,7 +70,9 @@ UPDATE t_ops_script_manage t1 SET t1.env_code = IFNULL((select env_code from DAT
 UPDATE t_tro_dbresource t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
 
 -- t_login_record
-UPDATE t_login_record t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
+UPDATE t_login_record t1
+    LEFT JOIN t_tro_user t2 ON t1.user_name=t2.name
+    SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t2.id),'test');
 
 -- t_leakverify_result
 UPDATE t_leakverify_result t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
@@ -184,32 +189,26 @@ UPDATE t_performance_criteria_config t1
     LEFT JOIN t_application_mnt t2 ON t1.app_id = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
-
 -- tenant_id
 update t_application_ds_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_application_mnt set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_application_plugins_config set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_application_node_probe set tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = application_name),1);
+update t_fast_debug_config_info set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_fast_debug_exception set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_fast_debug_result set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_black_list set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_business_link_manage_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_leakcheck_config set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_script_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_leakcheck_config_detail set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_leakverify_result set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);;
-update t_link_guard set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_link_manage_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_leakverify_result set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_operation_log set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_ops_script_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_script_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_link_guard set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_link_manage_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_tro_dbresource set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_application_node_probe set tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME= application_name),1);
-update t_fast_debug_config_info set tenant_id=IFNULL((select tenant_id from t_business_link_manage_table where LINK_ID= business_link_id),1);
-update t_fast_debug_exception set tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME= application_Name),1);
-update t_fast_debug_result set tenant_id=IFNULL((select tenant_id from t_business_link_manage_table where LINK_NAME= business_link_name),1);
-update t_file_manage t1
-    LEFT JOIN t_script_file_ref t2 ON t1.id = t2.file_id
-    LEFT JOIN t_script_manage_deploy t3 ON t3.id = t2.script_deploy_id
-    LEFT JOIN t_script_manage t4 ON t4.id = t3.script_id
-    SET t1.tenant_id = IFNULL(t4.tenant_id,1);
-
+update t_file_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_application_plugins_config set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_application_focus set tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = app_name),1);
 update t_application_middleware t set tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_ID = t.application_id),1);
 update t_data_build t set t.tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = t.APPLICATION_ID);
@@ -265,7 +264,6 @@ update e_patrol_scene_chain set env_code='test',tenant_id=1;
 update e_patrol_scene_check set env_code='test',tenant_id=1;
 
 -- 兮曦 --
-
 
 ---无涯
 UPDATE t_pradar_zk_config set TENANT_ID = -1 and env_code = 'system'

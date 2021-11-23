@@ -18,14 +18,12 @@ public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
     /**
      * 批量增加
      * @param params
-     * @return
      */
     void batchInsert(List<SceneLinkRelateCreateParam> params);
 
     /**
      * 根据流程删除删除
      * @param sceneId
-     * @return
      */
     void deleteBySceneId(String sceneId);
 

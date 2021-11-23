@@ -28,7 +28,7 @@ import io.shulie.takin.web.biz.utils.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentDownloadUrlVerifyUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectTypeEnum;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentVersionDAO;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentVersionQueryParam;
 import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
@@ -166,7 +166,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             return PagingList.empty();
         }
 
-        return PagingList.of(CommonUtil.list2list(results, AgentVersionListResponse.class), resultPage.getTotal());
+        return PagingList.of(DataTransformUtil.list2list(results, AgentVersionListResponse.class), resultPage.getTotal());
     }
 
     @Override

@@ -1,6 +1,6 @@
 package io.shulie.takin.web.data.dao.script.impl;
 
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.script.ScriptManageDeployDAO;
 import io.shulie.takin.web.data.mapper.mysql.ScriptManageDeployMapper;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
@@ -19,7 +19,7 @@ public class ScriptManageDeployDAOImpl implements ScriptManageDeployDAO {
 
     @Override
     public ScriptManageDeployResult getById(Long scriptDeployId) {
-        return CommonUtil.copyBeanPropertiesWithNull(scriptManageDeployMapper.selectById(scriptDeployId),
+        return DataTransformUtil.copyBeanPropertiesWithNull(scriptManageDeployMapper.selectById(scriptDeployId),
             ScriptManageDeployResult.class);
     }
 

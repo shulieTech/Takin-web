@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.mapper.mysql.PradarZkConfigMapper;
 import io.shulie.takin.web.data.model.mysql.PradarZkConfigEntity;
 import io.shulie.takin.web.data.param.pradarconfig.PagePradarZkConfigParam;
@@ -31,7 +31,7 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO, MPUtil<PradarZk
     public List<PradarZkConfigResult> list() {
         List<PradarZkConfigEntity> result = pradarZkConfigMapper.selectList(this.getLambdaQueryWrapper()
             .select(PradarZkConfigEntity::getZkPath, PradarZkConfigEntity::getValue));
-        return CommonUtil.list2list(result, PradarZkConfigResult.class);
+        return DataTransformUtil.list2list(result, PradarZkConfigResult.class);
     }
 
     @Override
@@ -54,12 +54,12 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO, MPUtil<PradarZk
 
     @Override
     public PradarZkConfigResult getById(Long id) {
-        return CommonUtil.copyBeanPropertiesWithNull(pradarZkConfigMapper.selectById(id), PradarZkConfigResult.class);
+        return DataTransformUtil.copyBeanPropertiesWithNull(pradarZkConfigMapper.selectById(id), PradarZkConfigResult.class);
     }
 
     @Override
     public PradarZkConfigResult getByZkPath(String zkPath) {
-        return CommonUtil.copyBeanPropertiesWithNull(pradarZkConfigMapper.selectOne(this.getLimitOneLambdaQueryWrapper()
+        return DataTransformUtil.copyBeanPropertiesWithNull(pradarZkConfigMapper.selectOne(this.getLimitOneLambdaQueryWrapper()
             .eq(PradarZkConfigEntity::getZkPath, zkPath)), PradarZkConfigResult.class);
     }
 
@@ -79,7 +79,7 @@ public class PradarZkConfigDAOImpl implements PradarZkConfigDAO, MPUtil<PradarZk
         if (page.getTotal() == 0) {
             return PagingList.empty();
         }
-        return PagingList.of(CommonUtil.list2list(page.getRecords(), PradarZkConfigResult.class), page.getTotal());
+        return PagingList.of(DataTransformUtil.list2list(page.getRecords(), PradarZkConfigResult.class), page.getTotal());
     }
 
     @Override

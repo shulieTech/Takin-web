@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentConfigDAO;
 import io.shulie.takin.web.data.mapper.mysql.AgentConfigMapper;
 import io.shulie.takin.web.data.model.mysql.AgentConfigEntity;
@@ -60,7 +60,7 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
         AgentConfigEntity entity = agentConfigMapper.selectOne(this.getLimitOneLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getEnKey, enKey)
                 .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.GLOBAL.getVal()));
-        return CommonUtil.copyBeanPropertiesWithNull(entity, AgentConfigDetailResult.class);
+        return DataTransformUtil.copyBeanPropertiesWithNull(entity, AgentConfigDetailResult.class);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
         AgentConfigEntity entity = agentConfigMapper.selectOne(this.getLimitOneLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getZhKey, zhKey)
                 .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.GLOBAL.getVal()));
-        return CommonUtil.copyBeanPropertiesWithNull(entity, AgentConfigDetailResult.class);
+        return DataTransformUtil.copyBeanPropertiesWithNull(entity, AgentConfigDetailResult.class);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
             this.getLambdaQueryWrapper()
                 .in(AgentConfigEntity::getEnKey, enKeyList)
                 .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.GLOBAL.getVal()));
-        return CommonUtil.list2list(entityList, AgentConfigDetailResult.class);
+        return DataTransformUtil.list2list(entityList, AgentConfigDetailResult.class);
     }
 
     @Override
@@ -86,20 +86,20 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
             this.getLambdaQueryWrapper()
                 .in(AgentConfigEntity::getZhKey, zhKeyList)
                 .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.GLOBAL.getVal()));
-        return CommonUtil.list2list(entityList, AgentConfigDetailResult.class);
+        return DataTransformUtil.list2list(entityList, AgentConfigDetailResult.class);
     }
 
     @Override
     public List<AgentConfigDetailResult> getAllGlobalConfig() {
         List<AgentConfigEntity> entityList = agentConfigMapper.selectList(this.getLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getType, AgentConfigTypeEnum.GLOBAL.getVal()));
-        return CommonUtil.list2list(entityList, AgentConfigDetailResult.class);
+        return DataTransformUtil.list2list(entityList, AgentConfigDetailResult.class);
     }
 
     @Override
     public AgentConfigDetailResult findById(Long id) {
         AgentConfigEntity entity = agentConfigMapper.selectById(id);
-        return CommonUtil.copyBeanPropertiesWithNull(entity, AgentConfigDetailResult.class);
+        return DataTransformUtil.copyBeanPropertiesWithNull(entity, AgentConfigDetailResult.class);
     }
 
     @Override
@@ -123,16 +123,14 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
 
     @Override
     public List<AgentConfigDetailResult> listByTypeAndTenantIdAndEnvCode(AgentConfigQueryParam queryParam) {
-        List<AgentConfigEntity> entityList = agentConfigMapper.selectList(this.getLambdaQueryWrapper()
-                .eq(AgentConfigEntity::getTenantId, queryParam.getTenantId())
-                .eq(AgentConfigEntity::getEnvCode, queryParam.getEnvCode())
+        List<AgentConfigEntity> entityList = agentConfigMapper.selectList(this.getTenantAndEnvLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getType, queryParam.getType())
                 .eq(queryParam.getEffectMechanism() != null, AgentConfigEntity::getEffectMechanism,
                     queryParam.getEffectMechanism())
                 .eq(StringUtils.isNotBlank(queryParam.getEnKey()), AgentConfigEntity::getEnKey, queryParam.getEnKey())
                 .le(queryParam.getEffectMinVersionNum() != null, AgentConfigEntity::getEffectMinVersionNum,
                     queryParam.getEffectMinVersionNum()));
-        return CommonUtil.list2list(entityList, AgentConfigDetailResult.class);
+        return DataTransformUtil.list2list(entityList, AgentConfigDetailResult.class);
     }
 
     @Override
@@ -151,7 +149,7 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
                 .le(queryParam.getEffectMinVersionNum() != null, AgentConfigEntity::getEffectMinVersionNum,
                     queryParam.getEffectMinVersionNum())
         );
-        return CommonUtil.list2list(entityList, AgentConfigDetailResult.class);
+        return DataTransformUtil.list2list(entityList, AgentConfigDetailResult.class);
     }
 
     @Override
@@ -170,7 +168,7 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
 
     @Override
     public AgentConfigDetailResult getByEnKeyAndTypeWithTenant(String enKey, Integer type) {
-        return CommonUtil.copyBeanPropertiesWithNull(
+        return DataTransformUtil.copyBeanPropertiesWithNull(
             agentConfigMapper.selectOne(this.getTenantAndEnvLimitOneLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getEnKey, enKey)
                 .eq(AgentConfigEntity::getType, type)), AgentConfigDetailResult.class);
@@ -179,7 +177,7 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
     @Override
     public AgentConfigDetailResult getByEnKeyAndTypeAndProjectNameWithTenant(String enKey, Integer type,
         String projectName) {
-        return CommonUtil.copyBeanPropertiesWithNull(
+        return DataTransformUtil.copyBeanPropertiesWithNull(
             agentConfigMapper.selectOne(this.getTenantAndEnvLimitOneLambdaQueryWrapper()
                 .eq(AgentConfigEntity::getEnKey, enKey)
                 .eq(AgentConfigEntity::getProjectName, projectName)

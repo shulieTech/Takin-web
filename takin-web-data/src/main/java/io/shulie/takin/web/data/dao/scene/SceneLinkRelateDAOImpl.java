@@ -1,6 +1,5 @@
 package io.shulie.takin.web.data.dao.scene;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,7 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowTree;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.mapper.mysql.SceneLinkRelateMapper;
 import io.shulie.takin.web.data.model.mysql.SceneLinkRelateEntity;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateCreateParam;
@@ -33,7 +32,7 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
        if(CollectionUtils.isEmpty(params)) {
            return;
        }
-        List<SceneLinkRelateEntity> entities = CommonUtil.list2list(params,SceneLinkRelateEntity.class);
+        List<SceneLinkRelateEntity> entities = DataTransformUtil.list2list(params,SceneLinkRelateEntity.class);
        this.saveBatch(entities);
     }
 
@@ -98,15 +97,8 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
     @Override
     public List<Long> listBusinessLinkIdsByBusinessFlowId(Long businessFlowId) {
         List<Object> businessLinkObjectIds = this.listObjs(this.getLambdaQueryWrapper()
-            .select(SceneLinkRelateEntity::getBusinessLinkId)
-            .eq(SceneLinkRelateEntity::getSceneId, businessFlowId));
-        if (businessLinkObjectIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return businessLinkObjectIds.stream()
-            .map(businessLinkObjectId -> Long.valueOf(businessLinkObjectId.toString()))
-            .collect(Collectors.toList());
+            .select(SceneLinkRelateEntity::getBusinessLinkId).eq(SceneLinkRelateEntity::getSceneId, businessFlowId));
+        return DataTransformUtil.list2list(businessLinkObjectIds, Long.class);
     }
 
     @Override

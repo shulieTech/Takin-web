@@ -123,13 +123,16 @@ public class AgentConfigDAOImpl extends ServiceImpl<AgentConfigMapper, AgentConf
 
     @Override
     public List<AgentConfigDetailResult> listByTypeAndTenantIdAndEnvCode(AgentConfigQueryParam queryParam) {
-        List<AgentConfigEntity> entityList = agentConfigMapper.selectList(this.getTenantAndEnvLambdaQueryWrapper()
-                .eq(AgentConfigEntity::getType, queryParam.getType())
-                .eq(queryParam.getEffectMechanism() != null, AgentConfigEntity::getEffectMechanism,
-                    queryParam.getEffectMechanism())
-                .eq(StringUtils.isNotBlank(queryParam.getEnKey()), AgentConfigEntity::getEnKey, queryParam.getEnKey())
-                .le(queryParam.getEffectMinVersionNum() != null, AgentConfigEntity::getEffectMinVersionNum,
-                    queryParam.getEffectMinVersionNum()));
+        // 这里的 tenantId, envCode 就是传递的
+        List<AgentConfigEntity> entityList = agentConfigMapper.selectList(this.getLambdaQueryWrapper()
+            .eq(AgentConfigEntity::getTenantId, queryParam.getTenantId())
+            .eq(AgentConfigEntity::getEnvCode, queryParam.getEnvCode())
+            .eq(AgentConfigEntity::getType, queryParam.getType())
+            .eq(queryParam.getEffectMechanism() != null, AgentConfigEntity::getEffectMechanism,
+                queryParam.getEffectMechanism())
+            .eq(StringUtils.isNotBlank(queryParam.getEnKey()), AgentConfigEntity::getEnKey, queryParam.getEnKey())
+            .le(queryParam.getEffectMinVersionNum() != null, AgentConfigEntity::getEffectMinVersionNum,
+                queryParam.getEffectMinVersionNum()));
         return DataTransformUtil.list2list(entityList, AgentConfigDetailResult.class);
     }
 

@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,6 +22,7 @@ import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
@@ -36,6 +38,7 @@ import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityUpdateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
+import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +52,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class ActivityDAOImpl implements ActivityDAO {
+public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTableEntity> {
 
     @Resource
     private LinkManageTableMapper linkManageTableMapper;
@@ -62,33 +65,19 @@ public class ActivityDAOImpl implements ActivityDAO {
 
     @Override
     public List<Long> exists(ActivityExistsQueryParam param) {
-        LambdaQueryWrapper<BusinessLinkManageTableEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.select(
-            BusinessLinkManageTableEntity::getLinkId
-        );
-        if (param.getActivityName() != null) {
-            wrapper.eq(BusinessLinkManageTableEntity::getLinkName, param.getActivityName());
-        }
-        if (param.getServiceName() != null) {
-            wrapper.eq(BusinessLinkManageTableEntity::getEntrace,
-                ActivityUtil.buildEntrance(param.getApplicationName(), param.getMethod(), param.getServiceName(),
-                    param.getRpcType()));
-        }
-        if (StringUtils.isNotBlank(param.getVirtualEntrance())) {
-            wrapper.eq(BusinessLinkManageTableEntity::getEntrace,
-                ActivityUtil.buildVirtualEntrance(param.getVirtualEntrance(), param.getRpcType()));
-        }
-
-        wrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
-        wrapper.eq(BusinessLinkManageTableEntity::getTenantId,WebPluginUtils.traceTenantId());
-        List<BusinessLinkManageTableEntity> businessLinkManageTableEntities = businessLinkManageTableMapper.selectList(
-            wrapper);
-        if (CollectionUtils.isEmpty(businessLinkManageTableEntities)) {
-            return Lists.newArrayList();
-        }
-        return businessLinkManageTableEntities.stream()
-            .map(BusinessLinkManageTableEntity::getLinkId)
-            .collect(Collectors.toList());
+        LambdaQueryWrapper<BusinessLinkManageTableEntity> wrapper = this.getLambdaQueryWrapper()
+            .select(BusinessLinkManageTableEntity::getLinkId)
+            .eq(StrUtil.isNotBlank(param.getActivityName()),
+                BusinessLinkManageTableEntity::getLinkName, param.getActivityName())
+            .eq(StrUtil.isNotBlank(param.getServiceName()),
+                BusinessLinkManageTableEntity::getEntrace, ActivityUtil.buildEntrance(param.getApplicationName(),
+                    param.getMethod(), param.getServiceName(), param.getRpcType()))
+            .eq(StrUtil.isNotBlank(param.getVirtualEntrance()), BusinessLinkManageTableEntity::getEntrace,
+                ActivityUtil.buildVirtualEntrance(param.getVirtualEntrance(), param.getRpcType()))
+            .eq(BusinessLinkManageTableEntity::getIsDeleted, 0)
+            .eq(BusinessLinkManageTableEntity::getTenantId, WebPluginUtils.traceTenantId())
+            .eq(BusinessLinkManageTableEntity::getEnvCode, WebPluginUtils.traceEnvCode());
+        return DataTransformUtil.list2list(businessLinkManageTableMapper.selectObjs(wrapper), Long.class);
     }
 
     @Override

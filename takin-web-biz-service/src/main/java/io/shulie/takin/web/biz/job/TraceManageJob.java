@@ -30,11 +30,16 @@ import org.springframework.stereotype.Component;
 public class TraceManageJob implements SimpleJob {
     @Autowired
     private TraceManageDAO traceManageDAO;
-    public static long timeout = 20 * 1000;
+
+    /**
+     * aka 5 minutes
+     */
+    public static long timeout = 300 * 1000;
 
     @Autowired
     @Qualifier("jobThreadPool")
     private ThreadPoolExecutor jobThreadPool;
+
     @Override
     public void execute(ShardingContext shardingContext) {
 
@@ -78,4 +83,5 @@ public class TraceManageJob implements SimpleJob {
             }
         }
     }
+
 }

@@ -1,13 +1,10 @@
 package io.shulie.takin.web.entrypoint.controller.file;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -17,8 +14,8 @@ import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
 import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
 import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
 import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
-import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -40,7 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequestMapping("/api/file")
-@Api(tags = "文件管理")
+@Api(tags = "接口: 文件管理")
 @Slf4j
 public class FileController {
 
@@ -71,23 +68,18 @@ public class FileController {
     @ApiOperation("|_ 文件下载")
     @GetMapping("/download")
     public void download(@RequestParam("filePath") String filePath, HttpServletResponse response) {
-        try {
-            if (!this.filePathValidate(filePath)) {
-                log.warn("非法下载路径文件，禁止下载：{}", filePath);
-                return;
-            }
-
-            if (!new File(filePath).exists()) {return;}
-
-            ServletOutputStream outputStream = response.getOutputStream();
-            Files.copy(Paths.get(filePath), outputStream);
-            response.setContentType("application/octet-stream");
-            String saveName = filePath.substring(filePath.lastIndexOf("/") + 1);
-            response.setHeader("Content-Disposition",
-                "attachment;filename=" + new String(saveName.getBytes("UTF-8"), "iso-8859-1"));
-        } catch (Exception e) {
-            log.error("文件下载错误: 文件地址: {}, 错误信息: {}", filePath, e.getMessage(), e);
+        if (!this.filePathValidate(filePath)) {
+            log.error("非法下载路径文件，禁止下载：{}", filePath);
+            return;
         }
+
+        File file = new File(filePath);
+        if (!file.exists()) {
+            log.warn("文件不存在，地址：{}", filePath);
+            return;
+        }
+
+        CommonUtil.zeroCopyDownload(file, response);
     }
 
     @PostMapping("/upload")
@@ -131,7 +123,7 @@ public class FileController {
     public void downloadFileByPath(@RequestParam("filePath") String filePath, HttpServletResponse response) {
         this.download(filePath, response);
         // 删除文件
-        FileManagerHelper.deleteFilesByPath(filePath);
+        cn.hutool.core.io.FileUtil.del(filePath);
     }
 
     /**

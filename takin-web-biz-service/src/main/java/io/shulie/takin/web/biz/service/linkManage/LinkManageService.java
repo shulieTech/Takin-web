@@ -88,7 +88,7 @@ public interface LinkManageService {
 
     List<MiddleWareEntity> businessProcessMiddleWares(List<String> ids);
 
-    BusinessFlowDto getBusinessFlowDetail(String id);
+    BusinessFlowDto getBusinessFlowDetail(Long id);
 
     void modifyBusinessFlow(BusinessFlowVo vo) throws Exception;
 

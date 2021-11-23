@@ -20,22 +20,21 @@ import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityNameResponse;
+import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityNameResponse;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -74,7 +73,7 @@ public class LinkManageController {
     )
     public Response<String> deleteScene(@RequestBody SceneManageDeleteReq req) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
-        BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(req.getId().toString());
+        BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(req.getId());
         if (null == dto) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, "该业务流程不存在");
         }
@@ -298,7 +297,7 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response<?> getBusinessFlowDetail(@NotNull String id) {
+    public Response<?> getBusinessFlowDetail(@NotNull Long id) {
         try {
             BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(id);
             return Response.success(dto);

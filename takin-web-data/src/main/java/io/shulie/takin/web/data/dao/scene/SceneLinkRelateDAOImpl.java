@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowTree;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.mapper.mysql.SceneLinkRelateMapper;
 import io.shulie.takin.web.data.model.mysql.SceneLinkRelateEntity;
@@ -106,6 +107,11 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
         return businessLinkObjectIds.stream()
             .map(businessLinkObjectId -> Long.valueOf(businessLinkObjectId.toString()))
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BusinessFlowTree> listRecursion(Long flowId, Long tenantId, String envCode) {
+        return this.getBaseMapper().listRecursion(flowId, tenantId, envCode);
     }
 
 }

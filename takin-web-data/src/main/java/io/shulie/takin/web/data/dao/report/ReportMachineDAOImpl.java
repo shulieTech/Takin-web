@@ -6,7 +6,7 @@ import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.mapper.mysql.ReportMachineMapper;
 import io.shulie.takin.web.data.model.mysql.ReportMachineEntity;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;

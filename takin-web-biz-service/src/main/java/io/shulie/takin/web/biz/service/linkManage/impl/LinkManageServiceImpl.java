@@ -985,11 +985,11 @@ public class LinkManageServiceImpl implements LinkManageService {
     }
 
     @Override
-    public BusinessFlowDto getBusinessFlowDetail(String id) {
+    public BusinessFlowDto getBusinessFlowDetail(Long id) {
         BusinessFlowDto dto = new BusinessFlowDto();
 
         //获取业务流程基本信息
-        Scene scene = tSceneMapper.selectByPrimaryKey(Long.parseLong(id));
+        Scene scene = tSceneMapper.selectByPrimaryKey(id);
         if (Objects.isNull(scene)) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
                     id + "对应的业务流程不存在");
@@ -1000,7 +1000,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         dto.setLevel(scene.getSceneLevel());
         dto.setBusinessProcessName(scene.getSceneName());
 
-        List<SceneLinkRelateResult> relates = sceneLinkRelateDAO.selectBySceneId(Long.parseLong(id));
+        List<SceneLinkRelateResult> relates = sceneLinkRelateDAO.selectBySceneId(id);
         List<ExistBusinessActiveDto> existBusinessActiveIds =
             relates.stream().map(relate ->
             {
@@ -1012,7 +1012,8 @@ public class LinkManageServiceImpl implements LinkManageService {
 
         dto.setExistBusinessActive(existBusinessActiveIds);
 
-        List<BusinessFlowTree> roots = tSceneLinkRelateMapper.findAllRecursion(id,WebPluginUtils.traceTenantId(),WebPluginUtils.traceEnvCode());
+        List<BusinessFlowTree> roots = sceneLinkRelateDAO.listRecursion(id, WebPluginUtils.traceTenantId(),
+            WebPluginUtils.traceEnvCode());
         dto.setRoots(roots);
 
         //中间件信息
@@ -1031,7 +1032,6 @@ public class LinkManageServiceImpl implements LinkManageService {
         }
 
         return dto;
-
     }
 
     @Transactional

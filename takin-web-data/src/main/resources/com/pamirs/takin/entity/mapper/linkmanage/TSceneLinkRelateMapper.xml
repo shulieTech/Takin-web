@@ -15,23 +15,6 @@
         <result column="TENANT_ID" jdbcType="BIGINT" property="tenantId"/>
         <result column="ENV_CODE" jdbcType="VARCHAR" property="envCode"/>
     </resultMap>
-    <resultMap id="recursionMap" type="com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowTree">
-        <result column="FRONT_UUID_KEY" property="key"/>
-        <result column="BUSINESS_LINK_ID" property="id"/>
-        <collection property="children" ofType="com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowTree"
-                    column="{BUSINESS_LINK_ID=BUSINESS_LINK_ID,SCENE_ID=SCENE_ID}"
-                    select="selectByrecuire"></collection>
-    </resultMap>
-
-    <resultMap id="SCENE_NAME_AND_BUSINESSLINKNAME"
-               type="com.pamirs.takin.entity.domain.entity.linkmanage.SceneAndBusinessLink">
-        <result column="SCENE_ID" jdbcType="VARCHAR" property="sceneId"/>
-        <result column="TECH_LINK_ID" jdbcType="VARCHAR" property="techId"/>
-    </resultMap>
-    <sql id="Base_Column_List">
-        ID, ENTRANCE, IS_DELETED, CREATE_TIME, UPDATE_TIME
-    ,BUSINESS_LINK_ID,TECH_LINK_ID,SCENE_ID,PARENT_BUSINESS_LINK_ID
-    </sql>
 
     <insert id="batchInsert" parameterType="java.util.List">
         insert into t_scene_link_relate (ID,
@@ -53,16 +36,5 @@
             #{item.envCode})
         </foreach>
     </insert>
-
-
-    <select id="findAllRecursion" resultMap="recursionMap">
-        select BUSINESS_LINK_ID, FRONT_UUID_KEY, SCENE_ID
-        from t_scene_link_relate
-        where SCENE_ID = #{sceneId}
-          and TENANT_ID = #{tenantId}
-          and ENV_CODE = #{envCode}
-          and IS_DELETED = 0
-          and (PARENT_BUSINESS_LINK_ID = '' or PARENT_BUSINESS_LINK_ID is null)
-    </select>
 
 </mapper>

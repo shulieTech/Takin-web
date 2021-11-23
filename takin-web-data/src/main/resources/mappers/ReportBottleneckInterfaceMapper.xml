@@ -21,4 +21,5 @@
         id, report_id, application_name, sort_no, interface_type, interface_name, tps, rt,
         node_count, error_reqs, bottleneck_weight
     </sql>
+
 </mapper>

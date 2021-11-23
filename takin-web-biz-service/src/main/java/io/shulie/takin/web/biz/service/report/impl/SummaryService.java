@@ -13,19 +13,20 @@ import com.alibaba.fastjson.JSON;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.takin.entity.dao.report.TReportApplicationSummaryMapper;
-import com.pamirs.takin.entity.dao.report.TReportBottleneckInterfaceMapper;
-import com.pamirs.takin.entity.dao.report.TReportMachineMapper;
-import com.pamirs.takin.entity.dao.report.TReportSummaryMapper;
-import com.pamirs.takin.entity.domain.entity.report.ReportApplicationSummary;
-import com.pamirs.takin.entity.domain.entity.report.ReportMachine;
-import com.pamirs.takin.entity.domain.entity.report.ReportSummary;
 import com.pamirs.takin.entity.domain.entity.report.TpsTarget;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
+import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
+import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
+import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
+import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
+import io.shulie.takin.web.data.param.report.ReportApplicationSummaryCreateParam;
+import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
+import io.shulie.takin.web.data.param.report.ReportSummaryCreateParam;
 import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
+import io.shulie.takin.web.data.result.report.ReportSummaryResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -45,19 +46,19 @@ import org.springframework.stereotype.Component;
 public class SummaryService {
 
     @Resource
-    private TReportBottleneckInterfaceMapper tReportBottleneckInterfaceMapper;
+    private ReportBottleneckInterfaceDAO reportBottleneckInterfaceDAO;
 
     @Resource
-    private TReportApplicationSummaryMapper tReportApplicationSummaryMapper;
+    private ReportApplicationSummaryDAO reportApplicationSummaryDAO;
 
     @Autowired
     private ReportService reportService;
 
     @Resource
-    private TReportSummaryMapper tReportSummaryMapper;
+    private ReportSummaryDAO reportSummaryDAO;
 
     @Resource
-    private TReportMachineMapper tReportMachineMapper;
+    private ReportMachineDAO reportMachineDAO;
 
     @Autowired
     private ReportDataCache reportDataCache;
@@ -66,13 +67,12 @@ public class SummaryService {
     private InfluxDatabaseManager influxDatabaseManager;
 
     public void calcApplicationSummary(Long reportId) {
-        List<Map<String, Object>> dataList = tReportMachineMapper.selectCountByReport(reportId);
+        List<Map<String, Object>> dataList = reportMachineDAO.selectCountByReport(reportId);
         if (CollectionUtils.isEmpty(dataList)) {
             return;
         }
-        final String envCode = WebPluginUtils.traceEnvCode();
-        final Long tenantId = WebPluginUtils.traceTenantId();
-        List<ReportApplicationSummary> applications = Lists.newArrayList();
+
+        List<ReportApplicationSummaryCreateParam> applications = Lists.newArrayList();
         for (Map<String, Object> dataMap : dataList) {
             String applicationName = (String)dataMap.get("application_name");
             if (StringUtils.isBlank(applicationName)) {
@@ -81,29 +81,26 @@ public class SummaryService {
             Integer totalCount = convertLong((Long)dataMap.get("count"));
             Integer riskCount = convertBigDecimal((BigDecimal)dataMap.get("riskSum"));
 
-            ReportApplicationSummary application = new ReportApplicationSummary();
+            ReportApplicationSummaryCreateParam application = new ReportApplicationSummaryCreateParam();
             application.setReportId(reportId);
             application.setApplicationName(applicationName);
             application.setMachineTotalCount(totalCount);
             application.setMachineRiskCount(riskCount);
-            application.setEnvCode(envCode);
-            application.setTenantId(tenantId);
             applications.add(application);
         }
         if (CollectionUtils.isEmpty(applications)) {
             return;
         }
-        applications.forEach(tReportApplicationSummaryMapper::insertOrUpdate);
+        applications.forEach(reportApplicationSummaryDAO::insertOrUpdate);
     }
 
     public void calcReportSummay(Long reportId) {
-        Integer bottleneckInterfaceCount = convertLong(
-            tReportBottleneckInterfaceMapper.selectCountByReportId(reportId));
+        Integer bottleneckInterfaceCount = convertLong(reportBottleneckInterfaceDAO.selectCountByReportId(reportId));
 
         Integer appCount = 0;
         Integer totalCount = 0;
         Integer riskCount = 0;
-        Map<String, Object> countMap = tReportApplicationSummaryMapper.selectCountByReportId(reportId);
+        Map<String, Object> countMap = reportApplicationSummaryDAO.selectCountByReportId(reportId);
         if (MapUtils.isNotEmpty(countMap)) {
             appCount = convertLong((Long)countMap.get("count"));
             totalCount = convertBigDecimal((BigDecimal)countMap.get("totalSum"));
@@ -123,7 +120,7 @@ public class SummaryService {
         businessCount = businessCount != null ? businessCount : 0;
         passBusinessCount = passBusinessCount != null ? passBusinessCount : 0;
 
-        ReportSummary reportSummary = new ReportSummary();
+        ReportSummaryCreateParam reportSummary = new ReportSummaryCreateParam();
         reportSummary.setReportId(reportId);
         reportSummary.setBottleneckInterfaceCount(bottleneckInterfaceCount);
         reportSummary.setRiskMachineCount(riskCount);
@@ -132,12 +129,11 @@ public class SummaryService {
         reportSummary.setApplicationCount(appCount);
         reportSummary.setMachineCount(totalCount);
         reportSummary.setWarnCount(warnCount);
-        reportSummary.setEnvCode(WebPluginUtils.traceEnvCode());
-        reportSummary.setTenantId(WebPluginUtils.traceTenantId());
-        ReportSummary summary = tReportSummaryMapper.selectOneByReportId(reportId);
-        // todo 临时方案
+
+        ReportSummaryResult summary = reportSummaryDAO.selectOneByReportId(reportId);
+
         if (summary == null) {
-            tReportSummaryMapper.insert(reportSummary);
+            reportMachineDAO.insert(reportSummary);
         }
         log.info("Build ReportSummary Success, reportId={}", reportId);
     }
@@ -188,12 +184,12 @@ public class SummaryService {
                 if (array == null) {
                     continue;
                 }
-                ReportMachine reportMachine = new ReportMachine();
+                ReportMachineUpdateParam reportMachine = new ReportMachineUpdateParam();
                 reportMachine.setReportId(reportId);
                 reportMachine.setApplicationName(applicationName);
                 reportMachine.setMachineIp(host);
                 reportMachine.setMachineTpsTargetConfig(JSON.toJSONString(array));
-                tReportMachineMapper.updateTpsTargetConfig(reportMachine);
+                reportMachineDAO.updateTpsTargetConfig(reportMachine);
             }
         }
     }

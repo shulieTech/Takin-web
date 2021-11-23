@@ -19,12 +19,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.pamirs.takin.common.zk.FormatUtils;
-import com.pamirs.takin.entity.dao.report.TReportBottleneckInterfaceMapper;
-import com.pamirs.takin.entity.dao.report.TReportMachineMapper;
+
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.linkmanage.structure.Category;
-import com.pamirs.takin.entity.domain.entity.report.ReportBottleneckInterface;
-import com.pamirs.takin.entity.domain.entity.report.ReportMachine;
+
 import com.pamirs.takin.entity.domain.risk.BaseAppVo;
 import com.pamirs.takin.entity.domain.risk.LinkCount;
 import com.pamirs.takin.entity.domain.risk.Metrices;
@@ -41,15 +39,20 @@ import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
 import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
+import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
+import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.baseserver.BaseServerParam;
 import io.shulie.takin.web.data.param.baseserver.InfluxAvgParam;
 import io.shulie.takin.web.data.param.baseserver.ProcessBaseRiskParam;
 import io.shulie.takin.web.data.param.baseserver.TimeMetricsDetailParam;
 import io.shulie.takin.web.data.param.baseserver.TimeMetricsParam;
+import io.shulie.takin.web.data.param.report.ReportBottleneckInterfaceCreateParam;
+import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
 import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
 import io.shulie.takin.web.data.result.baseserver.InfluxAvgResult;
 import io.shulie.takin.web.data.result.baseserver.LinkDetailResult;
+import io.shulie.takin.web.data.result.report.ReportMachineResult;
 import io.shulie.takin.web.data.result.risk.BaseRiskResult;
 import io.shulie.takin.web.data.result.risk.LinkDataResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
@@ -87,9 +90,9 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
     private final ThreadLocal<Integer> totalCountLocal = new ThreadLocal<>();
     private final ThreadLocal<Double> firstRt = new ThreadLocal<>();
     @Autowired
-    private TReportMachineMapper reportMachineMapper;
+    private ReportMachineDAO reportMachineDAO;
     @Autowired
-    private TReportBottleneckInterfaceMapper reportBottleneckInterfaceMapper;
+    private ReportBottleneckInterfaceDAO reportBottleneckInterfaceDAO;
 
     @Autowired
     private InfluxDatabaseManager influxDatabaseManager;
@@ -131,8 +134,6 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         ApplicationNodeQueryParam param = new ApplicationNodeQueryParam();
         param.setApplicationNames(appNameList);
         List<String> onlineAgentIds = applicationNodeDAO.getOnlineAgentIds(param);
-        final Long tenantId = WebPluginUtils.traceTenantId();
-        final String envCode = WebPluginUtils.traceEnvCode();
         appNameList.forEach(appName -> {
             Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(sTime, eTime, appName));
             if (CollectionUtils.isNotEmpty(baseList)) {
@@ -162,7 +163,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 
             Map<String, List<BaseAppVo>> appMap = baseAppVoList.stream().collect(Collectors.groupingBy(this::fetchApp));
 
-            List<ReportMachine> insertList = Lists.newArrayList();
+            List<ReportMachineUpdateParam> insertList = Lists.newArrayList();
             appMap.values().forEach(value -> {
 
                 if(CollectionUtils.isEmpty(value)) {
@@ -176,7 +177,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     return true;
                 }).collect(Collectors.toList()).get(0);
                 if (baseAppVo != null) {
-                    ReportMachine tmp = new ReportMachine();
+                    ReportMachineUpdateParam tmp = new ReportMachineUpdateParam();
                     tmp.setReportId(baseAppVo.getReportId());
                     tmp.setMachineIp(baseAppVo.getAppIp());
                     tmp.setApplicationName(baseAppVo.getAppName());
@@ -194,16 +195,12 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     baseAppVo.setReportId(null);
                     baseAppVo.setAgentIp(null);
                     tmp.setMachineBaseConfig(JSON.toJSONString(baseAppVo));
-
-                    // 租户
-                    tmp.setEnvCode(envCode);
-                    tmp.setTenantId(tenantId);
                     insertList.add(tmp);
                 }
             });
             if (CollectionUtils.isNotEmpty(insertList)) {
                 // machineTpsTargetConfig 指标信息不更新
-                insertList.forEach(reportMachineMapper::insertOrUpdate);
+                insertList.forEach(reportMachineDAO::insertOrUpdate);
             }
         }
     }
@@ -221,13 +218,13 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 
         //更新机器风险信息
         riskVoList.forEach(vo -> {
-            ReportMachine reportMachine = new ReportMachine();
+            ReportMachineUpdateParam reportMachine = new ReportMachineUpdateParam();
             reportMachine.setReportId(vo.getReportId());
             reportMachine.setApplicationName(vo.getAppName());
             reportMachine.setMachineIp(vo.getAppIp());
             reportMachine.setRiskFlag(1);
             reportMachine.setRiskContent(vo.getContent());
-            reportMachineMapper.updateRiskContent(reportMachine);
+            reportMachineDAO.updateRiskContent(reportMachine);
         });
     }
 
@@ -338,7 +335,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             return 0;
         }));
         //批量入库
-        List<ReportBottleneckInterface> recordList = Lists.newArrayList();
+        List<ReportBottleneckInterfaceCreateParam> recordList = Lists.newArrayList();
         Set<String> sets = Sets.newHashSet();
         int sortNo = 1;
         for (int i = 0; i < bottleneckList.size(); i++) {
@@ -348,7 +345,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                 return;
             }
             sets.add(value);
-            ReportBottleneckInterface record = new ReportBottleneckInterface();
+            ReportBottleneckInterfaceCreateParam record = new ReportBottleneckInterfaceCreateParam();
             record.setReportId(reportId);
             record.setSortNo(sortNo);
             record.setApplicationName(data.getAppName());
@@ -362,7 +359,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             recordList.add(record);
             sortNo++;
         }
-        reportBottleneckInterfaceMapper.insertBatch(recordList);
+        reportBottleneckInterfaceDAO.insertBatch(recordList);
     }
 
     /**
@@ -939,7 +936,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         return vo.getReportId() + vo.getAppIp() + vo.getAppName();
     }
 
-    private String fetchMachine(ReportMachine vo) {
+    private String fetchMachine(ReportMachineResult vo) {
         return vo.getReportId() + vo.getMachineIp() + vo.getApplicationName();
     }
 }

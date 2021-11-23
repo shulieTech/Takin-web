@@ -25,7 +25,7 @@ public interface TApplicationMntDao {
      * @return 大于0表示该应用已存在, 否则不存在
      * @author shulie
      */
-    public int applicationExist(@Param("applicationName") String applicationName);
+    int applicationExist(@Param("applicationName") String applicationName);
 
     int applicationExistByAppName(@Param("applicationName") String applicationName);
 
@@ -45,7 +45,7 @@ public interface TApplicationMntDao {
      * @param tApplicationMnt 应用对象
      * @author shulie
      */
-    public void addApplication(TApplicationMnt tApplicationMnt);
+    void addApplication(TApplicationMnt tApplicationMnt);
 
     /**
      * 说明: 查询应用信息接口

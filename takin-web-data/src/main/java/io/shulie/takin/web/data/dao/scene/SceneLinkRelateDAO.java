@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.dao.scene;
 import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowTree;
 import io.shulie.takin.web.data.model.mysql.SceneLinkRelateEntity;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateCreateParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
@@ -30,10 +31,11 @@ public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
 
     /**
      * 根据sceneId 查询链路
+     *
      * @param sceneId
      * @return
      */
-    List<SceneLinkRelateResult> selectBySceneId( Long sceneId);
+    List<SceneLinkRelateResult> selectBySceneId(Long sceneId);
 
     /**
      * 返回业务活动个数
@@ -71,5 +73,15 @@ public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
      * @return 业务活动ids
      */
     List<Long> listBusinessLinkIdsByBusinessFlowId(Long businessFlowId);
+
+    /**
+     * 业务id, frontUuidKey, flowId
+     *
+     * @param flowId 业务流程id
+     * @param tenantId 租户id
+     * @param envCode 环境表示
+     * @return tree列表
+     */
+    List<BusinessFlowTree> listRecursion(Long flowId, Long tenantId, String envCode);
 
 }

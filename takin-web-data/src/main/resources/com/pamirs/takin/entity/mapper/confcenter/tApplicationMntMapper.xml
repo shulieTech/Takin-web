@@ -268,13 +268,12 @@
     </select>
 
     <select id="queryApplicationInfoByNameAndTenant" resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
-        select
-        <include refid="Base_Column_List"/>
-        from t_application_mnt where
-        APPLICATION_NAME=#{applicationName}
+        select <include refid="Base_Column_List"/>
+        from t_application_mnt where APPLICATION_NAME=#{applicationName}
         <if test="tenantId != null">
             and tenant_id=#{tenantId}
         </if>
+        limit 1
     </select>
 
     <!-- 根据应用ID批量删除应用信息 -->
@@ -520,23 +519,6 @@
         <include refid="Base_Column_List"/>
         from t_application_mnt where
         `access_status` in
-        <foreach collection="statusList" item="status" open="(" close=")" separator=",">
-            #{status}
-        </foreach>
-    </select>
-
-    <select id="getAllApplicationByStatusAndTenant"
-            resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
-        select
-        <include refid="Base_Column_List"/>
-        from t_application_mnt where 1=1
-        <if test="tenantId != null">
-            and tenant_id =  #{tenantId}
-        </if>
-        <if test="envCode != null">
-            and env_code =  #{envCode}
-        </if>
-        and `access_status` in
         <foreach collection="statusList" item="status" open="(" close=")" separator=",">
             #{status}
         </foreach>

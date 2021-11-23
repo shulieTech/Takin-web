@@ -12,6 +12,7 @@ import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -68,13 +69,15 @@ public class FinishReportJob implements SimpleJob {
                 // 开始数据层分片
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     // 根据环境 分线程
-                    ext.getEnvs().forEach(e ->
+                    for (TenantEnv e : ext.getEnvs()) {
+                        final TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(
+                            ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(), ext.getTenantCode(),
+                            ContextSourceEnum.JOB.getCode());
                         jobThreadPool.execute(() -> {
-                            TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),
-                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode());
                             this.finishReport(commonExt);
-                            WebPluginUtils.removeTraceContext();
-                        }));
+                        });
+                    }
+
                 }
             }
         }
@@ -82,7 +85,8 @@ public class FinishReportJob implements SimpleJob {
     }
 
     private void finishReport(TenantCommonExt commonExt) {
-        List<Long> reportIds = reportService.queryListRunningReport();
+        WebPluginUtils.setTraceTenantContext(commonExt);
+        List<Long> reportIds = reportTaskService.getRunningReport();
         if (CollectionUtils.isEmpty(reportIds)){
             log.warn("暂无压测中的报告！");
             return;

@@ -464,47 +464,51 @@ ALTER TABLE t_mq_config_template MODIFY COLUMN CUSTOMER_ID bigint(20) NULL DEFAU
 -- 兮曦 --
 ALTER TABLE e_patrol_activity_assert ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_activity_assert ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE e_patrol_activity_assert ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+alter table e_patrol_activity_assert ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 ALTER TABLE e_patrol_board ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_board ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE e_patrol_board ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE e_patrol_board modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
+alter table e_patrol_board add column `user_id` bigint(20) DEFAULT NULL COMMENT '用户id';
+alter table e_patrol_board ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+alter table e_patrol_board modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 
 ALTER TABLE e_patrol_board_scene ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_board_scene ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE e_patrol_board_scene ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+alter table e_patrol_board_scene ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 ALTER TABLE e_patrol_exception ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_exception ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE e_patrol_exception ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+alter table e_patrol_exception add column `user_id` bigint(20) DEFAULT NULL COMMENT '用户id';
+alter table e_patrol_exception ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 ALTER TABLE e_patrol_exception_config ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_exception_config ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE e_patrol_exception_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE e_patrol_exception_config modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
+alter table e_patrol_exception_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+alter table e_patrol_exception_config modify column `customer_id` bigint(20) DEFAULT NULL COMMENT '租户id(已废弃)';
 ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `tenant_id`, `env_code`, `type_value`,`level_value` ) USING BTREE;
 
 ALTER TABLE e_patrol_exception_notice_config ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_exception_notice_config ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE e_patrol_exception_notice_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+alter table e_patrol_exception_notice_config add column `user_id` bigint(20) DEFAULT NULL COMMENT '用户id';
+alter table e_patrol_exception_notice_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 ALTER TABLE e_patrol_exception_status_change_log ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_exception_status_change_log ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE e_patrol_exception_status_change_log ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+alter table e_patrol_exception_status_change_log ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 ALTER TABLE e_patrol_scene ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_scene ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE e_patrol_scene ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+alter table e_patrol_scene add column `user_id` bigint(20) DEFAULT NULL COMMENT '用户id';
+alter table e_patrol_scene ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE e_patrol_scene ADD COLUMN tenant_app_key varchar(512) NOT NULL COMMENT '租户key 唯一，同时也是userappkey';
 
 ALTER TABLE e_patrol_scene_chain ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_scene_chain ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE e_patrol_scene_chain ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+alter table e_patrol_scene_chain ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 
 ALTER TABLE e_patrol_scene_check ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1';
 ALTER TABLE e_patrol_scene_check ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识' ;
-ALTER TABLE e_patrol_scene_check ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+alter table e_patrol_scene_check ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 -- 兮曦 --
 -- DML开始
 BEGIN;

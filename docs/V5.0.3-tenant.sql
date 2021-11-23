@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_config`
     ) ENGINE = InnoDB;
 
 
-DROP TABLE t_base_config;
+DROP TABLE t_base_config IF EXISTS;
 CREATE TABLE `t_base_config` (
      `CONFIG_CODE` varchar(64) NOT NULL COMMENT '配置编码',
      `CONFIG_VALUE` longtext NOT NULL COMMENT '配置值',
@@ -82,6 +82,21 @@ ALTER TABLE t_app_middleware_info
 ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1',
 ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识';
 
+-- 清理无用数据
+DELETE FROM t_app_remote_call
+WHERE type = 0 OR id NOT IN (
+    SELECT t.id FROM(
+        SELECT MIN( id ) AS id FROM t_app_remote_call
+        GROUP BY
+            APP_NAME,
+            interface_name,
+            interface_type,
+            APPLICATION_ID,
+            interface_type,
+            mock_return_value,
+            type
+    ) t
+);
 ALTER TABLE t_app_remote_call
 ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1',
 ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识';
@@ -249,6 +264,8 @@ ALTER TABLE `t_performance_thread_data`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 
+-- 性能分析数据全部删除就行 无需订正
+DELETE FROM t_performance_thread_stack_data;
 ALTER TABLE `t_performance_thread_stack_data`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
@@ -260,6 +277,7 @@ ALTER TABLE `t_pessure_test_task_activity_config`
 ALTER TABLE `t_application_ds_manage` MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 ALTER TABLE `t_application_mnt` MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 
+DROP VIEW IF EXISTS APPLICATION_VIEW;
 CREATE VIEW APPLICATION_VIEW AS
 SELECT APPLICATION_ID,APPLICATION_NAME,tenant_id AS TENANT_ID,env_code as ENV_CODE,info.key AS TENANTAPPKEY
 FROM t_application_mnt app
@@ -547,6 +565,15 @@ VALUES (510, NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, 
 COMMIT;
 
 -- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_stack_info
+-- 方案1：
+-- DELETE FROM t_fast_debug_stack_info WHERE id NOT IN (
+--     SELECT * FROM (
+--       SELECT t.id
+--       FROM t_fast_debug_stack_info t
+--                JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
+--   )tmp
+-- )
+-- 方案2
 -- 1. 创建临时表
 -- CREATE TABLE IF NOT EXISTS `tmp_stack_info` (
 --     `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -578,6 +605,15 @@ COMMIT;
 -- RENAME TABLE tmp_stack_info TO t_fast_debug_stack_info;
 
 -- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_machine_performance
+-- 方案1：
+-- DELETE FROM t_fast_debug_machine_performance WHERE id NOT IN (
+--     SELECT * FROM (
+--           SELECT t.id
+--           FROM t_fast_debug_machine_performance t
+--           JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
+--       )tmp
+-- )
+-- 方案2：
 -- 1. 创建临时表
 -- CREATE TABLE IF NOT EXISTS `tmp_machine` (
 --     `id` bigint(20) NOT NULL AUTO_INCREMENT,

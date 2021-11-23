@@ -367,9 +367,16 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
         return PagingList.of(listResList, resultPage.getTotal());
     }
 
+//    @Override
+//    public List<PluginLibraryDetailResult> list(List<Long> pluginIds) {
+//        return pluginLibraryDAO.list(pluginIds);
+//    }
+
+
     @Override
-    public List<PluginLibraryDetailResult> list(List<Long> pluginIds) {
-        return pluginLibraryDAO.list(pluginIds);
+    public List<PluginLibraryDetailResult> list(List<Map<String, String>> pluginInfo) {
+        //todo nf
+        return null;
     }
 
     @Override

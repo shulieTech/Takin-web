@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.dao.agentupgradeonline.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -131,17 +132,24 @@ public class PluginLibraryDAOImpl extends ServiceImpl<PluginLibraryMapper, Plugi
     }
 
 
-    @Override
-    public List<PluginLibraryDetailResult> list(List<Long> pluginIds) {
-        List<PluginLibraryEntity> entityList = pluginLibraryMapper.selectList(
-                this.getLambdaQueryWrapper()
-                        .in(PluginLibraryEntity::getId, pluginIds)
-        );
-        if (CollectionUtils.isEmpty(entityList)) {
-            return Collections.emptyList();
-        }
+//    @Override
+//    public List<PluginLibraryDetailResult> list(List<Long> pluginIds) {
+//        List<PluginLibraryEntity> entityList = pluginLibraryMapper.selectList(
+//                this.getLambdaQueryWrapper()
+//                        .in(PluginLibraryEntity::getId, pluginIds)
+//        );
+//        if (CollectionUtils.isEmpty(entityList)) {
+//            return Collections.emptyList();
+//        }
+//
+//        return CommonUtil.list2list(entityList, PluginLibraryDetailResult.class);
+//    }
 
-        return CommonUtil.list2list(entityList, PluginLibraryDetailResult.class);
+
+    @Override
+    public List<PluginLibraryDetailResult> list(List<Map<String, String>> pluginInfos) {
+        pluginInfos.forEach(pluginInfo );
+        return null;
     }
 }
 

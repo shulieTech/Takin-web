@@ -50,7 +50,7 @@ public class ApplicationPluginUpgradeRefDAOImpl extends ServiceImpl<ApplicationP
     @Override
     public List<ApplicationPluginUpgradeRefDetailResult> getList(Long pluginId) {
         LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
-        queryWrapper.eq(ApplicationPluginUpgradeRefEntity::getPluginId,pluginId);
+        queryWrapper.eq(ApplicationPluginUpgradeRefEntity::getId,pluginId);
         return this.convertVos(this.list(queryWrapper));
     }
 

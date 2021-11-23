@@ -4,6 +4,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import io.shulie.takin.web.biz.service.application.IPluginDownLoadPathProcess;
 import io.shulie.takin.web.common.enums.application.ApplicationAgentPathTypeEnum;
 import io.shulie.takin.web.data.model.mysql.ApplicationPluginDownloadPathEntity;
@@ -20,10 +21,11 @@ public class FTPPathProcess implements IPluginDownLoadPathProcess {
 
     @Override
     public <T extends ApplicationPluginDownloadPathEntity> T encrypt(T param) {
+
         FTPContext ftpContext = Convert.convert(FTPContext.class, param.getContext());
         byte[] encoded  =  SecureUtil.generateKey(SymmetricAlgorithm.AES.getValue()).getEncoded();
-        String encryptPwd = SecureUtil.aes(encoded).encryptHex(ftpContext.getPassword());
-        ftpContext.setPassword(encryptPwd);
+        String encryptPwd = SecureUtil.aes(encoded).encryptHex(ftpContext.getPasswd());
+        ftpContext.setPasswd(encryptPwd);
         param.setSalt(Arrays.toString(encoded));
         param.setContext(JSON.toJSONString(ftpContext));
         return param;
@@ -35,25 +37,25 @@ public class FTPPathProcess implements IPluginDownLoadPathProcess {
     }
 
     static class FTPContext{
-        private String ip;
-        private String port;
+        private String ftpHost;
+        private Integer ftpPort;
         private String username;
-        private String password;
+        private String passwd;
 
-        public String getIp() {
-            return ip;
+        public String getFtpHost() {
+            return ftpHost;
         }
 
-        public void setIp(String ip) {
-            this.ip = ip;
+        public void setFtpHost(String ftpHost) {
+            this.ftpHost = ftpHost;
         }
 
-        public String getPort() {
-            return port;
+        public Integer getFtpPort() {
+            return ftpPort;
         }
 
-        public void setPort(String port) {
-            this.port = port;
+        public void setFtpPort(Integer ftpPort) {
+            this.ftpPort = ftpPort;
         }
 
         public String getUsername() {
@@ -64,12 +66,26 @@ public class FTPPathProcess implements IPluginDownLoadPathProcess {
             this.username = username;
         }
 
-        public String getPassword() {
-            return password;
+        public String getPasswd() {
+            return passwd;
         }
 
-        public void setPassword(String password) {
-            this.password = password;
+        public void setPasswd(String passwd) {
+            this.passwd = passwd;
         }
+    }
+
+    public static void main(String[] args) {
+        String context = "{\"ftpHost\":\"192.168.1.56\",\"ftpPort\":21,\"passwd\":\"test@shulie2021\",\"username\":\"root\"}";
+        FTPContext ftpContext = JSONObject.parseObject(context, FTPContext.class);
+//        FTPContext ftpContext = Convert.convert(FTPContext.class,context);
+        byte[] encoded  =  SecureUtil.generateKey(SymmetricAlgorithm.AES.getValue()).getEncoded();
+        String encryptPwd = SecureUtil.aes(encoded).encryptHex(ftpContext.getPasswd());
+        ftpContext.setPasswd(encryptPwd);
+        System.out.println(JSON.toJSONString(ftpContext));
+        System.out.println(encoded.toString());
+        //解密
+        String s = SecureUtil.aes(encoded).decryptStr(encryptPwd);
+        System.out.println(s);
     }
 }

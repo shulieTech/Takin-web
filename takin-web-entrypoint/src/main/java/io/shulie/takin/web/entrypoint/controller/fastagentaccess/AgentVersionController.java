@@ -155,7 +155,7 @@ public class AgentVersionController {
     }
 
     @ApiOperation("获取探针列表数据")
-    @GetMapping("/list")
+    @GetMapping("/list/new")
     public PagingList<AgentInfoListResponse> agentBaseList(AgentInfoListQueryRequest queryRequest) {
         return agentVersionService.getList(queryRequest);
     }

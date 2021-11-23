@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.dao.agentupgradeonline;
 
 import java.util.List;
+import java.util.Map;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreatePluginLibraryParam;
@@ -79,7 +80,7 @@ public interface PluginLibraryDAO {
      */
     List<PluginLibraryDetailResult> queryMaxVersionPlugin(Integer pluginType);
 
-    List<PluginLibraryDetailResult> list(List<Long> pluginIds);
+    List<PluginLibraryDetailResult> list(List<Map<String,String>> pluginInfos);
 
 
 }

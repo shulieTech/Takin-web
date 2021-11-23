@@ -616,8 +616,11 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
         appId2UpgradeBatch.forEach((k, v) -> {
             List<ApplicationPluginUpgradeRefDetailResult> upgradeRefs = pluginUpgradeRefService.getList(v);
-            List<Long> pluginIds = CollStreamUtil.toList(upgradeRefs, ApplicationPluginUpgradeRefDetailResult::getPluginId);
-            List<PluginLibraryDetailResult> plugins = pluginLibraryService.list(pluginIds);
+
+//            List<Long> pluginIds = CollStreamUtil.toList(upgradeRefs, ApplicationPluginUpgradeRefDetailResult::getId);
+            //todo nf
+            List<Map<String,String>> pluginInfo = new ArrayList<>();
+            List<PluginLibraryDetailResult> plugins = pluginLibraryService.list(pluginInfo);
             appId2Plugins.put(k, plugins);
         });
         return appId2Plugins;

@@ -50,6 +50,7 @@ public class ApplicationAgentPathTypeServiceImpl implements ApplicationAgentPath
         }
         ApplicationPluginPathDetailResponse response = Convert.convert(ApplicationPluginPathDetailResponse.class, result );
         response.setPathType(result.getPathType().toString());
+        response.setEditable(ApplicationAgentPathValidStatusEnum.CHECK_FAILED.getVal().equals(result.getValidStatus())?0:1);
         return  Response.success(response);
     }
 

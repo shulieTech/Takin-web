@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.pojo.response.application;
 
-import io.shulie.takin.common.beans.component.SelectVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -28,6 +27,9 @@ public class ApplicationPluginPathDetailResponse implements Serializable {
 
     @ApiModelProperty("配置内容")
     private String context;
+
+    @ApiModelProperty("是否可编辑0：可编辑，1：不可编辑")
+    private Integer editable = 1;
 
 
 }

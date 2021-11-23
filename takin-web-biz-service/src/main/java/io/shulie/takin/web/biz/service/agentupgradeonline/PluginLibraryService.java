@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.agentupgradeonline;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentLibraryCreateRequest;
@@ -68,7 +69,13 @@ public interface PluginLibraryService {
      */
     PagingList<PluginLibraryListResponse> list(PluginLibraryListQueryRequest query);
 
-    List<PluginLibraryDetailResult> list(List<Long> pluginIds);
+    /**
+     * Map<pluginName,pluginVersion>
+     * @param pluginInfo
+     * @return
+     */
+    List<PluginLibraryDetailResult> list(List<Map<String,String>> pluginInfo);
+
 
     /**
      * 查询所有的插件列表

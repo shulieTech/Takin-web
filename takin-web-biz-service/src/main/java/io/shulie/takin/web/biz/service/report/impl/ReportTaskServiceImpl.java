@@ -81,8 +81,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         try {
             String lockKey = String.format("finishReportJob:%s", reportId);
             if (!redisClientUtils.lock(lockKey, "1")) {
+                log.info("report is locked! reportId="+reportId);
                 return;
             }
+            log.info("finishReport start reportId="+reportId);
 //            if (RUNNINT.get()) {
 //                return;
 //            }
@@ -157,6 +159,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 //压测结束，生成压测报告异常，解锁报告
                 reportService.unLockReport(reportId);
                 redisClientUtils.unlock(lockKey, "0");
+                log.info("finishReport end reportId="+reportId);
             }
         } catch (Exception e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());

@@ -6,8 +6,8 @@ import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
-import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.mapper.mysql.ReportMachineMapper;
 import io.shulie.takin.web.data.model.mysql.ReportMachineEntity;
 import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
@@ -66,7 +66,7 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
         if(CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }
-        return CommonUtil.list2list(list,ReportMachineResult.class);
+        return DataTransformUtil.list2list(list,ReportMachineResult.class);
     }
 
     /**
@@ -87,7 +87,7 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
         if(CollectionUtils.isEmpty(list)) {
             return null;
         }
-        return CommonUtil.list2list(list,ReportMachineResult.class).get(0);
+        return DataTransformUtil.list2list(list,ReportMachineResult.class).get(0);
     }
 
     /**
@@ -107,7 +107,7 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
         if(CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }
-        return CommonUtil.list2list(list,ReportMachineResult.class);
+        return DataTransformUtil.list2list(list,ReportMachineResult.class);
     }
 
     /**

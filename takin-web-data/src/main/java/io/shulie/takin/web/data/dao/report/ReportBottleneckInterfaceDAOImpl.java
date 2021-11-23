@@ -5,8 +5,8 @@ import java.util.List;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
-import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.mapper.mysql.ReportBottleneckInterfaceMapper;
 import io.shulie.takin.web.data.model.mysql.ReportBottleneckInterfaceEntity;
 import io.shulie.takin.web.data.param.report.ReportBottleneckInterfaceCreateParam;
@@ -27,7 +27,7 @@ public class ReportBottleneckInterfaceDAOImpl extends ServiceImpl<ReportBottlene
     implements ReportBottleneckInterfaceDAO, MPUtil<ReportBottleneckInterfaceEntity> {
     @Override
     public void insertBatch(List<ReportBottleneckInterfaceCreateParam> params) {
-       List<ReportBottleneckInterfaceEntity> entities = CommonUtil.list2list(params,ReportBottleneckInterfaceEntity.class);
+       List<ReportBottleneckInterfaceEntity> entities = DataTransformUtil.list2list(params,ReportBottleneckInterfaceEntity.class);
        this.saveBatch(entities);
     }
 
@@ -49,7 +49,7 @@ public class ReportBottleneckInterfaceDAOImpl extends ServiceImpl<ReportBottlene
         if(CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }
-        return CommonUtil.list2list(list, ReportBottleneckInterfaceResult.class);
+        return DataTransformUtil.list2list(list, ReportBottleneckInterfaceResult.class);
     }
 
     @Override

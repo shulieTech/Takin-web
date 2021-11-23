@@ -36,7 +36,7 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.InstanceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.LibraryDTO;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
@@ -459,7 +459,7 @@ public class ApplicationDAOImpl
         commonExts.forEach(ext -> {
             List<ApplicationMntEntity> entities = applicationMntMapper.getAllTenantApp(ext);
             if (!entities.isEmpty()) {
-                detailResults.addAll(CommonUtil.list2list(entities,ApplicationDetailResult.class));
+                detailResults.addAll(DataTransformUtil.list2list(entities,ApplicationDetailResult.class));
             }
         });
         return detailResults;

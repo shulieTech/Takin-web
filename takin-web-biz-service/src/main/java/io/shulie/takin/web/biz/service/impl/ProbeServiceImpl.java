@@ -31,6 +31,7 @@ import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.ProbeDAO;
 import io.shulie.takin.web.data.param.probe.CreateProbeParam;
 import io.shulie.takin.web.data.param.probe.UpdateProbeParam;
@@ -71,7 +72,7 @@ public class ProbeServiceImpl implements ProbeService, ProbeConstants, AppConsta
     public PagingList<ProbeListOutput> pageProbe(PageBaseDTO pageDTO) {
         PagingList<ProbeListResult> resultPage = probeDAO.pageProbe(pageDTO);
         return resultPage.getTotal() == 0 ? PagingList.empty()
-            : PagingList.of(CommonUtil.list2list(resultPage.getList(), ProbeListOutput.class), resultPage.getTotal());
+            : PagingList.of(DataTransformUtil.list2list(resultPage.getList(), ProbeListOutput.class), resultPage.getTotal());
     }
 
     @Override

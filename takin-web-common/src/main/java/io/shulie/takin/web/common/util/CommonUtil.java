@@ -6,9 +6,7 @@ import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
@@ -23,8 +21,6 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.BeanUtils;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -34,8 +30,6 @@ import org.springframework.util.StringUtils;
  * @date 2021/6/3 4:43 下午
  */
 public class CommonUtil implements AppConstants {
-
-
 
     /**
      * 获得 zk 租户, 环境隔离后的路径
@@ -91,20 +85,6 @@ public class CommonUtil implements AppConstants {
      */
     public static String getZkNameSpace(TenantCommonExt commonExt) {
         return commonExt != null ? CommonUtil.getZkTenantAndEnvPath(APP,commonExt): Constants.DEFAULT_NAMESPACE;
-    }
-
-    /**
-     * 按照Bean对象属性创建对应的Class对象，并忽略某些属性
-     * 如果源头bean为null, 则吐出的也是null
-     *
-     * @param <T>              对象类型
-     * @param source           源Bean对象
-     * @param tClass           目标Class
-     * @param ignoreProperties 不拷贝的的属性列表
-     * @return 目标对象
-     */
-    public static <T> T copyBeanPropertiesWithNull(Object source, Class<T> tClass, String... ignoreProperties) {
-        return source == null ? null : BeanUtil.copyProperties(source, tClass, ignoreProperties);
     }
 
     /**
@@ -198,54 +178,6 @@ public class CommonUtil implements AppConstants {
     }
 
     /**
-     * 一个象的list 转 另一个对象的list
-     * 适合两者的字段名称及类型, 都一样
-     * 使用 json 方式
-     *
-     * 要转换的类, 需要有无参构造器
-     *
-     * 100000 数据, 花费时间 1622712527764
-     * 数据越多, 此方法愈快一些,
-     * stream 方法加了 try/catch 是一部分原因, newInstance 可能也是一部分原因
-     *
-     * @param sourceList  源list
-     * @param targetClazz 目标对象类对象
-     * @param <T>         要转换的类
-     * @return 另一个对象的list
-     */
-    public static <T> List<T> list2list(List<?> sourceList, Class<T> targetClazz) {
-        return CollectionUtils.isEmpty(sourceList) ? new ArrayList<>(0)
-            : JsonUtil.json2List(JsonUtil.bean2Json(sourceList), targetClazz);
-    }
-
-    /**
-     * 一个象的list 转 另一个对象的list
-     * 适合两者的字段名称及类型, 都一样
-     *
-     * 要转换的类, 需要有无参构造器
-     *
-     * 使用 stream 方式
-     *
-     * 100000 数据, 花费时间 1622712560395
-     *
-     * @param sourceList  源list
-     * @param targetClazz 目标对象类对象
-     * @param <T>         要转换的类
-     * @return 另一个对象的list
-     */
-    public static <T> List<T> list2listByStream(List<?> sourceList, Class<T> targetClazz) {
-        return sourceList.stream().map(source -> {
-            try {
-                T target = targetClazz.newInstance();
-                BeanUtils.copyProperties(source, target);
-                return target;
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException("目标对象实例化错误!");
-            }
-        }).collect(Collectors.toList());
-    }
-
-    /**
      * redis key
      * @param keyPart
      * @return
@@ -280,7 +212,7 @@ public class CommonUtil implements AppConstants {
         long middleAt = System.currentTimeMillis() - startAt;
         System.out.printf("生成数据花费时间: %d%n", middleAt);
 
-        list2list(aList, B.class);
+        DataTransformUtil.list2list(aList, B.class);
         //list2listByStream(aList, B.class);
         System.out.printf("转换数据花费时间: %d%n", System.currentTimeMillis() - middleAt);
     }

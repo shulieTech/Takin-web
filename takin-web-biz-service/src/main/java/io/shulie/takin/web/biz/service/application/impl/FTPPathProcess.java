@@ -41,6 +41,7 @@ public class FTPPathProcess implements IPluginDownLoadPathProcess {
         private Integer ftpPort;
         private String username;
         private String passwd;
+        private String basePath;
 
         public String getFtpHost() {
             return ftpHost;
@@ -72,6 +73,14 @@ public class FTPPathProcess implements IPluginDownLoadPathProcess {
 
         public void setPasswd(String passwd) {
             this.passwd = passwd;
+        }
+
+        public String getBasePath() {
+            return basePath;
+        }
+
+        public void setBasePath(String basePath) {
+            this.basePath = basePath;
         }
     }
 

@@ -80,7 +80,7 @@ public interface PluginLibraryDAO {
      */
     List<PluginLibraryDetailResult> queryMaxVersionPlugin(Integer pluginType);
 
-    List<PluginLibraryDetailResult> list(List<Map<String,String>> pluginInfos);
+    List<PluginLibraryDetailResult> list(String pluginName,String pluginVersion);
 
 
 }

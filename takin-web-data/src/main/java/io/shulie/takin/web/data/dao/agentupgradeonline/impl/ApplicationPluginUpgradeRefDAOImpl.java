@@ -48,22 +48,23 @@ public class ApplicationPluginUpgradeRefDAOImpl extends ServiceImpl<ApplicationP
 
 
     @Override
-    public List<ApplicationPluginUpgradeRefDetailResult> getList(Long pluginId) {
-        LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
-        queryWrapper.eq(ApplicationPluginUpgradeRefEntity::getId,pluginId);
+    public List<ApplicationPluginUpgradeRefDetailResult> getList(String pluginName, String pluginVersion) {
+        LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
+        queryWrapper.eq(ApplicationPluginUpgradeRefEntity::getPluginName,pluginName)
+                .eq(ApplicationPluginUpgradeRefEntity::getPluginVersion,pluginVersion);
         return this.convertVos(this.list(queryWrapper));
     }
 
     @Override
     public List<ApplicationPluginUpgradeRefDetailResult> getList(String upgradeBatch) {
-        LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         queryWrapper.eq(ApplicationPluginUpgradeRefEntity::getUpgradeBatch,upgradeBatch);
         return this.convertVos(this.list(queryWrapper));
     }
 
     @Override
     public List<ApplicationPluginUpgradeRefDetailResult> getList(List<String> upgradeBatchs) {
-        LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         queryWrapper.in(ApplicationPluginUpgradeRefEntity::getUpgradeBatch,upgradeBatchs);
         return this.convertVos(this.list(queryWrapper));
     }

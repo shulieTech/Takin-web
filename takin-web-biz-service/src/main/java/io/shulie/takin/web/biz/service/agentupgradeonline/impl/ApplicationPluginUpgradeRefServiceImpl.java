@@ -25,11 +25,8 @@ public class ApplicationPluginUpgradeRefServiceImpl implements ApplicationPlugin
     private ApplicationPluginUpgradeRefDAO refDAO;
 
     @Override
-    public List<ApplicationPluginUpgradeRefDetailResult> getList(Long pluginId) {
-        if(Objects.isNull(pluginId)){
-            return Collections.emptyList();
-        }
-        return refDAO.getList(pluginId);
+    public List<ApplicationPluginUpgradeRefDetailResult> getList(String pluginName, String pluginVersion) {
+        return  refDAO.getList(pluginName, pluginVersion);
     }
 
     @Override

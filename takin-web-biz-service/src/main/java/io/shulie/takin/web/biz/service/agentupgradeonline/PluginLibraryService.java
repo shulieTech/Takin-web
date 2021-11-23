@@ -13,6 +13,7 @@ import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginLibraryListResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeRefDetailResult;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -70,11 +71,9 @@ public interface PluginLibraryService {
     PagingList<PluginLibraryListResponse> list(PluginLibraryListQueryRequest query);
 
     /**
-     * Map<pluginName,pluginVersion>
-     * @param pluginInfo
      * @return
      */
-    List<PluginLibraryDetailResult> list(List<Map<String,String>> pluginInfo);
+    List<PluginLibraryDetailResult> list(List<ApplicationPluginUpgradeRefDetailResult> paramList);
 
 
     /**
@@ -90,5 +89,7 @@ public interface PluginLibraryService {
      * @return PluginInfo
      */
     Response<List<PluginInfo>> queryByPluginName(PluginAllowUpgradeLibraryListQueryRequest queryRequest);
+
+    PluginLibraryDetailResult queryOneById(Long pluginId);
 
 }

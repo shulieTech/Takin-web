@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import cn.hutool.core.convert.Convert;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -147,9 +148,15 @@ public class PluginLibraryDAOImpl extends ServiceImpl<PluginLibraryMapper, Plugi
 
 
     @Override
-    public List<PluginLibraryDetailResult> list(List<Map<String, String>> pluginInfos) {
-        pluginInfos.forEach(pluginInfo );
-        return null;
+    public List<PluginLibraryDetailResult> list(String pluginName, String pluginVersion) {
+        LambdaQueryWrapper<PluginLibraryEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
+                .eq(PluginLibraryEntity::getPluginName,pluginName)
+                .eq(PluginLibraryEntity::getVersion,pluginVersion);
+        List<PluginLibraryEntity> list = this.list(lambdaQueryWrapper);
+        if(CollectionUtils.isEmpty(list)){
+            return Collections.emptyList();
+        }
+        return  CommonUtil.list2list(list, PluginLibraryDetailResult.class);
     }
 }
 

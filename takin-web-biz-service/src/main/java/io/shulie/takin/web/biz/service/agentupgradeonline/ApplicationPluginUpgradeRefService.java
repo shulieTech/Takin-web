@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface ApplicationPluginUpgradeRefService {
 
-    List<ApplicationPluginUpgradeRefDetailResult> getList(Long pluginId);
+    List<ApplicationPluginUpgradeRefDetailResult> getList(String pluginName,String pluginVersion);
 
     List<ApplicationPluginUpgradeRefDetailResult> getList(String upgradeBatch);
 

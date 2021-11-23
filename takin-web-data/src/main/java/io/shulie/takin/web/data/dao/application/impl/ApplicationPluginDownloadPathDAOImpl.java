@@ -55,14 +55,14 @@ public class ApplicationPluginDownloadPathDAOImpl extends ServiceImpl<Applicatio
 
     @Override
     public ApplicationPluginDownloadPathDetailResult queryDetailByTenant() {
-        LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         return this.convertResult(this.getOne(queryWrapper));
     }
 
 
     @Override
     public ApplicationPluginDownloadPathDetailResult queryDetailByTenant(ApplicationAgentPathValidStatusEnum statusEnum) {
-        LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         queryWrapper.eq(ApplicationPluginDownloadPathEntity::getValidStatus, statusEnum.getVal());
         return this.convertResult(this.getOne(queryWrapper));
     }
@@ -89,7 +89,7 @@ public class ApplicationPluginDownloadPathDAOImpl extends ServiceImpl<Applicatio
 
     @Override
     public ApplicationPluginDownloadPathDetailResult queryById(Long id) {
-        LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<ApplicationPluginDownloadPathEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         queryWrapper.eq(ApplicationPluginDownloadPathEntity::getId,id);
         return this.convertResult(this.getOne(queryWrapper));
     }

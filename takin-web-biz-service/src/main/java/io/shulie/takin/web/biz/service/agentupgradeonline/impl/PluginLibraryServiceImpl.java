@@ -53,6 +53,7 @@ import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
 import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentVersionParam;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
 import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeRefDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -374,9 +375,13 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
 
 
     @Override
-    public List<PluginLibraryDetailResult> list(List<Map<String, String>> pluginInfo) {
-        //todo nf
-        return null;
+    public List<PluginLibraryDetailResult> list(List<ApplicationPluginUpgradeRefDetailResult> paramList) {
+        List<PluginLibraryDetailResult> list = new ArrayList<>();
+        paramList.forEach(detail -> {
+            list.addAll(pluginLibraryDAO.list(detail.getPluginName(), detail.getPluginVersion()));
+        });
+
+        return list;
     }
 
     @Override
@@ -411,6 +416,12 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
         List<AgentReportDetailResult> list = agentReportService.getList(applications);
         Map<Long, List<PluginLibraryDetailResult>> appPluginList = agentVersionService.findAppPluginList(list);
         //确定当前应用的最高插件版本
+
         return null;
+    }
+
+    @Override
+    public PluginLibraryDetailResult queryOneById(Long pluginId) {
+        return  pluginLibraryDAO.queryById(pluginId);
     }
 }

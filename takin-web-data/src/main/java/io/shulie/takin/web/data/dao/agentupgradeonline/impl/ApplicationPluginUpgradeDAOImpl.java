@@ -60,7 +60,7 @@ public class ApplicationPluginUpgradeDAOImpl
     @Override
     public List<ApplicationPluginUpgradeDetailResult> getList(Set<String> upgradeBatchs) {
         LambdaQueryWrapper<ApplicationPluginUpgradeEntity> queryWrapper = this.buildQuery(
-            this.getCustomerQueryWrapper().lambda());
+            this.getLambdaQueryWrapper());
         queryWrapper.in(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatchs);
         return this.convertVos(this.list(queryWrapper));
     }
@@ -68,7 +68,7 @@ public class ApplicationPluginUpgradeDAOImpl
     @Override
     public List<ApplicationPluginUpgradeDetailResult> getListByStatus(Integer status) {
         LambdaQueryWrapper<ApplicationPluginUpgradeEntity> queryWrapper = this.buildQuery(
-            this.getCustomerQueryWrapper().lambda());
+                this.getLambdaQueryWrapper());
         queryWrapper.eq(ApplicationPluginUpgradeEntity::getPluginUpgradeStatus, status);
         return this.convertVos(this.list(queryWrapper));
     }

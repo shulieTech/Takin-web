@@ -47,21 +47,21 @@ public class ApplicationTagRefDAOImpl extends ServiceImpl<ApplicationTagRefMappe
 
     @Override
     public List<ApplicationTagRefDetailResult> getList(List<Long> applicationIds) {
-        LambdaQueryWrapper<ApplicationTagRefEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<ApplicationTagRefEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         queryWrapper.in(ApplicationTagRefEntity::getApplicationId,applicationIds);
         return this.convertVos(this.list(queryWrapper));
     }
 
     @Override
     public List<ApplicationTagRefDetailResult> getList(Long tagId) {
-        LambdaQueryWrapper<ApplicationTagRefEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<ApplicationTagRefEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         queryWrapper.eq(ApplicationTagRefEntity::getTagId,tagId);
         return this.convertVos(this.list(queryWrapper));
     }
 
     @Override
     public List<ApplicationTagRefDetailResult> getListByTenant() {
-        LambdaQueryWrapper<ApplicationTagRefEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<ApplicationTagRefEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         return this.convertVos(this.list(queryWrapper));
     }
 }

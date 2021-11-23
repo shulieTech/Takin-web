@@ -56,21 +56,21 @@ public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentRepo
 
     @Override
     public List<AgentReportDetailResult> getList(List<Long> appIds) {
-        LambdaQueryWrapper<AgentReportEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<AgentReportEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         queryWrapper.in(AgentReportEntity::getApplicationId, appIds);
         return this.convertVos(this.list(queryWrapper));
     }
 
     @Override
     public List<AgentReportDetailResult> getListByStatus(List<Integer> statusList) {
-        LambdaQueryWrapper<AgentReportEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<AgentReportEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         queryWrapper.in(AgentReportEntity::getStatus, statusList);
         return this.convertVos(this.list(queryWrapper));
     }
 
     @Override
     public List<AgentReportDetailResult> getList() {
-        LambdaQueryWrapper<AgentReportEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<AgentReportEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
         return this.convertVos(this.list(queryWrapper));
     }
 

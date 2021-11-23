@@ -516,7 +516,12 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
         //按插件查
         if (!StringUtils.isEmpty(queryRequest.getPluginId())) {
-            List<ApplicationPluginUpgradeRefDetailResult> list = pluginUpgradeRefService.getList(queryRequest.getPluginId());
+            PluginLibraryDetailResult libraryDetailResult = pluginLibraryService.queryOneById(queryRequest.getPluginId());
+            if(Objects.isNull(libraryDetailResult)){
+                return null;
+            }
+            List<ApplicationPluginUpgradeRefDetailResult> list = pluginUpgradeRefService.getList(libraryDetailResult.getPluginName(),
+                    libraryDetailResult.getVersion());
             List<String> upgradeBatchs = CollStreamUtil.toList(list, ApplicationPluginUpgradeRefDetailResult::getUpgradeBatch);
             Set<String> set = new HashSet<>(upgradeBatchs);
             List<ApplicationPluginUpgradeDetailResult> upgradeDetails = pluginUpgradeService.getList(set);
@@ -524,7 +529,6 @@ public class AgentVersionServiceImpl implements AgentVersionService {
             if (CollectionUtils.isEmpty(applicationIds)) {
                 return null;
             }
-
             applicationIds.addAll(CollStreamUtil.toList(upgradeDetails, ApplicationPluginUpgradeDetailResult::getApplicationId));
         }
 
@@ -616,11 +620,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
         appId2UpgradeBatch.forEach((k, v) -> {
             List<ApplicationPluginUpgradeRefDetailResult> upgradeRefs = pluginUpgradeRefService.getList(v);
-
-//            List<Long> pluginIds = CollStreamUtil.toList(upgradeRefs, ApplicationPluginUpgradeRefDetailResult::getId);
-            //todo nf
-            List<Map<String,String>> pluginInfo = new ArrayList<>();
-            List<PluginLibraryDetailResult> plugins = pluginLibraryService.list(pluginInfo);
+            List<PluginLibraryDetailResult> plugins = pluginLibraryService.list(upgradeRefs);
             appId2Plugins.put(k, plugins);
         });
         return appId2Plugins;

@@ -3,6 +3,7 @@ package com.pamirs.takin.entity.domain.entity.linkmanage;
 import java.io.Serializable;
 import java.util.Date;
 
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 /**
@@ -11,7 +12,7 @@ import lombok.Data;
  * @author
  */
 @Data
-public class SceneLinkRelate implements Serializable {
+public class SceneLinkRelate extends TenantBaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * 主键id

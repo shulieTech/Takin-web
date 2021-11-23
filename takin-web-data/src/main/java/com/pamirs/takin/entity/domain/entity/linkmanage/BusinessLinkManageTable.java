@@ -3,6 +3,7 @@ package com.pamirs.takin.entity.domain.entity.linkmanage;
 import java.io.Serializable;
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -11,7 +12,7 @@ import lombok.Data;
  * @author 业务链路实体
  */
 @Data
-public class BusinessLinkManageTable implements Serializable {
+public class BusinessLinkManageTable extends TenantCommonExt implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * 主键

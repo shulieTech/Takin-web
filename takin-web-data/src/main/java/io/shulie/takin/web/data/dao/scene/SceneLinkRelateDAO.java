@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.shulie.takin.web.data.model.mysql.SceneLinkRelateEntity;
+import io.shulie.takin.web.data.param.scene.SceneLinkRelateCreateParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 
@@ -12,6 +13,48 @@ import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
  * @date 2021/5/28 5:38 下午
  */
 public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
+
+    /**
+     * 批量增加
+     * @param params
+     * @return
+     */
+    void batchInsert(List<SceneLinkRelateCreateParam> params);
+
+    /**
+     * 根据流程删除删除
+     * @param sceneId
+     * @return
+     */
+    void deleteBySceneId(String sceneId);
+
+    /**
+     * 根据sceneId 查询链路
+     * @param sceneId
+     * @return
+     */
+    List<SceneLinkRelateResult> selectBySceneId( Long sceneId);
+
+    /**
+     * 返回业务活动个数
+     * @param sceneId
+     * @return
+     */
+    Long countBySceneId(Long sceneId);
+
+    /**
+     * 返回链路个数
+     * @param techLinkIds
+     * @return
+     */
+    int countByTechLinkIds(List<String> techLinkIds);
+
+    /**
+     * 根据业务活动获取个数
+     * @param businessLinkId
+     * @return
+     */
+    long countByBusinessLinkId(Long businessLinkId);
 
     /**
      * 获取关联

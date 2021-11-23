@@ -59,7 +59,6 @@ import com.pamirs.takin.entity.domain.entity.linkmanage.BusinessLinkManageTable;
 import com.pamirs.takin.entity.domain.entity.linkmanage.LinkManageTable;
 import com.pamirs.takin.entity.domain.entity.linkmanage.LinkQueryVo;
 import com.pamirs.takin.entity.domain.entity.linkmanage.Scene;
-import com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate;
 import com.pamirs.takin.entity.domain.entity.linkmanage.TMiddlewareInfo;
 import com.pamirs.takin.entity.domain.entity.linkmanage.statistics.StatisticsQueryVo;
 import com.pamirs.takin.entity.domain.entity.linkmanage.structure.Category;
@@ -95,6 +94,7 @@ import io.shulie.takin.web.data.param.linkmanage.BusinessLinkManageQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.LinkManageQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
+import io.shulie.takin.web.data.param.scene.SceneLinkRelateCreateParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
@@ -502,7 +502,7 @@ public class LinkManageServiceImpl implements LinkManageService {
             tSceneMapper.deleteByPrimaryKey(Long.parseLong(sceneId));
 
             //取出关联的业务活动id是否可以被删除
-            List<SceneLinkRelate> relates = tSceneLinkRelateMapper.selectBySceneId(Long.parseLong(sceneId));
+            List<SceneLinkRelateResult> relates = sceneLinkRelateDAO.selectBySceneId(Long.parseLong(sceneId));
             List<Long> businessLinkIds = relates.stream().map(relate -> {
                 if (relate.getBusinessLinkId() != null) {
                     return Long.parseLong(relate.getBusinessLinkId());
@@ -511,7 +511,7 @@ public class LinkManageServiceImpl implements LinkManageService {
             }).collect(Collectors.toList());
 
             //删除关联表
-            tSceneLinkRelateMapper.deleteBySceneId(sceneId);
+            sceneLinkRelateDAO.deleteBySceneId(sceneId);
             //过滤出可以设置为删除状态的业务活动id并设置为可以删除
             enableBusinessActiveCanDelte(businessLinkIds);
 
@@ -530,7 +530,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         }
         List<Long> candeletedList = businessLinkIds.stream()
             .map(single -> {
-                long count = tSceneLinkRelateMapper.countByBusinessLinkId(single);
+                long count = sceneLinkRelateDAO.countByBusinessLinkId(single);
                 if (!(count > 0)) {
                     return single;
                 }
@@ -574,11 +574,11 @@ public class LinkManageServiceImpl implements LinkManageService {
         Map<String, List<ActivityListResult>> finalMap = map;
 
         //用户ids
-        List<Long> userIds = sceneDtos.stream().filter(data -> null != data.getUserId()).map(SceneDto::getUserId)
+        List<Long> userIds = sceneDtos.stream().map(SceneDto::getUserId).filter(Objects::nonNull)
             .collect(Collectors.toList());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(userIds);
         pageData = pageData.stream().map(single -> {
-            int count = tSceneLinkRelateMapper.countBySceneId(single.getId());
+            long count = sceneLinkRelateDAO.countBySceneId(single.getId());
             // 填充虚拟字段
             List<ActivityListResult> activityListResults = finalMap.get(String.valueOf(single.getId()));
             if (activityListResults != null && activityListResults.size() > 0) {
@@ -611,7 +611,7 @@ public class LinkManageServiceImpl implements LinkManageService {
                     single.setSystemProcessCount(String.valueOf(techLinkIds.size()));
                     //统计业务流程条数
                     if (CollectionUtils.isNotEmpty(techLinkIds)) {
-                        int countBusinessProcess = tSceneLinkRelateMapper.countByTechLinkIds(techLinkIds);
+                        int countBusinessProcess = sceneLinkRelateDAO.countByTechLinkIds(techLinkIds);
                         single.setBussinessProcessCount(String.valueOf(countBusinessProcess));
                     }
                 }
@@ -827,11 +827,11 @@ public class LinkManageServiceImpl implements LinkManageService {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, "关联业务活动不能为空");
         }
         Long sceneId = addScene(vo);
-        List<SceneLinkRelate> relates = parsingTree(vo, sceneId);
+        List<SceneLinkRelateCreateParam> relates = parsingTree(vo, sceneId);
         if (CollectionUtils.isNotEmpty(relates)) {
             //补全信息
             infoCompletion(relates);
-            tSceneLinkRelateMapper.batchInsert(relates);
+            sceneLinkRelateDAO.batchInsert(relates);
             //设置业务活动不能被删除
             diableDeleteBusinessActives(relates);
         }
@@ -841,7 +841,7 @@ public class LinkManageServiceImpl implements LinkManageService {
     /**
      * 设置业务活动不能被删除
      */
-    private void diableDeleteBusinessActives(List<SceneLinkRelate> relates) {
+    private void diableDeleteBusinessActives(List<SceneLinkRelateCreateParam> relates) {
 
         List<Long> relateBusinessLinkIds =
             relates.stream().map(
@@ -881,9 +881,9 @@ public class LinkManageServiceImpl implements LinkManageService {
      *
      * @return -
      */
-    private List<SceneLinkRelate> parsingTree(BusinessFlowVo vo, Long sceneId) {
+    private List<SceneLinkRelateCreateParam> parsingTree(BusinessFlowVo vo, Long sceneId) {
 
-        List<SceneLinkRelate> relates = Lists.newArrayList();
+        List<SceneLinkRelateCreateParam> relates = Lists.newArrayList();
         //根节点集合
         List<BusinessFlowTree> roots = vo.getRoot();
         for (BusinessFlowTree businessFlowTree : roots) {
@@ -893,13 +893,13 @@ public class LinkManageServiceImpl implements LinkManageService {
             if (StringUtils.isBlank(businessId)) {
                 continue;
             }
-            SceneLinkRelate relate = new SceneLinkRelate();
+            SceneLinkRelateCreateParam relate = new SceneLinkRelateCreateParam();
             relate.setSceneId(String.valueOf(sceneId));
             relate.setParentBusinessLinkId(parentId);
             relate.setBusinessLinkId(businessId);
             relate.setIsDeleted(0);
             //前端产生的uuid
-            relate.setFrontUUIDKey(root.getKey());
+            relate.setFrontUuidKey(root.getKey());
             relates.add(relate);
             List<BusinessFlowTree> children = root.getChildren();
             if (CollectionUtils.isNotEmpty(children)) {
@@ -926,7 +926,7 @@ public class LinkManageServiceImpl implements LinkManageService {
      *
      * @param relates 业务流程链路关联集合
      */
-    private void infoCompletion(List<SceneLinkRelate> relates) {
+    private void infoCompletion(List<SceneLinkRelateCreateParam> relates) {
         //获取出所有的业务活动ID
         List<Long> businessIds
             = relates
@@ -961,17 +961,17 @@ public class LinkManageServiceImpl implements LinkManageService {
      * @param result   返回结果的集合
      * @return -
      */
-    private List<SceneLinkRelate> parsing(List<BusinessFlowTree> children, String parentId, Long sceneId,
-        List<SceneLinkRelate> result) {
+    private List<SceneLinkRelateCreateParam> parsing(List<BusinessFlowTree> children, String parentId, Long sceneId,
+        List<SceneLinkRelateCreateParam> result) {
         for (BusinessFlowTree businessFlowTree : children) {
-            SceneLinkRelate relate = new SceneLinkRelate();
+            SceneLinkRelateCreateParam relate = new SceneLinkRelateCreateParam();
             BusinessFlowTree child = businessFlowTree;
             String businessId = child.getId();
             if (StringUtils.isNotBlank(businessId)) {
                 relate.setBusinessLinkId(child.getId());
                 relate.setParentBusinessLinkId(parentId);
                 relate.setIsDeleted(0);
-                relate.setFrontUUIDKey(child.getKey());
+                relate.setFrontUuidKey(child.getKey());
                 relate.setSceneId(String.valueOf(sceneId));
                 result.add(relate);
             }
@@ -1000,24 +1000,23 @@ public class LinkManageServiceImpl implements LinkManageService {
         dto.setLevel(scene.getSceneLevel());
         dto.setBusinessProcessName(scene.getSceneName());
 
-        List<SceneLinkRelate> relates = tSceneLinkRelateMapper.selectBySceneId(Long.parseLong(id));
-
+        List<SceneLinkRelateResult> relates = sceneLinkRelateDAO.selectBySceneId(Long.parseLong(id));
         List<ExistBusinessActiveDto> existBusinessActiveIds =
             relates.stream().map(relate ->
             {
                 ExistBusinessActiveDto single = new ExistBusinessActiveDto();
-                single.setKey(relate.getFrontUUIDKey());
+                single.setKey(relate.getFrontUuidKey());
                 single.setId(relate.getBusinessLinkId());
                 return single;
             }).collect(Collectors.toList());
 
         dto.setExistBusinessActive(existBusinessActiveIds);
 
-        List<BusinessFlowTree> roots = tSceneLinkRelateMapper.findAllRecursion(id);
+        List<BusinessFlowTree> roots = tSceneLinkRelateMapper.findAllRecursion(id,WebPluginUtils.traceTenantId(),WebPluginUtils.traceEnvCode());
         dto.setRoots(roots);
 
         //中间件信息
-        List<String> techLinkIds = relates.stream().map(SceneLinkRelate::getTechLinkId).collect(Collectors.toList());
+        List<String> techLinkIds = relates.stream().map(SceneLinkRelateResult::getTechLinkId).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(techLinkIds)) {
             List<String> middleWareIdStrings = tMiddlewareLinkRelateMapper.selectMiddleWareIdsByTechIds(techLinkIds);
             List<Long> middleWareIds = middleWareIdStrings.stream().map(Long::parseLong).collect(
@@ -1047,13 +1046,13 @@ public class LinkManageServiceImpl implements LinkManageService {
         //激活可以业务活动可以删除
         enableBusinessDelete(vo);
         //删除老的关联信息
-        tSceneLinkRelateMapper.deleteBySceneId(vo.getId());
+        sceneLinkRelateDAO.deleteBySceneId(vo.getId());
         //重新生成关联信息
-        List<SceneLinkRelate> relates = parsingTree(vo, Long.parseLong(vo.getId()));
+        List<SceneLinkRelateCreateParam> relates = parsingTree(vo, Long.parseLong(vo.getId()));
         if (CollectionUtils.isNotEmpty(relates)) {
             //补全信息
             infoCompletion(relates);
-            tSceneLinkRelateMapper.batchInsert(relates);
+            sceneLinkRelateDAO.batchInsert(relates);
         }
         //冻结业务活动可以删除
         diableDeleteBusinessActives(relates);
@@ -1063,13 +1062,13 @@ public class LinkManageServiceImpl implements LinkManageService {
         //记录变更日志
         Scene oldScene = tSceneMapper.selectByPrimaryKey(Long.parseLong(vo.getId()));
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_PROCESS, vo.getSceneName());
-        List<SceneLinkRelate> oldSceneLinkRelateList = tSceneLinkRelateMapper.selectBySceneId(
-            Long.parseLong(vo.getId()));
-        List<Long> oldBusinessLinkIdList = oldSceneLinkRelateList.stream().map(SceneLinkRelate::getBusinessLinkId).map(
+        List<SceneLinkRelateResult> oldSceneLinkRelateList = sceneLinkRelateDAO.selectBySceneId(Long.parseLong(vo.getId()));
+
+        List<Long> oldBusinessLinkIdList = oldSceneLinkRelateList.stream().map(SceneLinkRelateResult::getBusinessLinkId).map(
             Long::parseLong).collect(Collectors.toList());
-        List<SceneLinkRelate> currentSceneLinkRelateList = parsingTree(vo, Long.parseLong(vo.getId()));
+        List<SceneLinkRelateCreateParam> currentSceneLinkRelateList = parsingTree(vo, Long.parseLong(vo.getId()));
         List<Long> currentBusinessLinkIdList = currentSceneLinkRelateList.stream().map(
-            SceneLinkRelate::getBusinessLinkId).map(Long::parseLong).collect(Collectors.toList());
+            SceneLinkRelateCreateParam::getBusinessLinkId).map(Long::parseLong).collect(Collectors.toList());
         List<Long> toDeleteIdList = Lists.newArrayList();
         toDeleteIdList.addAll(oldBusinessLinkIdList);
         toDeleteIdList.removeAll(currentBusinessLinkIdList);
@@ -1107,8 +1106,8 @@ public class LinkManageServiceImpl implements LinkManageService {
         if (vo.getId() == null) {
             return;
         }
-        List<SceneLinkRelate> oldRelates =
-            tSceneLinkRelateMapper.selectBySceneId(Long.parseLong(vo.getId()));
+        List<SceneLinkRelateResult> oldRelates = sceneLinkRelateDAO.selectBySceneId(Long.parseLong(vo.getId()));
+
         if (CollectionUtils.isEmpty(oldRelates)) {
             return;
         }
@@ -1241,7 +1240,7 @@ public class LinkManageServiceImpl implements LinkManageService {
     @Override
     public List<BusinessActivityNameResponse> getBusinessActiveByFlowId(Long businessFlowId) {
         List<BusinessActivityNameResponse> sceneBusinessActivityRefVOS = new ArrayList<>();
-        List<SceneLinkRelate> sceneLinkRelates = tSceneLinkRelateMapper.selectBySceneId(businessFlowId);
+        List<SceneLinkRelateResult> sceneLinkRelates = sceneLinkRelateDAO.selectBySceneId(businessFlowId);
         if (CollectionUtils.isNotEmpty(sceneLinkRelates)) {
             List<Long> businessActivityIds = sceneLinkRelates.stream().map(o -> Long.valueOf(o.getBusinessLinkId()))
                 .collect(Collectors.toList());

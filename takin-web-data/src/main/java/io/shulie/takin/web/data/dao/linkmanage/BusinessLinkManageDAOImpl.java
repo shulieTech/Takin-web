@@ -11,9 +11,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.dao.linkmanage.TSceneLinkRelateMapper;
-import com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate;
 import io.shulie.takin.web.data.convert.linkmanage.BusinessLinkManageConvert;
+import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.LinkManageTableMapper;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
@@ -23,6 +22,7 @@ import io.shulie.takin.web.data.param.linkmanage.BusinessLinkManageQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.BusinessLinkManageUpdateParam;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.TechLinkResult;
+import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -38,13 +38,13 @@ import org.springframework.stereotype.Component;
 public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<BusinessLinkManageTableEntity> {
 
     @Autowired
-    private TSceneLinkRelateMapper tSceneLinkRelateMapper;
-
-    @Autowired
     private BusinessLinkManageTableMapper businessLinkManageTableMapper;
 
     @Autowired
     private LinkManageTableMapper linkManageTableMapper;
+
+    @Autowired
+    private SceneLinkRelateDAO sceneLinkRelateDAO;
 
     @Override
     public BusinessLinkResult selectBussinessLinkById(Long id) {
@@ -203,7 +203,7 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<
 
     @Override
     public List<Long> listIdsByBusinessFlowId(Long businessFlowId) {
-        List<SceneLinkRelate> sceneLinkRelates = tSceneLinkRelateMapper.selectBySceneId(businessFlowId);
+        List<SceneLinkRelateResult> sceneLinkRelates = sceneLinkRelateDAO.selectBySceneId(businessFlowId);
         return CollectionUtils.isEmpty(sceneLinkRelates)
             ? Collections.emptyList()
             : sceneLinkRelates.stream()

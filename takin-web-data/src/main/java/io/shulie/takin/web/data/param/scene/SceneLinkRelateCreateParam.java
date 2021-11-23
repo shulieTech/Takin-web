@@ -1,8 +1,7 @@
-package io.shulie.takin.web.data.result.scene;
+package io.shulie.takin.web.data.param.scene;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -10,11 +9,7 @@ import lombok.Data;
  * @date 2021/5/28 5:40 下午
  */
 @Data
-public class SceneLinkRelateResult extends TenantCommonExt {
-    /**
-     * 主键
-     */
-    private Long id;
+public class SceneLinkRelateCreateParam  {
 
     /**
      * 链路入口
@@ -29,12 +24,12 @@ public class SceneLinkRelateResult extends TenantCommonExt {
     /**
      * 创建时间
      */
-    private LocalDateTime createTime;
+    private Date createTime;
 
     /**
      * 更新时间
      */
-    private LocalDateTime updateTime;
+    private Date updateTime;
 
     /**
      * 业务链路ID
@@ -60,4 +55,5 @@ public class SceneLinkRelateResult extends TenantCommonExt {
      * 前端数结构对象key
      */
     private String frontUuidKey;
+
 }

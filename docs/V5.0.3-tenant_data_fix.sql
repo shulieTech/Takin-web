@@ -230,19 +230,40 @@ update t_performance_criteria_config t set t.tenant_id= IFNULL((select tenant_id
 
 -- 兮曦 --
 update e_patrol_activity_assert set env_code='test',tenant_id=1;
-update e_patrol_board set tenant_id=customer_id,env_code='test';
+
+update e_patrol_board set tenant_id=7,env_code='prod',user_id=7 where customer_id=7;
+update e_patrol_board set tenant_id=7,env_code='test',user_id=8 where customer_id=8;
+update e_patrol_board set tenant_id=1,env_code='test',user_id=1 where customer_id=1;
+
 update e_patrol_board_scene set env_code='test',tenant_id=1;
+
 update e_patrol_exception set env_code='test',tenant_id=1;
-update e_patrol_exception_config set tenant_id=customer_id;
-update e_patrol_exception_config set env_code='test' where tenant_id is not null;
-INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (1, 4, 1, 30, 1, '一般慢SQL');
-INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`) VALUES (0, 4, 2, 60, 1, '严重慢SQL');
-update e_patrol_exception_config set env_code='system',tenant_id=-1 where env_code is null and tenant_id is null;
+update e_patrol_exception a,e_patrol_scene b set a.user_id= b.user_id where a.scene_id=b.id and a.scene_id <> '-1';
+
+update e_patrol_exception_config set tenant_id=7,env_code='test' where customer_id=7;
+update e_patrol_exception_config set tenant_id=7,env_code='prod' where customer_id=8;
+update e_patrol_exception_config set tenant_id=1,env_code='test' where customer_id=1;
+
+delete from e_patrol_exception_config where customer_id is null;
+
+INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 1, 1, 100.00, 1, '一般卡慢', -1, 'system');
+INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 1, 2, 230.00, 1, '严重卡慢', -1, 'system');
+INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 2, 1, 90.00, -1, '一般瓶颈', -1, 'system');
+INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 2, 2, 80.00, -1, '严重瓶颈', -1, 'system');
+INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 4, 1, 30.00, 1, '一般慢SQL', -1, 'system');
+INSERT INTO `trodb`.`e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 4, 2, 60.00, 1, '严重慢SQL', -1, 'system');
+
 update e_patrol_exception_notice_config set env_code='test',tenant_id=1;
-update e_patrol_scene set env_code='test',tenant_id=customer_id;
+
+update e_patrol_scene set tenant_id=7,env_code='prod',user_id=7 where customer_id=7;
+update e_patrol_scene set tenant_id=7,env_code='test',user_id=8 where customer_id=8;
+update e_patrol_scene set tenant_id=1,env_code='test',user_id=1 where customer_id=1;
 update e_patrol_scene a,t_tenant_info b set a.tenant_app_key = b.`key` where a.tenant_id=b.id and a.tenant_id is not null;
+
 update e_patrol_scene_chain set env_code='test',tenant_id=1;
+
 update e_patrol_scene_check set env_code='test',tenant_id=1;
+
 -- 兮曦 --
 
 

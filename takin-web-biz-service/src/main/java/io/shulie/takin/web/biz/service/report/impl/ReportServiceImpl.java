@@ -168,10 +168,11 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void fillExecuteMan(ReportDetailOutput output) {
-        if (output == null || output.getUserId() == null) {
-            return;
+        UserExt user = WebPluginUtils.getUser();
+        if (Objects.nonNull(user)) {
+            output.setOperateId(String.valueOf(user.getId()));
+            output.setOperateName(user.getName());
         }
-        WebPluginUtils.fillUserData(output);
     }
 
     /**
@@ -301,6 +302,7 @@ public class ReportServiceImpl implements ReportService {
         } else {
             output.setCanStartStop(Boolean.TRUE);
         }
+        fillExecuteMan(output);
         return ResponseResult.success(output);
 
     }

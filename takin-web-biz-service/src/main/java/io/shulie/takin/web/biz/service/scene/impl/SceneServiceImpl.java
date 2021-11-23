@@ -12,6 +12,7 @@ import io.shulie.takin.cloud.open.request.scene.manage.SynchronizeRequest;
 import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
@@ -116,6 +117,8 @@ public class SceneServiceImpl implements SceneService {
     private FileManageDAO fileManageDAO;
     @Resource
     private MultipleSceneApi multipleSceneApi;
+    @Resource
+    private SceneManageService sceneManageService;
 
     @Value("${file.upload.tmp.path:/tmp/takin/}")
     private String tmpFilePath;
@@ -489,9 +492,17 @@ public class SceneServiceImpl implements SceneService {
         if (CollectionUtils.isEmpty(sceneLinkRelateList)) {
             return;
         }
-        Map<String, Long> businessActivityRef = sceneLinkRelateList.stream().filter(o -> o.getBusinessLinkId() != null).
-            collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5, o -> NumberUtils.toLong(o.getBusinessLinkId())));
-        synchronizeRequest.setBusinessActivityRef(businessActivityRef);
+        Map<String, SynchronizeRequest.BusinessActivityInfoData> businessActivityInfo = sceneLinkRelateList.stream()
+            .filter(o -> o.getBusinessLinkId() != null)
+            .collect(Collectors.toMap(SceneLinkRelateResult::getScriptXpathMd5, o -> {
+                long activityId = NumberUtils.toLong(o.getBusinessLinkId());
+                List<String> applicationIdList = sceneManageService.getAppIdsByBusinessActivityId(activityId);
+                SynchronizeRequest.BusinessActivityInfoData activityInfoData = new SynchronizeRequest.BusinessActivityInfoData();
+                activityInfoData.setId(activityId);
+                activityInfoData.setApplicationIdList(applicationIdList);
+                return activityInfoData;
+            }));
+        synchronizeRequest.setBusinessActivityInfo(businessActivityInfo);
         WebPluginUtils.fillCloudUserData(synchronizeRequest);
         multipleSceneApi.synchronize(synchronizeRequest);
     }

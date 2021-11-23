@@ -57,8 +57,8 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
     }
 
     @Override
-    public void finishUpgrade(Long appId, String upgradeBatch) {
-        upgradeDAO.finishUpgrade(appId, upgradeBatch);
+    public void changeUpgradeStatus(Long appId, String upgradeBatch, Integer status, String errorInfo) {
+        upgradeDAO.changeUpgradeStatus(appId, upgradeBatch, status, errorInfo);
     }
 
     @Override

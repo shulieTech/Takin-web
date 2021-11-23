@@ -87,9 +87,10 @@ public class ApplicationPluginUpgradeDAOImpl
     }
 
     @Override
-    public void finishUpgrade(Long appId, String upgradeBatch) {
+    public void changeUpgradeStatus(Long appId, String upgradeBatch, Integer status, String errorInfo) {
         ApplicationPluginUpgradeEntity entity = new ApplicationPluginUpgradeEntity();
-        entity.setPluginUpgradeStatus(AgentUpgradeEnum.UPGRADE_SUCCESS.getVal());
+        entity.setPluginUpgradeStatus(status);
+        entity.setErrorInfo(errorInfo);
         applicationPluginUpgradeMapper.update(entity,
             this.getLambdaQueryWrapper().eq(ApplicationPluginUpgradeEntity::getApplicationId, appId)
                 .eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch));
@@ -99,7 +100,8 @@ public class ApplicationPluginUpgradeDAOImpl
     public ApplicationPluginUpgradeDetailResult queryByAppIdAndUpgradeBatch(Long applicationId, String upgradeBatch) {
         ApplicationPluginUpgradeEntity entity = applicationPluginUpgradeMapper.selectOne(
             this.getLambdaQueryWrapper().eq(ApplicationPluginUpgradeEntity::getApplicationId, applicationId)
-                .eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch));
+                .eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch)
+                .ne(ApplicationPluginUpgradeEntity::getPluginUpgradeStatus, AgentUpgradeEnum.ROLLBACK.getVal()));
 
         if (entity == null) {
             return null;

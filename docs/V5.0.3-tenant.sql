@@ -549,7 +549,7 @@ COMMIT;
 
 -- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_stack_info
 -- 1. 创建临时表
--- CREATE TABLE if not EXISTS `tmp_stack_info` (
+-- CREATE TABLE IF NOT EXISTS `tmp_stack_info` (
 --     `id` bigint(20) NOT NULL AUTO_INCREMENT,
 --     `app_name` varchar(255) DEFAULT NULL,
 --     `agent_id` varchar(255) DEFAULT NULL,
@@ -580,7 +580,7 @@ COMMIT;
 
 -- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_machine_performance
 -- 1. 创建临时表
--- CREATE TABLE `tmp_machine` (
+-- CREATE TABLE IF NOT EXISTS `tmp_machine` (
 --     `id` bigint(20) NOT NULL AUTO_INCREMENT,
 --     `trace_id` varchar(512) DEFAULT NULL COMMENT 'traceId',
 --     `rpc_id` varchar(512) DEFAULT NULL COMMENT 'rpcid',

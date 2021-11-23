@@ -260,6 +260,7 @@ ALTER TABLE `t_pessure_test_task_activity_config`
 ALTER TABLE `t_application_ds_manage` MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 ALTER TABLE `t_application_mnt` MODIFY COLUMN `customer_id` bigint(20) NULL DEFAULT NULL COMMENT '租户id ,废弃';
 
+DROP VIEW IF EXISTS APPLICATION_VIEW;
 CREATE VIEW APPLICATION_VIEW AS
 SELECT APPLICATION_ID,APPLICATION_NAME,tenant_id AS TENANT_ID,env_code as ENV_CODE,info.key AS TENANTAPPKEY
 FROM t_application_mnt app

@@ -243,11 +243,6 @@ UPDATE t_datasource_tag_ref t1
     LEFT JOIN t_tro_dbresource t2 ON t1.datasource_id = t2.id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
--- t_fast_debug_stack_info
-UPDATE t_fast_debug_stack_info t1
-    LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
-    SET t1.env_code = IFNULL(t2.env_code,'test');
-
 -- t_leakverify_detail
 UPDATE t_leakverify_detail t1
     LEFT JOIN t_leakverify_result t2 ON t1.result_id = t2.id
@@ -318,8 +313,8 @@ update t_ops_script_file t set t.tenant_id=IFNULL((select tenant_id from t_ops_s
 update t_performance_base_data t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = t.app_name),1);
 update t_performance_criteria_config t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_ID = t.app_id),1);
 
--- caijy end
 COMMIT ;
+-- caijy end
 
 -- liuchuan
 BEGIN;
@@ -384,11 +379,9 @@ update e_patrol_scene set tenant_id=1,env_code='test',user_id=1 where customer_i
 update e_patrol_scene a,t_tenant_info b set a.tenant_app_key = b.`key` where a.tenant_id=b.id and a.tenant_id is not null;
 
 update e_patrol_scene_chain set env_code='test',tenant_id=1;
-
 update e_patrol_scene_check set env_code='test',tenant_id=1;
 
 -- 兮曦 --
-
 
 -- 额外 租户期间增加的表
 update t_mq_config_template set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
@@ -396,9 +389,17 @@ update t_application_ds_cache_manage set tenant_id=IFNULL((select tenant_id from
 update t_application_ds_db_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_application_ds_db_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 
--- TODO 大表最后数据迁移
-
-update t_fast_debug_stack_info f set f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
+-- 大表最后数据迁移
+-- t_fast_debug_stack_info
+UPDATE t_fast_debug_stack_info t1
+    LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_fast_debug_stack_info f SET f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
+-- t_fast_debug_machine_performance
+UPDATE t_fast_debug_machine_performance t1
+    LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_fast_debug_machine_performance f SET f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
 
 -- 最后加索引
 ALTER TABLE t_activity_node_service_state ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -507,7 +508,6 @@ ALTER TABLE t_tro_user_dept_relation ADD INDEX `idx_tenant` ( `tenant_id`);
 ALTER TABLE t_upload_interface_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_white_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_whitelist_effective_app ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE t_fast_debug_machine_performance ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_fast_debug_stack_info ADD INDEX `idx_tenant_env` (`tenant_id`,`env_code` );
 -- 调试工具结果
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_trace_id` ( `trace_id`);

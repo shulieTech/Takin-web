@@ -30,7 +30,7 @@ public class PluginDependentServiceImpl implements PluginDependentService {
         return list.stream().map(item -> {
             PluginInfo pluginInfo = new PluginInfo();
             pluginInfo.setPluginName(item.getDependentPluginName());
-            pluginInfo.setPluginVersion(item.getDependentPluginVersion());
+            pluginInfo.setVersion(item.getDependentPluginVersion());
             return pluginInfo;
         }).collect(Collectors.toList());
     }

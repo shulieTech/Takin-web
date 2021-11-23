@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -133,30 +134,31 @@ public class PluginLibraryDAOImpl extends ServiceImpl<PluginLibraryMapper, Plugi
     }
 
 
-//    @Override
-//    public List<PluginLibraryDetailResult> list(List<Long> pluginIds) {
-//        List<PluginLibraryEntity> entityList = pluginLibraryMapper.selectList(
-//                this.getLambdaQueryWrapper()
-//                        .in(PluginLibraryEntity::getId, pluginIds)
-//        );
-//        if (CollectionUtils.isEmpty(entityList)) {
-//            return Collections.emptyList();
-//        }
-//
-//        return CommonUtil.list2list(entityList, PluginLibraryDetailResult.class);
-//    }
-
 
     @Override
-    public List<PluginLibraryDetailResult> list(String pluginName, String pluginVersion) {
+    public PluginLibraryDetailResult getOneByPluginNameAndVersion(String pluginName, String pluginVersion) {
         LambdaQueryWrapper<PluginLibraryEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
                 .eq(PluginLibraryEntity::getPluginName,pluginName)
-                .eq(PluginLibraryEntity::getVersion,pluginVersion);
-        List<PluginLibraryEntity> list = this.list(lambdaQueryWrapper);
-        if(CollectionUtils.isEmpty(list)){
-            return Collections.emptyList();
-        }
-        return  CommonUtil.list2list(list, PluginLibraryDetailResult.class);
+                .eq(PluginLibraryEntity::getVersion,pluginVersion)
+                .eq(PluginLibraryEntity::getIsDeleted,0);
+        return Convert.convert(PluginLibraryDetailResult.class, this.getOne(lambdaQueryWrapper));
+    }
+
+    @Override
+    public List<PluginLibraryDetailResult> queryListByPluginNameAndGtVersion(String pluginName, Long pluginVersionNum) {
+        LambdaQueryWrapper<PluginLibraryEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
+                .eq(PluginLibraryEntity::getPluginName,pluginName)
+                .gt(pluginVersionNum != 0,PluginLibraryEntity::getVersionNum,pluginVersionNum)
+                .eq(PluginLibraryEntity::getIsDeleted,0);
+        return CommonUtil.list2list(this.list(lambdaQueryWrapper), PluginLibraryDetailResult.class);
+    }
+
+    @Override
+    public List<PluginLibraryDetailResult> queryListByIds(List<Long> pluginIds) {
+        LambdaQueryWrapper<PluginLibraryEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
+                .in(PluginLibraryEntity::getId,pluginIds)
+                .eq(PluginLibraryEntity::getIsDeleted,0);
+        return CommonUtil.list2list(this.list(lambdaQueryWrapper), PluginLibraryDetailResult.class);
     }
 }
 

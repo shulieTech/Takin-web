@@ -80,8 +80,16 @@ public interface PluginLibraryDAO {
      */
     List<PluginLibraryDetailResult> queryMaxVersionPlugin(Integer pluginType);
 
-    List<PluginLibraryDetailResult> list(String pluginName,String pluginVersion);
+    PluginLibraryDetailResult getOneByPluginNameAndVersion(String pluginName,String pluginVersion);
 
+    /**
+     * 查询比传入version版本高的pluginName同名插件集合
+     * @param pluginName
+     * @param pluginVersionNum
+     * @return
+     */
+    List<PluginLibraryDetailResult>  queryListByPluginNameAndGtVersion(String pluginName,Long pluginVersionNum);
 
+    List<PluginLibraryDetailResult> queryListByIds(List<Long> pluginIds);
 }
 

@@ -92,4 +92,6 @@ public interface PluginLibraryService {
 
     PluginLibraryDetailResult queryOneById(Long pluginId);
 
+    List<PluginLibraryDetailResult> queryListByIds(List<Long> pluginIds);
+
 }

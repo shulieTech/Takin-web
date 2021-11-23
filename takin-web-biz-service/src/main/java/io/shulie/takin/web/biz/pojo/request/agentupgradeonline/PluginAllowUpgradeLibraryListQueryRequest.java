@@ -23,5 +23,5 @@ public class PluginAllowUpgradeLibraryListQueryRequest {
 
     @ApiModelProperty(value = "应用id集合")
     @NotEmpty
-    private List<Long> applications;
+    private List<Long> applicationIds;
 }

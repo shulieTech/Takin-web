@@ -33,7 +33,7 @@ public class ApplicationPluginUpgradeRefServiceImpl implements ApplicationPlugin
         if (StringUtils.isBlank(upgradeBatch)) {
             return Collections.emptyList();
         }
-        return null;
+        return refDAO.getList(upgradeBatch);
     }
 
     @Override

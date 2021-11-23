@@ -1,24 +1,42 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
+import cn.hutool.core.collection.CollStreamUtil;
+import cn.hutool.core.convert.Convert;
 import com.google.common.base.Splitter;
+import com.pamirs.takin.common.util.MD5Util;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeCreateAgentInfoRequest;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeCreateRequest;
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeRefService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
+import io.shulie.takin.web.biz.utils.agentupgradeonline.AgentPkgUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
+import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
+import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeTypeEnum;
+import io.shulie.takin.web.common.enums.agentupgradeonline.PluginTypeEnum;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.agentupgradeonline.ApplicationPluginUpgradeDAO;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeParam;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeRefParam;
+import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 应用升级单(ApplicationPluginUpgrade)service
@@ -29,11 +47,15 @@ import org.springframework.util.CollectionUtils;
 @Service
 public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpgradeService {
 
+    @Value("${data.path}")
+    protected String uploadPath;
+
     @Resource
     private ApplicationPluginUpgradeDAO upgradeDAO;
 
     @Resource
     private ApplicationPluginUpgradeRefService applicationPluginUpgradeRefService;
+
 
     @Override
     public List<ApplicationPluginUpgradeDetailResult> getList(Set<String> upgradeBatchs) {
@@ -71,7 +93,7 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
     public void createUpgradeOrder(CreateApplicationPluginUpgradeParam param) {
         // 处理升级明细
         List<CreateApplicationPluginUpgradeRefParam> upgradeRefs = dealDependencyInfo(param.getUpgradeBatch(),
-            param.getUpgradeContext());
+                param.getUpgradeContext());
         if (!CollectionUtils.isEmpty(upgradeRefs)) {
             applicationPluginUpgradeRefService.batchCreate(upgradeRefs);
         }
@@ -80,7 +102,7 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
 
     /**
      * 处理依赖数据
-     *
+     * <p>
      * 示例：module-id=instrument-simulator,module-version=null;module-id=module-aerospike,module-version=null;
      *
      * @param upgradeBatch   升级批次
@@ -88,7 +110,7 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
      * @return CreateApplicationPluginUpgradeRefParam集合
      */
     private List<CreateApplicationPluginUpgradeRefParam> dealDependencyInfo(String upgradeBatch,
-        String dependencyInfo) {
+                                                                            String dependencyInfo) {
 
         List<CreateApplicationPluginUpgradeRefParam> refParamList = new ArrayList<>();
         // 处理升级明细
@@ -96,8 +118,8 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
         for (String dependency : dependencyList) {
             String[] items = dependency.split(",");
             if (items.length < 2
-                || !items[0].startsWith("module-id=")
-                || !items[1].startsWith("module-version=")) {
+                    || !items[0].startsWith("module-id=")
+                    || !items[1].startsWith("module-version=")) {
                 continue;
             }
             String pluginVersion = items[1].substring(15);
@@ -111,4 +133,77 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
         }
         return refParamList;
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Response pluginUpgrade(ApplicationPluginUpgradeCreateRequest createRequest) {
+        Set<PluginInfo> pluginInfoSet = new HashSet<>(createRequest.getUpgradeInfo());
+        StringBuilder sb = new StringBuilder();
+        pluginInfoSet.forEach(pluginInfo -> {
+            sb.append("module-id=");
+            sb.append(pluginInfo.getPluginName());
+            sb.append(",");
+            sb.append("module-version=");
+            sb.append(pluginInfo.getVersion());
+            sb.append(";");
+        });
+        String upgradeContext = sb.toString();
+        String upgradeBatch = MD5Util.getMD5(upgradeContext);
+
+        //获取升级包下载地址
+        String downLoadPath = this.downLoadPath(upgradeBatch, pluginInfoSet);
+
+        Set<ApplicationPluginUpgradeCreateAgentInfoRequest> appsInfoSet = new HashSet<>(createRequest.getAppsInfo());
+        List<CreateApplicationPluginUpgradeParam> upgradeSaveList = appsInfoSet.stream().map(apps -> {
+            CreateApplicationPluginUpgradeParam upgradeParam = new CreateApplicationPluginUpgradeParam();
+            upgradeParam.setApplicationId(apps.getApplicationId());
+            upgradeParam.setApplicationName(apps.getApplicationName());
+            upgradeParam.setUpgradeBatch(upgradeBatch);
+            upgradeParam.setUpgradeContext(upgradeContext);
+            upgradeParam.setUpgradeAgentId(apps.getAgentId());
+            upgradeParam.setDownloadPath(downLoadPath);
+            upgradeParam.setPluginUpgradeStatus(AgentUpgradeEnum.NOT_UPGRADE.getVal());
+            upgradeParam.setType(AgentUpgradeTypeEnum.PROACTIVE_UPGRADE.getVal());
+            //todo nf 租户&环境
+//            upgradeParam.setEnvCode("");
+//            upgradeParam.setTenantId(0L);
+            return upgradeParam;
+        }).collect(Collectors.toList());
+
+        List<CreateApplicationPluginUpgradeRefParam> upgradeRefs = dealDependencyInfo(upgradeBatch, upgradeContext);
+        if (!CollectionUtils.isEmpty(upgradeRefs)) {
+            applicationPluginUpgradeRefService.batchCreate(upgradeRefs);
+        }
+        upgradeDAO.batchSave(upgradeSaveList);
+        return Response.success();
+    }
+
+
+    private String downLoadPath(String upgradeBatch, Set<PluginInfo> pluginInfoSet){
+        //检查是否存在相同的升级包,如果存在就复用下载地址
+        ApplicationPluginUpgradeDetailResult detailResult = upgradeDAO.queryOneByUpgradeBatch(upgradeBatch);
+        String downLoadPath;
+        if (Objects.nonNull(detailResult)) {
+            downLoadPath = detailResult.getDownloadPath();
+        } else {
+            //获取合并包后的下载地址
+            Map<Integer, List<PluginInfo>> type2Info = CollStreamUtil.groupByKey(pluginInfoSet, PluginInfo::getPluginType);
+            if (!type2Info.containsKey(PluginTypeEnum.SIMULATOR.getCode())) {
+                throw new TakinWebException(TakinWebExceptionEnum.PLUGIN_UPGRADE_VALID_ERROR, "升级单中未找到simulator插件");
+            }
+
+            PluginLibraryDetailResult simulator = Convert.convert(PluginLibraryDetailResult.class,
+                    type2Info.get(PluginTypeEnum.SIMULATOR.getCode()).get(0));
+
+            List<PluginLibraryDetailResult> middlewareList = CommonUtil.list2list(type2Info.get(PluginTypeEnum.MIDDLEWARE.getCode()),
+                    PluginLibraryDetailResult.class);
+
+            downLoadPath = AgentPkgUtil.aggregation(null, simulator, middlewareList, uploadPath);
+        }
+
+        return downLoadPath;
+    }
+
+
+
 }

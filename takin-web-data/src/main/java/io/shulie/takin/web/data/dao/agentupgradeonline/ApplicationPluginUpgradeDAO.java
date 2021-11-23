@@ -52,5 +52,9 @@ public interface ApplicationPluginUpgradeDAO {
      * @param param CreateApplicationPluginUpgradeParam对象
      */
     void save(CreateApplicationPluginUpgradeParam param);
+
+    void batchSave(List<CreateApplicationPluginUpgradeParam> params);
+
+    ApplicationPluginUpgradeDetailResult queryOneByUpgradeBatch(String upgradeBatch);
 }
 

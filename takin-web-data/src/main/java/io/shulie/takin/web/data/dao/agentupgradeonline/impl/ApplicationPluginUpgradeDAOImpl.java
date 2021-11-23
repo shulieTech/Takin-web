@@ -18,6 +18,7 @@ import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
 import io.shulie.takin.web.data.dao.agentupgradeonline.ApplicationPluginUpgradeDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationPluginUpgradeMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationPluginUpgradeEntity;
+import io.shulie.takin.web.data.model.mysql.ApplicationPluginUpgradeRefEntity;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
@@ -32,14 +33,14 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ApplicationPluginUpgradeDAOImpl
-    extends ServiceImpl<ApplicationPluginUpgradeMapper, ApplicationPluginUpgradeEntity>
-    implements ApplicationPluginUpgradeDAO, MPUtil<ApplicationPluginUpgradeEntity> {
+        extends ServiceImpl<ApplicationPluginUpgradeMapper, ApplicationPluginUpgradeEntity>
+        implements ApplicationPluginUpgradeDAO, MPUtil<ApplicationPluginUpgradeEntity> {
 
     @Resource
     private ApplicationPluginUpgradeMapper applicationPluginUpgradeMapper;
 
     private LambdaQueryWrapper<ApplicationPluginUpgradeEntity> buildQuery(
-        LambdaQueryWrapper<ApplicationPluginUpgradeEntity> LambdaQueryWrapper) {
+            LambdaQueryWrapper<ApplicationPluginUpgradeEntity> LambdaQueryWrapper) {
         if (Objects.isNull(LambdaQueryWrapper)) {
             return this.getLambdaQueryWrapper().eq(ApplicationPluginUpgradeEntity::getIsDeleted, 0);
         } else {
@@ -61,7 +62,7 @@ public class ApplicationPluginUpgradeDAOImpl
     @Override
     public List<ApplicationPluginUpgradeDetailResult> getList(Set<String> upgradeBatchs) {
         LambdaQueryWrapper<ApplicationPluginUpgradeEntity> queryWrapper = this.buildQuery(
-            this.getLambdaQueryWrapper());
+                this.getLambdaQueryWrapper());
         queryWrapper.in(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatchs);
         return this.convertVos(this.list(queryWrapper));
     }
@@ -77,7 +78,7 @@ public class ApplicationPluginUpgradeDAOImpl
     @Override
     public ApplicationPluginUpgradeDetailResult queryLatestUpgradeByAppIdAndStatus(Long applicationId, Integer status) {
         ApplicationPluginUpgradeEntity entity = applicationPluginUpgradeMapper.queryLatestUpgradeByAppIdAndStatus(
-            applicationId, status);
+                applicationId, status);
         if (entity == null) {
             return null;
         }
@@ -92,16 +93,16 @@ public class ApplicationPluginUpgradeDAOImpl
         entity.setPluginUpgradeStatus(status);
         entity.setErrorInfo(errorInfo);
         applicationPluginUpgradeMapper.update(entity,
-            this.getLambdaQueryWrapper().eq(ApplicationPluginUpgradeEntity::getApplicationId, appId)
-                .eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch));
+                this.getLambdaQueryWrapper().eq(ApplicationPluginUpgradeEntity::getApplicationId, appId)
+                        .eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch));
     }
 
     @Override
     public ApplicationPluginUpgradeDetailResult queryByAppIdAndUpgradeBatch(Long applicationId, String upgradeBatch) {
         ApplicationPluginUpgradeEntity entity = applicationPluginUpgradeMapper.selectOne(
-            this.getLambdaQueryWrapper().eq(ApplicationPluginUpgradeEntity::getApplicationId, applicationId)
-                .eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch)
-                .ne(ApplicationPluginUpgradeEntity::getPluginUpgradeStatus, AgentUpgradeEnum.ROLLBACK.getVal()));
+                this.getLambdaQueryWrapper().eq(ApplicationPluginUpgradeEntity::getApplicationId, applicationId)
+                        .eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch)
+                        .ne(ApplicationPluginUpgradeEntity::getPluginUpgradeStatus, AgentUpgradeEnum.ROLLBACK.getVal()));
 
         if (entity == null) {
             return null;
@@ -114,6 +115,26 @@ public class ApplicationPluginUpgradeDAOImpl
         ApplicationPluginUpgradeEntity entity = new ApplicationPluginUpgradeEntity();
         BeanUtils.copyProperties(param, entity);
         applicationPluginUpgradeMapper.insert(entity);
+    }
+
+    @Override
+    public void batchSave(List<CreateApplicationPluginUpgradeParam> params) {
+        List<ApplicationPluginUpgradeEntity> collect = params.stream()
+                .map(item -> Convert.convert(ApplicationPluginUpgradeEntity.class, item))
+                .collect(Collectors.toList());
+        this.saveBatch(collect);
+    }
+
+    @Override
+    public ApplicationPluginUpgradeDetailResult queryOneByUpgradeBatch(String upgradeBatch) {
+        LambdaQueryWrapper<ApplicationPluginUpgradeEntity> queryWrapper = this.buildQuery(
+                this.getLambdaQueryWrapper());
+        queryWrapper.eq(ApplicationPluginUpgradeEntity::getUpgradeBatch, upgradeBatch);
+        List<ApplicationPluginUpgradeEntity> list = this.list(queryWrapper);
+        if(CollectionUtils.isEmpty(list)){
+            return null;
+        }
+        return this.convertVos(this.list(queryWrapper)).get(0);
     }
 }
 

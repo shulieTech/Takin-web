@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PluginDependentDAOImpl extends ServiceImpl<PluginDependentMapper, PluginDependentEntity>
-    implements PluginDependentDAO, MPUtil<PluginDependentEntity> {
+        implements PluginDependentDAO, MPUtil<PluginDependentEntity> {
 
     @Resource
     private PluginDependentMapper pluginDependentMapper;
@@ -32,8 +32,9 @@ public class PluginDependentDAOImpl extends ServiceImpl<PluginDependentMapper, P
     @Override
     public List<PluginDependentDetailResult> queryPluginDependentDetailList(String pluginName, String pluginVersion) {
         List<PluginDependentEntity> entityList = pluginDependentMapper.selectList(this.getLambdaQueryWrapper()
-            .eq(PluginDependentEntity::getPluginName, pluginName)
-            .eq(PluginDependentEntity::getPluginVersion, pluginVersion));
+                .eq(PluginDependentEntity::getPluginName, pluginName)
+                .eq(PluginDependentEntity::getPluginVersion, pluginVersion)
+                .eq(PluginDependentEntity::getIsDeleted, 0));
 
         return CommonUtil.list2list(entityList, PluginDependentDetailResult.class);
     }
@@ -41,8 +42,8 @@ public class PluginDependentDAOImpl extends ServiceImpl<PluginDependentMapper, P
     @Override
     public void batchInsert(List<CreatePluginDependentParam> list) {
         List<PluginDependentEntity> collect = list.stream()
-            .map(item -> Convert.convert(PluginDependentEntity.class, item))
-            .collect(Collectors.toList());
+                .map(item -> Convert.convert(PluginDependentEntity.class, item))
+                .collect(Collectors.toList());
         this.saveBatch(collect);
     }
 }

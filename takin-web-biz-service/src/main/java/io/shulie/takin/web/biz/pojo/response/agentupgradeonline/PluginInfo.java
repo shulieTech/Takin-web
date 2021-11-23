@@ -1,8 +1,9 @@
 package io.shulie.takin.web.biz.pojo.response.agentupgradeonline;
 
-import java.util.Date;
-
 import lombok.Data;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Description agent插件基本信息
@@ -34,7 +35,7 @@ public class PluginInfo {
     /**
      * 插件版本
      */
-    private String pluginVersion;
+    private String version;
 
     /**
      * 是否定制 false:非定制 true:定制
@@ -42,9 +43,14 @@ public class PluginInfo {
     private Boolean isCustomMode;
 
     /**
+     * 依赖模块
+     */
+    private List<PluginInfo> dependenciesInfos;
+
+    /**
      * 更新内容
      */
-    private String updateInfo;
+    private String updateDescription;
 
     /**
      * 创建时间

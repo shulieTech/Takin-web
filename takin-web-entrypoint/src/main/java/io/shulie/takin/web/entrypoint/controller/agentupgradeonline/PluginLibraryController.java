@@ -87,4 +87,7 @@ public class PluginLibraryController {
     public Response<List<PluginInfo>> upgradeAllowPluginList(@Validated @RequestBody PluginAllowUpgradeLibraryListQueryRequest queryRequest) {
         return pluginLibraryService.queryByPluginName(queryRequest);
     }
+
+
+
 }

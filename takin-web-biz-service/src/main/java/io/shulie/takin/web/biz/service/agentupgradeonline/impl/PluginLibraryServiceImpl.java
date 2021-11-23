@@ -1,17 +1,8 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline.impl;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
+import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentLibraryCreateRequest;
@@ -51,6 +42,7 @@ import io.shulie.takin.web.data.param.agentupgradeonline.PluginLibraryListQueryP
 import io.shulie.takin.web.data.param.agentupgradeonline.PluginLibraryQueryParam;
 import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
 import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentVersionParam;
+import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginDependentDetailResult;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
 import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeRefDetailResult;
@@ -62,6 +54,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 插件版本库(PluginLibrary)service
@@ -179,9 +184,9 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
             PluginInfo pluginInfo = new PluginInfo();
             pluginInfo.setPluginName(item.getModuleId());
             pluginInfo.setPluginType(typeEnum.getCode());
-            pluginInfo.setPluginVersion(item.getModuleVersion());
+            pluginInfo.setVersion(item.getModuleVersion());
             pluginInfo.setIsCustomMode(item.getCustomized());
-            pluginInfo.setUpdateInfo(item.getUpdateInfo());
+            pluginInfo.setUpdateDescription(item.getUpdateInfo());
             pluginInfo.setDependenciesInfo(item.getDependenciesInfoStr());
             return pluginInfo;
         }).collect(Collectors.toList()));
@@ -378,7 +383,7 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
     public List<PluginLibraryDetailResult> list(List<ApplicationPluginUpgradeRefDetailResult> paramList) {
         List<PluginLibraryDetailResult> list = new ArrayList<>();
         paramList.forEach(detail -> {
-            list.addAll(pluginLibraryDAO.list(detail.getPluginName(), detail.getPluginVersion()));
+            list.add(pluginLibraryDAO.getOneByPluginNameAndVersion(detail.getPluginName(), detail.getPluginVersion()));
         });
 
         return list;
@@ -411,17 +416,59 @@ public class PluginLibraryServiceImpl implements PluginLibraryService {
 
     @Override
     public Response<List<PluginInfo>> queryByPluginName(PluginAllowUpgradeLibraryListQueryRequest queryRequest) {
-        List<Long> applications = queryRequest.getApplications();
-        //确定当前应用的最高升级单
-        List<AgentReportDetailResult> list = agentReportService.getList(applications);
-        Map<Long, List<PluginLibraryDetailResult>> appPluginList = agentVersionService.findAppPluginList(list);
-        //确定当前应用的最高插件版本
+        List<Long> applications = queryRequest.getApplicationIds();
+        /*
+         * 确定应用的当前最高升级单和最高版本插件列表
+         * 多节点应用可能存在多个版本
+         * 这里只取最高的版本
+         */
 
-        return null;
+        List<AgentReportDetailResult> list = agentReportService.getList(applications);
+        Map<Long, List<PluginLibraryDetailResult>> appPluginListMap = agentVersionService.findAppPluginList(list);
+
+        Set<PluginLibraryDetailResult> pluginSet = new HashSet<>();
+        appPluginListMap.forEach((k,v) -> pluginSet.addAll(v));
+        Map<String, PluginLibraryDetailResult> pluginName2Detail = CollStreamUtil.toMap(pluginSet,
+                PluginLibraryDetailResult::getPluginName,
+                Function.identity());
+
+        Long versionNum = 0L;
+        if(pluginName2Detail.containsKey(queryRequest.getPluginName())){
+             versionNum = pluginName2Detail.get(queryRequest.getPluginName()).getVersionNum();
+        }
+        List<PluginLibraryDetailResult> detailResults = pluginLibraryDAO
+                .queryListByPluginNameAndGtVersion(queryRequest.getPluginName(), versionNum);
+
+        /*
+         *  确定需要一起升级的依赖插件
+         */
+        List<PluginInfo> pluginInfos = CommonUtil.list2list(detailResults, PluginInfo.class);
+        List<PluginInfo> dependenciesInfos = new ArrayList<>();
+        pluginInfos.forEach(pluginInfo -> {
+            List<PluginDependentDetailResult> dependents = pluginDependentDAO
+                    .queryPluginDependentDetailList(pluginInfo.getPluginName(), pluginInfo.getVersion());
+            dependents.forEach(dependent ->{
+                PluginLibraryDetailResult one = pluginLibraryDAO
+                        .getOneByPluginNameAndVersion(dependent.getDependentPluginName(), dependent.getDependentPluginVersion());
+                dependenciesInfos.add(Convert.convert(PluginInfo.class,one));
+            });
+            pluginInfo.setDependenciesInfos(dependenciesInfos);
+        });
+
+        //todo nf 租户隔离没加
+        return Response.success(CommonUtil.list2list(detailResults, PluginInfo.class));
     }
 
     @Override
     public PluginLibraryDetailResult queryOneById(Long pluginId) {
         return  pluginLibraryDAO.queryById(pluginId);
+    }
+
+    @Override
+    public List<PluginLibraryDetailResult> queryListByIds(List<Long> pluginIds) {
+        if(CollectionUtils.isEmpty(pluginIds)){
+            return Collections.emptyList();
+        }
+        return pluginLibraryDAO.queryListByIds(pluginIds);
     }
 }

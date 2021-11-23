@@ -148,6 +148,11 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 插件根目录
      */
     PLUGIN_PATH_VALID_ERROR("1600-"+ErrorConstant.VALIDATE_ERROR,"探针根目录数据校验异常"),
+
+    /**
+     * 升级
+     */
+    PLUGIN_UPGRADE_VALID_ERROR("1700-"+ErrorConstant.VALIDATE_ERROR,"升级包数据异常"),
     ;
     private final String errorCode;
 

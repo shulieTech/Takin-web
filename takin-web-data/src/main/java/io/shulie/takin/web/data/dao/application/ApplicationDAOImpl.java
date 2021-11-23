@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 
 import com.alibaba.excel.util.CollectionUtils;
 
-import com.alibaba.excel.util.StringUtils;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
@@ -53,6 +51,7 @@ import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -289,7 +288,7 @@ public class ApplicationDAOImpl
         if (param.getTenantId() != null) {
             wrapper.eq(ApplicationMntEntity::getTenantId, param.getTenantId());
         }
-        if(org.apache.commons.lang3.StringUtils.isNotBlank(param.getEnvCode())) {
+        if(StringUtils.isNotBlank(param.getEnvCode())) {
             wrapper.eq(ApplicationMntEntity::getEnvCode, param.getEnvCode());
         }
         return getApplicationDetailResults(wrapper);

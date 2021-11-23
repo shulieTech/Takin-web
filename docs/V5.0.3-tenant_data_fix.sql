@@ -1,49 +1,141 @@
 BEGIN;
--- 额外 租户期间增加的表
-update t_mq_config_template set tenant_id=customer_id;
-update t_application_ds_cache_manage set tenant_id=customer_id;
-update t_application_ds_db_manage set tenant_id=customer_id;
-update t_application_ds_db_table set tenant_id=customer_id;
+-- 无涯 基础表
+UPDATE t_pradar_zk_config set TENANT_ID = -1 and env_code = 'system'
+UPDATE t_trace_manage_deploy t1
+    LEFT JOIN t_trace_manage t2 ON t1.trace_manage_id = t2.id
+    SET t1.env_code = t2.env_code ,t1.tenant_id = t2.TENANT_ID;
 
--- 记录userid和envCode
-CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
-SELECT id as user_id,tenant_id,
-CASE
-   WHEN customer_id <> tenant_id THEN
-       'test'
-   ELSE
-       'prod'
-   END AS env_code
-FROM t_tro_user;
+---------------
+-- 场景表 t_scene | t_shadow_job_config | t_shadow_mq_consumer
+-- 查找租户
+select GROUP_CONCAT(id)  from t_tenant_info
+update t_scene set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+update t_shadow_job_config set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+update t_shadow_mq_consumer set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+update t_trace_node_info set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+update t_tro_dbresource set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+update t_white_list set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+update t_whitelist_effective_app set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+update t_application_mnt set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+update t_application_ds_cache_manage set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+update t_application_ds_db_manage set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
 
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(1,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(3,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(4,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(5 ,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(12,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(13,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(7 ,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(8 ,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(17,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(19,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(20,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(21,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(22,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(23,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(25,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(26,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(27,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(28,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(29,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(30,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(31,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(32,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(33,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(9 ,'test');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(10,'prod');
-INSERT INTO DATA_FIX_TABLE(`user_id`,`env_code`)  VALUES(24,'prod');
+-- 默认
+update t_scene set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+update t_shadow_job_config set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+update t_shadow_mq_consumer set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+update t_trace_node_info set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+update t_tro_dbresource set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+update t_white_list set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+update t_whitelist_effective_app set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+update t_application_mnt set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+update t_application_ds_cache_manage set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+update t_application_ds_db_manage set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+-- T3出行
+update t_scene set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+update t_shadow_job_config set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+update t_shadow_mq_consumer set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+update t_trace_node_info set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+update t_tro_dbresource set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+update t_white_list set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+update t_whitelist_effective_app set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+update t_application_mnt set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+update t_application_ds_cache_manage set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+update t_application_ds_db_manage set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+-- 老板姓
+update t_scene set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+update t_shadow_job_config set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+update t_shadow_mq_consumer set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+update t_trace_node_info set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+update t_tro_dbresource set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+update t_white_list set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+update t_whitelist_effective_app set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+update t_application_mnt set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+update t_application_ds_cache_manage set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+update t_application_ds_db_manage set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+
+-- 联动云
+update t_scene set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+update t_shadow_job_config set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+update t_shadow_mq_consumer set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+update t_trace_node_info set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+update t_tro_dbresource set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+update t_white_list set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+update t_whitelist_effective_app set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+update t_application_mnt set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+update t_application_ds_cache_manage set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+update t_application_ds_db_manage set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+
+-- todo 申通
+-- 更新 t_scene_link_relate
+UPDATE t_scene_link_relate t1
+    LEFT JOIN t_scene t2 ON t1.SCENE_ID = t2.id
+    SET t1.env_code = t2.env_code ,t1.tenant_id = t2.TENANT_ID;
+
+------脚本相关------
+-- t_script_debug
+select GROUP_CONCAT(id)  from t_tenant_info
+update t_script_debug set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+update t_script_manage set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
+-- 默认
+update t_script_debug set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+update t_script_manage set tenant_id = customer_id and env_code = 'test' where customer_id = 1
+-- T3出行
+update t_script_debug set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+update t_script_manage set tenant_id = 3 and env_code = 'test' where  customer_id = 4
+-- 老板姓
+update t_script_debug set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+update t_script_manage set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
+-- 联动云
+update t_script_debug set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+update t_script_manage set tenant_id = 10 and env_code = 'test' where  customer_id = 9
+
+UPDATE t_script_manage_deploy t1
+    LEFT JOIN t_script_manage t2 ON t1.script_id = t2.id
+    SET t1.env_code = t2.env_code ,t1.tenant_id = t2.TENANT_ID;
+-- t_shadow_job_config
+---无涯
 
 -- caijy
+BEGIN;
+-- 记录userid和envCode
+CREATE TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
+SELECT id as user_id,tenant_id,
+       CASE
+           WHEN customer_id <> tenant_id THEN
+               'test'
+           ELSE
+               'prod'
+           END AS env_code
+FROM t_tro_user;
+ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=1;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=3;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=4;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=5;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=12;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=13;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=7;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=8;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=17;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=19;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=20;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=21;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=22;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=23;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=25;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=26;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=27;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=28;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=29;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=30;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=31;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=32;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=33;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=9;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=10;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=24;
+
 -- env_code
 -- 应用表 t_application_mnt
 UPDATE t_application_mnt t1 SET t1.env_code = IFNULL((select env_code from DATA_FIX_TABLE where user_id=t1.user_id),'test');
@@ -190,31 +282,33 @@ UPDATE t_performance_criteria_config t1
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- tenant_id
-update t_application_ds_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_application_mnt set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_application_node_probe set tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = application_name),1);
-update t_fast_debug_config_info set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_fast_debug_exception set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_fast_debug_result set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_application_ds_manage ds set ds.tenant_id=IFNULL((select fix.tenant_id from `DATA_FIX_TABLE` fix where fix.user_id = ds.user_id),1);
+update t_application_mnt app set app.tenant_id=IFNULL((select fix.tenant_id from `DATA_FIX_TABLE` fix where fix.user_id = app.user_id),1);
+update t_application_node_probe probe set probe.tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = probe.application_name and customer_id=probe.customer_id),1);
 update t_black_list set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_business_link_manage_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_fast_debug_config_info set tenant_id=IFNULL((select tenant_id from t_business_link_manage_table where LINK_ID= business_link_id),1);
+update t_fast_debug_result set tenant_id=IFNULL((select tenant_id from t_fast_debug_config_info where id= config_id),1);
+update t_fast_debug_exception set tenant_id=IFNULL((select tenant_id from t_fast_debug_result where id= result_id),1);
+update t_script_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_file_manage t1
+    LEFT JOIN t_script_file_ref t2 ON t1.id = t2.file_id
+    LEFT JOIN t_script_manage_deploy t3 ON t3.id = t2.script_deploy_id
+    LEFT JOIN t_script_manage t4 ON t4.id = t3.script_id
+    SET t1.tenant_id = IFNULL(t4.tenant_id,1);
 update t_leakcheck_config set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_leakcheck_config_detail set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_leakverify_result set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_operation_log set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_ops_script_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_script_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_link_guard set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_link_manage_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_tro_dbresource set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_file_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_application_plugins_config set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_application_focus set tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = app_name),1);
 update t_application_middleware t set tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_ID = t.application_id),1);
 update t_data_build t set t.tenant_id=(select tenant_id from t_application_mnt where APPLICATION_ID = t.APPLICATION_ID);
 update t_datasource_tag_ref t set t.tenant_id=IFNULL((select tenant_id from t_tro_dbresource where id = t.datasource_id),1);
-update t_fast_debug_machine_performance f set f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t  WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
-update t_fast_debug_stack_info f set f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
 update t_leakverify_detail t set t.tenant_id=IFNULL((SELECT tenant_id FROM t_leakverify_result WHERE id=t.result_id and is_deleted=0),1);
 update t_link_detection t set t.tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_ID = t.APPLICATION_ID),1);
 update t_login_record t set t.tenant_id=IFNULL((select tenant_id from t_tro_user WHERE name=t.user_name and is_delete=0),1);
@@ -223,9 +317,39 @@ update t_ops_script_execute_result t set t.tenant_id=IFNULL((select tenant_id fr
 update t_ops_script_file t set t.tenant_id=IFNULL((select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_deleted=0),1);
 update t_performance_base_data t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = t.app_name),1);
 update t_performance_criteria_config t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_ID = t.app_id),1);
--- update t_performance_thread_data t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = t.app_name),1);
 
 -- caijy end
+COMMIT ;
+
+-- liuchuan
+BEGIN;
+-- t_activity_node_service_state 根据业务活动获得 租户id
+UPDATE t_activity_node_service_state a
+    LEFT JOIN (SELECT IFNULL(u.tenant_id, 1) tid, b.LINK_ID bid, b.env_code
+    FROM t_business_link_manage_table b LEFT JOIN t_tro_user u ON u.id = b.USER_ID) t
+ON t.bid = a.activity_id
+    SET a.tenant_id = t.tid, a.env_code = t.env_code;
+
+-- t_agent_config 根据 key, 获得用户id, 然后获得 租户id
+-- 需要单独给 env_code
+UPDATE t_agent_config m LEFT JOIN t_tro_user u ON u.`key` = m.user_app_key SET m.tenant_id = u.tenant_id;
+
+-- t_app_business_table_info 根据用户id查到租户id, 然后赋值
+UPDATE t_app_business_table_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.tenant_id;
+UPDATE t_app_business_table_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
+
+-- t_app_middleware_info 根据用户id查到租户id, 然后赋值
+UPDATE t_app_middleware_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.tenant_id;
+UPDATE t_app_middleware_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
+
+UPDATE t_app_remote_call m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.tenant_id;
+UPDATE t_app_remote_call m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
+
+UPDATE t_app_agent_config_report m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.tenant_id;
+UPDATE t_app_agent_config_report m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.application_id SET m.env_code = u.env_code;
+
+COMMIT;
+-- liuchuan end
 
 -- 兮曦 --
 update e_patrol_activity_assert set env_code='test',tenant_id=1;
@@ -265,138 +389,16 @@ update e_patrol_scene_check set env_code='test',tenant_id=1;
 
 -- 兮曦 --
 
----无涯
-UPDATE t_pradar_zk_config set TENANT_ID = -1 and env_code = 'system'
 
+-- 额外 租户期间增加的表
+update t_mq_config_template set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_application_ds_cache_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_application_ds_db_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+update t_application_ds_db_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 
-
-UPDATE t_trace_manage_deploy t1
-    LEFT JOIN t_trace_manage t2 ON t1.trace_manage_id = t2.id
-    SET t1.env_code = t2.env_code ,t1.tenant_id = t2.TENANT_ID;
-
----------------
--- 场景表 t_scene | t_shadow_job_config | t_shadow_mq_consumer
--- 查找租户
-select GROUP_CONCAT(id)  from t_tenant_info
-update t_scene set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-update t_shadow_job_config set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-update t_shadow_mq_consumer set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-update t_trace_node_info set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-update t_tro_dbresource set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-update t_white_list set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-update t_whitelist_effective_app set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-update t_application_mnt set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-update t_application_ds_cache_manage set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-update t_application_ds_db_manage set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-
--- 默认
-update t_scene set tenant_id = customer_id and env_code = 'test' where customer_id = 1
-update t_shadow_job_config set tenant_id = customer_id and env_code = 'test' where customer_id = 1
-update t_shadow_mq_consumer set tenant_id = customer_id and env_code = 'test' where customer_id = 1
-update t_trace_node_info set tenant_id = customer_id and env_code = 'test' where customer_id = 1
-update t_tro_dbresource set tenant_id = customer_id and env_code = 'test' where customer_id = 1
-update t_white_list set tenant_id = customer_id and env_code = 'test' where customer_id = 1
-update t_whitelist_effective_app set tenant_id = customer_id and env_code = 'test' where customer_id = 1
-update t_application_mnt set tenant_id = customer_id and env_code = 'test' where customer_id = 1
-update t_application_ds_cache_manage set tenant_id = customer_id and env_code = 'test' where customer_id = 1
-update t_application_ds_db_manage set tenant_id = customer_id and env_code = 'test' where customer_id = 1
--- T3出行
-update t_scene set tenant_id = 3 and env_code = 'test' where  customer_id = 4
-update t_shadow_job_config set tenant_id = 3 and env_code = 'test' where  customer_id = 4
-update t_shadow_mq_consumer set tenant_id = 3 and env_code = 'test' where  customer_id = 4
-update t_trace_node_info set tenant_id = 3 and env_code = 'test' where  customer_id = 4
-update t_tro_dbresource set tenant_id = 3 and env_code = 'test' where  customer_id = 4
-update t_white_list set tenant_id = 3 and env_code = 'test' where  customer_id = 4
-update t_whitelist_effective_app set tenant_id = 3 and env_code = 'test' where  customer_id = 4
-update t_application_mnt set tenant_id = 3 and env_code = 'test' where  customer_id = 4
-update t_application_ds_cache_manage set tenant_id = 3 and env_code = 'test' where  customer_id = 4
-update t_application_ds_db_manage set tenant_id = 3 and env_code = 'test' where  customer_id = 4
--- 老板姓
-update t_scene set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-update t_shadow_job_config set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-update t_shadow_mq_consumer set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-update t_trace_node_info set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-update t_tro_dbresource set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-update t_white_list set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-update t_whitelist_effective_app set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-update t_application_mnt set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-update t_application_ds_cache_manage set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-update t_application_ds_db_manage set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-
--- 联动云
-update t_scene set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-update t_shadow_job_config set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-update t_shadow_mq_consumer set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-update t_trace_node_info set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-update t_tro_dbresource set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-update t_white_list set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-update t_whitelist_effective_app set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-update t_application_mnt set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-update t_application_ds_cache_manage set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-update t_application_ds_db_manage set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-
--- todo 申通
--- 更新 t_scene_link_relate
-UPDATE t_scene_link_relate t1
-    LEFT JOIN t_scene t2 ON t1.SCENE_ID = t2.id
-    SET t1.env_code = t2.env_code ,t1.tenant_id = t2.TENANT_ID;
-
-------脚本相关------
--- t_script_debug
-select GROUP_CONCAT(id)  from t_tenant_info
-update t_script_debug set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
-update t_script_manage set tenant_id = customer_id and env_code = 'prod' where customer_id in(2,3,5,7,10,24)
--- 默认
-update t_script_debug set tenant_id = customer_id and env_code = 'test' where customer_id = 1
-update t_script_manage set tenant_id = customer_id and env_code = 'test' where customer_id = 1
--- T3出行
-update t_script_debug set tenant_id = 3 and env_code = 'test' where  customer_id = 4
-update t_script_manage set tenant_id = 3 and env_code = 'test' where  customer_id = 4
--- 老板姓
-update t_script_debug set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
-update t_script_manage set tenant_id = 5 and env_code = 'prod' where  customer_id in(12,13)
--- 联动云
-update t_script_debug set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-update t_script_manage set tenant_id = 10 and env_code = 'test' where  customer_id = 9
-
-UPDATE t_script_manage_deploy t1
-    LEFT JOIN t_script_manage t2 ON t1.script_id = t2.id
-    SET t1.env_code = t2.env_code ,t1.tenant_id = t2.TENANT_ID;
-
--- t_shadow_job_config
-
-
-
----无涯
-
--- 流川
--- t_activity_node_service_state 根据业务活动获得 租户id
-UPDATE t_activity_node_service_state a
-    LEFT JOIN (SELECT IFNULL(u.tenant_id, 1) tid, b.LINK_ID bid, b.env_code
-    FROM t_business_link_manage_table b LEFT JOIN t_tro_user u ON u.id = b.USER_ID) t
-ON t.bid = a.activity_id
-    SET a.tenant_id = t.tid, a.env_code = t.env_code;
-
--- t_agent_config 根据 key, 获得用户id, 然后获得 租户id
--- 需要单独给 env_code
-UPDATE t_agent_config m LEFT JOIN t_tro_user u ON u.`key` = m.user_app_key SET m.tenant_id = u.tenant_id;
-
--- t_app_business_table_info 根据用户id查到租户id, 然后赋值
-UPDATE t_app_business_table_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.customer_id;
-UPDATE t_app_business_table_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
-
--- t_app_middleware_info 根据用户id查到租户id, 然后赋值
-UPDATE t_app_middleware_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.customer_id;
-UPDATE t_app_middleware_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
-
-UPDATE t_app_remote_call m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.customer_id;
-UPDATE t_app_remote_call m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
-
-UPDATE t_app_agent_config_report m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.customer_id;
-UPDATE t_app_agent_config_report m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.application_id SET m.env_code = u.env_code;
-
-COMMIT;
-
+-- TODO 大表最后数据迁移
+update t_fast_debug_machine_performance f set f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t  WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
+update t_fast_debug_stack_info f set f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
 
 -- 最后加索引
 ALTER TABLE t_activity_node_service_state ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -505,3 +507,8 @@ ALTER TABLE t_tro_user_dept_relation ADD INDEX `idx_tenant` ( `tenant_id`);
 ALTER TABLE t_upload_interface_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_white_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_whitelist_effective_app ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+
+-- 调试工具结果
+ALTER TABLE t_fast_debug_result ADD INDEX `idx_trace_id` ( `trace_id`);
+ALTER TABLE t_fast_debug_result ADD INDEX `idx_config_Id` (`config_Id`);
+

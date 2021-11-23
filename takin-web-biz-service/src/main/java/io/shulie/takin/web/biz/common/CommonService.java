@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import com.alibaba.druid.filter.config.ConfigTools;
@@ -67,7 +66,6 @@ import com.pamirs.takin.entity.dao.confcenter.TSecondBasicDao;
 import com.pamirs.takin.entity.dao.confcenter.TSecondLinkMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TShadowTableConfigDao;
 import com.pamirs.takin.entity.dao.confcenter.TShadowTableDataSourceDao;
-import com.pamirs.takin.entity.dao.confcenter.TWhiteListMntDao;
 import com.pamirs.takin.entity.dao.dict.TDictDao;
 import com.pamirs.takin.entity.dao.dict.TDictionaryTypeMapper;
 import com.pamirs.takin.entity.dao.monitor.TAlarmDao;
@@ -90,10 +88,10 @@ import io.shulie.takin.web.biz.service.TReportService;
 import io.shulie.takin.web.biz.service.TSecondLinkMntService;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.data.dao.application.WhiteListDAO;
 import io.shulie.takin.web.data.mapper.mysql.BaseConfigMapper;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -170,7 +168,7 @@ public class CommonService {
     protected TDataBuildDao TDataBuildDao;
 
     @Autowired
-    protected TWhiteListMntDao tWListMntDao;
+    protected WhiteListDAO whiteListDAO;
 
     @Autowired
     protected TLinkDetectionDao TLinkDetectionDao;

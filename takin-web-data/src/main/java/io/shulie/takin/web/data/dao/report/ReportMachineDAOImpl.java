@@ -7,11 +7,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import io.shulie.takin.web.common.util.DataTransformUtil;
-import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 import io.shulie.takin.web.data.mapper.mysql.ReportMachineMapper;
 import io.shulie.takin.web.data.model.mysql.ReportMachineEntity;
+import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
-import io.shulie.takin.web.data.param.report.ReportSummaryCreateParam;
 import io.shulie.takin.web.data.result.report.ReportMachineResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
@@ -31,7 +30,7 @@ import org.springframework.stereotype.Component;
 public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, ReportMachineEntity>
     implements ReportMachineDAO, MPUtil<ReportMachineEntity> {
     @Override
-    public void insert(ReportSummaryCreateParam param) {
+    public void insert(ReportMachineUpdateParam param) {
         ReportMachineEntity entity = new ReportMachineEntity();
         BeanUtils.copyProperties(param,entity);
         this.save(entity);

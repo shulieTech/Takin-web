@@ -22,7 +22,6 @@ import com.google.common.collect.Maps;
 import com.pamirs.takin.common.ResponseOk;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
-import com.pamirs.takin.entity.dao.confcenter.TWhiteListMntDao;
 import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.query.whitelist.AgentWhiteList;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
@@ -63,7 +62,7 @@ public class WhiteListFileService {
     private TBListMntDao tbListMntDao;
 
     @Resource
-    private TWhiteListMntDao tWhiteListMntDao;
+    private WhiteListDAO whiteListDAO;
 
     @Autowired
     private TApplicationMntDao applicationMntDao;
@@ -74,8 +73,6 @@ public class WhiteListFileService {
     @Autowired
     private ApplicationDAO applicationDAO;
 
-    @Autowired
-    private WhiteListDAO whiteListDAO;
     @Autowired
     private WhitelistEffectiveAppDao whitelistEffectiveAppDao;
 
@@ -305,7 +302,7 @@ public class WhiteListFileService {
         if (CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }
-        List<Map<String, Object>> maps = tWhiteListMntDao.getWhiteListByAppIds(list);
+        List<Map<String, Object>> maps = whiteListDAO.getWhiteListByAppIds(list);
         return maps.stream().map(it -> {
                 AgentWhiteList whiteListDTO = new AgentWhiteList();
                 whiteListDTO.setInterfaceName((String)it.get("interfaceName"));

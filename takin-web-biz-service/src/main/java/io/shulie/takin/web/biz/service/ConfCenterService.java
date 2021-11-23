@@ -48,7 +48,6 @@ import com.pamirs.takin.common.util.PageInfo;
 import com.pamirs.takin.common.util.TakinFileUtil;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TLinkMntDao;
-import com.pamirs.takin.entity.dao.confcenter.TWhiteListMntDao;
 import com.pamirs.takin.entity.domain.entity.TAlarm;
 import com.pamirs.takin.entity.domain.entity.TApplicationIp;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
@@ -80,6 +79,7 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
+import io.shulie.takin.web.data.dao.application.WhiteListDAO;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
 import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
@@ -275,7 +275,7 @@ public class ConfCenterService extends CommonService {
         String whiteListUrl = MapUtils.getString(paramMap, "whiteListUrl");
         Long applicationId = MapUtils.getLong(paramMap, "applicationId");
         PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
-        List<TApplicationInterface> queryWhiteListInfo = tWListMntDao.queryOnlyWhiteList(applicationName, principalNo, type,
+        List<TApplicationInterface> queryWhiteListInfo = whiteListDAO.queryOnlyWhiteList(applicationName, principalNo, type,
             whiteListUrl, null, applicationId);
 
         return new PageInfo<>(queryWhiteListInfo.isEmpty() ? Lists.newArrayList() : queryWhiteListInfo);
@@ -291,14 +291,14 @@ public class ConfCenterService extends CommonService {
         if (null != whiteListIds) {
             applicationIds = (List)whiteListIds;
         }
-        return tWListMntDao.queryOnlyWhiteList(applicationName, principalNo, type, whiteListUrl, applicationIds, null);
+        return whiteListDAO.queryOnlyWhiteList(applicationName, principalNo, type, whiteListUrl, applicationIds, null);
     }
 
     /**
      * 项目压测开关
      */
     public void projectPressureSwitch(Long applicationId) {
-        // tWListMntDao.updateWListById();
+        // whiteListDAO.updateWListById();
     }
 
     /**
@@ -354,7 +354,7 @@ public class ConfCenterService extends CommonService {
         GetDeleteIds deleteIds = new GetDeleteIds(applicationIds, "applicationName").invoke(tApplicationMntDao);
         List<String> ableDeleteApplicationList = deleteIds.getAbleDeleteList();
         if (!ableDeleteApplicationList.isEmpty()) {
-            tWListMntDao.deleteApplicationInfoRelatedInterfaceByIds(ableDeleteApplicationList);
+            whiteListDAO.deleteApplicationInfoRelatedInterfaceByIds(ableDeleteApplicationList);
             ableDeleteApplicationList.forEach(applicationId -> {
                 TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(
                     Long.parseLong(applicationId));
@@ -462,7 +462,7 @@ public class ConfCenterService extends CommonService {
         List<String> duplicateUrlList = Lists.newArrayList();
         //MQ单独处理, 和其他白名单相比没有接口名interfaceName,只有queueName
         if (WListTypeEnum.MQ.getValue().equals(twListVo.getType())) {
-            int wListExist = tWListMntDao.queryWhiteListCountByMqInfo(twListVo);
+            int wListExist = whiteListDAO.queryWhiteListCountByMqInfo(twListVo);
             if (wListExist > 0) {
                 throw new TakinModuleException(TakinErrorEnum.CONFCENTER_ADD_WLIST_DUPICATE_EXCEPTION);
             }
@@ -475,7 +475,7 @@ public class ConfCenterService extends CommonService {
             List<String> list = twListVo.getList();
             List<TWList> twLists = Lists.newArrayList();
             list.forEach(url -> {
-                int wListExist = tWListMntDao.whiteListExist(appId, url, twListVo.getUseYn());
+                int wListExist = whiteListDAO.whiteListExist(appId, url, twListVo.getUseYn());
                 if (wListExist > 0) {
                     duplicateUrlList.add(url);
                 } else {
@@ -536,7 +536,7 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     private void batchAddWhiteList(List<TWList> twLists) {
-        tWListMntDao.batchAddWhiteList(twLists);
+        whiteListDAO.batchAddWhiteList(twLists);
     }
 
     /**
@@ -546,7 +546,7 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     private void addWhiteList(TWList tWhiteList) {
-        tWListMntDao.addWhiteList(tWhiteList);
+        whiteListDAO.addWhiteList(tWhiteList);
     }
 
     /**
@@ -561,23 +561,11 @@ public class ConfCenterService extends CommonService {
 
     public List<TApplicationInterface> queryOnlyWhiteList(String applicationName, String principalNo, String type, String x,
         Long appId) {
-        List<TApplicationInterface> queryWhiteListInfo = tWListMntDao.queryOnlyWhiteList(applicationName, principalNo, type, x,
+        List<TApplicationInterface> queryWhiteListInfo = whiteListDAO.queryOnlyWhiteList(applicationName, principalNo, type, x,
             null, null);
         return queryWhiteListInfo.isEmpty() ? Lists.newArrayList() : queryWhiteListInfo;
     }
 
-    /**
-     * 说明: 当链路为空查询不到查询白名单列表时，根据应用名称,负责人和白名单类型查询应用信息
-     *
-     * @param applicationName 应用名称
-     * @param principalNo     负责人
-     * @param type            白名单类型
-     * @return 应用服务列表
-     * @author shulie
-     */
-    public List<TApplicationInterface> queryWhiteList(String applicationName, String principalNo, String type) {
-        return tWListMntDao.queryWhiteList(applicationName, principalNo, type);
-    }
 
     /**
      * 说明: 根据id查询白名单信息
@@ -588,7 +576,7 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     public TWList querySingleWhiteListById(String whitelistId) throws TakinModuleException {
-        TWList tWlist = tWListMntDao.querySingleWhiteListById(whitelistId);
+        TWList tWlist = whiteListDAO.querySingleWhiteListById(whitelistId);
         if (tWlist == null) {
             throw new TakinModuleException(TakinErrorEnum.CONFCENTER_QUERY_WLISTBYID_NOTEXIST);
         }
@@ -603,18 +591,18 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     public void updateWhiteListById(TWList param) throws TakinModuleException {
-        TWList dbData = tWListMntDao.querySingleWhiteListById(String.valueOf(param.getWlistId()));
+        TWList dbData = whiteListDAO.querySingleWhiteListById(String.valueOf(param.getWlistId()));
         if (dbData == null) {
             throw new TakinModuleException(TakinErrorEnum.CONFCENTER_QUERY_WLISTBYID_NOTEXIST);
         }
-        int applicationExist = tWListMntDao.whiteListExist(param.getApplicationId(), param.getInterfaceName(),
+        int applicationExist = whiteListDAO.whiteListExist(param.getApplicationId(), param.getInterfaceName(),
             param.getUseYn());
         //            修改时,排除当前白名单记录,所以存在至少1个白名单
         if (applicationExist > 1) {
             throw new TakinModuleException(TakinErrorEnum.CONFCENTER_UPDATE_WLIST_DUPICATE_EXCEPTION);
         }
         //更新白名单需要更新缓存
-        tWListMntDao.updateSelective(param);
+        whiteListDAO.updateSelective(param);
         //写入文件 nginx访问
         writeWhiteListFile();
     }
@@ -626,11 +614,11 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     public String deleteWhiteListByIds(String whiteListIds) {
-        GetDeleteIds deleteIds = new GetDeleteIds(whiteListIds, "interfaceName").invoke(tWListMntDao);
+        GetDeleteIds deleteIds = new GetDeleteIds(whiteListIds, "interfaceName").invoke(whiteListDAO);
         List<String> ableDeleteWhiteList = deleteIds.getAbleDeleteList();
         if (!ableDeleteWhiteList.isEmpty()) {
-            List<TWList> ableDeleteWhiteLists = tWListMntDao.queryWhiteListByIds(ableDeleteWhiteList);
-            tWListMntDao.deleteWhiteListByIds(ableDeleteWhiteList);
+            List<TWList> ableDeleteWhiteLists = whiteListDAO.queryWhiteListByIds(ableDeleteWhiteList);
+            whiteListDAO.deleteWhiteListByIds(ableDeleteWhiteList);
             //删除白名单需要更新缓存
             ableDeleteWhiteLists.stream().map(TWList::getApplicationId).distinct().forEach(applicationId -> {
                 TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(
@@ -649,8 +637,8 @@ public class ConfCenterService extends CommonService {
      */
     public void deleteWhiteListByIds(List<Long> ids) {
         if (!ids.isEmpty()) {
-            List<TWList> ableDeleteWhiteLists = tWListMntDao.getWhiteListByIds(ids);
-            tWListMntDao.deleteByIds(ids);
+            List<TWList> ableDeleteWhiteLists = whiteListDAO.getWhiteListByIds(ids);
+            whiteListDAO.deleteByIds(ids);
 
         }
         writeWhiteListFile();
@@ -790,7 +778,7 @@ public class ConfCenterService extends CommonService {
         if (StringUtils.isNotEmpty(appName)) {
             appNameKey = appName;
         }
-        List<Map<String, Object>> wLists = tWListMntDao.queryWhiteListList(appName);
+        List<Map<String, Object>> wLists = whiteListDAO.queryWhiteListList(appName);
         List<Map<String, Object>> bLists = tBListMntDao.queryBListList();
         Map<String, List<Map<String, Object>>> resultMap = Maps.newHashMapWithExpectedSize(30);
         List<Map<String, Object>> wListsResult = Lists.newArrayList();
@@ -842,7 +830,7 @@ public class ConfCenterService extends CommonService {
         } else {
             RedisKey wListRedis = new RedisKey(WhiteBlackListRedisKey.TAKIN_WHITE_LIST_KEY_METRIC + appNameKey,
                 WhiteBlackListRedisKey.TIMEOUT);
-            wLists = tWListMntDao.queryWhiteListList(appName);
+            wLists = whiteListDAO.queryWhiteListList(appName);
             // 查询完白名单列表后，需要加工成海明需要的数据格式
             //先筛选出来type=mq的，然后再根据mqType计算出是ibmmq还是rocketmq
             //如果没查到直接报查询异常
@@ -1450,15 +1438,15 @@ public class ConfCenterService extends CommonService {
         PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
         switch (type) {
             case "1":
-                List<TPradaHttpData> tPradaHttpData = tWListMntDao.queryInterfaceByAppNameByTPHD(applicationName, type,
+                List<TPradaHttpData> tPradaHttpData = whiteListDAO.queryInterfaceByAppNameByTPHD(applicationName, type,
                     interfaceName);
                 return new PageInfo<>(tPradaHttpData.isEmpty() ? Lists.newArrayList() : tPradaHttpData);
             case "2":
-                List<TUploadInterfaceDataVo> dubboData = tWListMntDao.queryInterfaceByAppNameFromTUID(applicationName,
+                List<TUploadInterfaceDataVo> dubboData = whiteListDAO.queryInterfaceByAppNameFromTUID(applicationName,
                     type, interfaceName);
                 return new PageInfo<>(dubboData.isEmpty() ? Lists.newArrayList() : dubboData);
             case "4":
-                List<TUploadInterfaceDataVo> jobData = tWListMntDao.queryInterfaceByAppNameFromTUID(applicationName,
+                List<TUploadInterfaceDataVo> jobData = whiteListDAO.queryInterfaceByAppNameFromTUID(applicationName,
                     type, interfaceName);
                 return new PageInfo<>(jobData.isEmpty() ? Lists.newArrayList() : jobData);
             default:
@@ -1559,7 +1547,7 @@ public class ConfCenterService extends CommonService {
      * @return
      */
     public List<Map<String, Object>> queryWhiteListByAppId(String applicationId) {
-        return tWListMntDao.queryWhiteListByAppId(applicationId);
+        return whiteListDAO.queryWhiteListByAppId(applicationId);
 
     }
 
@@ -1845,7 +1833,7 @@ public class ConfCenterService extends CommonService {
      * @return
      */
     public List<Map<String, String>> getWhiteListForLink() {
-        return tWListMntDao.getWhiteListForLink();
+        return whiteListDAO.getWhiteListForLink();
     }
 
     /**
@@ -2129,8 +2117,8 @@ public class ConfCenterService extends CommonService {
                 Map<String, Object> map = null;
                 if (t instanceof TApplicationMntDao) {
                     map = tApplicationMntDao.queryApplicationRelationBasicLinkByApplicationId(id);
-                } else if (t instanceof TWhiteListMntDao) {
-                    map = tWListMntDao.queryWhiteListRelationBasicLinkByWhiteListId(id);
+                } else if (t instanceof WhiteListDAO) {
+                    map = whiteListDAO.queryWhiteListRelationBasicLinkByWhiteListId(id);
                 } else if (t instanceof TLinkMntDao) {
                     map = tLinkMnDao.querySecondLinkRelationBasicLinkByBasicLinkId(id);
                 }

@@ -133,7 +133,7 @@ public class SummaryService {
         ReportSummaryResult summary = reportSummaryDAO.selectOneByReportId(reportId);
 
         if (summary == null) {
-            reportMachineDAO.insert(reportSummary);
+            reportSummaryDAO.insert(reportSummary);
         }
         log.info("Build ReportSummary Success, reportId={}", reportId);
     }

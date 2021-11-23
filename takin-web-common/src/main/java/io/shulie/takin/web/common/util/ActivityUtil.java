@@ -86,6 +86,12 @@ public class ActivityUtil {
      */
     public static EntranceJoinEntity covertEntrance(String dbEntrance) {
         String[] split = StringUtils.split(dbEntrance, "\\|");
+        if (split.length == 2){
+            EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
+            entranceJoinEntity.setServiceName(split[0]);
+            entranceJoinEntity.setRpcType(split[1]);
+            return entranceJoinEntity;
+        }
         if (split.length != 3) {
             return new EntranceJoinEntity();
         }

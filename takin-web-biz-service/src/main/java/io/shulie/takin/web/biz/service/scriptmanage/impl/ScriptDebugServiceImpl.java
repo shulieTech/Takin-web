@@ -215,8 +215,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 if (debugCloudRequest == null){
                     return response;
                 }
-            }else {
-                debugCloudRequest = bulidDebugCloudRequest(request, response, scriptDeploy,activityIds);
+            } else {
+                debugCloudRequest = buildDebugCloudRequest(request, response, scriptDeploy,activityIds);
                 if (debugCloudRequest == null){
                     return response;
                 }
@@ -262,7 +262,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }
     }
 
-    private SceneTryRunTaskStartReq bulidDebugCloudRequest(ScriptDebugDoDebugRequest request, ScriptDebugResponse response,
+    private SceneTryRunTaskStartReq buildDebugCloudRequest(ScriptDebugDoDebugRequest request, ScriptDebugResponse response,
                                                            ScriptManageDeployEntity scriptDeploy,List<Long> activityIdList) {
         // 根据脚本发布实例类型, 查询业务活动或者业务流程下的业务活动
         // 判断业务流程是否存在, 判断活动是否存在

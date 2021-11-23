@@ -13,7 +13,9 @@ import io.shulie.takin.web.biz.service.agentcommand.AgentCommandSupport;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
+import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeTypeEnum;
 import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidStatusEnum;
+import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
 import lombok.Data;
@@ -87,8 +89,8 @@ public class AgentStartProcessor extends AgentCommandSupport {
             String lockKey = String.format(AGENT_START_TEMPLATE, agentHeartbeatBO.getApplicationId(), dependencyMd5);
             if (distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS)) {
                 try {
-
-                    // TODO 将dependencyInfo入库
+                    // 将dependencyInfo入库
+                    saveDependencyInfo(agentHeartbeatBO);
                     agentStartResult.setUpgradeBath(dependencyMd5);
                 } finally {
                     distributedLock.unLockSafely(lockKey);
@@ -104,6 +106,27 @@ public class AgentStartProcessor extends AgentCommandSupport {
     @Override
     public AgentCommandEnum getCommand() {
         return AgentCommandEnum.AGENT_START_GET_FILE;
+    }
+
+    /**
+     * 将agent上报上来的dependencyInfo入库
+     *
+     * dependencyInfo格式：module-id=instrument-simulator,module-version=null;module-id=module-aerospike,
+     * module-version=null;
+     *
+     * @param agentHeartbeatBO 心跳数据
+     */
+    private void saveDependencyInfo(AgentHeartbeatBO agentHeartbeatBO) {
+        CreateApplicationPluginUpgradeParam upgradeParam = new CreateApplicationPluginUpgradeParam();
+        upgradeParam.setApplicationId(agentHeartbeatBO.getApplicationId());
+        upgradeParam.setApplicationName(agentHeartbeatBO.getProjectName());
+        upgradeParam.setUpgradeBatch(MD5Util.getMD5(agentHeartbeatBO.getDependencyInfo()));
+        upgradeParam.setUpgradeContext(agentHeartbeatBO.getDependencyInfo());
+        upgradeParam.setUpgradeAgentId(agentHeartbeatBO.getAgentId());
+        upgradeParam.setPluginUpgradeStatus(AgentUpgradeEnum.UPGRADE_SUCCESS.getVal());
+        upgradeParam.setType(AgentUpgradeTypeEnum.AGENT_REPORT.getVal());
+        upgradeParam.setRemark("agent上报上来的依赖数据");
+        applicationPluginUpgradeService.createUpgradeOrder(upgradeParam);
     }
 
     @Data

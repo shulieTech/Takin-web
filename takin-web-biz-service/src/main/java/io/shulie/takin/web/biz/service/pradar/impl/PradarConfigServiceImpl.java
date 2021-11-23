@@ -9,7 +9,7 @@ import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
 import io.shulie.takin.web.biz.service.pradar.PradarConfigService;
 import io.shulie.takin.web.biz.utils.ZkHelper;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.pradar.PradarZkConfigDAO;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
 import io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult;
@@ -47,7 +47,7 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         if (page.getTotal() == 0) {
             return PagingList.empty();
         }
-        return PagingList.of(CommonUtil.list2list(page.getList(), PradarZKConfigResponse.class), page.getTotal());
+        return PagingList.of(DataTransformUtil.list2list(page.getList(), PradarZKConfigResponse.class), page.getTotal());
     }
 
     @Override

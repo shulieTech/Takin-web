@@ -105,7 +105,6 @@ public interface AgentConfigDAO {
      * 更新配置值
      *
      * @param updateParam 更新对象
-     * @return 影响的记录数
      */
     void updateConfigValue(UpdateAgentConfigParam updateParam);
 

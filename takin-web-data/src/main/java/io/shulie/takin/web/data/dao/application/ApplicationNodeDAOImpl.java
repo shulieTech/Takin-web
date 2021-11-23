@@ -10,7 +10,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeDTO;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationNodeParam;
 import io.shulie.takin.web.data.result.application.ApplicationNodeListResult;
@@ -92,7 +92,7 @@ public class ApplicationNodeDAOImpl implements ApplicationNodeDAO {
         ApplicationNodeQueryDTO applicationQueryDTO = new ApplicationNodeQueryDTO();
         BeanUtils.copyProperties(param, applicationQueryDTO);
         PagingList<ApplicationNodeDTO> applicationNodePage = applicationClient.pageApplicationNode(applicationQueryDTO);
-        return PagingList.of(CommonUtil.list2list(applicationNodePage.getList(), ApplicationNodeListResult.class), applicationNodePage.getTotal());
+        return PagingList.of(DataTransformUtil.list2list(applicationNodePage.getList(), ApplicationNodeListResult.class), applicationNodePage.getTotal());
     }
 
     @Override

@@ -3,7 +3,7 @@ package io.shulie.takin.web.data.dao.impl;
 import java.util.List;
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationNodeProbeMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationNodeProbeEntity;
@@ -37,7 +37,7 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO, MPU
                     ApplicationNodeProbeEntity::getProbeId, ApplicationNodeProbeEntity::getOperateResult)
                 .eq(ApplicationNodeProbeEntity::getApplicationName, applicationName)
                 .eq(ApplicationNodeProbeEntity::getAgentId, agentId));
-        return CommonUtil.copyBeanPropertiesWithNull(applicationNodeProbeEntity, ApplicationNodeProbeResult.class);
+        return DataTransformUtil.copyBeanPropertiesWithNull(applicationNodeProbeEntity, ApplicationNodeProbeResult.class);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO, MPU
                     ApplicationNodeProbeEntity::getAgentId, ApplicationNodeProbeEntity::getOperateResult)
                 .eq(ApplicationNodeProbeEntity::getApplicationName, applicationName)
                 .in(ApplicationNodeProbeEntity::getAgentId, agentIds));
-        return CommonUtil.list2list(applicationNodeProbeEntityList, ApplicationNodeProbeResult.class);
+        return DataTransformUtil.list2list(applicationNodeProbeEntityList, ApplicationNodeProbeResult.class);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO, MPU
             .eq(tenantId != null, ApplicationNodeProbeEntity::getTenantId, tenantId)
             .eq(ApplicationNodeProbeEntity::getAgentId, agentId)
             .orderByDesc(tenantId == null, ApplicationNodeProbeEntity::getTenantId));
-        return CommonUtil.copyBeanPropertiesWithNull(entity, ApplicationNodeProbeResult.class);
+        return DataTransformUtil.copyBeanPropertiesWithNull(entity, ApplicationNodeProbeResult.class);
     }
 
 }

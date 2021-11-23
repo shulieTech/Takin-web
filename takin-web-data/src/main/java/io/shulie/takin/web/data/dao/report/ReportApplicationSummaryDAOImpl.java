@@ -6,7 +6,7 @@ import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.mapper.mysql.ReportApplicationSummaryMapper;
 import io.shulie.takin.web.data.model.mysql.ReportApplicationSummaryEntity;
 import io.shulie.takin.web.data.param.report.ReportApplicationSummaryCreateParam;
@@ -62,7 +62,7 @@ public class ReportApplicationSummaryDAOImpl extends ServiceImpl<ReportApplicati
         if(CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();
         }
-        return CommonUtil.list2list(list, ReportApplicationSummaryResult.class);
+        return DataTransformUtil.list2list(list, ReportApplicationSummaryResult.class);
     }
 
     @Override

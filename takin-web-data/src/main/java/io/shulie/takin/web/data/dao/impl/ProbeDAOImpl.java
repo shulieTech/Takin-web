@@ -1,14 +1,10 @@
 package io.shulie.takin.web.data.dao.impl;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.ProbeDAO;
 import io.shulie.takin.web.data.mapper.mysql.ProbeMapper;
 import io.shulie.takin.web.data.model.mysql.ProbeEntity;
@@ -40,7 +36,7 @@ public class ProbeDAOImpl implements ProbeDAO, MPUtil<ProbeEntity> {
                 .orderByDesc(ProbeEntity::getGmtUpdate));
 
         return probeEntityPage.getTotal() == 0 ? PagingList.empty()
-            : PagingList.of(CommonUtil.list2list(probeEntityPage.getRecords(), ProbeListResult.class),
+            : PagingList.of(DataTransformUtil.list2list(probeEntityPage.getRecords(), ProbeListResult.class),
                 probeEntityPage.getTotal());
     }
 

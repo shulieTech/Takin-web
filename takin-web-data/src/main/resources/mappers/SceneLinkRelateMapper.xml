@@ -32,7 +32,7 @@
         SCENE_ID, PARENT_BUSINESS_LINK_ID, FRONT_UUID_KEY
     </sql>
     <select id="countByTechLinkIds" resultType="java.lang.Integer">
-        select count(1) from t_scene_link_relate where TECH_LINK_ID in
+        select count(*) from t_scene_link_relate where TECH_LINK_ID in
         <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
             #{item}
         </foreach>

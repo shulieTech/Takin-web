@@ -8,10 +8,12 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 业务链路管理表
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @TableName(value = "t_business_link_manage_table")
 public class BusinessLinkManageTableEntity extends UserBaseEntity {

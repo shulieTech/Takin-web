@@ -193,15 +193,7 @@
           and IS_DELETED = 0
     </update>
 
-    <select id="selectByBusinessId" resultType="com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate">
-        select *
-        from t_scene_link_relate
-        where BUSINESS_LINK_ID = #{businessId}
-          and IS_DELETED = 0
-    </select>
-
-
-    <select id="selectBusinessIdByParentBusinessId" resultType="java.util.List">
+    <select id="selectBusinessIdByParentBusinessId" resultType="java.lang.String">
         select BUSINESS_LINK_ID
         from t_scene_link_relate
         where PARENT_BUSINESS_LINK_ID in #{parentBusinessId}
@@ -215,14 +207,6 @@
         where SCENE_ID = #{sceneId}
           and IS_DELETED = 0
           and (PARENT_BUSINESS_LINK_ID = '' or PARENT_BUSINESS_LINK_ID is null)
-    </select>
-
-    <select id="selectByrecuire" resultMap="recursionMap">
-        select BUSINESS_LINK_ID, FRONT_UUID_KEY, SCENE_ID
-        from t_scene_link_relate
-        where PARENT_BUSINESS_LINK_ID = #{BUSINESS_LINK_ID}
-          and SCENE_ID = #{SCENE_ID}
-          and IS_DELETED = 0
     </select>
 
     <select id="countBySceneId" resultType="java.lang.Integer">

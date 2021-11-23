@@ -65,6 +65,13 @@ public interface ApplicationPluginUpgradeService {
     List<ApplicationPluginUpgradeHistoryResponse> history();
 
     /**
+     * 回滚详情
+     * @param upgradeBatch
+     * @return 应用名集合
+     */
+    Response<List<String>> rollbackDetail(String upgradeBatch);
+
+    /**
      * 回滚
      * @param upgradeBatch
      * @return 不能回滚的应用名集合

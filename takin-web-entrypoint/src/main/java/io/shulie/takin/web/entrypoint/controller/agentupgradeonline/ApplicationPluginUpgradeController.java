@@ -46,6 +46,12 @@ public class ApplicationPluginUpgradeController {
         return Response.success(history);
     }
 
+    @ApiOperation("|_ 回滚详情")
+    @PutMapping("/rollback/detail")
+    public Response<List<String>> rollbackDetail(@Validated @RequestBody ApplicationPluginUpgradeRollBackRequest rollBackRequest) {
+        return  upgradeService.rollbackDetail(rollBackRequest.getUpgradeBatch());
+    }
+
     @ApiOperation("|_ 回滚")
     @PutMapping("/rollback")
     public Response rollback(@Validated @RequestBody ApplicationPluginUpgradeRollBackRequest rollBackRequest) {

@@ -181,7 +181,7 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
     }
 
 
-    private String downLoadPath(String upgradeBatch, Set<PluginInfo> pluginInfoSet){
+    private String downLoadPath(String upgradeBatch, Set<PluginInfo> pluginInfoSet) {
         //检查是否存在相同的升级包,如果存在就复用下载地址
         ApplicationPluginUpgradeDetailResult detailResult = upgradeDAO.queryOneByUpgradeBatch(upgradeBatch);
         String downLoadPath;
@@ -217,19 +217,17 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
         List<ApplicationPluginUpgradeHistoryResponse> history = new ArrayList<>();
 
         List<ApplicationPluginUpgradeDetailResult> list = upgradeDAO.getList();
-        if(CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return history;
         }
 
         Map<String, List<ApplicationPluginUpgradeDetailResult>> upgradeBatch2Detail = CollStreamUtil.groupByKey(list,
                 ApplicationPluginUpgradeDetailResult::getUpgradeBatch);
 
-        upgradeBatch2Detail.forEach((upgradeBatch,details) ->{
-            Set<Long> ids = new HashSet<>();
-            Map<Integer, ApplicationPluginUpgradeDetailResult> map = details.stream().peek(detail -> {
-                ids.add(detail.getApplicationId());
-            }).collect(Collectors.toMap(ApplicationPluginUpgradeDetailResult::getPluginUpgradeStatus, Function.identity()));
-
+        upgradeBatch2Detail.forEach((upgradeBatch, details) -> {
+            Set<Long> ids = details.stream().map(ApplicationPluginUpgradeDetailResult::getId).collect(Collectors.toSet());
+            Map<Integer, List<ApplicationPluginUpgradeDetailResult>> map = CollStreamUtil.groupByKey(details,
+                    ApplicationPluginUpgradeDetailResult::getPluginUpgradeStatus);
             /*
              * 同一批次升级单中
              * 升级失败:只要有一个升级失败，就判定为失败状态
@@ -237,18 +235,45 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
              * 已回滚: 只要全部回滚，才判定为已回滚
              */
             int status;
-            if(map.containsKey(AgentUpgradeEnum.UPGRADE_FILE.getVal())){
+            if (map.containsKey(AgentUpgradeEnum.UPGRADE_FILE.getVal())) {
                 status = AgentUpgradeEnum.UPGRADE_FILE.getVal();
-            }else if(map.containsKey(AgentUpgradeEnum.NOT_UPGRADE.getVal())){
+            } else if (map.containsKey(AgentUpgradeEnum.NOT_UPGRADE.getVal())) {
                 status = AgentUpgradeEnum.UPGRADING.getVal();
-            }else if(!map.containsKey(AgentUpgradeEnum.ROLLBACK.getVal())){
+            } else if (!map.containsKey(AgentUpgradeEnum.ROLLBACK.getVal())) {
                 status = AgentUpgradeEnum.UPGRADE_SUCCESS.getVal();
-            }else {
+            } else {
                 status = AgentUpgradeEnum.ROLLBACK.getVal();
             }
-            history.add(new ApplicationPluginUpgradeHistoryResponse(upgradeBatch,status,ids.size()));
+            ApplicationPluginUpgradeHistoryResponse response = new ApplicationPluginUpgradeHistoryResponse(upgradeBatch,
+                    status, ids.size());
+
+            if (AgentUpgradeEnum.UPGRADE_FILE.getVal() == status) {
+                //补充失败详情
+                List<ApplicationPluginUpgradeDetailResult> errorLists = map.get(status);
+                List<ApplicationPluginUpgradeHistoryResponse.UpgradeErrorInfo> errorDetails = errorLists
+                        .stream()
+                        .map(detail ->
+                                new ApplicationPluginUpgradeHistoryResponse.UpgradeErrorInfo(
+                                        detail.getApplicationName(),
+                                        detail.getErrorInfo()))
+                        .collect(Collectors.toList());
+                response.setErrorDetails(errorDetails);
+            }
+            history.add(response);
         });
         return history;
+    }
+
+    /**
+     * 回滚详情
+     *
+     * @param upgradeBatch
+     * @return 应用名集合
+     */
+    @Override
+    public Response<List<String>> rollbackDetail(String upgradeBatch) {
+        List<ApplicationPluginUpgradeDetailResult> list = upgradeDAO.getList(upgradeBatch);
+        return Response.success(CollStreamUtil.toList(list, ApplicationPluginUpgradeDetailResult::getApplicationName));
     }
 
     /**
@@ -264,19 +289,19 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
 
 
         List<String> errorAppList = new ArrayList<>();
-        appId2Detail.forEach((appId,detail) ->{
+        appId2Detail.forEach((appId, detail) -> {
             List<ApplicationPluginUpgradeDetailResult> upgradeDetails = upgradeDAO.getListByUpgradeBatchAndAppIdGtId(upgradeBatch,
-                    appId,detail.getId());
-            if(!CollectionUtils.isEmpty(upgradeDetails)){
+                    appId, detail.getId());
+            if (!CollectionUtils.isEmpty(upgradeDetails)) {
                 errorAppList.add(detail.getApplicationName());
             }
         });
-        if(!CollectionUtils.isEmpty(errorAppList)){
+        if (!CollectionUtils.isEmpty(errorAppList)) {
             //有不能回滚的应用，回滚失败
-            return Response.fail("回滚失败",errorAppList);
+            return Response.fail("回滚失败", errorAppList);
         }
         //执行回滚
-        upgradeDAO.batchRollBack(CollStreamUtil.toList(list,ApplicationPluginUpgradeDetailResult::getId));
+        upgradeDAO.batchRollBack(CollStreamUtil.toList(list, ApplicationPluginUpgradeDetailResult::getId));
         return Response.success();
     }
 }

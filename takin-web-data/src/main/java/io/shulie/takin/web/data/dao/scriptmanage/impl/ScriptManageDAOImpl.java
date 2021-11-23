@@ -95,67 +95,6 @@ public class ScriptManageDAOImpl
     }
 
     @Override
-    public void deleteScriptManageDeployById(Long scriptDeployId) {
-        ScriptManageDeployEntity scriptManageDeployEntity = scriptManageDeployMapper.selectById(scriptDeployId);
-        if (scriptManageDeployEntity == null) {
-            return;
-        }
-        scriptManageDeployMapper.deleteById(scriptDeployId);
-        LambdaQueryWrapper<ScriptManageDeployEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ScriptManageDeployEntity::getScriptId, scriptManageDeployEntity.getScriptId());
-        Long count = scriptManageDeployMapper.selectCount(wrapper);
-        if (count == 0) {
-            scriptManageMapper.deleteById(scriptManageDeployEntity.getScriptId());
-        }
-    }
-
-    @Override
-    public PagingList<ScriptManageDeployResult> pageQueryScriptManageDeploy(ScriptManageDeployPageQueryParam param) {
-        LambdaQueryWrapper<ScriptManageDeployEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.select(
-            ScriptManageDeployEntity::getId,
-            ScriptManageDeployEntity::getGmtUpdate,
-            ScriptManageDeployEntity::getName,
-            ScriptManageDeployEntity::getRefType,
-            ScriptManageDeployEntity::getRefValue,
-            ScriptManageDeployEntity::getScriptId,
-            ScriptManageDeployEntity::getScriptVersion,
-            ScriptManageDeployEntity::getStatus,
-            ScriptManageDeployEntity::getType);
-        if (StringUtils.isNotBlank(param.getName())) {
-            wrapper.like(ScriptManageDeployEntity::getName, param.getName());
-        }
-        if (StringUtils.isNotBlank(param.getRefType())) {
-            wrapper.eq(ScriptManageDeployEntity::getRefType, param.getRefType());
-        }
-        if (StringUtils.isNotBlank(param.getRefValue())) {
-            wrapper.eq(ScriptManageDeployEntity::getRefValue, param.getRefValue());
-        }
-        if (CollectionUtils.isNotEmpty(param.getScriptDeployIds())) {
-            wrapper.in(ScriptManageDeployEntity::getId, param.getScriptDeployIds());
-        }
-        if (CollectionUtils.isNotEmpty(param.getScriptIds())) {
-            wrapper.in(ScriptManageDeployEntity::getScriptId, param.getScriptIds());
-        }
-        //这个分页工具是从1开始分页的
-        Page<ScriptManageDeployEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
-        wrapper.orderByDesc(ScriptManageDeployEntity::getGmtUpdate);
-        Page<ScriptManageDeployEntity> scriptManageDeployEntityPage = scriptManageDeployMapper.selectPage(page,
-            wrapper);
-        if (CollectionUtils.isEmpty(scriptManageDeployEntityPage.getRecords())) {
-            return PagingList.of(Lists.newArrayList(),scriptManageDeployEntityPage.getTotal());
-        }
-        List<ScriptManageDeployResult> scriptManageDeployResults = scriptManageDeployEntityPage.getRecords().stream()
-            .map(scriptManageDeployEntity -> {
-                ScriptManageDeployResult scriptManageDeployResult = new ScriptManageDeployResult();
-                BeanUtils.copyProperties(scriptManageDeployEntity, scriptManageDeployResult);
-                return scriptManageDeployResult;
-            }).collect(Collectors.toList());
-
-        return PagingList.of(scriptManageDeployResults, scriptManageDeployEntityPage.getTotal());
-    }
-
-    @Override
     public ScriptManageDeployResult createScriptManageDeploy(ScriptManageDeployCreateParam scriptManageDeployCreateParam) {
         if (scriptManageDeployCreateParam == null) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "创建部署脚本时入参为空！");

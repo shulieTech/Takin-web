@@ -1630,8 +1630,7 @@ public class LinkTopologyService extends CommonService {
 
         // 查询出所有的 名称对应的中间件状态
         Map<String, Map<Integer, Integer>> applicationNameAboutStatusCountMap = applicationMiddlewareService
-            .getApplicationNameAboutStatusCountMap(applicationNameList);
-                .getApplicationNameAboutStatusCountMap(applicationIds);
+            .getApplicationNameAboutStatusCountMap(applicationIds);
         if (applicationNameAboutStatusCountMap.isEmpty()) {
             return Collections.emptyList();
         }

@@ -15,7 +15,6 @@ import io.shulie.takin.web.data.param.application.UpdateApplicationMiddlewarePar
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareListResult;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareStatusAboutCountResult;
 import io.shulie.takin.web.data.util.MPUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -93,8 +92,7 @@ public class ApplicationMiddlewareDAOImpl implements ApplicationMiddlewareDAO, M
     @Override
     public List<ApplicationMiddlewareStatusAboutCountResult> listStatusCountByAndGroupByApplicationNameListAndStatus(
         List<Long> applicationIds, List<Integer> statusList) {
-        return applicationMiddlewareMapper.selectStatusCountByAndGroupByApplicationNameListAndStatusList(applicationIds,
-            statusList, WebPluginUtils.getCustomerId());
+        return applicationMiddlewareMapper.selectStatusCountByAndGroupByApplicationNameListAndStatusList(applicationIds, statusList);
     }
 
 }

@@ -36,6 +36,10 @@ public class TraceManageJob implements SimpleJob {
      */
     public static long timeout = 300 * 1000;
 
+    @Autowired
+    @Qualifier("jobThreadPool")
+    private ThreadPoolExecutor jobThreadPool;
+
     @Override
     public void execute(ShardingContext shardingContext) {
 

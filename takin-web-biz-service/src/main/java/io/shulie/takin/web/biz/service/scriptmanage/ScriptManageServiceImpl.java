@@ -159,9 +159,6 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      */
     private String fileUploadUrl;
 
-    @Value("${data.path}")
-    private String dataPath;
-
     @Autowired
     private DiffFileApi fileApi;
     @Autowired

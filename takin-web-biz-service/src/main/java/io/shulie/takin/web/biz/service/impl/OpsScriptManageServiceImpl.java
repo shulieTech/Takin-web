@@ -190,9 +190,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         if (param.getName().length() > 20) {
             throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "名称长度不能超过20！");
         }
-        String tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue() +
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
+        String tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
         //上传主要文件
         OpsScriptFileParam scriptFileParam = fileParamList.get(0);
         log.info("生成的文件uploadId为{}", scriptFileParam.getUploadId());
@@ -263,9 +261,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             .set(OpsScriptManageEntity::getScriptType, param.getScriptType())
             .update();
 
-        String tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue() +
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
+        String tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
         //删除原目录
         OpsScriptFileParam scriptFileParam = param.getFileManageUpdateRequests().get(0);
         if (scriptFileParam.getContent() != null) {

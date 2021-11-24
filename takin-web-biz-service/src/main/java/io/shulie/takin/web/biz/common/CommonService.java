@@ -248,7 +248,7 @@ public class CommonService {
     protected BaseConfigMapper baseConfigMapper;
 
     public String getBasePath() {
-        return ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_BASE_PATH)+ WebPluginUtils.traceTenantCode()+ Separator.Separator1.getValue();
+        return ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_BASE_PATH);
     }
 
     /**

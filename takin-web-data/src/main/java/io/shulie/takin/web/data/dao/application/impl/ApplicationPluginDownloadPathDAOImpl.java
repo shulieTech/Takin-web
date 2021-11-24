@@ -1,8 +1,8 @@
 package io.shulie.takin.web.data.dao.application.impl;
 
+import java.util.Objects;
+
 import cn.hutool.core.convert.Convert;
-import cn.hutool.crypto.SecureUtil;
-import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidStatusEnum;
@@ -13,11 +13,7 @@ import io.shulie.takin.web.data.param.application.CreateApplicationPluginDownloa
 import io.shulie.takin.web.data.param.application.UpdateApplicationPluginDownloadPathParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * 探针根目录(ApplicationPluginDownloadPath)表数据库 dao 层实现

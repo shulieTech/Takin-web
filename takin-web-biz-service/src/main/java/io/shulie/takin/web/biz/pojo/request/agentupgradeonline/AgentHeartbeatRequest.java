@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.pojo.request.agentupgradeonline;
 import java.util.List;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
 import io.swagger.annotations.ApiModel;
@@ -45,19 +46,18 @@ public class AgentHeartbeatRequest {
     @ApiModelProperty(value = "agent错误信息")
     private String agentErrorInfo;
 
-    @ApiModelProperty(value = "simulator状态", required = true)
-    @NotBlank(message = "simulator状态不能为空")
+    @ApiModelProperty(value = "simulator状态")
     private String simulatorStatus;
 
     @ApiModelProperty(value = "simulator错误信息")
     private String simulatorErrorInfo;
 
     @ApiModelProperty(value = "卸载状态", required = true)
-    @NotBlank(message = "卸载状态不能为空")
+    @NotNull(message = "卸载状态不能为空")
     private Integer uninstallStatus;
 
     @ApiModelProperty(value = "休眠状态", required = true)
-    @NotBlank(message = "休眠状态不能为空")
+    @NotNull(message = "休眠状态不能为空")
     private Integer dormantStatus;
 
     @ApiModelProperty(value = "agent版本", required = true)

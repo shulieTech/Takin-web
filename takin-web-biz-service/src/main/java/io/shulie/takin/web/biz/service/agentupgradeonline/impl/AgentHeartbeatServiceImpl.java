@@ -29,6 +29,8 @@ import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -41,6 +43,10 @@ import org.springframework.util.StringUtils;
  */
 @Service
 public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
+
+    private final Logger distributionLog = LoggerFactory.getLogger("AGENT_COMMAND_DISTRIBUTION");
+
+    private final Logger reportLog = LoggerFactory.getLogger("AGENT_COMMAND_REPORT");
 
     /**
      * 企业版标识
@@ -75,6 +81,8 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
 
         // 异步处理上报的命令数据
         if (!CollectionUtils.isEmpty(commandRequest.getCommandResult())) {
+            reportLog.info("projectName:{}, agentId:{}, commands:{}", agentHeartbeatBO.getProjectName(),
+                agentHeartbeatBO.getAgentId(), commandRequest.getCommandResult());
             commandRequest.getCommandResult().forEach(commandResult ->
                 agentHeartbeatThreadPool.execute(() -> {
                     IAgentCommandProcessor processor = commandProcessorMap.get(commandResult.getId());
@@ -113,7 +121,14 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
             }
         });
 
-        return filterCommand(commandBOList);
+        List<AgentCommandBO> result = filterCommand(commandBOList);
+
+        if (!CollectionUtils.isEmpty(result)) {
+            distributionLog.info("projectName:{}, agentId:{}, commands:{}", agentHeartbeatBO.getProjectName(),
+                agentHeartbeatBO.getAgentId(), result);
+        }
+
+        return result;
     }
 
     /**

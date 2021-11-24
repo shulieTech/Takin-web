@@ -25,6 +25,58 @@
         </filter>
     </appender>
 
+    <appender name="AGENT_COMMAND_DISTRIBUTION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/agentCommandDistribution.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <FileNamePattern>
+                ${LOG_HOME}/agentCommandDistribution.%i.log
+            </FileNamePattern>
+            <!-- 生成日志序号。maxIndex:只会生成4个日志文件 -->
+            <MinIndex>1</MinIndex>
+            <MaxIndex>4</MaxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <!--使用triggeringPolicy来截断日志, 例如: 我们一个文件只要50MB, 大于50MB则进入下一个序号的日志-->
+            <MaxFileSize>50MB</MaxFileSize>
+        </triggeringPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%logger{36}] %L [%X{traceId}] - %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>warn</level>
+        </filter>
+    </appender>
+
+    <logger name="AGENT_COMMAND_DISTRIBUTION" level="INFO" additivity="false">
+        <appender-ref ref="AGENT_COMMAND_DISTRIBUTION"/>
+    </logger>
+
+    <appender name="AGENT_COMMAND_REPORT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/agentCommandReport.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <FileNamePattern>
+                ${LOG_HOME}/agentCommandReport.%i.log
+            </FileNamePattern>
+            <!-- 生成日志序号。maxIndex:只会生成4个日志文件 -->
+            <MinIndex>1</MinIndex>
+            <MaxIndex>4</MaxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <!--使用triggeringPolicy来截断日志, 例如: 我们一个文件只要50MB, 大于50MB则进入下一个序号的日志-->
+            <MaxFileSize>50MB</MaxFileSize>
+        </triggeringPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%logger{36}] %L [%X{traceId}] - %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>warn</level>
+        </filter>
+    </appender>
+
+    <logger name="AGENT_COMMAND_REPORT" level="INFO" additivity="false">
+        <appender-ref ref="AGENT_COMMAND_REPORT"/>
+    </logger>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%logger{36}] %L [%X{traceId}] - %msg%n</pattern>

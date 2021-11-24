@@ -11,6 +11,7 @@ import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidSta
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentReportStatusEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginDownloadPathDAO;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
+import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -52,6 +53,13 @@ public abstract class AgentCommandSupport implements IAgentCommandProcessor {
      */
     public abstract Object dealHeartbeat0(AgentHeartbeatBO agentHeartbeatBO);
 
+    /**
+     * 在当前状态下才处理数据
+     *
+     * @return AgentReportStatusEnum枚举
+     */
+    public abstract AgentReportStatusEnum workStatus();
+
     @Override
     public void process(AgentHeartbeatBO agentHeartbeatBO, AgentCommandBO commandParam) {
         // 因为这个方法是在线程池中异步调用，所以不允许抛出异常
@@ -68,7 +76,7 @@ public abstract class AgentCommandSupport implements IAgentCommandProcessor {
     @Override
     public AgentCommandBO dealHeartbeat(AgentHeartbeatBO agentHeartbeatBO) {
         // 当前节点不是运行中，并且心跳数据当前指令不需要处理则返回null
-        if (!AgentReportStatusEnum.RUNNING.equals(agentHeartbeatBO.getCurStatus())
+        if (!workStatus().equals(agentHeartbeatBO.getCurStatus())
             || !needDealHeartbeat(agentHeartbeatBO)) {
             return null;
         }
@@ -93,5 +101,33 @@ public abstract class AgentCommandSupport implements IAgentCommandProcessor {
     protected ApplicationPluginDownloadPathDetailResult getPluginDownloadPath(
         ApplicationAgentPathValidStatusEnum statusEnum) {
         return applicationPluginDownloadPathDAO.queryDetailByTenant(statusEnum);
+    }
+
+    @Data
+    protected static class PluginDownloadPathResult {
+
+        /**
+         * 类型 0:oss;1:ftp;2:nginx
+         */
+        private Integer pathType;
+
+        /**
+         * 配置内容
+         */
+        private String context;
+
+        /**
+         * 盐
+         */
+        private String salt;
+
+        public PluginDownloadPathResult(ApplicationPluginDownloadPathDetailResult detailResult) {
+            if (detailResult == null) {
+                return;
+            }
+            this.pathType = detailResult.getPathType();
+            this.context = detailResult.getContext();
+            this.salt = detailResult.getSalt();
+        }
     }
 }

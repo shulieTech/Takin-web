@@ -543,3 +543,7 @@ ALTER TABLE t_fast_debug_result ADD INDEX `idx_config_Id` (`config_Id`);
 ALTER TABLE `t_exception_info` ADD INDEX `idx_code` ( `code`);
 ALTER TABLE `t_exception_info` ADD INDEX `idx_agent_code` ( `agent_code`);
 
+-- 角色表
+ALTER TABLE t_tro_role ADD UNIQUE INDEX `unique_idx_name_tenant_env` ( `tenant_id`, `env_code`, `name` ) USING BTREE;
+-- 权限表
+ALTER TABLE t_tro_authority ADD UNIQUE INDEX `unique_idx_role_id_resource_id_tenant_env` ( `tenant_id`, `env_code`, `resource_id`, `role_id` ) USING BTREE;

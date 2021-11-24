@@ -26,82 +26,77 @@ update trodb_cloud.t_scene_manage set tenant_id = customer_id and env_code = 'pr
 update trodb_cloud.t_report       set tenant_id = customer_id and env_code = 'prod' where customer_id in (2,3,5,7,10,24);
 --
 
-----------------------------更新修正报告相关
+-- 更新修正报告相关
 -- 更新 t_report_application_summary |t_report_machine |t_report_summary --
 -- 默认租户 --
 -- 找出默认租户用户id
-SELECT GROUP_CONCAT(id) from t_tro_user WHERE tenant_id = 1
 -- 找出默认租户的报告id trodb_cloud找
-SELECT GROUP_CONCAT(id) from t_report WHERE user_id in()
+
 -- 更新报告 t_report_application_summary
-update t_report_application_summary set tenant_id = 1 and env_code = 'test' WHERE report_id in ()
-update t_report_machine set tenant_id = 1 and env_code = 'test' WHERE report_id in ()
-update t_report_summary set tenant_id = 1 and env_code = 'test' WHERE report_id in ()
-update t_trace_manage set tenant_id = 1 and env_code = 'test' WHERE report_id in ()
+update t_report_application_summary set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE tenant_id = 1));
+update t_report_machine set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE tenant_id = 1));
+update t_report_summary set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE tenant_id = 1));
+update t_trace_manage set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE tenant_id = 1));
 
 -- T3出行
 -- 测试环境 cloud查找
-SELECT GROUP_CONCAT(id) from t_report WHERE user_id = 4
-update t_report_application_summary set tenant_id = 3 and env_code = 'test' WHERE report_id in ()
-update t_report_machine set tenant_id = 3 and env_code = 'test' WHERE report_id in ()
-update t_report_summary set tenant_id = 3 and env_code = 'test' WHERE report_id in ()
-update t_trace_manage set tenant_id = 3 and env_code = 'test' WHERE report_id in ()
+update t_report_application_summary t set t.tenant_id = 3, t.env_code = 'test' WHERE t.report_id in (SELECT id from trodb_cloud.t_report a WHERE a.user_id = 4);
+update t_report_machine set tenant_id = 3 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report a WHERE a.user_id = 4);
+update t_report_summary set tenant_id = 3 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report a WHERE a.user_id = 4);
+update t_trace_manage set tenant_id = 3 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report a WHERE a.user_id = 4);
 
 -- 生产环境 cloud查找
-SELECT GROUP_CONCAT(id) from t_report WHERE user_id = 3
-update t_report_application_summary set tenant_id = 3 and env_code = 'prod' WHERE report_id in ()
-update t_report_machine set tenant_id = 3 and env_code = 'prod' WHERE report_id in ()
-update t_report_summary set tenant_id = 3 and env_code = 'prod' WHERE report_id in ()
-update t_trace_manage set tenant_id = 3 and env_code = 'prod' WHERE report_id in ()
+update t_report_application_summary set tenant_id = 3 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 3);
+update t_report_machine set tenant_id = 3 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 3);
+update t_report_summary set tenant_id = 3 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 3);
+update t_trace_manage set tenant_id = 3 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 3);
 
 
 
 
 -- 老百姓
 -- 生产环境 cloud查找
-SELECT GROUP_CONCAT(id) from t_report WHERE user_id in(5,12,13)
-update t_report_application_summary set tenant_id = 5 and env_code = 'prod' WHERE report_id in ()
-update t_report_machine set tenant_id = 5 and env_code = 'prod' WHERE report_id in ()
-update t_report_summary set tenant_id = 5 and env_code = 'prod' WHERE report_id in ()
-update t_trace_manage set tenant_id = 5 and env_code = 'prod' WHERE report_id in ()
+update t_report_application_summary set tenant_id = 5 and env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(5,12,13));
+update t_report_machine set tenant_id = 5 and env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(5,12,13));
+update t_report_summary set tenant_id = 5 and env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(5,12,13));
+update t_trace_manage set tenant_id = 5 and env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(5,12,13));
 
 
 
 -- 申通快递
 -- 测试环境 cloud查找
-SELECT GROUP_CONCAT(id) from t_tro_user WHERE name like 'sto%' and id <> 7
-SELECT GROUP_CONCAT(id) from t_report WHERE user_id in()
-update t_report_application_summary set tenant_id = 7 and env_code = 'test' WHERE report_id in ()
-update t_report_machine set tenant_id = 7 and env_code = 'test' WHERE report_id in ()
-update t_report_summary set tenant_id = 7 and env_code = 'test' WHERE report_id in ()
-update t_trace_manage set tenant_id = 7 and env_code = 'test' WHERE report_id in ()
+update t_report_application_summary set tenant_id = 7 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE name like 'sto%' and id <> 7));
+
+update t_report_machine set tenant_id = 7 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE name like 'sto%' and id <> 7));
+
+update t_report_summary set tenant_id = 7 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE name like 'sto%' and id <> 7));
+
+update t_trace_manage set tenant_id = 7 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE name like 'sto%' and id <> 7));
+
 
 -- 生产环境 cloud查找
-update t_report_application_summary set tenant_id = 7 and env_code = 'prod' WHERE report_id in ()
-update t_report_machine set tenant_id = 7 and env_code = 'prod' WHERE report_id in ()
-update t_report_summary set tenant_id = 7 and env_code = 'prod' WHERE report_id in ()
-update t_trace_manage set tenant_id = 7 and env_code = 'prod' WHERE report_id in ()
+update t_report_application_summary set tenant_id = 7 and env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE name like 'sto%' and id = 7));
+update t_report_machine set tenant_id = 7 and env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE name like 'sto%' and id = 7));
+update t_report_summary set tenant_id = 7 and env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE name like 'sto%' and id = 7));
+update t_trace_manage set tenant_id = 7 and env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE name like 'sto%' and id = 7));
 
 -- 联动云
 -- 测试环境 cloud查找
-SELECT GROUP_CONCAT(id) from t_report WHERE user_id = 9
-update t_report_application_summary set tenant_id = 10 and env_code = 'test' WHERE report_id in ()
-update t_report_machine set tenant_id = 10 and env_code = 'test' WHERE report_id in ()
-update t_report_summary set tenant_id = 10 and env_code = 'test' WHERE report_id in ()
-update t_trace_manage set tenant_id = 10 and env_code = 'test' WHERE report_id in ()
+update t_report_application_summary set tenant_id = 10 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 9);
+update t_report_machine set tenant_id = 10 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 9);
+update t_report_summary set tenant_id = 10 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 9);
+update t_trace_manage set tenant_id = 10 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 9);
 
 
 -- 生产环境 cloud查找
-SELECT GROUP_CONCAT(id) from t_report WHERE user_id = 10
-update t_report_application_summary set tenant_id = 10 and env_code = 'prod' WHERE report_id in ()
-update t_report_machine set tenant_id = 10 and env_code = 'prod' WHERE report_id in ()
-update t_report_summary set tenant_id = 10 and env_code = 'prod' WHERE report_id in ()
-update t_trace_manage set tenant_id = 10 and env_code = 'prod' WHERE report_id in ()
+update t_report_application_summary set tenant_id = 10 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 10);
+update t_report_machine set tenant_id = 10 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 10);
+update t_report_summary set tenant_id = 10 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 10);
+update t_trace_manage set tenant_id = 10 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 10);
 
 -- 爱库存
 -- 生产环境 cloud查找
-SELECT GROUP_CONCAT(id) from t_report WHERE user_id = 24
-update t_report_application_summary set tenant_id = 24 and env_code = 'prod' WHERE report_id in ()
-update t_report_machine set tenant_id = 24 and env_code = 'prod' WHERE report_id in ()
-update t_report_summary set tenant_id = 24 and env_code = 'prod' WHERE report_id in ()
-update t_trace_manage set tenant_id = 24 and env_code = 'prod' WHERE report_id in ()
+update t_report_application_summary set tenant_id = 24 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 24);
+update t_report_machine set tenant_id = 24 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 24);
+update t_report_summary set tenant_id = 24 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 24);
+update t_trace_manage set tenant_id = 24 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id = 24);

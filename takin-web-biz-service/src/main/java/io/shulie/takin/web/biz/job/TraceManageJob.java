@@ -24,7 +24,12 @@ import org.springframework.stereotype.Component;
 public class TraceManageJob implements SimpleJob {
     @Autowired
     private TraceManageDAO traceManageDAO;
-    public static long timeout = 20 * 1000;
+
+    /**
+     * aka 5 minutes
+     */
+    public static long timeout = 300 * 1000;
+
     @Override
     public void execute(ShardingContext shardingContext) {
         //获取正在采集中的数据
@@ -43,4 +48,5 @@ public class TraceManageJob implements SimpleJob {
             }
         }
     }
+
 }

@@ -15,8 +15,15 @@
 
 package io.shulie.takin.web.data.dao.application;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.excel.util.StringUtils;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
@@ -28,6 +35,7 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.InstanceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.LibraryDTO;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
@@ -45,12 +53,6 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -380,7 +382,7 @@ public class ApplicationDAOImpl
         entity.setApplicationId(applicationId);
         entity.setAccessStatus(status);
         LambdaUpdateWrapper<ApplicationMntEntity> wrapper = this.getLambdaUpdateWrapper();
-        ;
+
         wrapper.set(ApplicationMntEntity::getAccessStatus, status)
             .eq(ApplicationMntEntity::getApplicationId, applicationId);
         applicationMntMapper.update(null, wrapper);
@@ -400,4 +402,12 @@ public class ApplicationDAOImpl
     public void attendApplicationService(Map<String, String> param) {
         applicationAttentionListMapper.attendApplicationService(param);
     }
+
+    @Override
+    public List<Long> listIdsByNameListAndCustomerId(List<String> applicationNameList) {
+        return CommonUtil.list2list(applicationMntMapper.selectObjs(this.getCustomerLambdaQueryWrapper()
+            .select(ApplicationMntEntity::getApplicationId)
+            .in(ApplicationMntEntity::getApplicationName, applicationNameList)), Long.class);
+    }
+
 }

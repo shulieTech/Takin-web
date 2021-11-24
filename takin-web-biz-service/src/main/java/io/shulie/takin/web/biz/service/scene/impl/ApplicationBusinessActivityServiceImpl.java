@@ -71,7 +71,7 @@ public class ApplicationBusinessActivityServiceImpl implements ApplicationBusine
         String rpcType = map.get(FeaturesConstants.RPC_TYPE_KEY);
         String extend = map.get(FeaturesConstants.EXTEND_KEY);
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
-            linkManageTableEntity.getApplicationName(),
+                false, linkManageTableEntity.getApplicationName(),
             null, serviceName, methodName, rpcType, extend);
         if (applicationEntrancesTopology == null) {
             return Lists.newArrayList();

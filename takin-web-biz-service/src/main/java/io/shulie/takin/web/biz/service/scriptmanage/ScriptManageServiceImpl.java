@@ -24,10 +24,12 @@ import com.alibaba.fastjson.JSON;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.ZipUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.SceneManageConstant;
+import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.common.util.parse.UrlUtil;
 import com.pamirs.takin.entity.dao.linkmanage.TBusinessLinkManageTableMapper;
 import com.pamirs.takin.entity.dao.linkmanage.TSceneLinkRelateMapper;
@@ -88,6 +90,7 @@ import io.shulie.takin.web.biz.utils.exception.ScriptManageExceptionUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.common.constant.FileManageConstant;
+import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.ScriptManageConstant;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.script.FileTypeEnum;
@@ -98,13 +101,14 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.vo.file.FileExtendVO;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.common.vo.script.ScriptDeployFinishDebugVO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.LinkManageDAO;
+import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.dao.script.ScriptDebugDAO;
+import io.shulie.takin.web.data.dao.script.ScriptManageDeployDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptTagRefDAO;
@@ -117,6 +121,7 @@ import io.shulie.takin.web.data.param.tagmanage.TagManageParam;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptDeployDetailResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
@@ -125,6 +130,7 @@ import io.shulie.takin.web.data.result.tagmanage.TagManageResult;
 import io.shulie.takin.web.diff.api.DiffFileApi;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -133,6 +139,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 /**
  * @author zhaoyong
@@ -155,6 +162,9 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     @Value("${file.upload.user.data.dir:/data/tmp}")
     private String fileDir;
+
+    @Value("${data.path}")
+    private String dataPath;
 
     @Autowired
     private DiffFileApi fileApi;
@@ -191,6 +201,12 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     @Autowired
     private ScriptDebugDAO scriptDebugDAO;
+
+    @Autowired
+    private ScriptManageDeployDAO scriptManageDeployDAO;
+
+    @Autowired
+    private SceneLinkRelateDAO sceneLinkRelateDAO;
 
     @Override
     public String getZipFileUrl(Long scriptDeployId) {
@@ -906,6 +922,53 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         fileManageResults = addScriptFile(partRequest, takinScriptId);
         response.setFileManageResults(fileManageResults);
         return response;
+    }
+
+    @Override
+    public List<BusinessLinkResult> listBusinessActivityByScriptDeployId(Long scriptDeployId) {
+        List<Long> businessIds = this.listBusinessActivityIdsByScriptDeployId(scriptDeployId);
+        return businessIds.isEmpty() ? Collections.emptyList()
+            : businessLinkManageDAO.selectBussinessLinkByIdList(businessIds);
+    }
+
+    @Override
+    public List<Long> listBusinessActivityIdsByScriptDeployId(Long scriptDeployId) {
+        // 根据脚本实例id获得业务活动或者业务流程id
+        ScriptManageDeployResult scriptDeploy = scriptManageDeployDAO.getById(scriptDeployId);
+        if (scriptDeploy == null) {
+            throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, "场景关联脚本不存在!");
+        }
+
+        String refType = scriptDeploy.getRefType();
+        // 获得业务活动列表
+        // 1 1的话, 直接查业务活动表, 2的话, 查web的scene表, 然后
+        if (ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE.equals(refType)) {
+            return sceneLinkRelateDAO.listBusinessLinkIdsByBusinessFlowId(
+                Long.valueOf(scriptDeploy.getRefValue()));
+        }
+
+        return Collections.singletonList(Long.valueOf(scriptDeploy.getRefValue()));
+    }
+
+    @Override
+    public String getZipFileNameByScriptDeployId(Long scriptDeployId) {
+        // 查询脚本是否存在
+        ScriptDeployDetailResult scriptDeploy = scriptManageDAO.getScriptDeployByDeployId(scriptDeployId);
+        Assert.notNull(scriptDeploy, "脚本不存在！");
+
+        // 脚本对应的列表
+        List<String> filePathList = scriptManageDAO.listFilePathByScriptDeployId(scriptDeployId);
+        Assert.notEmpty(filePathList, "脚本文件不存在！");
+        String aFile = filePathList.get(0);
+        File file = new File(aFile);
+        Assert.isTrue(file.exists(), "脚本文件不存在！");
+        File parentFile = file.getParentFile();
+
+        // 根据脚本名称组装
+        String absoluteZipName = String.format("%s%s%s.%s", parentFile.getParent(),
+            File.separator, scriptDeploy.getName(), ProbeConstants.FILE_TYPE_ZIP);
+        ZipUtil.zip(parentFile.getAbsolutePath(), absoluteZipName);
+        return absoluteZipName;
     }
 
     private List<FileManageResult> addScriptFile(WebPartRequest partRequest, Long takinScriptId) {

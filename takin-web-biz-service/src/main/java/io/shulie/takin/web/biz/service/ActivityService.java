@@ -6,7 +6,9 @@ import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +27,8 @@ public interface ActivityService {
      * @param request
      */
     void createActivity(ActivityCreateRequest request);
+
+    void createActivityWithoutAMDB(ActivityCreateRequest request);
 
     /**
      * 新增虚拟业务活动
@@ -65,13 +69,12 @@ public interface ActivityService {
     /**
      * 获取业务活动详情
      *
-     * @param activityId 业务活动id
      * @return 详情
      */
-    ActivityResponse getActivityById(Long activityId);
+    ActivityResponse getActivityById(ActivityInfoQueryRequest activityInfoQueryRequest);
     ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request);
     ActivityResponse getActivityWithMetricsByIdForReport(Long activityId, LocalDateTime start, LocalDateTime end);
-    ActivityBottleneckResponse getBottleneckByActivityList(List<ActivityInfoQueryRequest> activityList, String appName, String serviceName);
+    ActivityBottleneckResponse getBottleneckByActivityList(ApplicationVisualInfoResponse applicationVisualInfoResponse, LocalDateTime startTime, LocalDateTime endTime);
 
     ActivityResponse getActivityByIdWithoutTopology(Long id);
 
@@ -82,4 +85,8 @@ public interface ActivityService {
     void setActivityNodeState(long activityId, String serviceName, String ownerApps, boolean state);
 
     List<ActivityNodeState> getActivityNodeServiceState(long activityId);
+
+    BusinessLinkManageTableEntity getActivityByName(String activityName);
+
+    BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request);
 }

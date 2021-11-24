@@ -387,8 +387,8 @@ update e_patrol_scene_check set env_code='test',tenant_id=1;
 
 -- 额外 租户期间增加的表
 update t_mq_config_template set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_application_ds_cache_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_application_ds_db_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+-- update t_application_ds_cache_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+-- update t_application_ds_db_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_application_ds_db_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 
 -- 大表最后数据迁移
@@ -432,7 +432,7 @@ ALTER TABLE `t_dictionary_data`
 DROP PRIMARY KEY,
 ADD PRIMARY KEY(`ID`,`tenant_id`,`env_code`) USING BTREE;
 ALTER TABLE `t_dictionary_type` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE `t_exception_info` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
+-- t_exception_info 不需要订正 ALTER TABLE `t_exception_info` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_fast_debug_config_info` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_fast_debug_config_info ADD UNIQUE KEY `idx_name_tenant_env` ( `name`,`tenant_id`,`env_code` );
 ALTER TABLE t_fast_debug_config_info DROP KEY `name`;
@@ -514,4 +514,7 @@ ALTER TABLE t_fast_debug_stack_info ADD INDEX `idx_tenant_env` (`tenant_id`,`env
 -- 调试工具结果
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_trace_id` ( `trace_id`);
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_config_Id` (`config_Id`);
+-- 异常信息
+ALTER TABLE `t_exception_info` ADD INDEX `idx_code` ( `code`);
+ALTER TABLE `t_exception_info` ADD INDEX `idx_agent_code` ( `agent_code`);
 

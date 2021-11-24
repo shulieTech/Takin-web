@@ -39,6 +39,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -80,6 +81,9 @@ public class AgentVersionServiceImpl implements AgentVersionService {
      * envCode字符串
      */
     private final static String PRADAR_ENV_CODE = "pradar.env.code";
+
+    @Value("${takin.web.url}")
+    private String takinWebUrl;
 
     @Autowired
     private AgentVersionDAO agentVersionDAO;
@@ -224,7 +228,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
              FileOutputStream fos = new FileOutputStream(outputFile)
         ) {
-            String downloadUrl = generatorDownLoadUrl(projectName, version, urlPrefix);
+            String downloadUrl = generatorDownLoadUrl(projectName, version, takinWebUrl);
             String str;
             while ((str = reader.readLine()) != null) {
                 if (str.contains("{|downloadUrl|}")) {

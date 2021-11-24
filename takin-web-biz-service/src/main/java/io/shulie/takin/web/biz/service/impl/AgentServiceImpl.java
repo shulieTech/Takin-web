@@ -35,7 +35,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AgentServiceImpl implements AgentService {
 
-    @Value("${takin.web.version}")
+    @Value("${takin.web.url}")
     private String takinWebUrl;
 
     @Autowired

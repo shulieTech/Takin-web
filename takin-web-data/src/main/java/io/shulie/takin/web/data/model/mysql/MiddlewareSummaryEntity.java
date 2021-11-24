@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @TableName(value = "t_middleware_summary")
-public class MiddlewareSummaryEntity extends TenantBaseEntity {
+public class MiddlewareSummaryEntity {
     @TableId(value = "id", type = IdType.INPUT)
     private Long id;
 

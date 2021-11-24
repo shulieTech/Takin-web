@@ -14,7 +14,7 @@ import lombok.Data;
     */
 @Data
 @TableName(value = "t_middleware_jar")
-public class MiddlewareJarEntity extends TenantBaseEntity {
+public class MiddlewareJarEntity{
     @TableId(value = "id", type = IdType.INPUT)
     private Long id;
 

@@ -111,32 +111,32 @@ FROM t_tro_user;
 ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
 
 -- saas
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=1;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=3;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=4;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=5;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=12;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=13;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=7;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=8;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=17;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=19;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=20;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=21;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=22;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=23;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=25;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=26;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=27;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=28;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=29;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=30;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=31;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=32;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=33;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=9;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=10;
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=24;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=1;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=3;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=4;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=5;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=12;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=13;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=7;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=8;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=17;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=19;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=20;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=21;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=22;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=23;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=25;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=26;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=27;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=28;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=29;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=30;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=31;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=32;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=33;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=9;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=10;
+UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=24;
 
 -- demo环境
 
@@ -281,6 +281,18 @@ UPDATE t_performance_criteria_config t1
     LEFT JOIN t_application_mnt t2 ON t1.app_id = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
+-- liuchuan部分
+
+-- t_agent_config
+UPDATE t_agent_config m
+    LEFT JOIN t_tro_user u ON u.`name` = m.operator
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=u.id
+SET m.env_code = IFNULL(fix.env_code,'test');
+
+
+
+-- liuchuan end
+
 -- tenant_id
 update t_application_ds_manage ds set ds.tenant_id=IFNULL((select tenant_id from t_tro_user where id= ds.user_id),1);
 update t_application_mnt app set app.tenant_id=IFNULL((select tenant_id from t_tro_user where id= app.user_id),1);
@@ -328,25 +340,24 @@ UPDATE t_activity_node_service_state a
     LEFT JOIN (SELECT IFNULL(u.tenant_id, 1) tid, b.LINK_ID bid, b.env_code
     FROM t_business_link_manage_table b LEFT JOIN t_tro_user u ON u.id = b.USER_ID) t
 ON t.bid = a.activity_id
-    SET a.tenant_id = t.tid, a.env_code = t.env_code;
+    SET a.tenant_id = IFNULL(t.tid,1), a.env_code = IFNULL(t.env_code,'test');
 
 -- t_agent_config 根据 key, 获得用户id, 然后获得 租户id
--- 需要单独给 env_code
-UPDATE t_agent_config m LEFT JOIN t_tro_user u ON u.`key` = m.user_app_key SET m.tenant_id = u.tenant_id;
-
+UPDATE t_agent_config m LEFT JOIN t_tro_user u ON u.`name` = m.operator SET m.tenant_id = IFNULL(u.tenant_id,1);
+UPDATE t_agent_config set tenant_id=-1,env_code='system' WHERE tenant_id=1 AND env_code='test';
 -- t_app_business_table_info 根据用户id查到租户id, 然后赋值
-UPDATE t_app_business_table_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.tenant_id;
-UPDATE t_app_business_table_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
+UPDATE t_app_business_table_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = IFNULL(u.tenant_id,1);
+UPDATE t_app_business_table_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = IFNULL(u.env_code,'test');
 
 -- t_app_middleware_info 根据用户id查到租户id, 然后赋值
-UPDATE t_app_middleware_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.tenant_id;
-UPDATE t_app_middleware_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
+UPDATE t_app_middleware_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = IFNULL(u.tenant_id,1);
+UPDATE t_app_middleware_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = IFNULL(u.env_code,'test');
 
-UPDATE t_app_remote_call m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.tenant_id;
-UPDATE t_app_remote_call m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = u.env_code;
+UPDATE t_app_remote_call m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = IFNULL(u.tenant_id,1);
+UPDATE t_app_remote_call m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = IFNULL(u.env_code,'test');
 
 UPDATE t_app_agent_config_report m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = u.tenant_id;
-UPDATE t_app_agent_config_report m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.application_id SET m.env_code = u.env_code;
+UPDATE t_app_agent_config_report m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.application_id SET m.env_code = IFNULL(u.env_code,'test');
 
 COMMIT;
 -- liuchuan end

@@ -71,7 +71,7 @@ public class ScriptManageDAOImpl
         }
         ScriptManageDeployResult scriptManageDeployResult = BeanUtil.copyProperties(scriptManageDeployEntity, ScriptManageDeployResult.class);
         ScriptManageEntity scriptManageEntity = scriptManageMapper.selectById(scriptManageDeployEntity.getScriptId());
-        if (scriptManageEntity != null){
+        if (scriptManageEntity == null){
             return null;
         }
         scriptManageDeployResult.setMVersion(scriptManageEntity.getMVersion());

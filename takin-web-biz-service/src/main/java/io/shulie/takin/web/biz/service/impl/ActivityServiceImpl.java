@@ -179,6 +179,8 @@ public class ActivityServiceImpl implements ActivityService {
                 String.format("保存失败，[名称:%s] 已被使用", request.getActivityName()));
         }
 
+        param.setActivityName(null);
+        param.setApplicationName(request.getApplicationName());
         param.setEntranceName(request.getServiceName());
         param.setExtend(request.getExtend());
         param.setMethod(request.getMethod());

@@ -1,10 +1,8 @@
 package io.shulie.takin.web.biz.pojo.bo.agentupgradeonline;
 
-import javax.validation.constraints.NotNull;
+import java.util.UUID;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * @Description agent命令业务数据
@@ -12,9 +10,12 @@ import lombok.NoArgsConstructor;
  * @Date 2021/11/17 10:29 上午
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class AgentCommandBO {
+
+    /**
+     * 任务的uuid
+     */
+    private String uuid = UUID.randomUUID().toString();
 
     /**
      * 指令id
@@ -25,4 +26,12 @@ public class AgentCommandBO {
      * 指令对应的参数
      */
     private String extras;
+
+    public AgentCommandBO() {
+    }
+
+    public AgentCommandBO(Long id, String extras) {
+        this.id = id;
+        this.extras = extras;
+    }
 }

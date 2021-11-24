@@ -14,11 +14,10 @@ import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgra
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
 import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidStatusEnum;
+import io.shulie.takin.web.common.enums.fastagentaccess.AgentReportStatusEnum;
 import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
-import lombok.Data;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -114,11 +113,15 @@ public class AgentUpgradeProcessor extends AgentCommandSupport {
         ApplicationPluginDownloadPathDetailResult downloadResult = getPluginDownloadPath(
             ApplicationAgentPathValidStatusEnum.CHECK_PASSED);
 
-        UpgradeResult upgradeResult = new UpgradeResult();
-        BeanUtils.copyProperties(downloadResult, upgradeResult);
+        UpgradeResult upgradeResult = new UpgradeResult(downloadResult);
         upgradeResult.setUpgradeBath(upgradeDetailResult.getUpgradeBatch());
         upgradeResult.setDownloadPath(upgradeDetailResult.getDownloadPath());
         return upgradeResult;
+    }
+
+    @Override
+    public AgentReportStatusEnum workStatus() {
+        return AgentReportStatusEnum.RUNNING;
     }
 
     @Override
@@ -126,23 +129,7 @@ public class AgentUpgradeProcessor extends AgentCommandSupport {
         return AgentCommandEnum.REPORT_UPGRADE_RESULT;
     }
 
-    @Data
-    static class UpgradeResult {
-
-        /**
-         * 类型 0:oss;1:ftp;2:nginx
-         */
-        private Integer pathType;
-
-        /**
-         * 配置内容
-         */
-        private String context;
-
-        /**
-         * 盐
-         */
-        private String salt;
+    static class UpgradeResult extends PluginDownloadPathResult {
 
         /**
          * 升级批次号
@@ -153,5 +140,29 @@ public class AgentUpgradeProcessor extends AgentCommandSupport {
          * 下载地址
          */
         private String downloadPath;
+
+        public UpgradeResult() {
+            super(null);
+        }
+
+        public UpgradeResult(ApplicationPluginDownloadPathDetailResult detailResult) {
+            super(detailResult);
+        }
+
+        public String getUpgradeBath() {
+            return upgradeBath;
+        }
+
+        public void setUpgradeBath(String upgradeBath) {
+            this.upgradeBath = upgradeBath;
+        }
+
+        public String getDownloadPath() {
+            return downloadPath;
+        }
+
+        public void setDownloadPath(String downloadPath) {
+            this.downloadPath = downloadPath;
+        }
     }
 }

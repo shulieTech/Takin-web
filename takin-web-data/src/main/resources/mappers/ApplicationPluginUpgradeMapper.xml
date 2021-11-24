@@ -11,6 +11,7 @@
         <result property="upgradeAgentId" column="upgrade_agent_id"/>
         <result property="downloadPath" column="download_path"/>
         <result property="pluginUpgradeStatus" column="plugin_upgrade_status"/>
+        <result property="type" column="type"/>
         <result property="remark" column="remark"/>
         <result property="gmtCreate" column="gmt_create"/>
         <result property="gmtUpdate" column="gmt_update"/>
@@ -25,6 +26,7 @@
                upgrade_agent_id,
                download_path,
                plugin_upgrade_status,
+               type,
                remark,
                gmt_create,
                gmt_update

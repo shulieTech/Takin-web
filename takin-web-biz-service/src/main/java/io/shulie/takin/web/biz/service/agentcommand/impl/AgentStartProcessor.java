@@ -15,11 +15,11 @@ import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeTypeEnum;
 import io.shulie.takin.web.common.enums.application.ApplicationAgentPathValidStatusEnum;
+import io.shulie.takin.web.common.enums.fastagentaccess.AgentReportStatusEnum;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginDownloadPathDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
-import lombok.Data;
-import org.springframework.beans.BeanUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -29,6 +29,7 @@ import org.springframework.util.StringUtils;
  * @Date 2021/11/19 11:44 上午
  */
 @Component
+@Slf4j
 public class AgentStartProcessor extends AgentCommandSupport {
 
     private static final String AGENT_START_TEMPLATE = "AGENT_START:%s-%s";
@@ -62,9 +63,13 @@ public class AgentStartProcessor extends AgentCommandSupport {
             ApplicationPluginDownloadPathDetailResult downloadResult = getPluginDownloadPath(
                 ApplicationAgentPathValidStatusEnum.CHECK_PASSED);
 
-            AgentStartResult agentStartResult = new AgentStartResult();
-            BeanUtils.copyProperties(downloadResult, agentStartResult);
+            AgentStartResult agentStartResult = new AgentStartResult(downloadResult);
             agentStartResult.setUpgradeBath(upgradeDetailResult.getUpgradeBatch());
+
+            if (AgentUpgradeTypeEnum.AGENT_REPORT.getVal().equals(upgradeDetailResult.getType())) {
+                agentStartResult.setPathType(-1);
+            }
+
             return agentStartResult;
         }
 
@@ -92,6 +97,9 @@ public class AgentStartProcessor extends AgentCommandSupport {
                     // 将dependencyInfo入库
                     saveDependencyInfo(agentHeartbeatBO);
                     agentStartResult.setUpgradeBath(dependencyMd5);
+                } catch (Exception e) {
+                    log.error("[AGENT] heartbeat save dependency error, dependency:{}",
+                        agentHeartbeatBO.getDependencyInfo(), e);
                 } finally {
                     distributedLock.unLockSafely(lockKey);
                 }
@@ -101,6 +109,11 @@ public class AgentStartProcessor extends AgentCommandSupport {
         }
 
         return agentStartResult;
+    }
+
+    @Override
+    public AgentReportStatusEnum workStatus() {
+        return AgentReportStatusEnum.STARTING;
     }
 
     @Override
@@ -129,27 +142,27 @@ public class AgentStartProcessor extends AgentCommandSupport {
         applicationPluginUpgradeService.createUpgradeOrder(upgradeParam);
     }
 
-    @Data
-    static class AgentStartResult {
-
-        /**
-         * 类型 0:oss;1:ftp;2:nginx
-         */
-        private Integer pathType;
-
-        /**
-         * 配置内容
-         */
-        private String context;
-
-        /**
-         * 盐
-         */
-        private String salt;
+    static class AgentStartResult extends PluginDownloadPathResult {
 
         /**
          * 升级批次号
          */
         private String upgradeBath;
+
+        public AgentStartResult() {
+            super(null);
+        }
+
+        public AgentStartResult(ApplicationPluginDownloadPathDetailResult detailResult) {
+            super(detailResult);
+        }
+
+        public String getUpgradeBath() {
+            return upgradeBath;
+        }
+
+        public void setUpgradeBath(String upgradeBath) {
+            this.upgradeBath = upgradeBath;
+        }
     }
 }

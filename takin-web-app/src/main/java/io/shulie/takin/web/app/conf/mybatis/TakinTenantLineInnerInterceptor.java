@@ -49,20 +49,87 @@ import net.sf.jsqlparser.statement.update.Update;
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
 public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor {
+
+    private String[] tableArrWithoutTenantId=new String[]{
+        "t_dictionary_type",
+        "t_tc_sequence",
+        "t_tenant_info",
+        "t_tro_resource",
+        "t_config_server",
+        "t_pradar_zk_config",
+        "t_cache_config_template",
+        "t_connectpool_config_template",
+        "t_http_client_config_template",
+        "t_app_remote_call_template_mapping",
+        "t_mq_config_template",
+        "t_rpc_config_template",
+        "t_agent_config",
+        "t_agent_version",
+        "t_exception_info",
+        "t_middleware_summary",
+        "t_middleware_jar"
+    };
+
+    private String[] tableArrWithoutEnvCode=new String[]{
+        "t_tro_user",
+        "t_tro_dept",
+        "t_dictionary_type",
+        "t_tro_user_dept_relation",
+        "t_tc_sequence",
+        "t_tenant_info",
+        "t_tro_resource",
+        "t_config_server",
+        "t_pradar_zk_config",
+        "t_cache_config_template",
+        "t_connectpool_config_template",
+        "t_http_client_config_template",
+        "t_app_remote_call_template_mapping",
+        "t_mq_config_template",
+        "t_rpc_config_template",
+        "t_agent_config",
+        "t_agent_version",
+        "t_exception_info",
+        "t_middleware_summary",
+        "t_middleware_jar"
+    };
+
+    private String[] tableArrWithoutUserId =new String[]{
+        "t_tro_user",
+        "t_tro_dept",
+        "t_dictionary_type",
+        "t_config_server",
+        "t_tc_sequence",
+        "t_tenant_info",
+        "t_tro_resource",
+        "t_config_server",
+        "t_pradar_zk_config",
+        "t_cache_config_template",
+        "t_connectpool_config_template",
+        "t_http_client_config_template",
+        "t_app_remote_call_template_mapping",
+        "t_mq_config_template",
+        "t_rpc_config_template",
+        "t_agent_config",
+        "t_agent_version",
+        "t_exception_info",
+        "t_middleware_summary",
+        "t_middleware_jar"
+    };
+
     /**
      * 没有tenant_id 的表
      */
-    private List<String> tableWithoutTenantId = Lists.newArrayList("t_dictionary_type","t_tc_sequence","t_tenant_info","t_tro_resource", "t_config_server", "t_pradar_zk_config", "t_cache_config_template", "t_connectpool_config_template", "t_http_client_config_template", "t_app_remote_call_template_mapping", "t_mq_config_template", "t_rpc_config_template", "t_agent_config", "t_agent_version");
+    private List<String> tableWithoutTenantId = Lists.newArrayList(tableArrWithoutTenantId);
 
     /**
      * 没有env_code 的表
      */
-    private List<String> tableWithoutEnvCode = Lists.newArrayList("t_tro_user","t_tro_dept","t_dictionary_type","t_tro_user_dept_relation","t_tc_sequence","t_tenant_info","t_tro_resource", "t_config_server", "t_pradar_zk_config", "t_cache_config_template", "t_connectpool_config_template", "t_http_client_config_template", "t_app_remote_call_template_mapping", "t_mq_config_template", "t_rpc_config_template", "t_agent_config", "t_agent_version");
+    private List<String> tableWithoutEnvCode = Lists.newArrayList(tableArrWithoutEnvCode);
 
     /**
      * 没有user_id 的表
      */
-    private List<String> tableWithoutUserId = Lists.newArrayList("t_tro_user","t_tro_dept","t_dictionary_type","t_config_server","t_tc_sequence","t_tenant_info","t_tro_resource", "t_config_server", "t_pradar_zk_config", "t_cache_config_template", "t_connectpool_config_template", "t_http_client_config_template", "t_app_remote_call_template_mapping", "t_mq_config_template", "t_rpc_config_template", "t_agent_config", "t_agent_version");
+    private List<String> tableWithoutUserId = Lists.newArrayList(tableArrWithoutUserId);
 
     private TakinTenantLineHandler tenantLineHandler;
 

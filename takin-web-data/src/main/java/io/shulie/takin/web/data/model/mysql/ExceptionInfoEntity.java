@@ -15,7 +15,7 @@ import lombok.Data;
 */
 @Data
 @TableName(value = "t_exception_info")
-public class ExceptionInfoEntity extends TenantBaseEntity {
+public class ExceptionInfoEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 

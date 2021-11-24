@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.response.application;
 
+import java.util.Map;
 import java.util.Objects;
 
 import io.shulie.takin.web.common.vo.WebOptionEntity;
@@ -21,6 +22,8 @@ public class ApplicationEntrancesResponse extends WebOptionEntity {
     private String extend;
 
     private String serviceName;
+
+    private Map activityNameAndId;
 
     @Override
     public boolean equals(Object o) {

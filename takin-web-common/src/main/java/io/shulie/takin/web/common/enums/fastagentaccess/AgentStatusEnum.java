@@ -12,6 +12,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum AgentStatusEnum {
     INSTALLED(0, "INSTALLED", "安装成功"),
+    UNINSTALL(1, "UNINSTALL", "未安装"),
     INSTALL_FAILED(4, "INSTALL_FAILED", "安装失败"),
     ;
 

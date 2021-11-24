@@ -4,9 +4,11 @@ import java.util.List;
 
 import com.pamirs.pradar.log.parser.trace.RpcBased;
 import com.pamirs.pradar.log.parser.trace.RpcStack;
+import io.shulie.surge.data.deploy.pradar.link.model.TTrackClickhouseModel;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 
 /**
@@ -21,7 +23,7 @@ public interface TraceClient {
      * @param dto 请求参数
      * @return 分页数据
      */
-    PagingList<EntryTraceInfoDTO> listEntryTraceByTaskId(QueryLinkDetailDTO dto);
+    PagingList<EntryTraceInfoDTO> listEntryTraceByTaskIdV2(QueryLinkDetailDTO dto);
 
     /**
      * 查询入口的trace请求流量信息
@@ -42,5 +44,13 @@ public interface TraceClient {
      * @return
      */
     List<RpcBased> getTraceBaseById(String traceId);
+
+    /**
+     * 查询trace日志
+     * @param query
+     * @return
+     */
+    PagingList<TTrackClickhouseModel> listTraceLog(TraceLogQueryDTO query);
+
 
 }

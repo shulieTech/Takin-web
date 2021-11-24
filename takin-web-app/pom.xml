@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.0.2</version>
+        <version>takin-web-5.0.4.8</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-app</artifactId>
@@ -193,18 +193,6 @@
             <scope>provided</scope>
         </dependency>
 
-
-        <dependency>
-            <groupId>io.shulie.instrument.module</groupId>
-            <artifactId>module-pradar-core</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>guava</artifactId>
-                    <groupId>com.google.guava</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
         <dependency>
             <groupId>com.github.xiaoymin</groupId>

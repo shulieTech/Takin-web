@@ -191,6 +191,12 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
             return AgentReportStatusEnum.STARTING;
         }
 
+        // 判断是否为刚启动，agent状态为未安装，simulator状态为null或者空字符串
+        if (AgentStatusEnum.UNINSTALL.getCode().equals(agentHeartBeatBO.getAgentStatus()) && StringUtils.isEmpty(
+            agentHeartBeatBO.getSimulatorStatus())) {
+            return AgentReportStatusEnum.BEGIN;
+        }
+
         // 判断是否异常 agent状态异常 或 simulator状态不是安装成功
         if (AgentStatusEnum.INSTALL_FAILED.getCode().equals(agentHeartBeatBO.getAgentStatus())
             || !ProbeStatusEnum.INSTALLED.getCode().equals(agentHeartBeatBO.getSimulatorStatus())) {

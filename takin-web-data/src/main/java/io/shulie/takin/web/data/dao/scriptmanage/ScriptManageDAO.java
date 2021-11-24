@@ -11,6 +11,7 @@ import io.shulie.takin.web.data.param.scriptmanage.ScriptExecuteResultCreatePara
 import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployCreateParam;
 import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployPageQueryParam;
 import io.shulie.takin.web.data.param.scriptmanage.shell.ShellExecuteParam;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptDeployDetailResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptExecuteResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
@@ -42,22 +43,6 @@ public interface ScriptManageDAO extends IService<ScriptManageEntity> {
      * @return
      */
     ScriptManageDeployResult selectScriptManageDeployByVersion(Long scriptId, Integer scriptVersion);
-
-    /**
-     * 删除脚本发布实例，如果一个脚本的所有实例都被删除，删除这个脚本
-     *
-     * @param scriptDeployId
-     */
-    void deleteScriptManageDeployById(Long scriptDeployId);
-
-    /**
-     * 分页查询脚本发布实例列表
-     *
-     * @param scriptManageDeployPageQueryParam
-     * @return
-     */
-    PagingList<ScriptManageDeployResult> pageQueryScriptManageDeploy(
-        ScriptManageDeployPageQueryParam scriptManageDeployPageQueryParam);
 
     /**
      * 新增脚本发布实例，同时如果没有脚本id的话，新增脚本
@@ -141,6 +126,13 @@ public interface ScriptManageDAO extends IService<ScriptManageEntity> {
      */
     ScriptManageDeployEntity getDeployByDeployId(Long scriptDeployId);
 
+    /**
+     * 通过脚本发布id, 获得脚本实例
+     *
+     * @param scriptDeployId 脚本发布id
+     * @return 脚本实例对象
+     */
+    ScriptDeployDetailResult getScriptDeployByDeployId(Long scriptDeployId);
 
     /**
      * 脚本实例数量
@@ -162,5 +154,12 @@ public interface ScriptManageDAO extends IService<ScriptManageEntity> {
      */
     PagingList<ScriptExecuteResult> getExecuteResult(ShellExecuteParam param);
 
+    /**
+     * 根据脚本发布id，获得对应的文件地址列表
+     *
+     * @param scriptDeployId 脚本发布id
+     * @return 文件地址列表
+     */
+    List<String> listFilePathByScriptDeployId(Long scriptDeployId);
 
 }

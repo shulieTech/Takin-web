@@ -1,24 +1,21 @@
 package io.shulie.takin.web.entrypoint.controller.file;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
 import com.pamirs.takin.entity.domain.vo.file.FileDeleteVO;
-import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.common.constant.RemoteConstant;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.http.HttpWebClient;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.common.vo.FileWrapperVO;
-import io.shulie.takin.web.diff.api.DiffFileApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -41,25 +38,58 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequestMapping("/api/file")
-@Api(tags = "文件管理")
+@Api(tags = "接口: 文件管理")
 @Slf4j
 public class FileController {
 
     @Autowired
     private HttpWebClient httpWebClient;
 
-    @Autowired
-    private DiffFileApi fileApi;
-
     @Value("${file.upload.user.data.dir:/data/tmp}")
     private String fileDir;
+
+    /**
+     * 上传文件临时地址
+     */
+    @Value("${file.upload.tmp.path}")
+    private String uploadTempPath;
+
+    /**
+     * 脚本上传地址
+     */
+    @Value("${file.upload.script.path}")
+    private String uploadScriptPath;
+
+    /**
+     * 文件保存地址
+     */
+    @Value("${data.path}")
+    private String dataPath;
+
+    @ApiOperation("|_ 文件下载")
+    @GetMapping("/download")
+    public void download(@RequestParam("filePath") String filePath, HttpServletResponse response) {
+        if (!this.filePathValidate(filePath)) {
+            log.error("非法下载路径文件，禁止下载：{}", filePath);
+            return;
+        }
+
+        File file = new File(filePath);
+        if (!file.exists()) {
+            log.warn("文件不存在，地址：{}", filePath);
+            return;
+        }
+
+        CommonUtil.zeroCopyDownload(file, response);
+    }
 
     @PostMapping("/upload")
     @ApiOperation(value = "文件上传")
     public WebResponse upload(List<MultipartFile> file) {
-        if (file == null || file.size() == 0) {
+        if (CollectionUtil.isEmpty(file)) {
             return WebResponse.fail("上传文件不能为空");
         }
+
         FileWrapperVO wrapperVO = new FileWrapperVO();
         wrapperVO.setFile(FileUtil.convertMultipartFileList(file));
         wrapperVO.setRequestUrl(RemoteConstant.FILE_UPLOAD_URL);
@@ -105,48 +135,32 @@ public class FileController {
     @ApiOperation("文件下载")
     @GetMapping(value = "/downloadFileByPath")
     public void downloadFileByPath(@RequestParam("filePath") String filePath, HttpServletResponse response) {
-        try {
-
-            if (!filePathValidate(filePath)) {
-                log.warn("非法下载路径文件，禁止下载：{}", filePath);
-                return;
-            }
-
-            if (new File(filePath).exists()) {
-                ServletOutputStream outputStream = response.getOutputStream();
-                Files.copy(Paths.get(filePath), outputStream);
-                response.setContentType("application/octet-stream");
-                String saveName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
-                response.setHeader("Content-Disposition",
-                    "attachment;filename=" + new String(saveName.getBytes("UTF-8"), "iso-8859-1"));
-            }
-            // 最后删除文件
-            FileManagerHelper.deleteFilesByPath(filePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.download(filePath, response);
+        // 删除文件
+        cn.hutool.core.io.FileUtil.del(filePath);
     }
 
     /**
      * 文件路径是否管理策略
      *
      * @param filePath 文件路径
-     * @return
+     * @return 是否
      */
     private boolean filePathValidate(String filePath) {
-        List<String> arrayList = init();
-
-        for (int i = 0; i < arrayList.size(); i++) {
-            if (filePath.startsWith(arrayList.get(i))) {
-                return true;
-            }
-        }
-        return false;
+        return this.pathInit().stream().anyMatch(filePath::startsWith);
     }
 
-    private List<String> init() {
+    /**
+     * 文件路径初始化
+     *
+     * @return 文件路径列表
+     */
+    private List<String> pathInit() {
         List<String> arrayList = new ArrayList<>();
         arrayList.add(fileDir);
+        arrayList.add(uploadTempPath);
+        arrayList.add(uploadScriptPath);
+        arrayList.add(dataPath);
         return arrayList;
     }
 

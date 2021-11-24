@@ -58,6 +58,20 @@ public class SwaggerConfig {
 
     private ObjectMapper objectMapper;
 
+    @Bean
+    public Docket all() {
+        return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
+            .groupName("压测平台-所有接口")
+            .select().apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(PathSelectors.any())
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(this.apiInfo()).enable(true);
+    }
+
+
     /**
      * v4.* 版本的都放在这里
      *

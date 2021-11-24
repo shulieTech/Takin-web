@@ -1,24 +1,77 @@
 package io.shulie.takin.web.biz.service;
 
-import cn.hutool.core.util.StrUtil;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.alibaba.fastjson.JSON;
+
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.MiddlewareType;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.MD5Util;
-import io.shulie.amdb.common.dto.link.topology.*;
+import io.shulie.amdb.common.dto.link.topology.LinkEdgeDTO;
+import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
+import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoBaseDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForCacheDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForDBDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForMQDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForOSSDTO;
+import io.shulie.amdb.common.dto.link.topology.NodeExtendInfoForSearchDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.amdb.common.enums.NodeTypeGroupEnum;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery1;
+import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery2;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeDTO;
 import io.shulie.takin.web.biz.common.CommonService;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.*;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppCallDatasourceInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppCallInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppProvider;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.AppProviderInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.ApplicationEntranceTopologyEdgeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.DbInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.ExceptionListResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.MqInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.NodeDetailDatasourceInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.NodeTypeResponseEnum;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.OssInfo;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyAppNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyCacheNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyDbNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyMqNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyOssNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyOtherNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologySearchNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyUnknownNodeResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse.TopologyVirtualNodeResponse;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.activity.info.RpcTypeEnum;
@@ -40,16 +93,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 
 /**
  * 链路拓扑图 接口--拓扑图信息从AMDB获取
@@ -62,7 +105,6 @@ public class LinkTopologyService extends CommonService {
 
     @Autowired
     private ApplicationMiddlewareService applicationMiddlewareService;
-
 
     @Autowired
     private ApplicationClient applicationClient;
@@ -83,19 +125,19 @@ public class LinkTopologyService extends CommonService {
 
     public static final double INIT = 0.0; // db 没有数据的初始值
 
-
     /**
      * 拓扑图查询, 处理
      *
      * @param request 请求入参
-     *
+     * @param tempActivity 是否是临时拓扑图
      * @return 拓扑图相关
      */
     public ApplicationEntranceTopologyResponse getApplicationEntrancesTopology(
-            ApplicationEntranceTopologyQueryRequest request) {
+            ApplicationEntranceTopologyQueryRequest request, boolean tempActivity) {
 
         // 大数据查询拓扑图
         LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
+                tempActivity,
                 request.getApplicationName(), request.getLinkId(), request.getServiceName(), request.getMethod(),
                 request.getRpcType(), request.getExtend());
 
@@ -134,7 +176,6 @@ public class LinkTopologyService extends CommonService {
         Map<String, List<ApplicationNodeDTO>> appNodeMap = Maps.newHashMap();
 
         // nodes
-        //SY:将节点的ID保存到map里面-节点信息
         List<LinkNodeDTO> nodes = applicationEntrancesTopology.getNodes();
         if (CollectionUtils.isNotEmpty(nodes)) {
             nodeMap = nodes.stream().collect(Collectors.toMap(LinkNodeDTO::getNodeId, self -> self));
@@ -143,15 +184,13 @@ public class LinkTopologyService extends CommonService {
         }
 
         // edges
-        //SY:边信息
         List<LinkEdgeDTO> edges = applicationEntrancesTopology.getEdges();
         if (CollectionUtils.isNotEmpty(edges)) {
-            providerEdgeMap = edges.stream().collect(Collectors.groupingBy(LinkEdgeDTO::getTargetId));//SY:根据边做分组
+            providerEdgeMap = edges.stream().collect(Collectors.groupingBy(LinkEdgeDTO::getTargetId));
             callEdgeMap = edges.stream().collect(Collectors.groupingBy(LinkEdgeDTO::getSourceId));
         }
 
         // 节点转换
-        //SY:根据不同的节点类型处理转化-加入provider service
         applicationEntranceTopologyResponse.setNodes(this.convertNodes(applicationEntrancesTopology, nodeMap,
             providerEdgeMap, callEdgeMap, managerMap, appNodeMap));
         // 边 转换
@@ -164,35 +203,34 @@ public class LinkTopologyService extends CommonService {
     }
 
     /**
-     * @param activityId 业务活动 id
-     * @param startDateTime 拓扑图的 开始时间
-     * @param endDateTime   拓扑图的 结束时间
-     * @param allTotalCountStartDateTime    拓扑图的 线上总调用量指标的 开始时间
+     * @param startTimeUseInInFluxDB 拓扑图的 开始时间
+     * @param endTimeUseInInFluxDB   拓扑图的 结束时间
+     * @param allTotalCountStartDateTimeUseInInFluxDB    拓扑图的 线上总调用量指标的 开始时间
      */
-    public void fillMetrics(Long activityId,
+    public void fillMetrics(ActivityInfoQueryRequest request,
                             ApplicationEntranceTopologyResponse topologyResponse,
-                            LocalDateTime startDateTime,
-                            LocalDateTime endDateTime,
-                            LocalDateTime allTotalCountStartDateTime, FlowTypeEnum flowTypeEnum) {
+                            LocalDateTime startTimeUseInInFluxDB,
+                            LocalDateTime endTimeUseInInFluxDB,
+                            LocalDateTime allTotalCountStartDateTimeUseInInFluxDB) {
 
         Boolean metricsType = null;
         // 压测流量(true)，业务流量(false)，混合流量(null)
-        if (FlowTypeEnum.PRESSURE_MEASUREMENT.equals(flowTypeEnum)) {
+        if (FlowTypeEnum.PRESSURE_MEASUREMENT.equals(request.getFlowTypeEnum())) {
             metricsType = true;
-        } else if (FlowTypeEnum.BUSINESS.equals(flowTypeEnum)) {
+        } else if (FlowTypeEnum.BUSINESS.equals(request.getFlowTypeEnum())) {
             metricsType = false;
         }
 
         // startTime
-        long startMilli = startDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
-        long allTotalCountStartMilli = allTotalCountStartDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        long startMilliUseInInFluxDB = startTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        long allTotalCountStartMilliUseInInFluxDB = allTotalCountStartDateTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
 
         // endTime
-        long endMilli = endDateTime.toInstant(ZoneOffset.of("+0")).toEpochMilli();
+        long endMilliUseInInFluxDB = endTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
 
         // 由于 机器性能 / Trace数据量 等问题， 大数据在入库时 时间有延迟
-        // 这里要查询真实 Trace数据的时间范围，应该是小于 startMilli
-        long realSeconds = getTracePeriod(startMilli, endMilli, startDateTime, endDateTime);
+        // 这里要查询真实 Trace数据的时间范围，应该是小于 startMilliUseInInFluxDB
+        long realSeconds = getTracePeriod(startMilliUseInInFluxDB, endMilliUseInInFluxDB, startTimeUseInInFluxDB, endTimeUseInInFluxDB);
 
         /*
         填充 Node
@@ -206,7 +244,7 @@ public class LinkTopologyService extends CommonService {
             bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.getCustomerId());
         }
         // 查询 该业务活动 的所有开关状态
-        List<ActivityNodeState> dbActivityNodeServiceState = activityService.getActivityNodeServiceState(activityId);
+        List<ActivityNodeState> dbActivityNodeServiceState = activityService.getActivityNodeServiceState(request.getActivityId());
 
         List<AbstractTopologyNodeResponse> allNodes = topologyResponse.getNodes();
         for (AbstractTopologyNodeResponse node : allNodes) {
@@ -215,20 +253,21 @@ public class LinkTopologyService extends CommonService {
             if (appnode.getProviderService() != null) {
                 List<AppProviderInfo> appProviderInfos =
                         fillAppNodeServiceSuccessRateAndRt(
-                                activityId, appnode, startDateTime, startMilli,
-                                endMilli, realSeconds, metricsType, bottleneckConfig,
+                                request, appnode, startTimeUseInInFluxDB, endTimeUseInInFluxDB, startMilliUseInInFluxDB,
+                                endMilliUseInInFluxDB, realSeconds, metricsType, bottleneckConfig,
                                 dbActivityNodeServiceState);
 
                 // 设置 拓扑图中节点上显示哪一个服务性能指标
                 setTopologyNodeServiceMetrics(node, appProviderInfos);
-                // 设置业务活动层级的瓶颈
-                setTopologyLevelBottleneck(topologyResponse);
             }
 
             if (node.getRoot()) {
                 rootNode = node;
             }
         }
+
+        // 设置业务活动层级的瓶颈
+        setTopologyLevelBottleneck(topologyResponse);
 
         /*
         填充 Edge
@@ -294,75 +333,84 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void setTopologyNodeServiceMetrics(AbstractTopologyNodeResponse node, List<AppProviderInfo> appProviderInfos) {
-        // init
-        Double allTotalCount = INIT;
-        Double allSuccessCount = INIT; // 总成功调用次数
-        Double allTotalTps = INIT;
-        Double allTotalRt = INIT;
+        AppProvider appProviderContainer = AppProvider.buildInit();
 
         for (AppProviderInfo appProviderInfo : appProviderInfos) {
-            for (AppProvider appProvider : appProviderInfo.getDataSource()) {
-                // 如果服务打开，则更新值
-                if (appProvider.getSwitchState()) {
-                    allTotalCount = bigDecimalAdd(allTotalCount, appProvider.getServiceAllTotalCount());
-                    allSuccessCount = bigDecimalAdd(allSuccessCount, appProvider.getAllSuccessCount());
-                    allTotalTps = bigDecimalAdd(allTotalTps, appProvider.getServiceAllTotalTps());
-                    allTotalRt = bigDecimalAdd(allTotalRt, appProvider.getAllTotalRt());
-                }
-            }
+            List<AppProvider> appProviderList = appProviderInfo.getDataSource();
+            avgComputer(appProviderContainer, appProviderList);
         }
 
         // 在 node 上赋值
-        node.setServiceAllTotalCount(allTotalCount);
-        node.setServiceAllSuccessRate(bigDecimalDivide(allSuccessCount, allTotalCount));
-        node.setServiceAllTotalTps(allTotalTps);
-        node.setServiceRt(bigDecimalDivide(allTotalRt, allTotalCount));
+        node.setServiceAllTotalCount(appProviderContainer.getServiceAllTotalCount());
+        node.setServiceAllSuccessRate(appProviderContainer.getServiceAllSuccessRate());
+        node.setServiceAllTotalTps(appProviderContainer.getServiceAllTotalTps());
+        node.setServiceRt(appProviderContainer.getServiceRt());
+    }
+
+    private AppProvider avgComputer(AppProvider appProviderContainer, List<AppProvider> appProviderList) {
+        appProviderList.stream()
+                // 如果服务打开，则更新值
+                .filter(a -> {
+                    if (a.getSwitchState() == null) return true;
+                    else return a.getSwitchState();
+                })
+                .forEach(appProvider -> {
+                    appProviderContainer.setServiceAllTotalCount(
+                            bigDecimalAdd(appProviderContainer.getServiceAllTotalCount(), appProvider.getServiceAllTotalCount())
+                    );
+                    appProviderContainer.setAllSuccessCount(
+                            bigDecimalAdd(appProviderContainer.getAllSuccessCount(), appProvider.getAllSuccessCount())
+                    );
+                    appProviderContainer.setServiceAllTotalTps(
+                            bigDecimalAdd(appProviderContainer.getServiceAllTotalTps(), appProvider.getServiceAllTotalTps())
+                    );
+                    appProviderContainer.setAllTotalRt(
+                            bigDecimalAdd(appProviderContainer.getAllTotalRt(), appProvider.getAllTotalRt())
+                    );
+                    appProviderContainer.setServiceAllMaxRt(
+                            Math.max(appProviderContainer.getServiceAllMaxRt(), appProvider.getServiceAllMaxRt())
+                    );
+                });
+
+        appProviderContainer.setServiceAllSuccessRate(
+                bigDecimalDivide(appProviderContainer.getAllSuccessCount(), appProviderContainer.getServiceAllTotalCount())
+        );
+        appProviderContainer.setServiceRt(
+                bigDecimalDivide(appProviderContainer.getAllTotalRt(), appProviderContainer.getServiceAllTotalCount())
+        );
+
+        return appProviderContainer;
     }
 
     private List<AppProviderInfo> fillAppNodeServiceSuccessRateAndRt(
-            Long activityId, TopologyAppNodeResponse node, LocalDateTime startDateTime, long startMilli, long endMilli,
+            ActivityInfoQueryRequest request, TopologyAppNodeResponse node,
+            LocalDateTime startTimeUseInInFluxDB, LocalDateTime endTimeUseInInFluxDB, long startMilli, long endMilli,
             long realSeconds, Boolean metricsType, List<E2eExceptionConfigInfoExt> bottleneckConfig,
             List<ActivityNodeState> dbActivityNodeServiceState) {
 
-        // 节点 所有有服务，包含 不同的中间件，不同的serviceMethod
+        // 节点 所有有服务，包含 不同的中间件，不同的 serviceMethod
         List<AppProvider> allAppProviderServiceList = new ArrayList<>();
 
         List<AppProviderInfo> providerService = node.getProviderService();
         for (AppProviderInfo appProviderInfo : providerService) {
 
             for (AppProvider appProvider : appProviderInfo.getDataSource()) {
-                appProvider.setContainRealAppProvider(new ArrayList<>());
+                // 对服务包含的每条边，填充指标数据
+                fillMetrixFromDB(request, startMilli, endMilli, realSeconds, metricsType, appProvider);
 
-                for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
-                    String eagleId = linkEdgeDTO.getEagleId();
-                    // 根据服务边，查询指标
-                    AppProvider appProviderFromDb =
-                            queryMetricsFromDb(startMilli, endMilli, realSeconds, metricsType, eagleId);
+                // 合并 同一上游 的多条边
+                mergeSameBeforeApp(appProvider);
 
-                    appProviderFromDb.setBeforeApps(appProvider.getBeforeAppsMap().get(linkEdgeDTO.getSourceId()));
-                    appProviderFromDb.setOwnerApps(appProvider.getOwnerApps());
-                    appProviderFromDb.setEagleId(eagleId);
-                    appProviderFromDb.setSource(linkEdgeDTO.getSourceId());
-                    appProviderFromDb.setTarget(linkEdgeDTO.getTargetId());
-                    appProviderFromDb.setRpcType(linkEdgeDTO.getRpcType());
-                    appProviderFromDb.setServiceName(appProvider.getServiceName());
-                    appProviderFromDb.setMiddlewareName(appProvider.getMiddlewareName());
+                // 计算瓶颈
+                appProvider.getContainRealAppProvider().stream()
+                        // 如果不是初始值，再计算瓶颈
+                        .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT))
+                        .forEach(appProviderFromDb -> {
+                            // 瓶颈计算 and 落库
+                            computeBottleneck(startTimeUseInInFluxDB, request.getActivityId(), bottleneckConfig, appProviderFromDb);
+                        });
 
-                    // 瓶颈类型 init
-                    int rateBottleneckType = -1; // 瓶颈类型(-1 没有瓶颈)
-                    appProviderFromDb.setAllSuccessRateBottleneckType(rateBottleneckType);
-                    appProviderFromDb.setAllTotalRtBottleneckType(rateBottleneckType);
-                    appProviderFromDb.setAllSqlTotalRtBottleneckType(rateBottleneckType);
-
-                    if (!appProviderFromDb.getServiceAllTotalCount().equals(INIT)) { // 如果不是初始值，再计算瓶颈
-                        //SY:瓶颈计算+落库
-                        computeBottleneck(startDateTime, activityId, bottleneckConfig, appProviderFromDb);
-                    }
-
-                    appProvider.getContainRealAppProvider().add(appProviderFromDb);
-                }
-
-                // 计算出每条真实边的指标后，再计算平均指标，用来对节点的某一服务赋值
+                // 计算出每条真实边的指标后，再计算平均指标，用来对节点的某一服务赋值, 当开关打开时，在拓扑图中展示
                 fillNodeServiceMetrics(appProvider);
 
                 allAppProviderServiceList.add(appProvider);
@@ -372,12 +420,141 @@ public class LinkTopologyService extends CommonService {
 
         if (!allAppProviderServiceList.isEmpty()) {
             // 查询 并 设置 节点服务 开关状态
-            setNodeServiceState(activityId, node, dbActivityNodeServiceState, allAppProviderServiceList);
+            setNodeServiceState(request.getActivityId(), node, dbActivityNodeServiceState, allAppProviderServiceList);
             // 设置 节点层次的瓶颈数据
             setNodeBottleneck(node, allAppProviderServiceList);
         }
 
         return providerService;
+    }
+
+    private void mergeSameBeforeApp(AppProvider appProvider) {
+        Map<String, AppProvider> appProviderHashMap = appProvider.getContainRealAppProvider().stream()
+                .collect(Collectors.toMap(
+                        AppProvider::getBeforeApps,
+                        Function.identity(),
+                        (existingValue, newValue) -> {
+                            ArrayList<AppProvider> arrayList = new ArrayList();
+                            arrayList.add(newValue);
+
+                            avgComputer(existingValue, arrayList);
+
+                            existingValue.setEagleId(existingValue.getEagleId() + "," + newValue.getEagleId());
+                            return existingValue;
+                        }));
+
+        appProvider.setContainRealAppProvider(new ArrayList(appProviderHashMap.values()));
+    }
+
+    private void fillMetrixFromDB(ActivityInfoQueryRequest request, long startMilli, long endMilli, long realSeconds, Boolean metricsType, AppProvider appProvider) {
+        appProvider.setContainRealAppProvider(new ArrayList<>());
+
+        HashMap<String, Boolean> isContainSame = new HashMap<>();
+
+        for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
+            String eagleId = linkEdgeDTO.getEagleId();
+            String beforeApps = appProvider.getBeforeAppsMap().get(linkEdgeDTO.getSourceId());
+
+            // 根据服务边，查询指标
+            AppProvider appProviderFromDb;
+            if (request.isTempActivity()) {
+                appProviderFromDb = queryMetricsFromAMDB(isContainSame, beforeApps, appProvider.getOwnerApps(), appProvider.getMiddlewareName(), appProvider.getServiceName(), request);
+            } else {
+                appProviderFromDb = queryMetricsFromDb(startMilli, endMilli, realSeconds, metricsType, eagleId);
+            }
+
+            appProviderFromDb.setBeforeApps(beforeApps);
+            appProviderFromDb.setOwnerApps(appProvider.getOwnerApps());
+            appProviderFromDb.setEagleId(eagleId);
+            appProviderFromDb.setSource(linkEdgeDTO.getSourceId());
+            appProviderFromDb.setTarget(linkEdgeDTO.getTargetId());
+            appProviderFromDb.setRpcType(linkEdgeDTO.getRpcType());
+            appProviderFromDb.setServiceName(appProvider.getServiceName());
+            appProviderFromDb.setMiddlewareName(appProvider.getMiddlewareName());
+
+            // 瓶颈类型 init
+            int rateBottleneckType = -1; // 瓶颈类型(-1 没有瓶颈)
+            appProviderFromDb.setAllSuccessRateBottleneckType(rateBottleneckType);
+            appProviderFromDb.setAllTotalRtBottleneckType(rateBottleneckType);
+            appProviderFromDb.setAllSqlTotalRtBottleneckType(rateBottleneckType);
+
+            appProvider.getContainRealAppProvider().add(appProviderFromDb);
+        }
+    }
+
+    private AppProvider queryMetricsFromAMDB(
+            HashMap<String, Boolean> isContainSame, String beforeApps, String toAppName, String middlewareName, String serviceName, ActivityInfoQueryRequest request) {
+
+        String[] split = serviceName.split("#");
+        String service = split[0];
+        String method = split[1];
+
+        // 如果 有 key 相同的边时，不调用大数据
+        String key = beforeApps + toAppName + middlewareName + service + method;
+        Boolean aBoolean = isContainSame.get(key);
+        if (null == aBoolean) {
+            isContainSame.put(key, true);
+        } else {
+            // 之前有相同的
+            return getAppProvider(0L, Collections.emptyList());
+        }
+
+        // step 1
+        String startTime = DateUtils.formatLocalDateTime(request.getStartTime());
+        String endTime = DateUtils.formatLocalDateTime(request.getEndTime());
+
+        TempTopologyQuery1 query1 = TempTopologyQuery1.builder()
+                .inAppName(toAppName)
+                .inService(service)
+                .inMethod(method)
+                .startTime(startTime)
+                .endTime(endTime)
+                .timeGap(request.getTimeGap())
+                .build();
+
+        String response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
+
+        // step 2
+        ArrayList<TraceMetricsResult> traceMetricsResultList = new ArrayList<>();
+        Integer realSeconds = 0;
+
+        if (StringUtils.isNotBlank(response1)) {
+            TempTopologyQuery2 query2 = TempTopologyQuery2.builder()
+                    .fromAppName(beforeApps)
+                    .appName(toAppName)
+                    .middlewareName(middlewareName)
+                    .service(service)
+                    .method(method)
+                    .entranceStr(response1)
+                    .clusterTest(request.getFlowTypeEnum().getType())
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .timeGap(request.getTimeGap())
+                    .build();
+
+            JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);
+
+            TraceMetricsResult traceMetricsResult = new TraceMetricsResult();
+
+            Integer allTotalCount = (Integer) jsonObject.get("allTotalCount");
+            traceMetricsResult.setAllTotalCount(allTotalCount.doubleValue());
+
+            Integer allSuccessCount = (Integer) jsonObject.get("allSuccessCount");
+            traceMetricsResult.setAllSuccessCount(allSuccessCount.doubleValue());
+
+            Integer allTotalRt = (Integer) jsonObject.get("allTotalRt");
+            traceMetricsResult.setAllTotalRt(allTotalRt.doubleValue());
+
+            Integer allMaxRt = (Integer) jsonObject.get("allMaxRt");
+            traceMetricsResult.setAllMaxRt(allMaxRt.doubleValue());
+
+            traceMetricsResultList.add(traceMetricsResult);
+
+            realSeconds = (Integer) jsonObject.get("realSeconds");
+        }
+
+        AppProvider appProvider = getAppProvider(realSeconds, traceMetricsResultList);
+        return appProvider;
     }
 
     private void setNodeBottleneck(TopologyAppNodeResponse node, List<AppProvider> allAppProviderServiceList) {
@@ -431,39 +608,34 @@ public class LinkTopologyService extends CommonService {
     }
 
     private void fillNodeServiceMetrics(AppProvider appProvider) {
-        // init
-        Double serviceAllTotalCount = INIT;
-        Double allSuccessCount = INIT; // 总成功调用次数
-        Double serviceAllTotalTps = INIT;
-        Double allTotalRt = INIT;
-        Double serviceAllMaxRt = INIT;
+        AppProvider appProviderContainer = AppProvider.buildInit();
 
         // 将同一服务 的多条调用线上 的指标平均
-        for (AppProvider realPro : appProvider.getContainRealAppProvider()) {
-            serviceAllTotalCount = bigDecimalAdd(serviceAllTotalCount, realPro.getServiceAllTotalCount());
-            allSuccessCount = bigDecimalAdd(allSuccessCount, realPro.getAllSuccessCount());
-            serviceAllTotalTps = bigDecimalAdd(serviceAllTotalTps, realPro.getServiceAllTotalTps());
-
-            allTotalRt = bigDecimalAdd(allTotalRt, realPro.getAllTotalRt());
-            serviceAllMaxRt = Math.max(serviceAllMaxRt, realPro.getServiceAllMaxRt());
-        }
+        avgComputer(appProviderContainer, appProvider.getContainRealAppProvider());
 
         // 节点中 某个服务的 4 类性能指标
-        appProvider.setServiceAllTotalCount(serviceAllTotalCount);
+
+        // 1) 总调用量
+        appProvider.setServiceAllTotalCount(appProviderContainer.getServiceAllTotalCount());
+
         // 成功率（入口1+入口2+入口3 成功次数）/（入口1+入口2+入口3 总次数）
-        appProvider.setAllSuccessCount(allSuccessCount);
-        appProvider.setServiceAllSuccessRate(bigDecimalDivide(appProvider.getAllSuccessCount(), serviceAllTotalCount));
-        // tps 入口1+入口2+入口3 tps
-        appProvider.setServiceAllTotalTps(serviceAllTotalTps);
+        appProvider.setAllSuccessCount(appProviderContainer.getAllSuccessCount());
+        // 2) 总成功率
+        appProvider.setServiceAllSuccessRate(appProviderContainer.getServiceAllSuccessRate());
+
+        // 3) 总Tps          tps 入口1+入口2+入口3 tps
+        appProvider.setServiceAllTotalTps(appProviderContainer.getServiceAllTotalTps());
+
         // rt （入口1+入口2+入口3 总耗时） /（入口1+入口2+入口3 总次数）
-        appProvider.setAllTotalRt(allTotalRt);
-        appProvider.setServiceAvgRt(bigDecimalDivide(appProvider.getAllTotalRt(), serviceAllTotalCount));
+        appProvider.setAllTotalRt(appProviderContainer.getAllTotalRt());
+        appProvider.setServiceAvgRt(appProviderContainer.getServiceRt());
+        appProvider.setServiceAllMaxRt(appProviderContainer.getServiceAllMaxRt());
+        // 4) 前端显示 RT
         appProvider.setServiceRt(appProvider.getServiceAvgRt());
-        appProvider.setServiceAllMaxRt(serviceAllMaxRt);
     }
 
-    private void computeBottleneck(
-            LocalDateTime startDateTime, Long activityId,
+    public void computeBottleneck(
+            LocalDateTime startTimeUseInInFluxDB, Long activityId,
             List<E2eExceptionConfigInfoExt> bottleneckConfig, AppProvider appProvider) {
 
         E2eStorageRequest storageRequest = new E2eStorageRequest();
@@ -483,10 +655,11 @@ public class LinkTopologyService extends CommonService {
         E2eBaseStorageParam baseStorageParam = new E2eBaseStorageParam();
         baseStorageParam.setSuccessRate(appProvider.getServiceAllSuccessRate());
         baseStorageParam.setRt(appProvider.getServiceAvgRt()); // 预设
-        baseStorageParam.setEdgeId(appProvider.getEagleId());
-        baseStorageParam.setStartTime(DateUtils.convertLocalDateTimeToUDate(startDateTime.plusHours(8)));
+        baseStorageParam.setStartTime(DateUtils.convertLocalDateTimeToUDate(startTimeUseInInFluxDB.plusHours(8)));
         baseStorageParam.setServiceName(appProvider.getOwnerApps() + "#" + appProvider.getServiceName());
         baseStorageParam.setRpcType(appProvider.getRpcType());
+        // 应用详情模块使用时，不传这两个值
+        baseStorageParam.setEdgeId(appProvider.getEagleId());
         baseStorageParam.setActivityId(activityId);
 
         // 卡慢 rt
@@ -547,9 +720,7 @@ public class LinkTopologyService extends CommonService {
 
         // 循环节点的服务
         for (AppProvider appProvider : appProviderList) {
-            String nodeServiceName = appProvider.getMiddlewareName()
-                    + ":"
-                    + appProvider.getServiceName();
+            String nodeServiceName = appProvider.getMiddlewareName() + ":" + appProvider.getServiceName();
 
             for (ActivityNodeState dbCurrentNodeState : currentNodeStateList) {
                 // 如果该 node 在 db 中, 有开关记录, 则用 db 中的状态
@@ -587,17 +758,22 @@ public class LinkTopologyService extends CommonService {
         Collection<TraceMetricsResult> allTotalTpsAndRtCountResult = influxDBManager.query(TraceMetricsResult.class, allTotalTpsAndRtCountQuerySql, pradarDatabase);
         ArrayList<TraceMetricsResult> allTotalTpsAndRtCountResults = new ArrayList<>(allTotalTpsAndRtCountResult);
 
+        AppProvider appProvider = getAppProvider(realSeconds, allTotalTpsAndRtCountResults);
+        return appProvider;
+    }
+
+    public AppProvider getAppProvider(long realSeconds, List<TraceMetricsResult> allTotalTpsAndRtCountResults) {
         AppProvider appProvider = new AppProvider();
 
         // 指标 初始化
         appProvider.setServiceAllTotalCount(INIT); // 总调用量
         appProvider.setServiceAllSuccessRate(INIT); // 总成功率
-            appProvider.setAllSuccessCount(INIT); // 总成功调用次数
+        appProvider.setAllSuccessCount(INIT); // 总成功调用次数
         appProvider.setServiceAllTotalTps(INIT); // 总Tps
 
         appProvider.setServiceRt(INIT); // 总Rt
         appProvider.setServiceAvgRt(INIT); // 平均Rt
-            appProvider.setAllTotalRt(INIT); // 总调用Rt
+        appProvider.setAllTotalRt(INIT); // 总调用Rt
         appProvider.setServiceAllMaxRt(INIT); // maxRt
 
         if (allTotalTpsAndRtCountResults.size() != 0) {
@@ -777,8 +953,10 @@ public class LinkTopologyService extends CommonService {
         if (CollectionUtils.isEmpty(nodes)) {
             return Maps.newHashMap();
         }
-        List<String> applicationNames = nodes.stream().filter(node -> nodeIsApp(node) && !isVirtualNode(node)).map(
-                LinkNodeDTO::getNodeName).collect(Collectors.toList());
+        List<String> applicationNames = nodes.stream()
+                .filter(node -> nodeIsApp(node) && !isVirtualNode(node))
+                .map(LinkNodeDTO::getNodeName)
+                .collect(Collectors.toList());
 
         List<ApplicationResult> applicationsByName = applicationDAO.getApplicationByName(applicationNames);
         if (CollectionUtils.isEmpty(applicationsByName)) {
@@ -1029,8 +1207,7 @@ public class LinkTopologyService extends CommonService {
             AppProviderInfo appProviderInfo = new AppProviderInfo();
             appProviderInfo.setLabel(edgeByMiddlewareName.getKey()); // MiddlewareName
 
-            List<AppProvider> datasource = getDatasource(node, nodeMap, edgeByMiddlewareName,
-                    Lists.newArrayList());
+            List<AppProvider> datasource = getDatasource(node, nodeMap, edgeByMiddlewareName, Lists.newArrayList());
             appProviderInfo.setDataSource(datasource);
             return appProviderInfo;
         }).collect(Collectors.toList());
@@ -1062,7 +1239,6 @@ public class LinkTopologyService extends CommonService {
                 HashMap<String, String> sourceIdToNodeName = new HashMap<>();
                 appProvider.setBeforeAppsMap(sourceIdToNodeName);
 
-                // 设置上游应用(逗号分割的列表)
                 List<String> keyList = item.getValue().stream()
                         .filter(Objects::nonNull)
                         .map(LinkEdgeDTO::getSourceId)
@@ -1070,10 +1246,13 @@ public class LinkTopologyService extends CommonService {
 
                 for (String id : keyList) {
                     LinkNodeDTO linkNodeDTO = nodeMap.get(id);
-                    String nodeName = linkNodeDTO.getNodeName();
-                    sourceIdToNodeName.put(id, nodeName);
+                    if (linkNodeDTO != null) {
+                        String nodeName = linkNodeDTO.getNodeName();
+                        sourceIdToNodeName.put(id, nodeName);
+                    }
                 }
 
+                // 设置上游应用(逗号分割的列表)
                 String collect = item.getValue().stream()
                         .filter(Objects::nonNull)
                         .map(LinkEdgeDTO::getSourceId)
@@ -1414,9 +1593,15 @@ public class LinkTopologyService extends CommonService {
             return Collections.emptyList();
         }
 
+        // 根据应用名称搜索该租户下这些应用名称的应用id
+        List<Long> applicationIds = applicationDAO.listIdsByNameListAndCustomerId(applicationNameList);
+        if (applicationIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         // 查询出所有的 名称对应的中间件状态
         Map<String, Map<Integer, Integer>> applicationNameAboutStatusCountMap = applicationMiddlewareService
-                .getApplicationNameAboutStatusCountMap(applicationNameList);
+                .getApplicationNameAboutStatusCountMap(applicationIds);
         if (applicationNameAboutStatusCountMap.isEmpty()) {
             return Collections.emptyList();
         }
@@ -1483,6 +1668,7 @@ public class LinkTopologyService extends CommonService {
                     ApplicationEntranceTopologyEdgeResponse
                             applicationEntranceTopologyEdgeResponse
                             = new ApplicationEntranceTopologyEdgeResponse();
+
                     // 虚拟入口边
                     if ("VIRTUAL".equals(edge.getEagleType())) {
                         //edge.setEagleType(request.getType().getType());
@@ -1491,6 +1677,7 @@ public class LinkTopologyService extends CommonService {
                         edge.setService(request.getServiceName());
                         edge.setMiddlewareName(request.getType().getType());
                     }
+
                     applicationEntranceTopologyEdgeResponse.setSource(edge.getSourceId());
                     applicationEntranceTopologyEdgeResponse.setTarget(edge.getTargetId());
                     //EdgeTypeEnum edgeTypeEnum = EdgeTypeEnum.getEdgeTypeEnum(edge.getMiddlewareName());

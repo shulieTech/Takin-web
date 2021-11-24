@@ -1,5 +1,10 @@
 package io.shulie.takin.web.data.dao.perfomanceanaly;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.web.data.common.InfluxDatabaseWriter;
@@ -12,9 +17,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
-import java.util.*;
 
 /**
  * @author mubai
@@ -115,10 +117,10 @@ public class PressureMachineStatisticsDaoImpl implements PressureMachineStatisti
         if (StringUtils.isBlank(time)) {
             return;
         }
-        String influxDatabaseSql = "delete" +
-                " from t_pressure_machine_statistics" +
-                " where time <= '" + time + "'";
-
-        influxDatabaseWriter.query(influxDatabaseSql, PressureMachineStatisticsResult.class);
+        //String influxDatabaseSql = "delete" +
+        //        " from t_pressure_machine_statistics" +
+        //        " where time <= '" + time + "'";
+        //
+        //influxDatabaseWriter.query(influxDatabaseSql, PressureMachineStatisticsResult.class);
     }
 }

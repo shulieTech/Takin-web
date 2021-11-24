@@ -13,22 +13,22 @@ VALUES (1, 'ed45ef6b-bf94-48fa-b0c0-15e0285365d2', 'default', 'default', 'defaul
 
 -- 插入环境
 INSERT INTO `t_tenant_env_ref`
-(`tenant_id`, `env_code`, `env_name`, `desc`)
+(`tenant_id`, `env_code`, `env_name`, `desc`,`is_default`)
 VALUES
-    (1, 'test', '测试环境', ''),
-    (1, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
-    (2, 'test', '测试环境', ''),
-    (2, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
-    (3, 'test', '测试环境', ''),
-    (3, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
-    (5, 'test', '测试环境', ''),
-    (5, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
-    (7, 'test', '测试环境', ''),
-    (7, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
-    (10, 'test', '测试环境', ''),
-    (10, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作'),
-    (24, 'test', '测试环境', ''),
-    (24, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作');
+    (1, 'test', '测试环境', '',1),
+    (1, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作',0),
+    (2, 'test', '测试环境', '',1),
+    (2, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作',0),
+    (3, 'test', '测试环境', '',1),
+    (3, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作',0),
+    (5, 'test', '测试环境', '',1),
+    (5, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作',0),
+    (7, 'test', '测试环境', '',1),
+    (7, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作',0),
+    (10, 'test', '测试环境', '',1),
+    (10, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作',0),
+    (24, 'test', '测试环境', '',1),
+    (24, 'prod', '生产环境', '当前环境为生产环境，请谨慎操作',0);
 SELECT * from t_tro_user
 -- 更正t_tro_user
 update  t_tro_user set tenant_id = customer_id where customer_id is not null
@@ -65,6 +65,10 @@ SELECT * from t_tro_user_dept_relation
 -- 部门不区分环境
 update t_tro_user_dept_relation t1  join t_tro_user t2 on t1.user_id = t2.id set t1.tenant_id =  t2.tenant_id;
 update t_tro_dept t1 join (SELECT DISTINCT dept_id,tenant_id FROM t_tro_user_dept_relation ) t2 on t1.id = t2.dept_id set t1.tenant_id =  t2.tenant_id;
+-- 修正部分根用户
+update t_tro_dept t1  join (SELECT t2.parent_id,t2.tenant_id FROM t_tro_dept t2 WHERE t2.parent_id is not null) a
+on  t1.tenant_id = a.tenant_id set t1.tenant_id = a.tenant_id  WHERE t1.parent_id is null
+
 
 -- 角色 区分 环境  t_tro_authority
 select GROUP_CONCAT(id)  from t_tenant_info;

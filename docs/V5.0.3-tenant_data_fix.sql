@@ -99,7 +99,7 @@ UPDATE t_script_manage_deploy t1
 -- caijy
 BEGIN;
 -- 记录userid和envCode
-CREATE TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
+CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
 SELECT id as user_id,tenant_id,
        CASE
            WHEN customer_id <> tenant_id THEN
@@ -109,32 +109,37 @@ SELECT id as user_id,tenant_id,
            END AS env_code
 FROM t_tro_user;
 ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=1;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=3;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=4;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=5;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=12;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=13;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=7;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=8;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=17;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=19;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=20;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=21;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=22;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=23;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=25;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=26;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=27;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=28;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=29;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=30;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=31;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=32;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=33;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=9;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=10;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=24;
+
+-- saas
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=1;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=3;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=4;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=5;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=12;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=13;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=7;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=8;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=17;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=19;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=20;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=21;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=22;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=23;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=25;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=26;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=27;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=28;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=29;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=30;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=31;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=32;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=33;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=9;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=10;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=24;
+
+-- demo环境
+
 
 -- env_code
 -- 应用表 t_application_mnt
@@ -277,8 +282,8 @@ UPDATE t_performance_criteria_config t1
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
 -- tenant_id
-update t_application_ds_manage ds set ds.tenant_id=IFNULL((select fix.tenant_id from `DATA_FIX_TABLE` fix where fix.user_id = ds.user_id),1);
-update t_application_mnt app set app.tenant_id=IFNULL((select fix.tenant_id from `DATA_FIX_TABLE` fix where fix.user_id = app.user_id),1);
+update t_application_ds_manage ds set ds.tenant_id=IFNULL((select tenant_id from t_tro_user where id= ds.user_id),1);
+update t_application_mnt app set app.tenant_id=IFNULL((select tenant_id from t_tro_user where id= app.user_id),1);
 update t_application_node_probe probe set probe.tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = probe.application_name and customer_id=probe.customer_id),1);
 update t_black_list set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_business_link_manage_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);

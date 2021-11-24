@@ -1,4 +1,14 @@
 -- 需要查cloud数据 订正
+
+-- 场景表
+ALTER TABLE trodb_cloud.t_scene_manage
+    ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1',
+    ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识';
+-- 报告表
+ALTER TABLE trodb_cloud.t_report
+    ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1',
+    ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识';
+
 -- T3出行
 update trodb_cloud.t_scene_manage set tenant_id = 3           and env_code = 'test' where  customer_id = 4;
 update trodb_cloud.t_report       set tenant_id = 3           and env_code = 'test' where  customer_id = 4;

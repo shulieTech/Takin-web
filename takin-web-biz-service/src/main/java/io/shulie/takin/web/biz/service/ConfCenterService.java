@@ -255,8 +255,8 @@ public class ConfCenterService extends CommonService {
 
         try {
             TakinFileUtil.createFile(getBasePath() + tApplicationMnt.getApplicationName());
-        } catch (Throwable throwable) {
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_CONFIG_FILE_CREATE_ERROR, "文件创建失败！");
+        } catch (Throwable e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_CONFIG_FILE_CREATE_ERROR, "文件创建失败！",e);
         }
 
     }
@@ -448,7 +448,6 @@ public class ConfCenterService extends CommonService {
             param.setConfigValue(entity.getConfigValue());
             pluginsConfigService.update(param);
         }
-
     }
 
     /**

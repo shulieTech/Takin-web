@@ -425,9 +425,10 @@ public class SwaggerConfig {
             .groupName("探针在线升级")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex(
-                "/api/(agentReport|applicationPluginUpgrade|applicationPluginUpgradeRef|applicationTagRef"
-                    + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/heartbeat).*"))
+//            .paths(getRegex(
+//                "/api/(agentReport|applicationPluginUpgrade|applicationPluginUpgradeRef|applicationTagRef"
+//                    + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/heartbeat).*"))
+                    .paths(getRegex("/api/(fast/agent/access/list/new|agent/heartbeat|plugin/upgrade|application/tag|pluginDependent|pluginLibrary).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

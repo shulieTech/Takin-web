@@ -2,6 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.agentupgradeonline;
 
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeRollBackRequest;
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.ApplicationPluginUpgradeHistoryDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.ApplicationPluginUpgradeHistoryResponse;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
 import io.shulie.takin.web.common.common.Response;
@@ -27,7 +28,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(APIUrls.TAKIN_API_URL + "plugin/upgrade")
-@Api(tags = "")
+@Api(tags = "接口：插件升级管理")
 public class ApplicationPluginUpgradeController {
 
     @Autowired
@@ -47,7 +48,7 @@ public class ApplicationPluginUpgradeController {
 
     @ApiOperation("|_ 查看升级历史详情")
     @PutMapping("/history/detail")
-    public Response historyDetail(@Validated @RequestBody ApplicationPluginUpgradeRollBackRequest rollBackRequest) {
+    public Response<List<ApplicationPluginUpgradeHistoryDetailResponse>> historyDetail(@Validated @RequestBody ApplicationPluginUpgradeRollBackRequest rollBackRequest) {
         return  upgradeService.historyDetail(rollBackRequest.getUpgradeBatch());
     }
 

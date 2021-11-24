@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.request.agentupgradeonline;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -12,10 +13,13 @@ import javax.validation.constraints.NotNull;
 public class ApplicationPluginUpgradeCreateAgentInfoRequest {
 
     @NotNull
+    @ApiModelProperty(value = "应用Id",required = true)
     private Long applicationId;
     @NotNull
+    @ApiModelProperty(value = "应用名称",required = true)
     private String applicationName;
     @NotNull
+    @ApiModelProperty(value = "agentId",required = true)
     private String agentId;
 
 }

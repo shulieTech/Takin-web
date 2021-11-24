@@ -5,10 +5,10 @@ import cn.hutool.core.convert.Convert;
 import com.google.common.base.Splitter;
 import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeCreateAgentInfoRequest;
+import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeCreatePluginInfoRequest;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.ApplicationPluginUpgradeHistoryDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.ApplicationPluginUpgradeHistoryResponse;
-import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeRefService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
 import io.shulie.takin.web.biz.utils.agentupgradeonline.AgentPkgUtil;
@@ -140,7 +140,7 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Response pluginUpgrade(ApplicationPluginUpgradeCreateRequest createRequest) {
-        Set<PluginInfo> pluginInfoSet = new HashSet<>(createRequest.getUpgradeInfo());
+        Set<ApplicationPluginUpgradeCreatePluginInfoRequest> pluginInfoSet = new HashSet<>(createRequest.getUpgradeInfo());
         StringBuilder sb = new StringBuilder();
         pluginInfoSet.forEach(pluginInfo -> {
             sb.append("module-id=");
@@ -154,6 +154,7 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
         String upgradeBatch = MD5Util.getMD5(upgradeContext);
 
         //获取升级包下载地址
+
         String downLoadPath = this.downLoadPath(upgradeBatch, pluginInfoSet);
 
         Set<ApplicationPluginUpgradeCreateAgentInfoRequest> appsInfoSet = new HashSet<>(createRequest.getAppsInfo());
@@ -182,7 +183,7 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
     }
 
 
-    private String downLoadPath(String upgradeBatch, Set<PluginInfo> pluginInfoSet) {
+    private String downLoadPath(String upgradeBatch,Set<ApplicationPluginUpgradeCreatePluginInfoRequest> pluginInfoSet) {
         //检查是否存在相同的升级包,如果存在就复用下载地址
         ApplicationPluginUpgradeDetailResult detailResult = upgradeDAO.queryOneByUpgradeBatch(upgradeBatch);
         String downLoadPath;
@@ -190,7 +191,8 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
             downLoadPath = detailResult.getDownloadPath();
         } else {
             //获取合并包后的下载地址
-            Map<Integer, List<PluginInfo>> type2Info = CollStreamUtil.groupByKey(pluginInfoSet, PluginInfo::getPluginType);
+            Map<Integer, List<ApplicationPluginUpgradeCreatePluginInfoRequest>> type2Info = CollStreamUtil.groupByKey(pluginInfoSet,
+                    ApplicationPluginUpgradeCreatePluginInfoRequest::getPluginType);
             if (!type2Info.containsKey(PluginTypeEnum.SIMULATOR.getCode())) {
                 throw new TakinWebException(TakinWebExceptionEnum.PLUGIN_UPGRADE_VALID_ERROR, "升级单中未找到simulator插件");
             }

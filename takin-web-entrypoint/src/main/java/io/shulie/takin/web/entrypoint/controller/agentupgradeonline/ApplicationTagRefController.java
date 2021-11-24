@@ -20,7 +20,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(APIUrls.TAKIN_API_URL + "application/tag")
-@Api(tags = "")
+@Api(tags = "接口：应用标签管理")
 public class ApplicationTagRefController {
 
     @Autowired

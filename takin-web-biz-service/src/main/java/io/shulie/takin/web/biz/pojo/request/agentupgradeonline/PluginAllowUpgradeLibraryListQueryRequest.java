@@ -17,11 +17,11 @@ import java.util.List;
 @ApiModel("入参-探针允许升级版本列表查询类")
 public class PluginAllowUpgradeLibraryListQueryRequest {
 
-    @ApiModelProperty(value = "插件名")
+    @ApiModelProperty(value = "插件名",required = true)
     @NotNull
     private String pluginName;
 
-    @ApiModelProperty(value = "应用id集合")
+    @ApiModelProperty(value = "应用id集合",required = true)
     @NotEmpty
     private List<Long> applicationIds;
 }

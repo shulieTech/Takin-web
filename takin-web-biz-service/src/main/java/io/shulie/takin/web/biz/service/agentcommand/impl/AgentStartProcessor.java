@@ -113,7 +113,7 @@ public class AgentStartProcessor extends AgentCommandSupport {
 
     @Override
     public AgentReportStatusEnum workStatus() {
-        return AgentReportStatusEnum.STARTING;
+        return AgentReportStatusEnum.BEGIN;
     }
 
     @Override

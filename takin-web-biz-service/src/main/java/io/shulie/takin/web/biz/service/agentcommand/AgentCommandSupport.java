@@ -64,10 +64,10 @@ public abstract class AgentCommandSupport implements IAgentCommandProcessor {
     public void process(AgentHeartbeatBO agentHeartbeatBO, AgentCommandBO commandParam) {
         // 因为这个方法是在线程池中异步调用，所以不允许抛出异常
         try {
-            if (StringUtils.isBlank(commandParam.getExtras())) {
+            if (StringUtils.isBlank(commandParam.getExtrasString())) {
                 return;
             }
-            process0(agentHeartbeatBO, JSON.parseObject(commandParam.getExtras()));
+            process0(agentHeartbeatBO, JSON.parseObject(commandParam.getExtrasString()));
         } catch (Exception e) {
             // ignore
         }

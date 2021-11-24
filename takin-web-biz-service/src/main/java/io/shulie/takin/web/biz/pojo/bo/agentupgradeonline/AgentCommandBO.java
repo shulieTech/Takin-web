@@ -25,13 +25,13 @@ public class AgentCommandBO {
     /**
      * 指令对应的参数
      */
-    private String extras;
+    private String extrasString;
 
     public AgentCommandBO() {
     }
 
     public AgentCommandBO(Long id, String extras) {
         this.id = id;
-        this.extras = extras;
+        this.extrasString = extras;
     }
 }

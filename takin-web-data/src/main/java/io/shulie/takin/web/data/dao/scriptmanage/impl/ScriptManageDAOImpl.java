@@ -69,8 +69,13 @@ public class ScriptManageDAOImpl
         if (scriptManageDeployEntity == null) {
             return null;
         }
-
-        return BeanUtil.copyProperties(scriptManageDeployEntity, ScriptManageDeployResult.class);
+        ScriptManageDeployResult scriptManageDeployResult = BeanUtil.copyProperties(scriptManageDeployEntity, ScriptManageDeployResult.class);
+        ScriptManageEntity scriptManageEntity = scriptManageMapper.selectById(scriptManageDeployEntity.getScriptId());
+        if (scriptManageEntity != null){
+            return null;
+        }
+        scriptManageDeployResult.setMVersion(scriptManageEntity.getMVersion());
+        return scriptManageDeployResult;
     }
 
     @Override

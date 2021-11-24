@@ -93,6 +93,7 @@ import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -202,7 +203,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             ScriptDebugExceptionUtil.isDebugError(applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.getCustomerId(), AppSwitchEnum.CLOSED),
                     "脚本调试失败，探针总开关已关闭");
             // 脚本发布实例是否存在
-            ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDeployId);
+            ScriptManageDeployResult scriptDeploy = scriptManageDAO.selectScriptManageDeployById(scriptDeployId);
             ScriptDebugExceptionUtil.isDebugError(scriptDeploy == null, "脚本发布实例不存在!");
 
             // 该脚本发布实例是否有未完成的调试
@@ -210,7 +211,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 "该脚本有未完成的调试, 请等待调试结束再进行调试!");
             SceneTryRunTaskStartReq debugCloudRequest;
             List<Long> activityIds = new ArrayList<>();
-            if (ScriptMVersionEnum.isM_1(scriptDeploy.getScriptVersion())){
+            if (ScriptMVersionEnum.isM_1(scriptDeploy.getMVersion())){
                 debugCloudRequest = buildM1DebugCloudRequest(request, response, scriptDeploy,activityIds);
                 if (debugCloudRequest == null){
                     return response;
@@ -263,7 +264,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     }
 
     private SceneTryRunTaskStartReq buildDebugCloudRequest(ScriptDebugDoDebugRequest request, ScriptDebugResponse response,
-                                                           ScriptManageDeployEntity scriptDeploy,List<Long> activityIdList) {
+                                                           ScriptManageDeployResult scriptDeploy,List<Long> activityIdList) {
         // 根据脚本发布实例类型, 查询业务活动或者业务流程下的业务活动
         // 判断业务流程是否存在, 判断活动是否存在
         List<Long> businessActivityIds = this.listBusinessActivityIdsByScriptDeploy(scriptDeploy);
@@ -291,7 +292,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     }
 
     private SceneTryRunTaskStartReq buildM1DebugCloudRequest(ScriptDebugDoDebugRequest request, ScriptDebugResponse response,
-                                                             ScriptManageDeployEntity scriptDeploy,List<Long> activityIdList){
+                                                             ScriptManageDeployResult scriptDeploy,List<Long> activityIdList){
         // 业务流程id
         Long flowId = null;
         // 关联业务流程, 查出关联的业务流程
@@ -341,7 +342,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @param requestNum         请求条数
      * @return 入参
      */
-    private SceneTryRunTaskStartReq getDebugParams(ScriptManageDeployEntity scriptDeploy,
+    private SceneTryRunTaskStartReq getDebugParams(ScriptManageDeployResult scriptDeploy,
                                                    List<BusinessLinkManageTableEntity> businessActivities, Integer requestNum, Integer concurrencyNum) {
         // cloud 调试请求参数拼接
         SceneTryRunTaskStartReq debugCloudRequest = new SceneTryRunTaskStartReq();
@@ -533,7 +534,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         // 业务活动
         // 调试记录下的 脚本发布id
         Long scriptDeployId = scriptDebugEntity.getScriptDeployId();
-        ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDeployId);
+        ScriptManageDeployResult scriptDeploy = scriptManageDAO.selectScriptManageDeployById(scriptDeployId);
         if (scriptDeploy == null) {
             return response;
         }
@@ -676,7 +677,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      */
     private List<EntranceRuleDTO> getEntryList(Long scriptDeployId, Long businessActivityId) {
         // 脚本发布实例是否存在
-        ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDeployId);
+        ScriptManageDeployResult scriptDeploy = scriptManageDAO.selectScriptManageDeployById(scriptDeployId);
         ScriptDebugExceptionUtil.isCommonError(scriptDeploy == null, "脚本发布实例不存在!");
 
         List<Long> businessActivityIds = this.listBusinessActivityIdsByScriptDeploy(scriptDeploy);
@@ -698,7 +699,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @param scriptDeploy 脚本发布实例详情
      * @return 业务活动ids
      */
-    private List<Long> checkAndListBusinessActivityIds(ScriptManageDeployEntity scriptDeploy) {
+    private List<Long> checkAndListBusinessActivityIds(ScriptManageDeployResult scriptDeploy) {
         List<Long> businessActivityIds = this.listBusinessActivityIdsByScriptDeploy(scriptDeploy);
         ScriptDebugExceptionUtil.isDebugError(businessActivityIds.isEmpty(), "脚本对应的业务活动不存在!");
         return businessActivityIds;
@@ -745,7 +746,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @param scriptDeploy 脚本发布实例
      * @return 业务活动ids
      */
-    private List<Long> listBusinessActivityIdsByScriptDeploy(ScriptManageDeployEntity scriptDeploy) {
+    private List<Long> listBusinessActivityIdsByScriptDeploy(ScriptManageDeployResult scriptDeploy) {
         // 脚本发布实例关联业务活动, 直接返回id
         if (ScriptManageUtil.deployRefBusinessActivityType(scriptDeploy.getRefType())) {
             return Collections.singletonList(Long.valueOf(scriptDeploy.getRefValue()));
@@ -1155,7 +1156,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @param requestNum         请求条数
      * @return 入参
      */
-    private SceneTryRunTaskStartReq getDebugParams(ScriptManageDeployEntity scriptDeploy, SceneResult scene,
+    private SceneTryRunTaskStartReq getDebugParams(ScriptManageDeployResult scriptDeploy, SceneResult scene,
         List<SceneBusinessActivityRefOpen> sceneBusinessActivityRefs, Integer requestNum, Integer concurrencyNum) {
         // cloud 调试请求参数拼接
         SceneTryRunTaskStartReq debugCloudRequest = new SceneTryRunTaskStartReq();

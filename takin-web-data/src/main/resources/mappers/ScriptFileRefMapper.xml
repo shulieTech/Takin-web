@@ -14,4 +14,10 @@
         <!--@mbg.generated-->
         id, file_id, script_deploy_id, gmt_create, gmt_update
     </sql>
+
+    <select id="listUploadPathByScriptDeployId" resultType="java.lang.String">
+        SELECT f.upload_path FROM t_script_file_ref sf LEFT JOIN t_file_manage f ON f.id = sf.file_id
+        WHERE sf.script_deploy_id = #{scriptDeployId}
+    </select>
+
 </mapper>

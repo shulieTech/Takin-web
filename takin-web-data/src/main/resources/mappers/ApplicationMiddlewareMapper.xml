@@ -34,15 +34,14 @@
     <select id="selectStatusCountByAndGroupByApplicationNameListAndStatusList"
             resultType="io.shulie.takin.web.data.result.application.ApplicationMiddlewareStatusAboutCountResult">
         SELECT application_name, `status`, COUNT(*) count FROM t_application_middleware
-        WHERE application_name IN
-
-        <foreach collection ="applicationNameList" item="applicationName" separator ="," open="(" close=")">
-            #{applicationName}
+        WHERE is_deleted = 0
+        AND application_id IN
+        <foreach collection = "applicationIds" item = "applicationId" separator = "," open = "(" close=")">
+            #{applicationId}
         </foreach >
 
         <if test="statusList != null and statusList.size > 0">
             AND `status` IN
-
             <foreach collection ="statusList" item="status" separator ="," open="(" close=")">
                 #{status}
             </foreach >

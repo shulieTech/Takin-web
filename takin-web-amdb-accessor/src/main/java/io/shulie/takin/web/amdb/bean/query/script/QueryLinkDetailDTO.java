@@ -69,7 +69,6 @@ public class QueryLinkDetailDTO extends PagingDevice {
      */
     private Long endTime;
 
-
     /**
      * 结束时间
      */

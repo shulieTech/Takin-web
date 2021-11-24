@@ -287,7 +287,7 @@ UPDATE t_performance_criteria_config t1
 UPDATE t_agent_config m
     LEFT JOIN t_tro_user u ON u.`name` = m.operator
     LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=u.id
-SET m.env_code = IFNULL(fix.env_code,'test');
+    SET m.env_code = IFNULL(fix.env_code,'test');
 
 
 
@@ -428,12 +428,10 @@ ALTER TABLE t_app_middleware_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_
 ALTER TABLE t_app_remote_call ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_application_api_manage ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_application_api_manage ADD UNIQUE KEY `idx_app_api_method_tenant_env` ( `APPLICATION_NAME`,`api`,`method`,`tenant_id`,`env_code` );
-ALTER TABLE t_application_api_manage DROP KEY `APPLICATION_NAME`;
 ALTER TABLE `t_application_ds_manage` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_application_mnt ADD INDEX `idx_application_id` ( `application_id` );
 ALTER TABLE t_application_mnt
-DROP KEY `index_identifier_application_name`,
-ADD UNIQUE KEY `idx_application_name_tenant_env` ( `APPLICATION_NAME`,`tenant_id`,`env_code`);
+    ADD UNIQUE KEY `idx_application_name_tenant_env` ( `APPLICATION_NAME`,`tenant_id`,`env_code`);
 ALTER TABLE `t_application_focus` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_application_middleware` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_application_node_probe` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -443,7 +441,6 @@ ALTER TABLE `t_business_link_manage_table` ADD INDEX `idx_tenant_env` ( `tenant_
 ALTER TABLE `t_data_build` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_datasource_tag_ref` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_datasource_tag_ref ADD UNIQUE KEY `idx_datasource_tag_tenant_env` ( `datasource_id`,`tag_id`,`tenant_id`,`env_code` );
-ALTER TABLE t_datasource_tag_ref DROP KEY `index_datasourceId_tagId`;
 ALTER TABLE `t_dictionary_data`
 DROP PRIMARY KEY,
 ADD PRIMARY KEY(`ID`,`tenant_id`,`env_code`) USING BTREE;
@@ -451,7 +448,6 @@ ALTER TABLE `t_dictionary_type` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_co
 -- t_exception_info 不需要订正 ALTER TABLE `t_exception_info` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_fast_debug_config_info` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_fast_debug_config_info ADD UNIQUE KEY `idx_name_tenant_env` ( `name`,`tenant_id`,`env_code` );
-ALTER TABLE t_fast_debug_config_info DROP KEY `name`;
 ALTER TABLE `t_fast_debug_exception` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_fast_debug_machine_performance` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_fast_debug_result` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -479,18 +475,16 @@ ALTER TABLE `t_performance_criteria_config` ADD INDEX `idx_tenant_env` ( `tenant
 ALTER TABLE `t_performance_thread_data` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_performance_thread_stack_data` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE `t_pessure_test_task_activity_config` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE t_pradar_zk_config ADD UNIQUE INDEX `idx_path_tenant_env` ( `zk_path`,`tenant_id`,`env_code` );
-DROP INDEX `idx_zk_path` on t_pradar_zk_config;
+ALTER TABLE t_pradar_zk_config
+    ADD UNIQUE INDEX `idx_path_tenant_env` ( `zk_path`,`tenant_id`,`env_code` );
 ALTER TABLE t_pressure_machine ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_pressure_machine_statistics ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_pressure_time_record ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_probe ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_quick_access ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_report_application_summary ADD UNIQUE INDEX `unique_idx_report_appliacation_tenant_env` ( `report_id`,`application_name`,`tenant_id`,`env_code` );
-DROP index `unique_idx_report_appliacation` on t_report_application_summary ;
 ALTER TABLE t_report_bottleneck_interface ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_report_machine ADD UNIQUE INDEX `unique_idx_report_appliacation_machine_tenant_env` ( `report_id`,`application_name`, `machine_ip`,`tenant_id`,`env_code` );
-DROP index `unique_report_application_machine` ON t_report_machine ;
 ALTER TABLE t_report_machine ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_report_summary ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_scene ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -502,9 +496,7 @@ ALTER TABLE t_script_debug ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` )
 ALTER TABLE t_script_execute_result ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_script_file_ref ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_script_manage ADD UNIQUE INDEX `unique_name_tenant_env` ( `name`,`tenant_id`,`env_code` );
-DROP index `name` ON t_script_manage ;
 ALTER TABLE t_script_manage_deploy ADD UNIQUE INDEX `unique_name_version_tenant_env` ( `name`,`script_version`,`tenant_id`,`env_code` );
-DROP index `name_version` ON t_script_manage_deploy ;
 ALTER TABLE t_script_tag_ref ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_shadow_job_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_shadow_mq_consumer ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -527,6 +519,18 @@ ALTER TABLE t_upload_interface_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`en
 ALTER TABLE t_white_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_whitelist_effective_app ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_fast_debug_stack_info ADD INDEX `idx_tenant_env` (`tenant_id`,`env_code` );
+-- 最后删除KEY
+ALTER TABLE t_application_mnt
+DROP KEY `index_identifier_application_name`;
+ALTER TABLE t_pradar_zk_config
+DROP INDEX `idx_zk_path` on t_pradar_zk_config;
+DROP INDEX `unique_idx_report_appliacation` on t_report_application_summary;
+DROP INDEX `unique_report_application_machine` ON t_report_machine ;
+DROP INDEX `name` ON t_script_manage ;
+DROP INDEX `name_version` ON t_script_manage_deploy ;
+ALTER TABLE t_fast_debug_config_info DROP KEY `name`;
+ALTER TABLE t_application_api_manage DROP KEY `APPLICATION_NAME`;
+ALTER TABLE t_datasource_tag_ref DROP KEY `index_datasourceId_tagId`;
 -- 调试工具结果
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_trace_id` ( `trace_id`);
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_config_Id` (`config_Id`);

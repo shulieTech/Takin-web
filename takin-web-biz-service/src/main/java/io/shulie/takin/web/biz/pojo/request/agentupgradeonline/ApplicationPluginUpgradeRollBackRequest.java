@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 @Data
 public class ApplicationPluginUpgradeRollBackRequest {
 
-    @ApiModelProperty(value = "回滚批次号")
+    @ApiModelProperty(value = "批次号")
     @NotNull
     private String upgradeBatch;
 

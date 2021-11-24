@@ -6,6 +6,7 @@ import com.google.common.base.Splitter;
 import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeCreateAgentInfoRequest;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeCreateRequest;
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.ApplicationPluginUpgradeHistoryDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.ApplicationPluginUpgradeHistoryResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.PluginInfo;
 import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeRefService;
@@ -24,6 +25,7 @@ import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPlugin
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeRefParam;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeRefDetailResult;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -130,7 +132,6 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
             refParam.setPluginName(items[0].substring(10));
             refParam.setPluginVersion(pluginVersion);
             refParam.setPluginVersionNum(AgentVersionUtil.string2Int(pluginVersion));
-            refParam.setRemark("agent上报的依赖数据");
             refParamList.add(refParam);
         }
         return refParamList;
@@ -213,12 +214,12 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
      * @return
      */
     @Override
-    public List<ApplicationPluginUpgradeHistoryResponse> history() {
+    public Response<List<ApplicationPluginUpgradeHistoryResponse>> history() {
         List<ApplicationPluginUpgradeHistoryResponse> history = new ArrayList<>();
 
         List<ApplicationPluginUpgradeDetailResult> list = upgradeDAO.getList();
         if (CollectionUtils.isEmpty(list)) {
-            return history;
+            return Response.success();
         }
 
         Map<String, List<ApplicationPluginUpgradeDetailResult>> upgradeBatch2Detail = CollStreamUtil.groupByKey(list,
@@ -261,7 +262,28 @@ public class ApplicationPluginUpgradeServiceImpl implements ApplicationPluginUpg
             }
             history.add(response);
         });
-        return history;
+        return Response.success(history);
+    }
+
+    /**
+     * 查看升级历史信息
+     *
+     * @param upgradeBatch
+     * @return
+     */
+    @Override
+    public Response<List<ApplicationPluginUpgradeHistoryDetailResponse>> historyDetail(String upgradeBatch) {
+        List<ApplicationPluginUpgradeRefDetailResult> list = applicationPluginUpgradeRefService.getList(upgradeBatch);
+        if (CollectionUtils.isEmpty(list)) {
+            return Response.success();
+        }
+
+        List<ApplicationPluginUpgradeHistoryDetailResponse> collect = list
+                .stream()
+                .map(detail ->
+                        new ApplicationPluginUpgradeHistoryDetailResponse(detail.getPluginName(), detail.getPluginVersion()))
+                .collect(Collectors.toList());
+        return Response.success(collect);
     }
 
     /**

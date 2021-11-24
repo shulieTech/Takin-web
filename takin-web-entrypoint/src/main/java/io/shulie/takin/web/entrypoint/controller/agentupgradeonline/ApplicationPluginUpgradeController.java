@@ -42,8 +42,13 @@ public class ApplicationPluginUpgradeController {
     @ApiOperation("|_ 查看升级历史")
     @GetMapping("/history")
     public Response<List<ApplicationPluginUpgradeHistoryResponse>> history() {
-        List<ApplicationPluginUpgradeHistoryResponse> history = upgradeService.history();
-        return Response.success(history);
+        return upgradeService.history();
+    }
+
+    @ApiOperation("|_ 查看升级历史详情")
+    @PutMapping("/history/detail")
+    public Response historyDetail(@Validated @RequestBody ApplicationPluginUpgradeRollBackRequest rollBackRequest) {
+        return  upgradeService.historyDetail(rollBackRequest.getUpgradeBatch());
     }
 
     @ApiOperation("|_ 回滚详情")

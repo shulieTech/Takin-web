@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.ApplicationPluginUpgradeCreateRequest;
+import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.ApplicationPluginUpgradeHistoryDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.agentupgradeonline.ApplicationPluginUpgradeHistoryResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateApplicationPluginUpgradeParam;
@@ -62,7 +63,13 @@ public interface ApplicationPluginUpgradeService {
      * 查看升级历史信息
      * @return
      */
-    List<ApplicationPluginUpgradeHistoryResponse> history();
+    Response<List<ApplicationPluginUpgradeHistoryResponse>> history();
+
+    /**
+     * 查看升级历史信息
+     * @return
+     */
+    Response<List<ApplicationPluginUpgradeHistoryDetailResponse>> historyDetail(String upgradeBatch);
 
     /**
      * 回滚详情

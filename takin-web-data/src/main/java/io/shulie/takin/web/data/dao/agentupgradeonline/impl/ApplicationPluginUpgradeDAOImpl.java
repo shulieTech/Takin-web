@@ -135,8 +135,7 @@ public class ApplicationPluginUpgradeDAOImpl
     @Override
     public List<ApplicationPluginUpgradeDetailResult> getList() {
         LambdaQueryWrapper<ApplicationPluginUpgradeEntity> queryWrapper = this.buildQuery(
-                this.getLambdaQueryWrapper());
-        queryWrapper.eq(ApplicationPluginUpgradeEntity::getIsDeleted, 0)
+                this.getLambdaQueryWrapper())
                 .orderByDesc(ApplicationPluginUpgradeEntity::getId);
         return this.convertVos(this.list(queryWrapper));
     }

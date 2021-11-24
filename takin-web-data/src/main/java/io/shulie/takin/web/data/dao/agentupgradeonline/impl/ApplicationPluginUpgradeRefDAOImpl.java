@@ -26,8 +26,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ApplicationPluginUpgradeRefDAOImpl
-    extends ServiceImpl<ApplicationPluginUpgradeRefMapper, ApplicationPluginUpgradeRefEntity>
-    implements ApplicationPluginUpgradeRefDAO, MPUtil<ApplicationPluginUpgradeRefEntity> {
+        extends ServiceImpl<ApplicationPluginUpgradeRefMapper, ApplicationPluginUpgradeRefEntity>
+        implements ApplicationPluginUpgradeRefDAO, MPUtil<ApplicationPluginUpgradeRefEntity> {
 
 
     private LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> buildQuery(LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> LambdaQueryWrapper) {
@@ -38,12 +38,12 @@ public class ApplicationPluginUpgradeRefDAOImpl
         }
     }
 
-    private ApplicationPluginUpgradeRefDetailResult convertVo(ApplicationPluginUpgradeRefEntity entity){
-        return Convert.convert(ApplicationPluginUpgradeRefDetailResult.class,entity);
+    private ApplicationPluginUpgradeRefDetailResult convertVo(ApplicationPluginUpgradeRefEntity entity) {
+        return Convert.convert(ApplicationPluginUpgradeRefDetailResult.class, entity);
     }
 
-    private List<ApplicationPluginUpgradeRefDetailResult> convertVos(List<ApplicationPluginUpgradeRefEntity> entities){
-        if(CollectionUtils.isEmpty(entities)){
+    private List<ApplicationPluginUpgradeRefDetailResult> convertVos(List<ApplicationPluginUpgradeRefEntity> entities) {
+        if (CollectionUtils.isEmpty(entities)) {
             return Collections.emptyList();
         }
         return entities.stream().map(this::convertVo).collect(Collectors.toList());
@@ -53,30 +53,30 @@ public class ApplicationPluginUpgradeRefDAOImpl
     @Override
     public List<ApplicationPluginUpgradeRefDetailResult> getList(String pluginName, String pluginVersion) {
         LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
-        queryWrapper.eq(ApplicationPluginUpgradeRefEntity::getPluginName,pluginName)
-                .eq(ApplicationPluginUpgradeRefEntity::getPluginVersion,pluginVersion);
+        queryWrapper.eq(ApplicationPluginUpgradeRefEntity::getPluginName, pluginName)
+                .eq(ApplicationPluginUpgradeRefEntity::getPluginVersion, pluginVersion);
         return this.convertVos(this.list(queryWrapper));
     }
 
     @Override
     public List<ApplicationPluginUpgradeRefDetailResult> getList(String upgradeBatch) {
         LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
-        queryWrapper.eq(ApplicationPluginUpgradeRefEntity::getUpgradeBatch,upgradeBatch);
+        queryWrapper.eq(ApplicationPluginUpgradeRefEntity::getUpgradeBatch, upgradeBatch);
         return this.convertVos(this.list(queryWrapper));
     }
 
     @Override
     public List<ApplicationPluginUpgradeRefDetailResult> getList(List<String> upgradeBatchs) {
         LambdaQueryWrapper<ApplicationPluginUpgradeRefEntity> queryWrapper = this.buildQuery(this.getLambdaQueryWrapper());
-        queryWrapper.in(ApplicationPluginUpgradeRefEntity::getUpgradeBatch,upgradeBatchs);
+        queryWrapper.in(ApplicationPluginUpgradeRefEntity::getUpgradeBatch, upgradeBatchs);
         return this.convertVos(this.list(queryWrapper));
     }
 
     @Override
     public void batchCreate(List<CreateApplicationPluginUpgradeRefParam> upgradeRefs) {
         List<ApplicationPluginUpgradeRefEntity> collect = upgradeRefs.stream()
-            .map(item -> Convert.convert(ApplicationPluginUpgradeRefEntity.class, item))
-            .collect(Collectors.toList());
+                .map(item -> Convert.convert(ApplicationPluginUpgradeRefEntity.class, item))
+                .collect(Collectors.toList());
         this.saveBatch(collect);
     }
 }

@@ -10,20 +10,20 @@ ALTER TABLE trodb_cloud.t_report
     ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识';
 
 -- T3出行
-update trodb_cloud.t_scene_manage set tenant_id = 3           and env_code = 'test' where  customer_id = 4;
-update trodb_cloud.t_report       set tenant_id = 3           and env_code = 'test' where  customer_id = 4;
+update trodb_cloud.t_scene_manage set tenant_id = 3           , env_code = 'test' where  customer_id = 4;
+update trodb_cloud.t_report       set tenant_id = 3           , env_code = 'test' where  customer_id = 4;
 -- 联动云
-update trodb_cloud.t_scene_manage set tenant_id = 10          and env_code = 'test' where  customer_id = 9;
-update trodb_cloud.t_report       set tenant_id = 10          and env_code = 'test' where  customer_id = 9;
+update trodb_cloud.t_scene_manage set tenant_id = 10          , env_code = 'test' where  customer_id = 9;
+update trodb_cloud.t_report       set tenant_id = 10          , env_code = 'test' where  customer_id = 9;
 -- 老板姓
-update trodb_cloud.t_scene_manage set tenant_id = 5           and env_code = 'prod' where  customer_id in (12,13);
-update trodb_cloud.t_report       set tenant_id = 5           and env_code = 'prod' where  customer_id in (12,13);
+update trodb_cloud.t_scene_manage set tenant_id = 5           , env_code = 'prod' where  customer_id in (12,13);
+update trodb_cloud.t_report       set tenant_id = 5           , env_code = 'prod' where  customer_id in (12,13);
 -- 默认
-update trodb_cloud.t_scene_manage set tenant_id = customer_id and env_code = 'test' where customer_id = 1;
-update trodb_cloud.t_report       set tenant_id = customer_id and env_code = 'test' where customer_id = 1;
+update trodb_cloud.t_scene_manage set tenant_id = customer_id , env_code = 'test' where customer_id = 1;
+update trodb_cloud.t_report       set tenant_id = customer_id , env_code = 'test' where customer_id = 1;
 -- 测试、T3出行、lbx-pressure、申通快递、联动云
-update trodb_cloud.t_scene_manage set tenant_id = customer_id and env_code = 'prod' where customer_id in (2,3,5,7,10,24);
-update trodb_cloud.t_report       set tenant_id = customer_id and env_code = 'prod' where customer_id in (2,3,5,7,10,24);
+update trodb_cloud.t_scene_manage set tenant_id = customer_id , env_code = 'prod' where customer_id in (2,3,5,7,10,24);
+update trodb_cloud.t_report       set tenant_id = customer_id , env_code = 'prod' where customer_id in (2,3,5,7,10,24);
 --
 
 -- 更新修正报告相关

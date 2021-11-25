@@ -1,5 +1,6 @@
 package io.shulie.takin.web.ext.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
 import io.shulie.takin.plugin.framework.core.PluginManager;
+import io.shulie.takin.web.ext.api.agentupgradeonline.AgentHeartbeatExtApi;
 import io.shulie.takin.web.ext.api.auth.WebDataAuthExtApi;
 import io.shulie.takin.web.ext.api.auth.WebUserAuthExtApi;
 import io.shulie.takin.web.ext.api.e2e.InspectionExtApi;
@@ -41,6 +43,7 @@ public class WebPluginUtils {
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
     private static WebUserAuthExtApi userAuthExtApi;
+    private static AgentHeartbeatExtApi agentHeartbeatExtApi;
     public static InspectionExtApi inspectionExtApi;
 
     static PluginManager pluginManager;
@@ -51,9 +54,24 @@ public class WebPluginUtils {
         userApi = pluginManager.getExtension(WebUserExtApi.class);
         dataAuthApi = pluginManager.getExtension(WebDataAuthExtApi.class);
         userAuthExtApi = pluginManager.getExtension(WebUserAuthExtApi.class);
+        agentHeartbeatExtApi = pluginManager.getExtension(AgentHeartbeatExtApi.class);
         inspectionExtApi = pluginManager.getExtension(InspectionExtApi.class);
     }
 
+    /**
+     * 获取 IAgentCommandProcessor 实现类处理不同的心跳指令
+     *
+     * 由于 IAgentCommandProcessor 类在biz-service模块下所以在当前接口定义中只定义返回Object对象，使用时加下类型判断
+     *
+     * @return IAgentCommandProcessor子类集合
+     */
+    public static List<Object> getAgentCommandProcessor() {
+        List<Object> result = new ArrayList<>();
+        if (Objects.nonNull(agentHeartbeatExtApi)) {
+            result = agentHeartbeatExtApi.getAgentCommandProcessor();
+        }
+        return result;
+    }
 
     /**
      * 补充 插入 更新 用户数据
@@ -188,8 +206,6 @@ public class WebPluginUtils {
         return null;
     }
 
-
-
     /**
      * 返回 userAppKey
      *
@@ -269,8 +285,6 @@ public class WebPluginUtils {
         return null;
     }
 
-
-
     //public void fillMiddlewareUserData(AppMiddlewareQuery query) {
     //    //UserExt user = null;
     //    ////TakinRestContext.getUser();
@@ -279,18 +293,19 @@ public class WebPluginUtils {
     //    //}
     //}
 
-
     public static Class<?> getClassByName(String className) {
         try {
             // 先扫描用户插件
-            return Class.forName(className,true,pluginManager.getExtension(WebUserExtApi.class).getClass().getClassLoader());
+            return Class.forName(className, true, pluginManager.getExtension(WebUserExtApi.class).getClass()
+                .getClassLoader());
         } catch (ClassNotFoundException e) {
-           return null;
+            return null;
         }
     }
 
     /**
      * 根据用户名 模糊查询
+     *
      * @param userName
      * @return
      */
@@ -303,6 +318,7 @@ public class WebPluginUtils {
 
     /**
      * 权限相关数据
+     *
      * @return
      */
     public static List<Long> getQueryAllowUserIdList() {

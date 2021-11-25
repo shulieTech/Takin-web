@@ -29,6 +29,7 @@ import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -65,6 +66,9 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
     @Resource
     private ThreadPoolExecutor agentHeartbeatThreadPool;
 
+    /**
+     * 非企业版处理器集合
+     */
     private final Map<Long, IAgentCommandProcessor> commandProcessorMap = new HashMap<>();
 
     public AgentHeartbeatServiceImpl(List<IAgentCommandProcessor> processorList) {
@@ -73,8 +77,10 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
 
     public List<AgentCommandBO> process(AgentHeartbeatRequest commandRequest) {
 
-        // TODO ocean_wll 加个判断是否企业版，根据企业版的不同，执行不同的对象
-        Boolean isEnterprise = ENTERPRISE_FLAG.equals(commandRequest.getFlag());
+        // 是否企业版
+        boolean isEnterprise = ENTERPRISE_FLAG.equals(commandRequest.getFlag());
+        Map<Long, IAgentCommandProcessor> processorMap = isEnterprise ? getEnterpriseCommandProcessorMap()
+            : commandProcessorMap;
 
         // 检测状态
         AgentHeartbeatBO agentHeartbeatBO = buildAgentHeartBeatBO(commandRequest);
@@ -85,7 +91,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
                 agentHeartbeatBO.getAgentId(), commandRequest.getCommandResult());
             commandRequest.getCommandResult().forEach(commandResult ->
                 agentHeartbeatThreadPool.execute(() -> {
-                    IAgentCommandProcessor processor = commandProcessorMap.get(commandResult.getId());
+                    IAgentCommandProcessor processor = processorMap.get(commandResult.getId());
                     if (processor != null) {
                         processor.process(agentHeartbeatBO, commandResult);
                     }
@@ -104,7 +110,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         List<Future<AgentCommandBO>> futures = new ArrayList<>();
 
         // 异步处理各种命令
-        for (Map.Entry<Long, IAgentCommandProcessor> entry : commandProcessorMap.entrySet()) {
+        for (Map.Entry<Long, IAgentCommandProcessor> entry : processorMap.entrySet()) {
             Future<AgentCommandBO> future = agentHeartbeatThreadPool.submit(
                 () -> entry.getValue().dealHeartbeat(agentHeartbeatBO));
             futures.add(future);
@@ -244,5 +250,25 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         agentHeartbeatBO.setCurStatus(statusEnum);
 
         return agentHeartbeatBO;
+    }
+
+    /**
+     * 获取企业版命令处理器
+     *
+     * @return map
+     */
+    private Map<Long, IAgentCommandProcessor> getEnterpriseCommandProcessorMap() {
+        Map<Long, IAgentCommandProcessor> enterpriseCommandProcessorMap = new HashMap<>(commandProcessorMap);
+        List<Object> enterpriseProcessorList = WebPluginUtils.getAgentCommandProcessor();
+        if (!CollectionUtils.isEmpty(enterpriseProcessorList)) {
+            enterpriseProcessorList.forEach(processor -> {
+                if (processor instanceof IAgentCommandProcessor) {
+                    enterpriseCommandProcessorMap.put(
+                        ((IAgentCommandProcessor)processor).getCommand().getCommand(),
+                        (IAgentCommandProcessor)processor);
+                }
+            });
+        }
+        return enterpriseCommandProcessorMap;
     }
 }

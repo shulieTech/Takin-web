@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.shulie.takin.web.common.constant.CacheConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +28,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-public class RedisConfig {
+public class RedisConfig implements CacheConstants {
 
     /**
      * redis 消息监听者
@@ -43,7 +44,7 @@ public class RedisConfig {
         return new RedisCacheManager(
             RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory),
             this.getRedisCacheConfigurationWithTtl(600),
-            "agentConfig"
+            CACHE_KEY_AGENT_CONFIG, CACHE_KEY_AGENT_APPLICATION_NODE
         );
     }
 

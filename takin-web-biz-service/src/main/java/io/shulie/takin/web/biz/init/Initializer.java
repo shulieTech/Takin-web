@@ -54,7 +54,7 @@ public class Initializer implements InitializingBean {
         // 黑名单数据补全
         new Thread(() -> blacklistDataFixer.fix()).start();
         // 白名单生效应用数据订正
-        new Thread(() -> whitelistEffectAppNameDataFixer.fix()).start();
+        //new Thread(() -> whitelistEffectAppNameDataFixer.fix()).start();
         new Thread(() -> pradarConfigService.initZooKeeperData()).start();
         // 白名单数据修复
         new Thread(() -> whitelistDataFixer.fix()).start();

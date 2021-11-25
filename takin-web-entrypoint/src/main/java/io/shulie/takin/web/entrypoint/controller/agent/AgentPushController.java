@@ -226,7 +226,7 @@ public class AgentPushController {
     @PostMapping(value = AgentUrls.AGENT_PUSH_APPLICATION_CONFIG)
     @ApiOperation(value = "agent上传配置信息")
     public void uploadConfigInfo(@Validated @RequestBody ConfigReportInputParam inputParam) {
-        log.info("agent上传配置信息，入参为:{}", JsonHelper.bean2Json(inputParam));
+        log.debug("agent上传配置信息，入参为:{}", JsonHelper.bean2Json(inputParam));
         reportDetailService.uploadConfigInfo(inputParam);
     }
 }

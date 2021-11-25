@@ -144,8 +144,7 @@ public class ShellScriptManageServiceImpl implements ShellScriptManageService {
         Long tenantId = Long.valueOf(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_TENANT_ID));
         fileManageCreateParam.setTenantId(tenantId);
         String uploadPath = String.format("%s/shell/%s/%s/%s",
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH) + WebPluginUtils
-                .traceTenantCode() + Separator.Separator1.getValue(),
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH) + Separator.Separator1.getValue(),
             result.getScriptId(), result.getScriptVersion(), fileName);
         fileManageCreateParam.setUploadPath(uploadPath);
         fileManageCreateParam.setUploadTime(new Date());

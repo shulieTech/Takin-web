@@ -256,8 +256,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String fileDir = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue();
+        String fileDir = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR);
         String[] cmds = {"curl", "-o", fileDir + "/" + fileName, "--create-dirs", "-OL", url};
         LinuxHelper.execCurl(cmds);
         return fileDir + "/" + fileName;
@@ -279,8 +278,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         if (CollectionUtils.isEmpty(scriptFile) || scriptFile.size() != 1) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件不唯一！");
         }
-        String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue() + WebPluginUtils.traceEnvCode();
+        String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH);
         ScriptCheckDTO scriptCheckDTO = checkAndUpdateScript(scriptManageDeployCreateRequest.getRefType(),
             scriptManageDeployCreateRequest.getRefValue(),
             tmpFilePath + "/" + scriptFile.get(0).getUploadId() + "/" + scriptFile.get(0).getFileName());
@@ -337,8 +335,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      * 如果前端有上传脚本文件内容，说明之前的文件是没有用了，所以如果是临时文件，将文件删除，重新创建临时文件
      */
     private void uploadCreateScriptFile(List<FileManageCreateRequest> fileManageCreateRequests) {
-        String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH) +
-            WebPluginUtils.traceTenantCode() + Separator.Separator1.getValue() + WebPluginUtils.traceEnvCode();
+        String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH);
         if (CollectionUtils.isNotEmpty(fileManageCreateRequests)) {
             for (FileManageCreateRequest fileManageCreateRequest : fileManageCreateRequests) {
                 if (fileManageCreateRequest.getIsDeleted() == 0 && fileManageCreateRequest.getFileType() == 0
@@ -375,8 +372,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         if (CollectionUtils.isEmpty(fileManageCreateRequests)) {
             return;
         }
-        String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue()+WebPluginUtils.traceEnvCode();
+        String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH);
         // 脚本文件遍历删除, 创建
         for (FileManageUpdateRequest fileManageUpdateRequest : fileManageCreateRequests) {
             if (StringUtil.isNotBlank(fileManageUpdateRequest.getScriptContent())) {
@@ -503,8 +499,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         ScriptManageExceptionUtil.isUpdateValidError(CollectionUtils.isEmpty(scriptFile) || scriptFile.size() != 1,
             "脚本文件不唯一!");
 
-        String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue()+WebPluginUtils.traceEnvCode();
+        String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH);
         // 脚本文件 url
         String scriptFileUrl;
         if (scriptFile.get(0).getId() == null) {
@@ -626,8 +621,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         List<String> sourcePaths = new ArrayList<>();
         // 脚本路径前缀 目录 + 脚本id + 版本
         String targetScriptPath = this.getTargetScriptPath(scriptManageDeployResult);
-        String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue()+WebPluginUtils.traceEnvCode();
+        String tmpFilePath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH);
         List<String> tmpFilePaths = scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream().filter(
             o -> o.getIsDeleted() == 0
                 && !StringUtil.isBlank(o.getUploadId())).map(
@@ -844,8 +838,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        String fileDir = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR) + WebPluginUtils
-            .traceTenantCode() + Separator.Separator1.getValue();
+        String fileDir = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR);
         String[] cmds = {"curl", "-o", fileDir + "/" + fileName, "--create-dirs", "-OL", url};
         LinuxHelper.execCurl(cmds);
         return fileDir + "/" + fileName;
@@ -1866,7 +1859,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      */
     private String getTargetScriptPath(ScriptManageDeployResult scriptManageDeployResult) {
         return String.format("%s/%s/%s/",
-            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH)+WebPluginUtils.traceTenantCode()+Separator.Separator1.getValue()+WebPluginUtils.traceEnvCode(),
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH),
             scriptManageDeployResult.getScriptId(), scriptManageDeployResult.getScriptVersion());
     }
 

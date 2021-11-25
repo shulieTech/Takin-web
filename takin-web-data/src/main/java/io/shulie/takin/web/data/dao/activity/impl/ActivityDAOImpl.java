@@ -412,7 +412,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         ActivityNodeState activityNodeState = new ActivityNodeState();
         String key;
         try {
-            key = MD5Tool.getMD5(activityId + ownerApps + serviceName);
+            key = MD5Tool.getMD5(activityId + ownerApps + serviceName + WebPluginUtils.traceTenantId() + WebPluginUtils.traceEnvCode());
         } catch (Exception e) {
             return;
         }
@@ -422,6 +422,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         activityNodeState.setServiceName(serviceName);
         activityNodeState.setState(state);
         activityNodeState.setTenantId(WebPluginUtils.traceTenantId());
+        activityNodeState.setEnvCode(WebPluginUtils.traceEnvCode());
 
         //SY:如果限制节点下只允许一个服务为打开状态则先清空再新增
 //        activityNodeStateTableMapper.removeActivityNodeByActivityIdAndOwnerApp(activityNodeState);

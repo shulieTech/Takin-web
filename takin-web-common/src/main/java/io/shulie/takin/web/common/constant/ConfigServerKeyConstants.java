@@ -18,11 +18,6 @@ public interface ConfigServerKeyConstants {
     String TAKIN_APPLICATION_NEW_AGENT = "takin.application.new-agent";
     String TAKIN_SCRIPT_DEBUG_RPCTYPE = "takin.script-debug.rpcType";
 
-    /**
-     * 存储位置
-     */
-    String TAKIN_DATA_PATH = "takin.data.path";
-
     String TAKIN_BASE_PATH = "takin.basePath";
 
     /**

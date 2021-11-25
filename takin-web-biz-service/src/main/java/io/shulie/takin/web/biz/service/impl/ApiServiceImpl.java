@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
@@ -31,7 +33,6 @@ import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,7 +47,6 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
     /**
      * 上传文件的路径
      */
-    @Value("${data.path}")
     private String uploadPath;
 
     @Autowired
@@ -57,6 +57,11 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
 
     @Autowired
     private ApplicationService applicationService;
+
+    @PostConstruct
+    public void init() {
+        uploadPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH);
+    }
 
     @Override
     public FileUploadResponse uploadFile(FileUploadRequest request) {

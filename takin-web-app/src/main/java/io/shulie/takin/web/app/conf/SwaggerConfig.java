@@ -19,7 +19,6 @@ package io.shulie.takin.web.app.conf;
 import java.time.LocalDate;
 import java.util.function.Predicate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
@@ -57,8 +56,6 @@ public class SwaggerConfig {
 
     @Value("${server.servlet.context-path:}")
     private String servletContextPath;
-
-    private ObjectMapper objectMapper;
 
     @Value("${swagger.enable:true}")
     private Boolean swaggerEnable;

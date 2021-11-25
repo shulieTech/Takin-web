@@ -220,7 +220,6 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             CreateAgentConfigParam createParam = this.getCreateAgentConfigParam(detailResult,
                 updateRequest.getDefaultValue(), AgentConfigTypeEnum.PROJECT.getVal());
             createParam.setProjectName(updateRequest.getProjectName());
-            createParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
             agentConfigDAO.insert(createParam);
         }
     }
@@ -269,7 +268,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             return;
         }
 
-        // 插入
+        // 插入租户环境全局
         CreateAgentConfigParam createParam = this.getCreateAgentConfigParam(detailResult,
             updateRequest.getDefaultValue(), AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
         agentConfigDAO.insert(createParam);
@@ -299,6 +298,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
         createParam.setEditable(detailResult.getEditable());
         createParam.setValueType(detailResult.getValueType());
         createParam.setValueOption(detailResult.getValueOption());
+        createParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
         return createParam;
     }
 

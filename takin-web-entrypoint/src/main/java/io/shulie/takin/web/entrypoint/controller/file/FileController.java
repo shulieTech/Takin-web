@@ -15,13 +15,14 @@ import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
 import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
 import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.FileUtil;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,27 +44,6 @@ public class FileController {
 
     @Autowired
     private CloudFileApi cloudFileApi;
-
-    @Value("${file.upload.user.data.dir:/data/tmp}")
-    private String fileDir;
-
-    /**
-     * 上传文件临时地址
-     */
-    @Value("${file.upload.tmp.path}")
-    private String uploadTempPath;
-
-    /**
-     * 脚本上传地址
-     */
-    @Value("${file.upload.script.path}")
-    private String uploadScriptPath;
-
-    /**
-     * 文件保存地址
-     */
-    @Value("${data.path}")
-    private String dataPath;
 
     @ApiOperation("|_ 文件下载")
     @GetMapping("/download")
@@ -143,10 +123,10 @@ public class FileController {
      */
     private List<String> pathInit() {
         List<String> arrayList = new ArrayList<>();
-        arrayList.add(fileDir);
-        arrayList.add(uploadTempPath);
-        arrayList.add(uploadScriptPath);
-        arrayList.add(dataPath);
+        arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR));
+        arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH));
+        arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH));
+        arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH));
         return arrayList;
     }
 

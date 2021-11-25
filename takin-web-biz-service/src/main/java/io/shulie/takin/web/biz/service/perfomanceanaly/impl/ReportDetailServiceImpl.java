@@ -28,6 +28,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author qianshui
@@ -61,25 +62,25 @@ public class ReportDetailServiceImpl implements ReportDetailService {
      *
      * @param inputParam
      */
+    @Transactional(rollbackFor = Throwable.class)
     @Override
     public void uploadConfigInfo(ConfigReportInputParam inputParam) {
         if (inputParam == null) {
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_UPLOAD_CONFIG_MSG_ERROR, "上传参数不能为空！");
         }
         TApplicationMnt info = tApplicationMntDao.queryApplicationinfoByName(inputParam.getApplicationName());
-        if(Objects.isNull(info)){
-            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "应用【"+inputParam.getApplicationName()+"】不存在");
+        if (Objects.isNull(info)) {
+            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR,
+                "应用【" + inputParam.getApplicationName() + "】不存在");
         }
-
 
         List<CreateAppAgentConfigReportParam> saveList = new ArrayList<>();
 
-
         List<ConfigReportInputParam.ConfigInfo> globalConf = inputParam.getGlobalConf();
         List<ConfigReportInputParam.ConfigInfo> appConf = inputParam.getAppConf();
-        if(CollectionUtils.isNotEmpty(globalConf)){
+        if (CollectionUtils.isNotEmpty(globalConf)) {
             globalConf.forEach(global -> {
-                CreateAppAgentConfigReportParam reportParam  = new CreateAppAgentConfigReportParam();
+                CreateAppAgentConfigReportParam reportParam = new CreateAppAgentConfigReportParam();
                 reportParam.setAgentId(inputParam.getAgentId());
                 reportParam.setApplicationId(info.getApplicationId());
                 reportParam.setApplicationName(inputParam.getApplicationName());
@@ -93,9 +94,9 @@ public class ReportDetailServiceImpl implements ReportDetailService {
             });
         }
 
-        if(CollectionUtils.isNotEmpty(appConf)){
+        if (CollectionUtils.isNotEmpty(appConf)) {
             appConf.forEach(appConfig -> {
-                CreateAppAgentConfigReportParam reportParam  = new CreateAppAgentConfigReportParam();
+                CreateAppAgentConfigReportParam reportParam = new CreateAppAgentConfigReportParam();
                 reportParam.setAgentId(inputParam.getAgentId());
                 reportParam.setApplicationId(info.getApplicationId());
                 reportParam.setApplicationName(inputParam.getApplicationName());
@@ -110,22 +111,26 @@ public class ReportDetailServiceImpl implements ReportDetailService {
         }
 
         List<AppAgentConfigReportDetailResult> dbResults = agentConfigReportDAO.listByAppId(info.getApplicationId());
-        Map<Integer, List<AppAgentConfigReportDetailResult>> dbMap = CollStreamUtil.groupByKey(dbResults, AppAgentConfigReportDetailResult::getConfigType);
-        Map<Integer, List<CreateAppAgentConfigReportParam>> reportMap = CollStreamUtil.groupByKey(saveList, CreateAppAgentConfigReportParam::getConfigType);
+        Map<Integer, List<AppAgentConfigReportDetailResult>> dbMap = CollStreamUtil.groupByKey(dbResults,
+            AppAgentConfigReportDetailResult::getConfigType);
+        Map<Integer, List<CreateAppAgentConfigReportParam>> reportMap = CollStreamUtil.groupByKey(saveList,
+            CreateAppAgentConfigReportParam::getConfigType);
 
         List<UpdateAppAgentConfigReportParam> updateList = new ArrayList<>();
 
-        dbMap.forEach((k,v) ->{
-            if(reportMap.containsKey(k)){
+        dbMap.forEach((k, v) -> {
+            if (reportMap.containsKey(k)) {
                 List<CreateAppAgentConfigReportParam> params = reportMap.get(k);
                 Map<String, AppAgentConfigReportDetailResult> m1 = v.stream().
-                        collect(Collectors.toMap(AppAgentConfigReportDetailResult::getConfigKey, Function.identity()));
-                Map<String, CreateAppAgentConfigReportParam> m2 = params.stream().collect(Collectors.toMap(CreateAppAgentConfigReportParam::getConfigKey, Function.identity()));
+                    collect(Collectors.toMap(AppAgentConfigReportDetailResult::getConfigKey, Function.identity()));
+                Map<String, CreateAppAgentConfigReportParam> m2 = params.stream().collect(
+                    Collectors.toMap(CreateAppAgentConfigReportParam::getConfigKey, Function.identity()));
 
-                m1.forEach((key,data) ->{
-                    if(m2.containsKey(key)){
+                m1.forEach((key, data) -> {
+                    if (m2.containsKey(key)) {
                         saveList.remove(m2.get(key));
-                        UpdateAppAgentConfigReportParam convert = Convert.convert(UpdateAppAgentConfigReportParam.class, m2.get(key));
+                        UpdateAppAgentConfigReportParam convert = Convert.convert(UpdateAppAgentConfigReportParam.class,
+                            m2.get(key));
                         convert.setId(data.getId());
                         updateList.add(convert);
                     }

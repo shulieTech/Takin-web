@@ -13,6 +13,7 @@ import io.shulie.takin.web.data.param.tracemanage.TraceManageDeployUpdateParam;
 import io.shulie.takin.web.data.result.tracemanage.TraceManageDeployResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -47,18 +48,22 @@ public class TraceManageJob implements SimpleJob {
             // 私有化 + 开源
             collectData();
         }else {
-        List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-            // saas
-            tenantInfoExts.forEach(ext -> {
-                // 根据环境 分线程
-                ext.getEnvs().forEach(e ->
-                    jobThreadPool.execute(() ->  {
-                        WebPluginUtils.setTraceTenantContext(
-                            new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(), ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
-                        collectData();
-                        WebPluginUtils.removeTraceContext();
-                    }));
-            });
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
+            // saas 根据租户进行分片
+            for (TenantInfoExt ext : tenantInfoExts) {
+                // 开始数据层分片
+                if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    // 根据环境 分线程
+                    for (TenantEnv e : ext.getEnvs()) {
+                        jobThreadPool.execute(() ->  {
+                            WebPluginUtils.setTraceTenantContext(
+                                new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(), ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                            collectData();
+                            WebPluginUtils.removeTraceContext();
+                        });
+                    }
+                }
+            }
         }
     }
 

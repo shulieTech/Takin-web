@@ -1,5 +1,10 @@
 package io.shulie.takin.web.biz.job;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
+
 import cn.hutool.core.collection.CollStreamUtil;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
@@ -7,19 +12,21 @@ import com.google.common.collect.Maps;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.AntPathMatcher;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Z
@@ -38,11 +45,37 @@ public class AppRemoteApiFilterJob implements SimpleJob {
 
     @Autowired
     private ApplicationApiService apiService;
-
+    @Autowired
+    @Qualifier("jobThreadPool")
+    private ThreadPoolExecutor jobThreadPool;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void execute(ShardingContext shardingContext) {
+        if(WebPluginUtils.isOpenVersion()) {
+            // 私有化 + 开源
+            this.appRemoteApiFilter();
+        }else {
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
+            for (TenantInfoExt ext : tenantInfoExts) {
+                // 开始数据层分片
+                if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    // 根据环境 分线程
+                    for (TenantEnv e : ext.getEnvs()) {
+                        jobThreadPool.execute(() -> {
+                            WebPluginUtils.setTraceTenantContext(
+                                new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),
+                                    ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                            this.appRemoteApiFilter();
+                            WebPluginUtils.removeTraceContext();
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    private void appRemoteApiFilter() {
         //加载所有的远程调用数据
         Map<Long, List<AppRemoteCallResult>> appRemoteCallGroupByAppId = appRemoteCallService.getListGroupByAppId();
         if(appRemoteCallGroupByAppId.isEmpty()){
@@ -78,8 +111,8 @@ public class AppRemoteApiFilterJob implements SimpleJob {
         filterMap.forEach((k,v) ->{
             //已经合并过的剔除
             List<AppRemoteCallResult> filterList = v.stream()
-                    .filter(appRemoteCallResult -> appRemoteCallResult.getInterfaceName().equals(k))
-                    .collect(Collectors.toList());
+                .filter(appRemoteCallResult -> appRemoteCallResult.getInterfaceName().equals(k))
+                .collect(Collectors.toList());
             if(CollectionUtils.isNotEmpty(filterList)){
                 return;
             }

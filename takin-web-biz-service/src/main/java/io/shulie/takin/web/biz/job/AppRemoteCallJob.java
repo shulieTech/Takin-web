@@ -12,9 +12,9 @@ import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -47,16 +47,21 @@ public class AppRemoteCallJob implements SimpleJob {
 
         } else {
             List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-            // saas
-            tenantInfoExts.forEach(ext -> {
-                // 根据环境 分线程
-                ext.getEnvs().forEach(e -> {
-                    WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),ext.getTenantCode(),ContextSourceEnum.JOB.getCode()));
-                    jobThreadPool.execute(() -> appRemoteCallService.syncAmdb());
-                    WebPluginUtils.removeTraceContext();
-                });
-            });
+            for (TenantInfoExt ext : tenantInfoExts) {
+                // 开始数据层分片
+                if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    // 根据环境 分线程
+                    for (TenantEnv e : ext.getEnvs()) {
+                        jobThreadPool.execute(() ->{
+                            WebPluginUtils.setTraceTenantContext(
+                                new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                    ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                            appRemoteCallService.syncAmdb();
+                        });
 
+                    }
+                }
+            }
         }
     }
 

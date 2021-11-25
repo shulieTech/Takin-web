@@ -170,6 +170,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     public void init() {
         supportRpcType = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_DEBUG_RPC_TYPE);
     }
+
     @Autowired
     private ApplicationService applicationService;
 

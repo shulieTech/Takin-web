@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_info`
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_key` (`key`) USING BTREE,
     UNIQUE KEY `unique_code` (`code`) USING BTREE
-    ) ENGINE = InnoDB;
+    ) ENGINE = InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `t_tenant_env_ref`
 (
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_env_ref`
     `gmt_update`     datetime       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_tenant_code` (`tenant_id`,`env_code`) USING BTREE
-    ) ENGINE = InnoDB;
+    ) ENGINE = InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 -- 配置表
 CREATE TABLE IF NOT EXISTS `t_tenant_config`
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_config`
     `gmt_update`     datetime       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_key_tenant_env` (`tenant_id`,`env_code`,`key`) USING BTREE
-    ) ENGINE = InnoDB;
+    ) ENGINE = InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 -- t_base_config
 ALTER TABLE t_base_config

@@ -5,6 +5,7 @@ import java.util.concurrent.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -158,6 +159,15 @@ public class ThreadPoolConfig {
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
+    @Value("${poolConfig.e2e.coreSize: 150}")
+    private Integer e2eCoreSize;
+
+    @Value("${poolConfig.e2e.maxSize: 500}")
+    private Integer e2eMaxSize;
+
+    @Value("${poolConfig.e2e.queueSize: 1000}")
+    private Integer e2eQueueSize;
+
     /**
      * e2e线程池
      * @return
@@ -165,7 +175,8 @@ public class ThreadPoolConfig {
     @Bean(name = "e2eThreadPool")
     public ThreadPoolExecutor e2eThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("e2e-job-%d").build();
-        return new ThreadPoolExecutor(100, 500, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory,
-            new ThreadPoolExecutor.AbortPolicy());
+        return new ThreadPoolExecutor(e2eCoreSize, e2eMaxSize, 60L, TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(e2eQueueSize), nameThreadFactory, new ThreadPoolExecutor.AbortPolicy());
     }
+
 }

@@ -6,12 +6,13 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import cn.hutool.core.bean.BeanUtil;
-import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import io.shulie.takin.web.biz.service.dashboard.QuickAccessService;
-import io.shulie.takin.web.data.model.mysql.dashboard.QuickAccessEntity;
-import io.shulie.takin.web.data.mapper.mysql.dashboard.QuickAccessMapper;
 import io.shulie.takin.web.biz.pojo.response.dashboard.QuickAccessResponse;
+import io.shulie.takin.web.biz.service.dashboard.QuickAccessService;
+import io.shulie.takin.web.data.mapper.mysql.dashboard.QuickAccessMapper;
+import io.shulie.takin.web.data.model.mysql.dashboard.QuickAccessEntity;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.springframework.stereotype.Service;
 
 @Service
 public class QuickAccessServiceImpl implements QuickAccessService {
@@ -28,6 +29,10 @@ public class QuickAccessServiceImpl implements QuickAccessService {
     public List<QuickAccessResponse> list() {
         // 组装查询条件
         QueryWrapper<QuickAccessEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("distinct quick_name,quick_logo,url_address,`order`,is_enable");
+        queryWrapper.in("tenant_id",WebPluginUtils.traceTenantIdForSystem());
+        queryWrapper.in("env_code",WebPluginUtils.traceEnvCodeForSystem());
+        queryWrapper.orderByDesc("tenant_id");
         queryWrapper.orderByAsc("`order`");
 
         // 执行查询

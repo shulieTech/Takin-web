@@ -101,9 +101,8 @@ public class AgentConfigController {
         moduleCode = BizOpConstants.ModuleCode.AGENT_CONFIG,
         needAuth = ActionTypeEnum.UPDATE
     )
-    public WebResponse update(@RequestBody AgentConfigUpdateRequest updateRequest) {
+    public void update(@RequestBody AgentConfigUpdateRequest updateRequest) {
         agentConfigService.update(updateRequest);
-        return WebResponse.success();
     }
 
     @ApiOperation("|_ 使用全局配置")

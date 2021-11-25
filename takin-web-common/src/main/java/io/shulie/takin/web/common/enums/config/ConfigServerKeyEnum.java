@@ -13,11 +13,6 @@ import lombok.Getter;
 public enum ConfigServerKeyEnum implements AppConstants {
 
     /**
-     * zk 配置
-     */
-    TAKIN_CONFIG_ZOOKEEPER_ADDRESS("takin.config.zk.addr", "takin.config.zk.addr", NO),
-
-    /**
      * ops 脚本路径 配置
      */
     TAKIN_FILE_OPS_SCRIPT_PATH("file.ops_script.path", "takin.file.ops_script.path", NO),
@@ -123,12 +118,6 @@ public enum ConfigServerKeyEnum implements AppConstants {
      */
     TAKIN_PRESSURE_MACHINE_UPLOAD_INTERVAL_TIME("pressure.machine.upload.interval.time",
         "takin.pressure.machine.upload.interval.time", NO),
-
-    /**
-     * influxdb 性能数据的数据库
-     */
-    SPRING_PERFORMANCE_INFLUXDB_DATABASE("spring.performance.influxdb.database", "spring.performance.influxdb.database",
-        NO),
 
     /**
      * 脚本调试时, 允许的 rpc 类型

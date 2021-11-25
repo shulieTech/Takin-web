@@ -111,35 +111,40 @@ FROM t_tro_user;
 ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
 
 -- saas
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=1;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=3;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=4;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=5;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=12;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=13;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=7;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=8;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=17;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=19;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=20;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=21;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=22;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=23;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=25;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=26;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=27;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=28;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=29;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=30;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=31;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=32;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=33;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=9;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=10;
-UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=24;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=1;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=3;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=4;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=5;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=12;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=13;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=7;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=8;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=17;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=19;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=20;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=21;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=22;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=23;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=25;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=26;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=27;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=28;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=29;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=30;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=31;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=32;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=33;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=9;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=10;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=24;
 
 -- demo环境
+CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
+SELECT id as user_id,tenant_id,'test' as env_code
+FROM t_tro_user;
+ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
 
+UPDATE `DATA_FIX_TABLE` SET `env_code`='pre' WHERE `user_id`=90424;
 
 -- env_code
 -- 应用表 t_application_mnt
@@ -427,7 +432,7 @@ ALTER TABLE t_app_business_table_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`
 ALTER TABLE t_app_middleware_info ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_app_remote_call ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_application_api_manage ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
-ALTER TABLE t_application_api_manage ADD UNIQUE KEY `idx_app_api_method_tenant_env` ( `APPLICATION_NAME`,`api`,`method`,`tenant_id`,`env_code` );
+-- ALTER TABLE t_application_api_manage ADD UNIQUE KEY `idx_app_api_method_tenant_env` ( `APPLICATION_NAME`,`api`,`method`,`tenant_id`,`env_code` );
 ALTER TABLE `t_application_ds_manage` ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_application_mnt ADD INDEX `idx_application_id` ( `application_id` );
 ALTER TABLE t_application_mnt
@@ -522,20 +527,29 @@ ALTER TABLE t_fast_debug_stack_info ADD INDEX `idx_tenant_env` (`tenant_id`,`env
 -- t_base_config
 ALTER TABLE t_base_config
 DROP  PRIMARY KEY,
-DROP  UNIQUE KEY `unique_idx_config_code`;
+DROP  INDEX `unique_idx_config_code`;
 ADD   PRIMARY KEY (`CONFIG_CODE`, `env_code`, `tenant_id`);
 -- 最后删除KEY
 ALTER TABLE t_application_mnt
 DROP KEY `index_identifier_application_name`;
 ALTER TABLE t_pradar_zk_config
-DROP INDEX `idx_zk_path` on t_pradar_zk_config;
-DROP INDEX `unique_idx_report_appliacation` on t_report_application_summary;
-DROP INDEX `unique_report_application_machine` ON t_report_machine ;
-DROP INDEX `name` ON t_script_manage ;
-DROP INDEX `name_version` ON t_script_manage_deploy ;
-ALTER TABLE t_fast_debug_config_info DROP KEY `name`;
-ALTER TABLE t_application_api_manage DROP KEY `APPLICATION_NAME`;
-ALTER TABLE t_datasource_tag_ref DROP KEY `index_datasourceId_tagId`;
+DROP INDEX `idx_zk_path`;
+
+ALTER TABLE t_report_application_summary
+DROP INDEX `unique_idx_report_appliacation`;
+
+ALTER TABLE t_report_machine
+DROP INDEX `unique_report_application_machine`;
+
+ALTER TABLE t_script_manage
+DROP INDEX `name`;
+
+ALTER TABLE t_script_manage_deploy
+DROP INDEX `name_version`;
+
+ALTER TABLE t_fast_debug_config_info DROP INDEX `name`;
+ALTER TABLE t_application_api_manage DROP INDEX IF EXISTS `APPLICATION_NAME`;
+ALTER TABLE t_datasource_tag_ref DROP INDEX `index_datasourceId_tagId`;
 -- 调试工具结果
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_trace_id` ( `trace_id`);
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_config_Id` (`config_Id`);

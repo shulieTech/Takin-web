@@ -18,7 +18,7 @@ import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.agentcommand.IAgentCommandProcessor;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentHeartbeatService;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentReportService;
-import io.shulie.takin.web.biz.service.agentupgradeonline.ApplicationPluginUpgradeService;
+import io.shulie.takin.web.biz.service.agentupgradeonline.WebApplicationPluginUpgradeService;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentCommandEnum;
 import io.shulie.takin.web.common.enums.agentupgradeonline.AgentUpgradeEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
@@ -28,7 +28,7 @@ import io.shulie.takin.web.common.enums.fastagentaccess.ProbeStatusEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
-import io.shulie.takin.web.data.result.application.ApplicationPluginUpgradeDetailResult;
+import io.shulie.takin.web.data.result.agentUpgradeOnline.ApplicationPluginUpgradeDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +61,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
     private ApplicationService applicationService;
 
     @Resource
-    private ApplicationPluginUpgradeService applicationPluginUpgradeService;
+    private WebApplicationPluginUpgradeService applicationPluginUpgradeService;
 
     @Resource
     private ThreadPoolExecutor agentHeartbeatThreadPool;

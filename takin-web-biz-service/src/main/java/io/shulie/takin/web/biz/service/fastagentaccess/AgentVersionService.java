@@ -1,20 +1,12 @@
 package io.shulie.takin.web.biz.service.fastagentaccess;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-
-import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentInfoListQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentInfoStateListQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentInfoListResponse;
-import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentInfoStateListResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentVersionListResponse;
-import io.shulie.takin.web.data.result.agentUpgradeOnline.PluginLibraryDetailResult;
-import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * agent版本管理(AgentVersion)service
@@ -104,16 +96,5 @@ public interface AgentVersionService {
      * @return File
      */
     File getInstallScript(String projectName, String version, String urlPrefix);
-
-    /**
-     * 查询列表基础数据
-     * @param queryRequest
-     * @return
-     */
-    PagingList<AgentInfoListResponse> getList(AgentInfoListQueryRequest queryRequest);
-
-//    List<SelectVO> getAccessStatusList();
-
-     Map<Long, List<PluginLibraryDetailResult>> findAppPluginList(List<AgentReportDetailResult> agentReportList);
 
 }

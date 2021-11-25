@@ -6,21 +6,21 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `t_config_server`;
 CREATE TABLE `t_config_server` (
-                                   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                                   `key` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '配置的 key',
-                                   `value` varchar(100) COLLATE utf8mb4_bin DEFAULT '' COMMENT '配置的值',
-                                   `tenant_id` bigint(20) DEFAULT '-99' COMMENT '租户id, -99 表示无',
-                                   `env_code` varchar(20) COLLATE utf8mb4_bin DEFAULT '' COMMENT '环境',
-                                   `tenant_app_key` varchar(80) COLLATE utf8mb4_bin DEFAULT '' COMMENT '租户key',
-                                   `is_tenant` tinyint(3) unsigned DEFAULT '1' COMMENT '是否是住户使用, 1 是, 0 否',
-                                   `is_global` tinyint(3) unsigned DEFAULT '1' COMMENT '是否是全局的, 1 是, 0 否',
-                                   `edition` tinyint(3) unsigned DEFAULT '6' COMMENT '归属版本, 1 开源版, 2 企业版, 6 开源版和企业版',
-                                   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                                   `gmt_update` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-                                   `is_deleted` tinyint(3) unsigned DEFAULT '0' COMMENT '逻辑删除字段, 0 未删除, 1 已删除',
-                                   PRIMARY KEY (`id`) USING BTREE,
-                                   KEY `idx_k_uk_e` (`key`,`tenant_app_key`,`env_code`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='配置表-服务的配置';
+       `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+       `key` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '配置的 key',
+       `value` varchar(100) COLLATE utf8mb4_bin DEFAULT '' COMMENT '配置的值',
+       `tenant_id` bigint(20) DEFAULT '-99' COMMENT '租户id, -99 表示无',
+       `env_code` varchar(20) COLLATE utf8mb4_bin DEFAULT '' COMMENT '环境',
+       `tenant_app_key` varchar(80) COLLATE utf8mb4_bin DEFAULT '' COMMENT '租户key',
+       `is_tenant` tinyint(3) unsigned DEFAULT '1' COMMENT '是否是住户使用, 1 是, 0 否',
+       `is_global` tinyint(3) unsigned DEFAULT '1' COMMENT '是否是全局的, 1 是, 0 否',
+       `edition` tinyint(3) unsigned DEFAULT '6' COMMENT '归属版本, 1 开源版, 2 企业版, 6 开源版和企业版',
+       `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+       `gmt_update` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+       `is_deleted` tinyint(3) unsigned DEFAULT '0' COMMENT '逻辑删除字段, 0 未删除, 1 已删除',
+       PRIMARY KEY (`id`) USING BTREE,
+       KEY `idx_k_uk_e` (`key`,`tenant_app_key`,`env_code`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='配置表-服务的配置';
 
 -- ----------------------------
 -- Records of t_config_server

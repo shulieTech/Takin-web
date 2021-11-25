@@ -99,16 +99,17 @@ UPDATE t_script_manage_deploy t1
 -- caijy
 BEGIN;
 -- 记录userid和envCode
-CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
-SELECT id as user_id,tenant_id,
-       CASE
-           WHEN customer_id <> tenant_id THEN
-               'test'
-           ELSE
-               'prod'
-           END AS env_code
-FROM t_tro_user;
-ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
+-- DROP TABLE IF EXISTS `DATA_FIX_TABLE`;
+-- CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
+-- SELECT id as user_id,tenant_id,
+--        CASE
+--            WHEN customer_id <> tenant_id THEN
+--                'test'
+--            ELSE
+--                'prod'
+--            END AS env_code
+-- FROM t_tro_user;
+-- ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
 
 -- saas
 -- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=1;
@@ -139,12 +140,12 @@ ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
 -- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=24;
 
 -- demo环境
-CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
-SELECT id as user_id,tenant_id,'test' as env_code
-FROM t_tro_user;
-ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
-
-UPDATE `DATA_FIX_TABLE` SET `env_code`='pre' WHERE `user_id`=90424;
+-- DROP TABLE IF EXISTS `DATA_FIX_TABLE`;
+-- CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
+-- SELECT id as user_id,tenant_id,'test' as env_code
+-- FROM t_tro_user;
+--
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='pre' WHERE `user_id`=90424;
 
 -- env_code
 -- 应用表 t_application_mnt

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_info`
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_key` (`key`) USING BTREE,
     UNIQUE KEY `unique_code` (`code`) USING BTREE
-    ) ENGINE = InnoDB;
+    ) ENGINE = InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `t_tenant_env_ref`
 (
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_env_ref`
     `gmt_update`     datetime       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_tenant_code` (`tenant_id`,`env_code`) USING BTREE
-    ) ENGINE = InnoDB;
+    ) ENGINE = InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 -- 配置表
 CREATE TABLE IF NOT EXISTS `t_tenant_config`
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `t_tenant_config`
     `gmt_update`     datetime       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_key_tenant_env` (`tenant_id`,`env_code`,`key`) USING BTREE
-    ) ENGINE = InnoDB;
+    ) ENGINE = InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 -- t_base_config
 ALTER TABLE t_base_config
@@ -296,8 +296,8 @@ ALTER TABLE t_probe
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 ALTER TABLE t_quick_access
-    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
-	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT -1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'system'  COMMENT '环境变量' AFTER `tenant_id`;
 ALTER TABLE t_report_application_summary comment '报告应用统计数据';
 ALTER TABLE t_report_application_summary
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',

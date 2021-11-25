@@ -25,6 +25,6 @@ logs
 ig**
 
 # 本地配置文件
-application-local.yml
+application-local.*
 
 public/

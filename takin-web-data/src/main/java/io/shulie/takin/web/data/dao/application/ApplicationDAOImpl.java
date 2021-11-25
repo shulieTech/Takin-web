@@ -396,7 +396,8 @@ public class ApplicationDAOImpl
                 ApplicationMntEntity::getApplicationId,
                 ApplicationMntEntity::getApplicationName, ApplicationMntEntity::getAccessStatus,
                 ApplicationMntEntity::getSwitchStatus, ApplicationMntEntity::getNodeNum)
-            .in(ApplicationMntEntity::getApplicationName, applicationNames);
+            .in(ApplicationMntEntity::getApplicationName, applicationNames)
+            .in(ApplicationMntEntity::getEnvCode, WebPluginUtils.traceEnvCode());
         if (WebPluginUtils.checkUserPlugin()) {
             wrapper.eq(ApplicationMntEntity::getTenantId, WebPluginUtils.traceTenantId());
         }

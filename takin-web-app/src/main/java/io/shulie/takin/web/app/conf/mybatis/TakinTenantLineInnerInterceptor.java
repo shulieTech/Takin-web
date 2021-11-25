@@ -67,6 +67,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_agent_version",
         "t_exception_info",
         "t_middleware_summary",
+        "t_agent_plugin",
         "t_middleware_jar"
     };
 
@@ -90,6 +91,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_agent_version",
         "t_exception_info",
         "t_middleware_summary",
+        "t_agent_plugin",
         "t_middleware_jar"
     };
 
@@ -113,6 +115,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_agent_version",
         "t_exception_info",
         "t_middleware_summary",
+        "t_agent_plugin",
         "t_middleware_jar"
     };
 

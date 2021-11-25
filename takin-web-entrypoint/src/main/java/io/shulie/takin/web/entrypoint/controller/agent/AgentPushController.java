@@ -15,7 +15,6 @@ import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
 import com.pamirs.takin.entity.domain.vo.TUploadNeedVo;
 import io.shulie.takin.channel.bean.CommandPacket;
-import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.ConfCenterService;
@@ -215,7 +214,6 @@ public class AgentPushController {
     @PostMapping(value = AgentUrls.PERFORMANCE_TRACE_URL)
     @ApiOperation(value = "agent上传trace信息")
     public void uploadTraceInfo(@RequestBody CommandPacket commandPacket) {
-        log.info("agent上传trace信息，入参为:{}", JsonHelper.bean2Json(commandPacket));
         traceManageService.uploadTraceInfo(commandPacket);
     }
 
@@ -226,7 +224,6 @@ public class AgentPushController {
     @PostMapping(value = AgentUrls.AGENT_PUSH_APPLICATION_CONFIG)
     @ApiOperation(value = "agent上传配置信息")
     public void uploadConfigInfo(@Validated @RequestBody ConfigReportInputParam inputParam) {
-        log.debug("agent上传配置信息，入参为:{}", JsonHelper.bean2Json(inputParam));
         reportDetailService.uploadConfigInfo(inputParam);
     }
 }

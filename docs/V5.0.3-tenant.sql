@@ -296,8 +296,8 @@ ALTER TABLE t_probe
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
 	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
 ALTER TABLE t_quick_access
-    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',
-	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'test'  COMMENT '环境变量' AFTER `tenant_id`;
+    ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT -1 COMMENT '租户id',
+	ADD COLUMN `env_code`  varchar(20) NOT NULL DEFAULT 'system'  COMMENT '环境变量' AFTER `tenant_id`;
 ALTER TABLE t_report_application_summary comment '报告应用统计数据';
 ALTER TABLE t_report_application_summary
     ADD COLUMN `tenant_id` bigint(20)  NOT NULL DEFAULT 1 COMMENT '租户id',

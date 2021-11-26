@@ -38,8 +38,8 @@ public class FinishReportJob implements SimpleJob {
 
 
     @Autowired
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor jobThreadPool;
+    @Qualifier("finishReportJobThreadPool")
+    private ThreadPoolExecutor finishReportJobThreadPool;
 
     @Autowired
     @Qualifier("fastDebugThreadPool")
@@ -71,7 +71,7 @@ public class FinishReportJob implements SimpleJob {
                         final TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(
                             ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(), ext.getTenantCode(),
                             ContextSourceEnum.JOB.getCode());
-                        jobThreadPool.execute(() -> {
+                        finishReportJobThreadPool.execute(() -> {
                             this.finishReport(commonExt);
                         });
                     }

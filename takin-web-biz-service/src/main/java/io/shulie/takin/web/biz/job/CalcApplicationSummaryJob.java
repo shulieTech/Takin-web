@@ -39,12 +39,12 @@ public class CalcApplicationSummaryJob implements SimpleJob {
     @Autowired
     private ReportTaskService reportTaskService;
 
-    @Autowired
-    private ReportService reportService;
+    //@Autowired
+    //private ReportService reportService;
 
     @Autowired
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor jobThreadPool;
+    @Qualifier("calcApplicationSummaryJobThreadPool")
+    private ThreadPoolExecutor calcApplicationSummaryJobThreadPool;
 
     @Autowired
     @Qualifier("fastDebugThreadPool")
@@ -89,7 +89,7 @@ public class CalcApplicationSummaryJob implements SimpleJob {
                             continue;
                         }
 
-                        jobThreadPool.execute(()->{
+                        calcApplicationSummaryJobThreadPool.execute(()->{
                             this.calcApplicationSummary(commonExt);
                         });
                     }

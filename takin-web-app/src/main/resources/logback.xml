@@ -89,5 +89,10 @@
     <logger name="io.shulie.takin.job" level="INFO" additivity="false">
         <appender-ref ref="job"/>
     </logger>
-
+    <logger name="io.shulie.takin.web.biz.job" level="INFO" additivity="false">
+        <appender-ref ref="job"/>
+    </logger>
+    <logger name="io.shulie.takin.e2e.scheduled" level="INFO" additivity="false">
+        <appender-ref ref="job"/>
+    </logger>
 </configuration>

@@ -52,10 +52,10 @@ public class AppRemoteApiFilterJob implements SimpleJob {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void execute(ShardingContext shardingContext) {
-        if(WebPluginUtils.isOpenVersion()) {
+        if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源
             this.appRemoteApiFilter();
-        }else {
+        } else {
             List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             for (TenantInfoExt ext : tenantInfoExts) {
                 // 开始数据层分片
@@ -64,8 +64,8 @@ public class AppRemoteApiFilterJob implements SimpleJob {
                     for (TenantEnv e : ext.getEnvs()) {
                         jobThreadPool.execute(() -> {
                             WebPluginUtils.setTraceTenantContext(
-                                new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),
-                                    ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                                    new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                            ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
                             this.appRemoteApiFilter();
                             WebPluginUtils.removeTraceContext();
                         });
@@ -78,7 +78,7 @@ public class AppRemoteApiFilterJob implements SimpleJob {
     private void appRemoteApiFilter() {
         //加载所有的远程调用数据
         Map<Long, List<AppRemoteCallResult>> appRemoteCallGroupByAppId = appRemoteCallService.getListGroupByAppId();
-        if(appRemoteCallGroupByAppId.isEmpty()){
+        if (appRemoteCallGroupByAppId.isEmpty()) {
             return;
         }
         //加载入口规则
@@ -91,13 +91,15 @@ public class AppRemoteApiFilterJob implements SimpleJob {
             List<AppRemoteCallResult> appRemoteCallListVOS = appRemoteCallGroupByAppId.get(appId);
             List<AppRemoteCallResult> appRemoteCallFilterList = Lists.newArrayList();
             manageVOS.forEach(apiManage -> {
-                appRemoteCallListVOS.forEach(appRemoteCall -> {
-                    boolean match = antPathMatcher.match(apiManage.getApi(), appRemoteCall.getInterfaceName());
-                    boolean equals = apiManage.getApi().equals(appRemoteCall.getInterfaceName());
-                    if (match && !equals) {
-                        appRemoteCallFilterList.add(appRemoteCall);
-                    }
-                });
+                if (CollectionUtils.isNotEmpty(appRemoteCallListVOS)) {
+                    appRemoteCallListVOS.forEach(appRemoteCall -> {
+                        boolean match = antPathMatcher.match(apiManage.getApi(), appRemoteCall.getInterfaceName());
+                        boolean equals = apiManage.getApi().equals(appRemoteCall.getInterfaceName());
+                        if (match && !equals) {
+                            appRemoteCallFilterList.add(appRemoteCall);
+                        }
+                    });
+                }
                 delList.addAll(appRemoteCallFilterList);
                 filterMap.put(apiManage.getApi(), appRemoteCallFilterList);
             });
@@ -108,12 +110,12 @@ public class AppRemoteApiFilterJob implements SimpleJob {
         appRemoteCallService.batchLogicDelByIds(delIds);
 
         List<AppRemoteCallResult> save = Lists.newArrayList();
-        filterMap.forEach((k,v) ->{
+        filterMap.forEach((k, v) -> {
             //已经合并过的剔除
             List<AppRemoteCallResult> filterList = v.stream()
-                .filter(appRemoteCallResult -> appRemoteCallResult.getInterfaceName().equals(k))
-                .collect(Collectors.toList());
-            if(CollectionUtils.isNotEmpty(filterList)){
+                    .filter(appRemoteCallResult -> appRemoteCallResult.getInterfaceName().equals(k))
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(filterList)) {
                 return;
             }
             AppRemoteCallResult appRemoteCallResult = v.get(0);

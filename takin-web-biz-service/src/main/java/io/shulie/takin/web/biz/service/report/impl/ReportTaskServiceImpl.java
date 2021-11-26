@@ -80,7 +80,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     public List<Long> getRunningReport() {
         List<Long> reportIds = reportService.queryListRunningReport();
         if (CollectionUtils.isEmpty(reportIds)){
-            log.warn("暂无压测中的报告！");
+            log.debug("暂无压测中的报告！");
             return Lists.newArrayList();
         }
         log.info("获取租户【{}】，环境【{}】的正在压测中的报告:{}",

@@ -879,7 +879,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
      */
     @Override
     public void batchLogicDelByIds(List<Long> ids) {
-        appRemoteCallDAO.batchLogicDelByIds(ids);
+        if(CollectionUtils.isNotEmpty(ids)){
+            appRemoteCallDAO.batchLogicDelByIds(ids);
+        }
     }
 
     @Override

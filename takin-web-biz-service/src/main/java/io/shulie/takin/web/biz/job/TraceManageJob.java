@@ -38,7 +38,7 @@ public class TraceManageJob implements SimpleJob {
     public static long timeout = 300 * 1000;
 
     @Autowired
-    @Qualifier("jobThreadPool")
+    @Qualifier("traceManageJobThreadPool")
     private ThreadPoolExecutor jobThreadPool;
 
     @Override

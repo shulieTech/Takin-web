@@ -35,8 +35,8 @@ public class AppAccessStatusJob implements SimpleJob {
     private ApplicationService applicationService;
 
     @Autowired
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor jobThreadPool;
+    @Qualifier("appAccessStatusJobThreadPool")
+    private ThreadPoolExecutor appAccessStatusJobThreadPool;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -51,7 +51,7 @@ public class AppAccessStatusJob implements SimpleJob {
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     // 根据环境 分线程
                     for (TenantEnv e : ext.getEnvs()) {
-                        jobThreadPool.execute(() -> {
+                        appAccessStatusJobThreadPool.execute(() -> {
                             WebPluginUtils.setTraceTenantContext(
                                 new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),
                                     ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));

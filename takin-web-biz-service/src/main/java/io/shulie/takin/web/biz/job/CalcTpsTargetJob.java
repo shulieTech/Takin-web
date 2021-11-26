@@ -39,12 +39,12 @@ public class CalcTpsTargetJob implements SimpleJob {
     @Autowired
     private ReportTaskService reportTaskService;
 
-    @Autowired
-    private ReportService reportService;
+    //@Autowired
+    //private ReportService reportService;
 
     @Autowired
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor jobThreadPool;
+    @Qualifier("calcTpsTargetJobThreadPool")
+    private ThreadPoolExecutor calcTpsTargetJobThreadPool;
 
     @Autowired
     @Qualifier("fastDebugThreadPool")
@@ -83,7 +83,7 @@ public class CalcTpsTargetJob implements SimpleJob {
                             continue;
                         }
 
-                        jobThreadPool.execute(() -> {
+                        calcTpsTargetJobThreadPool.execute(() -> {
                             this.calcTpsTarget(tenantCommonExt);
                         });
                     }

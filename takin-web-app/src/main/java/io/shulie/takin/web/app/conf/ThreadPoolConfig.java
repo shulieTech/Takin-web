@@ -25,6 +25,60 @@ import org.springframework.web.client.RestTemplate;
 public class ThreadPoolConfig {
 
     /**
+     * 用于 AppAccessStatusJob 定时任务
+     * 10s
+     *
+     * @return 线程池
+     */
+    @Bean(name = "appAccessStatusJobThreadPool")
+    public ThreadPoolExecutor AppAccessStatusJobThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
+        return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 用于 FinishReportJob 定时任务
+     * 10s
+     *
+     * @return 线程池
+     */
+    @Bean(name = "finishReportJobThreadPool")
+    public ThreadPoolExecutor FinishReportJobThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
+        return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 用于 CalcApplicationSummaryJob 定时任务
+     * 10s
+     *
+     * @return 线程池
+     */
+    @Bean(name = "calcApplicationSummaryJobThreadPool")
+    public ThreadPoolExecutor CalcApplicationSummaryJobThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
+        return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+
+    /**
+     * 用于 CalcTpsTargetJob 定时任务
+     * 10s
+     *
+     * @return 线程池
+     */
+    @Bean(name = "calcTpsTargetJobThreadPool")
+    public ThreadPoolExecutor CalcTpsTargetJobThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
+        return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+
+    /**
      * 用于 showdownVerifyJob 定时任务
      * 10s
      *

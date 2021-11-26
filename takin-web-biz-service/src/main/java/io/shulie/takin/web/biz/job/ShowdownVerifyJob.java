@@ -25,28 +25,31 @@ import org.springframework.stereotype.Component;
 @ElasticSchedulerJob(jobName = "showdownVerifyJob", cron = "0/10 * *  * * ?", description = "漏数验证")
 @Slf4j
 public class ShowdownVerifyJob implements SimpleJob {
+
     @Autowired
     private VerifyTaskService verifyTaskService;
 
     @Autowired
-    @Qualifier("jobThreadPool")
+    @Qualifier("showdownVerifyJobThreadPool")
     private ThreadPoolExecutor jobThreadPool;
+
     @Override
     public void execute(ShardingContext shardingContext) {
 
-        if(WebPluginUtils.isOpenVersion()) {
+        if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源
             verifyTaskService.showdownVerifyTask();
-        }else {
+        } else {
             List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             for (TenantInfoExt ext : tenantInfoExts) {
                 // 开始数据层分片
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     // 根据环境 分线程
                     for (TenantEnv e : ext.getEnvs()) {
-                        jobThreadPool.execute(() ->  {
-                            WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                ext.getTenantCode(),ContextSourceEnum.JOB.getCode()));
+                        jobThreadPool.execute(() -> {
+                            WebPluginUtils.setTraceTenantContext(
+                                new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                    ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
                             verifyTaskService.showdownVerifyTask();
                             WebPluginUtils.removeTraceContext();
                         });

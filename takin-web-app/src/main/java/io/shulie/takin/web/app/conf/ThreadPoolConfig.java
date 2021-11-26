@@ -25,13 +25,53 @@ import org.springframework.web.client.RestTemplate;
 public class ThreadPoolConfig {
 
     /**
+     * 用于 showdownVerifyJob 定时任务
+     * 10s
+     *
+     * @return 线程池
+     */
+    @Bean(name = "showdownVerifyJobThreadPool")
+    public ThreadPoolExecutor showdownVerifyJobThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
+        return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 用于 syncMachineDataJobThreadPool 定时任务
+     * 10s
+     *
+     * @return 线程池
+     */
+    @Bean(name = "syncMachineDataJobThreadPool")
+    public ThreadPoolExecutor syncMachineDataJobThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
+        return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 用于 traceManageJobThreadPool 定时任务
+     * 5s
+     *
+     * @return 线程池
+     */
+    @Bean(name = "traceManageJobThreadPool")
+    public ThreadPoolExecutor traceManageJobThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
+        return new ThreadPoolExecutor(40, 100, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
      * 用于定时任务
-     * @return
+     *
+     * @return 线程池
      */
     @Bean(name = "jobThreadPool")
     public ThreadPoolExecutor jobThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-        return new ThreadPoolExecutor(200, 500, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory,
+        return new ThreadPoolExecutor(20, 50, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 

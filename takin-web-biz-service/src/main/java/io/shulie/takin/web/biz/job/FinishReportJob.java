@@ -15,14 +15,10 @@ import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.domain.WebResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
 
 /**
  * @author 无涯
@@ -41,7 +37,7 @@ public class FinishReportJob implements SimpleJob {
     private ReportTaskService reportTaskService;
     @Autowired
     private ReportService reportService;
-    @Resource
+    @Autowired
     private ThreadPoolExecutor commThreadPool;
 
     @Override

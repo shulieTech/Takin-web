@@ -262,6 +262,43 @@ public class SceneManageController {
         return Response.success(responseResult.getData(), responseResult.getTotalNum());
     }
 
+    /**
+     * 大盘无权限接口 场景接口
+     * @param current
+     * @param pageSize
+     * @param sceneId
+     * @param sceneName
+     * @param status
+     * @param tagId
+     * @param lastPtStartTime
+     * @param lastPtEndTime
+     * @return
+     */
+    @GetMapping("/list/un_safe")
+    @ApiOperation(value = "压测场景列表")
+    public Response<List<SceneManageListOutput>> getListNoAuth(@ApiParam(name = "current", value = "页码", required = true) Integer current,
+        @ApiParam(name = "pageSize", value = "页大小", required = true) Integer pageSize,
+        @ApiParam(name = "sceneId", value = "压测场景ID") Long sceneId,
+        @ApiParam(name = "sceneName", value = "压测场景名称") String sceneName,
+        @ApiParam(name = "status", value = "压测状态") Integer status,
+        @ApiParam(name = "tagId", value = "标签id") Long tagId,
+        @ApiParam(name = "lastPtStartTime", value = "压测结束时间") String lastPtStartTime,
+        @ApiParam(name = "lastPtEndTime", value = "压测结束时间") String lastPtEndTime
+    ) {
+        SceneManageQueryVO queryVO = new SceneManageQueryVO();
+
+        queryVO.setPageNumber(current + 1);
+        queryVO.setPageSize(pageSize);
+        queryVO.setSceneId(sceneId);
+        queryVO.setSceneName(sceneName);
+        queryVO.setStatus(status);
+        queryVO.setTagId(tagId);
+        queryVO.setLastPtStartTime(lastPtStartTime);
+        queryVO.setLastPtEndTime(lastPtEndTime);
+        ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
+        return Response.success(responseResult.getData(), responseResult.getTotalNum());
+    }
+
     @GetMapping("/ipnum")
     @ApiOperation(value = "获取机器数量范围")
     public ResponseResult<StrategyResp> getIpNum(

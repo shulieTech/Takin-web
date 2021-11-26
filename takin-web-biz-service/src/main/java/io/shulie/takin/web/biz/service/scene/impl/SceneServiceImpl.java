@@ -13,6 +13,7 @@ import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
@@ -311,8 +312,8 @@ public class SceneServiceImpl implements SceneService {
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(kafkaScriptNodes)){
             PluginConfigCreateRequest pluginConfigCreateRequest = new PluginConfigCreateRequest();
-            pluginConfigCreateRequest.setName("kafka-all");
-            pluginConfigCreateRequest.setType("kafka");
+            pluginConfigCreateRequest.setName("2");
+            pluginConfigCreateRequest.setType("KAFKA");
             pluginConfigCreateRequest.setVersion("v2.5");
             createRequest.setPluginConfigCreateRequests(Collections.singletonList(pluginConfigCreateRequest));
         }
@@ -681,7 +682,6 @@ public class SceneServiceImpl implements SceneService {
 
         }
 
-
         //更新业务流程
         sceneUpdateParam.setId(businessFlowUpdateRequest.getId());
         sceneUpdateParam.setSceneLevel(businessFlowUpdateRequest.getSceneLevel());
@@ -735,6 +735,19 @@ public class SceneServiceImpl implements SceneService {
             updateRequest.setFileManageUpdateRequests(updateFileManageRequests);
         }
 
+        if (CollectionUtils.isNotEmpty(data)){
+            //TODO 目前临时将kafka版本锁死,如果脚本中存在kafka取样器，使用kafka2.5版本
+            List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);
+            List<ScriptNode> kafkaScriptNodes = scriptNodeByType.stream().filter(o -> SamplerTypeEnum.KAFKA == o.getSamplerType())
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(kafkaScriptNodes)){
+                PluginConfigUpdateRequest pluginConfigUpdate = new PluginConfigUpdateRequest();
+                pluginConfigUpdate.setName("2");
+                pluginConfigUpdate.setType("KAFKA");
+                pluginConfigUpdate.setVersion("v2.5");
+                updateRequest.setPluginConfigUpdateRequests(Collections.singletonList(pluginConfigUpdate));
+            }
+        }
         //更新脚本
         Long scriptDeployId = scriptManageService.updateScriptManage(updateRequest);
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();

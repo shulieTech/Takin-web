@@ -43,7 +43,7 @@ public class ApplicationController {
     @PutMapping("center/app/switch")
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
+        subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(

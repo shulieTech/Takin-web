@@ -45,7 +45,7 @@ public class GlobalController {
     @ApiOperation(value = "打开全局白名单开关")
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
+        subModuleName = BizOpConstants.SubModules.PRESSURE_WHITELIST_SWITCH,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITELIST_SWITCH_ACTION
     )
     @AuthVerification(
@@ -65,7 +65,7 @@ public class GlobalController {
     @ApiOperation(value = "关闭全局白名单开关")
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
+        subModuleName = BizOpConstants.SubModules.PRESSURE_WHITELIST_SWITCH,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITELIST_SWITCH_ACTION
     )
     @AuthVerification(

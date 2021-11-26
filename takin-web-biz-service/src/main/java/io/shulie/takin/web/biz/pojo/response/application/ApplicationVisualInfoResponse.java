@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.Map;
 
 @Data

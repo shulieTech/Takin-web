@@ -38,4 +38,5 @@ public class ReportLinkDetailResponse {
      * 是否是压测流量, 默认 true
      */
     private boolean clusterTest;
+
 }

@@ -44,7 +44,9 @@ public class ApplicationDsDbManageDAOImpl  extends ServiceImpl<ApplicationDsDbMa
             lambdaQueryWrapper.eq(ApplicationDsDbManageEntity::getIsDeleted, 0);
         }
         if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
-            lambdaQueryWrapper.in(ApplicationDsDbManageEntity::getUserId, param.getUserIdList());
+            if(!param.getUserIdList().contains(1)){
+                lambdaQueryWrapper.in(ApplicationDsDbManageEntity::getUserId, param.getUserIdList());
+            }
         }
         lambdaQueryWrapper.orderByDesc(ApplicationDsDbManageEntity::getGmtUpdate);
 

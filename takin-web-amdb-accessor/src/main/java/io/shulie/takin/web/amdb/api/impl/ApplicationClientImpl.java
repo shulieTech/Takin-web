@@ -274,6 +274,7 @@ public class ApplicationClientImpl implements ApplicationClient {
      */
     private PagingList<ApplicationNodeDTO> pageApplicationNode(String url, ApplicationNodeQueryDTO dto) {
         try {
+
             HttpMethod httpMethod = HttpMethod.GET;
             if (url.equals(this.getApplicationNodeQueryPathUrl())) {
                 httpMethod = HttpMethod.POST;

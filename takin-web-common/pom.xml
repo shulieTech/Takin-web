@@ -19,7 +19,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.0.3-SNAPSHOT</version>
+        <version>takin-web-5.0.4.8</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-common</artifactId>
@@ -68,6 +68,7 @@
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
 
+
         <dependency>
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-core</artifactId>
@@ -115,7 +116,7 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-ext-api</artifactId>
-            <version>takin-web-5.0.3-SNAPSHOT</version>
+            <version>takin-web-5.0.4.8</version>
             <scope>compile</scope>
         </dependency>
 
@@ -131,6 +132,17 @@
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.instrument.module</groupId>
+            <artifactId>module-pradar-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>provided</scope>
         </dependency>
 
        <dependency>

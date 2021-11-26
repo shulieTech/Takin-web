@@ -63,4 +63,6 @@ public class ActivityCreateParam extends UserCommonExt {
      * 虚拟业务mq类型
      */
     private EntranceTypeEnum serverMiddlewareType;
+
+    private boolean persistence = true;
 }

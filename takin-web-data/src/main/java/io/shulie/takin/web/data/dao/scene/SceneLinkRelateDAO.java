@@ -17,10 +17,20 @@ public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
 
     /**
      * 获取关联
+     *
      * @param param
      * @return
      */
     List<SceneLinkRelateResult> getList(SceneLinkRelateParam param);
+
+    /**
+     * 根据业务流程id, 获得关联业务活动ids
+     *
+     * @param businessFlowId 业务流程ids
+     * @return 业务活动ids
+     */
+    List<Long> listBusinessLinkIdsByBusinessFlowId(Long businessFlowId);
+
 
     /**
      * 查询接口

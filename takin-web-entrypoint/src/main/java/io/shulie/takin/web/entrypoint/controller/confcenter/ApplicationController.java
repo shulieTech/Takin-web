@@ -17,13 +17,28 @@ import io.shulie.takin.common.beans.annotation.AuthVerification;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.AppUnstallAgentVo;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntrancesResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
+import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.common.util.MD5Tool;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -39,7 +54,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -55,6 +80,10 @@ public class ApplicationController {
     private static String FALSE_CODE = "0";
     @Autowired
     private ApplicationService applicationService;
+    @Autowired
+    private ApplicationEntranceClient applicationEntranceClient;
+    @Autowired
+    private ActivityService activityService;
 
     @GetMapping("/application/center/list")
     @ApiOperation("应用列表查询接口")
@@ -293,6 +322,27 @@ public class ApplicationController {
         return applicationService.getApplicationVisualInfo(request);
     }
 
+    @GetMapping("/application/center/app/activityList")
+    @ApiOperation("关联业务活动")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response getApplicationActivityList(@Valid ApplicationVisualInfoQueryRequest request) {
+        Response<List<ApplicationVisualInfoResponse>> response = applicationService.getApplicationVisualInfo(request);
+        List<ApplicationVisualInfoResponse> data = response.getData();
+        if (CollectionUtils.isNotEmpty(data)) {
+            Map allActiveIdAndName = data.get(0).getAllActiveIdAndName();
+            ArrayList<Map.Entry> activityList = new ArrayList<>();
+            if (null != allActiveIdAndName && !allActiveIdAndName.isEmpty()) {
+                Set<Map.Entry> set = allActiveIdAndName.entrySet();
+                set.forEach(entry->activityList.add(entry));
+            }
+            return Response.success(activityList);
+        }
+        return null;
+    }
+
     /**
      * 关注应用服务接口
      *
@@ -309,6 +359,57 @@ public class ApplicationController {
             return;
         }
         applicationService.attendApplicationService(request);
+    }
+
+    @PostMapping("/application/center/app/gotoActivityInfo")
+    @ApiOperation("跳转业务活动详情")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.CREATE
+    )
+    public Map gotoActivityInfo(@Validated @RequestBody ActivityCreateRequest request) throws Exception {
+        HashMap result = new HashMap();
+        //业务活动名称模糊搜索
+        String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.getCustomerId());
+        BusinessLinkManageTableEntity entity = activityService.getActivityByName(key);
+
+        boolean isTempActivity = true;
+        if (null != entity) {
+            result.put(entity.getLinkId(), isTempActivity);
+        } else {
+            entity = activityService.getActivity(request);
+            if (null != entity) {
+                result.put(entity.getLinkId(), false);
+            } else {
+                List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
+                        request.getApplicationName(), "");
+                if (CollectionUtils.isNotEmpty(applicationEntrances)) {
+                    List<ApplicationEntrancesResponse> responseList = applicationEntrances.stream()
+                            .filter(item -> !item.getServiceName().startsWith("PT_"))
+                            .map(item -> {
+                                ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
+                                applicationEntrancesResponse.setMethod(item.getMethodName());
+                                applicationEntrancesResponse.setRpcType(item.getRpcType());
+                                applicationEntrancesResponse.setExtend(item.getExtend());
+                                applicationEntrancesResponse.setServiceName(item.getServiceName());
+                                applicationEntrancesResponse.setLabel(
+                                        ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
+                                applicationEntrancesResponse.setValue(
+                                        ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
+                                                item.getAppName(), item.getRpcType(), item.getExtend()));
+                                return applicationEntrancesResponse;
+                                // 增加去重
+                            }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(responseList))
+                    request.setLinkId(responseList.get(0).getValue());
+                }
+                request.setActivityName(key);
+                request.setRpcType(request.getRpcType());
+                applicationService.gotoActivityInfo(request);
+                result.put(activityService.getActivityByName(key).getLinkId(), isTempActivity);
+            }
+        }
+        return result;
     }
 
     @GetMapping("/application/center/app/activityList")

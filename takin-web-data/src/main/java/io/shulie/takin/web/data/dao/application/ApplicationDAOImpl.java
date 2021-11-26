@@ -382,7 +382,7 @@ public class ApplicationDAOImpl
         entity.setApplicationId(applicationId);
         entity.setAccessStatus(status);
         LambdaUpdateWrapper<ApplicationMntEntity> wrapper = this.getLambdaUpdateWrapper();
-        ;
+
         wrapper.set(ApplicationMntEntity::getAccessStatus, status)
             .eq(ApplicationMntEntity::getApplicationId, applicationId);
         applicationMntMapper.update(null, wrapper);

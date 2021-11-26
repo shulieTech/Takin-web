@@ -124,4 +124,7 @@ public class BusinessLinkManageTableEntity {
      */
     @TableField(value = "SERVER_MIDDLEWARE_TYPE")
     private String serverMiddlewareType;
+
+    @TableField(value = "persistence")
+    private boolean persistence = true;
 }

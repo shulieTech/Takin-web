@@ -16,11 +16,12 @@ public class ActivityUtil {
 
     /**
      * 判断是否是正常业务活动
-     * @param type
-     * @return
+     *
+     * @param type 业务活动类型
+     * @return 是否是正常业务活动
      */
-    public static Boolean isNormalBusiness(Integer type){
-        return type == null || BusinessTypeEnum.NORMAL_BUSINESS.getType().equals(type);
+    public static boolean isNormalBusiness(Integer type){
+        return BusinessTypeEnum.NORMAL_BUSINESS.getType().equals(type);
     }
 
     /**
@@ -136,6 +137,32 @@ public class ActivityUtil {
             entranceJoinEntity.setRpcType("-1");
         }
         return entranceJoinEntity;
+    }
+
+    /**
+     * 虚拟业务活动转换
+     *
+     * @param dbEntrance 入口
+     * @return 业务活动入口转换对象
+     */
+    public static EntranceJoinEntity covertVirtualEntranceV2(String dbEntrance) {
+        String[] split = StringUtils.split(dbEntrance, "\\|");
+        EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
+        entranceJoinEntity.setServiceName(split[0]);
+        entranceJoinEntity.setRpcType(split[1]);
+        return entranceJoinEntity;
+    }
+
+    /**
+     * 根据入口, 业务活动类型, 获得业务活动入口转换对象
+     *
+     * @param entrance 入口
+     * @param type 业务活动类型, 1 虚拟业务活动, 0 正常业务活动
+     * @return 业务活动入口转换对象
+     */
+    public static EntranceJoinEntity getEntranceJoinEntityByEntranceAndType(String entrance, Integer type) {
+        return ActivityUtil.isNormalBusiness(type) ? ActivityUtil.covertEntrance(entrance)
+            : ActivityUtil.covertVirtualEntranceV2(entrance);
     }
 
     @Data

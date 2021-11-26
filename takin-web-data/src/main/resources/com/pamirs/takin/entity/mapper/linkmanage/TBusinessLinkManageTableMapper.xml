@@ -31,6 +31,7 @@
         <include refid="Base_Column_List"/>
         from t_business_link_manage_table
         where LINK_ID = #{linkId,jdbcType=BIGINT}
+        AND persistence = 1
     </select>
 
 
@@ -43,6 +44,7 @@
             #{item}
         </foreach>
         and IS_DELETED = 0
+        AND persistence = 1
     </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete
@@ -244,6 +246,7 @@
         from t_business_link_manage_table
         where LINK_NAME = #{linkName,jdbcType=VARCHAR}
           and IS_DELETED = 0
+          AND persistence = 1
     </select>
 
     <update id="updateByTechId" parameterType="com.pamirs.takin.entity.domain.entity.linkmanage.BusinessLinkManageTable">
@@ -300,6 +303,7 @@
                  left join t_link_manage_table tech
                            on manage.RELATED_TECH_LINK = tech.LINK_ID
         where manage.IS_DELETED = 0
+        AND persistence = 1
           and manage.LINK_ID = #{id}
         group by manage.LINK_ID
     </select>
@@ -311,6 +315,7 @@
             #{item}
         </foreach>
         and IS_DELETED = 0
+        AND persistence = 1
     </select>
     <select id="selectBussinessLinkListBySelective2"
             parameterType="com.pamirs.takin.entity.domain.entity.linkmanage.LinkQueryVo"
@@ -380,6 +385,7 @@
         select count(1)
         from t_business_link_manage_table
         where IS_DELETED = 0
+        AND persistence = 1
     </select>
     <update id="updateIsChangeByTechId" parameterType="java.lang.Long">
         update t_business_link_manage_table
@@ -395,6 +401,7 @@
                 LINK_NAME like concat(concat('%',#{bussinessActiveName}),'%')
             </if>
             and IS_DELETED = 0
+            AND persistence = 1
         </trim>
     </select>
 
@@ -412,6 +419,7 @@
             #{item}
         </foreach>
         and IS_DELETED = 0
+        AND persistence = 1
     </select>
 
     <update id="cannotdelete">

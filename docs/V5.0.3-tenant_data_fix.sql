@@ -412,6 +412,9 @@ update t_mq_config_template set tenant_id=IFNULL((select tenant_id from t_tro_us
 -- update t_application_ds_cache_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 -- update t_application_ds_db_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 UPDATE t_application_ds_db_table m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.app_id SET m.env_code = IFNULL(u.env_code,'test');
+UPDATE t_application_ds_db_manage m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = IFNULL(u.env_code,'test');
+UPDATE t_shadow_mq_consumer m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.application_id SET m.env_code = IFNULL(u.env_code,'test');
+
 
 -- 大表最后数据迁移
 -- t_fast_debug_stack_info

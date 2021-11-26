@@ -14,12 +14,12 @@
  *
  */
 
-package io.shulie.takin.web.biz.service.linkmanage.impl;
+package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import com.google.common.collect.Lists;
 import io.shulie.takin.web.app.Application;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
-import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
+import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import org.junit.Test;
 import org.junit.runner.RunWith;

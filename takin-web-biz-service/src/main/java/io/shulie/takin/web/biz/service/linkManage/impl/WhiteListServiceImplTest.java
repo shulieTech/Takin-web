@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.service.linkmanage.impl;
+package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import io.shulie.takin.web.common.vo.whitelist.WhiteListVO;
 import org.junit.Assert;

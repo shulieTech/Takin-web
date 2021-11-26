@@ -11,7 +11,7 @@ import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallDelV2Reques
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateV2Request;
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallStringResponse;
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallV2Response;
-import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
+import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.APIUrls;
 import io.swagger.annotations.Api;

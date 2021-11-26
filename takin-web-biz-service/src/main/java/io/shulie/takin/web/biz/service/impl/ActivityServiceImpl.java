@@ -128,7 +128,8 @@ public class ActivityServiceImpl implements ActivityService {
             request.setServiceName(JmxUtil.pathGuiYi(request.getServiceName()));
         }
         createParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
+            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
+                request.getRpcType()));
         activityDAO.createActivity(createParam);
         notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
             request.getMethod(), request.getRpcType(), request.getExtend());
@@ -340,7 +341,8 @@ public class ActivityServiceImpl implements ActivityService {
             request.setServiceName(JmxUtil.pathGuiYi(request.getServiceName()));
         }
         updateParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
+            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
+                request.getRpcType()));
         // 技术链路id
         updateParam.setLinkId(oldActivity.getLinkId());
         activityDAO.updateActivity(updateParam);

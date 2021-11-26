@@ -1,7 +1,7 @@
 package io.shulie.takin.web.biz.cache.agentimpl;
 
 import io.shulie.takin.web.biz.cache.AbstractAgentConfigCache;
-import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
+import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;

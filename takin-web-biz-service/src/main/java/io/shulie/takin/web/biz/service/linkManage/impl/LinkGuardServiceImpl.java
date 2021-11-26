@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.service.linkmanage.impl;
+package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
 import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
+import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.ext.util.WebPluginUtils;

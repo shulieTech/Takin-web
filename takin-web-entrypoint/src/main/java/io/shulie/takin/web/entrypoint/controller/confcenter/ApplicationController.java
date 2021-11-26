@@ -412,25 +412,4 @@ public class ApplicationController {
         return result;
     }
 
-    @GetMapping("/application/center/app/activityList")
-    @ApiOperation("关联业务活动")
-    @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-            needAuth = ActionTypeEnum.QUERY
-    )
-    public Response getApplicationActivityList(@Valid ApplicationVisualInfoQueryRequest request) {
-        Response<List<ApplicationVisualInfoResponse>> response = applicationService.getApplicationVisualInfo(request);
-        List<ApplicationVisualInfoResponse> data = response.getData();
-        if (CollectionUtils.isNotEmpty(data)) {
-            Map allActiveIdAndName = data.get(0).getAllActiveIdAndName();
-            ArrayList<Map.Entry> activityList = new ArrayList<>();
-            if (null != allActiveIdAndName && !allActiveIdAndName.isEmpty()) {
-                Set<Map.Entry> set = allActiveIdAndName.entrySet();
-                set.forEach(entry->activityList.add(entry));
-            }
-            return Response.success(activityList);
-        }
-        return null;
-    }
-
 }

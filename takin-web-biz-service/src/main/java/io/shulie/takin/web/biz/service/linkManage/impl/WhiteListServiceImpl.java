@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package io.shulie.takin.web.biz.service.linkmanage.impl;
+package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,7 +53,7 @@ import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistSearchInput;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistUpdatePartAppNameInput;
 import io.shulie.takin.web.biz.pojo.request.whitelist.WhiteListDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.whitelist.WhiteListUpdateRequest;
-import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
+import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.whitelist.WhitelistTagEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;

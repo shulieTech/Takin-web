@@ -117,7 +117,7 @@ public class ApplicationEntranceController {
                     applicationEntrancesResponse.setServiceName(item.getServiceName());
                     applicationEntrancesResponse.setLabel(item.getMethodName() + "|" + item.getServiceName());
                     applicationEntrancesResponse.setValue(
-                            ActivityUtil.buildEntrance(item.getMethodName(),item.getServiceName(),item.getRpcType()));
+                            ActivityUtil.buildEntrance(item.getAppName(),item.getMethodName(),item.getServiceName(),item.getRpcType()));
                     return applicationEntrancesResponse;
                     // 增加去重
                 }).distinct().collect(Collectors.toList());

@@ -14,7 +14,7 @@
  *
  */
 
-package io.shulie.takin.web.biz.service.linkmanage.impl;
+package io.shulie.takin.web.biz.service.linkManage.impl;
 
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.convert.Convert;
@@ -42,7 +42,7 @@ import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutputV2;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallCreateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
-import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
+import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;

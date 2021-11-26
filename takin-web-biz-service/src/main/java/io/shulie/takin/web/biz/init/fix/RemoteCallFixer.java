@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
-import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
+import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.blacklist.BlacklistEnableEnum;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;

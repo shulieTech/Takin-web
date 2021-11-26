@@ -50,11 +50,8 @@ public class ActivityUtil {
         }
     }
 
-    public static String buildEntrance(String methodName, String serviceName, String rpcType) {
-        if (RpcTypeEnum.MQ.getValue().equals(rpcType)){
-            return StringUtils.join(Lists.newArrayList(serviceName, rpcType), "|");
-        }
-        return StringUtils.join(Lists.newArrayList( methodName, serviceName, rpcType), "|");
+    public static String buildEntrance(String applicationName, String methodName, String serviceName, String rpcType) {
+        return StringUtils.join(Lists.newArrayList(applicationName, methodName, serviceName, rpcType), "|");
     }
 
     /**
@@ -167,6 +164,8 @@ public class ActivityUtil {
 
     @Data
     public static class EntranceJoinEntity {
+
+        private String applicationName;
 
         private String methodName;
 

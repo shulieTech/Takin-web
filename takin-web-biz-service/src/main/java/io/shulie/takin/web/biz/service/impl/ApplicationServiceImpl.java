@@ -67,7 +67,6 @@ import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInpu
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
@@ -83,8 +82,8 @@ import io.shulie.takin.web.biz.service.ConfCenterService;
 import io.shulie.takin.web.biz.service.ShadowConsumerService;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
-import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
-import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
+import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
+import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.utils.DsManageUtil;
 import io.shulie.takin.web.biz.utils.PageUtils;
@@ -96,7 +95,6 @@ import io.shulie.takin.web.common.constant.GuardEnableConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.constant.WhiteListConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
@@ -1110,7 +1108,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (null != infoResponseMap) {
             Map.Entry<List<ApplicationVisualInfoResponse>, Integer> infoEntry = null;
             for (Map.Entry<List<ApplicationVisualInfoResponse>, Integer> ApplicationVisualInfoEntry :
-             infoResponseMap.entrySet()) {
+                infoResponseMap.entrySet()) {
                 infoEntry = ApplicationVisualInfoEntry;
                 break;
             }
@@ -1213,54 +1211,71 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (CollectionUtils.isEmpty(data)) {
             return null;
         }
-        String[] orderList = orderBy.split(" ");
-        if (orderList.length != 2) {
-            return null;
-        }
-        int total = data.size();
-        String orderName = orderList[0];
-        String orderType = orderList[1];
-        List<ApplicationVisualInfoResponse> visualInfoDTOList = data.stream().sorted((d1, d2) -> {
-            boolean b1 = attentionList.contains(d1.getServiceAndMethod());
-            boolean b2 = attentionList.contains(d2.getServiceAndMethod());
-            if ((b1 && b2) || (!b1 && !b2)) {
-                Number result = 0;
-                switch (orderName) {
-                    case "QPS":
-                        result = d1.getRequestCount() - d2.getRequestCount();
-                        break;
-                    case "TPS":
-                        result = d1.getTps() - d2.getTps();
-                        break;
-                    case "RT":
-                        result = d1.getResponseConsuming() - d2.getResponseConsuming();
-                        break;
-                    case "SUCCESSRATE":
-                        result = d1.getSuccessRatio() - d2.getSuccessRatio();
-                }
-                int diff = result.doubleValue() > 0 ? 1 : -1;
-                return "asc".equals(orderType) ? diff : -diff;
-            } else {
-                return b1 ? -1 : 1;
-            }
-        }).map(dto -> {
-            dto.setAttend(attentionList.contains(dto.getServiceAndMethod()));
-            String[] activeList = dto.getActiveList();
-            Map<String, String> activityResult = new HashMap<>();
-            if (activeList != null) {
-                for (String active : activeList) {
-                    String[] split = active.split("#");
-                    String appName = split[0];
-                    String entrance = ActivityUtil.buildEntrance(split[2], split[1], "%");
-                    List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
-                    if (!CollectionUtils.isEmpty(serviceList)) {
-                        serviceList.stream().forEach(serviceName -> activityResult.put(String.valueOf(serviceName.get("linkId")), serviceName.get("linkName")));
+
+//        String[] orderList = orderBy.split(" ");
+//        if (orderList.length != 2) {
+//            return null;
+//        }
+//        int total = data.size();
+//        String orderName = orderList[0];
+//        String orderType = orderList[1];
+        List<ApplicationVisualInfoResponse> visualInfoDTOList = data.stream()
+//                .sorted((d1, d2) -> {
+//            boolean b1 = attentionList.contains(d1.getServiceAndMethod());
+//            boolean b2 = attentionList.contains(d2.getServiceAndMethod());
+//            if ((b1 && b2) || (!b1 && !b2)) {
+//                Number result = 0;
+//                switch (orderName) {
+//                    case "QPS":
+//                        result = d1.getRequestCount() - d2.getRequestCount();
+//                        break;
+//                    case "TPS":
+//                        result = d1.getTps() - d2.getTps();
+//                        break;
+//                    case "RT":
+//                        result = d1.getResponseConsuming() - d2.getResponseConsuming();
+//                        break;
+//                    case "SUCCESSRATE":
+//                        result = d1.getSuccessRatio() - d2.getSuccessRatio();
+//                }
+//                int diff = result.doubleValue() > 0 ? 1 : -1;
+//                return "asc".equals(orderType) ? diff : -diff;
+//            } else {
+//                return b1 ? -1 : 1;
+//            }
+//        })
+                .map(dto -> {
+                    dto.setAttend(attentionList.contains(dto.getServiceAndMethod()));
+                    String[] activeList = dto.getActiveList();
+                    Map<String, String> activityResult = new HashMap<>();
+                    if (activeList != null) {
+                        for (String active : activeList) {
+                            String[] split = active.split("#");
+                            String appName = split[0];
+                            String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
+                            List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
+                            if (!CollectionUtils.isEmpty(serviceList)) {
+                                serviceList.stream().forEach(serviceName -> activityResult.put(String.valueOf(serviceName.get("linkId")), serviceName.get("linkName")));
+                            }
+                        }
                     }
-                }
-            }
-            dto.setActiveIdAndName(activityResult);
-            return dto;
-        }).collect(Collectors.toList());
+                    dto.setActiveIdAndName(activityResult);
+                    String[] allActiveList = dto.getAllActiveList();
+                    Map<String, String> allActivityResult = new HashMap<>();
+                    if (allActiveList != null) {
+                        for (String active : allActiveList) {
+                            String[] split = active.split("#");
+                            String appName = split[0];
+                            String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
+                            List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
+                            if (!CollectionUtils.isEmpty(serviceList)) {
+                                serviceList.stream().forEach(serviceName -> allActivityResult.put(split[1] + "#" + split[2], serviceName.get("linkName")));
+                            }
+                        }
+                    }
+                    dto.setAllActiveIdAndName(allActivityResult);
+                    return dto;
+                }).collect(Collectors.toList());
 
 //        List<ApplicationVisualInfoResponse> infoDTOPageList = new ArrayList<>();
 //        for (int i = current * pageSize; i < (current + 1) * pageSize && i < visualInfoDTOList.size(); i++) {

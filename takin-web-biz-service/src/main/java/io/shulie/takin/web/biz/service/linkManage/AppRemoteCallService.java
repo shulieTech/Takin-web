@@ -14,7 +14,7 @@
  *
  */
 
-package io.shulie.takin.web.biz.service.linkmanage;
+package io.shulie.takin.web.biz.service.linkManage;
 
 import java.util.List;
 import java.util.Map;

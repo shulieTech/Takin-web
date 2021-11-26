@@ -16,7 +16,7 @@ import io.shulie.takin.web.biz.pojo.input.blacklist.BlacklistCreateInput;
 import io.shulie.takin.web.biz.pojo.input.blacklist.BlacklistSearchInput;
 import io.shulie.takin.web.biz.pojo.input.blacklist.BlacklistUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.blacklist.BlacklistOutput;
-import io.shulie.takin.web.biz.service.linkmanage.impl.WhiteListFileService;
+import io.shulie.takin.web.biz.service.linkManage.impl.WhiteListFileService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.blacklist.BlacklistTypeEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;

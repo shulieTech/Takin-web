@@ -11,7 +11,7 @@ import com.pamirs.takin.entity.domain.query.whitelist.WhiteListOperateVO;
 import com.pamirs.takin.entity.domain.query.whitelist.WhiteListQueryVO;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.pojo.request.whitelist.WhiteListDeleteRequest;
-import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
+import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;

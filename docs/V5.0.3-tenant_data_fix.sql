@@ -217,6 +217,12 @@ UPDATE t_fast_debug_result t1
     LEFT JOIN t_business_link_manage_table t2 ON t1.business_link_name = t2.LINK_NAME AND t1.customer_id=t2.customer_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
+UPDATE t_script_file_ref t1
+    LEFT JOIN t_script_manage_deploy t2 ON t1.script_deploy_id = t2.script_deploy_id
+    SET t1.env_code = IFNULL(t2.env_code,'test'),
+        t1.tenant_id = IFNULL(t2.tenant_id,1);
+
+
 -- t_file_manage
 UPDATE t_file_manage t1
     LEFT JOIN t_script_file_ref t2 ON t1.id = t2.file_id
@@ -412,8 +418,10 @@ update t_mq_config_template set tenant_id=IFNULL((select tenant_id from t_tro_us
 -- update t_application_ds_cache_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 -- update t_application_ds_db_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 UPDATE t_application_ds_db_table m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.app_id SET m.env_code = IFNULL(u.env_code,'test');
+UPDATE t_application_ds_db_table m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.app_id SET m.tenant_id = IFNULL(u.tenant_id,1);
 UPDATE t_application_ds_db_manage m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = IFNULL(u.env_code,'test');
 UPDATE t_shadow_mq_consumer m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.application_id SET m.env_code = IFNULL(u.env_code,'test');
+UPDATE t_application_api_manage m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = IFNULL(u.env_code,'test'),m.tenant_id=IFNULL(u.tenant_id,1);
 
 
 -- 大表最后数据迁移
@@ -554,6 +562,12 @@ DROP INDEX `name_version`;
 ALTER TABLE t_fast_debug_config_info DROP INDEX `name`;
 ALTER TABLE t_application_api_manage DROP INDEX IF EXISTS `APPLICATION_NAME`;
 ALTER TABLE t_datasource_tag_ref DROP INDEX `index_datasourceId_tagId`;
+
+ALTER TABLE t_app_remote_call
+DROP INDEX 	`idx_tenant_env`,
+ADD  UNIQUE KEY `idx_interface_name_app_tenant_env`(`APPLICATION_ID`,`interface_name`,`tenant_id`,`env_code`);
+
+
 -- 调试工具结果
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_trace_id` ( `trace_id`);
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_config_Id` (`config_Id`);

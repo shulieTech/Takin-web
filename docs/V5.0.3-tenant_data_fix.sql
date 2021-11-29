@@ -103,7 +103,7 @@ BEGIN;
 -- CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
 -- SELECT id as user_id,tenant_id,
 --        CASE
---            WHEN customer_id <> tenant_id THEN
+--            WHEN id <> tenant_id THEN
 --                'test'
 --            ELSE
 --                'prod'

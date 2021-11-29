@@ -1,19 +1,16 @@
-package com.pamirs.takin.entity.domain.entity;
+package io.shulie.takin.web.data.param.application;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
- * t_application_api_manage
- *
- * @author
+ * @author fanxx
+ * @date 2020/11/4 5:53 下午
  */
 @Data
-public class ApplicationApiManage extends TenantCommonExt implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class ApplicationApiQueryParam extends TenantCommonExt {
     /**
      * 主键
      */
@@ -38,15 +35,18 @@ public class ApplicationApiManage extends TenantCommonExt implements Serializabl
      * 更新时间
      */
     private Date updateTime;
+
+    /**
+     * 用户id
+     */
+    private Long userId;
+
     /**
      * 是否有效 0:有效;1:无效
      */
     private Byte isDeleted;
 
-    private Long userId;
-
-    private String requestMethod;
+    private String method;
 
     private Integer isAgentRegiste;
-
 }

@@ -60,4 +60,7 @@ public class ApplicationApiManageEntity extends UserBaseEntity {
      */
     @TableField(value = "method")
     private String method;
+
+    @TableField(value = "is_agent_registe")
+    private Integer isAgentRegiste;
 }

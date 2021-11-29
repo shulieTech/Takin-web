@@ -46,5 +46,7 @@ public class ApplicationApiCreateParam extends TenantCommonExt {
      */
     private Byte isDeleted;
 
-    private String requestMethod;
+    private String method;
+
+    private Integer isAgentRegiste;
 }

@@ -10,14 +10,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
-
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.convert.Convert;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.dao.apimanage.TApplicationApiManageMapper;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
-import com.pamirs.takin.entity.domain.entity.ApplicationApiManage;
 import com.pamirs.takin.entity.domain.query.ApplicationApiParam;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
@@ -34,6 +30,8 @@ import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 import io.shulie.takin.web.data.dao.application.ApplicationApiDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.param.application.ApplicationApiCreateParam;
+import io.shulie.takin.web.data.param.application.ApplicationApiQueryParam;
+import io.shulie.takin.web.data.result.application.ApplicationApiManageResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -52,8 +50,6 @@ import org.springframework.stereotype.Component;
 public class ApplicationApiServiveImpl implements ApplicationApiService {
     private static final String EMPTY = " ";
     private static final String HTTP_METHOD_TYPE = "HTTP_METHOD_TYPE";
-    @Resource
-    private TApplicationApiManageMapper manageMapper;
 
     @Autowired
     private ApplicationApiDAO applicationApiDAO;
@@ -63,7 +59,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
 
     @Override
     public Response registerApi(Map<String, List<String>> register) {
-        List<ApplicationApiManage> batch = Lists.newArrayList();
+        List<ApplicationApiCreateParam> batch = Lists.newArrayList();
         try {
             for (Map.Entry entry : register.entrySet()) {
 
@@ -95,13 +91,13 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                     if (api.contains("||")) {
                         String[] splits = api.split("\\|\\|");
                         for (String split : splits) {
-                            ApplicationApiManage manage = new ApplicationApiManage();
+                            ApplicationApiCreateParam manage = new ApplicationApiCreateParam();
                             manage.setApi(split.trim());
                             manage.setApplicationName(appName);
                             manage.setIsDeleted((byte)0);
                             manage.setCreateTime(new Date());
                             manage.setUpdateTime(new Date());
-                            manage.setRequestMethod(requestMethod);
+                            manage.setMethod(requestMethod);
                             manage.setApplicationId(applicationDetailResult.getApplicationId());
                             manage.setUserId(applicationDetailResult.getUserId());
                             manage.setIsAgentRegiste(1);
@@ -109,12 +105,12 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                         }
 
                     } else {
-                        ApplicationApiManage manage = new ApplicationApiManage();
+                        ApplicationApiCreateParam manage = new ApplicationApiCreateParam();
                         manage.setApi(api.trim());
                         manage.setApplicationName(appName);
                         manage.setIsDeleted((byte)0);
                         manage.setCreateTime(new Date());
-                        manage.setRequestMethod(requestMethod);
+                        manage.setMethod(requestMethod);
                         manage.setUpdateTime(new Date());
                         manage.setApplicationId(applicationDetailResult.getApplicationId());
                         manage.setUserId(applicationDetailResult.getUserId());
@@ -125,15 +121,15 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                 });
 
                 // 旧的删除了，新的再添加
-                manageMapper.deleteByAppName(appName);
+                applicationApiDAO.deleteByAppName(appName);
 
-                manageMapper.insertBatch(batch);
+                applicationApiDAO.insertBatch(batch);
             }
         } catch (Exception e) {
             batch.forEach(single -> {
                 try {
-                    ApplicationApiManage manage = new ApplicationApiManage();
-                    manage.setRequestMethod(single.getRequestMethod());
+                    ApplicationApiCreateParam manage = new ApplicationApiCreateParam();
+                    manage.setMethod(single.getMethod());
                     manage.setApi(single.getApi());
                     manage.setApplicationName(single.getApplicationName());
                     manage.setIsDeleted(single.getIsDeleted());
@@ -143,7 +139,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                     manage.setTenantId(single.getTenantId());
                     manage.setUserId(single.getUserId());
                     manage.setIsAgentRegiste(single.getIsAgentRegiste());
-                    manageMapper.insertSelective(manage);
+                    applicationApiDAO.insertSelective(manage);
                 } catch (TakinWebException e1) {
                     log.error(e1.getMessage(), e1);
                     throw new TakinWebException(e1.getEx(), e1.getMessage(), e1);
@@ -161,15 +157,15 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
     public Response pullApi(String appName) {
         ApplicationApiParam apiParam = new ApplicationApiParam();
         apiParam.setAppName(appName);
-        List<ApplicationApiManage> all = manageMapper.querySimple(apiParam);
+        List<ApplicationApiManageResult> all = applicationApiDAO.querySimple(apiParam);
         if (org.apache.commons.collections4.CollectionUtils.isEmpty(all)) {
             return Response.success(new HashMap<>());
         }
         Map<String, List<String>> res = new HashMap<>();
-        for (ApplicationApiManage applicationApiManage : all) {
+        for (ApplicationApiManageResult applicationApiManage : all) {
             res.computeIfAbsent(applicationApiManage.getApplicationName(), k -> new ArrayList<>()).add(
                 applicationApiManage.getApi()
-                    + "#" + applicationApiManage.getRequestMethod());
+                    + "#" + applicationApiManage.getMethod());
         }
         return Response.success(res);
     }
@@ -178,35 +174,35 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
     public Response pullApiV1(String appName) {
         ApplicationApiParam apiParam = new ApplicationApiParam();
         apiParam.setAppName(appName);
-        List<ApplicationApiManage> all = manageMapper.querySimple(apiParam);
+        List<ApplicationApiManageResult> all = applicationApiDAO.querySimpleWithTenant(apiParam);
         if (org.apache.commons.collections4.CollectionUtils.isEmpty(all)) {
             return Response.success(new HashMap<>());
         }
         Map<String, List<String>> res = new HashMap<>();
-        for (ApplicationApiManage applicationApiManage : all) {
+        for (ApplicationApiManageResult applicationApiManage : all) {
             res.computeIfAbsent(applicationApiManage.getApplicationName(), k -> new ArrayList<>()).add(
                 applicationApiManage.getApi()
-                    + "#" + applicationApiManage.getRequestMethod());
+                    + "#" + applicationApiManage.getMethod());
         }
         return Response.success(res);
     }
 
     @Override
     public Response delete(String id) {
-        manageMapper.deleteByPrimaryKey(Long.parseLong(id));
+        applicationApiDAO.deleteByPrimaryKey(Long.parseLong(id));
         return Response.success();
     }
 
     @Override
     public Response query(EntranceApiVo vo) {
-        ApplicationApiManage manage = new ApplicationApiManage();
+        ApplicationApiQueryParam manage = new ApplicationApiQueryParam();
         manage.setApplicationName(vo.getApplicationName());
         manage.setApi(vo.getApi());
 
-        List<ApplicationApiManage> reocords = manageMapper.selectBySelective(manage,WebPluginUtils.getQueryAllowUserIdList());
+        List<ApplicationApiManageResult> reocords = applicationApiDAO.selectBySelective(manage,WebPluginUtils.getQueryAllowUserIdList());
 
-        reocords.sort(Comparator.comparing(ApplicationApiManage::getCreateTime).reversed());
-        List<ApplicationApiManage> pageData =
+        reocords.sort(Comparator.comparing(ApplicationApiManageResult::getCreateTime).reversed());
+        List<ApplicationApiManageResult> pageData =
             PageUtils.getPage(true, vo.getCurrentPage(), vo.getPageSize(), reocords);
         List<ApplicationApiManageVO> dtos = new ArrayList<>();
         pageData.stream().forEach(data -> {
@@ -232,7 +228,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
         if (Objects.isNull(vo.getId())) {
             return Response.fail("0", "主键为空");
         }
-        ApplicationApiManage applicationApiManage = manageMapper.selectByPrimaryKey(Long.parseLong(vo.getId()));
+        ApplicationApiManageResult applicationApiManage = applicationApiDAO.selectByPrimaryKey(Long.parseLong(vo.getId()));
         if (null == applicationApiManage) {
             return Response.fail("0", "该规则不存在");
         }
@@ -244,14 +240,14 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
         } else {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.APPLICATION_NAME, applicationName);
         }
-        ApplicationApiManage manage = new ApplicationApiManage();
+        ApplicationApiCreateParam manage = new ApplicationApiCreateParam();
         manage.setId(Long.parseLong(vo.getId()));
         manage.setApplicationName(vo.getApplicationName());
         manage.setApi(vo.getApi());
-        manage.setRequestMethod(
+        manage.setMethod(
             DictionaryCache.getObjectByParam(HTTP_METHOD_TYPE, Integer.parseInt(vo.getMethod())).getLabel());
         manage.setUpdateTime(new Date());
-        manageMapper.updateByPrimaryKeySelective(manage);
+        applicationApiDAO.updateByPrimaryKeySelective(manage);
         return Response.success();
     }
 
@@ -259,7 +255,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
     public Response create(ApiCreateVo vo) {
         ApplicationApiCreateParam createParam = new ApplicationApiCreateParam();
         //前端给的是字典中的枚举数据
-        createParam.setRequestMethod(
+        createParam.setMethod(
             DictionaryCache.getObjectByParam(HTTP_METHOD_TYPE, Integer.parseInt(vo.getMethod())).getLabel());
         createParam.setApi(vo.getApi());
         createParam.setApplicationName(vo.getApplicationName());
@@ -281,13 +277,13 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
             return Response.fail("0", "id 不能为空");
         }
         ApplicationApiManageVO dto = new ApplicationApiManageVO();
-        ApplicationApiManage manage = manageMapper.selectByPrimaryKey(Long.parseLong(id));
+        ApplicationApiManageResult manage = applicationApiDAO.selectByPrimaryKey(Long.parseLong(id));
         if (Objects.nonNull(manage)) {
             BeanUtils.copyProperties(manage, dto);
         }
-        if (manage != null && StringUtils.isNotBlank(manage.getRequestMethod())) {
+        if (manage != null && StringUtils.isNotBlank(manage.getMethod())) {
             EnumResult objectByParam = DictionaryCache.getObjectByParamByLabel(HTTP_METHOD_TYPE,
-                manage.getRequestMethod());
+                manage.getMethod());
             if (objectByParam != null) {
                 dto.setRequestMethod(objectByParam.getValue());
             }
@@ -297,7 +293,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
 
     @Override
     public Map<Long, List<ApplicationApiManageVO>> selectListGroupByAppId() {
-        List<ApplicationApiManage> apiManageList = manageMapper.query();
+        List<ApplicationApiManageResult> apiManageList = applicationApiDAO.query();
         if (CollectionUtils.isEmpty(apiManageList)) {
             return new HashMap<>(0);
         }

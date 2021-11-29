@@ -18,4 +18,191 @@
         ID, APPLICATION_ID, APPLICATION_NAME, CREATE_TIME, UPDATE_TIME, IS_DELETED, api,
         `method`
     </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_application_api_manage
+        where ID = #{id,jdbcType=BIGINT}
+    </select>
+
+    <insert id="insert" parameterType="io.shulie.takin.web.data.model.mysql.ApplicationApiManageEntity">
+        insert into t_application_api_manage (ID, APPLICATION_ID, APPLICATION_NAME,
+                                              CREATE_TIME, UPDATE_TIME, IS_DELETED, api, method)
+        values (#{id,jdbcType=BIGINT}, #{applicationId,jdbcType=BIGINT}, #{applicationName,jdbcType=VARCHAR},
+                #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{isDeleted,jdbcType=TINYINT}
+                   , #{api}, #{method})
+
+    </insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into t_application_api_manage ( APPLICATION_NAME,
+        CREATE_TIME, UPDATE_TIME, IS_DELETED,api,method,application_id,user_id,IS_AGENT_REGISTE)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.applicationName},#{item.createTime},#{item.updateTime},#{item.isDeleted},#{item.api},#{item.method},#{item.applicationId},#{item.userId},#{item.isAgentRegiste})
+        </foreach>
+
+
+    </insert>
+
+
+    <insert id="insertSelective" parameterType="io.shulie.takin.web.data.model.mysql.ApplicationApiManageEntity">
+        insert into t_application_api_manage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                ID,
+            </if>
+            <if test="applicationId != null">
+                APPLICATION_ID,
+            </if>
+            <if test="applicationName != null">
+                APPLICATION_NAME,
+            </if>
+            <if test="createTime != null">
+                CREATE_TIME,
+            </if>
+            <if test="updateTime != null">
+                UPDATE_TIME,
+            </if>
+            <if test="isDeleted != null">
+                IS_DELETED,
+            </if>
+            <if test="api != null">
+                api,
+            </if>
+            <if test="method != null">
+                method,
+            </if>
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="isAgentRegiste != null">
+                is_agent_registe,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="applicationId != null">
+                #{applicationId,jdbcType=BIGINT},
+            </if>
+            <if test="applicationName != null">
+                #{applicationName,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isDeleted != null">
+                #{isDeleted,jdbcType=TINYINT},
+            </if>
+            <if test="api != null">
+                #{api},
+            </if>
+            <if test="method != null">
+                #{method},
+            </if>
+            <if test="userId != null">
+                #{userId},
+            </if>
+            <if test="isAgentRegiste != null">
+                #{isAgentRegiste},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="io.shulie.takin.web.data.model.mysql.ApplicationApiManageEntity">
+        update t_application_api_manage
+        <set>
+            <if test="applicationId != null">
+                APPLICATION_ID = #{applicationId,jdbcType=BIGINT},
+            </if>
+            <if test="applicationName != null">
+                APPLICATION_NAME = #{applicationName,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isDeleted != null">
+                IS_DELETED = #{isDeleted,jdbcType=TINYINT},
+            </if>
+            <if test="api != null">
+                api = #{api},
+            </if>
+            <if test="method != null">
+                method = #{method},
+            </if>
+        </set>
+        where ID = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="io.shulie.takin.web.data.model.mysql.ApplicationApiManageEntity">
+        update t_application_api_manage
+        set APPLICATION_ID   = #{applicationId,jdbcType=BIGINT},
+            APPLICATION_NAME = #{applicationName,jdbcType=VARCHAR},
+            CREATE_TIME      = #{createTime,jdbcType=TIMESTAMP},
+            UPDATE_TIME      = #{updateTime,jdbcType=TIMESTAMP},
+            IS_DELETED       = #{isDeleted,jdbcType=TINYINT}
+        where ID = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="query" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_application_api_manage where IS_DELETED=0
+    </select>
+
+    <select id="querySimple" resultMap="BaseResultMap" parameterType="com.pamirs.takin.entity.domain.query.ApplicationApiParam">
+        select APPLICATION_NAME, api, method
+        from t_application_api_manage
+        where method is not null
+        and method != ''
+        <if test="appName != null">
+            and APPLICATION_NAME = #{appName}
+        </if>
+    </select>
+
+    <select id="querySimpleWithTenant" resultMap="BaseResultMap" parameterType="com.pamirs.takin.entity.domain.query.ApplicationApiParam">
+        select APPLICATION_NAME, api, method
+        from t_application_api_manage
+        where method is not null
+        and method != ''
+        <if test="appName != null">
+            and APPLICATION_NAME = #{appName}
+        </if>
+    </select>
+
+    <select id="selectBySelective" parameterType="io.shulie.takin.web.data.model.mysql.ApplicationApiManageEntity"
+            resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_application_api_manage where IS_DELETED=0
+        <if test="record != null and record.api != null">
+            and api = #{record.api}
+        </if>
+        <if test="record != null and record.applicationName != null">
+            and APPLICATION_NAME = #{record.applicationName}
+        </if>
+        <if test="userIds != null and userIds.size > 0">
+            AND user_id IN
+            <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                #{userId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="deleteByAppName" parameterType="java.lang.String">
+        delete
+        from t_application_api_manage
+        where application_name = #{appName}
+          and is_agent_registe = 1
+    </select>
+
+
 </mapper>

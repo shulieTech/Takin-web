@@ -6,11 +6,11 @@ import com.pamirs.takin.common.util.MD5Util;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * @Description agent命令业务数据
+ * @Description agent命令下发对象
  * @Author ocean_wll
  * @Date 2021/11/17 10:29 上午
  */
-public class AgentCommandBO {
+public class AgentCommandResBO {
 
     /**
      * 任务的uuid
@@ -27,10 +27,10 @@ public class AgentCommandBO {
      */
     private String extrasString;
 
-    public AgentCommandBO() {
+    public AgentCommandResBO() {
     }
 
-    public AgentCommandBO(Long id, String extras) {
+    public AgentCommandResBO(Long id, String extras) {
         this.id = id;
         this.extrasString = extras;
     }

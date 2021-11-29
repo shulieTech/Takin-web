@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
+import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandResBO;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentHeartbeatRequest;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentHeartbeatService;
 import io.shulie.takin.web.common.constant.APIUrls;
@@ -31,7 +31,7 @@ public class AgentHeartbeatController {
     private AgentHeartbeatService agentHeartbeatService;
 
     @PostMapping("/heartbeat")
-    public List<AgentCommandBO> process(@Validated @RequestBody AgentHeartbeatRequest heartbeatRequest) {
+    public List<AgentCommandResBO> process(@Validated @RequestBody AgentHeartbeatRequest heartbeatRequest) {
         return agentHeartbeatService.process(heartbeatRequest);
     }
 }

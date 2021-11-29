@@ -2,7 +2,7 @@ package io.shulie.takin.web.biz.service.agentupgradeonline;
 
 import java.util.List;
 
-import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
+import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandResBO;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentHeartbeatRequest;
 
 /**
@@ -18,5 +18,5 @@ public interface AgentHeartbeatService {
      * @param request 心跳请求
      * @return AgentCommandBO集合
      */
-    List<AgentCommandBO> process(AgentHeartbeatRequest request);
+    List<AgentCommandResBO> process(AgentHeartbeatRequest request);
 }

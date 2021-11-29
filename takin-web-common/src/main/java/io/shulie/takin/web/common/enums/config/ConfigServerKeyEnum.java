@@ -59,6 +59,11 @@ public enum ConfigServerKeyEnum implements AppConstants {
     TAKIN_REPORT_OPEN_TASK("open.report.task", "takin.report.open.task", YES),
 
     /**
+     * 压测报告分片总数
+     */
+    TAKIN_REPORT_PART_TOTAL("", "takin.report.part.total", NO),
+
+    /**
      * 上传文件保存路径
      */
     TAKIN_DATA_PATH("data.path", "takin.data.path", NO),

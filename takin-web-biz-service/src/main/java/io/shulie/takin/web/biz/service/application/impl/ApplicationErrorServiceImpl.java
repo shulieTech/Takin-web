@@ -72,6 +72,8 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
         if (nodeErrorResponse != null) {
             responseList.add(nodeErrorResponse);
         }
+        //String key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, userAppKey, envCode,
+        //    applicationMnt.getApplicationId() + PRADAR_SEPERATE_FLAG + param.getAgentId());
         //redisKey改造
         String appUniqueKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
             WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),

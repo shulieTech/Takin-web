@@ -290,10 +290,10 @@ UPDATE t_performance_criteria_config t1
 -- liuchuan部分
 
 -- t_agent_config
-UPDATE t_agent_config m
-    LEFT JOIN t_tro_user u ON u.`name` = m.operator
-    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=u.id
-    SET m.env_code = IFNULL(fix.env_code,'test');
+-- UPDATE t_agent_config m
+--     LEFT JOIN t_tro_user u ON u.`name` = m.operator
+--     LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=u.id
+--     SET m.env_code = IFNULL(fix.env_code,'test');
 
 
 

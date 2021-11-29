@@ -7,8 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -19,6 +23,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
@@ -85,10 +90,6 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
 
     @Autowired
     OpsScriptBatchNoDAO opsScriptBatchNoDAO;
-
-    @Autowired
-    @Qualifier("opsScriptThreadPool")
-    ThreadPoolExecutor opsScriptThreadPool;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -433,6 +434,10 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         String lockKey = "";
         String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.traceTenantId(), param.hashCode());
         this.isCreateError(!distributedLock.tryLockZeroWait(lockKey), AppConstants.TOO_FREQUENTLY);
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("ops-script-thread-%d").build();
+        ThreadPoolExecutor opsScriptThreadPool = new ThreadPoolExecutor(1, 20, 60L, TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(100), nameThreadFactory,
+            new AbortPolicy());
         try {
             //删除原有批次号 生成新批次号
             opsScriptBatchNoDAO.lambdaUpdate()
@@ -452,6 +457,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             log.error("{}", "脚本执行错误！", e);
             throw this.getCreateError("脚本执行错误！原因：" + e.getMessage());
         } finally {
+            opsScriptThreadPool.shutdown();
             distributedLock.unLockSafely(lockKey);
         }
         return true;

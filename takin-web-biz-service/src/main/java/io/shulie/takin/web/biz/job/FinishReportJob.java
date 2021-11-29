@@ -38,7 +38,7 @@ public class FinishReportJob implements SimpleJob {
 
 
     @Autowired
-    @Qualifier("finishReportJobThreadPool")
+    @Qualifier("jobThreadPool")
     private ThreadPoolExecutor finishReportJobThreadPool;
 
     @Autowired

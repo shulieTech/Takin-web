@@ -69,8 +69,13 @@ public class ScriptManageDAOImpl
         if (scriptManageDeployEntity == null) {
             return null;
         }
-
-        return BeanUtil.copyProperties(scriptManageDeployEntity, ScriptManageDeployResult.class);
+        ScriptManageDeployResult scriptManageDeployResult = BeanUtil.copyProperties(scriptManageDeployEntity, ScriptManageDeployResult.class);
+        ScriptManageEntity scriptManageEntity = scriptManageMapper.selectById(scriptManageDeployEntity.getScriptId());
+        if (scriptManageEntity == null){
+            return null;
+        }
+        scriptManageDeployResult.setMVersion(scriptManageEntity.getMVersion());
+        return scriptManageDeployResult;
     }
 
     @Override
@@ -288,7 +293,8 @@ public class ScriptManageDAOImpl
             ScriptManageEntity::getGmtUpdate,
             ScriptManageEntity::getScriptVersion,
             ScriptManageEntity::getCustomerId,
-            ScriptManageEntity::getUserId
+            ScriptManageEntity::getUserId,
+            ScriptManageEntity::getMVersion
         );
         wrapper.in(ScriptManageEntity::getId, scriptIdList);
         Page<ScriptManageEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
@@ -316,7 +322,11 @@ public class ScriptManageDAOImpl
                     o -> o.getScriptId().equals(scriptManageEntity.getId()) &&
                         o.getScriptVersion().equals(scriptManageEntity.getScriptVersion())).collect(
                     Collectors.toList());
-                return collect.get(0);
+                ScriptManageDeployResult scriptManageDeployResult = collect.get(0);
+                if (scriptManageDeployResult != null){
+                    scriptManageDeployResult.setMVersion(scriptManageEntity.getMVersion());
+                }
+                return scriptManageDeployResult;
             }).collect(Collectors.toList());
         List<ScriptManageEntity> entityList = scriptManageEntityPage.getRecords();
         for (ScriptManageDeployResult result : scriptManageDeploys) {

@@ -19,6 +19,7 @@ import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -78,51 +79,54 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     @Override
     public void finishReport(Long reportId) {
         try {
-            if (RUNNINT.get()) {
+            String lockKey = String.format("finishReportJob:%s", reportId);
+            if (!redisClientUtils.lock(lockKey, "1")) {
+                log.info("report is locked! reportId="+reportId);
                 return;
             }
-            if (!RUNNINT.compareAndSet(false, true)) {
-                return;
-            }
+            log.info("finishReport start reportId="+reportId);
+//            if (RUNNINT.get()) {
+//                return;
+//            }
+//            if (!RUNNINT.compareAndSet(false, true)) {
+//                return;
+//            }
             try {
-                //Ready 数据准备
-                reportDataCache.readyCloudReportData(reportId);
-            } catch (Exception e) {
-                log.error("finish report data preparation：{},errorMsg= {}", reportId,e.getMessage());
-            }
-            ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
-            if (reportDetailDTO == null) {
-                return;
-            }
-            // 压测结束才锁报告
-            Date endTime = reportDetailDTO.getEndTime();
-            if (endTime == null) {
-                return;
-            }
-            // 解除 场景锁
-            redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
-            try {
+                try {
+                    //Ready 数据准备
+                    reportDataCache.readyCloudReportData(reportId);
+                } catch (Exception e) {
+                    log.error("finish report data preparation：{},errorMsg= {}", reportId,e.getMessage());
+                }
+                ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
+                if (reportDetailDTO == null) {
+                    return;
+                }
+                // 压测结束才锁报告
+                Date endTime = reportDetailDTO.getEndTime();
+                if (null == endTime) {
+                    log.warn("finishReport endTime is null!reportId="+reportId);
+                    return;
+                }
+                // 解除 场景锁
+                redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
                 // 前置删除
                 //删除redis数据
                 redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
                 // 删除key
                 redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY,reportId));
                 Long startTime = System.currentTimeMillis();
+                //保留数据库锁是为了保留web在多个环境场景部署但链接同一cloud，导致redis不一致的情况
                 WebResponse lockResponse = reportService.lockReport(reportId);
-                if (!lockResponse.getSuccess() || lockResponse.getData() == null || !((Boolean)lockResponse.getData())) {
-                    log.error("Lock Running Report Data Failure, reportId={},errorMsg= {}...", reportId,lockResponse.getError());
+                if (BooleanUtils.isNotTrue(lockResponse.getSuccess()) || BooleanUtils.isNotTrue((Boolean) lockResponse.getData())) {
+                    log.warn("db lock failed!reportId="+reportId);
+//                    log.error("Lock Running Report Data Failure, reportId={},errorMsg= {}...", reportId, lockResponse.getError());
+                    return;
                 }
-                log.info("finish report，total data  Running Report :{}", reportId);
+                log.info("finish report，total data  Running Report reportId="+reportId);
 
                 // 收集数据 单独线程收集
                 fastDebugThreadPool.execute(this.collectData(reportId));
-
-                // 停止报告
-                WebResponse webResponse = reportService.finishReport(reportId);
-                if (!webResponse.getSuccess() || !(Boolean)webResponse.getData()) {
-                    log.info("压测结束失败 Report :{}，cloud更新失败", reportId);
-                }
-
 
                 Boolean isLeaked = leakVerifyResultDAO.querySceneIsLeaked(reportId);
                 if (isLeaked) {
@@ -136,20 +140,31 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                     log.info("修改压测报告的结果:[{}]", JSON.toJSONString(responseResult));
                 }
 
+                // 停止报告 移到最后
+                WebResponse webResponse = reportService.finishReport(reportId);
+                if (!webResponse.getSuccess() || !(Boolean)webResponse.getData()) {
+                    log.error("生成最终报告失败！ reportId :{}，cloud更新失败", reportId);
+                }
+
                 reportDataCache.clearDataCache(reportId);
-                log.info("报告id={}汇总成功，花费时间={}", reportId, (System.currentTimeMillis() - startTime));
+                log.info("报告reportId={}汇总成功，花费时间={}", reportId, (System.currentTimeMillis() - startTime));
             } catch (Exception e) {
                 // log.error("客户端生成报告id={}数据异常:{}", reportId, e.getMessage(), e);
                 //生成报告异常，清空本轮生成表数据
                 reportClearService.clearReportData(reportId);
+//                //压测结束，生成压测报告异常，解锁报告
+//                reportService.unLockReport(reportId);
+                log.error("Unlock Report Success, reportId={} ,errorMsg= {}...", reportId,e.getMessage());
+            } finally {
                 //压测结束，生成压测报告异常，解锁报告
                 reportService.unLockReport(reportId);
-                log.error("Unlock Report Success, reportId={} ,errorMsg= {}...", reportId,e.getMessage());
+                redisClientUtils.unlock(lockKey, "0");
+                log.info("finishReport end reportId="+reportId);
             }
         } catch (Exception e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());
-        } finally {
-            RUNNINT.compareAndSet(true, false);
+//        } finally {
+//            RUNNINT.compareAndSet(true, false);
         }
     }
 

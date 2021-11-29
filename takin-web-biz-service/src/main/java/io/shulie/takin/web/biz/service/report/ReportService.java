@@ -35,7 +35,6 @@ public interface ReportService {
 
     ResponseResult<ReportDetailTempOutput> tempReportDetail(Long sceneId);
 
-
     //WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,ReportTraceQueryDTO queryDTO);
 
     WebResponse listWarn(WarnQueryParam param);
@@ -54,8 +53,8 @@ public interface ReportService {
      * avgTps
      * 两个 key
      *
-     * @param reportId 报告 id
-     * @param sceneId 场景 id
+     * @param reportId   报告 id
+     * @param sceneId    场景 id
      * @param customerId 租户 id
      * @return 指标列表
      */
@@ -67,6 +66,8 @@ public interface ReportService {
 
     WebResponse queryListRunningReport();
 
+    WebResponse queryListPressuringReport();
+
     WebResponse lockReport(Long reportId);
 
     WebResponse unLockReport(Long reportId);
@@ -75,6 +76,7 @@ public interface ReportService {
 
     /**
      * 查询脚本节点树
+     *
      * @param request 查询参数
      * @return
      */

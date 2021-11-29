@@ -43,7 +43,7 @@ public class CalcTpsTargetJob implements SimpleJob {
         }
         long start = System.currentTimeMillis();
         List<Object> reportIds = Lists.newArrayList();
-        WebResponse runningResponse = reportService.queryListRunningReport();
+        WebResponse runningResponse = reportService.queryListPressuringReport();
         if (runningResponse.getSuccess() == true && runningResponse.getData() != null) {
             reportIds.addAll((List)runningResponse.getData());
         }

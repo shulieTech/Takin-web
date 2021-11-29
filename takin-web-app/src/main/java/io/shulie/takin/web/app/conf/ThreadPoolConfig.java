@@ -23,6 +23,12 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class ThreadPoolConfig {
 
+    @Bean(name = "commThreadPool")
+    public ThreadPoolExecutor commThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("comm-thread-%d").build();
+        return new ThreadPoolExecutor(100, 100, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory);
+    }
+
     @Bean(name = "fastDebugThreadPool")
     public ThreadPoolExecutor fastDebug() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("fast-debug-%d").build();

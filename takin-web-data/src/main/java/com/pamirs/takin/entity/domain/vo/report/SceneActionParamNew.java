@@ -24,6 +24,8 @@ public class SceneActionParamNew extends WebRequest implements Serializable {
 
     private List<Long> enginePluginIds;
 
+    private List<ScenePluginParam> enginePlugins;
+
     private Boolean leakSqlEnable;
 
     private Boolean continueRead = false;

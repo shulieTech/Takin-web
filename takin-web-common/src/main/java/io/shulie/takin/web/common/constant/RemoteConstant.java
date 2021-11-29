@@ -36,6 +36,7 @@ public class RemoteConstant {
     public static final String REPORT_COUNT = "/api/report/count";
     public static final String REPORT_RUNNINNG = "/api/report/running";
     public static final String REPORT_RUNNINNG_LIST = "/api/report/running/list";
+    public static final String REPORT_PRESSURING_LIST = "/api/report/pressuring/list";
     public static final String REPORT_LOCK = "/api/report/lock";
     public static final String REPORT_UNLOCK = "/api/report/unlock";
     public static final String REPORT_FINISH = "/api/report/finish";

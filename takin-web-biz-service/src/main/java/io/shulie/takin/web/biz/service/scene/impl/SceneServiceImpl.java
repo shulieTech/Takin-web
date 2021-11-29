@@ -10,7 +10,10 @@ import io.shulie.takin.cloud.common.utils.CommonUtil;
 import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
 import io.shulie.takin.cloud.open.request.scene.manage.SynchronizeRequest;
 import io.shulie.takin.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
@@ -303,6 +306,17 @@ public class SceneServiceImpl implements SceneService {
         createRequest.setMVersion(ScriptMVersionEnum.SCRIPT_M_1.getCode());
         createRequest.setRefType(ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE);
         createRequest.setRefValue(sceneCreateParam.getId().toString());
+        //TODO 目前临时将kafka版本锁死,如果脚本中存在kafka取样器，使用kafka2.5版本
+        List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);
+        List<ScriptNode> kafkaScriptNodes = scriptNodeByType.stream().filter(o -> SamplerTypeEnum.KAFKA == o.getSamplerType())
+                .collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(kafkaScriptNodes)){
+            PluginConfigCreateRequest pluginConfigCreateRequest = new PluginConfigCreateRequest();
+            pluginConfigCreateRequest.setName("2");
+            pluginConfigCreateRequest.setType("KAFKA");
+            pluginConfigCreateRequest.setVersion("v2.5");
+            createRequest.setPluginConfigCreateRequests(Collections.singletonList(pluginConfigCreateRequest));
+        }
         Long scriptManageId = scriptManageService.createScriptManage(createRequest);
 
         //更新业务流程
@@ -668,7 +682,6 @@ public class SceneServiceImpl implements SceneService {
 
         }
 
-
         //更新业务流程
         sceneUpdateParam.setId(businessFlowUpdateRequest.getId());
         sceneUpdateParam.setSceneLevel(businessFlowUpdateRequest.getSceneLevel());
@@ -722,6 +735,19 @@ public class SceneServiceImpl implements SceneService {
             updateRequest.setFileManageUpdateRequests(updateFileManageRequests);
         }
 
+        if (CollectionUtils.isNotEmpty(data)){
+            //TODO 目前临时将kafka版本锁死,如果脚本中存在kafka取样器，使用kafka2.5版本
+            List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);
+            List<ScriptNode> kafkaScriptNodes = scriptNodeByType.stream().filter(o -> SamplerTypeEnum.KAFKA == o.getSamplerType())
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(kafkaScriptNodes)){
+                PluginConfigUpdateRequest pluginConfigUpdate = new PluginConfigUpdateRequest();
+                pluginConfigUpdate.setName("2");
+                pluginConfigUpdate.setType("KAFKA");
+                pluginConfigUpdate.setVersion("v2.5");
+                updateRequest.setPluginConfigUpdateRequests(Collections.singletonList(pluginConfigUpdate));
+            }
+        }
         //更新脚本
         Long scriptDeployId = scriptManageService.updateScriptManage(updateRequest);
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();

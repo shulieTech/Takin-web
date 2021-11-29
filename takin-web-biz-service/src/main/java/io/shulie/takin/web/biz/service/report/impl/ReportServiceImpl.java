@@ -466,6 +466,13 @@ public class ReportServiceImpl implements ReportService {
         request.setHttpMethod(HttpMethod.GET);
         return httpWebClient.request(request);
     }
+    @Override
+    public WebResponse queryListPressuringReport() {
+        WebRequest request = new WebRequest();
+        request.setRequestUrl(RemoteConstant.REPORT_PRESSURING_LIST);
+        request.setHttpMethod(HttpMethod.GET);
+        return httpWebClient.request(request);
+    }
 
     @Override
     public WebResponse lockReport(Long reportId) {

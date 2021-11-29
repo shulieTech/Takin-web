@@ -40,6 +40,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -55,6 +56,9 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class AgentVersionServiceImpl implements AgentVersionService {
 
+    @Value("${takin.web.url}")
+    private String takinWebUrl;
+
     /**
      * 安装脚本的路径
      */
@@ -64,7 +68,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
      * agent下载的url模板
      */
     private final static String AGENT_DOWNLOAD_TEMPLATE
-        = "%s/fast/agent/access/project/download?projectName=%s&userAppKey=%s&version=%s&expireDate=%s"
+        = "%s/api/fast/agent/access/project/download?projectName=%s&userAppKey=%s&version=%s&expireDate=%s"
         + "&flag=%s";
 
     /**
@@ -221,7 +225,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
              FileOutputStream fos = new FileOutputStream(outputFile)
         ) {
-            String downloadUrl = generatorDownLoadUrl(projectName, version, urlPrefix);
+            String downloadUrl = generatorDownLoadUrl(projectName, version, takinWebUrl);
             String str;
             while ((str = reader.readLine()) != null) {
                 if (str.contains("{|downloadUrl|}")) {

@@ -29,7 +29,7 @@ public interface ApplicationApiService {
      * @param appName
      * @return
      */
-    Response pullApiV1(String appName);
+    Map<String, List<String>>  pullApiV1(String appName);
 
 
     Response delete(String id);

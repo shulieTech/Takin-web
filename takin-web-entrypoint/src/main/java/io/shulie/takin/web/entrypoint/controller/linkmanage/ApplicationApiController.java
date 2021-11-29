@@ -6,14 +6,15 @@ import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiDeleteVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -39,6 +40,9 @@ public class ApplicationApiController {
 
     @Autowired
     private ApplicationApiService apiService;
+
+    @Autowired
+    private ApplicationApiManageAmdbCache applicationApiManageAmdbCache;
 
     //@ApiOperation("agent注册api")
     //@PostMapping(value = "/agent/api/register")
@@ -75,10 +79,9 @@ public class ApplicationApiController {
      */
     @ApiOperation("storm拉取api")
     @GetMapping(value = "/v1/api/pull")
-    public Response pullV1(@RequestParam(value = "appName", required = false) String appName) {
+    public Response pullV1(@RequestParam(value = "appName") String appName) {
         try {
-            return apiService.pullApiV1(appName);
-
+            return Response.success(applicationApiManageAmdbCache.get(appName));
         } catch (Exception e) {
             return Response.fail(e.getMessage());
         }

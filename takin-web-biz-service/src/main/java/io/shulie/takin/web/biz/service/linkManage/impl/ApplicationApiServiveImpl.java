@@ -19,6 +19,7 @@ import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
 import io.shulie.takin.web.biz.cache.DictionaryCache;
+import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
 import io.shulie.takin.web.biz.utils.PageUtils;
@@ -56,6 +57,9 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
 
     @Autowired
     private ApplicationDAO applicationDAO;
+
+    @Autowired
+    private ApplicationApiManageAmdbCache applicationApiManageAmdbCache;
 
     @Override
     public Response registerApi(Map<String, List<String>> register) {
@@ -171,12 +175,12 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
     }
 
     @Override
-    public Response pullApiV1(String appName) {
+    public  Map<String, List<String>> pullApiV1(String appName) {
         ApplicationApiParam apiParam = new ApplicationApiParam();
         apiParam.setAppName(appName);
         List<ApplicationApiManageResult> all = applicationApiDAO.querySimpleWithTenant(apiParam);
-        if (org.apache.commons.collections4.CollectionUtils.isEmpty(all)) {
-            return Response.success(new HashMap<>());
+        if (CollectionUtils.isEmpty(all)) {
+            return null;
         }
         Map<String, List<String>> res = new HashMap<>();
         for (ApplicationApiManageResult applicationApiManage : all) {
@@ -184,14 +188,21 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                 applicationApiManage.getApi()
                     + "#" + applicationApiManage.getMethod());
         }
-        return Response.success(res);
+        return res;
+
     }
 
     @Override
     public Response delete(String id) {
+        ApplicationApiManageResult result = applicationApiDAO.selectByPrimaryKey(Long.parseLong(id));
+        if(result == null) {
+            return Response.fail("0", "该规则不存在");
+        }
         applicationApiDAO.deleteByPrimaryKey(Long.parseLong(id));
+        this.reseting(result.getApplicationName());
         return Response.success();
     }
+
 
     @Override
     public Response query(EntranceApiVo vo) {
@@ -248,6 +259,8 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
             DictionaryCache.getObjectByParam(HTTP_METHOD_TYPE, Integer.parseInt(vo.getMethod())).getLabel());
         manage.setUpdateTime(new Date());
         applicationApiDAO.updateByPrimaryKeySelective(manage);
+
+        this.reseting(vo.getApplicationName());
         return Response.success();
     }
 
@@ -268,6 +281,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
         createParam.setTenantId(applicationDetailResult.getTenantId());
         createParam.setUserId(applicationDetailResult.getUserId());
         applicationApiDAO.insert(createParam);
+        this.reseting(vo.getApplicationName());
         return Response.success();
     }
 
@@ -304,4 +318,13 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
             .collect(Collectors.toList());
         return CollStreamUtil.groupByKey(voList, ApplicationApiManageVO::getApplicationId);
     }
+
+    /**
+     * 失效
+     * @param applicationName
+     */
+    private void reseting(String applicationName) {
+        applicationApiManageAmdbCache.evict(applicationName);
+    }
+
 }

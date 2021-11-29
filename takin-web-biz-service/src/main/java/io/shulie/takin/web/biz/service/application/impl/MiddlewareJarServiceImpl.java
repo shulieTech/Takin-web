@@ -507,7 +507,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
             .build();
 
         if (CollectionUtils.isEmpty(importExcelVOList)) {
-            return middlewareCompareResponse;
+            importExcelVOList.add(new ImportExcelVO());
         }
         final Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams(), ImportExcelVO.class,
             importExcelVOList);

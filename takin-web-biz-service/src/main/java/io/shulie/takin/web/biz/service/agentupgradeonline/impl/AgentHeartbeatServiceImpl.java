@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
-import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
+import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandResBO;
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentHeartbeatBO;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentHeartbeatRequest;
 import io.shulie.takin.web.biz.service.ApplicationService;
@@ -75,7 +75,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         processorList.forEach(processor -> commandProcessorMap.put(processor.getCommand().getCommand(), processor));
     }
 
-    public List<AgentCommandBO> process(AgentHeartbeatRequest commandRequest) {
+    public List<AgentCommandResBO> process(AgentHeartbeatRequest commandRequest) {
 
         // 是否企业版
         boolean isEnterprise = ENTERPRISE_FLAG.equals(commandRequest.getFlag());
@@ -107,18 +107,18 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         // 数据入库
         agentReportService.insertOrUpdate(createAgentReportParam);
 
-        List<Future<AgentCommandBO>> futures = new ArrayList<>();
+        List<Future<AgentCommandResBO>> futures = new ArrayList<>();
 
         // 异步处理各种命令
         for (Map.Entry<Long, IAgentCommandProcessor> entry : processorMap.entrySet()) {
-            Future<AgentCommandBO> future = agentHeartbeatThreadPool.submit(
+            Future<AgentCommandResBO> future = agentHeartbeatThreadPool.submit(
                 () -> entry.getValue().dealHeartbeat(agentHeartbeatBO));
             futures.add(future);
         }
-        List<AgentCommandBO> commandBOList = new ArrayList<>();
+        List<AgentCommandResBO> commandBOList = new ArrayList<>();
         futures.forEach(future -> {
             try {
-                AgentCommandBO agentCommandBO = future.get(60, TimeUnit.SECONDS);
+                AgentCommandResBO agentCommandBO = future.get(60, TimeUnit.SECONDS);
                 if (agentCommandBO != null) {
                     commandBOList.add(agentCommandBO);
                 }
@@ -127,7 +127,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
             }
         });
 
-        List<AgentCommandBO> result = filterCommand(commandBOList);
+        List<AgentCommandResBO> result = filterCommand(commandBOList);
 
         if (!CollectionUtils.isEmpty(result)) {
             distributionLog.info("projectName:{}, agentId:{}, commands:{}", agentHeartbeatBO.getProjectName(),
@@ -143,10 +143,10 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
      * @param commandBOList 指令集合
      * @return AgentCommandBO集合
      */
-    private List<AgentCommandBO> filterCommand(List<AgentCommandBO> commandBOList) {
+    private List<AgentCommandResBO> filterCommand(List<AgentCommandResBO> commandBOList) {
         boolean haveAgentGetFileCommand = false;
         boolean haveReportAgentUploadPathStatusCommand = false;
-        for (AgentCommandBO command : commandBOList) {
+        for (AgentCommandResBO command : commandBOList) {
             if (AgentCommandEnum.AGENT_START_GET_FILE.getCommand().equals(command.getId())) {
                 haveAgentGetFileCommand = true;
             }
@@ -155,10 +155,10 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
             }
         }
 
-        List<AgentCommandBO> result = new ArrayList<>();
+        List<AgentCommandResBO> result = new ArrayList<>();
         // 如果有 200000 则不允许有 100110 和 100100
         // 如果有 100100 就不允许有 100110
-        for (AgentCommandBO command : commandBOList) {
+        for (AgentCommandResBO command : commandBOList) {
             if (haveAgentGetFileCommand
                 && (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())
                 || AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId()))) {

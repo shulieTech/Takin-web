@@ -5,7 +5,7 @@ import java.util.List;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandBO;
+import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandReqBO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -68,7 +68,7 @@ public class AgentHeartbeatRequest {
     private String dependencyInfo;
 
     @ApiModelProperty(value = "agent命令结果")
-    private List<AgentCommandBO> commandResult;
+    private List<AgentCommandReqBO> commandResult;
 
     @ApiModelProperty(value = "是否企业版，开源版就是个空的值，企业版会给个shulieEnterprise")
     private String flag;

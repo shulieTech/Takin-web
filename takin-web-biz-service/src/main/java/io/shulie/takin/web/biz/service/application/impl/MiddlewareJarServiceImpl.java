@@ -51,6 +51,8 @@ import io.shulie.takin.web.data.mapper.mysql.MiddlewareJarMapper;
 import io.shulie.takin.web.data.model.mysql.MiddlewareJarEntity;
 import io.shulie.takin.web.data.model.mysql.MiddlewareSummaryEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -60,6 +62,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
 
 import static io.shulie.takin.web.biz.utils.FunctionUtils.ifBlankDone;
 import static io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum.NOT_SUPPORTED;
@@ -80,7 +84,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
     @Autowired
     private MiddlewareSummaryService middlewareSummaryService;
 
-    @Autowired
+    @Resource
     private MiddlewareJarMapper middlewareJarMapper;
 
     @Autowired
@@ -473,7 +477,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
             .peek(this::reCompute).collect(Collectors.collectingAndThen(Collectors.toList(),
                 middlewareSummaryService::saveOrUpdateBatch
             ));
-        final List<ImportExcelVO> importExcelVOList = importExcelVoListRef.get();
+        List<ImportExcelVO> importExcelVOList = importExcelVoListRef.get();
 
         final String filePath = uploadPath + (uploadPath.endsWith(File.separator) ? "" : File.separator)
             + MIDDLEWARE_MANAGE_DIR;
@@ -502,6 +506,9 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
             .url("/" + APIUrls.MIDDLEWARE_JAR + "/file/" + fileUrl)
             .build();
 
+        if (CollectionUtils.isEmpty(importExcelVOList)) {
+            return middlewareCompareResponse;
+        }
         final Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams(), ImportExcelVO.class,
             importExcelVOList);
 

@@ -42,8 +42,12 @@ public final class BizOpConstants {
         public static final String REMOTE_CALL = "远程调用";
         public static final String SHADOW_CONSUMER = "影子消费者";
         public static final String PRESSURE_TEST_SCENE = "压测场景";
-        public static final String PRESSURE_TEST_SWITCH = "压测开关";
-        public static final String PRESSURE_WHITELIST_SWITCH = "白名单开关";
+
+        public static final String PRESSURE_CONFIG_SWITCH = "全局开关";
+
+        //public static final String PRESSURE_TEST_SWITCH = "压测开关";
+        //public static final String PRESSURE_WHITELIST_SWITCH = "白名单开关";
+
         public static final String BLACKLIST = "黑名单";
         public static final String ENTRYRULE = "入口规则";
         public static final String SCRIPT_MANAGE = "脚本管理";

@@ -251,7 +251,7 @@ public class ApplicationController {
     @PutMapping("/application/center/app/switch/silence")
     @ModuleDef(
             moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-            subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
+            subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
             logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(
@@ -273,7 +273,7 @@ public class ApplicationController {
     @GetMapping("/application/center/app/switch/silence")
     @ModuleDef(
             moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-            subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
+            subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
             logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(
@@ -288,7 +288,7 @@ public class ApplicationController {
     @GetMapping("/application/center/app/report/config/info")
     @ModuleDef(
             moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-            subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
+            subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
             logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(

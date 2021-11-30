@@ -147,4 +147,4 @@ CREATE TABLE `t_plugin_tenant_ref`
     `IS_DELETED`         tinyint(2) NOT NULL DEFAULT 0 COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE KEY `pluginName_pluginVersion_owningTenantId` (`plugin_name`,`plugin_version`,`owning_tenant_id`) USING BTREE
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='插件版本库';
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='插件租户关联表';

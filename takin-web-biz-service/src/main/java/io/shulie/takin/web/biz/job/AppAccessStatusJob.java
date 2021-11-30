@@ -35,7 +35,7 @@ public class AppAccessStatusJob implements SimpleJob {
     private ApplicationService applicationService;
 
     @Autowired
-    @Qualifier("appAccessStatusJobThreadPool")
+    @Qualifier("jobThreadPool")
     private ThreadPoolExecutor appAccessStatusJobThreadPool;
 
     @Override

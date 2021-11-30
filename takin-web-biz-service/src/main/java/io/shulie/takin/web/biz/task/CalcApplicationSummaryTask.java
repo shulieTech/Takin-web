@@ -39,7 +39,6 @@ public class CalcApplicationSummaryTask implements SimpleTask{
     @Qualifier("fastDebugThreadPool")
     private ThreadPoolExecutor fastDebugThreadPool;
 
-
     @Override
     public void runTask() {
         long start = System.currentTimeMillis();
@@ -47,20 +46,21 @@ public class CalcApplicationSummaryTask implements SimpleTask{
             if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                 return;
             }
-            final TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(
-                WebPluginUtils.traceTenantId(), WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
-                WebPluginUtils.traceTenantCode(),
-                ContextSourceEnum.JOB.getCode());
+            //final TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(
+            //    WebPluginUtils.traceTenantId(), WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+            //    WebPluginUtils.traceTenantCode(),
+            //    ContextSourceEnum.JOB.getCode());
             // 私有化 + 开源 根据 报告id进行分片
             List<Long> reportIds = reportTaskService.getRunningReport();
             log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
             for (Long reportId : reportIds) {
-                // 开始数据层分片 TODO
+                // 开始数据层分片
                 if (reportId % getPartTotal() == getMachieId()) {
-                    fastDebugThreadPool.execute(() -> {
-                        WebPluginUtils.setTraceTenantContext(commonExt);
-                        reportTaskService.calcApplicationSummary(reportId);
-                    });
+                    //fastDebugThreadPool.execute(() -> {
+                    //    WebPluginUtils.setTraceTenantContext(commonExt);
+                    //    reportTaskService.calcApplicationSummary(reportId);
+                    //});
+                    reportTaskService.calcApplicationSummary(reportId);
                 }
             }
         }else {
@@ -77,9 +77,7 @@ public class CalcApplicationSummaryTask implements SimpleTask{
                         if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
                             continue;
                         }
-                        calcApplicationSummaryJobThreadPool.execute(()->{
-                            this.calcApplicationSummary(commonExt);
-                        });
+                        this.calcApplicationSummary(commonExt);
                     }
                 }
             }

@@ -38,7 +38,7 @@ public class SyncMachineDataJob implements SimpleJob {
     private ReportTaskService reportTaskService;
 
     @Autowired
-    @Qualifier("syncMachineDataJobThreadPool")
+    @Qualifier("jobThreadPool")
     private ThreadPoolExecutor jobThreadPool;
 
     @Autowired

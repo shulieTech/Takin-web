@@ -38,16 +38,17 @@
         USER_ID
         from
         t_black_list
-        where 1=1
-        <if test="redisKey!=null and redisKey!=''">
-            and REDIS_KEY like concat('%',#{redisKey},'%')
-        </if>
-        <if test="userIds != null and userIds.size > 0">
-            AND user_id IN
-            <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
-                #{userId}
-            </foreach>
-        </if>
+        <where>
+            <if test="redisKey!=null and redisKey!=''" >
+                REDIS_KEY like concat('%',#{redisKey},'%')
+            </if>
+            <if test="userIds != null and userIds.size > 0">
+                AND user_id IN
+                <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
         order by UPDATE_TIME desc
     </select>
 

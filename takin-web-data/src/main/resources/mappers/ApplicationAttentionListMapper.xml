@@ -16,19 +16,21 @@
     <select id="getAttentionList" parameterType="io.shulie.takin.web.data.param.application.ApplicationAttentionParam" resultType="io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity">
         SELECT
         <include refid="Base_Column_List" />
-        FROM t_application_focus where 1=1
-        <if test="tenantId!=null and tenantId!=''">
-            AND tenant_id=#{tenantId}
-        </if>
-        <if test="envCode!=null and envCode!=''">
-            AND env_code = #{envCode}
-        </if>
-        <if test="applicationName!=null and applicationName!=''">
-            AND app_name = #{applicationName}
-        </if>
-        <if test="focus!=null and focus!=''">
-            AND focus = #{focus}
-        </if>
+        FROM t_application_focus
+        <where>
+            <if test="tenantId!=null and tenantId!=''">
+                 tenant_id=#{tenantId}
+            </if>
+            <if test="envCode!=null and envCode!=''">
+                AND env_code = #{envCode}
+            </if>
+            <if test="applicationName!=null and applicationName!=''">
+                AND app_name = #{applicationName}
+            </if>
+            <if test="focus!=null and focus!=''">
+                AND focus = #{focus}
+            </if>
+        </where>
     </select>
 
     <insert id="attendApplicationService" parameterType="java.util.Map">

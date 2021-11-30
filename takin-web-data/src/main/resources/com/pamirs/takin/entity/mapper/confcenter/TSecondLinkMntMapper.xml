@@ -101,10 +101,12 @@
         tslm.LINK_TPS_RULE,tslm.USE_YN,tslm.REMARK,CREATE_TIME,UPDATE_TIME,TEST_STATUS
         FROM
         t_second_link_mnt tslm
-        WHERE 1=1
-        <if test="linkName!=null and linkName!=''">
-            AND tslm.LINK_NAME like CONCAT('%',#{linkName},'%')
-        </if>
+        <where>
+            <if test="linkName!=null and linkName!=''">
+                 tslm.LINK_NAME like CONCAT('%',#{linkName},'%')
+            </if>
+        </where>
+
         ORDER BY tslm.UPDATE_TIME DESC
     </select>
 
@@ -156,11 +158,10 @@
         v.second_update_time UPDATE_TIME
         FROM
         v_second_base_link_ref v
-        WHERE 1=1
+        WHERE v.base_link_name LIKE CONCAT('%',#{baseLinkName},'%')
         <if test="linkName!=null and linkName!=''">
             AND v.second_link_name LIKE CONCAT('%',#{linkName},'%')
         </if>
-        AND v.base_link_name LIKE CONCAT('%',#{baseLinkName},'%')
     </select>
 
     <!--  根据基础链路id查询出应用列表 -->

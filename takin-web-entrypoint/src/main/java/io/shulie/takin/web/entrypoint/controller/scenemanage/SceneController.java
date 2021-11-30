@@ -156,7 +156,7 @@ public class SceneController {
             // 1. 获取业务流程关联的业务活动
             List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(sceneRequest.getBasicInfo().getBusinessFlowId());
             if (CollectionUtils.isEmpty(links)) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程关联的业务活动");}
-            // 2. 转换业务活动为压测你日工
+            // 2. 转换业务活动为压测内容
             List<SceneRequest.Content> content = links.stream().map(t -> new SceneRequest.Content() {{
                 setPathMd5(t.getScriptXpathMd5());
                 setBusinessActivityId(Long.valueOf(t.getBusinessLinkId()));
@@ -173,6 +173,16 @@ public class SceneController {
                 item.setName(nodeMap.get(item.getPathMd5()));
                 item.setApplicationId(sceneManageService.getAppIdsByBusinessActivityId(item.getBusinessActivityId()));
             }
+            // 3.4 补充非业务活动目标到压测内容
+            List<String> contentNode = content.stream().map(SceneRequest.Content::getPathMd5).distinct().collect(Collectors.toList());
+            List<String> needFillNode = sceneRequest.getGoal().keySet().stream().filter(t -> !contentNode.contains(t)).distinct().collect(Collectors.toList());
+            needFillNode.forEach(t -> content.add(new SceneRequest.Content() {{
+                if (!nodeMap.containsKey(t)) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果存在不能匹配的非业务活动的压测目标");}
+                setPathMd5(t);
+                setName(nodeMap.get(t));
+                setBusinessActivityId(0L);
+                setApplicationId(new ArrayList<>(0));
+            }}));
             sceneRequest.setContent(content);
         }
         // 5. 填充SLA

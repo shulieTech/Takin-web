@@ -137,8 +137,6 @@ public class ApplicationApiDAOImpl implements ApplicationApiDAO {
 
     @Override
     public List<ApplicationApiManageResult> selectBySelective(ApplicationApiQueryParam record, List<Long> userIds) {
-        record.setTenantId(WebPluginUtils.traceTenantId());
-        record.setEnvCode(WebPluginUtils.traceEnvCode());
         List<ApplicationApiManageEntity> query = apiManageMapper.selectBySelective(record,userIds);
         if(CollectionUtils.isEmpty(query)) {
             return Lists.newArrayList();

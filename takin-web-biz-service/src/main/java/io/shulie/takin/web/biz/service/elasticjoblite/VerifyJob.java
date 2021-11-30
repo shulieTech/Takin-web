@@ -61,8 +61,9 @@ public class VerifyJob implements SimpleJob {
             JobScheduler jobScheduler = VerifyTaskServiceImpl.jobSchedulerMap.get(mapKey);
             if (jobScheduler != null){
                 jobScheduler.getSchedulerFacade().shutdownInstance();
-                redis.hmdelete(VerifyTaskServiceImpl.jobSchedulerRedisKey, mapKey);
             }
+            VerifyTaskServiceImpl.jobSchedulerMap.remove(mapKey);
+            redis.hmdelete(VerifyTaskServiceImpl.jobSchedulerRedisKey, mapKey);
             return;
         }
         logger.info("开始执行验证任务[refType:{},refId:{}]", Objects.requireNonNull(typeEnum).name(), refId);

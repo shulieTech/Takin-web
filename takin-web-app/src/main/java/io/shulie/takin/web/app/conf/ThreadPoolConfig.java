@@ -24,99 +24,6 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class ThreadPoolConfig {
 
-    ///**
-    // * 用于 AppAccessStatusJob 定时任务
-    // * 10s
-    // *
-    // * @return 线程池
-    // */
-    //@Bean(name = "appAccessStatusJobThreadPool")
-    //public ThreadPoolExecutor AppAccessStatusJobThreadPool() {
-    //    ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-    //    return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
-    //        new ThreadPoolExecutor.AbortPolicy());
-    //}
-    //
-    ///**
-    // * 用于 FinishReportJob 定时任务
-    // * 10s
-    // *
-    // * @return 线程池
-    // */
-    //@Bean(name = "finishReportJobThreadPool")
-    //public ThreadPoolExecutor FinishReportJobThreadPool() {
-    //    ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-    //    return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
-    //        new ThreadPoolExecutor.AbortPolicy());
-    //}
-    //
-    ///**
-    // * 用于 CalcApplicationSummaryJob 定时任务
-    // * 10s
-    // *
-    // * @return 线程池
-    // */
-    //@Bean(name = "calcApplicationSummaryJobThreadPool")
-    //public ThreadPoolExecutor CalcApplicationSummaryJobThreadPool() {
-    //    ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-    //    return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
-    //        new ThreadPoolExecutor.AbortPolicy());
-    //}
-    //
-    //
-    ///**
-    // * 用于 CalcTpsTargetJob 定时任务
-    // * 10s
-    // *
-    // * @return 线程池
-    // */
-    //@Bean(name = "calcTpsTargetJobThreadPool")
-    //public ThreadPoolExecutor CalcTpsTargetJobThreadPool() {
-    //    ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-    //    return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
-    //        new ThreadPoolExecutor.AbortPolicy());
-    //}
-    //
-    //
-    ///**
-    // * 用于 showdownVerifyJob 定时任务
-    // * 10s
-    // *
-    // * @return 线程池
-    // */
-    //@Bean(name = "showdownVerifyJobThreadPool")
-    //public ThreadPoolExecutor showdownVerifyJobThreadPool() {
-    //    ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-    //    return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
-    //        new ThreadPoolExecutor.AbortPolicy());
-    //}
-    //
-    ///**
-    // * 用于 syncMachineDataJobThreadPool 定时任务
-    // * 10s
-    // *
-    // * @return 线程池
-    // */
-    //@Bean(name = "syncMachineDataJobThreadPool")
-    //public ThreadPoolExecutor syncMachineDataJobThreadPool() {
-    //    ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-    //    return new ThreadPoolExecutor(20, 80, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
-    //        new ThreadPoolExecutor.AbortPolicy());
-    //}
-    //
-    ///**
-    // * 用于 traceManageJobThreadPool 定时任务
-    // * 5s
-    // *
-    // * @return 线程池
-    // */
-    //@Bean(name = "traceManageJobThreadPool")
-    //public ThreadPoolExecutor traceManageJobThreadPool() {
-    //    ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-    //    return new ThreadPoolExecutor(40, 100, 30L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200), nameThreadFactory,
-    //        new ThreadPoolExecutor.AbortPolicy());
-    //}
-
     /**
      * 用于定时任务
      *
@@ -132,7 +39,7 @@ public class ThreadPoolConfig {
     @Bean(name = "fastDebugThreadPool")
     public ThreadPoolExecutor fastDebug() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("fast-debug-%d").build();
-        return new ThreadPoolExecutor(10, 20, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(2000), nameThreadFactory,
+        return new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(2000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
@@ -179,7 +86,7 @@ public class ThreadPoolConfig {
     @Bean(name = "backgroundMonitorThreadPool")
     public ThreadPoolExecutor backgroundMonitorThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("background-monitor-thread-%d").build();
-        return new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+        return new ThreadPoolExecutor(5, 10, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
@@ -187,9 +94,9 @@ public class ThreadPoolConfig {
     public Executor myAsync() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         //核心线程数
-        executor.setCorePoolSize(10);
+        executor.setCorePoolSize(5);
         //最大核心线程数
-        executor.setMaxPoolSize(20);
+        executor.setMaxPoolSize(10);
         //心态检测，超过设置时间回收线程,线程空闲时的存活时间
         executor.setKeepAliveSeconds(0);
         //队列深度

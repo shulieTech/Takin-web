@@ -522,6 +522,9 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
      * @return
      */
     private List<LinkDataResult> processLinkDataById(Long businessActivityId, long sTime, long eTime) {
+        if (businessActivityId == null || businessActivityId <= 0){
+            return null;
+        }
         List<LinkDataResult> linkDataResultList = Lists.newArrayList();
         BusinessLinkResponse businessLinkResponse = linkManageService.getBussisnessLinkDetail(
                 String.valueOf(businessActivityId));

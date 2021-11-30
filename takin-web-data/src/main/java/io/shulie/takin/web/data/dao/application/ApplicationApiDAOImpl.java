@@ -14,6 +14,7 @@ import io.shulie.takin.web.data.param.application.ApplicationApiQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationApiUpdateUserParam;
 import io.shulie.takin.web.data.result.application.ApplicationApiManageResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

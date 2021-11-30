@@ -166,7 +166,7 @@ public class ThreadPoolConfig {
     @Value("${poolConfig.e2e.maxSize: 20}")
     private Integer e2eMaxSize;
 
-    @Value("${poolConfig.e2e.queueSize: 5000}")
+    @Value("${poolConfig.e2e.queueSize: 10000}")
     private Integer e2eQueueSize;
 
     /**

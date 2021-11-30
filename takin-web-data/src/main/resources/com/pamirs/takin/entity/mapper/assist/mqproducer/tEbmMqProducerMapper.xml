@@ -152,7 +152,8 @@
     </select>
 
     <sql id="Base_Column_List">
-        TEP_ID,
+        TEP_ID
+        ,
         MSG_TYPE,
         DICT_TYPE,
         MSG_HOST,
@@ -231,16 +232,17 @@
         LEFT JOIN
         t_dictionary_data tdd
         ON t.DICT_TYPE = tdd.DICT_TYPE AND t.MSG_TYPE = tdd.VALUE_ORDER
-        WHERE 1=1
-        <if test="esbCode!=null and esbCode!=''">
-            and t.ESBCODE LIKE CONCAT('%',#{esbCode},'%')
-        </if>
-        <if test="produceStartTime!=null and produceStartTime!=''">
-            AND t.PRODUCE_START_TIME >= #{produceStartTime}
-        </if>
-        <if test="produceEndTime!=null and produceEndTime!=''">
-            AND t.PRODUCE_END_TIME &lt;= #{produceEndTime}
-        </if>
+        <where>
+            <if test="esbCode!=null and esbCode!=''">
+                and t.ESBCODE LIKE CONCAT('%',#{esbCode},'%')
+            </if>
+            <if test="produceStartTime!=null and produceStartTime!=''">
+                AND t.PRODUCE_START_TIME >= #{produceStartTime}
+            </if>
+            <if test="produceEndTime!=null and produceEndTime!=''">
+                AND t.PRODUCE_END_TIME &lt;= #{produceEndTime}
+            </if>
+        </where>
         ORDER BY
         t.UPDATE_TIME DESC
     </select>

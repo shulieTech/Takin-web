@@ -174,11 +174,11 @@
         USE_YN,
         GMT_CREATE,
         GMT_MODIFIED
-        from t_white_list where 1=1
+        from t_white_list
+        where IS_DELETED = 0
         <if test="applicationId != null">
             and APPLICATION_ID= #{applicationId,jdbcType=BIGINT}
         </if>
-        and IS_DELETED = 0
     </select>
 
     <select id="queryDistinctWhiteListTotalByApplicationId" resultType="com.pamirs.takin.entity.domain.entity.TWList">
@@ -196,11 +196,10 @@
         USER_ID,
         IS_GLOBAL,
         IS_HANDWORK
-        from t_white_list where 1=1
+        from t_white_list where IS_DELETED = 0
         <if test="applicationId != null">
             and APPLICATION_ID= #{applicationId,jdbcType=BIGINT}
         </if>
-        and IS_DELETED = 0
     </select>
 
     <!-- 根据id查询单个白名单信息 -->
@@ -408,16 +407,19 @@
         b.ID = a.DICT_TYPE
         AND b.TYPE_NAME = '白名单'
         ) td ON tphd.INTERFACE_TYPE = td.VALUE_ORDER
-        where 1=1
-        <if test="applicationName!=null and applicationName!=''">
-            AND tphd.APP_NAME=#{applicationName}
-        </if>
-        <if test="type!=null and type!=''">
-            and tphd.INTERFACE_TYPE=#{type}
-        </if>
-        <if test="interfaceName!=null and interfaceName!=''">
-            AND tphd.INTERFACE_NAME like concat('%',#{interfaceName},'%')
-        </if>
+
+      <where>
+          <if test="applicationName!=null and applicationName!=''">
+              tphd.APP_NAME=#{applicationName}
+          </if>
+          <if test="type!=null and type!=''">
+              and tphd.INTERFACE_TYPE=#{type}
+          </if>
+          <if test="interfaceName!=null and interfaceName!=''">
+              AND tphd.INTERFACE_NAME like concat('%',#{interfaceName},'%')
+          </if>
+      </where>
+
     </select>
 
     <!--根据应用和接口名称查询应用下dubbo/job接口数据-->
@@ -443,16 +445,18 @@
         b.ID = a.DICT_TYPE
         AND b.TYPE_NAME = '白名单'
         ) td ON tuid.INTERFACE_TYPE = td.VALUE_ORDER
-        where 1=1
-        <if test="applicationName!=null and applicationName!=''">
-            AND tuid.APP_NAME=#{applicationName}
-        </if>
-        <if test="type!=null and type!=''">
-            and tuid.INTERFACE_TYPE=#{type}
-        </if>
-        <if test="interfaceName!=null and interfaceName!=''">
-            and tuid.INTERFACE_VALUE like concat('%',#{interfaceName},'%')
-        </if>
+        <where>
+            <if test="applicationName!=null and applicationName!=''">
+                 tuid.APP_NAME=#{applicationName}
+            </if>
+            <if test="type!=null and type!=''">
+                and tuid.INTERFACE_TYPE=#{type}
+            </if>
+            <if test="interfaceName!=null and interfaceName!=''">
+                and tuid.INTERFACE_VALUE like concat('%',#{interfaceName},'%')
+            </if>
+        </where>
+
     </select>
 
     <!--查询白名单数量-->

@@ -130,19 +130,20 @@
         LEFT JOIN
         t_dictionary_data tdd
         ON t.DICT_TYPE = tdd.DICT_TYPE AND t.MSG_TYPE = tdd.VALUE_ORDER
-        WHERE 1=1
-        <if test="topic!=null and topic!=''">
-            and t.TOPIC LIKE CONCAT('%',#{topic},'%')
-        </if>
-        <if test="groupName!=null and groupName!=''">
-            and t.GROUPNAME LIKE CONCAT('%',#{groupName},'%')
-        </if>
-        <if test="produceStartTime!=null and produceStartTime!=''">
-            AND t.PRODUCE_START_TIME >= #{produceStartTime}
-        </if>
-        <if test="produceEndTime!=null and produceEndTime!=''">
-            AND t.PRODUCE_END_TIME &lt;= #{produceEndTime}
-        </if>
+        <where>
+            <if test="topic!=null and topic!=''">
+                 t.TOPIC LIKE CONCAT('%',#{topic},'%')
+            </if>
+            <if test="groupName!=null and groupName!=''">
+                and t.GROUPNAME LIKE CONCAT('%',#{groupName},'%')
+            </if>
+            <if test="produceStartTime!=null and produceStartTime!=''">
+                AND t.PRODUCE_START_TIME >= #{produceStartTime}
+            </if>
+            <if test="produceEndTime!=null and produceEndTime!=''">
+                AND t.PRODUCE_END_TIME &lt;= #{produceEndTime}
+            </if>
+        </where>
         ORDER BY
         t.UPDATE_TIME DESC
     </select>

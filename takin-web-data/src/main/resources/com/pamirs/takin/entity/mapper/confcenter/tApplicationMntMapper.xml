@@ -22,14 +22,14 @@
     </select>
 
     <select id="applicationExistByTenantIdAndAppName" resultType="Integer">
-        select count(1) from t_application_mnt where 1=1
+        select count(1) from t_application_mnt
+        where APPLICATION_NAME= #{applicationName}
         <if test="tenantId!=null">
             AND TENANT_ID = #{tenantId}
         </if>
         <if test="envCode!=null">
             AND ENV_CODE = #{envCode}
         </if>
-        AND APPLICATION_NAME= #{applicationName}
     </select>
 
     <!-- 新增应用信息 -->
@@ -180,23 +180,23 @@
         tam.ALARM_PERSON
         from
         t_application_mnt tam
-        where 1=1
-        <if test="applicationName!=null and applicationName!=''">
-            AND tam.APPLICATION_NAME like
-            concat('%',#{applicationName},'%')
-        </if>
-        <if test="applicationIds != null and applicationIds.size > 0">
-            AND tam.APPLICATION_ID IN
-            <foreach collection="applicationIds" item="applicationId" open="(" close=")" separator=",">
-                #{applicationId}
-            </foreach>
-        </if>
-        <if test="userIds != null and userIds.size > 0">
-            AND tam.user_id IN
-            <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
-                #{userId}
-            </foreach>
-        </if>
+        <where>
+            <if test="applicationName!=null and applicationName!=''">
+                 tam.APPLICATION_NAME like concat('%',#{applicationName},'%')
+            </if>
+            <if test="applicationIds != null and applicationIds.size > 0">
+                AND tam.APPLICATION_ID IN
+                <foreach collection="applicationIds" item="applicationId" open="(" close=")" separator=",">
+                    #{applicationId}
+                </foreach>
+            </if>
+            <if test="userIds != null and userIds.size > 0">
+                AND tam.user_id IN
+                <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
         order by tam.APPLICATION_ID desc
     </select>
 

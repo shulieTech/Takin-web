@@ -77,102 +77,74 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
 
     public List<AgentCommandResBO> process(AgentHeartbeatRequest commandRequest) {
 
-        // 是否企业版
-        boolean isEnterprise = ENTERPRISE_FLAG.equals(commandRequest.getFlag());
-        Map<Long, IAgentCommandProcessor> processorMap = isEnterprise ? getEnterpriseCommandProcessorMap()
-            : commandProcessorMap;
+        // 1、获取处理器集合
+        Map<Long, IAgentCommandProcessor> processorMap = getCommandProcessorMap(commandRequest.getFlag());
 
-        // 检测状态
+        // 2、检测状态
         AgentHeartbeatBO agentHeartbeatBO = buildAgentHeartBeatBO(commandRequest);
 
-        // 异步处理上报的命令数据
-        if (!CollectionUtils.isEmpty(commandRequest.getCommandResult())) {
-            reportLog.info("projectName:{}, agentId:{}, commands:{}", agentHeartbeatBO.getProjectName(),
-                agentHeartbeatBO.getAgentId(), commandRequest.getCommandResult());
-            commandRequest.getCommandResult().forEach(commandResult ->
-                agentHeartbeatThreadPool.execute(() -> {
-                    IAgentCommandProcessor processor = processorMap.get(commandResult.getId());
-                    if (processor != null) {
-                        processor.process(agentHeartbeatBO, commandResult);
-                    }
-                })
-            );
-        }
+        // 3、异步处理上报的数据
+        // 需要跳过的指令
+        List<Long> skipCommandIds = asyncProcessCommandResult(commandRequest, agentHeartbeatBO, processorMap);
 
-        CreateAgentReportParam createAgentReportParam = new CreateAgentReportParam();
-        BeanUtils.copyProperties(agentHeartbeatBO, createAgentReportParam);
-        createAgentReportParam.setApplicationName(agentHeartbeatBO.getProjectName());
-        createAgentReportParam.setStatus(agentHeartbeatBO.getCurStatus().getVal());
+        // 4、保存心跳数据
+        saveHeartbeatData(agentHeartbeatBO);
 
-        // 数据入库
-        agentReportService.insertOrUpdate(createAgentReportParam);
-
-        List<Future<AgentCommandResBO>> futures = new ArrayList<>();
-
-        // 异步处理各种命令
-        for (Map.Entry<Long, IAgentCommandProcessor> entry : processorMap.entrySet()) {
-            Future<AgentCommandResBO> future = agentHeartbeatThreadPool.submit(
-                () -> entry.getValue().dealHeartbeat(agentHeartbeatBO));
-            futures.add(future);
-        }
-        List<AgentCommandResBO> commandBOList = new ArrayList<>();
-        futures.forEach(future -> {
-            try {
-                AgentCommandResBO agentCommandBO = future.get(60, TimeUnit.SECONDS);
-                if (agentCommandBO != null) {
-                    commandBOList.add(agentCommandBO);
-                }
-            } catch (Exception e) {
-                // ignore
-            }
-        });
-
-        List<AgentCommandResBO> result = filterCommand(commandBOList);
-
-        if (!CollectionUtils.isEmpty(result)) {
-            distributionLog.info("projectName:{}, agentId:{}, commands:{}", agentHeartbeatBO.getProjectName(),
-                agentHeartbeatBO.getAgentId(), result);
-        }
-
-        return result;
+        // 5、阻塞多线程处理心跳数据，最多等待60s；
+        return asyncDealHeartbeatData(agentHeartbeatBO, processorMap, skipCommandIds);
     }
 
     /**
-     * 过滤指令，有些指令不能同时返回
+     * 获取处理器map
      *
-     * @param commandBOList 指令集合
-     * @return AgentCommandBO集合
+     * @param flag 标识：是否为企业版
+     * @return map
      */
-    private List<AgentCommandResBO> filterCommand(List<AgentCommandResBO> commandBOList) {
-        boolean haveAgentGetFileCommand = false;
-        boolean haveReportAgentUploadPathStatusCommand = false;
-        for (AgentCommandResBO command : commandBOList) {
-            if (AgentCommandEnum.AGENT_START_GET_FILE.getCommand().equals(command.getId())) {
-                haveAgentGetFileCommand = true;
-            }
-            if (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())) {
-                haveReportAgentUploadPathStatusCommand = true;
-            }
+    private Map<Long, IAgentCommandProcessor> getCommandProcessorMap(String flag) {
+        // 判断是否为企业版
+        boolean isEnterprise = ENTERPRISE_FLAG.equals(flag);
+
+        if (!isEnterprise) {
+            return commandProcessorMap;
         }
 
-        List<AgentCommandResBO> result = new ArrayList<>();
-        // 如果有 200000 则不允许有 100110 和 100100
-        // 如果有 100100 就不允许有 100110
-        for (AgentCommandResBO command : commandBOList) {
-            if (haveAgentGetFileCommand
-                && (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())
-                || AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId()))) {
-                continue;
-            }
-            if (haveReportAgentUploadPathStatusCommand
-                && AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId())) {
-                continue;
-            }
-            result.add(command);
+        Map<Long, IAgentCommandProcessor> enterpriseCommandProcessorMap = new HashMap<>(commandProcessorMap);
+        List<Object> enterpriseProcessorList = WebPluginUtils.getAgentCommandProcessor();
+        if (!CollectionUtils.isEmpty(enterpriseProcessorList)) {
+            enterpriseProcessorList.forEach(processor -> {
+                if (processor instanceof IAgentCommandProcessor) {
+                    enterpriseCommandProcessorMap.put(
+                        ((IAgentCommandProcessor)processor).getCommand().getCommand(),
+                        (IAgentCommandProcessor)processor);
+                }
+            });
         }
-
-        return result;
+        return enterpriseCommandProcessorMap;
     }
+
+    /**
+     * AgentCommandRequest -> AgentHeartBeatBO
+     *
+     * @param commandRequest AgentCommandRequest对象
+     * @return AgentHeartBeatBO对象
+     */
+    private AgentHeartbeatBO buildAgentHeartBeatBO(AgentHeartbeatRequest commandRequest) {
+        TApplicationMnt applicationMnt = applicationService.queryTApplicationMntByName(commandRequest.getProjectName());
+        if (applicationMnt == null) {
+            throw new TakinWebException(ExceptionCode.AGENT_REGISTER_ERROR, "应用名不存在");
+        }
+
+        AgentHeartbeatBO agentHeartbeatBO = new AgentHeartbeatBO();
+        agentHeartbeatBO.setApplicationId(applicationMnt.getApplicationId());
+        BeanUtils.copyProperties(commandRequest, agentHeartbeatBO);
+
+        // 获取节点当前状态
+        AgentReportStatusEnum statusEnum = getAgentReportStatus(agentHeartbeatBO);
+        agentHeartbeatBO.setCurStatus(statusEnum);
+
+        return agentHeartbeatBO;
+    }
+
 
     /**
      * 获取agent状态
@@ -229,46 +201,131 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         return AgentReportStatusEnum.UNKNOWN;
     }
 
+
     /**
-     * AgentCommandRequest -> AgentHeartBeatBO
+     * 异步处理上报数据
      *
-     * @param commandRequest AgentCommandRequest对象
-     * @return AgentHeartBeatBO对象
+     * @param commandRequest   请求数据
+     * @param agentHeartbeatBO 心跳数据
+     * @param processorMap     处理器集合
+     * @return 需要跳过的指令
      */
-    private AgentHeartbeatBO buildAgentHeartBeatBO(AgentHeartbeatRequest commandRequest) {
-        TApplicationMnt applicationMnt = applicationService.queryTApplicationMntByName(commandRequest.getProjectName());
-        if (applicationMnt == null) {
-            throw new TakinWebException(ExceptionCode.AGENT_REGISTER_ERROR, "应用名不存在");
+    private List<Long> asyncProcessCommandResult(AgentHeartbeatRequest commandRequest,
+        AgentHeartbeatBO agentHeartbeatBO, Map<Long, IAgentCommandProcessor> processorMap) {
+        // 需要跳过的指令
+        List<Long> skipCommandIds = new ArrayList<>();
+        // 异步处理上报的命令数据
+        if (!CollectionUtils.isEmpty(commandRequest.getCommandResult())) {
+            // 记录日志
+            reportLog.info("agentHeartbeatBO:{}, commands:{}",
+                agentHeartbeatBO,
+                commandRequest.getCommandResult());
+
+            commandRequest.getCommandResult().forEach(commandResult ->
+                agentHeartbeatThreadPool.execute(() -> {
+                    skipCommandIds.add(commandResult.getId());
+                    IAgentCommandProcessor processor = processorMap.get(commandResult.getId());
+                    if (processor != null) {
+                        processor.process(agentHeartbeatBO, commandResult);
+                    }
+                })
+            );
         }
+        return skipCommandIds;
+    }
 
-        AgentHeartbeatBO agentHeartbeatBO = new AgentHeartbeatBO();
-        agentHeartbeatBO.setApplicationId(applicationMnt.getApplicationId());
-        BeanUtils.copyProperties(commandRequest, agentHeartbeatBO);
 
-        // 获取节点当前状态
-        AgentReportStatusEnum statusEnum = getAgentReportStatus(agentHeartbeatBO);
-        agentHeartbeatBO.setCurStatus(statusEnum);
-
-        return agentHeartbeatBO;
+    /**
+     * 心跳数据入库
+     *
+     * @param agentHeartbeatBO 心跳数据
+     */
+    private void saveHeartbeatData(AgentHeartbeatBO agentHeartbeatBO) {
+        CreateAgentReportParam createAgentReportParam = new CreateAgentReportParam();
+        BeanUtils.copyProperties(agentHeartbeatBO, createAgentReportParam);
+        createAgentReportParam.setApplicationName(agentHeartbeatBO.getProjectName());
+        createAgentReportParam.setStatus(agentHeartbeatBO.getCurStatus().getVal());
+        agentReportService.insertOrUpdate(createAgentReportParam);
     }
 
     /**
-     * 获取企业版命令处理器
+     * 异步处理心跳数据
      *
-     * @return map
+     * @param agentHeartbeatBO 心跳数据
+     * @param processorMap     处理器集合
+     * @param skipCommandIds   跳过的指令
+     * @return AgentCommandResBO集合
      */
-    private Map<Long, IAgentCommandProcessor> getEnterpriseCommandProcessorMap() {
-        Map<Long, IAgentCommandProcessor> enterpriseCommandProcessorMap = new HashMap<>(commandProcessorMap);
-        List<Object> enterpriseProcessorList = WebPluginUtils.getAgentCommandProcessor();
-        if (!CollectionUtils.isEmpty(enterpriseProcessorList)) {
-            enterpriseProcessorList.forEach(processor -> {
-                if (processor instanceof IAgentCommandProcessor) {
-                    enterpriseCommandProcessorMap.put(
-                        ((IAgentCommandProcessor)processor).getCommand().getCommand(),
-                        (IAgentCommandProcessor)processor);
-                }
-            });
+    private List<AgentCommandResBO> asyncDealHeartbeatData(AgentHeartbeatBO agentHeartbeatBO,
+        Map<Long, IAgentCommandProcessor> processorMap, List<Long> skipCommandIds) {
+
+        List<Future<AgentCommandResBO>> futures = new ArrayList<>();
+        // 异步处理各种命令
+        for (Map.Entry<Long, IAgentCommandProcessor> entry : processorMap.entrySet()) {
+            if (skipCommandIds.contains(entry.getKey())) {
+                continue;
+            }
+            Future<AgentCommandResBO> future = agentHeartbeatThreadPool.submit(
+                () -> entry.getValue().dealHeartbeat(agentHeartbeatBO));
+            futures.add(future);
         }
-        return enterpriseCommandProcessorMap;
+
+        List<AgentCommandResBO> commandBOList = new ArrayList<>();
+        futures.forEach(future -> {
+            try {
+                AgentCommandResBO agentCommandBO = future.get(60, TimeUnit.SECONDS);
+                if (agentCommandBO != null) {
+                    commandBOList.add(agentCommandBO);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        });
+
+        List<AgentCommandResBO> result = filterCommand(commandBOList);
+
+        // 记录日志
+        if (!CollectionUtils.isEmpty(result)) {
+            distributionLog.info("agentHeartbeatBO:{}, commands:{}", agentHeartbeatBO, result);
+        }
+
+        return result;
+    }
+
+    /**
+     * 过滤指令，有些指令不能同时返回
+     *
+     * @param commandBOList 指令集合
+     * @return AgentCommandBO集合
+     */
+    private List<AgentCommandResBO> filterCommand(List<AgentCommandResBO> commandBOList) {
+        boolean haveAgentGetFileCommand = false;
+        boolean haveReportAgentUploadPathStatusCommand = false;
+        for (AgentCommandResBO command : commandBOList) {
+            if (AgentCommandEnum.AGENT_START_GET_FILE.getCommand().equals(command.getId())) {
+                haveAgentGetFileCommand = true;
+            }
+            if (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())) {
+                haveReportAgentUploadPathStatusCommand = true;
+            }
+        }
+
+        List<AgentCommandResBO> result = new ArrayList<>();
+        // 如果有 200000 则不允许有 100110 和 100100
+        // 如果有 100100 就不允许有 100110
+        for (AgentCommandResBO command : commandBOList) {
+            if (haveAgentGetFileCommand
+                && (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())
+                || AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId()))) {
+                continue;
+            }
+            if (haveReportAgentUploadPathStatusCommand
+                && AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId())) {
+                continue;
+            }
+            result.add(command);
+        }
+
+        return result;
     }
 }

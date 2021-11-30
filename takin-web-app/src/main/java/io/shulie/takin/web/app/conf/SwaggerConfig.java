@@ -428,7 +428,7 @@ public class SwaggerConfig {
 //            .paths(getRegex(
 //                "/api/(agentReport|applicationPluginUpgrade|applicationPluginUpgradeRef|applicationTagRef"
 //                    + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/heartbeat).*"))
-                    .paths(getRegex("/api/(fast/agent/access/list/new|agent/heartbeat|plugin/path|plugin/upgrade|application/tag|pluginDependent|pluginLibrary).*"))
+                    .paths(getRegex("/api/(fast/agent/access/list/new|agent/heartbeat|plugin/path|plugin/upgrade|application/tag|pluginDependent|pluginLibrary|v2/user).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

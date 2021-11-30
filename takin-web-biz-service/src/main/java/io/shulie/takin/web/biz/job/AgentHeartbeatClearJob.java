@@ -15,10 +15,10 @@ import org.springframework.stereotype.Component;
  * @Date 2021/11/18 2:30 下午
  */
 @Component
-@ElasticSchedulerJob(jobName = "agentHeartbeatClearJob", cron = "0 0/1 * * * ? *", description = "清理过期的agent心跳数据")
+//@ElasticSchedulerJob(jobName = "agentHeartbeatClearJob", cron = "0 0/1 * * * ? *", description = "清理过期的agent心跳数据")
 @Slf4j
 public class AgentHeartbeatClearJob implements SimpleJob {
-
+    //todo nf 调试关闭
     @Resource
     private AgentReportService agentReportService;
 

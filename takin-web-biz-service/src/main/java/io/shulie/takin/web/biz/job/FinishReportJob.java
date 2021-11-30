@@ -48,7 +48,7 @@ public class FinishReportJob implements SimpleJob {
         if (null != res && BooleanUtils.isTrue(res.getSuccess()) && null != res.getData()) {
             reportIds.addAll((List)res.getData());
         }
-        log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
+        log.info("FinishReportJob 获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
         reportIds.stream().filter(Objects::nonNull)
                 .map(String::valueOf)
                 .map(NumberUtils::toLong)

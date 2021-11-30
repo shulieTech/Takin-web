@@ -47,7 +47,7 @@ public class SyncMachineDataJob implements SimpleJob {
         if (runningResponse.getSuccess() && runningResponse.getData() != null) {
             reportIds.addAll((List)runningResponse.getData());
         }
-        log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
+        log.info("SyncMachineDataJob 获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
         for (Object obj : reportIds) {
             // 开始数据层分片
             long reportId = Long.parseLong(String.valueOf(obj));

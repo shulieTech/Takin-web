@@ -278,7 +278,7 @@ public class ApplicationController {
     )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
-            needAuth = ActionTypeEnum.ENABLE_DISABLE
+            needAuth = ActionTypeEnum.QUERY
     )
     public Response AppSilenceSwitch() {
         return applicationService.userAppSilenceSwitchInfo();
@@ -293,7 +293,7 @@ public class ApplicationController {
     )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
-            needAuth = ActionTypeEnum.ENABLE_DISABLE
+            needAuth = ActionTypeEnum.QUERY
     )
     public Response AppConfigReportInfo(@ApiParam(name = "bizType", value = "业务类型") @NotNull Integer bizType,
                                         @ApiParam(name = "appName", value = "应用名称") String appName) {

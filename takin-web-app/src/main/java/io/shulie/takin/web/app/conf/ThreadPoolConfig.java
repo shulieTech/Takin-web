@@ -32,14 +32,14 @@ public class ThreadPoolConfig {
     @Bean(name = "jobThreadPool")
     public ThreadPoolExecutor jobThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-        return new ThreadPoolExecutor(20, 30, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(3000), nameThreadFactory,
+        return new ThreadPoolExecutor(20, 30, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "fastDebugThreadPool")
     public ThreadPoolExecutor fastDebug() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("fast-debug-%d").build();
-        return new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(2000), nameThreadFactory,
+        return new ThreadPoolExecutor(10, 10, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 

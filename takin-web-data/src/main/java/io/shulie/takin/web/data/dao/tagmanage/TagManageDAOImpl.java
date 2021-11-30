@@ -183,4 +183,31 @@ public class TagManageDAOImpl implements TagManageDAO {
         }
         return null;
     }
+
+    /**
+     * 新增tag
+     *
+     * @param tagManageParams
+     * @return
+     */
+    @Override
+    public List<TagManageResult> addTags(List<TagManageParam> tagManageParams) {
+        List<TagManageResult> tags = new ArrayList<>();
+        for (TagManageParam tagManageParam : tagManageParams) {
+            TagManageResult result = new TagManageResult();
+            result.setTagName(tagManageParam.getTagName());
+            List<TagManageEntity> tagManageList = getByTagNameAndTagType(tagManageParam.getTagName(),tagManageParam.getTagType());
+            if (CollectionUtils.isNotEmpty(tagManageList)) {
+                result.setId(tagManageList.get(0).getId());
+                continue;
+            }
+            TagManageEntity tagManageEntity = new TagManageEntity();
+            BeanUtils.copyProperties(tagManageParam, tagManageEntity);
+            tagManageMapper.insert(tagManageEntity);
+            result.setId(tagManageEntity.getId());
+
+            tags.add(result);
+        }
+        return tags;
+    }
 }

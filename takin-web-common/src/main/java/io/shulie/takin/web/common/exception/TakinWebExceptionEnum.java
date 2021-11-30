@@ -156,6 +156,11 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 升级
      */
     PLUGIN_UPGRADE_VALID_ERROR("1700-"+ErrorConstant.VALIDATE_ERROR,"升级包数据异常"),
+
+    /**
+     * 应用标签
+     */
+    APPLICATION_TAG_CREATE_ERROR("1800-"+ErrorConstant.ADD_ERROR,"应用标签创建异常"),
     ;
     private final String errorCode;
 

@@ -1,9 +1,11 @@
 package io.shulie.takin.web.biz.service.dashboard.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.stereotype.Service;
 import io.shulie.takin.web.common.common.Response;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
@@ -33,10 +35,12 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         //压测开关
         ApplicationSwitchStatusResponse status = dashboardApplicationService.getUserAppSwitchInfo();
         result.setSwitchStatus(status.getSwitchStatus());
+        Map<String, List<Integer>> permissionData = WebPluginUtils.traceUser().getPermissionData();
 
         //应用数量
         ApplicationQueryParam queryParam = new ApplicationQueryParam();
         queryParam.setPageSize(-1);
+        //
         Response<List<ApplicationVo>> appResponse = applicationService.getApplicationList(queryParam);
         if (appResponse != null && appResponse.getData() != null) {
             List<ApplicationVo> applicationVoList = appResponse.getData();

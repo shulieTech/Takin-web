@@ -75,7 +75,7 @@ public final class BizOpConstants {
     }
 
     public static class ModuleCode {
-        public static final String DASHBOARD = "dashboard";
+
         public static final String LINK_CARDING = "linkTease";
         public static final String SYSTEM_PROCESS = "systemFlow";
         public static final String BUSINESS_ACTIVITY = "businessActivity";
@@ -113,6 +113,14 @@ public final class BizOpConstants {
         public static final String AGENT_CONFIG = "admins_simulationConfig";
         public static final String AGENT_VERSION= "admins_admin";
         public static final String NEW_PROJECT_ACCESS= "appManage_appAccess";
+
+
+
+        // 大盘查询放开  dashboard 不允许用到其他地方
+        public static final String DASHBOARD = "dashboard";
+        public static final String DASHBOARD_APPMANAGE = "dashboard_"+ APPLICATION_MANAGE ;
+        public static final String DASHBOARD_SCENE = "dashboard_" + PRESSURE_TEST_SCENE;
+        public static final String DASHBOARD_REPORT = "dashboard_" + PRESSURE_TEST_REPORT;
     }
 
     public static class OpTypes {

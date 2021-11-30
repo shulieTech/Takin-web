@@ -276,6 +276,10 @@ public class SceneManageController {
      */
     @GetMapping("/list/un_safe")
     @ApiOperation(value = "压测场景列表")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.DASHBOARD_SCENE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<SceneManageListOutput>> getListNoAuth(@ApiParam(name = "current", value = "页码", required = true) Integer current,
         @ApiParam(name = "pageSize", value = "页大小", required = true) Integer pageSize,
         @ApiParam(name = "sceneId", value = "压测场景ID") Long sceneId,

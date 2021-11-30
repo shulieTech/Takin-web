@@ -55,7 +55,11 @@ public class ReportController {
      * @return
      */
     @GetMapping("report/listReport/un_safe")
-    @ApiOperation("报告列表")
+    @ApiOperation("大盘使用报告列表")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.DASHBOARD_REPORT,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public Response<List<ReportDTO>> listReportNoAuth(ReportQueryParam reportQuery) {
         ResponseResult<List<ReportDTO>> response = reportService.listReport(reportQuery);
         return Response.success(response.getData(), response.getTotalNum());

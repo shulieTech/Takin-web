@@ -52,5 +52,10 @@ public interface DistributedLock {
 
     void unLock(String lockKey);
 
-    void checkLock(String lockKey);
+    /**
+     * 是否有锁
+     * @param lockKey
+     * @return
+     */
+    Boolean checkLock(String lockKey);
 }

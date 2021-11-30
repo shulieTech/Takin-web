@@ -147,7 +147,7 @@ public class ReportDataCache {
         List<MetricesResponse> metricsList = reportService.queryMetrics(reportId, reportDetail.getSceneId());
 
         if (CollectionUtils.isEmpty(metricsList)) {
-            log.error("ReportDataCache Cache Jmeter Metric is null");
+            log.debug("ReportDataCache Cache Jmeter Metric is null");
             return;
         }
 
@@ -192,19 +192,19 @@ public class ReportDataCache {
             return;
         }
         if (CollectionUtils.isEmpty(reportDetail.getBusinessActivity())) {
-            log.error("报告中关联的业务活动为空");
+            log.debug("报告中关联的业务活动为空");
             return;
         }
         Set<Long> appSet = Sets.newHashSet();
         reportDetail.getBusinessActivity().forEach(
             data -> appSet.addAll(splitApplicationIds(data.getApplicationIds())));
         if (appSet.size() == 0) {
-            log.error("报告中关联的应用为空");
+            log.debug("报告中关联的应用为空");
             return;
         }
         List<TApplicationMnt> appsList = tApplicationMntDao.queryApplicationMntListByIds(Lists.newArrayList(appSet));
         if (CollectionUtils.isEmpty(appsList)) {
-            log.error("报告中关联的应用为空");
+            log.debug("报告中关联的应用为空");
             return;
         }
         List<String> applications = appsList.stream().map(TApplicationMnt::getApplicationName)

@@ -65,7 +65,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
                 " and env_code = '" + WebPluginUtils.traceEnvCode() + "'"
                 + " group by tag_agent_id, tag_app_ip";
         Collection<BaseServerResult> baseServerResults = influxDatabaseManager.query(BaseServerResult.class, baseSql);
-        log.info("queryBaseServer influxdb sql :{},cost time :{}", baseSql, System.currentTimeMillis() - startTime);
+        log.debug("queryBaseServer influxdb sql :{},cost time :{}", baseSql, System.currentTimeMillis() - startTime);
         return baseServerResults;
     }
 

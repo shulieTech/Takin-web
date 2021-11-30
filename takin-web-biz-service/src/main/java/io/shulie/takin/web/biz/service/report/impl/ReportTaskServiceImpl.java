@@ -195,7 +195,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             //first 同步应用基础信息
             long startTime = System.currentTimeMillis();
             problemAnalysisService.syncMachineData(reportId);
-            log.info("reportId={} syncMachineData success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
+            log.debug("reportId={} syncMachineData success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
         } catch (Exception e) {
             log.error("reportId={} syncMachineData false,errorMsg= {}", reportId, e.getMessage());
         }
@@ -209,7 +209,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             reportDataCache.readyCloudReportData(reportId);
             //then tps指标图
             summaryService.calcTpsTarget(reportId);
-            log.info("reportId={} calcTpsTarget success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
+            log.debug("reportId={} calcTpsTarget success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
         } catch (Exception e) {
             log.error("reportId={} calcTpsTarget false,errorMsg= {}", reportId, e.getMessage());
         }
@@ -223,7 +223,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             reportDataCache.readyCloudReportData(reportId);
             //汇总应用 机器数 风险机器数
             summaryService.calcApplicationSummary(reportId);
-            log.info("reportId={} calcApplicationSummary success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
+            log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
         } catch (Exception e) {
             log.error("reportId={} calcApplicationSummary false,errorMsg= {}", reportId, e.getMessage());
         }

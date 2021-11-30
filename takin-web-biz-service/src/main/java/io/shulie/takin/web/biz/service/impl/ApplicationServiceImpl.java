@@ -701,7 +701,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             log.error("执行定时同步应用状态异常", e);
         } finally {
             long endTime = System.currentTimeMillis();
-            log.info("执行定时同步应用状态完成，执行耗时：{}", (endTime - startTime));
+            log.debug("执行定时同步应用状态完成，执行耗时：{}", (endTime - startTime));
         }
     }
 

@@ -61,6 +61,7 @@ import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
+import io.shulie.takin.web.biz.task.TaskUtils;
 import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
@@ -226,6 +227,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         }
         // 缓存 报告id
         cacheReportId(startResult, param);
+
+        // 推送队列
+        TaskUtils.createReportMessage(startResult.getReportId());
 
         return startResult;
     }

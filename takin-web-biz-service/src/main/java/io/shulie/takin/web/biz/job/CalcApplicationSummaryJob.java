@@ -1,14 +1,13 @@
 package io.shulie.takin.web.biz.job;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-import com.dangdang.ddframe.job.api.ShardingContext;
-import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
-import io.shulie.takin.web.biz.task.DelayBucket;
-import io.shulie.takin.web.biz.task.TaskPool;
-import io.shulie.takin.web.biz.task.ReadyQueue;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
@@ -19,6 +18,8 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,29 +27,22 @@ import org.springframework.stereotype.Component;
  * @date 2021/7/13 23:10
  */
 
-@ElasticSchedulerJob(jobName = "calcApplicationSummaryJob",
-    // 分片序列号和参数用等号分隔 不需要参数可以不加
-    isSharding = true,
-    //shardingItemParameters = "0=0,1=1,2=2",
-    cron = "*/10 * * * * ?",
-    description = "汇总应用 机器数 风险机器数")
+// @ElasticSchedulerJob(jobName = "calcApplicationSummaryJob",
+//     // 分片序列号和参数用等号分隔 不需要参数可以不加
+//     isSharding = true,
+//     //shardingItemParameters = "0=0,1=1,2=2",
+//     cron = "*/10 * * * * ?",
+//     description = "汇总应用 机器数 风险机器数")
 @Slf4j
 @Component
-public class CalcApplicationSummaryJob  {
+public class CalcApplicationSummaryJob implements ApplicationListener<ContextRefreshedEvent> {
 
 
     @Autowired
     private ReportTaskService reportTaskService;
 
-    @Autowired
-    private DelayBucket delayBucket;
-    @Autowired
-    private TaskPool jobPool;
-    @Autowired
-    private ReadyQueue readyQueue;
-
     @Override
-    public void execute(ShardingContext shardingContext) {
+    public void execute() {
         long start = System.currentTimeMillis();
         if (WebPluginUtils.isOpenVersion()) {
             if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
@@ -115,4 +109,21 @@ public class CalcApplicationSummaryJob  {
         }
     }
 
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        ExecutorService executorService = new ThreadPoolExecutor(
+            length,
+            length,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<Runnable>());
+
+        for (int i = 0; i < length; i++) {
+            executorService.execute(
+                new DelayJobHandler(
+                    delayBucket,
+                    jobPool,
+                    readyQueue,
+                    i));
+        }
+    }
 }

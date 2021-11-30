@@ -1,5 +1,6 @@
 package io.shulie.takin.web.app.conf;
 
+import io.shulie.takin.web.biz.task.TaskUtils;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,5 +29,6 @@ public class AutowireStaticSmartInitializingSingleton implements SmartInitializi
     public void afterSingletonsInstantiated() {
         // 因为是给static静态属性赋值，因此这里new一个实例做注入是可行的
         beanFactory.autowireBean(new WebPluginUtils());
+        beanFactory.autowireBean(new TaskUtils());
     }
 }

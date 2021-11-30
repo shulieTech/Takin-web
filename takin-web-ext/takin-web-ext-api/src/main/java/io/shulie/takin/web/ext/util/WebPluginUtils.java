@@ -713,6 +713,18 @@ public class WebPluginUtils {
         ext.setTenantCode(traceTenantCode());
         return ext;
     }
+
+    /**
+     * 组装 http 租户参数
+     * @param ext
+     */
+    public static void fillTenantCommonExt(TenantCommonExt ext) {
+        ext.setTenantId(traceTenantId());
+        ext.setEnvCode(traceEnvCode());
+        ext.setTenantAppKey(traceTenantAppKey());
+        ext.setTenantCode(traceTenantCode());
+    }
+
     //********************************http线程上下文模块**********************************//
 
     /**

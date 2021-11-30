@@ -1,14 +1,14 @@
 package io.shulie.takin.web.biz.job;
 
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
+import io.shulie.takin.web.biz.task.DelayBucket;
+import io.shulie.takin.web.biz.task.TaskPool;
+import io.shulie.takin.web.biz.task.ReadyQueue;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
@@ -19,14 +19,13 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
  * @author 无涯
  * @date 2021/7/13 23:10
  */
-@Component
+
 @ElasticSchedulerJob(jobName = "calcApplicationSummaryJob",
     // 分片序列号和参数用等号分隔 不需要参数可以不加
     isSharding = true,
@@ -34,21 +33,19 @@ import org.springframework.stereotype.Component;
     cron = "*/10 * * * * ?",
     description = "汇总应用 机器数 风险机器数")
 @Slf4j
-public class CalcApplicationSummaryJob implements SimpleJob {
+@Component
+public class CalcApplicationSummaryJob  {
+
 
     @Autowired
     private ReportTaskService reportTaskService;
 
-    //@Autowired
-    //private ReportService reportService;
-
     @Autowired
-    @Qualifier("calcApplicationSummaryJobThreadPool")
-    private ThreadPoolExecutor calcApplicationSummaryJobThreadPool;
-
+    private DelayBucket delayBucket;
     @Autowired
-    @Qualifier("fastDebugThreadPool")
-    private ThreadPoolExecutor fastDebugThreadPool;
+    private TaskPool jobPool;
+    @Autowired
+    private ReadyQueue readyQueue;
 
     @Override
     public void execute(ShardingContext shardingContext) {

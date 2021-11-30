@@ -61,6 +61,7 @@ public class VerifyJob implements SimpleJob {
             JobScheduler jobScheduler = VerifyTaskServiceImpl.jobSchedulerMap.get(mapKey);
             if (jobScheduler != null){
                 jobScheduler.getSchedulerFacade().shutdownInstance();
+                redis.hmdelete(VerifyTaskServiceImpl.jobSchedulerRedisKey, mapKey);
             }
             return;
         }

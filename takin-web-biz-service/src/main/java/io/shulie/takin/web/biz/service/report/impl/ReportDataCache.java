@@ -95,12 +95,12 @@ public class ReportDataCache {
             WebPluginUtils.setTraceTenantContext(reportDetail.getTenantId(),tenantAppKey,reportDetail.getEnvCode(),commonExt.getTenantCode(),
                 ContextSourceEnum.JOB.getCode());
             redisTemplate.opsForValue().set(getReportDetailKey(reportId), reportApplication.getReportDetail());
-            log.info("Report Id={}, Status={}，endTime = {}", reportId, reportApplication.getReportDetail().getTaskStatus(),
+            log.debug("Report Id={}, Status={}，endTime = {}", reportId, reportApplication.getReportDetail().getTaskStatus(),
                 reportApplication.getReportDetail().getEndTime());
         }
         if (CollectionUtils.isNotEmpty(reportApplication.getApplicationNames())) {
             redisTemplate.opsForSet().add(getReportApplicationKey(reportId), reportApplication.getApplicationNames().toArray());
-            log.info("Report Id={}, applicationName={}", reportId, JSON.toJSONString(reportApplication.getApplicationNames()));
+            log.debug("Report Id={}, applicationName={}", reportId, JSON.toJSONString(reportApplication.getApplicationNames()));
         }
     }
 
@@ -211,7 +211,7 @@ public class ReportDataCache {
             .filter(StringUtils::isNoneBlank).distinct().collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(applications)) {
             redisTemplate.opsForSet().add(getReportApplicationKey(reportId), applications.toArray());
-            log.info("Report Id={},报告中关联的应用有 applicationName={}", reportId, JSON.toJSONString(applications));
+            log.debug("Report Id={},报告中关联的应用有 applicationName={}", reportId, JSON.toJSONString(applications));
         }
     }
 

@@ -12,8 +12,6 @@ import org.apache.ibatis.annotations.Param;
 public interface ApplicationApiManageMapper extends BaseMapper<ApplicationApiManageEntity> {
 
 
-    int insert(ApplicationApiManageEntity record);
-
     int insertSelective(ApplicationApiManageEntity record);
 
     ApplicationApiManageEntity selectByPrimaryKey(Long id);

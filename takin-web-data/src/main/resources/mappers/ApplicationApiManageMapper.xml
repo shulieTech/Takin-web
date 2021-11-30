@@ -26,15 +26,6 @@
         where ID = #{id,jdbcType=BIGINT}
     </select>
 
-    <insert id="insert" parameterType="io.shulie.takin.web.data.model.mysql.ApplicationApiManageEntity">
-        insert into t_application_api_manage (ID, APPLICATION_ID, APPLICATION_NAME,
-                                              CREATE_TIME, UPDATE_TIME, IS_DELETED, api, method,tenant_id,env_code)
-        values (#{id,jdbcType=BIGINT}, #{applicationId,jdbcType=BIGINT}, #{applicationName,jdbcType=VARCHAR},
-                #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{isDeleted,jdbcType=TINYINT}
-                   , #{api}, #{method},#{tenantId},#{envCode})
-
-    </insert>
-
     <insert id="insertBatch" parameterType="java.util.List">
         insert into t_application_api_manage ( APPLICATION_NAME,
         CREATE_TIME, UPDATE_TIME, IS_DELETED,api,method,application_id,user_id,IS_AGENT_REGISTE)

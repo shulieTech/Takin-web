@@ -14,6 +14,7 @@ import io.shulie.takin.web.data.param.application.ApplicationApiQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationApiUpdateUserParam;
 import io.shulie.takin.web.data.result.application.ApplicationApiManageResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,6 +137,8 @@ public class ApplicationApiDAOImpl implements ApplicationApiDAO {
 
     @Override
     public List<ApplicationApiManageResult> selectBySelective(ApplicationApiQueryParam record, List<Long> userIds) {
+        record.setTenantId(WebPluginUtils.traceTenantId());
+        record.setEnvCode(WebPluginUtils.traceEnvCode());
         List<ApplicationApiManageEntity> query = apiManageMapper.selectBySelective(record,userIds);
         if(CollectionUtils.isEmpty(query)) {
             return Lists.newArrayList();

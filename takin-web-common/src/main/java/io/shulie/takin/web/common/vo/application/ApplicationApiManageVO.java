@@ -44,6 +44,8 @@ public class ApplicationApiManageVO implements Serializable {
      */
     private Byte isDeleted;
 
+    private String method;
+
     private String requestMethod;
 
     private Boolean canEdit = true;

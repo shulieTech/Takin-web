@@ -137,7 +137,7 @@ public class SummaryService {
         if (summary == null) {
             reportSummaryDAO.insert(reportSummary);
         }
-        log.info("Build ReportSummary Success, reportId={}", reportId);
+        log.debug("Build ReportSummary Success, reportId={}", reportId);
     }
 
     public void calcTpsTarget(Long reportId) {

@@ -111,7 +111,7 @@ public class AgentCommandFactory {
                 throw new TakinWebException(ExceptionCode.AGENT_RESPONSE_ERROR, "agentId："
                     + takinPacket.getAgentId() + "执行" + commandModule + "失败");
             case COMMAND_COMPLETED_SUCCESS:
-                log.info("execute command success. execute [{}] command success: " + commandModule);
+                log.debug("execute command success. execute [{}] command success: " + commandModule);
                 return result.getResponse();
             default: {}
         }

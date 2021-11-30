@@ -198,7 +198,7 @@ public class AmdbHelper {
         AmdbResult<List<T>> amdbResponse = JSONUtil.toBean(resultJson,
             new TypeReference<AmdbResult<List<T>>>() {
             }, true);
-        log.info(JSON.toJSONString(amdbResponse));
+        log.debug(JSON.toJSONString(amdbResponse));
     }
 
     /**
@@ -212,7 +212,7 @@ public class AmdbHelper {
         AmdbResult<T> amdbResponse = JSONUtil.toBean(resultJson,
             new TypeReference<AmdbResult<T>>() {
             }, true);
-        log.info(JSON.toJSONString(amdbResponse));
+        log.debug(JSON.toJSONString(amdbResponse));
         amdbResponse.setData(JSON.parseObject(JSON.toJSONString(amdbResponse.getData()), clazz));
     }
 

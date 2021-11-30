@@ -146,7 +146,7 @@ public class PerformanceBaseDataDAOImpl implements PerformanceBaseDataDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        log.info("influxWriterBase运行时间：{}", System.currentTimeMillis() - start);
+        log.debug("influxWriterBase运行时间：{}", System.currentTimeMillis() - start);
 
     }
 

@@ -124,19 +124,19 @@ public class FinishReportJob implements SimpleJob {
                 continue;
             }
 
-            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
-            if(!tryLock) {
-                return;
-            }
-            try {
-                // 开始数据分片
-                fastDebugThreadPool.execute(() -> {
+            // 开始数据分片
+            fastDebugThreadPool.execute(() -> {
+                boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+                if(!tryLock) {
+                    return;
+                }
+                try {
                     WebPluginUtils.setTraceTenantContext(commonExt);
                     reportTaskService.finishReport(reportId,commonExt);
-                });
-            } finally {
-                distributedLock.unLockSafely(lockKey);
-            }
+                } finally {
+                    distributedLock.unLockSafely(lockKey);
+                }
+            });
         }
 
     }

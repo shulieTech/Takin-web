@@ -130,20 +130,19 @@ public class SyncMachineDataJob implements SimpleJob {
             if (distributedLock.checkLock(lockKey)) {
                 continue;
             }
-
-            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
-            if(!tryLock) {
-                return;
-            }
-            try {
-                // 开始数据层分片
-                fastDebugThreadPool.execute(() -> {
+            // 开始数据层分片
+            fastDebugThreadPool.execute(() -> {
+                boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+                if(!tryLock) {
+                    return;
+                }
+                try {
                     WebPluginUtils.setTraceTenantContext(commonExt);
                     reportTaskService.syncMachineData(reportId);
-                });
-            } finally {
-                distributedLock.unLockSafely(lockKey);
-            }
+                }finally {
+                    distributedLock.unLockSafely(lockKey);
+                }
+            });
         }
 
     }

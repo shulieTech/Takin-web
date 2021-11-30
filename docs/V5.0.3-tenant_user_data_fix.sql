@@ -1,3 +1,9 @@
+alter table t_business_link_manage_table modify LINK_NAME varchar(200) collate utf8_bin;
+update t_tro_resource set action = '[6]'  WHERE name = '全局配置'
+alter table t_tenant_info modify `code` varchar(200) collate utf8_bin;
+update t_tro_resource set name = 'superadmin' WHERE name = 'admin'
+
+
 -- 查出租户
 SELECT * from t_tro_user WHERE id = customer_id
 -- 插入租户

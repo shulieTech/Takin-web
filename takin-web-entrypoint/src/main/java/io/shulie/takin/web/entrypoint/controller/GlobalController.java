@@ -49,7 +49,7 @@ public class GlobalController {
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITELIST_SWITCH_ACTION
     )
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_WHITELIST_SWITCH,
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
         needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response openWhiteListSwitch() {
@@ -69,7 +69,7 @@ public class GlobalController {
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITELIST_SWITCH_ACTION
     )
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_WHITELIST_SWITCH,
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
         needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response closeWhiteListSwitch() {

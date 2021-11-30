@@ -47,7 +47,7 @@ public class ApplicationController {
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
         needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public AppPressureSwitchSetResponse getAppSwitch(

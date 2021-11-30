@@ -45,9 +45,6 @@ public final class BizOpConstants {
 
         public static final String PRESSURE_CONFIG_SWITCH = "全局开关";
 
-        //public static final String PRESSURE_TEST_SWITCH = "压测开关";
-        //public static final String PRESSURE_WHITELIST_SWITCH = "白名单开关";
-
         public static final String BLACKLIST = "黑名单";
         public static final String ENTRYRULE = "入口规则";
         public static final String SCRIPT_MANAGE = "脚本管理";
@@ -85,8 +82,8 @@ public final class BizOpConstants {
         public static final String PRESSURE_TEST_SCENE = "pressureTestManage_pressureTestScene";
         public static final String PRESSURE_TEST_REPORT = "pressureTestManage_pressureTestReport";
         public static final String PRESSURE_STATISTIC = "pressureTestManage_pressureTestStatistic";
-        public static final String CONFIG_CENTER = "configCenter";
-        public static final String PRESSURE_TEST_SWITCH = "configCenter_pressureMeasureSwitch";
+        public static final String CONFIG_CENTER = "configCenter_globalConfig";
+        //public static final String PRESSURE_TEST_SWITCH = "configCenter_pressureMeasureSwitch";
         public static final String PRESSURE_WHITELIST_SWITCH = "configCenter_whitelistSwitch";
         public static final String BLACKLIST = "configCenter_blacklist";
         public static final String ENTRYRULE = "configCenter_entryRule";

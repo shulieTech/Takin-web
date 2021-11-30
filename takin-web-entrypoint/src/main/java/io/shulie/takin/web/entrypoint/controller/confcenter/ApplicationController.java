@@ -255,7 +255,7 @@ public class ApplicationController {
             logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
+            moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
             needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response UpdateAppSilenceSwitch(@RequestBody ApplicationVo vo) {
@@ -277,7 +277,7 @@ public class ApplicationController {
             logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
+            moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
             needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response AppSilenceSwitch() {
@@ -292,7 +292,7 @@ public class ApplicationController {
             logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
+            moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
             needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response AppConfigReportInfo(@ApiParam(name = "bizType", value = "业务类型") @NotNull Integer bizType,

@@ -2,12 +2,15 @@ package io.shulie.takin.web.biz.job;
 
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
+import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
@@ -45,6 +48,9 @@ public class FinishReportJob implements SimpleJob {
     @Qualifier("fastDebugThreadPool")
     private ThreadPoolExecutor fastDebugThreadPool;
 
+    @Autowired
+    private DistributedLock distributedLock;
+
     @Override
     public void execute(ShardingContext shardingContext) {
 
@@ -68,11 +74,24 @@ public class FinishReportJob implements SimpleJob {
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     // 根据环境 分线程
                     for (TenantEnv e : ext.getEnvs()) {
+                        // 分布式锁
+                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(),e.getEnvCode(),shardingContext.getJobName());
+                        if (distributedLock.checkLock(lockKey)) {
+                            continue;
+                        }
                         final TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(
                             ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(), ext.getTenantCode(),
                             ContextSourceEnum.JOB.getCode());
                         finishReportJobThreadPool.execute(() -> {
-                            this.finishReport(commonExt);
+                            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+                            if(!tryLock) {
+                                return;
+                            }
+                            try {
+                                this.finishReport(commonExt);
+                            } finally {
+                                distributedLock.unLockSafely(lockKey);
+                            }
                         });
                     }
 

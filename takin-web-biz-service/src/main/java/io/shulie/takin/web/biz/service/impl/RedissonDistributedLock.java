@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.service.impl;
 
 import java.util.concurrent.TimeUnit;
 
-import cn.hutool.core.lang.Assert;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -58,8 +57,8 @@ public class RedissonDistributedLock implements DistributedLock {
     }
 
     @Override
-    public void checkLock(String lockKey) {
-        Assert.isTrue(redissonClient.getLock(lockKey).isLocked(), "has cancel lock:" + lockKey);
+    public Boolean checkLock(String lockKey) {
+       return redissonClient.getLock(lockKey).isLocked();
     }
 
 }

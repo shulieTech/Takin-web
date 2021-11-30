@@ -1,7 +1,15 @@
 package io.shulie.takin.web.biz.service.dsManage.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Lists;
 import com.pamirs.attach.plugin.dynamic.Type;
@@ -43,13 +51,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author HengYu
@@ -117,7 +118,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         WebPluginUtils.fillUserData(createParam);
 
         //同步配置
-        configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), createParam.getApplicationId(), null);
+        configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), createParam.getApplicationId(), null);
 
         //修改应用状态
         applicationService.modifyAccessStatus(String.valueOf(createParam.getApplicationId()),
@@ -147,8 +148,8 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         updateParam.setConfig(config);
         updateParam.setParseConfig(parseShadowServerConfig(config));
 
-        configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), dsResult.getApplicationId(),
-                dsResult.getApplicationName());
+        configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), dsResult.getApplicationId(),
+            dsResult.getApplicationName());
 
         agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
 
@@ -193,8 +194,8 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         enableParam.setId(enableRequest.getId());
         enableParam.setStatus(enableRequest.getStatus());
         applicationDsDAO.enable(enableParam);
-        configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), dsResult.getApplicationId(),
-                dsResult.getApplicationName());
+        configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), dsResult.getApplicationId(),
+            dsResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
 
         return Response.success();
@@ -210,8 +211,8 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         deleteParam.setIdList(Collections.singletonList(dsDeleteRequest.getId()));
         applicationDsDAO.delete(deleteParam);
 
-        configSyncService.syncShadowDB(WebPluginUtils.getTenantUserAppKey(), dsResult.getApplicationId(),
-                dsResult.getApplicationName());
+        configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), dsResult.getApplicationId(),
+            dsResult.getApplicationName());
 
         agentConfigCacheManager.evictShadowServer(dsResult.getApplicationName());
         return Response.success();

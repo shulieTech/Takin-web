@@ -2,15 +2,21 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 链路场景关联表
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @TableName(value = "t_scene_link_relate")
-public class SceneLinkRelateEntity {
+public class SceneLinkRelateEntity extends TenantBaseEntity {
     /**
      * 主键
      */

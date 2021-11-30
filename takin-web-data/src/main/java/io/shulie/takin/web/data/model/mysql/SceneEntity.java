@@ -2,15 +2,21 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 场景表
  */
 @Data
 @TableName(value = "t_scene")
-public class SceneEntity {
+@EqualsAndHashCode(callSuper = true)
+public class SceneEntity extends UserBaseEntity {
     /**
      * 主键
      */
@@ -32,13 +38,13 @@ public class SceneEntity {
     /**
      * 场景等级 :p0/p1/02/03
      */
-    @TableField(value = "SCENE_LEVEL", updateStrategy = FieldStrategy.IGNORED)
+    @TableField(value = "SCENE_LEVEL")
     private String sceneLevel;
 
     /**
      * 是否核心场景 0:不是;1:是
      */
-    @TableField(value = "IS_CORE", updateStrategy = FieldStrategy.IGNORED)
+    @TableField(value = "IS_CORE")
     private Integer isCore;
 
     /**
@@ -46,18 +52,6 @@ public class SceneEntity {
      */
     @TableField(value = "IS_CHANGED")
     private Integer isChanged;
-
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 是否有效 0:有效;1:无效

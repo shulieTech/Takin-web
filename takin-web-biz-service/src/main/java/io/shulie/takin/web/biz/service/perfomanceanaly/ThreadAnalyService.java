@@ -31,5 +31,9 @@ public interface ThreadAnalyService {
      */
     String getThreadStackInfo(String link);
 
+    /**
+     * 清理性能分析数据 租户
+     * @param time
+     */
     void clearData(Integer time);
 }

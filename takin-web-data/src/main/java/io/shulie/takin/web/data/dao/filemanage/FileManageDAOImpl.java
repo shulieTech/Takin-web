@@ -66,14 +66,14 @@ public class FileManageDAOImpl implements FileManageDAO {
 
     @Override
     public FileManageResult selectFileManageById(Long id) {
-        if (id == null){
+        if (id == null) {
             return null;
         }
         FileManageEntity fileManageEntity = fileManageMapper.selectById(id);
         return toFileManageResult(fileManageEntity);
     }
 
-    private FileManageResult toFileManageResult(FileManageEntity fileManageEntity){
+    private FileManageResult toFileManageResult(FileManageEntity fileManageEntity) {
         if (fileManageEntity == null) {
             return null;
         }
@@ -84,7 +84,7 @@ public class FileManageDAOImpl implements FileManageDAO {
         fileManageResult.setFileExt(fileManageEntity.getFileExt());
         fileManageResult.setFileType(fileManageEntity.getFileType());
         fileManageResult.setFileExtend(fileManageEntity.getFileExtend());
-        fileManageResult.setCustomerId(fileManageEntity.getCustomerId());
+        fileManageResult.setTenantId(fileManageEntity.getTenantId());
         fileManageResult.setUploadTime(fileManageEntity.getUploadTime());
         fileManageResult.setUploadPath(fileManageEntity.getUploadPath());
         fileManageResult.setIsDeleted(fileManageEntity.getIsDeleted());

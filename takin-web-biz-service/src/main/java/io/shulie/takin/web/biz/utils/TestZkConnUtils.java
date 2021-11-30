@@ -4,9 +4,10 @@ import org.apache.zookeeper.ZooKeeper;
 import org.springframework.util.StringUtils;
 
 /**
- * @Description 测试zk连接的工具类
- * @Author ocean_wll
- * @Date 2021/8/13 2:11 下午
+ * 测试zk连接的工具类
+ *
+ * @author ocean_wll
+ * @date 2021/8/13 2:11 下午
  */
 public class TestZkConnUtils {
 

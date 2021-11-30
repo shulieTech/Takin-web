@@ -12,7 +12,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月17日
+ * @date 2018年5月17日
  */
 @Deprecated //todo service和controller都不需要包装这种对象，切面自动完成
 public class Results<T> implements Serializable {

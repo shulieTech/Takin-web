@@ -3,6 +3,8 @@ package com.pamirs.takin.entity.domain.vo;
 import java.util.Date;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pamirs.takin.common.util.DateToStringFormatSerialize;
+import io.shulie.takin.web.data.common.BaseTenantBean;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -12,7 +14,13 @@ import org.springframework.format.annotation.DateTimeFormat;
  * @version 1.0
  * @create 2018/11/1 0001 17:32
  */
-public class TDictionaryVo {
+public class TDictionaryVo{
+
+    public TDictionaryVo(){
+        this.tenantId = WebPluginUtils.traceTenantId();
+        this.envCode = WebPluginUtils.traceEnvCode();
+    }
+
     /**
      * 字典ID
      */
@@ -70,6 +78,32 @@ public class TDictionaryVo {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonSerialize(using = DateToStringFormatSerialize.class)
     private Date modifyTime;
+
+    /**
+     * 租户ID
+     */
+    private Long tenantId;
+
+    /**
+     * 环境编码
+     */
+    private String envCode;
+
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public String getEnvCode() {
+        return envCode;
+    }
+
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
+    }
 
     /**
      * Gets the value of typeName.

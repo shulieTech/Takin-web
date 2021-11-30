@@ -14,7 +14,7 @@ import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.entity.domain.vo.TLinkServiceMntVo;
 import io.shulie.takin.web.biz.service.ConfCenterService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.utils.ExcelUtil;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Api(tags = "链路管理")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class LinkMntController {
     private final Logger LOGGER = LoggerFactory.getLogger(LinkMntController.class);
 
@@ -55,7 +55,7 @@ public class LinkMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_ADD_LINK_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_ADD_LINK_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> saveBasicLink(@RequestBody @Valid TLinkServiceMntVo tLinkServiceMntVo,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -81,8 +81,8 @@ public class LinkMntController {
      * @return 成功, 则返回基础链路信息列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_LINKLIST_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_LINKLIST_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryBasicLinkList(@RequestBody Map<String, Object> paramMap) {
         try {
             return ResponseOk.create(confCenterService.queryBasicLinkList(paramMap));
@@ -103,7 +103,7 @@ public class LinkMntController {
      * @param linkType        链路类型
      * @param principalNo     负责人工号
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_LINKLIST_DOWNLOAD)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_LINKLIST_DOWNLOAD)
     public void downloadLinkList(HttpServletResponse response, String applicationName,
         String interfaceName,
         String linkName,
@@ -134,7 +134,7 @@ public class LinkMntController {
      * 模版:链路类型,目标rt,目标tps,目标RT-SA,目标成功率,选择二级链路,链路模块,链路名称,链路描述,阿斯旺场景 ID,链路等级,链路入口(HTTP接口),链路负责人工号
      * ,是否可用,计算单量方式,接口名称,接口描述
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_LINKLIST_UPLOAD)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_LINKLIST_UPLOAD)
     public ResponseEntity<Object> batchUploadLinkList(@RequestParam(value = "file") MultipartFile[] files)
         throws Exception {
         try {
@@ -155,7 +155,7 @@ public class LinkMntController {
      * @return 成功, 则返回链路详情, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_LINKINFO_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_LINKINFO_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkByLinkId(@RequestParam("linkId") String linkId) {
         try {
             TLinkServiceMntVo queryLinkByLinkId = confCenterService.queryLinkByLinkId(linkId);
@@ -173,8 +173,8 @@ public class LinkMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_DELETE_LINKINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_LINKINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteBasicLinkByLinkIds(@RequestParam("linkIds") String linkIds) {
         try {
             if (StringUtils.isEmpty(linkIds)) {
@@ -200,7 +200,7 @@ public class LinkMntController {
      * @return 成功, 则链路等级字典列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_LINKRANK_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_LINKRANK_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkRankList() {
         try {
             return ResponseOk.create(confCenterService.queryDicList(TakinDictTypeEnum.LINKRANK));
@@ -217,8 +217,8 @@ public class LinkMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_UPDATE_LINKINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_LINKINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateLinkinfo(@RequestBody @Valid TLinkServiceMntVo tLinkServiceMntVo,
         BindingResult bindingResult
     ) {
@@ -245,8 +245,8 @@ public class LinkMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_DELETE_LINKINTERFACE_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_LINKINTERFACE_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteLinkInterfaceByLinkServiceId(
         @RequestParam("linkServiceIds") String linkServiceIds) {
         try {
@@ -269,7 +269,7 @@ public class LinkMntController {
      * @return 成功, 则链路类型字典列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_LINKTYPE_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_LINKTYPE_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkTypeList() {
         try {
             return ResponseOk.create(confCenterService.queryDicList(TakinDictTypeEnum.LINK_TYPE));
@@ -283,8 +283,8 @@ public class LinkMntController {
     /**
      * @return
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_LINKBYLINKTYPE_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_LINKBYLINKTYPE_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkByLinkType(@RequestBody Map<String, Object> paramMap) {
         try {
             return ResponseOk.create(confCenterService.queryLinkByLinkType(paramMap));
@@ -298,8 +298,8 @@ public class LinkMntController {
     /**
      * @return
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_LINKIDNAME_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_LINKIDNAME_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkIdNameList() {
         try {
             return ResponseOk.create(confCenterService.queryLinkIdName());
@@ -316,8 +316,8 @@ public class LinkMntController {
      * @return 成功, 则链路模块字典列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_LINKMODULE_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_LINKMODULE_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkModuleList() {
         try {
             return ResponseOk.create(confCenterService.queryDicList(TakinDictTypeEnum.LINK_MODULE));
@@ -334,8 +334,8 @@ public class LinkMntController {
      * @return 成功, 则链路模块字典列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_WHITELIST_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_WHITELIST_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getWhiteList() {
         try {
             return ResponseOk.create(confCenterService.getWhiteListForLink());
@@ -352,8 +352,8 @@ public class LinkMntController {
      * @return 成功, 则链路模块字典列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_CALC_VOLUME_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_CALC_VOLUME_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryCalcVolumeList() {
         try {
             return ResponseOk.create(confCenterService.queryDicList(TakinDictTypeEnum.VOLUME_CALC_STATUS));
@@ -389,8 +389,8 @@ public class LinkMntController {
      *
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_LINK_HEADER_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_LINK_HEADER_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkHeaderList() {
         try {
             return ResponseOk.create(confCenterService.queryLinkHeaderInfoList());
@@ -409,8 +409,8 @@ public class LinkMntController {
      * @author shulie
      * @create 2019/4/15 17:36
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_SECONDLINK_BY_MODULE_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_SECONDLINK_BY_MODULE_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> querySecondLinkByModule(@RequestParam("linkModule") String linkModule) {
         try {
             long moduleValue = Long.parseLong(linkModule);

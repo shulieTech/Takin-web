@@ -10,6 +10,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.validation.Valid;
 import javax.annotation.Resource;
 
+import io.shulie.takin.cloud.entrypoint.scenemanage.MultipleSceneApi;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneTaskStartReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailResponse;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
+import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -39,7 +44,6 @@ import io.shulie.takin.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
-import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
@@ -48,12 +52,8 @@ import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.ext.content.enginecall.ThreadGroupConfigExt;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneTaskStartReq;
-import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
-import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
-import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.response.leakcheck.LeakSqlBatchRefsResponse;
 

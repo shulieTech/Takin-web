@@ -11,8 +11,4 @@ public interface PressureMachineLogService {
 
     PressureMachineLogResponse queryByExample(PressureMachineLogQueryRequest request);
 
-    /**
-     * 清理20天之前的数据
-     */
-    void clearRubbishData();
 }

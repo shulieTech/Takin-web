@@ -2,9 +2,15 @@ package io.shulie.takin.web.entrypoint.controller.linkmanage;
 
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 
-import com.pamirs.takin.entity.domain.dto.linkmanage.*;
+import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessActiveIdAndNameDto;
+import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowDto;
+import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowIdAndNameDto;
+import com.pamirs.takin.entity.domain.dto.linkmanage.MiddleWareNameDto;
+import com.pamirs.takin.entity.domain.dto.linkmanage.SceneDto;
+import com.pamirs.takin.entity.domain.dto.linkmanage.SystemProcessIdAndNameDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkHistoryInfoDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkmiddleWareDto;
@@ -13,28 +19,22 @@ import com.pamirs.takin.entity.domain.entity.linkmanage.statistics.StatisticsQue
 import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
-import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
-import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityNameResponse;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityNameResponse;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
+import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,12 +52,12 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "linkmanage", value = "链路标注")
 @Deprecated
 public class LinkManageController {
 
-    @Autowired
+    @Resource
     private LinkManageService linkManageService;
 
     @RequestMapping(value = "/link/scene/manage", method = RequestMethod.DELETE)
@@ -71,14 +71,14 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.DELETE
     )
-    public Response deleteScene(@RequestBody DeleteVo deleteVo) {
+    public Response<String> deleteScene(@RequestBody SceneManageDeleteReq req) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
-        BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(deleteVo.getId());
+        BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(req.getId());
         if (null == dto) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, "该业务流程不存在");
         }
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_PROCESS, dto.getBusinessProcessName());
-        return linkManageService.deleteScene(deleteVo.getId());
+        return Response.success(linkManageService.deleteScene(req.getId().toString()));
     }
 
     @GetMapping("/link/scene/manage")
@@ -151,7 +151,7 @@ public class LinkManageController {
     /**
      * 获取所有的系统流程名字和id
      *
-     * @return
+     * @return -
      */
     @GetMapping("/link/tech/linkmanage/all")
     @ApiOperation("系统流程名字和id的模糊搜索,不传数据则全部搜索")
@@ -162,7 +162,7 @@ public class LinkManageController {
     public Response<List<SystemProcessIdAndNameDto>> systemProcessFuzzSearch(
         @ApiParam(name = "systemProcessName", value = "系统流程名字") String systemProcessName) {
         try {
-            List<SystemProcessIdAndNameDto> dto = linkManageService.ggetAllSystemProcess(systemProcessName);
+            List<SystemProcessIdAndNameDto> dto = linkManageService.getAllSystemProcess(systemProcessName);
             return Response.success(dto);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -173,7 +173,7 @@ public class LinkManageController {
     /**
      * 获取所有的系统流程名字和id
      *
-     * @return
+     * @return -
      */
     @GetMapping("/link/tech/linkmanage/canRelate/all")
     @ApiOperation("系统流程名字和id的模糊搜索,不传数据则全部搜索")
@@ -250,7 +250,7 @@ public class LinkManageController {
     /**
      * 业务流程页面的中间件去重
      *
-     * @return
+     * @return -
      */
     @PostMapping("/link/scene/middlewares")
     @ApiOperation("业务流程页面的中间件去重")
@@ -278,7 +278,7 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.CREATE
     )
-    public Response addBusinessFlow(@RequestBody BusinessFlowVo vo) {
+    public Response<?> addBusinessFlow(@RequestBody BusinessFlowVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_PROCESS, vo.getSceneName());
         try {
@@ -298,7 +298,7 @@ public class LinkManageController {
         needAuth = ActionTypeEnum.QUERY
     )
     @Deprecated
-    public Response getBusinessFlowDetail(@NotNull String id) {
+    public Response<?> getBusinessFlowDetail(@NotNull Long id) {
         try {
             BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(id);
             return Response.success(dto);
@@ -319,7 +319,7 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.UPDATE
     )
-    public Response modifyBusinessFlow(@RequestBody BusinessFlowVo vo) {
+    public Response<?> modifyBusinessFlow(@RequestBody BusinessFlowVo vo) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
         try {
             linkManageService.modifyBusinessFlow(vo);
@@ -356,6 +356,5 @@ public class LinkManageController {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, e.getMessage());
         }
     }
-
 
 }

@@ -1,10 +1,10 @@
 package io.shulie.takin.web.data.dao.perfomanceanaly;
 
+import java.util.List;
+
 import io.shulie.takin.web.data.param.perfomanceanaly.PressureMachineStatisticsInsertParam;
 import io.shulie.takin.web.data.param.perfomanceanaly.PressureMachineStatisticsQueryParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineStatisticsResult;
-
-import java.util.List;
 
 /**
  * @author mubai
@@ -20,7 +20,5 @@ public interface PressureMachineStatisticsDao {
 
     PressureMachineStatisticsResult statistics();
 
-    //清理90天之前的数据
-    void clearRubbishData(String time);
 
 }

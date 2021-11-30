@@ -5,7 +5,6 @@ import java.util.Map;
 
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.vo.TLinkApplicationInterface;
-import io.shulie.takin.web.common.annocation.DataAuth;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -14,7 +13,7 @@ import org.apache.ibatis.annotations.Param;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月26日
+ * @date 2018年4月26日
  */
 @Mapper
 public interface TApplicationMntDao {
@@ -26,18 +25,19 @@ public interface TApplicationMntDao {
      * @return 大于0表示该应用已存在, 否则不存在
      * @author shulie
      */
-    public int applicationExist(@Param("applicationName") String applicationName);
+    int applicationExist(@Param("applicationName") String applicationName);
 
     int applicationExistByAppName(@Param("applicationName") String applicationName);
 
     /**
      * 判断同一租户下应用名称是否重复
      *
-     * @param customerId
+     * @param tenantId
      * @param applicationName
      * @return
      */
-    int applicationExistByCustomerIdAndAppName(@Param("customerId") Long customerId, @Param("applicationName") String applicationName);
+    int applicationExistByTenantIdAndAppName(@Param("tenantId") Long tenantId, @Param("envCode") String envCode,
+        @Param("applicationName") String applicationName);
 
     /**
      * 说明: 添加应用接口
@@ -45,7 +45,7 @@ public interface TApplicationMntDao {
      * @param tApplicationMnt 应用对象
      * @author shulie
      */
-    public void addApplication(TApplicationMnt tApplicationMnt);
+    void addApplication(TApplicationMnt tApplicationMnt);
 
     /**
      * 说明: 查询应用信息接口
@@ -65,9 +65,9 @@ public interface TApplicationMntDao {
      * @return 应用列表
      * @author shulie
      */
-    @DataAuth
-    public List<TApplicationMnt> queryApplicationList(@Param("applicationName") String applicationName,
-        @Param("applicationIds") List<String> applicationIds);
+
+    List<TApplicationMnt> queryApplicationList(@Param("applicationName") String applicationName,
+        @Param("applicationIds") List<String> applicationIds,@Param("userIds") List<Long> userIds);
 
     /**
      * 说明: 根据id列表批量查询应用和白名单信息
@@ -94,7 +94,7 @@ public interface TApplicationMntDao {
     TApplicationMnt queryApplicationinfoById(@Param("applicationId") long applicationId);
 
     public TApplicationMnt queryApplicationinfoByIdAndRole(@Param("applicationId") long applicationId,
-        @Param("role") Integer role, @Param("userId") Integer userId);
+        @Param("role") Integer role, @Param("tenantId") Long tenantId);
 
     /**
      * 说明: 根据应用id查询应用信息接口
@@ -214,10 +214,10 @@ public interface TApplicationMntDao {
      * @return 应用对象
      * @author shulie
      */
-    public TApplicationMnt queryApplicationinfoByName(@Param("applicationName") String applicationName);
+    TApplicationMnt queryApplicationinfoByName(@Param("applicationName") String applicationName);
 
     TApplicationMnt queryApplicationInfoByNameAndTenant(@Param("applicationName") String applicationName,
-        @Param("customerId") Long customerId);
+        @Param("tenantId") Long tenantId);
 
     /**
      * 更新 agentVersion
@@ -249,18 +249,26 @@ public interface TApplicationMntDao {
 
     /**
      * 返回id
+     *
      * @param names
-     * @param userId
+     * @param tenantId
+     * @param envCode
      * @return
      */
-    List<String> queryIdsByNameAndTenant(@Param("names") List<String> names, @Param("userId") Long userId);
-
+    List<String> queryIdsByNameAndTenant(@Param("names") List<String> names,
+        @Param("tenantId") Long tenantId,@Param("envCode") String envCode);
 
     List<TApplicationMnt> getAllApplications();
 
+    /**
+     * 查询
+     *
+     * @param statusList
+     * @return
+     */
     List<TApplicationMnt> getAllApplicationByStatus(@Param("statusList") List<Integer> statusList);
 
-    List<TApplicationMnt> getApplicationsByTenants(@Param("userIdList") List<Long> userIdList);
+    List<TApplicationMnt> getApplicationsByUserIdList(@Param("userIdList") List<Long> userIdList);
 
     String getIdByName(@Param("applicationName") String applicationName);
 

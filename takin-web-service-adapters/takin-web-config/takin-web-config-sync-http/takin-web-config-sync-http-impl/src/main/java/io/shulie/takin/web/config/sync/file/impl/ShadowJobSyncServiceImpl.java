@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.shulie.takin.web.config.entity.ShadowJob;
 import io.shulie.takin.web.config.sync.api.ShadowJobSyncService;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class ShadowJobSyncServiceImpl implements ShadowJobSyncService {
 
     @Override
-    public void syncShadowJob(String namespace, String applicationName, List<ShadowJob> shadowJobs) {
+    public void syncShadowJob(TenantCommonExt commonExt, String applicationName, List<ShadowJob> shadowJobs) {
         // TODO 写到redis，不写文件
     }
 }

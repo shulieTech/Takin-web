@@ -2,20 +2,22 @@ package io.shulie.takin.web.common.domain;
 
 import java.io.Serializable;
 
-import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import org.springframework.http.HttpMethod;
 
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
+
 /**
- * @author hezhongqi
- * @Package io.shulie.takin.web.common.domain
- * @ClassName: WebRequest
- * @description:老版请求方式
+ * 老版请求方式
+ *
  * @date 2021/8/10 15:54
  */
 @Data
 @Deprecated
-public class WebRequest extends CloudUserCommonRequestExt implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class WebRequest extends ContextExt implements Serializable {
 
     private static final long serialVersionUID = -1529428936481160409L;
 

@@ -2,11 +2,13 @@ package com.pamirs.takin.entity.domain.vo.report;
 
 import java.io.Serializable;
 
-import io.shulie.takin.web.common.domain.WebRequest;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+import io.shulie.takin.common.beans.page.PagingDevice;
 
 /**
  * @author 莫问
@@ -15,7 +17,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @ApiModel
 @EqualsAndHashCode(callSuper = true)
-public class ReportQueryParam extends WebRequest implements Serializable {
+public class ReportQueryParam extends PagingDevice implements Serializable {
 
     @ApiModelProperty(name = "sceneId", value = "场景ID")
     private Long sceneId;
@@ -45,6 +47,6 @@ public class ReportQueryParam extends WebRequest implements Serializable {
      * 前端传
      */
     @ApiModelProperty(value = "负责人姓名")
-    private String userName;
+    private String managerName;
 
 }

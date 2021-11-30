@@ -46,15 +46,6 @@ public class AppRemoteCallListVO extends AppRemoteCallVO {
     @ApiModelProperty(name = "count", value = "服务端应用名个数")
     private Integer count;
 
-    @ApiModelProperty(name = "canEdit", value = "编辑权限")
-    private Boolean canEdit = true;
-
-    @ApiModelProperty(name = "canRemove", value = "删除权限")
-    private Boolean canRemove = true;
-
-    @ApiModelProperty(name = "canEnableDisable", value = "启动关闭权限")
-    private Boolean canEnableDisable = true;
-
     /**
      * 排序用
      */

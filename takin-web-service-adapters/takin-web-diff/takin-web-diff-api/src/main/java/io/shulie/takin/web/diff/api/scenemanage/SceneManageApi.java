@@ -6,18 +6,26 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
-import io.shulie.takin.cloud.open.req.engine.EnginePluginDetailsWrapperReq;
-import io.shulie.takin.cloud.open.req.engine.EnginePluginFetchWrapperReq;
-import io.shulie.takin.cloud.open.req.scenemanage.*;
-import io.shulie.takin.cloud.open.resp.engine.EnginePluginDetailResp;
-import io.shulie.takin.cloud.open.resp.engine.EnginePluginSimpleInfoResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageListResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.ScriptCheckResp;
-import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
+import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginDetailsWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginFetchWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.CloudUpdateSceneFileRequest;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneIpNumReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryByIdsReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptCheckAndUpdateReq;
+import io.shulie.takin.cloud.sdk.model.response.engine.EnginePluginDetailResp;
+import io.shulie.takin.cloud.sdk.model.response.engine.EnginePluginSimpleInfoResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
+import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.ext.content.script.ScriptNode;
-import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -38,65 +46,65 @@ public interface SceneManageApi {
     /**
      * 保存
      *
-     * @return
+     * @return -
      */
     ResponseResult<Long> saveScene(SceneManageWrapperReq sceneManageWrapperReq);
 
     /**
      * 更新
      *
-     * @return
+     * @return -
      */
     ResponseResult<String> updateScene(SceneManageWrapperReq sceneManageWrapperReq);
 
     /**
      * 删除
      *
-     * @return
+     * @return -
      */
-    ResponseResult deleteScene(SceneManageDeleteReq sceneManageDeleteReq);
+    ResponseResult<String> deleteScene(SceneManageDeleteReq sceneManageDeleteReq);
 
     /**
      * 获取场景明细 供编辑使用
      *
-     * @return
+     * @return -
      */
     ResponseResult<SceneManageWrapperResp> getSceneDetail(SceneManageIdReq sceneManageIdVO);
 
     /**
      * 获取压测场景列表
      *
-     * @return
+     * @return -
      */
     ResponseResult<List<SceneManageListResp>> getSceneList(SceneManageQueryReq sceneManageQueryReq);
 
     /**
      * 流量计算
      *
-     * @return
+     * @return -
      */
     ResponseResult<BigDecimal> calcFlow(SceneManageWrapperReq sceneManageWrapperReq);
 
     /**
      * 获取机器数量范围
      *
-     * @return
+     * @return -
      */
     ResponseResult<StrategyResp> getIpNum(SceneIpNumReq sceneIpNumReq);
 
     /**
      * 不分页查询所有场景
      *
-     * @return
+     * @return -
      */
-    ResponseResult<List<SceneManageListResp>> getSceneManageList(CloudUserCommonRequestExt requestExt);
+    ResponseResult<List<SceneManageListResp>> getSceneManageList(ContextExt traceContextExt);
 
     ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req);
 
     /**
      * 获取支持的jmeter插件列表
      *
-     * @return
+     * @return -
      */
     ResponseResult<Map<String, List<EnginePluginSimpleInfoResp>>> listEnginePlugins(
         EnginePluginFetchWrapperReq wrapperReq);
@@ -104,14 +112,14 @@ public interface SceneManageApi {
     /**
      * 获取支持的jmeter插件详情
      *
-     * @return
+     * @return -
      */
     ResponseResult<EnginePluginDetailResp> getEnginePluginDetails(EnginePluginDetailsWrapperReq wrapperReq);
 
     /**
      * 校验并更新脚本
      *
-     * @return
+     * @return -
      */
     ResponseResult<ScriptCheckResp> checkAndUpdateScript(ScriptCheckAndUpdateReq scriptCheckAndUpdateReq);
 

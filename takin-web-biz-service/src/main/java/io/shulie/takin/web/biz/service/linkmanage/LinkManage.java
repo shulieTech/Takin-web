@@ -5,18 +5,19 @@ import java.util.Optional;
 
 import com.pamirs.takin.entity.domain.entity.linkmanage.figure.LinkEdge;
 import com.pamirs.takin.entity.domain.entity.linkmanage.figure.RpcType;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * @author  vernon
+ * @author vernon
  * @date 2019/12/10 02:06
  */
 
+@Slf4j
 @Component
 public class LinkManage {
-    private static final Logger logger = LoggerFactory.getLogger(LinkManage.class);
 
     /**
      * 组装root顶点信息中的入口名
@@ -54,7 +55,7 @@ public class LinkManage {
         Optional<LinkEdge> optional
             = edges.stream().filter(edge -> "0".equals(edge.getRpcId())).findFirst();
         if (optional.get() == null) {
-            logger.info("获取顶级节点失败...");
+            log.info("获取顶级节点失败...");
             return result;
         }
         LinkEdge root = optional.get();

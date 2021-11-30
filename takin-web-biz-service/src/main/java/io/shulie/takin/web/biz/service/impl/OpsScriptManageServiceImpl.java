@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -28,15 +30,17 @@ import io.shulie.takin.web.biz.service.OpsScriptManageService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.biz.utils.PageUtils;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.opsscript.OpsScriptEnum;
 import io.shulie.takin.web.common.enums.opsscript.OpsScriptExecutionEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.data.dao.opsscript.OpsScriptBatchNoDAO;
 import io.shulie.takin.web.data.dao.opsscript.OpsScriptExecuteResultDAO;
 import io.shulie.takin.web.data.dao.opsscript.OpsScriptFileDAO;
@@ -52,10 +56,10 @@ import io.shulie.takin.web.data.result.opsscript.OpsScriptDetailVO;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptFileVO;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptVO;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -89,19 +93,22 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
     @Autowired
     private DistributedLock distributedLock;
 
-    @Value("${file.ops_script.path:${data.path}/ops_nfs_dir/}")
-    private String tempPath;
-
-    @Value("${file.ops_script.deploy_user:appdeploy}")
     private String deployUser;
 
     @Autowired
     private OpsScriptFileService opsScriptFileService;
 
-    @Value("${file.ops_script.deploy_user_enable:false}")
-    private boolean deployUserEnable;
+    @PostConstruct
+    public void init() {
+        boolean deployUserEnable = ConfigServerHelper.getBooleanValueByKey(
+            ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_DEPLOY_USER_ENABLE);
 
-
+        // 服务器是否添加执行脚本的用户
+        deployUser = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_DEPLOY_USER);
+        if (deployUserEnable) {
+            io.shulie.takin.web.biz.utils.LinuxHelper.executeLinuxCmdNotThrow("useradd " + deployUser);
+        }
+    }
 
     @Override
     public PagingList<OpsScriptVO> page(OpsScriptParam param) {
@@ -123,11 +130,13 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             if (CollectionUtils.isEmpty(resultList)) {
                 resultList = Lists.newArrayList();
             }
-            List<Long> userIds = records.stream().map(OpsScriptManageEntity::getUserId).distinct().collect(Collectors.toList());
+            List<Long> userIds = records.stream().map(OpsScriptManageEntity::getUserId).distinct().collect(
+                Collectors.toList());
             Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
 
             Map<String, String> timeMap = resultList.stream().collect(
-                Collectors.toMap(t -> t.getOpsScriptId() + "", t -> DateUtil.format(t.getExecuteTime(), DatePattern.NORM_DATETIME_PATTERN)));
+                Collectors.toMap(t -> t.getOpsScriptId() + "",
+                    t -> DateUtil.format(t.getExecuteTime(), DatePattern.NORM_DATETIME_PATTERN)));
             for (OpsScriptManageEntity record : records) {
                 OpsScriptVO vo = new OpsScriptVO();
                 vo.setName(record.getName());
@@ -138,7 +147,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
                 vo.setStatusName(OpsScriptExecutionEnum.getNameByStatus(record.getStatus()));
                 vo.setLastExecuteTime(timeMap.get(record.getId() + ""));
                 vo.setLastModefyTime(DateUtil.format(record.getGmtUpdate(), DatePattern.NORM_DATETIME_PATTERN));
-                vo.setUserName(WebPluginUtils.getUserName(record.getUserId(),userMap));
+                vo.setUserName(WebPluginUtils.getUserName(record.getUserId(), userMap));
                 vo.setUserId(record.getUserId());
                 WebPluginUtils.fillQueryResponse(vo);
                 opsScriptVOList.add(vo);
@@ -181,11 +190,12 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         if (param.getName().length() > 20) {
             throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "名称长度不能超过20！");
         }
-
+        String tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
         //上传主要文件
         OpsScriptFileParam scriptFileParam = fileParamList.get(0);
         log.info("生成的文件uploadId为{}", scriptFileParam.getUploadId());
-        this.saveLocalFile(tempPath + scriptFileParam.getUploadId() + "/" + scriptFileParam.getFileName(), this.getContent(scriptFileParam));
+        this.saveLocalFile(tempPath + scriptFileParam.getUploadId() + "/" + scriptFileParam.getFileName(),
+            this.getContent(scriptFileParam));
 
         //上传附件
         if (!CollectionUtils.isEmpty(param.getAttachmentManageUpdateRequests())) {
@@ -251,20 +261,24 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             .set(OpsScriptManageEntity::getScriptType, param.getScriptType())
             .update();
 
+        String tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
         //删除原目录
         OpsScriptFileParam scriptFileParam = param.getFileManageUpdateRequests().get(0);
         if (scriptFileParam.getContent() != null) {
             log.info("生成的文件uploadId为{}", scriptFileParam.getUploadId());
             FileManagerHelper.deleteFiles(Lists.newArrayList(scriptFileParam.getFilePath()));
             //上传主要文件
-            this.saveLocalFile(tempPath + scriptFileParam.getUploadId() + "/" + scriptFileParam.getFileName(), this.getContent(scriptFileParam));
+            this.saveLocalFile(tempPath + scriptFileParam.getUploadId() + "/" + scriptFileParam.getFileName(),
+                this.getContent(scriptFileParam));
         }
         //上传附件
         List<OpsScriptFileParam> attachmentManageUpdateRequests = param.getAttachmentManageUpdateRequests();
-        List<String> pathsFromPage = attachmentManageUpdateRequests.stream().filter(t -> StringUtil.isNotBlank(t.getFilePath())).map(
+        List<String> pathsFromPage = attachmentManageUpdateRequests.stream().filter(
+            t -> StringUtil.isNotBlank(t.getFilePath())).map(
             t -> t.getFilePath()).collect(Collectors.toList());
         //需要删除的附件
-        List<String> deletePath = fileList.stream().filter(t -> t.getFileType().equals(2) && !pathsFromPage.contains(t.getFilePath())).map(
+        List<String> deletePath = fileList.stream().filter(
+            t -> t.getFileType().equals(2) && !pathsFromPage.contains(t.getFilePath())).map(
             t -> t.getFilePath()).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(deletePath)) {
             FileManagerHelper.deleteFiles(deletePath);
@@ -353,7 +367,8 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             fileVOList.add(fileVO);
         });
         detailVO.setFiles(fileVOList.stream().filter(t -> t.getFileType().equals(1)).collect(Collectors.toList()));
-        detailVO.setAttachmentfiles(fileVOList.stream().filter(t -> t.getFileType().equals(2)).collect(Collectors.toList()));
+        detailVO.setAttachmentfiles(
+            fileVOList.stream().filter(t -> t.getFileType().equals(2)).collect(Collectors.toList()));
         detailVO.setId(entity.getId() + "");
         detailVO.setName(entity.getName());
         detailVO.setScriptType(entity.getScriptType());
@@ -411,11 +426,12 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "此脚本实例找不到文件，无法执行！");
         }
         if (!new File(one.getFilePath()).exists()) {
-            throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "脚本文件【" + one.getFilePath() + "】不存在，无法执行！");
+            throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR,
+                "脚本文件【" + one.getFilePath() + "】不存在，无法执行！");
         }
 
         String lockKey = "";
-        String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.getCustomerId(), param.hashCode());
+        String.format(LockKeyConstants.LOCK_CREATE_PROBE, WebPluginUtils.traceTenantId(), param.hashCode());
         this.isCreateError(!distributedLock.tryLockZeroWait(lockKey), AppConstants.TOO_FREQUENTLY);
         try {
             //删除原有批次号 生成新批次号
@@ -430,7 +446,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
             Long batchId = entity.getId();
             updateScriptStatus(param, OpsScriptExecutionEnum.RUNNING.getStatus());
             //执行文件
-            opsScriptLogCache.remove(param.getId() + "#" + WebPluginUtils.getUserId());
+            opsScriptLogCache.remove(param.getId() + "#" + WebPluginUtils.traceUserId());
             opsScriptThreadPool.execute(() -> this.runOpsShell(one, param, batchId));
         } catch (Exception e) {
             log.error("{}", "脚本执行错误！", e);
@@ -468,7 +484,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         String filename = one.getFilePath().substring(one.getFilePath().lastIndexOf("/") + 1);
         String fileDir = fullpath.substring(0, fullpath.lastIndexOf("/"));
         String command = "su - " + deployUser + " -c 'cd " + fileDir + " && sh " + filename + "' ";
-        final String key = param.getId() + "#" + WebPluginUtils.getUserId();
+        final String key = param.getId() + "#" + WebPluginUtils.traceUserId();
         LinuxHelper.runShell(command, 5000L, new LinuxHelper.Callback() {
             @Override
             public void before(Process process) {
@@ -505,7 +521,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
                     resultEntity.setBatchId(batchId);
                     resultEntity.setOpsScriptId(one.getOpsScriptId());
                     resultEntity.setLogFilePath(logPath);
-                    resultEntity.setExcutorId(WebPluginUtils.getUserId());
+                    resultEntity.setExcutorId(WebPluginUtils.traceUserId());
                     log.info("保存新执行日志...");
                     opsScriptExecuteResultDAO.save(resultEntity);
                 } catch (Exception e) {
@@ -536,7 +552,7 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         if (Objects.isNull(id)) {
             throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "id不能为空！");
         }
-        OpsExecutionVO executionVO = opsScriptLogCache.get(id + "#" + WebPluginUtils.getUserId());
+        OpsExecutionVO executionVO = opsScriptLogCache.get(id + "#" + WebPluginUtils.traceUserId());
         if (Objects.isNull(executionVO)) {
             executionVO = new OpsExecutionVO("", false);
         }
@@ -548,7 +564,8 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         if (Objects.isNull(id)) {
             throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "ID不能为空！");
         }
-        OpsScriptExecuteResultEntity one = opsScriptExecuteResultDAO.lambdaQuery().eq(OpsScriptExecuteResultEntity::getOpsScriptId, id).eq(
+        OpsScriptExecuteResultEntity one = opsScriptExecuteResultDAO.lambdaQuery().eq(
+            OpsScriptExecuteResultEntity::getOpsScriptId, id).eq(
             OpsScriptExecuteResultEntity::getIsDeleted, 0).one();
         if (Objects.isNull(one)) {
             return "";
@@ -556,7 +573,8 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         File file = new File(one.getLogFilePath());
         if (!file.exists()) {
             log.error("文件【{}】不存在！", one.getLogFilePath());
-            throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR, "文件【" + one.getLogFilePath() + "】不存在！");
+            throw new TakinWebException(TakinWebExceptionEnum.OPS_SCRIPT_VALIDATE_ERROR,
+                "文件【" + one.getLogFilePath() + "】不存在！");
         }
         String logContent = FileUtils.readTextFileContent(file);
         return logContent;
@@ -569,10 +587,4 @@ public class OpsScriptManageServiceImpl implements OpsScriptManageService {
         opsScriptManageDAO.update(manageWrapper);
     }
 
-    @Override
-    public void init() {
-        if (deployUserEnable) {
-            io.shulie.takin.web.biz.utils.LinuxHelper.executeLinuxCmdNotThrow("useradd " + deployUser);
-        }
-    }
 }

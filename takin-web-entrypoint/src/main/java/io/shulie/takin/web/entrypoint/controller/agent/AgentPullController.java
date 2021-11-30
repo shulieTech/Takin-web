@@ -2,6 +2,8 @@ package io.shulie.takin.web.entrypoint.controller.agent;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.config.WhiteListSwitchDTO;
@@ -20,10 +22,14 @@ import io.shulie.takin.web.common.constant.AgentUrls;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginsConfigVO;
+import io.shulie.takin.web.ext.api.user.WebUserExtApi;
+import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,7 +82,7 @@ public class AgentPullController {
     }
 
     @ApiOperation(value = "拉取Job配置")
-    @GetMapping(value = AgentUrls.TAKIN_SHADOW_JOB_URL, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = AgentUrls.TAKIN_SHADOW_JOB_URL, produces = MediaType.APPLICATION_JSON_VALUE)
     public Response<List<TShadowJobConfig>> queryByAppName(
         @RequestParam(value = "appName", defaultValue = "") String appName) {
         return Response.success(agentConfigCacheManager.getShadowJobs(appName));
@@ -139,5 +145,4 @@ public class AgentPullController {
         @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName) {
         return ResponseResult.success(agentConfigCacheManager.getRemoteCallConfig(appName));
     }
-
 }

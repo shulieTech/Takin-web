@@ -33,7 +33,7 @@ public interface ApplicationMiddlewareDAO {
      * @param status 状态 @see io.shulie.takin.web.data.model.mysql.ApplicationMiddlewareEntity
      * @return 相关统计
      */
-    Integer countByApplicationIdAndStatus(Long applicationId, Integer status);
+    Long countByApplicationIdAndStatus(Long applicationId, Integer status);
 
     /**
      * 批量更新, 根据 id

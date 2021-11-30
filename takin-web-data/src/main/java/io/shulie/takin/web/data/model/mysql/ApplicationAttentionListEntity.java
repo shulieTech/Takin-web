@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.model.mysql;
 
 import com.baomidou.mybatisplus.annotation.*;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 import java.util.Date;
@@ -10,7 +11,7 @@ import java.util.Date;
  */
 @Data
 @TableName(value = "t_application_focus")
-public class ApplicationAttentionListEntity {
+public class ApplicationAttentionListEntity extends TenantBaseEntity {
 
     /**
      * 主键

@@ -11,11 +11,13 @@
         <result column="IS_DELETED" jdbcType="TINYINT" property="isDeleted"/>
         <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime"/>
-        <result column="CUSTOMER_ID" jdbcType="BIGINT" property="customerId"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
+
         <result column="USER_ID" jdbcType="BIGINT" property="userId"/>
     </resultMap>
     <sql id="Base_Column_List">
-        ID, SCENE_NAME, BUSINESS_LINK, SCENE_LEVEL, IS_CORE, IS_CHANGED, IS_DELETED, CREATE_TIME,UPDATE_TIME,CUSTOMER_ID,USER_ID
+        ID, SCENE_NAME, BUSINESS_LINK, SCENE_LEVEL, IS_CORE, IS_CHANGED, IS_DELETED, CREATE_TIME,UPDATE_TIME,tenant_id,env_code,USER_ID
     </sql>
 
     <resultMap id="BusinessFlowIdAndNameDtoMap"
@@ -191,29 +193,35 @@
         left join t_business_link_manage_table business_manage on business_manage.LINK_ID=scene_relate.BUSINESS_LINK_ID
         left join t_link_manage_table tech_manage on scene_relate.TECH_LINK_ID=tech_manage.LINK_ID
         <trim prefix="where" prefixOverrides="and | or">
-            <if test="sceneName != null">
-                and scene.SCENE_NAME = #{sceneName}
+            <if test="vo != null and vo.sceneName != null">
+                and scene.SCENE_NAME = #{vo.sceneName}
             </if>
-            <if test="entrace !=null">
-                and tech_manage.ENTRACE = #{entrace,jdbcType=VARCHAR}
+            <if test="vo != null and vo.entrace !=null">
+                and tech_manage.ENTRACE = #{vo.entrace,jdbcType=VARCHAR}
             </if>
-            <if test="ischanged !=null">
-                and scene.IS_CHANGED = #{ischanged,jdbcType=TINYINT}
+            <if test="vo != null and vo.ischanged !=null">
+                and scene.IS_CHANGED = #{vo.ischanged,jdbcType=TINYINT}
             </if>
-            <if test="businessName !=null">
-                and business_manage.LINK_NAME = #{businessName}
+            <if test="vo != null and vo.businessName !=null">
+                and business_manage.LINK_NAME = #{vo.businessName}
             </if>
-            <if test="middleWareType !=null">
-                and middleware.MIDDLEWARE_TYPE = #{middleWareType}
+            <if test="vo != null and vo.middleWareType !=null">
+                and middleware.MIDDLEWARE_TYPE = #{vo.middleWareType}
             </if>
-            <if test="middleWareName !=null">
-                and middleware.MIDDLEWARE_NAME = #{middleWareName}
+            <if test="vo != null and vo.middleWareName !=null">
+                and middleware.MIDDLEWARE_NAME = #{vo.middleWareName}
             </if>
-            <if test="middleWareVersion !=null">
-                and middleware.MIDDLEWARE_VERSION = #{middleWareVersion}
+            <if test="vo != null and vo.middleWareVersion !=null">
+                and middleware.MIDDLEWARE_VERSION = #{vo.middleWareVersion}
             </if>
-            <if test="sceneId != null">
-                and scene.ID = #{sceneId}
+            <if test="vo != null and vo.sceneId != null">
+                and scene.ID = #{vo.sceneId}
+            </if>
+            <if test="userIds != null and userIds.size > 0">
+                AND scene.user_id IN
+                <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
             </if>
             and scene.IS_DELETED = 0
         </trim>

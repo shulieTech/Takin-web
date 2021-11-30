@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.entity.simplify.TShadowJobConfig;
 import com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery;
-import io.shulie.takin.web.common.annocation.DataAuth;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -18,9 +17,9 @@ public interface TShadowJobConfigMapper {
 
     int insert(TShadowJobConfig record);
 
-    TShadowJobConfig selectOneById(Long id);
+    TShadowJobConfig selectOneById(ShadowJobConfigQuery query);
 
-    @DataAuth
+
     List<TShadowJobConfig> selectList(ShadowJobConfigQuery query);
 
     int update(TShadowJobConfig record);

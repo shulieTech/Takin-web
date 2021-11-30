@@ -1,8 +1,7 @@
 package io.shulie.takin.web.biz.convert.linkmanage;
 
-import com.pamirs.takin.common.util.NumberUtil;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
-import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
 import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
@@ -30,12 +29,11 @@ import java.util.List;
 public interface LinkManageConvert {
     LinkManageConvert INSTANCE = Mappers.getMapper(LinkManageConvert.class);
 
-
     List<ScriptJmxNode> ofScriptNodeList(List<ScriptNode> scriptNodes);
 
     List<SceneLinkRelateSaveParam> ofSceneLinkRelateResults(List<SceneLinkRelateResult> sceneLinkRelateResults);
 
-    @Mapping(target = "id",ignore = true)
+    @Mapping(target = "id", ignore = true)
     BusinessFlowDetailResponse ofBusinessFlowDetailResponse(ScriptManageDeployDetailResponse scriptManageDeployDetail);
 
     FileManageResponse ofFileManageResponse(FileManageResponse fileManageResponse);
@@ -44,13 +42,13 @@ public interface LinkManageConvert {
 
     List<FileManageUpdateRequest> ofFileManageResponseList(List<FileManageResponse> fileManageResponseList);
 
-    @Mapping(target = "id",ignore = true)
+    @Mapping(target = "id", ignore = true)
     SceneLinkRelateSaveParam ofSceneLinkRelateRequest(SceneLinkRelateRequest sceneLinkRelateRequest);
 
-    @Mapping(target = "type",ignore = true)
+    @Mapping(target = "type", ignore = true)
     ActivityCreateRequest ofActivityCreateRequest(SceneLinkRelateRequest sceneLinkRelateRequest);
 
-    @Mapping(target = "type",ignore = true)
+    @Mapping(target = "type", ignore = true)
     VirtualActivityCreateRequest ofVirtualActivityCreateRequest(SceneLinkRelateRequest sceneLinkRelateRequest);
 
     List<BusinessFlowListResponse> ofSceneResultList(List<SceneResult> list);

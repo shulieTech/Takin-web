@@ -16,21 +16,22 @@ public class ActivityUtil {
 
     /**
      * 判断是否是正常业务活动
-     * @param type
-     * @return
+     *
+     * @param type 业务活动类型
+     * @return 是否是正常业务活动
      */
-    public static Boolean isNormalBusiness(Integer type){
-        return type == null || BusinessTypeEnum.NORMAL_BUSINESS.getType().equals(type);
+    public static boolean isNormalBusiness(Integer type) {
+        return BusinessTypeEnum.NORMAL_BUSINESS.getType().equals(type);
     }
 
     /**
      * linkId
      *
      * @param serviceName 服务名称
-     * @param methodName 方法名称
-     * @param appName 应用名称
-     * @param rpcType rpcType
-     * @param extend 扩展字段
+     * @param methodName  方法名称
+     * @param appName     应用名称
+     * @param rpcType     rpcType
+     * @param extend      扩展字段
      * @return linkId 链路id
      */
     public static String createLinkId(String serviceName, String methodName, String appName, String rpcType, String extend) {
@@ -39,7 +40,7 @@ public class ActivityUtil {
             .append("|").append(methodName)
             .append("|").append(appName)
             .append("|").append(rpcType);
-        if (StringUtils.isNotBlank(extend)){
+        if (StringUtils.isNotBlank(extend)) {
             tags.append("|").append(extend);
         }
         try {
@@ -50,25 +51,26 @@ public class ActivityUtil {
     }
 
     public static String buildEntrance(String methodName, String serviceName, String rpcType) {
-        if (RpcTypeEnum.MQ.getValue().equals(rpcType)){
+        if (RpcTypeEnum.MQ.getValue().equals(rpcType)) {
             return StringUtils.join(Lists.newArrayList(serviceName, rpcType), "|");
         }
-        return StringUtils.join(Lists.newArrayList( methodName, serviceName, rpcType), "|");
+        return StringUtils.join(Lists.newArrayList(methodName, serviceName, rpcType), "|");
     }
 
     /**
      * 获取s
+     *
      * @param virtualEntrance
      * @param rpcType
      * @return
      */
-    public static String buildVirtualEntrance(String methodName,String virtualEntrance, String rpcType) {
-        if (StringUtils.isNotBlank(methodName)){
-            return StringUtils.join(Lists.newArrayList(methodName,virtualEntrance, rpcType), "|");
+    public static String buildVirtualEntrance(String methodName, String virtualEntrance, String rpcType) {
+        if (StringUtils.isNotBlank(methodName)) {
+            return StringUtils.join(Lists.newArrayList(methodName, virtualEntrance, rpcType), "|");
         }
-        if(StringUtils.isNotBlank(rpcType)) {
+        if (StringUtils.isNotBlank(rpcType)) {
             return StringUtils.join(Lists.newArrayList(virtualEntrance, rpcType), "|");
-        }else {
+        } else {
             return virtualEntrance;
         }
 
@@ -86,7 +88,7 @@ public class ActivityUtil {
      */
     public static EntranceJoinEntity covertEntrance(String dbEntrance) {
         String[] split = StringUtils.split(dbEntrance, "\\|");
-        if (split.length == 2){
+        if (split.length == 2) {
             EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
             entranceJoinEntity.setServiceName(split[0]);
             entranceJoinEntity.setRpcType(split[1]);
@@ -101,7 +103,6 @@ public class ActivityUtil {
         entranceJoinEntity.setRpcType(split[2]);
         return entranceJoinEntity;
     }
-
 
     public static String toEntrance(EntranceJoinEntity entranceJoinEntity) {
         return StringUtils.join(
@@ -121,11 +122,11 @@ public class ActivityUtil {
         EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
         if (split.length == 1) {
             entranceJoinEntity.setVirtualEntrance(dbEntrance);
-        }else if(split.length == 2) {
+        } else if (split.length == 2) {
             // 服务入口
             entranceJoinEntity.setVirtualEntrance(split[0]);
             entranceJoinEntity.setRpcType(split[1]);
-        }else if (split.length == 3){
+        } else if (split.length == 3) {
             // 服务入口
             entranceJoinEntity.setMethodName(split[0]);
             entranceJoinEntity.setVirtualEntrance(split[1]);
@@ -138,8 +139,36 @@ public class ActivityUtil {
         return entranceJoinEntity;
     }
 
+    /**
+     * 虚拟业务活动转换
+     *
+     * @param dbEntrance 入口
+     * @return 业务活动入口转换对象
+     */
+    public static EntranceJoinEntity covertVirtualEntranceV2(String dbEntrance) {
+        String[] split = StringUtils.split(dbEntrance, "\\|");
+        EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
+        entranceJoinEntity.setServiceName(split[0]);
+        entranceJoinEntity.setRpcType(split[1]);
+        return entranceJoinEntity;
+    }
+
+    /**
+     * 根据入口, 业务活动类型, 获得业务活动入口转换对象
+     *
+     * @param entrance 入口
+     * @param type     业务活动类型, 1 虚拟业务活动, 0 正常业务活动
+     * @return 业务活动入口转换对象
+     */
+    public static EntranceJoinEntity getEntranceJoinEntityByEntranceAndType(String entrance, Integer type) {
+        return ActivityUtil.isNormalBusiness(type) ? ActivityUtil.covertEntrance(entrance)
+            : ActivityUtil.covertVirtualEntranceV2(entrance);
+    }
+
     @Data
     public static class EntranceJoinEntity {
+
+        private String applicationName;
 
         private String methodName;
 

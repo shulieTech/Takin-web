@@ -19,12 +19,11 @@ import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
 import io.shulie.takin.web.data.param.application.LinkGuardCreateParam;
 import io.shulie.takin.web.data.result.linkguard.LinkGuardResult;
-import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -76,7 +75,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         if (vo.getApplicationId() != null && !vo.getApplicationId().isEmpty()) {
             param.setAppId(Long.valueOf(vo.getApplicationId()));
         }
-        List<LinkGuardEntity> dbList = tLinkGuardMapper.selectByExample(param);
+        List<LinkGuardEntity> dbList = tLinkGuardMapper.selectByExample(param,WebPluginUtils.getQueryAllowUserIdList());
         if (dbList != null && dbList.size() > 0) {
             return Response.fail(FALSE_CORE, "同一个methodInfo只能设置一个挡板");
         }
@@ -95,7 +94,8 @@ public class LinkGuardServiceImpl implements LinkGuardService {
             return Response.fail(FALSE_CORE, "创建挡板失败");
         }
         applicationService.modifyAccessStatus(vo.getApplicationId(), AppAccessTypeEnum.UNUPLOAD.getValue(), null);
-        configSyncService.syncGuard(WebPluginUtils.getTenantUserAppKey(), Long.parseLong(vo.getApplicationId()), vo.getApplicationName());
+        configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), Long.parseLong(vo.getApplicationId()), vo.getApplicationName());
+        //todo agent改造点
         agentConfigCacheManager.evictGuards(vo.getApplicationName());
         return Response.success();
     }
@@ -126,7 +126,8 @@ public class LinkGuardServiceImpl implements LinkGuardService {
             return Response.fail(FALSE_CORE, "更新挡板失败", null);
         }
         // 原先是 用户基本的的key ，现在改成 租户级别的
-        configSyncService.syncGuard(WebPluginUtils.getTenantUserAppKey(), Long.parseLong(applicationId), vo.getApplicationName());
+        configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), Long.parseLong(applicationId), vo.getApplicationName());
+        //todo agent改造点
         agentConfigCacheManager.evictGuards(vo.getApplicationName());
         return Response.success();
     }
@@ -136,8 +137,8 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         try {
             LinkGuardEntity linkGuardEntity = tLinkGuardMapper.selectById(id);
             tLinkGuardMapper.deleteById(id);
-            UserExt user = WebPluginUtils.getUser();
-            configSyncService.syncGuard(user.getKey(), linkGuardEntity.getApplicationId(), null);
+            configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), linkGuardEntity.getApplicationId(), null);
+            //todo agent改造点
             agentConfigCacheManager.evictGuards(linkGuardEntity.getApplicationName());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -156,7 +157,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         }
         try {
             //处理agent携带用户信息的查询
-            if (WebPluginUtils.getTenantUserAppKey() != null && !WebPluginUtils.getTenantUserAppKey().isEmpty()) {
+            if (WebPluginUtils.traceTenantAppKey() != null && !WebPluginUtils.traceTenantAppKey().isEmpty()) {
                 if (param.getApplicationName() != null) {
                     TApplicationMnt applicationMnt = applicationService.queryTApplicationMntByName(param.getApplicationName());
                     if (applicationMnt != null) {
@@ -164,7 +165,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
                     }
                 }
             }
-            list = tLinkGuardMapper.selectByExample(param);
+            list = tLinkGuardMapper.selectByExample(param,WebPluginUtils.getQueryAllowUserIdList());
 
             if (null != list && list.size() > 0) {
                 if (param.getCurrentPage() == null || param.getPageSize() == null) {
@@ -199,7 +200,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         try {
             LinkGuardQueryParam param = new LinkGuardQueryParam();
             param.setIsEnable(true);
-            list = tLinkGuardMapper.selectByExample(param);
+            list = tLinkGuardMapper.selectByExample(param,WebPluginUtils.getQueryAllowUserIdList());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Response.fail(FALSE_CORE, "查询挡板失败", null);
@@ -224,8 +225,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         entity.setId(id);
         entity.setIsEnable(target);
         tLinkGuardMapper.update(entity);
-        UserExt user = WebPluginUtils.getUser();
-        configSyncService.syncGuard(user.getKey(), linkGuardEntity.getApplicationId(), null);
+        configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), linkGuardEntity.getApplicationId(), null);
         agentConfigCacheManager.evictGuards(linkGuardEntity.getApplicationName());
         return Response.success();
     }

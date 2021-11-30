@@ -5,7 +5,7 @@ package com.pamirs.takin.common.constant;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月16日
+ * @date 2018年5月16日
  */
 public enum PageLevelEnum {
     //1普通页面加载 2简单查询页面/复杂界面 3复杂查询页面

@@ -13,20 +13,23 @@ import com.alibaba.fastjson.JSON;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.takin.entity.dao.report.TReportApplicationSummaryMapper;
-import com.pamirs.takin.entity.dao.report.TReportBottleneckInterfaceMapper;
-import com.pamirs.takin.entity.dao.report.TReportMachineMapper;
-import com.pamirs.takin.entity.dao.report.TReportSummaryMapper;
-import com.pamirs.takin.entity.domain.entity.report.ReportApplicationSummary;
-import com.pamirs.takin.entity.domain.entity.report.ReportMachine;
-import com.pamirs.takin.entity.domain.entity.report.ReportSummary;
+import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.report.TpsTarget;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.web.biz.service.report.ReportService;
-import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.data.common.InfluxDatabaseManager;
+import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
+import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
+import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
+import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
+import io.shulie.takin.web.data.param.report.ReportApplicationSummaryCreateParam;
+import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
+import io.shulie.takin.web.data.param.report.ReportSummaryCreateParam;
 import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
+import io.shulie.takin.web.data.result.report.ReportSummaryResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -45,19 +48,19 @@ import org.springframework.stereotype.Component;
 public class SummaryService {
 
     @Resource
-    private TReportBottleneckInterfaceMapper tReportBottleneckInterfaceMapper;
+    private ReportBottleneckInterfaceDAO reportBottleneckInterfaceDAO;
 
     @Resource
-    private TReportApplicationSummaryMapper tReportApplicationSummaryMapper;
+    private ReportApplicationSummaryDAO reportApplicationSummaryDAO;
 
     @Autowired
     private ReportService reportService;
 
     @Resource
-    private TReportSummaryMapper tReportSummaryMapper;
+    private ReportSummaryDAO reportSummaryDAO;
 
     @Resource
-    private TReportMachineMapper tReportMachineMapper;
+    private ReportMachineDAO reportMachineDAO;
 
     @Autowired
     private ReportDataCache reportDataCache;
@@ -66,65 +69,60 @@ public class SummaryService {
     private InfluxDatabaseManager influxDatabaseManager;
 
     public void calcApplicationSummary(Long reportId) {
-        List<Map<String, Object>> dataList = tReportMachineMapper.selectCountByReport(reportId);
+        List<Map<String, Object>> dataList = reportMachineDAO.selectCountByReport(reportId);
         if (CollectionUtils.isEmpty(dataList)) {
             return;
         }
 
-        List<ReportApplicationSummary> applications = Lists.newArrayList();
+        List<ReportApplicationSummaryCreateParam> applications = Lists.newArrayList();
         for (Map<String, Object> dataMap : dataList) {
-            String applicationName = (String) dataMap.get("application_name");
+            String applicationName = (String)dataMap.get("application_name");
             if (StringUtils.isBlank(applicationName)) {
                 continue;
             }
-            Integer totalCount = convertLong((Long) dataMap.get("count"));
-            Integer riskCount = convertBigDecimal((BigDecimal) dataMap.get("riskSum"));
+            Integer totalCount = convertLong((Long)dataMap.get("count"));
+            Integer riskCount = convertBigDecimal((BigDecimal)dataMap.get("riskSum"));
 
-            ReportApplicationSummary application = new ReportApplicationSummary();
+            ReportApplicationSummaryCreateParam application = new ReportApplicationSummaryCreateParam();
             application.setReportId(reportId);
             application.setApplicationName(applicationName);
             application.setMachineTotalCount(totalCount);
             application.setMachineRiskCount(riskCount);
-
             applications.add(application);
         }
         if (CollectionUtils.isEmpty(applications)) {
             return;
         }
-        applications.forEach(tReportApplicationSummaryMapper::insertOrUpdate);
+        applications.forEach(reportApplicationSummaryDAO::insertOrUpdate);
     }
 
     public void calcReportSummay(Long reportId) {
-        Integer bottleneckInterfaceCount = convertLong(
-                tReportBottleneckInterfaceMapper.selectCountByReportId(reportId));
+        Integer bottleneckInterfaceCount = convertLong(reportBottleneckInterfaceDAO.selectCountByReportId(reportId));
 
         Integer appCount = 0;
         Integer totalCount = 0;
         Integer riskCount = 0;
-        Map<String, Object> countMap = tReportApplicationSummaryMapper.selectCountByReportId(reportId);
+        Map<String, Object> countMap = reportApplicationSummaryDAO.selectCountByReportId(reportId);
         if (MapUtils.isNotEmpty(countMap)) {
-            appCount = convertLong((Long) countMap.get("count"));
-            totalCount = convertBigDecimal((BigDecimal) countMap.get("totalSum"));
-            riskCount = convertBigDecimal((BigDecimal) countMap.get("riskSum"));
+            appCount = convertLong((Long)countMap.get("count"));
+            totalCount = convertBigDecimal((BigDecimal)countMap.get("totalSum"));
+            riskCount = convertBigDecimal((BigDecimal)countMap.get("riskSum"));
         }
 
         Integer warnCount = 0;
         Integer businessCount = 0;
         Integer passBusinessCount = 0;
-        WebResponse response = reportService.queryReportCount(reportId);
-        if (response != null && response.getData() != null) {
-            Map<String, Object> cloudMap = (Map<String, Object>) response.getData();
-            if (MapUtils.isNotEmpty(cloudMap)) {
-                warnCount = (Integer) cloudMap.get("warnCount");
-                businessCount = (Integer) cloudMap.get("count");
-                passBusinessCount = (Integer) cloudMap.get("passSum");
-            }
+        Map<String, Object> cloudMap = reportService.queryReportCount(reportId);
+        if (MapUtils.isNotEmpty(cloudMap)) {
+            warnCount = (Integer)cloudMap.get("warnCount");
+            businessCount = (Integer)cloudMap.get("count");
+            passBusinessCount = (Integer)cloudMap.get("passSum");
         }
         warnCount = warnCount != null ? warnCount : 0;
         businessCount = businessCount != null ? businessCount : 0;
         passBusinessCount = passBusinessCount != null ? passBusinessCount : 0;
 
-        ReportSummary reportSummary = new ReportSummary();
+        ReportSummaryCreateParam reportSummary = new ReportSummaryCreateParam();
         reportSummary.setReportId(reportId);
         reportSummary.setBottleneckInterfaceCount(bottleneckInterfaceCount);
         reportSummary.setRiskMachineCount(riskCount);
@@ -133,26 +131,41 @@ public class SummaryService {
         reportSummary.setApplicationCount(appCount);
         reportSummary.setMachineCount(totalCount);
         reportSummary.setWarnCount(warnCount);
-        ReportSummary summary = tReportSummaryMapper.selectOneByReportId(reportId);
-        // todo 临时方案
+
+        ReportSummaryResult summary = reportSummaryDAO.selectOneByReportId(reportId);
+
         if (summary == null) {
-            tReportSummaryMapper.insert(reportSummary);
+            reportSummaryDAO.insert(reportSummary);
         }
         log.info("Build ReportSummary Success, reportId={}", reportId);
     }
 
     public void calcTpsTarget(Long reportId) {
-        List<Metrices> metrics = reportDataCache.listAllMetricsData(reportId);
-        if (CollectionUtils.isEmpty(metrics)) {
+        ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
+        if(reportDetailDTO == null) {
+            log.error("calcTpsTarget 未找到报告【{}】",reportId);
             return;
         }
+        List<Metrices> metrics = reportDataCache.listAllMetricsData(reportId);
         List<String> applications = reportDataCache.getApplications(reportId);
         if (CollectionUtils.isEmpty(applications)) {
             return;
         }
-        //获取Min Max 压测时间
-        long minTime = metrics.stream().map(Metrices::getTime).min((Long::compareTo)).orElse(0L);
-        long maxTime = metrics.stream().map(Metrices::getTime).max((Long::compareTo)).orElse(0L);
+        //获取Min Max 压测时间 防止metrics 无数据
+        long minTime = DateUtil.parseSecondFormatter(reportDetailDTO.getStartTime()).getTime();
+        long maxTime = System.currentTimeMillis();
+        if(CollectionUtils.isNotEmpty(metrics)) {
+            minTime = metrics.stream().map(Metrices::getTime).min((Long::compareTo)).orElse(0L);
+            maxTime = metrics.stream().map(Metrices::getTime).max((Long::compareTo)).orElse(0L);
+        }else {
+            if(reportDetailDTO.getEndTime() != null) {
+                maxTime = reportDetailDTO.getEndTime().getTime();
+            }else if(maxTime - minTime >= 5*60*1000L){
+                //追加最大时间查询 5分钟
+                maxTime = minTime + 5*60*1000;
+            }
+        }
+
         //多往前选5秒
         minTime = minTime - 5 * 1000;
         //多往后选15s
@@ -162,7 +175,11 @@ public class SummaryService {
             //机器信息
             long startTime = System.currentTimeMillis();
             String searchAppIdSql = "select distinct(app_ip) as app_ip from app_base_data " +
-                    "where time>=" + minTime + "ms and time <= " + maxTime + "ms and app_name = '" + applicationName + "'";
+                "where time>=" + minTime + "ms and time <= " + maxTime + "ms and app_name = '" + applicationName + "'" +
+                // 增加租户
+                " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
+                " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
+
             Collection<BaseServerResult> appIds = influxDatabaseManager.query(BaseServerResult.class, searchAppIdSql);
             log.info("search appIds :{},cost time : {}", searchAppIdSql, System.currentTimeMillis() - startTime);
             if (CollectionUtils.isEmpty(appIds)) {
@@ -172,20 +189,23 @@ public class SummaryService {
             for (String host : hosts) {
                 long baseTime = System.currentTimeMillis();
                 String searchBaseSql = "select time, app_ip, cpu_rate, cpu_load, mem_rate, iowait, net_bandwidth_rate" +
-                        " from app_base_data where time>=" + minTime + "ms and time <= " + maxTime
-                        + "ms and app_name = '" + applicationName + "'" + " and app_ip = '" + host + "'";
+                    " from app_base_data where time>=" + minTime + "ms and time <= " + maxTime
+                    + "ms and app_name = '" + applicationName + "'" + " and app_ip = '" + host + "'" +
+                    // 增加租户
+                    " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
+                    " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
                 Collection<BaseServerResult> bases = influxDatabaseManager.query(BaseServerResult.class, searchBaseSql);
                 log.info("search baseSql :{},cost time = {} ", searchBaseSql, System.currentTimeMillis() - baseTime);
                 TpsTargetArray array = calcTpsTarget(metrics, bases);
                 if (array == null) {
                     continue;
                 }
-                ReportMachine reportMachine = new ReportMachine();
+                ReportMachineUpdateParam reportMachine = new ReportMachineUpdateParam();
                 reportMachine.setReportId(reportId);
                 reportMachine.setApplicationName(applicationName);
                 reportMachine.setMachineIp(host);
                 reportMachine.setMachineTpsTargetConfig(JSON.toJSONString(array));
-                tReportMachineMapper.updateTpsTargetConfig(reportMachine);
+                reportMachineDAO.updateTpsTargetConfig(reportMachine);
             }
         }
     }
@@ -207,18 +227,18 @@ public class SummaryService {
                 }
                 if (currentIndex < j) {
                     double cpu = bases.subList(currentIndex, j).stream().filter(data -> data.getCpuRate() != null)
-                            .mapToDouble(BaseServerResult::getCpuRate).average().orElse(0D);
+                        .mapToDouble(BaseServerResult::getCpuRate).average().orElse(0D);
                     double loading = bases.subList(currentIndex, j).stream().filter(data -> data.getCpuLoad() != null)
-                            .mapToDouble(BaseServerResult::getCpuLoad).average().orElse(0D);
+                        .mapToDouble(BaseServerResult::getCpuLoad).average().orElse(0D);
                     double memory = bases.subList(currentIndex, j).stream().filter(data -> data.getMemRate() != null)
-                            .mapToDouble(BaseServerResult::getMemRate).average().orElse(0D);
+                        .mapToDouble(BaseServerResult::getMemRate).average().orElse(0D);
                     double io = bases.subList(currentIndex, j).stream().filter(data -> data.getIoWait() != null)
-                            .mapToDouble(BaseServerResult::getIoWait).average().orElse(0D);
+                        .mapToDouble(BaseServerResult::getIoWait).average().orElse(0D);
                     double mbps = bases.subList(currentIndex, j).stream().filter(
-                                    data -> data.getNetBandWidthRate() != null).mapToDouble(BaseServerResult::getNetBandWidthRate)
-                            .average().orElse(0D);
+                            data -> data.getNetBandWidthRate() != null).mapToDouble(BaseServerResult::getNetBandWidthRate)
+                        .average().orElse(0D);
 
-                    target.setCpu(new BigDecimal((int) cpu));
+                    target.setCpu(new BigDecimal((int)cpu));
                     target.setLoading(new BigDecimal(loading).setScale(2, RoundingMode.HALF_UP));
                     target.setMemory(new BigDecimal(memory).setScale(2, RoundingMode.HALF_UP));
                     target.setIo(new BigDecimal(io).setScale(2, RoundingMode.HALF_UP));

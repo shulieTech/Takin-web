@@ -23,6 +23,17 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class ThreadPoolConfig {
 
+    /**
+     * 用于定时任务
+     * @return
+     */
+    @Bean(name = "jobThreadPool")
+    public ThreadPoolExecutor jobThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
+        return new ThreadPoolExecutor(100, 500, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
     @Bean(name = "commThreadPool")
     public ThreadPoolExecutor commThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("comm-thread-%d").build();
@@ -151,5 +162,16 @@ public class ThreadPoolConfig {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("query-async-thread-%d").build();
         return new ThreadPoolExecutor(coreSize, coreSize * 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * e2e线程池
+     * @return
+     */
+    @Bean(name = "e2eThreadPool")
+    public ThreadPoolExecutor e2eThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("e2e-job-%d").build();
+        return new ThreadPoolExecutor(16, 1000, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
     }
 }

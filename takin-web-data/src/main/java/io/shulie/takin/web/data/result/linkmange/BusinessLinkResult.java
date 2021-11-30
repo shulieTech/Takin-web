@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.result.linkmange;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -7,7 +8,7 @@ import lombok.Data;
  * @date 2020/10/16 5:40 下午
  */
 @Data
-public class BusinessLinkResult {
+public class BusinessLinkResult extends UserCommonExt {
 
     private Long linkId;
     private String id;
@@ -23,8 +24,7 @@ public class BusinessLinkResult {
     private String linkLevel;
     private String businessDomain;
     private BusinessLinkResult child;
-    private Long customerId;
-    private Long userId;
+
     private String relatedTechLink;
 
     /**

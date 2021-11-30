@@ -9,7 +9,6 @@
         <result column="type" jdbcType="VARCHAR" property="type"/>
         <result column="value" jdbcType="VARCHAR" property="value"/>
         <result column="remark" jdbcType="VARCHAR" property="remark"/>
-        <result column="is_deleted" jdbcType="TINYINT" property="isDeleted"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime"/>
     </resultMap>
@@ -18,4 +17,26 @@
         id, zk_path, `type`, `value`, `remark`, is_deleted, create_time,
         modify_time
     </sql>
+
+    <select id="selectListByZkPath"
+            resultType="io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult">
+        select id, zk_path, `type`, `value`, remark, tenant_id, env_code from t_pradar_zk_config where is_deleted = 0 and tenant_id = #{tenantId} and env_code = #{envCode} and zk_path = #{zkPath}
+        UNION ALL
+        select id, zk_path, `type`, `value`, remark, tenant_id, env_code from t_pradar_zk_config where is_deleted = 0 and tenant_id = -1 and env_code = 'system' and zk_path = #{zkPath}
+    </select>
+
+    <select id="selectPageByTenantIdAndEnvCode"
+            resultType="io.shulie.takin.web.data.result.pradarzkconfig.PradarZkConfigResult">
+        SELECT * FROM (SELECT id, zk_path, `value`, `type`, remark, modify_time FROM t_pradar_zk_config
+        WHERE tenant_id IN
+        <foreach collection="param.tenantIds" item="tenantId" separator="," open="(" close=")">
+            #{tenantId}
+        </foreach>
+        AND env_code IN
+        <foreach collection="param.envCodeList" item="envCode" separator="," open="(" close=")">
+            #{envCode}
+        </foreach>
+        ORDER BY tenant_id DESC LIMIT 100) t GROUP BY t.zk_path
+    </select>
+
 </mapper>

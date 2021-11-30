@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月21日
+ * @date 2018年5月21日
  */
 public class HttpUtils {
 

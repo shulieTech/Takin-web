@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.pojo.request.scenemanage;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -11,7 +12,7 @@ import lombok.Data;
  */
 
 @Data
-public class SceneSchedulerTaskUpdateRequest {
+public class SceneSchedulerTaskUpdateRequest extends TenantCommonExt {
 
     private Long id ;
 

@@ -20,12 +20,14 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
+import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * application_mnt dao 层
@@ -37,7 +39,23 @@ public interface ApplicationDAO {
 
     List<ApplicationDetailResult> getApplications(List<String> appNames);
 
+    /**
+     * 根据应用查
+     *
+     * @param appNames
+     * @return
+     */
     List<ApplicationResult> getApplicationByName(List<String> appNames);
+
+    /**
+     * 根据租户查询
+     *
+     * @param appNames
+     * @param userAppKey
+     * @param envCode
+     * @return
+     */
+    List<ApplicationResult> getApplicationByName(List<String> appNames, String userAppKey, String envCode);
 
     List<ApplicationDetailResult> getApplicationListByUserIds(List<Long> userIdList);
 
@@ -70,11 +88,19 @@ public interface ApplicationDAO {
     ApplicationDetailResult getApplicationById(Long appId);
 
     /**
+     * 不用租户拦截查询 导出接口用
+     *
+     * @param appId
+     * @return
+     */
+    ApplicationDetailResult getApplicationByIdWithInterceptorIgnore(Long appId);
+
+    /**
      * 根据租户查询
      *
      * @return
      */
-    ApplicationDetailResult getApplicationByCustomerIdAndName(String appName);
+    ApplicationDetailResult getApplicationByTenantIdAndName(String appName);
 
     /**
      * 指定责任人-应用管理
@@ -90,7 +116,7 @@ public interface ApplicationDAO {
      * @param applicationNames 应用名称列表
      * @return 应用列表
      */
-    List<ApplicationMntEntity> listByApplicationNamesAndCustomerId(List<String> applicationNames);
+    List<ApplicationMntEntity> listByApplicationNamesAndTenantId(List<String> applicationNames);
 
     /**
      * 通过名称获得应用
@@ -116,14 +142,22 @@ public interface ApplicationDAO {
     /**
      * 批量更新应用节点数
      *
-     * @param paramList  参数集合
-     * @param customerId 租户id
+     * @param paramList 参数集合
+     * @param tenantId  租户id
      */
-    void batchUpdateAppNodeNum(List<NodeNumParam> paramList, Long customerId);
+    void batchUpdateAppNodeNum(List<NodeNumParam> paramList, Long tenantId);
 
-    List<ApplicationAttentionListEntity> getAttentionList(String applicationName);
+    List<ApplicationAttentionListEntity> getAttentionList(ApplicationAttentionParam param);
 
     void attendApplicationService(Map<String, String> param);
+
+    /**
+     * 根据租户获取相关应用
+     *
+     * @param commonExts
+     * @return
+     */
+    List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts);
 
     /**
      * 根据应用名称， 获得该租户下的应用ids

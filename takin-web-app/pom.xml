@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.0.3-SNAPSHOT</version>
+        <version>takin-web-5.2.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-app</artifactId>
@@ -47,6 +47,18 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>curator-client</artifactId>
+                    <groupId>com.netflix.curator</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>curator-framework</artifactId>
+                    <groupId>com.netflix.curator</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>curator-recipes</artifactId>
+                    <groupId>com.netflix.curator</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -133,6 +145,14 @@
                 <exclusion>
                     <artifactId>jsqlparser</artifactId>
                     <groupId>com.github.jsqlparser</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>curator-framework</artifactId>
+                    <groupId>com.netflix.curator</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>curator-recipes</artifactId>
+                    <groupId>com.netflix.curator</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -293,72 +313,39 @@
         <dependency>
             <groupId>com.github.jsqlparser</groupId>
             <artifactId>jsqlparser</artifactId>
-            <version>3.1</version>
-            <scope>compile</scope>
+            <version>4.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-diff-cloud</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.pagehelper</groupId>
+                    <artifactId>pagehelper-spring-boot-autoconfigure</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-config-sync-zk-impl</artifactId>
         </dependency>
     </dependencies>
 
     <profiles>
-        <!-- 通用的私有化部署 -->
-        <profile>
-            <id>standard-private</id>
-            <properties>
-                <profile.active>standard-private</profile.active>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-config-sync-zk-impl</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
         <!-- 通用的公有化部署 -->
         <profile>
             <id>standard-public</id>
             <properties>
                 <profile.active>standard-public</profile.active>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-diff-cloud</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>com.github.pagehelper</groupId>
-                            <artifactId>pagehelper-spring-boot-autoconfigure</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-config-sync-zk-impl</artifactId>
-                </dependency>
-            </dependencies>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
         </profile>
-
-        <!-- 通用容器化部署 -->
-        <profile>
-            <id>standard-share</id>
-            <properties>
-                <profile.active>share</profile.active>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-diff-cloud</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-config-sync-zk-impl</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
     </profiles>
     <build>
-        <finalName>takin-web_${profile.active}_${project.version}</finalName>
+        <finalName>${project.version}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

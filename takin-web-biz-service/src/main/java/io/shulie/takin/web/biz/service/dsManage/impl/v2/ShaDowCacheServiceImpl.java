@@ -1,11 +1,12 @@
 package io.shulie.takin.web.biz.service.dsManage.impl.v2;
 
-import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSON;
+import java.util.Objects;
+
 import com.alibaba.fastjson.JSONObject;
+
+import cn.hutool.json.JSONUtil;
 import com.pamirs.attach.plugin.dynamic.Converter;
 import io.shulie.takin.web.biz.convert.db.parser.RedisTemplateParser;
-import io.shulie.takin.web.biz.convert.db.parser.TemplateParser;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInputV2;
 import io.shulie.takin.web.biz.service.dsManage.AbstractShaDowManageService;
@@ -15,11 +16,8 @@ import io.shulie.takin.web.data.dao.application.ApplicationDsCacheManageDAO;
 import io.shulie.takin.web.data.model.mysql.ApplicationDsCacheManageEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 /**
  * @Author: 南风
@@ -92,8 +90,11 @@ public class ShaDowCacheServiceImpl extends AbstractShaDowManageService {
         ApplicationDsCacheManageEntity entity = new ApplicationDsCacheManageEntity();
         entity.setDsType(inputV2.getDsType());
         entity.setShaDowFileExtedn(inputV2.getExtInfo());
-        entity.setCustomerId(inputV2.getCustomerId());
+        //租户补充
+        entity.setTenantId(inputV2.getTenantId());
         entity.setUserId(inputV2.getUserId());
+        entity.setEnvCode(inputV2.getEnvCode());
+
         entity.setStatus(0);
         if (isCreate) {
             entity.setApplicationId(inputV2.getApplicationId());

@@ -7,6 +7,8 @@ package io.shulie.takin.web.biz.cache.webimpl;
  **/
 
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
+import io.shulie.takin.web.biz.utils.TenantKeyUtils;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
  * 缓存检测应用是否存在结果
  */
 @Component
+@Deprecated
 public class ApplicationRegisterCache {
 
     public static final String CACHE_NAME = "t:a:c:application:register";
@@ -27,22 +30,24 @@ public class ApplicationRegisterCache {
     @Autowired
     protected RedisTemplate redisTemplate;
 
-    public Integer queryValue(Long customerId,String applicationName) {
-        String key = getKey(customerId,applicationName);
+    public Integer queryValue(Long tenantId,String applicationName) {
+        String key = getKey(tenantId,applicationName);
         Object obj = redisTemplate.opsForValue().get(key);
         if (obj != null){
             return (Integer)obj;
         }
-        int applicationExist = tApplicationMntDao.applicationExistByCustomerIdAndAppName(
-            customerId, applicationName);
+        int applicationExist = tApplicationMntDao.applicationExistByTenantIdAndAppName(
+            tenantId, WebPluginUtils.traceEnvCode(), applicationName);
         redisTemplate.opsForValue().set(key,applicationExist);
         return applicationExist;
     }
 
-    String getKey(Long customerId, String applicationName){
+    //RedisKey改造增加tenantId,envCode
+    String getKey(Long tenantId, String applicationName){
         StringBuilder builder = new StringBuilder();
         builder.append(CACHE_NAME).append(":");
-        builder.append(customerId).append(":").append(applicationName);
+        builder.append(TenantKeyUtils.getTenantKey());
+        builder.append(tenantId).append(":").append(applicationName);
         return builder.toString();
     }
 

@@ -7,7 +7,7 @@ import com.pamirs.takin.entity.domain.entity.TReport;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月17日
+ * @date 2018年5月17日
  */
 public class TBusinessMonitor extends TReport {
     /**

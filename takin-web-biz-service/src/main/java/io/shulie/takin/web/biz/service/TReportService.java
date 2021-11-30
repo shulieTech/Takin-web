@@ -14,7 +14,7 @@ import com.pamirs.takin.entity.domain.vo.TReportDetail;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月17日
+ * @date 2018年5月17日
  */
 public interface TReportService {
 
@@ -24,10 +24,8 @@ public interface TReportService {
      * @param tReport 报告
      * @return 增加成功返回void，失败返回错误信息
      * @version v1.0
-     * @Date:
      */
     Result<Void> add(TReport tReport);
-
 
     /**
      * 删除报告
@@ -35,7 +33,6 @@ public interface TReportService {
      * @param id 报告id
      * @return 修改成功返回void，失败返回错误信息
      * @version v1.0
-     * @Date:
      */
     Result<Void> deleteById(Long id);
 
@@ -56,7 +53,6 @@ public interface TReportService {
      * @param status 状态
      * @return 报告详情
      * @version v1.0
-     * @Date:
      */
     Result<TReport> queryOneByScenarioId(Long id, Integer status);
 
@@ -66,7 +62,6 @@ public interface TReportService {
      * @param tReport 报告
      * @return TReportAppIpDetail
      * @version v1.0
-     * @Date:
      */
     List<TReportAppIpDetail> queryMachineDetail(TReport tReport);
 
@@ -77,7 +72,6 @@ public interface TReportService {
      * @param status       状态
      * @return 报告
      * @version v1.0
-     * @Date:
      */
     List<TReport> queryBySecondLinkIdAndStatus(String secondLinkId, String status);
 
@@ -86,12 +80,13 @@ public interface TReportService {
     TReportDetail queryReportDetail(Long reportId);
 
     /**
+     * 报告应用详细信息列表
+     *
      * @param reportId 报告id
      * @param linkId   基础链路id
      * @return List<TReportAppIpDetail>
-     * @description 报告应用详细信息列表
      * @author shulie
-     * @create 2018/6/27 22:59
+     * @date 2018/6/27 22:59
      */
     List<TReportAppIpDetail> queryApplicationIpByIpList(String reportId, String linkId);
 }

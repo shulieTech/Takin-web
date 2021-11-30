@@ -9,7 +9,7 @@ import com.pamirs.takin.common.ResponseOk;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.entity.domain.vo.TApplicationMntConfigVo;
 import io.shulie.takin.web.biz.service.ApplicationMntConfigService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +29,11 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月13日
+ * @date 2018年4月13日
  */
 @Api(tags = "应用配置接口")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class ApplicationMntConfigController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(ApplicationMntConfigController.class);
@@ -47,8 +47,8 @@ public class ApplicationMntConfigController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_APPLICATION_CONFIG_PAGE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_APPLICATION_CONFIG_PAGE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryApplicationConfigPage(@RequestBody Map<String, Object> paramMap) {
         try {
             return ResponseOk.create(applicationMntConfigService.queryApplicationConfigPage(paramMap));
@@ -66,8 +66,8 @@ public class ApplicationMntConfigController {
      * @return 成功, 则返回应用信息列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_APPLICATION_CONFIG_QUERY,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_APPLICATION_CONFIG_QUERY,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryConfig(@RequestParam("applicationName") String applicationName) {
         try {
             return ResponseOk.create(applicationMntConfigService.queryConfig(applicationName));
@@ -85,8 +85,8 @@ public class ApplicationMntConfigController {
      * @return 成功, 则返回应用信息列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_APPLICATION_CONFIG_BATCH_UPDATE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_APPLICATION_CONFIG_BATCH_UPDATE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateApplicationConfigBatch(@RequestBody @Valid TApplicationMntConfigVo vo,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {

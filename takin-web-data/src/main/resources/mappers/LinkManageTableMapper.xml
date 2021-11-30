@@ -13,8 +13,7 @@
     <result column="CHANGE_REMARK" jdbcType="LONGVARCHAR" property="changeRemark" />
     <result column="IS_CHANGE" jdbcType="TINYINT" property="isChange" />
     <result column="IS_JOB" jdbcType="TINYINT" property="isJob" />
-    <result column="CUSTOMER_ID" jdbcType="BIGINT" property="customerId" />
-    <result column="USER_ID" jdbcType="BIGINT" property="userId" />
+
     <result column="IS_DELETED" jdbcType="TINYINT" property="isDeleted" />
     <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
     <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
@@ -22,11 +21,14 @@
     <result column="CHANGE_TYPE" jdbcType="TINYINT" property="changeType" />
     <result column="CAN_DELETE" jdbcType="TINYINT" property="canDelete" />
     <result column="features" jdbcType="LONGVARCHAR" property="features" />
+      <result column="TENANT_ID" jdbcType="BIGINT" property="tenantId"/>
+      <result column="ENV_CODE" jdbcType="VARCHAR" property="envCode"/>
+      <result column="USER_ID" jdbcType="BIGINT" property="userId"/>
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     LINK_ID, LINK_NAME, ENTRACE, PT_ENTRACE, CHANGE_BEFORE, CHANGE_AFTER, CHANGE_REMARK, 
-    IS_CHANGE, IS_JOB, CUSTOMER_ID, USER_ID, IS_DELETED, CREATE_TIME, UPDATE_TIME, APPLICATION_NAME, 
-    CHANGE_TYPE, CAN_DELETE, features
+    IS_CHANGE, IS_JOB, IS_DELETED, CREATE_TIME, UPDATE_TIME, APPLICATION_NAME,
+    CHANGE_TYPE, CAN_DELETE, features,TENANT_ID,ENV_CODE,USER_ID
   </sql>
 </mapper>

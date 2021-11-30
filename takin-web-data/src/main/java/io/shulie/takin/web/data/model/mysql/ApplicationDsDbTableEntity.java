@@ -1,11 +1,12 @@
 package io.shulie.takin.web.data.model.mysql;
 
+import java.io.Serializable;
+
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.CommonWithUserIdAndTenantIdEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.io.Serializable;
 
 /**
  * 业务数据库表(ApplicationDsDbTable)实体类
@@ -17,7 +18,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_application_ds_db_table")
 @ToString(callSuper = true)
-public class ApplicationDsDbTableEntity extends NewBaseEntity implements Serializable {
+public class ApplicationDsDbTableEntity extends CommonWithUserIdAndTenantIdEntity implements Serializable {
     private static final long serialVersionUID = -96340134222281342L;
 
     private Long appId;
@@ -44,15 +45,6 @@ public class ApplicationDsDbTableEntity extends NewBaseEntity implements Seriali
      */
     private Integer manualTag;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     private Integer isCheck;
 

@@ -12,50 +12,15 @@
         <result column="SCENE_ID" jdbcType="VARCHAR" property="sceneId"/>
         <result column="PARENT_BUSINESS_LINK_ID" property="parentBusinessLinkId"/>
         <result column="FRONT_UUID_KEY" property="frontUUIDKey"/>
-    </resultMap>
-    <resultMap id="recursionMap" type="com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowTree">
-        <result column="FRONT_UUID_KEY" property="key"/>
-        <result column="BUSINESS_LINK_ID" property="id"/>
-        <collection property="children" ofType="com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowTree"
-                    column="{BUSINESS_LINK_ID=BUSINESS_LINK_ID,SCENE_ID=SCENE_ID}"
-                    select="selectByrecuire"></collection>
+        <result column="TENANT_ID" jdbcType="BIGINT" property="tenantId"/>
+        <result column="ENV_CODE" jdbcType="VARCHAR" property="envCode"/>
     </resultMap>
 
-    <resultMap id="SCENE_NAME_AND_BUSINESSLINKNAME"
-               type="com.pamirs.takin.entity.domain.entity.linkmanage.SceneAndBusinessLink">
-        <result column="SCENE_ID" jdbcType="VARCHAR" property="sceneId"/>
-        <result column="TECH_LINK_ID" jdbcType="VARCHAR" property="techId"/>
-    </resultMap>
-    <sql id="Base_Column_List">
-        ID, ENTRANCE, IS_DELETED, CREATE_TIME, UPDATE_TIME
-    ,BUSINESS_LINK_ID,TECH_LINK_ID,SCENE_ID,PARENT_BUSINESS_LINK_ID
-    </sql>
-    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-        select
-        <include refid="Base_Column_List"/>
-        from t_scene_link_relate
-        where ID = #{id,jdbcType=BIGINT}
-    </select>
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
-        delete
-        from t_scene_link_relate
-        where ID = #{id,jdbcType=BIGINT}
-    </delete>
-    <insert id="insert" parameterType="com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate">
-        insert into t_scene_link_relate (ID,
-                                         ENTRANCE, IS_DELETED, CREATE_TIME,
-                                         UPDATE_TIME, BUSINESS_LINK_ID, TECH_LINK_ID, SCENE_ID, PARENT_BUSINESS_LINK_ID,
-                                         FRONT_UUID_KEY)
-        values (#{id,jdbcType=BIGINT},
-                #{entrance,jdbcType=VARCHAR}, #{isDeleted,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP},
-                #{updateTime,jdbcType=TIMESTAMP}, #{businessLinkId}, #{techLinkId}, #{sceneId}, #{parentBusinessLinkId}
-                   , #{frontUUIDKey})
-    </insert>
     <insert id="batchInsert" parameterType="java.util.List">
         insert into t_scene_link_relate (ID,
         ENTRANCE, IS_DELETED, CREATE_TIME,
         UPDATE_TIME,BUSINESS_LINK_ID,TECH_LINK_ID,SCENE_ID,PARENT_BUSINESS_LINK_ID
-        ,FRONT_UUID_KEY)
+        ,FRONT_UUID_KEY,TENANT_ID,ENV_CODE)
         values
         <foreach collection="list" item="item" index="index" separator=",">
             (#{item.id,jdbcType=BIGINT},
@@ -66,184 +31,15 @@
             #{item.techLinkId},
             #{item.sceneId},
             #{item.parentBusinessLinkId},
-            #{item.frontUUIDKey})
+            #{item.frontUUIDKey},
+            #{item.tenantId}),
+            #{item.envCode})
         </foreach>
     </insert>
-
-    <insert id="insertSelective" parameterType="com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate">
-        insert into t_scene_link_relate
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="id != null">
-                ID,
-            </if>
-            <if test="entrance != null">
-                ENTRANCE,
-            </if>
-            <if test="isDeleted != null">
-                IS_DELETED,
-            </if>
-            <if test="createTime != null">
-                CREATE_TIME,
-            </if>
-            <if test="updateTime != null">
-                UPDATE_TIME,
-            </if>
-            <if test="businessLinkId != null">
-                BUSINESS_LINK_ID,
-            </if>
-            <if test="techLinkId != null">
-                TECH_LINK_ID,
-            </if>
-            <if test="sceneId != null">
-                SCENE_ID,
-            </if>
-            <if test="parentBusinessLinkId">
-                PARENT_BUSINESS_LINK_ID,
-            </if>
-        </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="id != null">
-                #{id,jdbcType=BIGINT},
-            </if>
-            <if test="entrance != null">
-                #{entrance,jdbcType=VARCHAR},
-            </if>
-            <if test="isDeleted != null">
-                #{isDeleted,jdbcType=TINYINT},
-            </if>
-            <if test="createTime != null">
-                #{createTime,jdbcType=TIMESTAMP},
-            </if>
-            <if test="updateTime != null">
-                #{updateTime,jdbcType=TIMESTAMP},
-            </if>
-            <if test="businessLinkId != null">
-                #{businessLinkId},
-            </if>
-            <if test="techLinkId != null">
-                #{techLinkId},
-            </if>
-            <if test="sceneId != null">
-                #{sceneId},
-            </if>
-            <if test="parentBusinessLinkId != null">
-                #{parentBusinessLinkId},
-            </if>
-        </trim>
-    </insert>
-    <update id="updateByPrimaryKeySelective"
-            parameterType="com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate">
-        update t_scene_link_relate
-        <set>
-            <if test="entrance != null">
-                ENTRANCE = #{entrance,jdbcType=VARCHAR},
-            </if>
-            <if test="isDeleted != null">
-                IS_DELETED = #{isDeleted,jdbcType=TINYINT},
-            </if>
-            <if test="createTime != null">
-                CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
-            </if>
-            <if test="updateTime != null">
-                UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
-            </if>
-            <if test="sceneId != null">
-                SCENE_ID = #{sceneId}
-            </if>
-            <if test="parentBusinessLinkId">
-                PARENT_BUSINESS_LINK_ID = #{parentBusinessLinkId}
-            </if>
-        </set>
-        where ID = #{id,jdbcType=BIGINT}
-    </update>
-    <update id="updateByPrimaryKey" parameterType="com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate">
-        update t_scene_link_relate
-        set ENTRANCE    = #{entrance,jdbcType=VARCHAR},
-            IS_DELETED  = #{isDeleted,jdbcType=TINYINT},
-            CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
-            UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP}
-        where ID = #{id,jdbcType=BIGINT}
-    </update>
-    <update id="deleteBySceneId" parameterType="java.lang.String">
-        delete
-        from t_scene_link_relate
-        where SCENE_ID = #{sceneId}
-    </update>
-
-
-    <select id="selectSceneIdByTechLinkId" resultMap="SCENE_NAME_AND_BUSINESSLINKNAME">
-        select distinct SCENE_ID, TECH_LINK_ID
-        from t_scene_link_relate
-        where TECH_LINK_ID = #{techLinkId}
-          and IS_DELETED = 0
-    </select>
 
     <select id="selectBySceneId" resultType="com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate"
             parameterType="java.lang.Long">
-        select *
-        from t_scene_link_relate
-        where SCENE_ID = #{sceneId}
-          and IS_DELETED = 0
+        select * from t_scene_link_relate where SCENE_ID = #{sceneId} and IS_DELETED = 0
     </select>
 
-    <update id="updateEntranceNameBySystemProcessId">
-        update t_scene_link_relate
-        set ENTRANCE = #{newEntrance}
-        where TECH_LINK_ID = #{linkId}
-          and IS_DELETED = 0
-    </update>
-
-    <select id="selectByBusinessId" resultType="com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate">
-        select *
-        from t_scene_link_relate
-        where BUSINESS_LINK_ID = #{businessId}
-          and IS_DELETED = 0
-    </select>
-
-
-    <select id="selectBusinessIdByParentBusinessId" resultType="java.util.List">
-        select BUSINESS_LINK_ID
-        from t_scene_link_relate
-        where PARENT_BUSINESS_LINK_ID in #{parentBusinessId}
-          and IS_DELETED = 0
-    </select>
-
-
-    <select id="findAllRecursion" resultMap="recursionMap">
-        select BUSINESS_LINK_ID, FRONT_UUID_KEY, SCENE_ID
-        from t_scene_link_relate
-        where SCENE_ID = #{sceneId}
-          and IS_DELETED = 0
-          and (PARENT_BUSINESS_LINK_ID = '' or PARENT_BUSINESS_LINK_ID is null)
-    </select>
-
-    <select id="selectByrecuire" resultMap="recursionMap">
-        select BUSINESS_LINK_ID, FRONT_UUID_KEY, SCENE_ID
-        from t_scene_link_relate
-        where PARENT_BUSINESS_LINK_ID = #{BUSINESS_LINK_ID}
-          and SCENE_ID = #{SCENE_ID}
-          and IS_DELETED = 0
-    </select>
-
-    <select id="countBySceneId" resultType="java.lang.Integer">
-        select count(1)
-        from t_scene_link_relate
-        where SCENE_ID = #{sceneId}
-          and IS_DELETED = 0
-    </select>
-
-    <select id="countByTechLinkIds" resultType="java.lang.Integer">
-
-        select count(1) from t_scene_link_relate where TECH_LINK_ID in
-        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
-            #{item}
-        </foreach>
-        and IS_DELETED = 0
-    </select>
-    <select id="countByBusinessLinkId" resultType="java.lang.Long">
-        select count(1)
-        from t_scene_link_relate
-        where BUSINESS_LINK_ID = #{businessLinkId}
-          and IS_DELETED = 0
-    </select>
 </mapper>

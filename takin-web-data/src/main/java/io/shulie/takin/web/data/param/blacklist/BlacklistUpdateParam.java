@@ -3,13 +3,17 @@ package io.shulie.takin.web.data.param.blacklist;
 import java.util.Date;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 
 /**
  * @author 无涯
  * @date 2021/4/6 2:22 下午
  */
 @Data
-public class BlacklistUpdateParam {
+@EqualsAndHashCode(callSuper = true)
+public class BlacklistUpdateParam extends UserCommonExt {
 
     /**
      * 主键id
@@ -19,18 +23,17 @@ public class BlacklistUpdateParam {
     /**
      * 黑名单类型
      */
-    private Integer type ;
+    private Integer type;
 
     /**
      * redisKey
      */
-    private String redisKey ;
-
+    private String redisKey;
 
     /**
      * 应用id
      */
-    private Long applicationId ;
+    private Long applicationId;
 
     /**
      * 插入时间
@@ -42,21 +45,10 @@ public class BlacklistUpdateParam {
      */
     private Date gmtModified;
 
-
     /**
      * 是否可用(0表示未启动,1表示启动,2表示启用未校验)
      */
     private Integer useYn;
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     public BlacklistUpdateParam() {
         gmtModified = new Date();

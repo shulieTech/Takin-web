@@ -2,7 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.application;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.pojo.request.application.CompareApplicationMiddlewareRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ListApplicationMiddlewareRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationMiddlewareCountResponse;
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2021-06-30 16:11:28
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "application/middleware/")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "application/middleware/")
 @Api(tags = "接口: 应用中间件")
 public class ApplicationMiddlewareController {
 

@@ -3,13 +3,17 @@ package io.shulie.takin.web.data.result.leakverify;
 import java.util.Date;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 
 /**
  * @author fanxx
  * @date 2021/1/6 4:20 下午
  */
 @Data
-public class LeakVerifyResultResult {
+@EqualsAndHashCode(callSuper = true)
+public class LeakVerifyResultResult extends UserCommonExt {
     private Long id;
 
     /**
@@ -42,20 +46,10 @@ public class LeakVerifyResultResult {
      */
     private String dbresourceUrl;
 
-    /**
+    /*
      * 是否漏数 0:正常;1:漏数;2:未检测;3:检测失败
+       private Integer status;
      */
-//    private Integer status;
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     /**
      * 备注

@@ -64,7 +64,7 @@ public class TApplicationInfoUploadVo {
      * This method returns the value of the database column t_application_info_upload.TAIU_ID
      *
      * @return the value of t_application_info_upload.TAIU_ID
-     * @mbggenerated
+     * @mbg generated
      */
     public String getTaiuId() {
         return taiuId;
@@ -75,7 +75,7 @@ public class TApplicationInfoUploadVo {
      * This method sets the value of the database column t_application_info_upload.TAIU_ID
      *
      * @param taiuId the value for t_application_info_upload.TAIU_ID
-     * @mbggenerated
+     * @mbg generated
      */
     public void setTaiuId(String taiuId) {
         this.taiuId = taiuId;
@@ -86,7 +86,7 @@ public class TApplicationInfoUploadVo {
      * This method returns the value of the database column t_application_info_upload.APPLICATION_NAME
      *
      * @return the value of t_application_info_upload.APPLICATION_NAME
-     * @mbggenerated
+     * @mbg generated
      */
     public String getApplicationName() {
         return applicationName;
@@ -97,7 +97,7 @@ public class TApplicationInfoUploadVo {
      * This method sets the value of the database column t_application_info_upload.APPLICATION_NAME
      *
      * @param applicationName the value for t_application_info_upload.APPLICATION_NAME
-     * @mbggenerated
+     * @mbg generated
      */
     public void setApplicationName(String applicationName) {
         this.applicationName = applicationName == null ? null : applicationName.trim();
@@ -108,7 +108,7 @@ public class TApplicationInfoUploadVo {
      * This method returns the value of the database column t_application_info_upload.INFO_TYPE
      *
      * @return the value of t_application_info_upload.INFO_TYPE
-     * @mbggenerated
+     * @mbg generated
      */
     public Integer getInfoType() {
         return infoType;
@@ -119,7 +119,7 @@ public class TApplicationInfoUploadVo {
      * This method sets the value of the database column t_application_info_upload.INFO_TYPE
      *
      * @param infoType the value for t_application_info_upload.INFO_TYPE
-     * @mbggenerated
+     * @mbg generated
      */
     public void setInfoType(Integer infoType) {
         this.infoType = infoType;
@@ -130,7 +130,7 @@ public class TApplicationInfoUploadVo {
      * This method returns the value of the database column t_application_info_upload.UPLOAD_INFO
      *
      * @return the value of t_application_info_upload.UPLOAD_INFO
-     * @mbggenerated
+     * @mbg generated
      */
     public String getUploadInfo() {
         return uploadInfo;
@@ -141,7 +141,7 @@ public class TApplicationInfoUploadVo {
      * This method sets the value of the database column t_application_info_upload.UPLOAD_INFO
      *
      * @param uploadInfo the value for t_application_info_upload.UPLOAD_INFO
-     * @mbggenerated
+     * @mbg generated
      */
     public void setUploadInfo(String uploadInfo) {
         this.uploadInfo = uploadInfo == null ? null : uploadInfo.trim();
@@ -152,7 +152,7 @@ public class TApplicationInfoUploadVo {
      * This method returns the value of the database column t_application_info_upload.CREATE_TIME
      *
      * @return the value of t_application_info_upload.CREATE_TIME
-     * @mbggenerated
+     * @mbg generated
      */
     public Date getCreateTime() {
         return createTime;
@@ -163,7 +163,7 @@ public class TApplicationInfoUploadVo {
      * This method sets the value of the database column t_application_info_upload.CREATE_TIME
      *
      * @param createTime the value for t_application_info_upload.CREATE_TIME
-     * @mbggenerated
+     * @mbg generated
      */
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;

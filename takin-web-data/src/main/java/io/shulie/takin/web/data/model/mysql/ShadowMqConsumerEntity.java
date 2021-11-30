@@ -2,12 +2,12 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
@@ -15,7 +15,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_shadow_mq_consumer")
-public class ShadowMqConsumerEntity {
+public class ShadowMqConsumerEntity extends UserBaseEntity {
     public static final String COL_TOPIC_GROUP = "topic_group";
     /**
      * 主键id
@@ -52,18 +52,6 @@ public class ShadowMqConsumerEntity {
      */
     @TableField(value = "status")
     private Integer status;
-
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 是否删除，0正常，1删除
@@ -110,7 +98,6 @@ public class ShadowMqConsumerEntity {
 
     public static final String COL_STATUS = "status";
 
-    public static final String COL_CUSTOMER_ID = "customer_id";
 
     public static final String COL_USER_ID = "user_id";
 

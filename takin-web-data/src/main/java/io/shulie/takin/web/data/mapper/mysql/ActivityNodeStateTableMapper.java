@@ -1,11 +1,11 @@
 package io.shulie.takin.web.data.mapper.mysql;
 
-import org.apache.ibatis.annotations.Param;
+import java.util.List;
+import java.util.Map;
+
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
-
-import java.util.Map;
-import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 public interface ActivityNodeStateTableMapper extends BaseMapper<ActivityNodeState> {
     void setActivityNodeState(ActivityNodeState activityNodeState);
@@ -14,5 +14,5 @@ public interface ActivityNodeStateTableMapper extends BaseMapper<ActivityNodeSta
 
     void removeActivityNodeByActivityIdAndOwnerApp(ActivityNodeState activityNodeState);
 
-    List<Map<String, String>> findActivityIdByServiceName(@Param(value = "customerId") Long customerId, @Param(value = "appName") String appName, @Param(value = "entrance") String entrance);
+    List<Map<String,String>> findActivityIdByServiceName(@Param(value = "tenantId") Long tenantId, @Param(value = "appName") String appName, @Param(value = "entrance") String entrance);
 }

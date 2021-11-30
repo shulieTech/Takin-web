@@ -6,6 +6,7 @@ import com.pamirs.takin.entity.domain.dto.EntranceSimpleDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.*;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkHistoryInfoDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkDto;
+import com.pamirs.takin.entity.domain.dto.linkmanage.linkstatistics.LinkRemarkmiddleWareDto;
 import com.pamirs.takin.entity.domain.entity.linkmanage.statistics.StatisticsQueryVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
@@ -44,7 +45,7 @@ public interface LinkManageService {
      * @param sceneId 场景名集合
      * @return -
      */
-    Response deleteScene(String sceneId);
+    String deleteScene(String sceneId);
 
     /**
      * 场景查询接口
@@ -54,7 +55,7 @@ public interface LinkManageService {
      */
     Response<List<SceneDto>> getScenes(SceneQueryVo vo);
 
-    Response getMiddleWareInfo(StatisticsQueryVo vo);
+    Response<List<LinkRemarkmiddleWareDto>> getMiddleWareInfo(StatisticsQueryVo vo);
 
     LinkRemarkDto getstatisticsInfo();
 
@@ -62,7 +63,7 @@ public interface LinkManageService {
 
     List<MiddleWareEntity> getAllMiddleWareTypeList();
 
-    List<SystemProcessIdAndNameDto> ggetAllSystemProcess(String systemProcessName);
+    List<SystemProcessIdAndNameDto> getAllSystemProcess(String systemProcessName);
 
     List<SystemProcessIdAndNameDto> getAllSystemProcessCanrelateBusiness(String systemProcessName);
 
@@ -81,7 +82,7 @@ public interface LinkManageService {
 
     List<MiddleWareEntity> businessProcessMiddleWares(List<String> ids);
 
-    BusinessFlowDto getBusinessFlowDetail(String id);
+    BusinessFlowDto getBusinessFlowDetail(Long id);
 
     void modifyBusinessFlow(BusinessFlowVo vo) throws Exception;
 

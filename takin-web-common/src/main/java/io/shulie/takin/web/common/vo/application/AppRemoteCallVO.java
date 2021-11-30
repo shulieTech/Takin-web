@@ -3,7 +3,7 @@ package io.shulie.takin.web.common.vo.application;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class AppRemoteCallVO extends UserCommonExt {
+public class AppRemoteCallVO extends AuthQueryResponseCommonExt {
     /**
      * 接口名称
      */

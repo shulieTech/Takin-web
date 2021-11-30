@@ -14,11 +14,13 @@ import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -26,6 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
  * @date 2020-03-16 15:23
  */
 public interface ApplicationService {
+
+    List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList);
 
     /**
      * 带租户
@@ -155,8 +159,6 @@ public interface ApplicationService {
 
     List<TApplicationMnt> getAllApplications();
 
-    List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList);
-
     String getIdByName(String applicationName);
 
     String getUserSwitchStatusForVo();
@@ -260,4 +262,12 @@ public interface ApplicationService {
      */
     void attendApplicationService(ApplicationVisualInfoQueryRequest request) throws Exception;
 
+    void gotoActivityInfo(ActivityCreateRequest request);
+
+    /**
+     * 获取租户应用，用于amdb
+     * @param commonExts
+     * @return
+     */
+    List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts);
 }

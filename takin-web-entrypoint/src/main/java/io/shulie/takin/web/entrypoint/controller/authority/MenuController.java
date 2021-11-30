@@ -7,7 +7,7 @@ import javax.annotation.Resource;
 
 import lombok.extern.slf4j.Slf4j;
 import io.swagger.annotations.Api;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.ext.entity.MenuResponseExt;
 import org.springframework.web.bind.annotation.GetMapping;
 import io.shulie.takin.web.biz.service.authority.MenuService;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Slf4j
 @RestController
 @Api(value = "菜单")
-@RequestMapping(APIUrls.TAKIN_API_URL + "menu")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "menu")
 public class MenuController {
     @Resource
     MenuService menuService;

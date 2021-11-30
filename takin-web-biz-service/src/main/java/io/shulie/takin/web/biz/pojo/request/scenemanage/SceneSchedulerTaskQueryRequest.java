@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.pojo.request.scenemanage;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author mubai
@@ -8,17 +10,17 @@ import lombok.Data;
  */
 
 @Data
-public class SceneSchedulerTaskQueryRequest {
+@EqualsAndHashCode(callSuper = true)
+public class SceneSchedulerTaskQueryRequest extends TenantCommonExt {
 
     /**
      * 执行时间大于时间
      */
-    private String startTime ;
+    private String startTime;
 
     /**
      * 执行时间小于时间
      */
-    private String endTime ;
-
+    private String endTime;
 
 }

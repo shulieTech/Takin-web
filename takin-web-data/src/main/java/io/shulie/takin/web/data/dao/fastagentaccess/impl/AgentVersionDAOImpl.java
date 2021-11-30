@@ -2,10 +2,11 @@ package io.shulie.takin.web.data.dao.fastagentaccess.impl;
 
 import java.util.List;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentVersionDAO;
 import io.shulie.takin.web.data.mapper.mysql.AgentVersionMapper;
 import io.shulie.takin.web.data.model.mysql.AgentVersionEntity;
@@ -15,14 +16,14 @@ import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionListResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * @Description agentVersion dao层
- * @Author ocean_wll
- * @Date 2021/8/12 4:03 下午
+ * agentVersion dao层
+ *
+ * @author ocean_wll
+ * @date 2021/8/12 4:03 下午
  */
 @Service
 public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersionEntity> {
@@ -39,27 +40,21 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
                 .eq(StringUtils.isNotBlank(queryParam.getFirstVersion()), AgentVersionEntity::getFirstVersion,
                     queryParam.getFirstVersion())
                 .orderByDesc(AgentVersionEntity::getVersionNum));
-
         List<AgentVersionEntity> records = entityPage.getRecords();
-        if (records.isEmpty()) {
+        if (entityPage.getTotal() == 0) {
             return PagingList.empty();
         }
 
-        return PagingList.of(CommonUtil.list2list(records, AgentVersionListResult.class), entityPage.getTotal());
+        return PagingList.of(DataTransformUtil.list2list(records, AgentVersionListResult.class), entityPage.getTotal());
     }
 
     @Override
     public AgentVersionDetailResult selectByVersion(String version) {
         LambdaQueryWrapper<AgentVersionEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(AgentVersionEntity::getVersion, version);
-        AgentVersionEntity entity = agentVersionMapper.selectOne(queryWrapper);
-        if (entity == null) {
-            return null;
-        }
-
-        AgentVersionDetailResult detailResult = new AgentVersionDetailResult();
-        BeanUtils.copyProperties(entity, detailResult);
-        return detailResult;
+        queryWrapper.eq(AgentVersionEntity::getVersion, version)
+            .orderByDesc(AgentVersionEntity::getVersionNum);
+        return DataTransformUtil.copyBeanPropertiesWithNull(agentVersionMapper.selectOne(queryWrapper),
+            AgentVersionDetailResult.class);
     }
 
     @Override
@@ -71,9 +66,7 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
 
     @Override
     public Integer insert(CreateAgentVersionParam createParam) {
-        AgentVersionEntity entity = new AgentVersionEntity();
-        BeanUtils.copyProperties(createParam, entity);
-        return agentVersionMapper.insert(entity);
+        return agentVersionMapper.insert(BeanUtil.copyProperties(createParam, AgentVersionEntity.class));
     }
 
     @Override

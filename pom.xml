@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-5.0.3-SNAPSHOT</version>
+    <version>takin-web-5.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -33,17 +33,19 @@
     <properties>
         <!-- build properties -->
         <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ssa</maven.build.timestamp.format>
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-5.0.3-SNAPSHOT</takin.web.version>
-        <takin.cloud.open.version>takin-cloud-open-5.0.2-SNAPSHOT</takin.cloud.open.version>
-        <takin.cloud.version>takin-cloud-5.0.2-SNAPSHOT</takin.cloud.version>
-        <takin.common.version>common-1.7.5-SNAPSHOT</takin.common.version>
-        <command.channel>common-1.7.4</command.channel>
+        <takin.web.version>takin-web-5.2.0-SNAPSHOT</takin.web.version>
+        <takin.cloud.sdk.version>takin-cloud-sdk-5.2.0-SNAPSHOT</takin.cloud.sdk.version>
+        <takin.cloud.version>takin-cloud-5.2.0-SNAPSHOT</takin.cloud.version>
+        <takin.common.version>common-2.0.0-SNAPSHOT</takin.common.version>
+        <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.4.2</pardar.log.protocol.version>
         <instrument.core.version>1.0.0</instrument.core.version>
 
@@ -63,7 +65,8 @@
         <mapstruct.version>1.3.1.Final</mapstruct.version>
         <influxdb.version>2.15</influxdb.version>
         <jedis.version>3.1.0</jedis.version>
-        <mybatis.plus.version>3.4.0</mybatis.plus.version>
+        <!--版本升级 3.4.0 -> 3.4.3.4-->
+        <mybatis.plus.version>3.4.3.4</mybatis.plus.version>
         <freemarker.version>2.3.30</freemarker.version>
         <mybatis.version>3.5.5</mybatis.version>
         <druid.stater.version>1.1.22</druid.stater.version>
@@ -180,13 +183,8 @@
 
             <dependency>
                 <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-open-api</artifactId>
-                <version>${takin.cloud.open.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-open-client-starter</artifactId>
-                <version>${takin.cloud.open.version}</version>
+                <artifactId>takin-cloud-sdk</artifactId>
+                <version>${takin.cloud.sdk.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
@@ -237,17 +235,6 @@
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid.stater.version}</version>
             </dependency>
-<!--            <dependency>-->
-<!--                <groupId>org.quartz-scheduler</groupId>-->
-<!--                <artifactId>quartz</artifactId>-->
-<!--                <version>${quartz.version}</version>-->
-<!--                <exclusions>-->
-<!--                    <exclusion>-->
-<!--                        <groupId>org.apache.zookeeper</groupId>-->
-<!--                        <artifactId>zookeeper</artifactId>-->
-<!--                    </exclusion>-->
-<!--                </exclusions>-->
-<!--            </dependency>-->
             <dependency>
                 <groupId>com.dangdang</groupId>
                 <artifactId>elastic-job-lite-core</artifactId>
@@ -360,7 +347,7 @@
             <dependency>
                 <groupId>io.shulie.amdb</groupId>
                 <artifactId>amdb-common</artifactId>
-                <version>1.0.2.1</version>
+                <version>1.0.3-SNAPSHOT</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.mapstruct</groupId>
@@ -389,7 +376,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
 
 
             <dependency>
@@ -430,6 +416,12 @@
                 <artifactId>easypoi-annotation</artifactId>
                 <version>${easypoi-annotation.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>io.shulie.surge.data</groupId>
+                <artifactId>surge-deploy-pradar-link</artifactId>
+                <version>1.0.2.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -447,79 +439,79 @@
             <id>ossrh</id>
             <properties></properties>
             <build>
-               <plugins>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-resources-plugin</artifactId>
-                       <version>2.5</version>
-                       <configuration>
-                           <encoding>UTF-8</encoding>
-                       </configuration>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-scm-plugin</artifactId>
-                       <version>1.0</version>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-release-plugin</artifactId>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-javadoc-plugin</artifactId>
-                       <version>2.9.1</version>
-                       <executions>
-                           <execution>
-                               <id>attach-javadocs</id>
-                               <goals>
-                                   <goal>jar</goal>
-                               </goals>
-                               <configuration>
-                                   <additionalparam>-Xdoclint:none</additionalparam>
-                               </configuration>
-                           </execution>
-                       </executions>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-gpg-plugin</artifactId>
-                       <version>1.5</version>
-                       <executions>
-                           <execution>
-                               <id>sign-artifacts</id>
-                               <phase>verify</phase>
-                               <goals>
-                                   <goal>sign</goal>
-                               </goals>
-                           </execution>
-                       </executions>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.sonatype.plugins</groupId>
-                       <artifactId>nexus-staging-maven-plugin</artifactId>
-                       <version>1.6.7</version>
-                       <extensions>true</extensions>
-                       <configuration>
-                           <serverId>ossrh</serverId>
-                           <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                           <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                       </configuration>
-                   </plugin>
-                   <plugin>
-                       <groupId>org.apache.maven.plugins</groupId>
-                       <artifactId>maven-jar-plugin</artifactId>
-                       <version>2.2</version>
-                       <configuration>
-                           <archive>
-                               <manifestEntries>
-                                   <IsTinyProject>true</IsTinyProject>
-                               </manifestEntries>
-                           </archive>
-                       </configuration>
-                   </plugin>
-               </plugins>
-           </build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>2.5</version>
+                        <configuration>
+                            <encoding>UTF-8</encoding>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-scm-plugin</artifactId>
+                        <version>1.0</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.9.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>2.2</version>
+                        <configuration>
+                            <archive>
+                                <manifestEntries>
+                                    <IsTinyProject>true</IsTinyProject>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
     <distributionManagement>

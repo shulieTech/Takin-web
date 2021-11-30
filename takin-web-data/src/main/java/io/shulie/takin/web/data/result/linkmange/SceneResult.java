@@ -13,7 +13,7 @@ import java.util.Date;
 public class SceneResult {
     private Long id;
     private String sceneName;
-    private Long customerId;
+    private Long tenantId;
     private Long userId;
 
     /**

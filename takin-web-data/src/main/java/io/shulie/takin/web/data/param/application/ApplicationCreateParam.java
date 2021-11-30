@@ -5,6 +5,7 @@ import javax.validation.constraints.NotBlank;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pamirs.takin.common.util.LongToStringFormatSerialize;
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -12,7 +13,7 @@ import lombok.Data;
  * @date 2020/11/4 3:24 下午
  */
 @Data
-public class ApplicationCreateParam {
+public class ApplicationCreateParam extends UserCommonExt {
 
     //@Field applicationId : 应用编号
     @JsonSerialize(using = LongToStringFormatSerialize.class)
@@ -66,7 +67,6 @@ public class ApplicationCreateParam {
     //告警人，在链路探活中使用
     private String alarmPerson;
     private String pradarVersion;
-    private Long customerId;
-    private Long userId;
+
 
 }

@@ -3,13 +3,17 @@ package io.shulie.takin.web.data.result.whitelist;
 import java.util.Date;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 
 /**
  * @author 无涯
  * @date 2021/4/12 4:18 下午
  */
 @Data
-public class WhitelistResult {
+@EqualsAndHashCode(callSuper = true)
+public class WhitelistResult extends UserCommonExt {
     /**
      * 主键id
      */
@@ -41,16 +45,6 @@ public class WhitelistResult {
      * 是否可用(0表示未启动,1表示启动,2表示启用未校验)
      */
     private Integer useYn;
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     /**
      * 插入时间

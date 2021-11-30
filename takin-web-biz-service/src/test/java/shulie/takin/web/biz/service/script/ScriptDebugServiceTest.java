@@ -37,7 +37,7 @@
 //        ScriptDebugEntity scriptDebugEntity = new ScriptDebugEntity();
 //        scriptDebugEntity.setScriptDeployId(1L);
 //        scriptDebugEntity.setStatus(5);
-//        scriptDebugEntity.setCustomerId(1L);
+//        scriptDebugEntity.setTenantId(1L);
 //        scriptDebugEntity.setUserId(1L);
 //        scriptDebugEntity.setRequestNum(1);
 //        scriptDebugEntity.setCreatedAt(DateUtil.date());

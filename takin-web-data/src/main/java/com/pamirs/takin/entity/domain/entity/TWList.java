@@ -2,6 +2,9 @@ package com.pamirs.takin.entity.domain.entity;
 
 import java.util.Date;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 /**
  * 说明：白名单实体类
  *
@@ -9,6 +12,8 @@ import java.util.Date;
  * @version V1.0
  * @date 2018年3月1日 下午12:49:55
  */
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class TWList extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -87,16 +92,6 @@ public class TWList extends BaseEntity {
     private String jobInterval;
 
     /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
-
-    /**
      * 全局
      */
     private Boolean isGlobal;
@@ -110,14 +105,12 @@ public class TWList extends BaseEntity {
 
     private Date gmtModified;
 
-
-
     public TWList() {
         super();
     }
 
     public static TWList build(String applicationId, String interfaceType, String interfaceName, String useYn,
-                               String dictType) {
+        String dictType) {
         TWList tWhiteList = new TWList();
         tWhiteList.setApplicationId(applicationId);
         tWhiteList.setType(interfaceType);
@@ -130,379 +123,8 @@ public class TWList extends BaseEntity {
     /**
      * 2018年5月17日
      *
-     * @return the wlistId
-     * @author shulie
-     * @version 1.0
-     */
-    public long getWlistId() {
-        return wlistId;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @param wlistId the wlistId to set
-     * @author shulie
-     * @version 1.0
-     */
-    public void setWlistId(long wlistId) {
-        this.wlistId = wlistId;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @return the interfaceName
-     * @author shulie
-     * @version 1.0
-     */
-    public String getInterfaceName() {
-        return interfaceName;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @param interfaceName the interfaceName to set
-     * @author shulie
-     * @version 1.0
-     */
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @return the type
-     * @author shulie
-     * @version 1.0
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @param type the type to set
-     * @author shulie
-     * @version 1.0
-     */
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @return the dictType
-     * @author shulie
-     * @version 1.0
-     */
-    public String getDictType() {
-        return dictType;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @param dictType the dictType to set
-     * @author shulie
-     * @version 1.0
-     */
-    public void setDictType(String dictType) {
-        this.dictType = dictType;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @return the applicationId
-     * @author shulie
-     * @version 1.0
-     */
-    public String getApplicationId() {
-        return applicationId;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @param applicationId the applicationId to set
-     * @author shulie
-     * @version 1.0
-     */
-    public void setApplicationId(String applicationId) {
-        this.applicationId = applicationId;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @return the principalNo
-     * @author shulie
-     * @version 1.0
-     */
-    public String getPrincipalNo() {
-        return principalNo;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @param principalNo the principalNo to set
-     * @author shulie
-     * @version 1.0
-     */
-    public void setPrincipalNo(String principalNo) {
-        this.principalNo = principalNo;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @return the useYn
-     * @author shulie
-     * @version 1.0
-     */
-    public String getUseYn() {
-        return useYn;
-    }
-
-    /**
-     * 2018年5月17日
-     *
-     * @param useYn the useYn to set
-     * @author shulie
-     * @version 1.0
-     */
-    public void setUseYn(String useYn) {
-        this.useYn = useYn;
-    }
-
-    /**
-     * Gets the value of mqType.
-     *
-     * @return the value of mqType
-     * @author shulie
-     * @version 1.0
-     */
-    public String getMqType() {
-        return mqType;
-    }
-
-    /**
-     * Sets the mqType.
-     *
-     * <p>You can use getMqType() to get the value of mqType</p>
-     *
-     * @param mqType mqType
-     * @author shulie
-     * @version 1.0
-     */
-    public void setMqType(String mqType) {
-        this.mqType = mqType;
-    }
-
-    /**
-     * Gets the value of queueName.
-     *
-     * @return the value of queueName
-     * @author shulie
-     * @version 1.0
-     */
-    public String getQueueName() {
-        return queueName;
-    }
-
-    /**
-     * Sets the queueName.
-     *
-     * <p>You can use getQueueName() to get the value of queueName</p>
-     *
-     * @param queueName queueName
-     * @author shulie
-     * @version 1.0
-     */
-    public void setQueueName(String queueName) {
-        this.queueName = queueName;
-    }
-
-    /**
-     * Gets the value of ipPort.
-     *
-     * @return the value of ipPort
-     * @author shulie
-     * @version 1.0
-     */
-    public String getIpPort() {
-        return ipPort;
-    }
-
-    /**
-     * Sets the ipPort.
-     *
-     * <p>You can use getIpPort() to get the value of ipPort</p>
-     *
-     * @param ipPort ipPort
-     * @author shulie
-     * @version 1.0
-     */
-    public void setIpPort(String ipPort) {
-        this.ipPort = ipPort;
-    }
-
-    /**
-     * Gets the value of httpType.
-     *
-     * @return the value of httpType
-     * @author shulie
-     * @version 1.0
-     */
-    public String getHttpType() {
-        return httpType;
-    }
-
-    /**
-     * Sets the httpType.
-     *
-     * <p>You can use getHttpType() to get the value of httpType</p>
-     *
-     * @param httpType httpType
-     * @author shulie
-     * @version 1.0
-     */
-    public void setHttpType(String httpType) {
-        this.httpType = httpType;
-    }
-
-    /**
-     * Gets the value of pageLevel.
-     *
-     * @return the value of pageLevel
-     * @author shulie
-     * @version 1.0
-     */
-    public String getPageLevel() {
-        return pageLevel;
-    }
-
-    /**
-     * Sets the pageLevel.
-     *
-     * <p>You can use getPageLevel() to get the value of pageLevel</p>
-     *
-     * @param pageLevel pageLevel
-     * @author shulie
-     * @version 1.0
-     */
-    public void setPageLevel(String pageLevel) {
-        this.pageLevel = pageLevel;
-    }
-
-    /**
-     * Gets the value of interfaceLevel.
-     *
-     * @return the value of interfaceLevel
-     * @author shulie
-     * @version 1.0
-     */
-    public String getInterfaceLevel() {
-        return interfaceLevel;
-    }
-
-    /**
-     * Sets the interfaceLevel.
-     *
-     * <p>You can use getInterfaceLevel() to get the value of interfaceLevel</p>
-     *
-     * @param interfaceLevel interfaceLevel
-     * @author shulie
-     * @version 1.0
-     */
-    public void setInterfaceLevel(String interfaceLevel) {
-        this.interfaceLevel = interfaceLevel;
-    }
-
-    /**
-     * Gets the value of jobInterval.
-     *
-     * @return the value of jobInterval
-     * @author shulie
-     * @version 1.0
-     */
-    public String getJobInterval() {
-        return jobInterval;
-    }
-
-    /**
-     * Sets the jobInterval.
-     *
-     * <p>You can use getJobInterval() to get the value of jobInterval</p>
-     *
-     * @param jobInterval jobInterval
-     * @author shulie
-     * @version 1.0
-     */
-    public void setJobInterval(String jobInterval) {
-        this.jobInterval = jobInterval;
-    }
-
-    public Long getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public Boolean getGlobal() {
-        return isGlobal;
-    }
-
-    public void setGlobal(Boolean global) {
-        isGlobal = global;
-    }
-
-    public Date getGmtCreate() {
-        return gmtCreate;
-    }
-
-    public void setGmtCreate(Date gmtCreate) {
-        this.gmtCreate = gmtCreate;
-    }
-
-    public Date getGmtModified() {
-        return gmtModified;
-    }
-
-    public void setGmtModified(Date gmtModified) {
-        this.gmtModified = gmtModified;
-    }
-
-    public Boolean getHandwork() {
-        return isHandwork;
-    }
-
-    public void setHandwork(Boolean handwork) {
-        isHandwork = handwork;
-    }
-
-    /**
-     * 2018年5月17日
-     *
      * @return 实体类字符串
      * @author shulie
-     * @version 1.0
      */
     @Override
     public String toString() {

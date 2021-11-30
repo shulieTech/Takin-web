@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.param.application;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2020/11/4 5:53 下午
  */
 @Data
-public class ApplicationApiCreateParam {
+public class ApplicationApiCreateParam extends TenantCommonExt {
     /**
      * 主键
      */
@@ -34,11 +35,6 @@ public class ApplicationApiCreateParam {
      * 更新时间
      */
     private Date updateTime;
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
     /**
      * 用户id

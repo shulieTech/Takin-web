@@ -8,6 +8,7 @@ import lombok.Data;
  */
 @Data
 public class ApplicationQueryParam {
-    private Long customerId;
+    private Long tenantId;
     private Long userId;
+    private String envCode;
 }

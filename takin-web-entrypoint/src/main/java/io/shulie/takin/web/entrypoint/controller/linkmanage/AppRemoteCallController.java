@@ -36,8 +36,8 @@ import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateReque
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallConfigResponse;
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallResponse;
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallStringResponse;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
-import io.shulie.takin.web.common.constant.APIUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;
@@ -62,7 +62,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "远程调用", value = "远程调用管理接口")
 public class AppRemoteCallController {
 

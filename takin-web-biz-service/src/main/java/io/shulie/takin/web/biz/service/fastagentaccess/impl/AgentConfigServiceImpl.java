@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.fastagentaccess.impl;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.ImmutableMap;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
@@ -30,19 +32,23 @@ import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.biz.utils.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.TestZkConnUtils;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
+import io.shulie.takin.web.common.constant.CacheConstants;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectMechanismEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigValueTypeEnum;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentConfigDAO;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentConfigQueryParam;
-import io.shulie.takin.web.data.param.fastagentaccess.AgentProjectConfigQueryParam;
 import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentConfigParam;
 import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentConfigParam;
 import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
+import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -53,7 +59,10 @@ import org.springframework.util.StringUtils;
  * @date 2021-08-12 18:54:56
  */
 @Service
-public class AgentConfigServiceImpl implements AgentConfigService {
+public class AgentConfigServiceImpl implements AgentConfigService, CacheConstants {
+
+    @Autowired
+    private AgentConfigService agentConfigService;
 
     /**
      * 对应的zk地址key
@@ -69,6 +78,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
     @Autowired
     private AgentConfigClient agentConfigClient;
 
+    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
     @Override
     public void batchInsert(List<AgentConfigCreateRequest> createRequestList) {
         List<String> enConfigKeyList = new ArrayList<>();
@@ -92,8 +102,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
         });
 
         // 3、批量插入
-        List<CreateAgentConfigParam> createAgentConfigParams = createRequestList
-            .stream()
+        List<CreateAgentConfigParam> createAgentConfigParams = createRequestList.stream()
             .map(item -> {
                 CreateAgentConfigParam createAgentConfigParam = new CreateAgentConfigParam();
                 BeanUtils.copyProperties(item, createAgentConfigParam);
@@ -101,7 +110,9 @@ public class AgentConfigServiceImpl implements AgentConfigService {
                 if (!CollectionUtils.isEmpty(item.getValueOptionList())) {
                     createAgentConfigParam.setValueOption(JSON.toJSONString(item.getValueOptionList()));
                 }
-                createAgentConfigParam.setEffectMinVersionNum(AgentVersionUtil.string2Int(item.getEffectMinVersion()));
+                createAgentConfigParam.setEffectMinVersionNum(AgentVersionUtil.string2Long(item.getEffectMinVersion()));
+                createAgentConfigParam.setTenantId(WebPluginUtils.SYS_DEFAULT_TENANT_ID);
+                createAgentConfigParam.setEnvCode(WebPluginUtils.SYS_DEFAULT_ENV_CODE);
                 return createAgentConfigParam;
             })
             .collect(Collectors.toList());
@@ -152,70 +163,146 @@ public class AgentConfigServiceImpl implements AgentConfigService {
         queryBO.setEffectMechanism(queryRequest.getEffectMechanism());
         queryBO.setEnKey(queryRequest.getEnKey());
         queryBO.setReadProjectConfig(queryRequest.getReadProjectConfig());
-        List<AgentConfigListResponse> list = getConfigList(queryBO).values().stream().map(item -> {
+        List<AgentConfigListResponse> list = agentConfigService.getConfigList(queryBO).values().stream()
+            .map(item -> {
             AgentConfigListResponse agentConfigListResponse = new AgentConfigListResponse();
             BeanUtils.copyProperties(item, agentConfigListResponse);
             return agentConfigListResponse;
         }).collect(Collectors.toList());
-
         // 过滤是否生效配置
         return filterConfigEffect(list, queryRequest);
     }
 
+    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
     @Override
     public void update(AgentConfigUpdateRequest updateRequest) {
         AgentConfigDetailResult detailResult = agentConfigDAO.findById(updateRequest.getId());
-
+        Assert.notNull(detailResult, "配置不存在！");
         // 特殊处理校验下zk地址
         if (ZK_CONFIG_KEY.equals(detailResult.getEnKey()) && !TestZkConnUtils.test(updateRequest.getDefaultValue())) {
             throw AppCommonUtil.getCommonError("zookeeper地址错误，无法连接");
         }
 
-        // 如果同时传了id和projectName则被认为是要把全局配置改成应用配置
-        if (StringUtils.hasLength(updateRequest.getProjectName())) {
-            // 校验id数据是否为全局配置，校验对应的配置当前应用是否已经有配置了
-            AgentProjectConfigQueryParam projectConfigQueryParam = new AgentProjectConfigQueryParam();
-            projectConfigQueryParam.setEnKey(detailResult.getEnKey());
-            projectConfigQueryParam.setProjectName(updateRequest.getProjectName());
-            projectConfigQueryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
-            AgentConfigDetailResult projectConfig = agentConfigDAO.findProjectConfig(projectConfigQueryParam);
-
-            boolean checkSuccess = AgentConfigTypeEnum.GLOBAL.getVal().equals(detailResult.getType())
-                && projectConfig == null;
-
-            // 校验通过则新增对应的应用配置记录
-            if (checkSuccess) {
-                CreateAgentConfigParam createParam = new CreateAgentConfigParam();
-                createParam.setOperator(getOperator());
-                createParam.setType(AgentConfigTypeEnum.PROJECT.getVal());
-                createParam.setZhKey(detailResult.getZhKey());
-                createParam.setEnKey(detailResult.getEnKey());
-                createParam.setDefaultValue(updateRequest.getDefaultValue());
-                createParam.setDesc(detailResult.getDesc());
-                createParam.setEffectType(detailResult.getEffectType());
-                createParam.setEffectMechanism(detailResult.getEffectMechanism());
-                createParam.setEffectMinVersion(detailResult.getEffectMinVersion());
-                createParam.setEffectMinVersionNum(detailResult.getEffectMinVersionNum());
-                createParam.setEditable(detailResult.getEditable());
-                createParam.setValueType(detailResult.getValueType());
-                createParam.setValueOption(detailResult.getValueOption());
-                createParam.setProjectName(updateRequest.getProjectName());
-                createParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
-                agentConfigDAO.insert(createParam);
-                return;
-            }
+        String projectName = updateRequest.getProjectName();
+        if (StrUtil.isBlank(projectName)) {
+            this.updateWithoutProjectName(updateRequest, detailResult);
+            return;
         }
 
+        this.updateWithProjectName(updateRequest, detailResult);
+    }
+
+    /**
+     * 当有应用名称时的更新
+     *
+     * @param updateRequest 更新所需数据
+     * @param detailResult  配置详情
+     */
+    private void updateWithProjectName(AgentConfigUpdateRequest updateRequest, AgentConfigDetailResult detailResult) {
+        // 应用配置，直接更新
+        if (AgentConfigTypeEnum.isProject(detailResult.getType())) {
+            this.updateConfig(updateRequest.getId(), updateRequest.getDefaultValue());
+            return;
+        }
+
+        // 全局或者租户全局，需要根据应用的有无进行新增或更新
+        if (AgentConfigTypeEnum.isGlobal(detailResult.getType())
+            || AgentConfigTypeEnum.isTenantGlobal(detailResult.getType())) {
+            String enKey = detailResult.getEnKey();
+            AgentConfigDetailResult agentConfig = agentConfigDAO.getByEnKeyAndTypeAndProjectNameWithTenant(enKey,
+                AgentConfigTypeEnum.PROJECT.getVal(), updateRequest.getProjectName());
+            if (agentConfig != null) {
+                this.updateConfig(agentConfig.getId(), updateRequest.getDefaultValue());
+                return;
+            }
+
+            // 插入
+            CreateAgentConfigParam createParam = this.getCreateAgentConfigParam(detailResult,
+                updateRequest.getDefaultValue(), AgentConfigTypeEnum.PROJECT.getVal());
+            createParam.setProjectName(updateRequest.getProjectName());
+            agentConfigDAO.insert(createParam);
+        }
+    }
+
+    /**
+     * 更新配置
+     *
+     * @param id    主键id
+     * @param value 修改的值
+     */
+    private void updateConfig(Long id, String value) {
         // 只传了id，就直接更新对应的id值
         UpdateAgentConfigParam updateParam = new UpdateAgentConfigParam();
         // 设置操作人
         updateParam.setOperator(getOperator());
-        updateParam.setId(updateRequest.getId());
-        updateParam.setDefaultValue(updateRequest.getDefaultValue());
-
+        updateParam.setId(id);
+        updateParam.setDefaultValue(value);
         agentConfigDAO.updateConfigValue(updateParam);
     }
 
+    /**
+     * 当没有应用名称时的更新
+     *
+     * @param updateRequest 更新所需数据
+     * @param detailResult  配置详情
+     */
+    private void updateWithoutProjectName(AgentConfigUpdateRequest updateRequest,
+        AgentConfigDetailResult detailResult) {
+        // 如果是应用级别或者是租户级别，直接更新
+        if (AgentConfigTypeEnum.isProject(detailResult.getType())
+            || AgentConfigTypeEnum.isTenantGlobal(detailResult.getType())) {
+            this.updateConfig(updateRequest.getId(), updateRequest.getDefaultValue());
+            return;
+        }
+
+        if (!AgentConfigTypeEnum.isGlobal(detailResult.getType())) {
+            return;
+        }
+
+        // 如果是全局级别，判断租户级别是否存在，来是否插入或者更新
+        String enKey = detailResult.getEnKey();
+        AgentConfigDetailResult agentConfig = agentConfigDAO.getByEnKeyAndTypeWithTenant(enKey,
+            AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
+        if (agentConfig != null) {
+            this.updateConfig(agentConfig.getId(), updateRequest.getDefaultValue());
+            return;
+        }
+
+        // 插入租户环境全局
+        CreateAgentConfigParam createParam = this.getCreateAgentConfigParam(detailResult,
+            updateRequest.getDefaultValue(), AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
+        agentConfigDAO.insert(createParam);
+    }
+
+    /**
+     * 获得新增所需数据
+     *
+     * @param detailResult 详情
+     * @param defaultValue 默认值
+     * @param type         类型
+     * @return 新增所需数据
+     */
+    private CreateAgentConfigParam getCreateAgentConfigParam(AgentConfigDetailResult detailResult,
+        String defaultValue, Integer type) {
+        CreateAgentConfigParam createParam = new CreateAgentConfigParam();
+        createParam.setOperator(getOperator());
+        createParam.setType(type);
+        createParam.setZhKey(detailResult.getZhKey());
+        createParam.setEnKey(detailResult.getEnKey());
+        createParam.setDefaultValue(defaultValue);
+        createParam.setDesc(detailResult.getDesc());
+        createParam.setEffectType(detailResult.getEffectType());
+        createParam.setEffectMechanism(detailResult.getEffectMechanism());
+        createParam.setEffectMinVersion(detailResult.getEffectMinVersion());
+        createParam.setEffectMinVersionNum(detailResult.getEffectMinVersionNum());
+        createParam.setEditable(detailResult.getEditable());
+        createParam.setValueType(detailResult.getValueType());
+        createParam.setValueOption(detailResult.getValueOption());
+        createParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
+        return createParam;
+    }
+
+    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
     @Override
     public void useGlobal(Long id) {
         AgentConfigDetailResult detailResult = agentConfigDAO.findById(id);
@@ -232,26 +319,45 @@ public class AgentConfigServiceImpl implements AgentConfigService {
         ConfigListQueryBO queryBO = new ConfigListQueryBO();
         queryBO.setProjectName(queryRequest.getProjectName());
         queryBO.setEffectMechanism(queryRequest.getEffectMechanism());
-        queryBO.setEffectMinVersionNum(AgentVersionUtil.string2Int(queryRequest.getVersion()));
-        Map<String, AgentConfigDetailResult> configList = getConfigList(queryBO);
+        queryBO.setEffectMinVersionNum(AgentVersionUtil.string2Long(queryRequest.getVersion()));
+        Map<String, AgentConfigDetailResult> configList = agentConfigService.getConfigList(queryBO);
         return configList.values().stream().collect(
             Collectors.toMap(AgentConfigDetailResult::getEnKey, AgentConfigDetailResult::getDefaultValue));
     }
 
+    @Cacheable(CACHE_KEY_AGENT_CONFIG)
     @Override
     public Map<String, AgentConfigDetailResult> getConfigList(ConfigListQueryBO queryBO) {
         // 1、查询符合条件的全局配置
         AgentConfigQueryParam queryParam = new AgentConfigQueryParam();
         BeanUtils.copyProperties(queryBO, queryParam);
-        List<AgentConfigDetailResult> globalConfigList = agentConfigDAO.findGlobalList(queryParam);
+        queryParam.setTenantId(WebPluginUtils.SYS_DEFAULT_TENANT_ID);
+        queryParam.setEnvCode(WebPluginUtils.SYS_DEFAULT_ENV_CODE);
+        queryParam.setType(AgentConfigTypeEnum.GLOBAL.getVal());
+        List<AgentConfigDetailResult> globalConfigList = agentConfigDAO.listByTypeAndTenantIdAndEnvCode(queryParam);
+        if (globalConfigList.isEmpty()) {
+            return new HashMap<>(0);
+        }
 
         // 将全局配置放入内存map中，因为后续要进行替换，key为配置key，value为AgentConfigDetailResult对象
         Map<String, AgentConfigDetailResult> configMap = globalConfigList.stream().collect(
-            Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x));
+            Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
+
+        // 1.2 租户下的全局配置
+        queryParam.setTenantId(WebPluginUtils.traceTenantId());
+        queryParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        queryParam.setType(AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
+        List<AgentConfigDetailResult> tenantGlobalConfigList = agentConfigDAO.listByTypeAndTenantIdAndEnvCode(
+            queryParam);
+        if (!tenantGlobalConfigList.isEmpty()) {
+            Map<String, AgentConfigDetailResult> tenantConfigMap = tenantGlobalConfigList.stream().collect(
+                Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
+            configMap.putAll(tenantConfigMap);
+        }
 
         // 2、查询符合条件的应用配置
         if (StringUtils.isEmpty(queryBO.getUserAppKey())) {
-            queryParam.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
+            queryParam.setUserAppKey(WebPluginUtils.traceTenantAppKey());
         } else {
             queryParam.setUserAppKey(queryBO.getUserAppKey());
         }
@@ -340,6 +446,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
         if (zhKeySet.size() != zhConfigKeys.size()) {
             throw AppCommonUtil.getCommonError("新增列表中存在重复的全局中文key，请检查后再提交");
         }
+
         List<AgentConfigDetailResult> enDbResult = agentConfigDAO.findGlobalConfigByEnKeyList(enConfigKeys);
         if (!CollectionUtils.isEmpty(enDbResult)) {
             StringBuilder stringBuilder = new StringBuilder();
@@ -347,6 +454,7 @@ public class AgentConfigServiceImpl implements AgentConfigService {
             String repeatKeys = stringBuilder.substring(0, stringBuilder.toString().length() - 1);
             throw AppCommonUtil.getCommonError("存在重复的全局配置英文key：" + repeatKeys);
         }
+
         List<AgentConfigDetailResult> zhDbResult = agentConfigDAO.findGlobalConfigByZhKeyList(zhConfigKeys);
         if (!CollectionUtils.isEmpty(zhDbResult)) {
             StringBuilder stringBuilder = new StringBuilder();
@@ -421,6 +529,8 @@ public class AgentConfigServiceImpl implements AgentConfigService {
      * @return 操作人
      */
     private String getOperator() {
-        return WebPluginUtils.getUser() == null ? LoginConstant.DEFAULT_OPERATOR : WebPluginUtils.getUser().getName();
+        UserExt userExt = WebPluginUtils.traceUser();
+        return userExt == null ? LoginConstant.DEFAULT_OPERATOR : userExt.getName();
     }
+
 }

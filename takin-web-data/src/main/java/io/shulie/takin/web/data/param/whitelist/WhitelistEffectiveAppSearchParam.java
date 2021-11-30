@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.param.whitelist;
 
 import java.util.List;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -9,11 +10,8 @@ import lombok.Data;
  * @date 2021/4/14 10:16 上午
  */
 @Data
-public class WhitelistEffectiveAppSearchParam {
-    /**
-     * 租户id
-     */
-    private Long customerId;
+public class WhitelistEffectiveAppSearchParam extends TenantCommonExt {
+
 
     /**
      * 用户id

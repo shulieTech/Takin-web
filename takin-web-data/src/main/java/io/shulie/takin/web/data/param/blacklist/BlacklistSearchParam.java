@@ -1,6 +1,6 @@
 package io.shulie.takin.web.data.param.blacklist;
 
-import io.shulie.takin.common.beans.page.PagingDevice;
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -8,7 +8,7 @@ import lombok.Data;
  * @date 2021/4/6 2:22 下午
  */
 @Data
-public class BlacklistSearchParam extends PagingDevice {
+public class BlacklistSearchParam extends UserCommonExt {
     /**
      * 黑名单类型
      */
@@ -25,16 +25,6 @@ public class BlacklistSearchParam extends PagingDevice {
      */
     private Long applicationId ;
 
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     /**
      * 是否管理员

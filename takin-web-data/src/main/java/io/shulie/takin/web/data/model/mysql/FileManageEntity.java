@@ -2,16 +2,16 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 @Data
 @TableName(value = "t_file_manage")
-public class FileManageEntity {
+public class FileManageEntity extends TenantBaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -55,12 +55,6 @@ public class FileManageEntity {
      */
     @TableField(value = "file_extend")
     private String fileExtend;
-
-    /**
-     * 客户id（当前登录用户对应的admin的id，数据隔离使用）
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
 
     /**
      * 上传时间

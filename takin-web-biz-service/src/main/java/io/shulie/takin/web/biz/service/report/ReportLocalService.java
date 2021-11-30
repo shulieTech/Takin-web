@@ -9,7 +9,7 @@ import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
-import com.pamirs.takin.entity.domain.vo.report.ReportLocalQueryParam;
+import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 
 /**
  * @author qianshui

@@ -27,7 +27,7 @@ import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.MqConstants;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationMiddlewareDAO;
 import io.shulie.takin.web.data.param.application.CreateApplicationMiddlewareParam;
@@ -152,14 +152,14 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
     @Override
     public List<UpdateApplicationMiddlewareParam> doCompare(List<ApplicationMiddlewareListResult> results) {
         // 转 dto
-        List<CompareApplicationMiddlewareDTO> compareApplicationMiddlewareList = CommonUtil.list2list(results,
+        List<CompareApplicationMiddlewareDTO> compareApplicationMiddlewareList = DataTransformUtil.list2list(results,
             CompareApplicationMiddlewareDTO.class);
 
         // 比对
         middlewareJarService.appCompare(compareApplicationMiddlewareList);
 
         // 返回
-        return CommonUtil.list2list(compareApplicationMiddlewareList, UpdateApplicationMiddlewareParam.class);
+        return DataTransformUtil.list2list(compareApplicationMiddlewareList, UpdateApplicationMiddlewareParam.class);
     }
 
     @Transactional(rollbackFor = Throwable.class)

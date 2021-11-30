@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
+
 import com.esotericsoftware.minlog.Log;
 import com.google.common.collect.Lists;
 import io.shulie.takin.cloud.common.constants.SceneManageConstant;
@@ -13,14 +15,17 @@ import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
 import io.shulie.takin.web.biz.service.OpsScriptFileService;
 import io.shulie.takin.web.biz.utils.FileUtils;
+import io.shulie.takin.web.common.common.Separator;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.data.dao.opsscript.OpsScriptFileDAO;
 import io.shulie.takin.web.data.model.mysql.OpsScriptFileEntity;
 import io.shulie.takin.web.data.param.opsscript.OpsUploadFileParam;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptFileVO;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,17 +41,14 @@ public class OpsScriptFileServiceImpl implements OpsScriptFileService {
     @Autowired
     private OpsScriptFileDAO opsScriptFileDAO;
 
-    @Value("${file.ops_script.path:${data.path}/ops_nfs_dir/}")
-    private String tempPath;
-
     @Override
     public List<OpsScriptFileVO> upload(List<MultipartFile> file, Integer fileType) {
-        List<OpsScriptFileVO> fileList = uploadFile(file, fileType);
-        return fileList;
+        return uploadFile(file, fileType);
     }
 
     @Override
     public Boolean delete(String uploadId) {
+        String tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
         if (uploadId != null) {
             String targetDir = tempPath + SceneManageConstant.FILE_SPLIT + uploadId;
             LinuxHelper.executeLinuxCmd("rm -rf " + targetDir);
@@ -85,6 +87,7 @@ public class OpsScriptFileServiceImpl implements OpsScriptFileService {
     }
 
     private List<OpsScriptFileVO> uploadFile(List<MultipartFile> files, Integer fileType) {
+        String tempPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH) + ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_OPS_SCRIPT_PATH);
         List<OpsScriptFileVO> fileVOList = Lists.newArrayList();
         for (MultipartFile mf : files) {
             String uploadId = UUID.randomUUID().toString();

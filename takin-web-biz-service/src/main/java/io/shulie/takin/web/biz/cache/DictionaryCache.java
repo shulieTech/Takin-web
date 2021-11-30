@@ -29,6 +29,7 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastdebug.DebugHttp
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastdebug.DebugRequestTypeEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.remotecall.RemoteCallConfigEnumMapping;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -45,9 +46,6 @@ public class DictionaryCache {
     private static final Map<String, List<EnumResult>> DICTIONARY_MAP = Maps.newHashMap();
     @Resource
     private TDictionaryDataMapper tDictionaryDataMapper;
-
-    //@Autowired
-    //private TroResourceDAO troResourceDAO;
 
     public static EnumResult getObjectByParam(String key, Integer valueCode) {
         return getObjectByParam(key, String.valueOf(valueCode));
@@ -111,6 +109,8 @@ public class DictionaryCache {
     private void fillDictFromDatabase() {
         Map<String, Object> paramMap = Maps.newHashMap();
         paramMap.put("valueActive", "Y");
+        paramMap.put("tenantId", WebPluginUtils.traceTenantId());
+        paramMap.put("envCode", WebPluginUtils.traceEnvCode());
         List<TDictionaryVo> voList = tDictionaryDataMapper.queryDictionaryList(paramMap);
         if (CollectionUtils.isEmpty(voList)) {
             return;

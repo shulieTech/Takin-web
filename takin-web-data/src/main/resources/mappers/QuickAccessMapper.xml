@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.dashboard.QuickAccessMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.web.data.model.mysql.dashboard.QuickAccessEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_quick_access-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="quick_name" jdbcType="VARCHAR" property="quickName"/>
+        <result column="quick_logo" jdbcType="VARCHAR" property="quickLogo"/>
+        <result column="url_address" jdbcType="VARCHAR" property="urlAddress"/>
+        <result column="order" jdbcType="INTEGER" property="order"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="is_deleted" jdbcType="TINYINT" property="isDeleted"/>
+        <result column="is_enable" jdbcType="TINYINT" property="isEnable"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id, quick_name, quick_logo, url_address, `order`, create_time, update_time,
+        is_deleted, is_enable
+    </sql>
+
+    <select id="queryList" resultMap="BaseResultMap" >
+        SELECT
+        *
+        FROM t_quick_access
+        WHERE tenant_id=#{tenantId} AND env_code = #{envCode}
+        UNION
+        SELECT
+        *
+        FROM t_quick_access
+        WHERE tenant_id = -1 AND env_code ='system'
+    </select>
+</mapper>

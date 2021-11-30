@@ -4,20 +4,30 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import io.shulie.takin.cloud.open.api.engine.CloudEngineApi;
-import io.shulie.takin.cloud.open.api.scenemanage.CloudSceneApi;
-import io.shulie.takin.cloud.open.req.engine.EnginePluginDetailsWrapperReq;
-import io.shulie.takin.cloud.open.req.engine.EnginePluginFetchWrapperReq;
-import io.shulie.takin.cloud.open.req.scenemanage.*;
-import io.shulie.takin.cloud.open.resp.engine.EnginePluginDetailResp;
-import io.shulie.takin.cloud.open.resp.engine.EnginePluginSimpleInfoResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageListResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.ScriptCheckResp;
-import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
+import javax.annotation.Resource;
+
+import io.shulie.takin.cloud.entrypoint.engine.CloudEngineApi;
+import io.shulie.takin.cloud.entrypoint.scenemanage.CloudSceneApi;
+import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginDetailsWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginFetchWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.CloudUpdateSceneFileRequest;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneIpNumReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryByIdsReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptCheckAndUpdateReq;
+import io.shulie.takin.cloud.sdk.model.response.engine.EnginePluginDetailResp;
+import io.shulie.takin.cloud.sdk.model.response.engine.EnginePluginSimpleInfoResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
+import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.ext.content.script.ScriptNode;
-import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,35 +39,56 @@ import org.springframework.stereotype.Component;
 @Component
 public class SceneManageApiImpl implements SceneManageApi {
 
-    @Autowired
+    @Resource(type = CloudSceneApi.class)
     private CloudSceneApi cloudSceneApi;
 
-    @Autowired
+    @Resource(type = CloudEngineApi.class)
     private CloudEngineApi cloudEngineApi;
 
     @Override
     public ResponseResult<Object> updateSceneFileByScriptId(CloudUpdateSceneFileRequest updateSceneFileRequest) {
-        return (ResponseResult<Object>)cloudSceneApi.updateSceneFileByScriptId(updateSceneFileRequest);
+        try {
+            cloudSceneApi.updateSceneFileByScriptId(updateSceneFileRequest);
+            return ResponseResult.success(true);
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<Long> saveScene(SceneManageWrapperReq sceneManageWrapperReq) {
-        return cloudSceneApi.saveScene(sceneManageWrapperReq);
+        try {
+            return ResponseResult.success(cloudSceneApi.saveScene(sceneManageWrapperReq));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<String> updateScene(SceneManageWrapperReq req) {
-        return cloudSceneApi.updateScene(req);
+        try {
+            return ResponseResult.success(cloudSceneApi.updateScene(req));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
-    public ResponseResult deleteScene(SceneManageDeleteReq sceneManageDeleteReq) {
-        return cloudSceneApi.deleteScene(sceneManageDeleteReq);
+    public ResponseResult<String> deleteScene(SceneManageDeleteReq sceneManageDeleteReq) {
+        try {
+            return ResponseResult.success(cloudSceneApi.deleteScene(sceneManageDeleteReq));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<SceneManageWrapperResp> getSceneDetail(SceneManageIdReq sceneManageIdVO) {
-        return cloudSceneApi.getSceneDetail(sceneManageIdVO);
+        try {
+            return ResponseResult.success(cloudSceneApi.getSceneDetail(sceneManageIdVO));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
@@ -67,56 +98,82 @@ public class SceneManageApiImpl implements SceneManageApi {
 
     @Override
     public ResponseResult<BigDecimal> calcFlow(SceneManageWrapperReq sceneManageWrapperReq) {
-        return cloudSceneApi.calcFlow(sceneManageWrapperReq);
+        try {
+            return ResponseResult.success(cloudSceneApi.calcFlow(sceneManageWrapperReq));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<StrategyResp> getIpNum(SceneIpNumReq sceneIpNumReq) {
-        return cloudSceneApi.getIpNum(sceneIpNumReq);
+        try {
+            return ResponseResult.success(cloudSceneApi.getIpNum(sceneIpNumReq));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
-
 
     @Override
     public ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req) {
-        return cloudSceneApi.queryByIds(req);
+        try {
+            return ResponseResult.success(cloudSceneApi.queryByIds(req));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
-
     @Override
-    public ResponseResult<List<SceneManageListResp>> getSceneManageList(CloudUserCommonRequestExt requestExt) {
-        return cloudSceneApi.getSceneManageList(requestExt);
+    public ResponseResult<List<SceneManageListResp>> getSceneManageList(ContextExt traceContextExt) {
+        try {
+            return ResponseResult.success(cloudSceneApi.getSceneManageList(traceContextExt));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     /**
      * 获取支持的jmeter插件列表
      *
-     * @return
+     * @return -
      */
     @Override
     public ResponseResult<Map<String, List<EnginePluginSimpleInfoResp>>> listEnginePlugins(EnginePluginFetchWrapperReq wrapperReq) {
-        return cloudEngineApi.listEnginePlugins(wrapperReq);
+        try {
+            return ResponseResult.success(cloudEngineApi.listEnginePlugins(wrapperReq));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     /**
      * 获取支持的jmeter插件详情
      *
-     * @return
+     * @return -
      */
     @Override
     public ResponseResult<EnginePluginDetailResp> getEnginePluginDetails(EnginePluginDetailsWrapperReq wrapperReq) {
-        WebPluginUtils.fillCloudUserData(wrapperReq);
-        return cloudEngineApi.getEnginePluginDetails(wrapperReq);
+        try {
+            return ResponseResult.success(cloudEngineApi.getEnginePluginDetails(wrapperReq));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<ScriptCheckResp> checkAndUpdateScript(ScriptCheckAndUpdateReq scriptCheckAndUpdateReq) {
-        WebPluginUtils.fillCloudUserData(scriptCheckAndUpdateReq);
-        return cloudSceneApi.checkAndUpdateScript(scriptCheckAndUpdateReq);
+        try {
+            return ResponseResult.success(cloudSceneApi.checkAndUpdateScript(scriptCheckAndUpdateReq));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<List<ScriptNode>> scriptAnalyze(ScriptAnalyzeRequest request) {
         WebPluginUtils.fillCloudUserData(request);
-        return cloudSceneApi.scriptAnalyze(request);
+        //return cloudSceneApi.scriptAnalyze(request);
+        // TODO 调整SDK
+        return null;
     }
 }

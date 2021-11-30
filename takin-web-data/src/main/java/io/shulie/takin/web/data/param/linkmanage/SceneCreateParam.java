@@ -3,14 +3,17 @@ package io.shulie.takin.web.data.param.linkmanage;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author fanxx
  * @date 2020/11/4 2:56 下午
  */
 @Data
-public class SceneCreateParam {
+@EqualsAndHashCode(callSuper = true)
+public class SceneCreateParam extends ContextExt {
     /**
      * 主键id
      */
@@ -49,16 +52,6 @@ public class SceneCreateParam {
     private Date updateTime;
 
     /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
-
-    /**
      * 场景类型，标识1为jmeter上传，默认0
      */
     private Integer type;
@@ -82,6 +75,5 @@ public class SceneCreateParam {
      * 脚本总节点数
      */
     private Integer totalNodeNum;
-
 
 }

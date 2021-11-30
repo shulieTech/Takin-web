@@ -1,49 +1,54 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import com.google.common.collect.Lists;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.bean.BeanUtil;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
-import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
-import com.pamirs.takin.entity.domain.vo.report.ReportIdVO;
+import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
-import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
-import com.pamirs.takin.entity.domain.vo.report.SceneIdVO;
-import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
-import io.shulie.takin.cloud.common.bean.scenemanage.BusinessActivitySummaryBean;
-import io.shulie.takin.cloud.open.req.report.ReportDetailByIdReq;
-import io.shulie.takin.cloud.open.req.report.ReportDetailBySceneIdReq;
-import io.shulie.takin.cloud.open.req.report.ReportTrendQueryReq;
-import io.shulie.takin.cloud.open.req.report.ScriptNodeTreeQueryReq;
-import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
-import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
-import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
-import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
+import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
+import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.sdk.model.request.common.CloudCommonInfoWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdReq;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailBySceneIdReq;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportQueryReq;
+import io.shulie.takin.cloud.sdk.model.request.report.ScriptNodeTreeQueryReq;
+import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
+import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
+import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
+import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
+import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportDetailResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
-import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
-import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.biz.service.report.ReportService;
-import io.shulie.takin.web.common.constant.RemoteConstant;
-import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebRequest;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.http.HttpAssert;
-import io.shulie.takin.web.common.http.HttpWebClient;
-import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
-import io.shulie.takin.web.data.result.baseserver.TraceMetricsResult;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -52,14 +57,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -68,110 +66,84 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class ReportServiceImpl implements ReportService {
-
-    @Autowired
-    private HttpWebClient httpWebClient;
     @Autowired
     private ReportApi reportApi;
-    @Value("${file.upload.url:''}")
-    private String fileUploadUrl;
+    @Autowired
+    private CloudReportApi cloudReportApi;
 
     @Autowired
     private VerifyTaskReportService verifyTaskReportService;
 
-    @Value("${file.upload.user.data.dir:/data/tmp}")
-    private String fileDir;
-
     @Autowired
     private ActivityDAO activityDAO;
 
-    @Autowired
-    private ActivityService activityService;
-
-    @Autowired
-    private InfluxDatabaseManager influxDBManager;
-
-    private static String pradarDatabase = "pradar";
-
-    @Autowired
-    private ReportRealTimeService reportRealTimeService;
-
     @Override
-    public WebResponse listReport(ReportQueryParam param) {
-        param.setRequestUrl(RemoteConstant.REPORT_LIST);
-        param.setHttpMethod(HttpMethod.GET);
+    public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
         // 前端查询条件 传用户
-        if (StringUtils.isNotBlank(param.getUserName())) {
-            List<UserExt> userList = WebPluginUtils.selectByName(param.getUserName());
+        final List<String> userIdList = new ArrayList<>(0);
+        if (StringUtils.isNotBlank(param.getManagerName())) {
+            List<UserExt> userList = WebPluginUtils.selectByName(param.getManagerName());
             if (CollectionUtils.isNotEmpty(userList)) {
-                List<Long> userIds = userList.stream().map(UserExt::getId).collect(Collectors.toList());
-                if (CollectionUtils.isEmpty(userIds)) {
-                    param.setUserIdStr(null);
-                } else {
-                    param.setUserIdStr(StringUtils.join(userIds, ","));
-                }
+                userList.forEach(t -> userIdList.add(StrUtil.format("'{}'", t.getId())));
             } else {
-                return WebResponse.success(Lists.newArrayList());
+                return ResponseResult.success(new ArrayList<>(0), 0L);
             }
         }
-        WebResponse webResponse = httpWebClient.request(param);
-
-        if (!webResponse.getSuccess()) {
-            ErrorInfo error = webResponse.getError();
-            String errorMsg = Objects.isNull(error) ? "" : error.getMsg();
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR,
-                "takin-cloud查询报告出错！原因：" + errorMsg);
-        }
-        List<Map> webRespData = (List<Map>)webResponse.getData();
-        if (webRespData == null) {
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR, "takin-cloud查询报告返回为空！");
-        }
-        List<Long> userIds = webRespData.stream().filter(data -> null != data.get("userId"))
-            .map(data -> Long.valueOf(data.get("userId").toString()))
-            .collect(Collectors.toList());
+        ResponseResult<List<ReportResp>> reportResponseList = cloudReportApi.listReport(new ReportQueryReq() {{
+            setSceneName(param.getSceneName());
+            setStartTime(param.getStartTime());
+            setEndTime(param.getEndTime());
+            setPageSize(param.getPageSize());
+            setPageNumber(param.getCurrentPage() + 1);
+            setFilterSql(String.join(",", userIdList));
+        }});
+        List<Long> userIds = reportResponseList.getData().stream().map(ContextExt::getUserId)
+            .filter(Objects::nonNull).collect(Collectors.toList());
         //用户信息Map key:userId  value:user对象
         Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
-        webRespData.forEach(data -> {
-            Long userId = data.get("userId") == null ? null : Long.valueOf(data.get("userId").toString());
+        List<ReportDTO> dtoList = reportResponseList.getData().stream().map(t -> {
+            Long userId = t.getUserId() == null ? null : Long.valueOf(t.getUserId().toString());
             //负责人名称
             String userName = Optional.ofNullable(userMap.get(userId))
                 .map(UserExt::getName)
                 .orElse("");
-            data.put("userName", userName);
-            data.put("userId", userId);
-        });
-        return webResponse;
+            ReportDTO result = BeanUtil.copyProperties(t, ReportDTO.class);
+            result.setUserName(userName);
+            result.setUserId(userId);
+            return result;
+        }).collect(Collectors.toList());
+        return ResponseResult.success(dtoList, reportResponseList.getTotalNum());
     }
 
     @Override
-    public ResponseResult<ReportDetailOutput> getReportByReportId(Long reportId) {
+    public ReportDetailOutput getReportByReportId(Long reportId) {
         ReportDetailByIdReq req = new ReportDetailByIdReq();
         req.setReportId(reportId);
-        ResponseResult<ReportDetailResp> result = reportApi.getReportByReportId(req);
-        if (result == null) {
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR, "takin-cloud查询实况报告不存在!");
-        }
+        final ReportDetailByIdReq idReq = new ReportDetailByIdReq() {{
+            setReportId(reportId);
+        }};
+        ReportDetailResp detailResponse = cloudReportApi.detail(idReq);
+        ReportDetailOutput output = new ReportDetailOutput();
+        BeanUtils.copyProperties(detailResponse, output);
+        assembleVerifyResult(output);
+        // 虚拟业务活动处理
+        //dealVirtualBusiness(output);
+        //补充报告执行人
+        fillExecuteMan(output);
+        return output;
 
-        if (result.getSuccess()) {
-            ReportDetailOutput output = new ReportDetailOutput();
-            BeanUtils.copyProperties(result.getData(), output);
-            assembleVerifyResult(output);
-            // 虚拟业务活动处理
-            //dealVirtualBusiness(output);
-            //补充报告执行人
-            fillExecuteMan(output);
-            return ResponseResult.success(output);
-        }
-
-        throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR,
-            "takin-cloud查询实况报告错误，原因为：" + result.getError().getMsg());
     }
 
     private void fillExecuteMan(ReportDetailOutput output) {
-        UserExt user = WebPluginUtils.getUser();
-        if (Objects.nonNull(user)) {
-            output.setOperateId(String.valueOf(user.getId()));
-            output.setOperateName(user.getName());
+        if (output == null) {return;}
+        // 获取用户信息
+        Map<Long, UserExt> userInfo = WebPluginUtils.getUserMapByIds(
+            new ArrayList<Long>(1) {{add(output.getUserId());}});
+        // 填充用户信息
+        if (userInfo.containsKey(output.getUserId())) {
+            output.setOperateId(output.getUserId().toString());
+            output.setUserName(userInfo.get(output.getUserId()).getName());
+            output.setOperateName(userInfo.get(output.getUserId()).getName());
         }
     }
 
@@ -218,75 +190,15 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ResponseResult<ReportTrendResp> queryReportTrend(ReportTrendQueryParam param) {
-        ReportTrendQueryReq reportTrendQueryReq = new ReportTrendQueryReq();
-        reportTrendQueryReq.setSceneId(param.getSceneId());
-        reportTrendQueryReq.setReportId(param.getReportId());
-        reportTrendQueryReq.setXpathMd5(param.getXpathMd5());
-        return reportApi.reportTrend(reportTrendQueryReq);
-    }
-
-    //@Override
-    //public WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery) {
-    //    // 获得 报告链路趋势
-    //    ResponseResult<ReportTrendResp>  webResponse= queryReportTrend(reportTrendQuery);
-    //    Long businessActivityId = reportTrendQuery.getBusinessActivityId();
-    //    if (businessActivityId.equals(0L)) { // 如果 活动ID 为0，则表示 全局趋势
-    //        return webResponse;
-    //    }
-    //
-    //    // 获取 `压测报告`的`请求流量明细`. 取最晚一条 traceId
-    //    PageInfo<ReportTraceDTO> reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
-    //            reportTrendQuery.getReportId(), null, 0, 1);
-    //    List<ReportTraceDTO> reportTraceDTOS = reportLinkListByReportId.getList();
-    //    if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-    //        return webResponse; // todo
-    //    }
-    //    String latestTraceIdStr = reportTraceDTOS.get(0).getTraceId();
-    //
-    //    // 取最早一条 traceId
-    //    int total = (int) reportLinkListByReportId.getTotal();
-    //    log.info("压测报告 report id = " + reportTrendQuery.getReportId() + " 总条数:" + total);
-    //    reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
-    //            reportTrendQuery.getReportId(), null, total, 1);
-    //    reportTraceDTOS = reportLinkListByReportId.getList();
-    //    if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-    //        return webResponse; // todo
-    //    }
-    //    String firstTraceId = reportTraceDTOS.get(0).getTraceId();
-    //
-    //    LinkedHashMap<String, Object> data = webResponse.getData();
-    //    return getWebResponse(webResponse, firstTraceId, latestTraceIdStr, businessActivityId, data);
-    //}
-
-    private LocalDateTime queryDataTimeByTraceId(String traceId) {
-        String queryByTraceId =
-            "SELECT" +
-                " time, totalTps" +
-                " FROM trace_metrics" +
-                " where" +
-                " traceId = '" + traceId + "'";
-
-        Collection<TraceMetricsResult> results = influxDBManager.query(TraceMetricsResult.class, queryByTraceId,
-            pradarDatabase);
-        ArrayList<TraceMetricsResult> queryByTraceIdList = new ArrayList<>(results);
-
-        LocalDateTime localDateTime = null;
-        if (queryByTraceIdList.size() != 0) {
-            TraceMetricsResult traceMetricsResult = queryByTraceIdList.get(0);
-            localDateTime = LocalDateTime.ofInstant(traceMetricsResult.getTime(), ZoneId.systemDefault());
-        }
-        return localDateTime;
+    public TrendResponse queryReportTrend(TrendRequest param) {
+        return cloudReportApi.trend(param);
     }
 
     @Override
-    public ResponseResult<ReportDetailTempOutput> tempReportDetail(Long sceneId) {
+    public ReportDetailTempOutput tempReportDetail(Long sceneId) {
         ReportDetailBySceneIdReq req = new ReportDetailBySceneIdReq();
         req.setSceneId(sceneId);
         ResponseResult<ReportDetailResp> result = reportApi.tempReportDetail(req);
-        if (!result.getSuccess()) {
-            return ResponseResult.fail(result.getError().getCode(), result.getError().getMsg());
-        }
         ReportDetailResp resp = result.getData();
         ReportDetailTempOutput output = new ReportDetailTempOutput();
         BeanUtils.copyProperties(resp, output);
@@ -303,106 +215,33 @@ public class ReportServiceImpl implements ReportService {
             output.setCanStartStop(Boolean.TRUE);
         }
         fillExecuteMan(output);
-        return ResponseResult.success(output);
+        return output;
 
     }
 
     @Override
-    public ResponseResult<ReportTrendResp> queryTempReportTrend(ReportTrendQueryParam param) {
-        ReportTrendQueryReq reportTrendQueryReq = new ReportTrendQueryReq();
-        reportTrendQueryReq.setSceneId(param.getSceneId());
-        reportTrendQueryReq.setReportId(param.getReportId());
-        reportTrendQueryReq.setXpathMd5(param.getXpathMd5());
-        return reportApi.tmpReportTrend(reportTrendQueryReq);
-    }
-
-    //@Override
-    //public WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam param, ReportTraceQueryDTO queryDTO) {
-    //    // 获得 实况报告链路趋势
-    //    ResponseResult<ReportTrendResp> reportTrendRespResponseResult = queryTempReportTrend(param);
-    //    Long businessActivityId = param.getBusinessActivityId();
-    //    if (businessActivityId.equals(0L)) { // 如果 活动ID 为0，则表示 全局趋势
-    //        return webResponse;
-    //    }
-    //
-    //    // 获取 `压测实况`的`请求流量明细`. 取最晚一条 traceId
-    //    PageInfo<ReportTraceDTO> reportLinkListByReportId =
-    //            reportRealTimeService.getReportLinkList(queryDTO.getReportId(), queryDTO.getSceneId(), queryDTO
-    //           .getStartTime(), queryDTO.getType(), 0, 1);
-    //    List<ReportTraceDTO> reportTraceDTOS = reportLinkListByReportId.getList();
-    //    if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-    //        return webResponse; // todo
-    //    }
-    //    String latestTraceIdStr = reportTraceDTOS.get(0).getTraceId();
-    //
-    //    // 取最早一条 traceId
-    //    int total = (int) reportLinkListByReportId.getTotal();
-    //    reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
-    //            queryDTO.getReportId(), null, total, 1);
-    //    reportTraceDTOS = reportLinkListByReportId.getList();
-    //    if (CollectionUtils.isEmpty(reportTraceDTOS)) {
-    //        return webResponse; // todo
-    //    }
-    //    String firstTraceId = reportTraceDTOS.get(0).getTraceId();
-    //
-    //    LinkedHashMap<String, Object> data = webResponse.getData();
-    //    return getWebResponse(webResponse, firstTraceId, latestTraceIdStr, businessActivityId, data);
-    //}
-
-    private WebResponse getWebResponse(WebResponse<LinkedHashMap<String, Object>> webResponse, String firstTraceId,
-        String lastTraceId, Long businessActivityId, LinkedHashMap<String, Object> data) {
-        LocalDateTime now = LocalDateTime.now();
-
-        LocalDateTime startDateTime = queryDataTimeByTraceId(firstTraceId);
-        LocalDateTime endDateTime = queryDataTimeByTraceId(lastTraceId);
-
-        boolean isCompletion = false; // 报告是否完整入库
-        if (null != startDateTime && null != endDateTime) {
-            isCompletion = true;
-        }
-        startDateTime = startDateTime == null ? now : startDateTime;
-        endDateTime = endDateTime == null ? now : endDateTime;
-
-        // 查询 链路拓扑图
-        ActivityResponse activity = activityService
-            .getActivityWithMetricsByIdForReport(businessActivityId, startDateTime, endDateTime);
-        // 响应中 加入 链路拓扑图
-        data.put("activity", activity);
-        data.put("isCompletion", isCompletion);
-        webResponse.setData(data);
-        return webResponse;
+    public TrendResponse queryTempReportTrend(TrendRequest param) {
+        return cloudReportApi.tempTrend(param);
     }
 
     @Override
-    public WebResponse listWarn(WarnQueryParam param) {
-        param.setRequestUrl(RemoteConstant.WARN_LIST);
-        param.setHttpMethod(HttpMethod.GET);
-        WebResponse webResponse = httpWebClient.request(param);
-        HttpAssert.isOk(webResponse, param, "takin-cloud查询警告列表");
-        return webResponse;
+    public ResponseResult<List<WarnDetailResponse>> listWarn(WarnQueryReq req) {
+        return cloudReportApi.listWarn(req);
 
     }
 
     @Override
-    public WebResponse queryReportActivityByReportId(Long reportId) {
-        ReportIdVO vo = new ReportIdVO();
-        vo.setReportId(reportId);
-        vo.setRequestUrl(RemoteConstant.REPORT_BUSINESSACTIVITY_LIST);
-        vo.setHttpMethod(HttpMethod.GET);
-        WebResponse webResponse = httpWebClient.request(vo);
-        HttpAssert.isOk(webResponse, vo, "takin-cloud通过报告ID查询报告的业务活动");
-        return webResponse;
+    public List<ActivityResponse> queryReportActivityByReportId(Long reportId) {
+        return cloudReportApi.activityByReportId(new ReportDetailByIdReq() {{
+            setReportId(reportId);
+        }});
     }
 
     @Override
-    public WebResponse queryReportActivityBySceneId(Long sceneId) {
-        SceneIdVO vo = new SceneIdVO();
-        vo.setSceneId(sceneId);
-        vo.setRequestUrl(RemoteConstant.SCENE_BUSINESSACTIVITY_LIST);
-        vo.setHttpMethod(HttpMethod.GET);
-        WebResponse webResponse = httpWebClient.request(vo);
-        HttpAssert.isOk(webResponse, vo, "takin-cloud通过场景ID查询报告的业务活动");
-        return webResponse;
+    public List<ActivityResponse> queryReportActivityBySceneId(Long sceneId) {
+        return cloudReportApi.activityBySceneId(new ReportDetailBySceneIdReq() {{
+            setSceneId(sceneId);
+        }});
     }
 
     @Override
@@ -411,94 +250,66 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public WebResponse queryMetrices(Long reportId, Long sceneId, Long customerId) {
-        ReportIdVO vo = new ReportIdVO();
-        vo.setReportId(reportId);
-        vo.setSceneId(sceneId);
-        vo.setCustomerId(customerId);
-        vo.setRequestUrl(RemoteConstant.REPORT_METRICES);
-        vo.setHttpMethod(HttpMethod.GET);
-        return httpWebClient.request(vo);
+    public List<MetricesResponse> queryMetrics(Long reportId, Long sceneId) {
+        return cloudReportApi.metrics(new TrendRequest() {{
+            setReportId(reportId);
+            setSceneId(sceneId);
+        }});
     }
 
     @Override
-    public List<Map<String, Object>> listMetrics(Long reportId, Long sceneId, Long customerId) {
-        ReportIdVO vo = new ReportIdVO();
-        vo.setReportId(reportId);
-        vo.setSceneId(sceneId);
-        vo.setCustomerId(customerId);
-        vo.setRequestUrl(RemoteConstant.REPORT_METRICES);
-        vo.setHttpMethod(HttpMethod.GET);
-        WebResponse response = httpWebClient.request(vo);
-        if (response == null) {
-            throw ApiException.create(500, String.format("请求 cloud 指标错误! url: %s", RemoteConstant.REPORT_METRICES));
+    public Map<String, Object> queryReportCount(Long reportId) {
+        return cloudReportApi.warnCount(new ReportDetailByIdReq() {{
+            setReportId(reportId);
+        }});
+    }
+
+    @Override
+    public Long queryRunningReport() {
+        return cloudReportApi.listRunning(new ContextExt());
+    }
+
+    @Override
+    public List<Long> queryListRunningReport() {
+        CloudCommonInfoWrapperReq req = new CloudCommonInfoWrapperReq();
+        WebPluginUtils.fillCloudUserData(req);
+        ResponseResult<List<Long>> result = reportApi.queryListRunningReport(req);
+        if (result == null || !result.getSuccess()) {
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR,
+                Optional.ofNullable(result).map(ResponseResult::getError).map(JsonHelper::bean2Json).orElse("cloud查询异常"));
         }
-
-        Object metricsObject = response.getData();
-        if (metricsObject == null) {
-            return Collections.emptyList();
-        }
-
-        return (List<Map<String, Object>>)metricsObject;
+        return result.getData();
     }
 
     @Override
-    public WebResponse queryReportCount(Long reportId) {
-        ReportIdVO vo = new ReportIdVO();
-        vo.setReportId(reportId);
-        vo.setRequestUrl(RemoteConstant.REPORT_COUNT);
-        vo.setHttpMethod(HttpMethod.GET);
-        return httpWebClient.request(vo);
+    public Boolean lockReport(Long reportId) {
+        return cloudReportApi.lock(new ReportDetailByIdReq() {{
+            setReportId(reportId);
+        }});
     }
 
     @Override
-    public WebResponse queryRunningReport() {
-        WebRequest request = new WebRequest();
-        request.setRequestUrl(RemoteConstant.REPORT_RUNNINNG);
-        request.setHttpMethod(HttpMethod.GET);
-        return httpWebClient.request(request);
+    public Boolean unLockReport(Long reportId) {
+        return cloudReportApi.unlock(new ReportDetailByIdReq() {{
+            setReportId(reportId);
+        }});
     }
 
-    @Override
-    public WebResponse queryListRunningReport() {
-        WebRequest request = new WebRequest();
-        request.setRequestUrl(RemoteConstant.REPORT_RUNNINNG_LIST);
-        request.setHttpMethod(HttpMethod.GET);
-        return httpWebClient.request(request);
-    }
     @Override
     public WebResponse queryListPressuringReport() {
-        WebRequest request = new WebRequest();
-        request.setRequestUrl(RemoteConstant.REPORT_PRESSURING_LIST);
-        request.setHttpMethod(HttpMethod.GET);
-        return httpWebClient.request(request);
+        //WebRequest request = new WebRequest();
+        //request.setRequestUrl(RemoteConstant.REPORT_PRESSURING_LIST);
+        //request.setHttpMethod(HttpMethod.GET);
+        //return httpWebClient.request(request);
+        // TODO SDK调整
+        return null;
     }
 
     @Override
-    public WebResponse lockReport(Long reportId) {
-        ReportIdVO vo = new ReportIdVO();
-        vo.setReportId(reportId);
-        vo.setRequestUrl(RemoteConstant.REPORT_LOCK);
-        vo.setHttpMethod(HttpMethod.PUT);
-        return httpWebClient.request(vo);
-    }
-
-    @Override
-    public WebResponse unLockReport(Long reportId) {
-        ReportIdVO vo = new ReportIdVO();
-        vo.setReportId(reportId);
-        vo.setRequestUrl(RemoteConstant.REPORT_UNLOCK);
-        vo.setHttpMethod(HttpMethod.PUT);
-        return httpWebClient.request(vo);
-    }
-
-    @Override
-    public WebResponse finishReport(Long reportId) {
-        ReportIdVO vo = new ReportIdVO();
-        vo.setReportId(reportId);
-        vo.setRequestUrl(RemoteConstant.REPORT_FINISH);
-        vo.setHttpMethod(HttpMethod.PUT);
-        return httpWebClient.request(vo);
+    public Boolean finishReport(Long reportId) {
+        return cloudReportApi.finish(new ReportDetailByIdReq() {{
+            setReportId(reportId);
+        }});
     }
 
     @Override

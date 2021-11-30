@@ -1,11 +1,10 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 /**
@@ -15,7 +14,7 @@ import lombok.Data;
 
 @Data
 @TableName(value = "t_scene_tag_ref")
-public class SceneTagRefEntity {
+public class SceneTagRefEntity extends TenantBaseEntity {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;

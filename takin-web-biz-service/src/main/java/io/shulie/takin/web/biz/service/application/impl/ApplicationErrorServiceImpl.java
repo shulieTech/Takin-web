@@ -25,12 +25,15 @@ import io.shulie.takin.web.biz.service.application.ApplicationErrorService;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.impl.ApplicationServiceImpl;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.enums.application.AppExceptionCodeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,9 +72,10 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
         if (nodeErrorResponse != null) {
             responseList.add(nodeErrorResponse);
         }
-
-
-        String appUniqueKey = queryRequest.getApplicationId() + ApplicationServiceImpl.PRADARNODE_KEYSET;
+        //redisKey改造
+        String appUniqueKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+            queryRequest.getApplicationId() + ApplicationServiceImpl.PRADARNODE_KEYSET);
+        //String appUniqueKey = TenantKeyUtils.getTenantKey()+queryRequest.getApplicationId() + ApplicationServiceImpl.PRADARNODE_KEYSET;
         Set<String> keys = redisTemplate.opsForSet().members(appUniqueKey);
         if (keys == null || keys.size() == 0) {
             return responseList;
@@ -169,7 +173,9 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
                 output.setTime(DateUtils.getNowDateStr());
                 outputs.add(output);
             }
-            String appUniqueKey = app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG;
+            //redisKey改造
+            String appUniqueKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,WebPluginUtils.traceTenantAppKey(),WebPluginUtils.traceEnvCode(),app.getAppId()+ApplicationServiceImpl.PRADAR_SEPERATE_FLAG);
+            //String appUniqueKey = TenantKeyUtils.getTenantKey()+app.getAppId() + ApplicationServiceImpl.PRADAR_SEPERATE_FLAG;
             Set<String> keys = redisTemplate.keys(appUniqueKey + "*");
             if (keys != null) {
                 for (String nodeKey : keys) {

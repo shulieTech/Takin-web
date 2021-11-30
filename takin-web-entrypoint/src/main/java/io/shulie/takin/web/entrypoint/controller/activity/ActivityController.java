@@ -119,7 +119,7 @@ public class ActivityController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
         needAuth = ActionTypeEnum.QUERY
     )
-    @ActivityCache(expireTime = 10)
+    @ActivityCache
     public ActivityResponse getActivityById(@Valid ActivityInfoQueryRequest request) {
         return activityService.getActivityWithMetricsById(request);
     }

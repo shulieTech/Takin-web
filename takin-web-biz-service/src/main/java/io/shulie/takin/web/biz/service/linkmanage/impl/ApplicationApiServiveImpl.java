@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.service.linkmanage.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.dao.apimanage.TApplicationApiManageMapper;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
 import com.pamirs.takin.entity.domain.entity.ApplicationApiManage;
+import com.pamirs.takin.entity.domain.query.ApplicationApiParam;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
@@ -30,12 +30,12 @@ import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 import io.shulie.takin.web.data.dao.application.ApplicationApiDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.param.application.ApplicationApiCreateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +61,6 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
     @Autowired
     private ApplicationDAO applicationDAO;
 
-
     @Override
     public Response registerApi(Map<String, List<String>> register) {
         List<ApplicationApiManage> batch = Lists.newArrayList();
@@ -76,7 +75,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                     continue;
                 }
 
-                ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByCustomerIdAndName(appName);
+                ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByTenantIdAndName(appName);
                 if (applicationDetailResult == null) {
                     throw new TakinWebException(TakinWebExceptionEnum.AGENT_REGISTER_API,
                         String.format("应用不存在, 应用名称: %s", appName));
@@ -104,7 +103,6 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                             manage.setUpdateTime(new Date());
                             manage.setRequestMethod(requestMethod);
                             manage.setApplicationId(applicationDetailResult.getApplicationId());
-                            manage.setCustomerId(applicationDetailResult.getCustomerId());
                             manage.setUserId(applicationDetailResult.getUserId());
                             manage.setIsAgentRegiste(1);
                             batch.add(manage);
@@ -119,7 +117,6 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                         manage.setRequestMethod(requestMethod);
                         manage.setUpdateTime(new Date());
                         manage.setApplicationId(applicationDetailResult.getApplicationId());
-                        manage.setCustomerId(applicationDetailResult.getCustomerId());
                         manage.setUserId(applicationDetailResult.getUserId());
                         manage.setIsAgentRegiste(1);
                         batch.add(manage);
@@ -143,7 +140,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                     manage.setUpdateTime(single.getUpdateTime());
                     manage.setCreateTime(single.getCreateTime());
                     manage.setApplicationId(single.getApplicationId());
-                    manage.setCustomerId(single.getCustomerId());
+                    manage.setTenantId(single.getTenantId());
                     manage.setUserId(single.getUserId());
                     manage.setIsAgentRegiste(single.getIsAgentRegiste());
                     manageMapper.insertSelective(manage);
@@ -162,7 +159,26 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
 
     @Override
     public Response pullApi(String appName) {
-        List<ApplicationApiManage> all = manageMapper.querySimple(appName);
+        ApplicationApiParam apiParam = new ApplicationApiParam();
+        apiParam.setAppName(appName);
+        List<ApplicationApiManage> all = manageMapper.querySimple(apiParam);
+        if (org.apache.commons.collections4.CollectionUtils.isEmpty(all)) {
+            return Response.success(new HashMap<>());
+        }
+        Map<String, List<String>> res = new HashMap<>();
+        for (ApplicationApiManage applicationApiManage : all) {
+            res.computeIfAbsent(applicationApiManage.getApplicationName(), k -> new ArrayList<>()).add(
+                applicationApiManage.getApi()
+                    + "#" + applicationApiManage.getRequestMethod());
+        }
+        return Response.success(res);
+    }
+
+    @Override
+    public Response pullApiV1(String appName) {
+        ApplicationApiParam apiParam = new ApplicationApiParam();
+        apiParam.setAppName(appName);
+        List<ApplicationApiManage> all = manageMapper.querySimple(apiParam);
         if (org.apache.commons.collections4.CollectionUtils.isEmpty(all)) {
             return Response.success(new HashMap<>());
         }
@@ -187,7 +203,7 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
         manage.setApplicationName(vo.getApplicationName());
         manage.setApi(vo.getApi());
 
-        List<ApplicationApiManage> reocords = manageMapper.selectBySelective(manage);
+        List<ApplicationApiManage> reocords = manageMapper.selectBySelective(manage,WebPluginUtils.getQueryAllowUserIdList());
 
         reocords.sort(Comparator.comparing(ApplicationApiManage::getCreateTime).reversed());
         List<ApplicationApiManage> pageData =
@@ -250,9 +266,10 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
         createParam.setIsDeleted((byte)0);
         createParam.setUpdateTime(new Date());
         createParam.setCreateTime(new Date());
-        ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByCustomerIdAndName(vo.getApplicationName());
+        ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByTenantIdAndName(
+            vo.getApplicationName());
         //4.8.0.4以后入口规则的所属用户跟着应用走
-        createParam.setCustomerId(applicationDetailResult.getCustomerId());
+        createParam.setTenantId(applicationDetailResult.getTenantId());
         createParam.setUserId(applicationDetailResult.getUserId());
         applicationApiDAO.insert(createParam);
         return Response.success();
@@ -279,10 +296,10 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
     }
 
     @Override
-    public Map<Long,List<ApplicationApiManageVO>> selectListGroupByAppId(){
+    public Map<Long, List<ApplicationApiManageVO>> selectListGroupByAppId() {
         List<ApplicationApiManage> apiManageList = manageMapper.query();
-        if(CollectionUtils.isEmpty(apiManageList)){
-            return Collections.EMPTY_MAP;
+        if (CollectionUtils.isEmpty(apiManageList)) {
+            return new HashMap<>(0);
         }
         List<ApplicationApiManageVO> voList = apiManageList.stream()
                 .filter(Objects::nonNull)

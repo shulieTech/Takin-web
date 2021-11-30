@@ -15,29 +15,27 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDT
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneActionResp;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.UpdateTpsRequest;
-import io.shulie.takin.web.biz.pojo.response.scene.StartResponse;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
@@ -57,7 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2020-04-27
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "scene/task/")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "scene/task/")
 @Api(tags = "场景任务", value = "场景任务")
 public class SceneTaskController {
     @Autowired
@@ -71,6 +69,12 @@ public class SceneTaskController {
     @Autowired
     private RedisClientUtils redisClientUtils;
 
+    /**
+     * 启动场景
+     *
+     * @param param 入参
+     * @return 启动结果
+     */
     @PostMapping("/start")
     @ApiOperation(value = "开始场景测试")
     @ModuleDef(
@@ -78,7 +82,7 @@ public class SceneTaskController {
         subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_START
     )
-    public WebResponse<StartResponse> start(@RequestBody SceneActionParam param) {
+    public WebResponse<SceneActionResp> start(@RequestBody SceneActionParam param) {
         try {
             ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(param.getSceneId());
             OperationLogContextHolder.operationType(BizOpConstants.OpTypes.START);
@@ -92,18 +96,14 @@ public class SceneTaskController {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, StringUtils.join(errorMsgList, Constants.SPLIT));
             }
             param.setResourceName(sceneData.getPressureTestSceneName());
-            WebResponse<StartResponse> startTaskResponse = sceneTaskService.startTask(param);
-            if (!startTaskResponse.getSuccess()) {
-                OperationLogContextHolder.ignoreLog();
-            }
-            if (startTaskResponse.getSuccess()) {
-                startCheckLeakTask(param, sceneData);
-            }
-            return startTaskResponse;
+            SceneActionResp startTaskResponse = sceneTaskService.startTask(param);
+            // 开启漏数
+            startCheckLeakTask(param, sceneData);
+            return WebResponse.success(startTaskResponse);
         } catch (TakinWebException ex) {
             // 解除 场景锁
             redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
-            StartResponse sceneStart = new StartResponse();
+            SceneActionResp sceneStart = new SceneActionResp();
             sceneStart.setMsg(Arrays.asList(StringUtils.split(ex.getMessage(), Constants.SPLIT)));
             return WebResponse.success(sceneStart);
         }
@@ -118,6 +118,7 @@ public class SceneTaskController {
             //查询报告id
             SceneManageIdReq req = new SceneManageIdReq();
             req.setId(param.getSceneId());
+            WebPluginUtils.fillCloudUserData(req);
             ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(req);
             SceneActionResp resp = JsonHelper.json2Bean(JsonHelper.bean2Json(response.getData()),
                 SceneActionResp.class);
@@ -137,6 +138,12 @@ public class SceneTaskController {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
     }
 
+    /**
+     * 停止压测
+     *
+     * @param param 入参
+     * @return 停止结果
+     */
     @PostMapping("/stop")
     @ApiOperation(value = "结束场景测试")
     @ModuleDef(
@@ -167,6 +174,13 @@ public class SceneTaskController {
         return stopResult;
     }
 
+    /**
+     * 检查压测场景启动状态
+     *
+     * @param sceneId  场景主键
+     * @param reportId 报告主键
+     * @return 启动状态
+     */
     @GetMapping("/checkStartStatus")
     @ApiOperation(value = "检查启动状态")
     public ResponseResult<SceneActionResp> checkStartStatus(@RequestParam("sceneId") Long sceneId, @RequestParam("reportId") Long reportId) {

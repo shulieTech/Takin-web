@@ -2,11 +2,11 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.time.LocalDateTime;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
@@ -14,7 +14,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_app_middleware_info")
-public class AppMiddlewareInfoEntity {
+public class AppMiddlewareInfoEntity extends UserBaseEntity {
     /**
      * 主键
      */
@@ -44,12 +44,6 @@ public class AppMiddlewareInfoEntity {
      */
     @TableField(value = "JAR_TYPE")
     private String jarType;
-
-    /**
-     * 用户ID
-     */
-    @TableField(value = "user_id" , fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 是否增强成功 0:有效;1:未生效

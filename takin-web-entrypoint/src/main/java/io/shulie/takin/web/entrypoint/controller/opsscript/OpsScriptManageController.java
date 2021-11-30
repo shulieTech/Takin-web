@@ -3,6 +3,8 @@ package io.shulie.takin.web.entrypoint.controller.opsscript;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import com.google.common.collect.Maps;
 import com.pamirs.takin.entity.dao.dict.TDictionaryDataMapper;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
@@ -12,10 +14,11 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.OpsScriptFileService;
 import io.shulie.takin.web.biz.service.OpsScriptManageService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.dao.dictionary.DictionaryDataDAO;
 import io.shulie.takin.web.data.param.opsscript.OpsScriptParam;
 import io.shulie.takin.web.data.param.opsscript.OpsUploadFileParam;
 import io.shulie.takin.web.data.result.opsscript.OpsScriptDetailVO;
@@ -41,17 +44,17 @@ import org.springframework.web.multipart.MultipartFile;
  * @since 2021-06-16 10:41:43
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "opsScriptManage")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "opsScriptManage")
 @Api(tags = "运维脚本-接口")
 public class OpsScriptManageController {
 
-    @Autowired
+    @Resource(type = OpsScriptManageService.class)
     OpsScriptManageService opsScriptManageService;
 
-    @Autowired
-    TDictionaryDataMapper dictionaryDataMapper;
+    @Resource(type = DictionaryDataDAO.class)
+    DictionaryDataDAO dictionaryDataDao;
 
-    @Autowired
+    @Resource(type = OpsScriptFileService.class)
     OpsScriptFileService opsScriptFileService;
 
     @ApiOperation("列表接口")
@@ -81,10 +84,7 @@ public class OpsScriptManageController {
         needAuth = ActionTypeEnum.QUERY
     )
     public List<TDictionaryVo> getScriptType() {
-        HashMap<String, Object> param = Maps.newHashMap();
-        param.put("valueActive", "Y");
-        param.put("typeAlias", "OPS_SCRIPT_TYPE");
-        return dictionaryDataMapper.queryDictionaryList(param);
+        return dictionaryDataDao.getDictByCode("OPS_SCRIPT_TYPE");
     }
 
     @ApiOperation("保存运维脚本")

@@ -7,8 +7,10 @@ import javax.annotation.Resource;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.shulie.takin.cloud.common.utils.CommonUtil;
-import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
-import io.shulie.takin.cloud.open.request.scene.manage.SynchronizeRequest;
+import io.shulie.takin.cloud.entrypoint.scenemanage.MultipleSceneApi;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SynchronizeRequest;
 import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
@@ -74,12 +76,10 @@ import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.biz.convert.linkmanage.LinkManageConvert;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateSaveParam;
-import io.shulie.takin.cloud.open.req.scenemanage.ScriptAnalyzeRequest;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageResult;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
-import io.shulie.takin.cloud.open.req.filemanager.FileCreateByStringParamReq;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
@@ -146,16 +146,16 @@ public class SceneServiceImpl implements SceneService {
         SceneLinkRelateResult link = null;
         ActivityListResult activity = null;
 
-        if (CollectionUtils.isNotEmpty(links)){
+        if (CollectionUtils.isNotEmpty(links)) {
             //sceneId不为空，更新过程
             if (null != sceneId) {
                 //如果存在业务流程id相同情况，优先匹配业务流程相同的
                 List<SceneLinkRelateResult> collect = links.stream().filter(o -> sceneId.equals(NumberUtils.toLong(o.getSceneId())))
-                        .collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(collect)){
+                    .collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(collect)) {
                     Set<String> businessActivitySet = collect.stream().map(SceneLinkRelateResult::getBusinessLinkId).collect(Collectors.toSet());
                     //即便业务流程相同，也不能匹配到两个业务活动
-                    if (CollectionUtils.isNotEmpty(businessActivitySet) && businessActivitySet.size() == 1){
+                    if (CollectionUtils.isNotEmpty(businessActivitySet) && businessActivitySet.size() == 1) {
                         link = collect.get(0);
                     }
                 }
@@ -164,7 +164,7 @@ public class SceneServiceImpl implements SceneService {
             if (null == link) {
                 //没有匹配到
                 Set<String> businessActivitySet = links.stream().map(SceneLinkRelateResult::getBusinessLinkId).collect(Collectors.toSet());
-                if (CollectionUtils.isNotEmpty(businessActivitySet) && businessActivitySet.size() == 1){
+                if (CollectionUtils.isNotEmpty(businessActivitySet) && businessActivitySet.size() == 1) {
                     link = links.get(0);
                 }
                 //noinspection unchecked
@@ -176,7 +176,7 @@ public class SceneServiceImpl implements SceneService {
             param.setEntrance(node.getIdentification());
             List<ActivityListResult> activities = activityDao.getActivityList(param);
             //只有匹配到一个业务活动，才可以进行自动匹配
-            if (CollectionUtils.isNotEmpty(activities) && activities.size() == 1){
+            if (CollectionUtils.isNotEmpty(activities) && activities.size() == 1) {
                 //noinspection unchecked
                 activity = activities.get(0);
             }
@@ -284,12 +284,11 @@ public class SceneServiceImpl implements SceneService {
         //保存业务流程
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
         sceneCreateParam.setSceneName(testName);
-        sceneCreateParam.setCustomerId(WebPluginUtils.getCustomerId());
-        sceneCreateParam.setUserId(WebPluginUtils.getUserId());
         sceneCreateParam.setLinkRelateNum(0);
         sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
         sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
         sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
+        WebPluginUtils.fillCloudUserData(sceneCreateParam);
         sceneDao.insert(sceneCreateParam);
 
         //新增脚本文件
@@ -309,8 +308,8 @@ public class SceneServiceImpl implements SceneService {
         //TODO 目前临时将kafka版本锁死,如果脚本中存在kafka取样器，使用kafka2.5版本
         List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);
         List<ScriptNode> kafkaScriptNodes = scriptNodeByType.stream().filter(o -> SamplerTypeEnum.KAFKA == o.getSamplerType())
-                .collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(kafkaScriptNodes)){
+            .collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(kafkaScriptNodes)) {
             PluginConfigCreateRequest pluginConfigCreateRequest = new PluginConfigCreateRequest();
             pluginConfigCreateRequest.setName("2");
             pluginConfigCreateRequest.setType("KAFKA");
@@ -407,7 +406,7 @@ public class SceneServiceImpl implements SceneService {
         }
         List<ScriptNode> samplerScriptNodeList = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, scriptNodeList);
         List<String> xpathMd5List = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(samplerScriptNodeList)){
+        if (CollectionUtils.isNotEmpty(samplerScriptNodeList)) {
             xpathMd5List = samplerScriptNodeList.stream().map(ScriptNode::getXpathMd5).collect(Collectors.toList());
         }
 
@@ -416,10 +415,10 @@ public class SceneServiceImpl implements SceneService {
         SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
         sceneLinkRelateParam.setSceneIds(Collections.singletonList(id.toString()));
         List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
-        if (CollectionUtils.isNotEmpty(sceneLinkRelateList) && CollectionUtils.isNotEmpty(xpathMd5List)){
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateList) && CollectionUtils.isNotEmpty(xpathMd5List)) {
             List<String> finalXpathMd5List = xpathMd5List;
             sceneLinkRelateList = sceneLinkRelateList.stream().filter(o -> finalXpathMd5List.contains(o.getScriptXpathMd5()))
-                    .collect(Collectors.toList());
+                .collect(Collectors.toList());
         }
         dealScriptJmxNodes(sceneLinkRelateList, scriptJmxNodes);
         response.setThreadScriptJmxNodes(scriptJmxNodes);
@@ -612,7 +611,7 @@ public class SceneServiceImpl implements SceneService {
         if (CollectionUtils.isNotEmpty(responses)) {
             responses.forEach(r -> {
                 UserExt user = userMap.get(r.getUserId());
-                if (user != null){
+                if (user != null) {
                     r.setUserName(user.getName());
                 }
             });
@@ -735,12 +734,12 @@ public class SceneServiceImpl implements SceneService {
             updateRequest.setFileManageUpdateRequests(updateFileManageRequests);
         }
 
-        if (CollectionUtils.isNotEmpty(data)){
+        if (CollectionUtils.isNotEmpty(data)) {
             //TODO 目前临时将kafka版本锁死,如果脚本中存在kafka取样器，使用kafka2.5版本
             List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);
             List<ScriptNode> kafkaScriptNodes = scriptNodeByType.stream().filter(o -> SamplerTypeEnum.KAFKA == o.getSamplerType())
-                    .collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(kafkaScriptNodes)){
+                .collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(kafkaScriptNodes)) {
                 PluginConfigUpdateRequest pluginConfigUpdate = new PluginConfigUpdateRequest();
                 pluginConfigUpdate.setName("2");
                 pluginConfigUpdate.setType("KAFKA");
@@ -831,7 +830,7 @@ public class SceneServiceImpl implements SceneService {
                         scriptJmxNode.setTechLinkId(activityListResult.getTechLinkId());
                         scriptJmxNode.setEntrace(activityListResult.getEntrace());
                         scriptJmxNode.setEntracePath(StringUtils.isNotBlank(entranceJoinEntity.getMethodName()) ?
-                                entranceJoinEntity.getMethodName() + "|" + entranceJoinEntity.getServiceName() : entranceJoinEntity.getServiceName());
+                            entranceJoinEntity.getMethodName() + "|" + entranceJoinEntity.getServiceName() : entranceJoinEntity.getServiceName());
                         scriptJmxNode.setStatus(1);
                     }
 

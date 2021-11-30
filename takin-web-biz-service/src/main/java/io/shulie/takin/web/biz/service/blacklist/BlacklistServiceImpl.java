@@ -21,6 +21,7 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.blacklist.BlacklistTypeEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.vo.blacklist.BlacklistVO;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
@@ -107,7 +108,8 @@ public class BlacklistServiceImpl implements BlacklistService {
         // 刷新agent数据
         TApplicationMnt tApplicationMnt = applicationMntDao.queryApplicationinfoById(applicationId);
         whiteListFileService.writeWhiteListFile();
-        configSyncService.syncAllowList(WebPluginUtils.getUserAppKey(tApplicationMnt.getUserId()), applicationId, tApplicationMnt.getApplicationName());
+        TenantCommonExt commonExt = WebPluginUtils.fillTenantCommonExt(tApplicationMnt.getTenantId(), tApplicationMnt.getEnvCode());
+        configSyncService.syncAllowList(commonExt, applicationId, tApplicationMnt.getApplicationName());
         agentConfigCacheManager.evictRecallCalls(tApplicationMnt.getApplicationName());
     }
 
@@ -170,9 +172,10 @@ public class BlacklistServiceImpl implements BlacklistService {
     public List<BlacklistOutput> selectList(BlacklistSearchInput input) {
         BlacklistSearchParam param = new BlacklistSearchParam();
         BeanUtils.copyProperties(input, param);
-        UserExt user = WebPluginUtils.getUser();
+        UserExt user = WebPluginUtils.traceUser();
         if (user != null) {
-            param.setCustomerId(WebPluginUtils.getCustomerId());
+            param.setTenantId(WebPluginUtils.traceTenantId());
+            param.setEnvCode(WebPluginUtils.traceEnvCode());
             param.setUserId(user.getId());
         }
         List<BlacklistResult> results = blackListDAO.selectList(param);

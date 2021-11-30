@@ -28,7 +28,9 @@ public class ActivityResult {
 
     private Long userId;
 
-    private Long customerId;
+    private Long tenantId;
+
+    private String envCode;
 
     /**
      * 业务链路是否否核心链路 0:不是;1:是

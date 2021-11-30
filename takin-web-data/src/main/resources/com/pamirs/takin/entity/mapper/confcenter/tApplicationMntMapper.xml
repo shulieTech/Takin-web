@@ -6,7 +6,7 @@
     <sql id="Base_Column_List">
         APPLICATION_ID, APPLICATION_NAME, APPLICATION_DESC, DDL_SCRIPT_PATH, CLEAN_SCRIPT_PATH, READY_SCRIPT_PATH,
         BASIC_SCRIPT_PATH, CACHE_SCRIPT_PATH, CACHE_EXP_TIME, USE_YN,NODE_NUM,ACCESS_STATUS,EXCEPTION_INFO,
-        SWITCH_STATUS,CREATE_TIME,UPDATE_TIME,ALARM_PERSON,PRADAR_VERSION,USER_ID,CUSTOMER_ID
+        SWITCH_STATUS,CREATE_TIME,UPDATE_TIME,ALARM_PERSON,PRADAR_VERSION,USER_ID,tenant_id, env_code
     </sql>
 
     <!-- 校验该应用是否已经存在 -->
@@ -21,12 +21,15 @@
         APPLICATION_NAME=#{applicationName}
     </select>
 
-    <select id="applicationExistByCustomerIdAndAppName" resultType="Integer">
+    <select id="applicationExistByTenantIdAndAppName" resultType="Integer">
         select count(1) from t_application_mnt where 1=1
-        <if test="customerId!=null">
-            AND CUSTOMER_ID = #{customerId}
+        <if test="tenantId!=null">
+            AND TENANT_ID = #{tenantId}
         </if>
-            AND APPLICATION_NAME= #{applicationName}
+        <if test="envCode!=null">
+            AND ENV_CODE = #{envCode}
+        </if>
+        AND APPLICATION_NAME= #{applicationName}
     </select>
 
     <!-- 新增应用信息 -->
@@ -188,6 +191,12 @@
                 #{applicationId}
             </foreach>
         </if>
+        <if test="userIds != null and userIds.size > 0">
+            AND tam.user_id IN
+            <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                #{userId}
+            </foreach>
+        </if>
         order by tam.APPLICATION_ID desc
     </select>
 
@@ -232,7 +241,7 @@
         t_application_mnt where
         APPLICATION_ID=#{applicationId}
         <if test="role != null and role != 0">
-            and customer_id = #{userId}
+            and tenant_id = #{tenantId}
         </if>
     </select>
 
@@ -244,7 +253,7 @@
         t_application_mnt where
         APPLICATION_ID=#{applicationId}
         <if test="userId != null">
-            and customer_id = #{userId}
+            and teannt_id = #{userId}
         </if>
     </select>
 
@@ -259,13 +268,12 @@
     </select>
 
     <select id="queryApplicationInfoByNameAndTenant" resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
-        select
-        <include refid="Base_Column_List"/>
-        from t_application_mnt where
-        APPLICATION_NAME=#{applicationName}
-        <if test="customerId != null">
-            and customer_id=#{customerId}
+        select <include refid="Base_Column_List"/>
+        from t_application_mnt where APPLICATION_NAME=#{applicationName}
+        <if test="tenantId != null">
+            and tenant_id=#{tenantId}
         </if>
+        limit 1
     </select>
 
     <!-- 根据应用ID批量删除应用信息 -->
@@ -413,7 +421,7 @@
             resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
         select *
         from t_application_mnt
-        where customer_id = #{uid,jdbcType=BIGINT}
+        where teannt_id = #{uid,jdbcType=BIGINT}
     </select>
 
     <!--根据应用id批量查询应用名称-->
@@ -480,8 +488,12 @@
         select APPLICATION_ID
         from t_application_mnt
         <where>
-            <if test="userId != null">
-                customer_id = #{userId}
+            1 = 1
+            <if test="tenantId != null">
+               and tenant_id = #{tenantId}
+            </if>
+            <if test="envCode != null">
+                and env_code = #{envCode}
             </if>
             <if test="names != null and names.size() != 0">
                 and application_name in
@@ -497,7 +509,7 @@
         select application_id,
                application_name,
                user_id,
-               customer_id
+               tenant_id
         from t_application_mnt
     </select>
 
@@ -512,15 +524,16 @@
         </foreach>
     </select>
 
-    <select id="getApplicationsByTenants"
+    <select id="getApplicationsByUserIdList"
             resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
-        select application_id,
-        application_name
-        from t_application_mnt where
-        customer_id in
-        <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
-            #{userId}
-        </foreach>
+        select application_id,application_name
+        from t_application_mnt
+        <if test="userIdList != null and userIdList.size()>0">
+            where user_id in
+            <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+                #{userId}
+            </foreach>
+        </if>
     </select>
 
     <select id="getIdByName" resultType="java.lang.String">

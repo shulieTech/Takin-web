@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.result.datasource;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2020/12/30 10:11 上午
  */
 @Data
-public class DataSourceResult {
+public class DataSourceResult extends TenantCommonExt {
     private Long id;
 
     /**
@@ -42,10 +43,6 @@ public class DataSourceResult {
      */
     private String features;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
     /**
      * 用户id

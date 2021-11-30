@@ -1,13 +1,22 @@
 package io.shulie.takin.web.biz.job;
 
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
-import io.shulie.takin.web.biz.service.perfomanceanaly.PerformanceBaseDataService;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ThreadAnalyService;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,16 +29,37 @@ import org.springframework.stereotype.Component;
 public class PerformanceAnalyzeJob implements SimpleJob {
 
     @Autowired
-    private PerformanceBaseDataService performanceBaseDataService;
-    @Autowired
     private ThreadAnalyService threadAnalyService;
 
-    @Value("${performance.clear.second:172800}")
-    private String second;
+    @Autowired
+    @Qualifier("jobThreadPool")
+    private ThreadPoolExecutor jobThreadPool;
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        performanceBaseDataService.clearData(Integer.valueOf(second));
-        threadAnalyService.clearData(Integer.valueOf(second));
+        Integer second = Integer.valueOf(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_PERFORMANCE_CLEAR_SECOND));
+
+
+        if (WebPluginUtils.isOpenVersion()) {
+            // 私有化 + 开源
+            threadAnalyService.clearData(second);
+        } else {
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
+            // saas
+            tenantInfoExts.forEach(ext -> {
+                // 根据环境 分线程
+                ext.getEnvs().forEach(e ->
+                    jobThreadPool.execute(() -> {
+                        WebPluginUtils.setTraceTenantContext(
+                            new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                        threadAnalyService.clearData(second);
+                        WebPluginUtils.removeTraceContext();
+                    }));
+
+            });
+
+        }
     }
 }

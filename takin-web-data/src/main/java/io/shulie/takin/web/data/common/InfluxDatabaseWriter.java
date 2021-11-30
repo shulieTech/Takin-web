@@ -7,19 +7,20 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import org.slf4j.Logger;
-import org.influxdb.InfluxDB;
-import org.influxdb.dto.Point;
-import org.influxdb.dto.Query;
-import org.slf4j.LoggerFactory;
-import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.QueryResult;
 import io.shulie.takin.utils.json.JsonHelper;
-import org.springframework.stereotype.Component;
+import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBFactory;
+import org.influxdb.dto.BatchPoints;
+import org.influxdb.dto.Point;
+import org.influxdb.dto.Query;
+import org.influxdb.dto.QueryResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="tangyuhan@shulie.io">yuhan.tang</a>
@@ -35,6 +36,7 @@ public class InfluxDatabaseWriter {
      * 连接地址
      */
     @Value("${spring.influxdb.url}")
+    @Getter
     private String influxdbUrl;
 
     /**
@@ -108,7 +110,6 @@ public class InfluxDatabaseWriter {
         try {
             getInfluxDatabase().write(database, "", builder.build());
         } catch (Exception ex) {
-            // todo 输出异常代码
             logger.error("插入数据出错[io.shulie.takin.web.data.common.InfluxDBWriter.insert].", ex);
             return false;
         }
@@ -158,13 +159,13 @@ public class InfluxDatabaseWriter {
                 Map<String, String> tags = serie.getTags();
 
                 // 封装查询结果
-                for (int i = 0; i < values.size(); ++i) {
+                for (List<Object> value : values) {
                     JSONObject jsonData = new JSONObject();
                     if (tags != null && tags.keySet().size() > 0) {
-                        tags.forEach((k, v) -> jsonData.put(k, v));
+                        tags.forEach(jsonData::put);
                     }
                     for (int j = 0; j < colums.size(); ++j) {
-                        jsonData.put(colums.get(j), values.get(i).get(j));
+                        jsonData.put(colums.get(j), value.get(j));
                     }
                     resultArr.add(jsonData);
                 }
@@ -192,7 +193,4 @@ public class InfluxDatabaseWriter {
         getInfluxDatabase().query(new Query(command, database));
     }
 
-    public String getInfluxdbUrl() {
-        return influxdbUrl;
-    }
 }

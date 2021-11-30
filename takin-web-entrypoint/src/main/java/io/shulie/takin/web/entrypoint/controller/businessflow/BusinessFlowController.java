@@ -12,7 +12,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.service.scene.SceneService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -25,7 +25,7 @@ import javax.validation.constraints.NotNull;
 
 @Slf4j
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "businessFlow")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "businessFlow")
 @Api(tags = "businessFlow", value = "业务流程接口")
 public class BusinessFlowController {
 

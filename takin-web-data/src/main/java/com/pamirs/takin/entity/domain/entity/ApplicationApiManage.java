@@ -3,6 +3,7 @@ package com.pamirs.takin.entity.domain.entity;
 import java.io.Serializable;
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -11,7 +12,7 @@ import lombok.Data;
  * @author
  */
 @Data
-public class ApplicationApiManage implements Serializable {
+public class ApplicationApiManage extends TenantCommonExt implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * 主键
@@ -42,11 +43,10 @@ public class ApplicationApiManage implements Serializable {
      */
     private Byte isDeleted;
 
-    private Long customerId;
-
     private Long userId;
 
     private String requestMethod;
 
     private Integer isAgentRegiste;
+
 }

@@ -30,7 +30,7 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.ConfCenterService;
 import io.shulie.takin.web.biz.utils.ExcelUtil;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.swagger.annotations.Api;
@@ -65,7 +65,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Api(tags = "黑白名单管理接口")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class BlackWhiteListMntController {
     private final Logger LOGGER = LoggerFactory.getLogger(BlackWhiteListMntController.class);
 
@@ -80,7 +80,7 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_ADD_WLIST_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_ADD_WLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> saveWhiteList(@RequestBody @Valid TWListVo twlistVo, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseError.create(1010200101, bindingResult.getFieldError().getDefaultMessage());
@@ -103,7 +103,7 @@ public class BlackWhiteListMntController {
      *
      * @return -
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_UPLOAD_WLIST_URI)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPLOAD_WLIST_URI)
     public ResponseEntity<Object> uploadWhiteList(@RequestParam(value = "file") MultipartFile[] files) {
 
         try {
@@ -124,7 +124,7 @@ public class BlackWhiteListMntController {
      * @param principalNo     负责人工号
      * @param type            白名单类型
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_EXCEL_DOWNLOAD_URI)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_EXCEL_DOWNLOAD_URI)
     public void whiteListDownload(HttpServletResponse response,
                                   String applicationName,
                                   String principalNo,
@@ -154,7 +154,7 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_WLIST_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_WLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryWhiteList(@RequestBody Map<String, Object> paramMap) {
         try {
             return ResponseOk.create(confCenterService.queryWhiteList(paramMap));
@@ -163,8 +163,8 @@ public class BlackWhiteListMntController {
         }
     }
 
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_WLIST_4AGENT_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_WLIST_4AGENT_URI,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseOk.ResponseResult queryWhiteList4Agent() {
         Map<String, List<Map<String, Object>>> result = new HashMap<>(0);
         try {
@@ -182,8 +182,8 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_WLISTBYID_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_WLISTBYID_URI,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> querySingleWhiteListById(@RequestParam("wlistId") String whitelistId) {
         if (StringUtils.isEmpty(whitelistId)) {
             throw new TakinWebException(TakinErrorEnum.CONFCENTER_QUERY_WLISTBYID_PARAMLACK,"");
@@ -202,7 +202,7 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_UPDATE_WLIST_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_WLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateWhiteListById(@RequestBody @Valid TWList tWhiteList, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseError.create(1010200401, bindingResult.getFieldError().getDefaultMessage());
@@ -222,7 +222,7 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_DELETE_WLIST_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_WLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteWhiteListByIds(@RequestParam("wlistIds") String whitelistIds) {
         try {
             String disableDeleteWhitelistIdsList = confCenterService.deleteWhiteListByIds(whitelistIds);
@@ -245,8 +245,8 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_DIC_QUERY_WLIST_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DIC_QUERY_WLIST_URI,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryWhitelistIdsListDic() {
         try {
             return ResponseOk.create(confCenterService.queryDicList(TakinDictTypeEnum.WLIST));
@@ -283,8 +283,8 @@ public class BlackWhiteListMntController {
      * @author shulie
      * @date 2019/3/1 14:42
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_WLISTBYAPPNAME_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_WLISTBYAPPNAME_URI,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryWhitelistIdsListByAppName(@RequestBody Map<String, Object> paramMap) {
         try {
             return ResponseOk.create(confCenterService.queryWhiteListByAppName(paramMap));
@@ -316,8 +316,8 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_WLISTBYAPPID_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_WLISTBYAPPID_URI,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryWhitelistIdsListByAppId(@RequestParam("applicationId") String applicationId) {
         if (StringUtils.isBlank(applicationId)) {
             throw new TakinWebException(TakinErrorEnum.CONFCENTER_QUERY_WLISTBYAPPID_PARAM_EXCEPTION,"");
@@ -338,7 +338,7 @@ public class BlackWhiteListMntController {
      * @author shulie
      */
     @ApiOperation(value = "添加黑名单接口")
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_ADD_BLIST_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_ADD_BLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
@@ -373,8 +373,8 @@ public class BlackWhiteListMntController {
      * @author shulie
      */
     @ApiOperation(value = "查询黑名单列表")
-    @RequestMapping(method = RequestMethod.GET, value = APIUrls.API_TAKIN_CONFCENTER_QUERY_BLIST_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(method = RequestMethod.GET, value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_BLIST_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @AuthVerification(
         moduleCode = BizOpConstants.ModuleCode.BLACKLIST,
         needAuth = ActionTypeEnum.QUERY
@@ -404,8 +404,8 @@ public class BlackWhiteListMntController {
      */
     @ApiOperation(value = "根据id查询黑名单详情接口")
     @ApiImplicitParam(name = "blistId", value = "黑名单编号")
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_BLISTBYID_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_BLISTBYID_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @AuthVerification(
         moduleCode = BizOpConstants.ModuleCode.BLACKLIST,
         needAuth = ActionTypeEnum.QUERY
@@ -426,7 +426,7 @@ public class BlackWhiteListMntController {
      * @author shulie
      */
     @ApiOperation(value = "根据id更新黑名单接口")
-    @PutMapping(value = APIUrls.API_TAKIN_CONFCENTER_UPDATE_BLIST_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_BLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
@@ -458,7 +458,7 @@ public class BlackWhiteListMntController {
      * @author shulie
      */
     @ApiOperation(value = "根据id启用禁用黑名单接口")
-    @PutMapping(value = APIUrls.API_TAKIN_CONFCENTER_USEYN_BLIST_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = ApiUrls.API_TAKIN_CONFCENTER_USEYN_BLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
@@ -494,8 +494,8 @@ public class BlackWhiteListMntController {
      * @author shulie
      */
     @ApiOperation(value = "批量删除黑名单接口")
-    @DeleteMapping(value = APIUrls.API_TAKIN_CONFCENTER_DELETE_BLIST_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @DeleteMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_BLIST_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
         subModuleName = BizOpConstants.SubModules.BLACKLIST,
@@ -536,8 +536,8 @@ public class BlackWhiteListMntController {
      * @author shulie
      */
     // TODO 更新nginx查询
-    //    @RequestMapping(value = APIUrls.API_TRO_CONFCENTER_QUERY_BWLIST_URI,method = RequestMethod.GET, produces =
-    //    MediaType.APPLICATION_JSON_UTF8_VALUE)
+    //    @RequestMapping(value = ApiUrls.API_TRO_CONFCENTER_QUERY_BWLIST_URI,method = RequestMethod.GET, produces =
+    //    MediaType.APPLICATION_JSON_VALUE)
     //    public ResponseEntity<Object> queryBWList(@RequestParam(name = "appName", required = false) String appName) {
     //        try {
     //
@@ -559,8 +559,8 @@ public class BlackWhiteListMntController {
      * @return 成功, 返回黑白名单列表信息;失败,则返回错误编码和错误信息
      * @author shulie
      */
-    //@RequestMapping(value = APIUrls.API_TRO_CONFCENTER_QUERY_BWLISTMETRIC_URI, method = RequestMethod.GET,
-    //    produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    //@RequestMapping(value = ApiUrls.API_TRO_CONFCENTER_QUERY_BWLISTMETRIC_URI, method = RequestMethod.GET,
+    //    produces = MediaType.APPLICATION_JSON_VALUE)
     //public ResponseEntity<Object> queryBWMetricList(@RequestParam(name = "appName", required = false) String appName) {
     //    try {
     //        return ResponseOk.create(confCenterService.queryBWMetricList(appName));

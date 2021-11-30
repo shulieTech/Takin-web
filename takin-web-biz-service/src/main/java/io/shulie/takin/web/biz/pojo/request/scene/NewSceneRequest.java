@@ -11,7 +11,7 @@ import javax.validation.constraints.NotBlank;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
 
 /**
  * 操作压测场景入参 -新

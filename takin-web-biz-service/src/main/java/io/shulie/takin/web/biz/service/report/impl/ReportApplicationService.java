@@ -1,26 +1,21 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import com.alibaba.fastjson.JSON;
-
+import cn.hutool.core.bean.BeanUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.report.ReportApplicationDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
-import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportService;
-import io.shulie.takin.web.common.domain.WebResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,16 +39,13 @@ public class ReportApplicationService {
     private TApplicationMntDao tApplicationMntDao;
 
     public ReportDetailDTO getDetail(Long reportId) {
-        ResponseResult<ReportDetailOutput> response = reportService.getReportByReportId(reportId);
-        if (response != null && response.getData() != null) {
-            return JSON.parseObject(JSON.toJSONString(response.getData()), ReportDetailDTO.class);
-        }
-        return new ReportDetailDTO();
+        ReportDetailOutput response = reportService.getReportByReportId(reportId);
+        return BeanUtil.copyProperties(response, ReportDetailDTO.class);
     }
 
     public ReportApplicationDTO getReportApplication(Long reportId) {
         ReportApplicationDTO reportApplication = new ReportApplicationDTO();
-        ReportDetailDTO reportDetail = getDetail(reportId);
+        ReportDetailDTO reportDetail = this.getDetail(reportId);
         reportApplication.setReportDetail(reportDetail);
         if (reportDetail == null || CollectionUtils.isEmpty(reportDetail.getBusinessActivity())) {
             return reportApplication;

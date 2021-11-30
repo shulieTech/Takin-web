@@ -3,20 +3,19 @@ package io.shulie.takin.web.data.dao.linkmanage;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import com.alibaba.excel.util.StringUtils;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.convert.linkmanage.BusinessLinkManageConvert;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
-import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
-import io.shulie.takin.web.data.model.mysql.ScriptManageEntity;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
@@ -24,7 +23,6 @@ import io.shulie.takin.web.data.param.scene.ScenePageQueryParam;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,7 +34,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SceneDAOImpl implements SceneDAO {
 
-    @Autowired
+    @Resource
     private SceneMapper sceneMapper;
 
     @Override
@@ -76,7 +74,7 @@ public class SceneDAOImpl implements SceneDAO {
         queryWrapper.select(
             SceneEntity::getId,
             SceneEntity::getSceneName,
-            SceneEntity::getCustomerId,
+            SceneEntity::getTenantId,
             SceneEntity::getUserId);
         List<SceneEntity> sceneEntityList = sceneMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(sceneEntityList)) {
@@ -84,7 +82,7 @@ public class SceneDAOImpl implements SceneDAO {
                 SceneResult sceneResult = new SceneResult();
                 sceneResult.setId(sceneEntity.getId());
                 sceneResult.setSceneName(sceneEntity.getSceneName());
-                sceneResult.setCustomerId(sceneEntity.getCustomerId());
+                sceneResult.setTenantId(sceneEntity.getTenantId());
                 sceneResult.setUserId(sceneEntity.getUserId());
                 return sceneResult;
             }).collect(Collectors.toList());
@@ -106,7 +104,7 @@ public class SceneDAOImpl implements SceneDAO {
         queryWrapper.select(
             SceneEntity::getId,
             SceneEntity::getSceneName,
-            SceneEntity::getCustomerId,
+            SceneEntity::getTenantId,
             SceneEntity::getUserId);
         List<SceneEntity> sceneEntityList = sceneMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(sceneEntityList)) {
@@ -114,7 +112,7 @@ public class SceneDAOImpl implements SceneDAO {
                 SceneResult sceneResult = new SceneResult();
                 sceneResult.setId(sceneEntity.getId());
                 sceneResult.setSceneName(sceneEntity.getSceneName());
-                sceneResult.setCustomerId(sceneEntity.getCustomerId());
+                sceneResult.setTenantId(sceneEntity.getTenantId());
                 sceneResult.setUserId(sceneEntity.getUserId());
                 return sceneResult;
             }).collect(Collectors.toList());

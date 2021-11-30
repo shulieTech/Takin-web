@@ -16,5 +16,13 @@ public class ApplicationInterfaceQueryDTO {
     private String fieldNames;
     private Integer pageSize;
     private Integer currentPage;
+    /**
+     * 租户标识
+     */
+    private String tenantAppKey;
+    /**
+     * 环境编码
+     */
+    private String envCode;
 
 }

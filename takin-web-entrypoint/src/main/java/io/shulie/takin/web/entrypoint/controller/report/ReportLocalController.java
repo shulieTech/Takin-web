@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSON;
-
+import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
@@ -18,15 +17,17 @@ import com.pamirs.takin.entity.domain.dto.report.ReportPradarLinkDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
-import com.pamirs.takin.entity.domain.vo.report.ReportLocalQueryParam;
+import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
+import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
@@ -44,7 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2020/7/27 下午5:59
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "场景报告模块", value = "场景报告")
 public class ReportLocalController {
 
@@ -90,11 +91,11 @@ public class ReportLocalController {
         return Response.success(reportLocalService.listRiskMachine(queryParam));
     }
 
-    //@GetMapping("/report/businessActivity/summary/list")
-    //@ApiOperation("压测明细")
-    //public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
-    //    return reportService.querySummaryList(reportId);
-    //}
+    @GetMapping("/report/businessActivity/summary/list")
+    @ApiOperation("压测明细")
+    public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
+        return reportService.querySummaryList(reportId);
+    }
 
     @GetMapping("/report/machine/detail")
     @ApiOperation("性能详情")
@@ -140,12 +141,8 @@ public class ReportLocalController {
             // initReportLink(lists);
             return Response.success(Lists.newArrayList());
         } else {
-            ResponseResult<ReportDetailOutput> response = reportService.getReportByReportId(reportId);
-            if (response == null || response.getData() == null) {
-                return Response.fail("500", "Not Found Report, id=" + reportId);
-            }
-            ReportDetailDTO reportDetail = JSON.parseObject(JSON.toJSONString(response.getData()),
-                ReportDetailDTO.class);
+            ReportDetailOutput response = reportService.getReportByReportId(reportId);
+            ReportDetailDTO reportDetail = BeanUtil.copyProperties(response, ReportDetailDTO.class);
             long startTime = System.currentTimeMillis();
             long endTime = startTime;
             if (reportDetail.getStartTime() != null) {

@@ -1,21 +1,24 @@
 package io.shulie.takin.web.biz.service.report;
 
-import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
-import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
-import com.pamirs.takin.entity.domain.vo.report.ReportTrendQueryParam;
-import com.pamirs.takin.entity.domain.vo.sla.WarnQueryParam;
-import io.shulie.takin.cloud.open.resp.report.NodeTreeSummaryResp;
-import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
-import io.shulie.takin.cloud.open.resp.report.ReportTrendResp;
-import io.shulie.takin.cloud.open.resp.report.ScriptNodeTreeResp;
+import java.util.List;
+import java.util.Map;
+
+import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
+import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
+import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
+import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
+import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
+import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
+import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.common.domain.WebResponse;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author qianshui
@@ -23,29 +26,23 @@ import java.util.Map;
  */
 public interface ReportService {
 
-    WebResponse listReport(ReportQueryParam param);
+    ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param);
 
-    ResponseResult<ReportDetailOutput> getReportByReportId(Long reportId);
+    ReportDetailOutput getReportByReportId(Long reportId);
 
-    ResponseResult<ReportTrendResp> queryTempReportTrend(ReportTrendQueryParam param);
+    TrendResponse queryReportTrend(TrendRequest param);
 
-    ResponseResult<ReportTrendResp> queryReportTrend(ReportTrendQueryParam param);
+    ReportDetailTempOutput tempReportDetail(Long sceneId);
 
-    //WebResponse queryReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery);
+    TrendResponse queryTempReportTrend(TrendRequest param);
 
-    ResponseResult<ReportDetailTempOutput> tempReportDetail(Long sceneId);
+    ResponseResult<List<WarnDetailResponse>> listWarn(WarnQueryReq req);
 
-    //WebResponse queryTempReportTrendWithTopology(ReportTrendQueryParam reportTrendQuery,ReportTraceQueryDTO queryDTO);
+    List<ActivityResponse> queryReportActivityByReportId(Long reportId);
 
-    WebResponse listWarn(WarnQueryParam param);
-
-    WebResponse queryReportActivityByReportId(Long reportId);
-
-    WebResponse queryReportActivityBySceneId(Long sceneId);
+    List<ActivityResponse> queryReportActivityBySceneId(Long sceneId);
 
     ResponseResult<NodeTreeSummaryResp> querySummaryList(Long reportId);
-
-    WebResponse queryMetrices(Long reportId, Long sceneId, Long customerId);
 
     /**
      * 获取指标列表
@@ -53,26 +50,35 @@ public interface ReportService {
      * avgTps
      * 两个 key
      *
-     * @param reportId   报告 id
-     * @param sceneId    场景 id
-     * @param customerId 租户 id
+     * @param reportId 报告 id
+     * @param sceneId  场景 id
      * @return 指标列表
      */
-    List<Map<String, Object>> listMetrics(Long reportId, Long sceneId, Long customerId);
+    List<MetricesResponse> queryMetrics(Long reportId, Long sceneId);
 
-    WebResponse queryReportCount(Long reportId);
+    Map<String, Object> queryReportCount(Long reportId);
 
-    WebResponse queryRunningReport();
+    /**
+     * 查询运行中的报告
+     *
+     * @return 报告主键
+     */
+    Long queryRunningReport();
 
-    WebResponse queryListRunningReport();
+    /**
+     * 获取正在压测的报告id
+     *
+     * @return 报告主键
+     */
+    List<Long> queryListRunningReport();
 
     WebResponse queryListPressuringReport();
 
-    WebResponse lockReport(Long reportId);
+    Boolean lockReport(Long reportId);
 
-    WebResponse unLockReport(Long reportId);
+    Boolean unLockReport(Long reportId);
 
-    WebResponse finishReport(Long reportId);
+    Boolean finishReport(Long reportId);
 
     /**
      * 查询脚本节点树

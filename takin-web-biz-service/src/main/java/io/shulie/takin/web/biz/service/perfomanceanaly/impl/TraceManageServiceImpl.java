@@ -11,6 +11,7 @@ import java.util.OptionalDouble;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -18,8 +19,6 @@ import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.channel.bean.CommandPacket;
 import io.shulie.takin.channel.bean.CommandSend;
 import io.shulie.takin.channel.bean.CommandStatus;
-import io.shulie.takin.cloud.open.resp.report.ReportDetailResp;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.agent.AgentCommandEnum;
 import io.shulie.takin.web.biz.agent.AgentCommandFactory;
@@ -87,13 +86,8 @@ public class TraceManageServiceImpl implements TraceManageService {
         if (traceManageCreateRequest.getReportId() == null) {
             throw new TakinWebException(ExceptionCode.TRACE_MANAGE_PARAM_VALID_ERROR, "报告id为空！");
         }
-        ResponseResult<ReportDetailOutput> reportDetail = reportService.getReportByReportId(
-            traceManageCreateRequest.getReportId());
-        if (reportDetail == null || !reportDetail.getSuccess() || reportDetail.getData() == null) {
-            throw new TakinWebException(ExceptionCode.TRACE_MANAGE_VALID_ERROR, "找不到当前对应的报告！");
-        }
-        String bean2Json = JsonHelper.bean2Json(reportDetail.getData());
-        ReportDetailDTO reportDetailDTO = JsonHelper.json2Bean(bean2Json, ReportDetailDTO.class);
+        ReportDetailOutput reportDetail = reportService.getReportByReportId(traceManageCreateRequest.getReportId());
+        ReportDetailDTO reportDetailDTO = BeanUtil.copyProperties(reportDetail, ReportDetailDTO.class);
         if (reportDetailDTO.getTaskStatus() != 1) {
             throw new TakinWebException(ExceptionCode.TRACE_MANAGE_VALID_ERROR, "当前报告不在压测中，不能追踪该报告！");
         }

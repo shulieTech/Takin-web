@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.entity.LinkGuardEntity;
 import com.pamirs.takin.entity.domain.query.LinkGuardQueryParam;
-import io.shulie.takin.web.common.annocation.DataAuth;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -20,8 +19,7 @@ public interface TLinkGuardMapper {
 
     void update(LinkGuardEntity guardEntity);
 
-    @DataAuth
-    List<LinkGuardEntity> selectByExample(@Param("param") LinkGuardQueryParam param);
+    List<LinkGuardEntity> selectByExample(@Param("param") LinkGuardQueryParam param,@Param("userIds") List<Long> userIds);
 
     Long selectCountByExample(@Param("param") LinkGuardQueryParam param);
 

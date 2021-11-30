@@ -5,8 +5,8 @@ import java.util.List;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneActionResp;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneJobStateResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneJobStateResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.UpdateTpsRequest;
 import io.shulie.takin.web.biz.pojo.response.scene.StartResponse;
@@ -18,7 +18,7 @@ import io.shulie.takin.web.common.domain.WebResponse;
  */
 public interface SceneTaskService {
 
-    WebResponse<StartResponse> startTask(SceneActionParam param);
+    SceneActionResp startTask(SceneActionParam param);
 
     ResponseResult<String> stopTask(SceneActionParam param);
 

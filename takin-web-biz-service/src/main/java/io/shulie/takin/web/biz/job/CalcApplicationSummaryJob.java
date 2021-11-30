@@ -41,13 +41,6 @@ public class CalcApplicationSummaryJob implements SimpleJob {
     @Autowired
     private ReportTaskService reportTaskService;
 
-    //@Autowired
-    //private ReportService reportService;
-
-    @Autowired
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor calcApplicationSummaryJobThreadPool;
-
     @Autowired
     @Qualifier("fastDebugThreadPool")
     private ThreadPoolExecutor fastDebugThreadPool;

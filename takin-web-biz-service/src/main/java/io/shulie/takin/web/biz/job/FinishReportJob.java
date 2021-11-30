@@ -98,7 +98,7 @@ public class FinishReportJob implements SimpleJob {
                 }
             }
         }
-        log.info("finishReport 执行时间:{}", System.currentTimeMillis() - start);
+        log.debug("finishReport 执行时间:{}", System.currentTimeMillis() - start);
     }
 
     private void finishReport(TenantCommonExt commonExt) {
@@ -108,7 +108,7 @@ public class FinishReportJob implements SimpleJob {
             log.debug("暂无压测中的报告！");
             return;
         }
-        log.info("获取租户【{}】【{}】正在压测中的报告:{}", commonExt.getTenantId(),
+        log.debug("获取租户【{}】【{}】正在压测中的报告:{}", commonExt.getTenantId(),
             commonExt.getEnvCode(), JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据分片

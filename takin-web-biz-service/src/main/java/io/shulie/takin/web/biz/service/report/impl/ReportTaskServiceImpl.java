@@ -83,7 +83,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             log.debug("暂无压测中的报告！");
             return Lists.newArrayList();
         }
-        log.info("获取租户【{}】，环境【{}】的正在压测中的报告:{}",
+        log.debug("获取租户【{}】，环境【{}】的正在压测中的报告:{}",
             WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
         return reportIds;
     }

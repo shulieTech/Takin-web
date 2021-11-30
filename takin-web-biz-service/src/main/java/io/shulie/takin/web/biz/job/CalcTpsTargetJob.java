@@ -108,7 +108,7 @@ public class CalcTpsTargetJob implements SimpleJob {
                 }
             }
         }
-        log.info("calcTpsTargetJob 执行时间:{}", System.currentTimeMillis() - start);
+        log.debug("calcTpsTargetJob 执行时间:{}", System.currentTimeMillis() - start);
     }
 
     private void calcTpsTarget(TenantCommonExt tenantCommonExt) {
@@ -118,7 +118,7 @@ public class CalcTpsTargetJob implements SimpleJob {
             log.debug("暂无压测中的报告！");
             return;
         }
-        log.info("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),
+        log.debug("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),
             JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据层分片

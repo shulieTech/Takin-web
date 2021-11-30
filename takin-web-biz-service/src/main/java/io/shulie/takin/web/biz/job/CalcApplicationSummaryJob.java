@@ -115,7 +115,7 @@ public class CalcApplicationSummaryJob implements SimpleJob {
             }
         }
 
-        log.info("calcApplicationSummaryJob 执行时间:{}", System.currentTimeMillis() - start);
+        log.debug("calcApplicationSummaryJob 执行时间:{}", System.currentTimeMillis() - start);
     }
 
     private void calcApplicationSummary(TenantCommonExt commonExt) {
@@ -125,7 +125,7 @@ public class CalcApplicationSummaryJob implements SimpleJob {
             log.debug("暂无压测中的报告！");
             return;
         }
-        log.info("获取租户【{}】【{}】正在压测中的报告:{}", commonExt.getTenantId(), commonExt.getEnvCode(),
+        log.debug("获取租户【{}】【{}】正在压测中的报告:{}", commonExt.getTenantId(), commonExt.getEnvCode(),
             JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
             // 开始数据层分片

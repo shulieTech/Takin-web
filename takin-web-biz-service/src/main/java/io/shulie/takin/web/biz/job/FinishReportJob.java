@@ -58,7 +58,7 @@ public class FinishReportJob implements SimpleJob {
         if(WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源 根据 报告id进行分片
             List<Long> reportIds =  reportTaskService.getRunningReport();
-            log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
+            log.debug("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
             for (Long reportId : reportIds) {
                 // 开始数据层分片
                 if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {

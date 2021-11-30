@@ -216,9 +216,10 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
         List<ApplicationApiManageResult> pageData =
             PageUtils.getPage(true, vo.getCurrentPage(), vo.getPageSize(), reocords);
         List<ApplicationApiManageVO> dtos = new ArrayList<>();
-        pageData.stream().forEach(data -> {
+        pageData.forEach(data -> {
             ApplicationApiManageVO dto = new ApplicationApiManageVO();
             BeanUtils.copyProperties(data, dto);
+            dto.setRequestMethod(data.getMethod());
             List<Long> allowUpdateUserIdList = WebPluginUtils.getUpdateAllowUserIdList();
             if (CollectionUtils.isNotEmpty(allowUpdateUserIdList)) {
                 dto.setCanEdit(allowUpdateUserIdList.contains(data.getUserId()));

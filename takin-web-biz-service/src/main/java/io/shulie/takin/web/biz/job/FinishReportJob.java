@@ -118,11 +118,25 @@ public class FinishReportJob implements SimpleJob {
         log.debug("获取租户【{}】【{}】正在压测中的报告:{}", commonExt.getTenantId(),
             commonExt.getEnvCode(), JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
-            // 开始数据分片
-            fastDebugThreadPool.execute(() -> {
-                WebPluginUtils.setTraceTenantContext(commonExt);
-                reportTaskService.finishReport(reportId,commonExt);
-            });
+            // 分布式锁
+            String lockKey = JobRedisUtils.getJobRedis(commonExt.getTenantId(),commonExt.getEnvCode(),"finishReport#"+reportId);
+            if (distributedLock.checkLock(lockKey)) {
+                continue;
+            }
+
+            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+            if(!tryLock) {
+                return;
+            }
+            try {
+                // 开始数据分片
+                fastDebugThreadPool.execute(() -> {
+                    WebPluginUtils.setTraceTenantContext(commonExt);
+                    reportTaskService.finishReport(reportId,commonExt);
+                });
+            } finally {
+                distributedLock.unLockSafely(lockKey);
+            }
         }
 
     }

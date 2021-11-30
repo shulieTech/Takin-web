@@ -120,15 +120,30 @@ public class SyncMachineDataJob implements SimpleJob {
         log.debug("syncMachineData 执行时间:{}", System.currentTimeMillis() - start);
     }
 
-    private void syncMachineData(TenantCommonExt tenantCommonExt) {
+    private void syncMachineData(TenantCommonExt commonExt) {
         List<Long> reportIds = reportTaskService.getRunningReport();
         log.debug("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),
             JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
-            fastDebugThreadPool.execute(() -> {
-                WebPluginUtils.setTraceTenantContext(tenantCommonExt);
-                reportTaskService.syncMachineData(reportId);
-            });
+            // 分布式锁
+            String lockKey = JobRedisUtils.getJobRedis(commonExt.getTenantId(),commonExt.getEnvCode(),"syncMachineData#"+reportId);
+            if (distributedLock.checkLock(lockKey)) {
+                continue;
+            }
+
+            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+            if(!tryLock) {
+                return;
+            }
+            try {
+                // 开始数据层分片
+                fastDebugThreadPool.execute(() -> {
+                    WebPluginUtils.setTraceTenantContext(commonExt);
+                    reportTaskService.syncMachineData(reportId);
+                });
+            } finally {
+                distributedLock.unLockSafely(lockKey);
+            }
         }
 
     }

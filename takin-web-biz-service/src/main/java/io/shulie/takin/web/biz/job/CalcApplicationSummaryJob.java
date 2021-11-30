@@ -135,11 +135,25 @@ public class CalcApplicationSummaryJob implements SimpleJob {
         log.debug("获取租户【{}】【{}】正在压测中的报告:{}", commonExt.getTenantId(), commonExt.getEnvCode(),
             JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
-            // 开始数据层分片
-            fastDebugThreadPool.execute(() -> {
-                WebPluginUtils.setTraceTenantContext(commonExt);
-                reportTaskService.calcApplicationSummary(reportId);
-            });
+            // 分布式锁
+            String lockKey = JobRedisUtils.getJobRedis(commonExt.getTenantId(),commonExt.getEnvCode(),"calcApplicationSummaryJob#"+reportId);
+            if (distributedLock.checkLock(lockKey)) {
+                continue;
+            }
+
+            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+            if(!tryLock) {
+                return;
+            }
+            try {
+                // 开始数据层分片
+                fastDebugThreadPool.execute(() -> {
+                    WebPluginUtils.setTraceTenantContext(commonExt);
+                    reportTaskService.calcApplicationSummary(reportId);
+                });
+            } finally {
+                distributedLock.unLockSafely(lockKey);
+            }
         }
     }
 

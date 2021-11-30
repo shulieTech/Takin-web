@@ -118,8 +118,8 @@ public class CalcTpsTargetJob implements SimpleJob {
         log.debug("calcTpsTargetJob 执行时间:{}", System.currentTimeMillis() - start);
     }
 
-    private void calcTpsTarget(TenantCommonExt tenantCommonExt) {
-        WebPluginUtils.setTraceTenantContext(tenantCommonExt);
+    private void calcTpsTarget(TenantCommonExt commonExt) {
+        WebPluginUtils.setTraceTenantContext(commonExt);
         List<Long> reportIds = reportTaskService.getRunningReport();
         if (CollectionUtils.isEmpty(reportIds)){
             log.debug("暂无压测中的报告！");
@@ -128,11 +128,24 @@ public class CalcTpsTargetJob implements SimpleJob {
         log.debug("获取租户【{}】【{}】正在压测中的报告:{}", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),
             JsonHelper.bean2Json(reportIds));
         for (Long reportId : reportIds) {
-            // 开始数据层分片
-            fastDebugThreadPool.execute(() -> {
-                WebPluginUtils.setTraceTenantContext(tenantCommonExt);
-                reportTaskService.calcTpsTarget(reportId);
-            });
+            // 分布式锁
+            String lockKey = JobRedisUtils.getJobRedis(commonExt.getTenantId(),commonExt.getEnvCode(),"calcTpsTargetJob#"+reportId);
+            if (distributedLock.checkLock(lockKey)) {
+                continue;
+            }
+            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+            if(!tryLock) {
+                return;
+            }
+            try {
+                // 开始数据层分片
+                fastDebugThreadPool.execute(() -> {
+                    WebPluginUtils.setTraceTenantContext(commonExt);
+                    reportTaskService.calcTpsTarget(reportId);
+                });
+            } finally {
+                distributedLock.unLockSafely(lockKey);
+            }
         }
     }
 }

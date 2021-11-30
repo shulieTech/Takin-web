@@ -151,7 +151,7 @@ public class ReportDataCache {
             return;
         }
 
-        log.info("ReportDataCache Cache Jmeter Metrics Data Size={}, One Sample: {}",
+        log.debug("ReportDataCache Cache Jmeter Metrics Data Size={}, One Sample: {}",
             metricsList.size(), metricsList.get(0));
 
         // 指标 redis key

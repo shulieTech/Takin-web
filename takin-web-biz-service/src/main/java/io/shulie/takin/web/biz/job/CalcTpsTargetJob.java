@@ -41,13 +41,6 @@ public class CalcTpsTargetJob implements SimpleJob {
     @Autowired
     private ReportTaskService reportTaskService;
 
-    //@Autowired
-    //private ReportService reportService;
-
-    @Autowired
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor calcTpsTargetJobThreadPool;
-
     @Autowired
     @Qualifier("fastDebugThreadPool")
     private ThreadPoolExecutor fastDebugThreadPool;

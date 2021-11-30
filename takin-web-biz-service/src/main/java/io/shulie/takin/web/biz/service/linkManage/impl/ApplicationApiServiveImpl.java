@@ -275,11 +275,14 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
         createParam.setIsDeleted((byte)0);
         createParam.setUpdateTime(new Date());
         createParam.setCreateTime(new Date());
-        ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByTenantIdAndName(
-            vo.getApplicationName());
-        //4.8.0.4以后入口规则的所属用户跟着应用走
-        createParam.setTenantId(applicationDetailResult.getTenantId());
-        createParam.setUserId(applicationDetailResult.getUserId());
+        //ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationByTenantIdAndName(
+        //    vo.getApplicationName());
+        ////4.8.0.4以后入口规则的所属用户跟着应用走
+        //createParam.setTenantId(applicationDetailResult.getTenantId());
+        //createParam.setUserId(applicationDetailResult.getUserId());
+        createParam.setIsDeleted((byte)0);
+        createParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        createParam.setTenantId(WebPluginUtils.traceTenantId());
         applicationApiDAO.insert(createParam);
         this.reseting(vo.getApplicationName());
         return Response.success();

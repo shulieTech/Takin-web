@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import io.shulie.takin.utils.json.JsonHelper;
 import lombok.extern.slf4j.Slf4j;
 import cn.hutool.core.bean.BeanUtil;
 import com.google.common.collect.Sets;
@@ -106,7 +107,8 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                     //停止状态
                     if (0L == status) {
                         log.info("压测场景已停止，关闭验证任务，场景ID[{}]", sceneId);
-                        JobScheduler jobScheduler = (JobScheduler)serviceMap.get(mapKey);
+                        Object value = serviceMap.get(mapKey);
+                        JobScheduler jobScheduler = JsonHelper.json2Bean(value.toString(),JobScheduler.class);
                         jobScheduler.getSchedulerFacade().shutdownInstance();
                         serviceMap.remove(mapKey);
                         //漏数验证兜底检测
@@ -149,7 +151,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(), createJobConfiguration(jobParameter));
         jobScheduler.init();
         String mapKey = startRequest.getRefType() + "$" + startRequest.getRefId();
-        redis.hmset(jobSchedulerRedisKey, mapKey, jobScheduler);
+        redis.hmset(jobSchedulerRedisKey, mapKey, JsonHelper.bean2Json(jobScheduler));
     }
 
     private LiteJobConfiguration createJobConfiguration(String jobParameter) {
@@ -175,7 +177,8 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         String mapKey = refType + "$" + refId;
         Map<Object, Object> map = redis.hmget(jobSchedulerRedisKey);
         if (map.containsKey(mapKey)) {
-            JobScheduler scheduler = (JobScheduler)map.get(mapKey);
+            Object value = map.get(mapKey);
+            JobScheduler scheduler = JsonHelper.json2Bean(value.toString(),JobScheduler.class);
             log.info("开始关闭验证任务:[{},{}]",
                 Objects.requireNonNull(VerifyTypeEnum.getTypeByCode(stopRequest.getRefType())).name(),
                 stopRequest.getRefId());

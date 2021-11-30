@@ -43,7 +43,7 @@ public class CalcApplicationSummaryJob implements SimpleJob {
     //private ReportService reportService;
 
     @Autowired
-    @Qualifier("calcApplicationSummaryJobThreadPool")
+    @Qualifier("jobThreadPool")
     private ThreadPoolExecutor calcApplicationSummaryJobThreadPool;
 
     @Autowired

@@ -406,7 +406,7 @@ public class LinkTopologyService extends CommonService {
                 // 合并 同一上游 的多条边
                 mergeSameBeforeApp(appProvider);
 
-                // 计算瓶颈
+                // 计算瓶颈t h
                 appProvider.getContainRealAppProvider().stream()
                         // 如果不是初始值，再计算瓶颈
                         .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT))

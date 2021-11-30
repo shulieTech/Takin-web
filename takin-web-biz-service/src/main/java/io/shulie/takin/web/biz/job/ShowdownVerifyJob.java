@@ -30,7 +30,7 @@ public class ShowdownVerifyJob implements SimpleJob {
     private VerifyTaskService verifyTaskService;
 
     @Autowired
-    @Qualifier("showdownVerifyJobThreadPool")
+    @Qualifier("jobThreadPool")
     private ThreadPoolExecutor jobThreadPool;
 
     @Override

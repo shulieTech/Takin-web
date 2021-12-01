@@ -135,7 +135,11 @@ public class SummaryService {
         ReportSummaryResult summary = reportSummaryDAO.selectOneByReportId(reportId);
 
         if (summary == null) {
-            reportSummaryDAO.insert(reportSummary);
+            try {
+                reportSummaryDAO.insert(reportSummary);
+            }catch (Exception e){
+                log.error("Build ReportSummary error, reportId={},tenantId={},envCode={}", reportId,WebPluginUtils.traceTenantId(),WebPluginUtils.traceEnvCode());
+            }
         }
         log.debug("Build ReportSummary Success, reportId={}", reportId);
     }

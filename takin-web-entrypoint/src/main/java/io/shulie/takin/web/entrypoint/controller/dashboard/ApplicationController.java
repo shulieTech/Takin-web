@@ -43,6 +43,12 @@ public class ApplicationController {
         return applicationService.getUserAppSwitchInfo();
     }
 
+    @ApiOperation("获取应用压测开关状态接口")
+    @GetMapping("center/app/switch/un_safe")
+    public ApplicationSwitchStatusResponse getAppSwitchInfoNoAuth() {
+        return applicationService.getUserAppSwitchInfo();
+    }
+
     @ApiOperation("压测全局开关接口")
     @PutMapping("center/app/switch")
     @ModuleDef(

@@ -1,8 +1,10 @@
 package io.shulie.takin.web.common.agent;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -156,14 +158,15 @@ public class ModulePropertiesResolver {
         StringBuilder stringBuilder = new StringBuilder();
         ZipFile zipFile = null;
         InputStream is = null;
+        BufferedReader br = null;
+        String line;
         try {
             zipFile = new ZipFile(new File(filePath));
             ZipEntry entry = zipFile.getEntry(baseDirName + File.separator + "module.properties");
             is = zipFile.getInputStream(entry);
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                stringBuilder.append(new String(buf, 0, len));
+            br = new BufferedReader(new InputStreamReader(is));
+            while ((line = br.readLine()) != null) {
+                stringBuilder.append(line).append("\n");
             }
         } catch (IOException e) {
             // ignore
@@ -178,6 +181,13 @@ public class ModulePropertiesResolver {
             if (is != null) {
                 try {
                     is.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+            if (br != null) {
+                try {
+                    br.close();
                 } catch (IOException e) {
                     // ignore
                 }

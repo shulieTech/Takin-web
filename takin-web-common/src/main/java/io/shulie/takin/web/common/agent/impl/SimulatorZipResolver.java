@@ -42,7 +42,7 @@ public class SimulatorZipResolver extends AgentZipResolverSupport {
         NEED_EXIST.put(joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "config", "simulator.properties"),
             "配置文件 simulator.properties 缺失!");
         NEED_EXIST.put(joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "config", "version"),
-            "缺失版本文件!");
+            "version文件缺失!");
         NEED_EXIST.put(joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "lib", "instrument-simulator-core.jar"),
             "instrument-simulator-core.jar 缺失!");
         NEED_EXIST.put(joinFileSeparator(Constants.SIMULATOR_ZIP_BASE_DIR, "provider",

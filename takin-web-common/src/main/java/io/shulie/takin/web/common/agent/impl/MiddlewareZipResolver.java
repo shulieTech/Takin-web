@@ -1,12 +1,13 @@
 package io.shulie.takin.web.common.agent.impl;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.annotation.Resource;
 
@@ -14,6 +15,7 @@ import cn.hutool.core.util.ZipUtil;
 import com.google.common.io.Files;
 import com.pamirs.takin.common.constant.Constants;
 import io.shulie.takin.web.common.agent.AgentZipResolverSupport;
+import io.shulie.takin.web.common.agent.ModulePropertiesResolver;
 import io.shulie.takin.web.common.enums.agentupgradeonline.PluginTypeEnum;
 import io.shulie.takin.web.common.pojo.bo.agent.AgentModuleInfo;
 import io.shulie.takin.web.common.pojo.bo.agent.PluginCreateBO;
@@ -36,7 +38,25 @@ public class MiddlewareZipResolver extends AgentZipResolverSupport {
 
     @Override
     public List<String> checkFile0(String filePath) {
-        return new ArrayList<>();
+        List<String> errorList = new CopyOnWriteArrayList<>();
+        List<AgentModuleInfo> moduleInfos = ModulePropertiesResolver.resolver(filePath, getZipBaseDirName());
+        CountDownLatch countDownLatch = new CountDownLatch(moduleInfos.size());
+        try (ZipFile zip = new ZipFile(new File(filePath))) {
+            for (AgentModuleInfo agentModuleInfo : moduleInfos) {
+                middlewareResolverThreadPool.execute(() -> {
+                    ZipEntry zipEntry = zip.getEntry(agentModuleInfo.getModuleId());
+                    if (zipEntry == null) {
+                        errorList.add("module-id: " + agentModuleInfo.getModuleId() + " ,不存在！！");
+                    }
+                    countDownLatch.countDown();
+                });
+            }
+            countDownLatch.await(60, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        return errorList;
     }
 
     @Override

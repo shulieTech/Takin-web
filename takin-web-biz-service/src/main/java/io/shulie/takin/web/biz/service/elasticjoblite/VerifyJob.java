@@ -11,10 +11,6 @@ import java.sql.SQLException;
 
 import com.alibaba.fastjson.JSON;
 
-import com.dangdang.ddframe.job.lite.api.JobScheduler;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.web.biz.service.impl.VerifyTaskServiceImpl;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
@@ -30,7 +26,6 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskJobParameter;
 import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author fanxx
@@ -39,9 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VerifyJob implements SimpleJob {
 
     private static final Logger logger = LoggerFactory.getLogger(VerifyJob.class);
-
-    @Autowired
-    private RedisClientUtils redis;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -54,18 +46,6 @@ public class VerifyJob implements SimpleJob {
         Long refId = jobParameter.getRefId();
         VerifyTypeEnum typeEnum = VerifyTypeEnum.getTypeByCode(refType);
 
-        String mapKey = refType + "$" + refId;
-        Object verifyJobStatus = redis.hmget(VerifyTaskServiceImpl.jobSchedulerRedisKey, mapKey);
-        //停止任务
-        if (verifyJobStatus == null || NumberUtils.toLong(verifyJobStatus.toString()) == 1){
-            JobScheduler jobScheduler = VerifyTaskServiceImpl.jobSchedulerMap.get(mapKey);
-            if (jobScheduler != null){
-                jobScheduler.getSchedulerFacade().shutdownInstance();
-            }
-            VerifyTaskServiceImpl.jobSchedulerMap.remove(mapKey);
-            redis.hmdelete(VerifyTaskServiceImpl.jobSchedulerRedisKey, mapKey);
-            return;
-        }
         logger.info("开始执行验证任务[refType:{},refId:{}]", Objects.requireNonNull(typeEnum).name(), refId);
         logger.info(shardingContext.toString());
         List<VerifyTaskConfig> taskConfigs = jobParameter.getVerifyTaskConfigList();

@@ -1,7 +1,5 @@
 package io.shulie.takin.web.app.conf;
 
-import javax.sql.DataSource;
-
 import com.dangdang.ddframe.job.event.JobEventConfiguration;
 import io.shulie.takin.job.ElasticJobProperties;
 import io.shulie.takin.job.ElasticRegCenterConfig;
@@ -31,15 +29,14 @@ public class ElasticJobAutoConfig {
 
     @Bean
     @ConditionalOnMissingBean(JobEventConfiguration.class)
-    public SpringJobSchedulerFactory springJobSchedulerFactory(ElasticJobProperties elasticJobProperties,DataSource dataSource) {
+    public SpringJobSchedulerFactory springJobSchedulerFactory(ElasticJobProperties elasticJobProperties) {
         ElasticJobConfig elasticJobConfig = new ElasticJobConfig();
         ZkClientConfig zkClientConfig = new ZkClientConfig();
         zkClientConfig.setZkServers(zkAddress);
         zkClientConfig.setNamespace("takin-web-job-" + env);
         elasticJobConfig.setZkClientConfig(zkClientConfig);
-        elasticJobConfig.setDataSource(dataSource);
         ElasticRegCenterConfig elasticRegCenterConfig = new ElasticRegCenterConfig(elasticJobConfig);
-        return new SpringJobSchedulerFactory(elasticJobProperties, elasticRegCenterConfig.regCenter(),elasticRegCenterConfig.jobEventConfiguration());
+        return new SpringJobSchedulerFactory(elasticJobProperties, elasticRegCenterConfig.regCenter());
     }
 
     @Bean

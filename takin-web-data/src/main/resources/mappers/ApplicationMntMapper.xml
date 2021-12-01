@@ -350,5 +350,11 @@
         where APPLICATION_ID =#{applicationId}
     </select>
 
+    <select id="getIdByName" resultType="java.lang.String">
+        select application_id
+        from t_application_mnt
+        where application_name = #{applicationName}
+    </select>
+
 
 </mapper>

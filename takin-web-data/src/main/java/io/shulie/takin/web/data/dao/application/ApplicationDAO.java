@@ -326,4 +326,12 @@ public interface ApplicationDAO {
      * @author shulie
      */
     String selectScriptPath( String applicationId, String scriptType);
+
+    /**
+     * e2e使用
+     * @param applicationName
+     * @return
+     */
+    String getIdByName(String applicationName);
+
 }

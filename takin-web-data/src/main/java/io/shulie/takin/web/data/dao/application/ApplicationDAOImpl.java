@@ -578,4 +578,9 @@ public class ApplicationDAOImpl
     public String selectScriptPath(String applicationId, String scriptType) {
         return applicationMntMapper.selectScriptPath(applicationId,scriptType);
     }
+
+    @Override
+    public String getIdByName(String applicationName) {
+        return applicationMntMapper.getIdByName(applicationName);
+    }
 }

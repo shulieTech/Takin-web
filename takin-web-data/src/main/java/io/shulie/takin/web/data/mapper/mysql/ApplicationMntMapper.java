@@ -187,4 +187,12 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
     String selectScriptPath(@Param("applicationId") String applicationId,
         @Param("scriptType") String scriptType);
 
+    /**
+     * 获取应用名
+     * @param applicationName
+     * @return
+     */
+    String getIdByName(@Param("applicationName") String applicationName);
+
+
 }

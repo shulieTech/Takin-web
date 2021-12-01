@@ -23,7 +23,7 @@ CREATE TABLE `t_plugin_library`
     `version`            varchar(20)  NOT NULL COMMENT '插件版本',
     `version_num`        bigint COMMENT '版本对应数值',
     `is_custom_mode`     tinyint(3) DEFAULT 0 COMMENT '是否为定制插件，0：否，1：是',
-    `update_description` varchar(100)                    DEFAULT '' COMMENT '更新说明',
+    `update_description` varchar(1024)                    DEFAULT '' COMMENT '更新说明',
     `download_path`      varchar(255)                    DEFAULT '' COMMENT '下载地址',
     `remark`             varchar(500) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
     `ext`                varchar(200) NOT NULL           DEFAULT '' COMMENT 'jar包配置文件原始数据,当前是主版本时填',

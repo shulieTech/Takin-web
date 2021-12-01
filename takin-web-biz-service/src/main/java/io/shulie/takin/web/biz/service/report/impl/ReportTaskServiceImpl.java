@@ -163,7 +163,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
      * @param reportId 报告 id
      * @return 可运行
      */
-    private Runnable collectData(Long reportId,TenantCommonExt commonExt) {
+    private synchronized Runnable collectData(Long reportId,TenantCommonExt commonExt) {
         return () -> {
             WebPluginUtils.setTraceTenantContext(commonExt);
             try {

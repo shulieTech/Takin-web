@@ -40,6 +40,9 @@ public class VerifyJob implements SimpleJob {
 
     private static final Logger logger = LoggerFactory.getLogger(VerifyJob.class);
 
+    @Autowired
+    private RedisClientUtils redis;
+
     @Override
     public void execute(ShardingContext shardingContext) {
         logger.info("定时任务开始检测:[{}],当前时间:[{}],定时任务ID:[{}]", shardingContext.getJobName(), new Date(),
@@ -52,7 +55,6 @@ public class VerifyJob implements SimpleJob {
         VerifyTypeEnum typeEnum = VerifyTypeEnum.getTypeByCode(refType);
 
         String mapKey = refType + "$" + refId;
-        RedisClientUtils redis = SpringUtil.getBean("redisClientUtils", RedisClientUtils.class);
         Object verifyJobStatus = redis.hmget(VerifyTaskServiceImpl.jobSchedulerRedisKey, mapKey);
         //停止任务
         if (verifyJobStatus == null || NumberUtils.toLong(verifyJobStatus.toString()) == 1){

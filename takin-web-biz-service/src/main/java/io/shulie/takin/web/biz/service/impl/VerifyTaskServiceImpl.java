@@ -1,6 +1,11 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
+import java.util.Objects;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
@@ -64,8 +69,6 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
 
     public static String jobSchedulerRedisKey = "job:scheduler:key";
 
-    public static final Map<String,JobScheduler> jobSchedulerMap = new HashMap<>();
-
     @Autowired
     LeakSqlService leakSqlService;
     @Autowired
@@ -103,7 +106,9 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                     //停止状态
                     if (0L == status) {
                         log.info("压测场景已停止，关闭验证任务，场景ID[{}]", sceneId);
-                        redis.hmset(jobSchedulerRedisKey, String.valueOf(mapKey), 1);
+                        JobScheduler jobScheduler = (JobScheduler)serviceMap.get(mapKey);
+                        jobScheduler.getSchedulerFacade().shutdownInstance();
+                        serviceMap.remove(mapKey);
                         //漏数验证兜底检测
                         log.info("漏数验证兜底检测，场景ID[{}]", sceneId);
                         LeakVerifyTaskRunWithSaveRequest runRequest = new LeakVerifyTaskRunWithSaveRequest();
@@ -144,11 +149,8 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(), createJobConfiguration(jobParameter));
         jobScheduler.init();
         String mapKey = startRequest.getRefType() + "$" + startRequest.getRefId();
-        jobSchedulerMap.put(mapKey,jobScheduler);
-        redis.hmset(jobSchedulerRedisKey, mapKey, 0);
+        redis.hmset(jobSchedulerRedisKey, mapKey, jobScheduler);
     }
-
-
 
     private LiteJobConfiguration createJobConfiguration(String jobParameter) {
         LeakVerifyTaskJobParameter jobParameterObject = JSON.parseObject(jobParameter,
@@ -173,10 +175,12 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         String mapKey = refType + "$" + refId;
         Map<Object, Object> map = redis.hmget(jobSchedulerRedisKey);
         if (map.containsKey(mapKey)) {
+            JobScheduler scheduler = (JobScheduler)map.get(mapKey);
             log.info("开始关闭验证任务:[{},{}]",
                 Objects.requireNonNull(VerifyTypeEnum.getTypeByCode(stopRequest.getRefType())).name(),
                 stopRequest.getRefId());
-            redis.hmset(jobSchedulerRedisKey, mapKey, 1);
+            scheduler.getSchedulerFacade().shutdownInstance();
+            redis.hmdelete(jobSchedulerRedisKey, mapKey);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

@@ -192,7 +192,7 @@
     </select>
 
     <!-- 根据应用id更新应用信息 -->
-    <update id="updateApplicationinfo" parameterType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
+    <update id="updateApplicationinfo">
         update
         t_application_mnt
         <set>

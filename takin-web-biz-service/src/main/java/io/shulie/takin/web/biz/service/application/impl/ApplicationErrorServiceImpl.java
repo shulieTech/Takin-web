@@ -15,7 +15,6 @@ import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.ExceptionInfo;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationErrorQueryInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationErrorOutput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationExceptionOutput;
@@ -31,6 +30,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -64,7 +64,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
     @Override
     public List<ApplicationErrorOutput> list(ApplicationErrorQueryInput queryRequest) {
         List<ApplicationErrorOutput> responseList = Lists.newArrayList();
-        TApplicationMnt tApplicationMnt = ensureApplicationExist(queryRequest);
+        ApplicationDetailResult tApplicationMnt = ensureApplicationExist(queryRequest);
 
         // 应用节点相关错误信息
         ApplicationErrorOutput nodeErrorResponse =
@@ -95,17 +95,17 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
         return responseList;
     }
 
-    private TApplicationMnt ensureApplicationExist(ApplicationErrorQueryInput queryRequest) {
-        Response<TApplicationMnt> applicationMntResponse = applicationService.getApplicationInfoForError(
+    private ApplicationDetailResult ensureApplicationExist(ApplicationErrorQueryInput queryRequest) {
+        Response<ApplicationDetailResult> applicationMntResponse = applicationService.getApplicationInfoForError(
             String.valueOf(queryRequest.getApplicationId()));
-        TApplicationMnt tApplicationMnt = applicationMntResponse.getData();
+        ApplicationDetailResult tApplicationMnt = applicationMntResponse.getData();
         if (Objects.isNull(tApplicationMnt)) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR, "应用不存在");
         }
         return tApplicationMnt;
     }
 
-    private void putNodeExceptionIfNeeded(List<ApplicationErrorOutput> responseList, TApplicationMnt tApplicationMnt) {
+    private void putNodeExceptionIfNeeded(List<ApplicationErrorOutput> responseList, ApplicationDetailResult tApplicationMnt) {
         Integer totalNodeCount = tApplicationMnt.getNodeNum();
         Integer onlineNodeCount = 0;
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(

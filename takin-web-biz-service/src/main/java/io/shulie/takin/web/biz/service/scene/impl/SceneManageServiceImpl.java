@@ -15,7 +15,6 @@ import javax.annotation.Resource;
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.bean.BeanUtil;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.SceneManageConstant;
@@ -24,7 +23,6 @@ import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.ListHelper;
 import com.pamirs.takin.common.util.parse.UrlUtil;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
@@ -76,9 +74,10 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -97,7 +96,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SceneManageServiceImpl implements SceneManageService {
     @Resource
-    private TApplicationMntDao tApplicationMntDao;
+    private ApplicationDAO applicationDAO;
     @Resource
     private CloudSceneApi cloudSceneApi;
 
@@ -676,7 +675,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (CollectionUtils.isEmpty(nameList)) {
             return Collections.EMPTY_LIST;
         }
-        return tApplicationMntDao.queryIdsByNameAndTenant(nameList, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode());
+        return applicationDAO.queryIdsByNameAndTenant(nameList, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode());
     }
 
     private List<String> getAppsbyId(Long id) {

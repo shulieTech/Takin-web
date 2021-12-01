@@ -13,8 +13,6 @@ import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.ImmutableMap;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.amdb.common.dto.agent.AgentConfigDTO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.AgentConfigClient;
@@ -36,11 +34,13 @@ import io.shulie.takin.web.common.constant.CacheConstants;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectMechanismEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigValueTypeEnum;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentConfigDAO;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentConfigQueryParam;
 import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentConfigParam;
 import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentConfigParam;
 import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
@@ -73,7 +73,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
     private AgentConfigDAO agentConfigDAO;
 
     @Autowired
-    private TApplicationMntDao tApplicationMntDao;
+    private ApplicationDAO applicationDAO;
 
     @Autowired
     private AgentConfigClient agentConfigClient;
@@ -129,9 +129,9 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
     @Override
     public List<String> getAllApplication(String keyword) {
         List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
-        List<TApplicationMnt> applicationMntList = tApplicationMntDao.getApplicationMntByUserIdsAndKeyword(userIdList,
+        List<ApplicationDetailResult> applicationMntList = applicationDAO.getApplicationMntByUserIdsAndKeyword(userIdList,
             keyword);
-        return applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(Collectors.toList());
+        return applicationMntList.stream().map(ApplicationDetailResult::getApplicationName).collect(Collectors.toList());
     }
 
     @Override

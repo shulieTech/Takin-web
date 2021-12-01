@@ -24,7 +24,6 @@ import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import io.shulie.amdb.common.enums.RpcType;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
@@ -91,6 +90,7 @@ import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptDebugEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import io.shulie.takin.web.data.param.scriptmanage.PageScriptDebugParam;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
@@ -347,8 +347,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }
 
         // 检查
-        List<TApplicationMnt> tApplicationList = applications.stream().map(application -> {
-            TApplicationMnt tApplicationMnt = new TApplicationMnt();
+        List<ApplicationDetailResult> tApplicationList = applications.stream().map(application -> {
+            ApplicationDetailResult tApplicationMnt = new ApplicationDetailResult();
             tApplicationMnt.setApplicationName(application.getApplicationName());
             tApplicationMnt.setApplicationId(application.getApplicationId());
             tApplicationMnt.setAccessStatus(application.getAccessStatus());

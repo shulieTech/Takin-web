@@ -74,7 +74,7 @@ public interface WhiteListDAO extends IService<WhiteListEntity> {
      * @param applicationIdLists 应用id集合
      * @author shulie
      */
-    void deleteApplicationInfoRelatedInterfaceByIds(List<String> applicationIdLists);
+    void deleteApplicationInfoRelatedInterfaceByIds(List<Long> applicationIdLists);
 
     /**
      * 说明: 判断该白名单接口是否已经存在

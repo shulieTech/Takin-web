@@ -16,12 +16,12 @@ import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.common.util.PageInfo;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.TShadowTableConfig;
 import com.pamirs.takin.entity.domain.entity.TShadowTableDataSource;
 import com.pamirs.takin.entity.domain.vo.TShadowTableConfigVo;
 import com.pamirs.takin.entity.domain.vo.TShadowTableDatasourceVo;
 import io.shulie.takin.web.biz.common.CommonService;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +48,7 @@ public class ShadowTableConfigService extends CommonService {
         }
         appName = appName.trim();
         //给 pardar 影子表 Y|ip:port|schema  第一个代表 是否使用影子表 可能 用影子表 但是就是生产表 来搜索  不用去影子库  N 使用影子库
-        TApplicationMnt applicationMnt = tApplicationMntDao.queryApplicationinfoByName(appName);
+        ApplicationDetailResult applicationMnt = applicationDAO.getByName(appName);
         if (applicationMnt == null) {
             appShadowTableMap.put("N|N|N", null);
             return appShadowTableMap;

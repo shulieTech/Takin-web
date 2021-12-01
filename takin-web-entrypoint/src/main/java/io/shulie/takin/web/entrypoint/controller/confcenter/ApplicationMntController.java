@@ -8,13 +8,15 @@ import com.pamirs.takin.common.ResponseError;
 import com.pamirs.takin.common.ResponseOk;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationCreateRequest;
 import io.shulie.takin.web.biz.service.ConfCenterService;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -51,14 +53,16 @@ public class ApplicationMntController {
      */
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_ADD_APPLICATION_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> saveApplication(@RequestBody @Valid TApplicationMnt tApplicationMnt,
+    public ResponseEntity<Object> saveApplication(@RequestBody @Valid ApplicationCreateRequest tApplicationMnt,
         BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             return ResponseError.create(1010100101, bindingResult.getFieldError().getDefaultMessage());
         }
         try {
-            confCenterService.saveApplication(tApplicationMnt);
+            ApplicationCreateParam param = new ApplicationCreateParam();
+            BeanUtils.copyProperties(tApplicationMnt,param);
+            confCenterService.saveApplication(param);
             //不想service嵌套service 特地 controller层做 以后可能facade层
             return ResponseOk.create("succeed");
         } catch (TakinModuleException e) {
@@ -157,13 +161,15 @@ public class ApplicationMntController {
      */
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_APPLICATIONINFO_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> updateApplicationinfo(@RequestBody @Valid TApplicationMnt tApplicationMnt,
+    public ResponseEntity<Object> updateApplicationinfo(@RequestBody @Valid ApplicationCreateRequest tApplicationMnt,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseError.create(1010100601, bindingResult.getFieldError().getDefaultMessage());
         }
         try {
-            confCenterService.updateApplicationinfo(tApplicationMnt);
+            ApplicationCreateParam param = new ApplicationCreateParam();
+            BeanUtils.copyProperties(tApplicationMnt,param);
+            confCenterService.updateApplicationInfo(param);
             return ResponseOk.create("succeed");
         } catch (TakinModuleException e) {
             LOGGER.error("ConfCenterController.updateApplicationinfo 创建应用脚本存放路径不存在{}", e);

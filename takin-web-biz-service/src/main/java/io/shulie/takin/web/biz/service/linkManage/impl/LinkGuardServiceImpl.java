@@ -7,10 +7,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.dao.linkguard.TLinkGuardMapper;
 import com.pamirs.takin.entity.domain.entity.LinkGuardEntity;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.query.LinkGuardQueryParam;
 import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
@@ -22,6 +20,7 @@ import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
 import io.shulie.takin.web.data.param.application.LinkGuardCreateParam;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkguard.LinkGuardResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +45,6 @@ public class LinkGuardServiceImpl implements LinkGuardService {
     @Autowired
     private ApplicationService applicationService;
     @Resource
-    private TApplicationMntDao applicationMntDao;
     @Autowired
     private ConfigSyncService configSyncService;
     @Autowired
@@ -159,7 +157,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
             //处理agent携带用户信息的查询
             if (WebPluginUtils.traceTenantAppKey() != null && !WebPluginUtils.traceTenantAppKey().isEmpty()) {
                 if (param.getApplicationName() != null) {
-                    TApplicationMnt applicationMnt = applicationService.queryTApplicationMntByName(param.getApplicationName());
+                    ApplicationDetailResult applicationMnt = applicationService.queryTApplicationMntByName(param.getApplicationName());
                     if (applicationMnt != null) {
                         param.setAppId(applicationMnt.getApplicationId());
                     }

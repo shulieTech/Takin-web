@@ -34,14 +34,12 @@ import com.pamirs.takin.common.constant.AppConfigSheetEnum;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.common.util.PageInfo;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.dao.simplify.TAppMiddlewareInfoMapper;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.dto.config.ImportConfigDTO;
 import com.pamirs.takin.entity.domain.dto.linkmanage.InterfaceVo;
 import com.pamirs.takin.entity.domain.entity.ExceptionInfo;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.simplify.TAppMiddlewareInfo;
 import com.pamirs.takin.entity.domain.entity.simplify.TShadowJobConfig;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
@@ -140,6 +138,7 @@ import io.shulie.takin.web.data.model.mysql.ShadowMqConsumerEntity;
 import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
+import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
@@ -198,8 +197,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ConfCenterService confCenterService;
-    @Resource
-    private TApplicationMntDao tApplicationMntDao;
     @Resource
     private TAppMiddlewareInfoMapper tAppMiddlewareInfoMapper;
     @Autowired
@@ -293,8 +290,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList) {
-        return tApplicationMntDao.getApplicationsByUserIdList(userIdList);
+    public List<ApplicationDetailResult> getApplicationsByUserIdList(List<Long> userIdList) {
+        return applicationDAO.getApplicationListByUserIds(userIdList);
     }
 
 
@@ -373,8 +370,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         param.put("pageNum", queryParam.getCurrentPage());
         param.put("applicationIds", queryParam.getApplicationIds());
 
-        PageInfo<TApplicationMnt> pageInfo = confCenterService.queryApplicationList(param);
-        List<TApplicationMnt> list = pageInfo.getList();
+        PageInfo<ApplicationDetailResult> pageInfo = confCenterService.queryApplicationList(param);
+        List<ApplicationDetailResult> list = pageInfo.getList();
         List<ApplicationVo> applicationVoList = appEntryListToVoList(list);
         //用户ids
         List<Long> userIds = applicationVoList.stream()
@@ -401,8 +398,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         param.put("pageSize", queryParam.getPageSize());
         param.put("pageNum", queryParam.getCurrentPage());
         param.put("applicationIds", queryParam.getApplicationIds());
-        PageInfo<TApplicationMnt> pageInfo = confCenterService.queryApplicationList(param);
-        List<TApplicationMnt> list = pageInfo.getList();
+        PageInfo<ApplicationDetailResult> pageInfo = confCenterService.queryApplicationList(param);
+        List<ApplicationDetailResult> list = pageInfo.getList();
         List<ApplicationVo> applicationVoList = appEntryListToVoList(list);
 
         //用户ids
@@ -472,7 +469,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (id == null) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR, "应用id不能为null");
         }
-        TApplicationMnt tApplicationMnt = confCenterService.queryApplicationinfoById(Long.parseLong(id));
+        ApplicationDetailResult tApplicationMnt = confCenterService.queryApplicationinfoById(Long.parseLong(id));
         if (tApplicationMnt == null) {
             return Response.success(new ApplicationVo());
         }
@@ -497,11 +494,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public Response<TApplicationMnt> getApplicationInfoForError(String id) {
+    public Response<ApplicationDetailResult> getApplicationInfoForError(String id) {
         if (id == null) {
             return Response.fail(FALSE_CORE, "应用id不能为null");
         }
-        TApplicationMnt tApplicationMnt = confCenterService.queryApplicationinfoByIdAndRole(Long.parseLong(id));
+        ApplicationDetailResult tApplicationMnt = confCenterService.queryApplicationinfoByIdAndRole(Long.parseLong(id));
         return Response.success(tApplicationMnt);
     }
 
@@ -573,7 +570,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 updateConfigAppName(param.getId(), param.getApplicationName());
             }
             OperationLogContextHolder.addVars(BizOpConstants.Vars.APPLICATION, applicationName);
-            confCenterService.updateApplicationinfo(voToAppEntity(param));
+            confCenterService.updateApplicationInfo(voToAppEntity(param));
         } catch (TakinModuleException e) {
             return Response.fail(FALSE_CORE, e.getErrorMessage(), e.getErrorMessage());
         }
@@ -617,7 +614,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return Response.fail("0000-0000-0000", "未获取到" + userAppKey + "用户信息");
         }
 
-        TApplicationMnt applicationMnt = this.queryTApplicationMntByName(param.getApplicationName());
+        ApplicationDetailResult applicationMnt = this.queryTApplicationMntByName(param.getApplicationName());
 
         if (applicationMnt == null) {
             return Response.fail("0000-0000-0000", "查询不到应用【" + param.getApplicationName() + "】,请先上报应用！");
@@ -657,10 +654,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         long startTime = System.currentTimeMillis();
         try {
             //查询出所有待检测状态的应用
-            List<TApplicationMnt> applicationMntList = tApplicationMntDao.getAllApplicationByStatus(
-                    Arrays.asList(0, 1, 2, 3));
+            List<ApplicationDetailResult> applicationMntList = applicationDAO.getAllApplicationByStatus(Arrays.asList(0, 1, 2, 3));
             if (!CollectionUtils.isEmpty(applicationMntList)) {
-                List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(
+                List<String> appNames = applicationMntList.stream().map(ApplicationDetailResult::getApplicationName).collect(
                         Collectors.toList());
                 List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames);
                 if (!CollectionUtils.isEmpty(applicationResultList)) {
@@ -721,19 +717,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void modifyAccessStatusWithoutAuth(List<Long> applicationIds, Integer accessStatus) {
         if (CollectionUtils.isNotEmpty(applicationIds)) {
-            tApplicationMntDao.updateApplicationStatus(applicationIds, accessStatus);
+            applicationDAO.batchUpdateApplicationStatus(applicationIds, accessStatus);
         }
     }
 
     @Override
-    public List<TApplicationMnt> getAllApplications() {
-        return tApplicationMntDao.getAllApplications();
+    public List<ApplicationDetailResult> getAllApplications() {
+        return applicationDAO.getAllApplications();
     }
 
-    @Override
-    public String getIdByName(String applicationName) {
-        return tApplicationMntDao.getIdByName(applicationName);
-    }
 
     @Override
     public Response<Integer> uploadMiddleware(Map<String, String> requestMap) {
@@ -1048,11 +1040,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public void uninstallAllAgent(List<String> appIds) {
         try {
             // 查询所有应用
-            List<TApplicationMnt> applicationList = tApplicationMntDao.queryApplicationList(null, appIds,WebPluginUtils.getQueryAllowUserIdList());
+            List<ApplicationDetailResult> applicationList = applicationDAO.queryApplicationList(null, appIds,WebPluginUtils.getQueryAllowUserIdList());
             if (CollectionUtil.isEmpty(applicationList)) {
                 return;
             }
-            for (TApplicationMnt application : applicationList) {
+            for (ApplicationDetailResult application : applicationList) {
                 try {
                     ApplicationNodeOperateProbeRequest nodeRequest = new ApplicationNodeOperateProbeRequest();
                     nodeRequest.setApplicationId(application.getApplicationId());
@@ -2045,7 +2037,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      *
      * @return -
      */
-    private ApplicationSwitchStatusDTO judgeAppSwitchStatus(TApplicationMnt dbApp, boolean needCalculateNodeNum) {
+    private ApplicationSwitchStatusDTO judgeAppSwitchStatus(ApplicationDetailResult dbApp, boolean needCalculateNodeNum) {
         if (dbApp == null) {
             return null;
         }
@@ -2099,7 +2091,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         try {
             UserExt userExt = WebPluginUtils.traceUser();
             AppMiddlewareQuery query = new AppMiddlewareQuery();
-            TApplicationMnt tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
+            ApplicationDetailResult tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
             if (null == tApplicationMnt) {
                 return Response.fail("未查询到应用相关数据");
             }
@@ -2136,12 +2128,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public void resumeAllAgent(List<String> appIds) {
         try {
             // 查询所有应用
-            List<TApplicationMnt> applicationList = tApplicationMntDao.queryApplicationList(null, appIds,WebPluginUtils.getQueryAllowUserIdList());
+            List<ApplicationDetailResult> applicationList = applicationDAO.queryApplicationList(null, appIds,WebPluginUtils.getQueryAllowUserIdList());
             if (CollectionUtil.isEmpty(applicationList)) {
                 return;
             }
 
-            List<String> appNames = applicationList.stream().map(TApplicationMnt :: getApplicationName).collect(Collectors.toList());
+            List<String> appNames = applicationList.stream().map(ApplicationDetailResult :: getApplicationName).collect(Collectors.toList());
             applicationNodeProbeDAO.delByAppNamesAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
         } catch (Exception e) {
             log.error("一键恢复探针异常", e);
@@ -2160,12 +2152,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return application;
     }
 
-    List<ApplicationVo> appEntryListToVoList(List<TApplicationMnt> tApplicationMnts) {
+    List<ApplicationVo> appEntryListToVoList(List<ApplicationDetailResult> tApplicationMnts) {
         List<ApplicationVo> voList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(tApplicationMnts)) {
             //取应用节点数信息
             List<String> appNameList = tApplicationMnts.stream()
-                .map(TApplicationMnt::getApplicationName)
+                .map(ApplicationDetailResult::getApplicationName)
                 .collect(Collectors.toList());
             List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNameList);
             //取应用节点版本信息
@@ -2177,7 +2169,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             List<ApplicationNodeResult> applicationNodeResultList = applicationNodes.getList();
             Map<Long, List<ApplicationNodeResult>> applicationNodeResultMap = Maps.newHashMap();
             if (!CollectionUtils.isEmpty(applicationNodeResultList)) {
-                for (TApplicationMnt tApplicationMnt : tApplicationMnts) {
+                for (ApplicationDetailResult tApplicationMnt : tApplicationMnts) {
                     List<ApplicationNodeResult> currentApplicationNodeResultList = applicationNodeResultList
                         .stream()
                         .filter(applicationNodeResult ->
@@ -2190,13 +2182,13 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 }
             }
             if (CollectionUtils.isEmpty(applicationResultList)) {
-                for (TApplicationMnt param : tApplicationMnts) {
+                for (ApplicationDetailResult param : tApplicationMnts) {
                     List<ApplicationNodeResult> applicationNodeResults = applicationNodeResultMap.get(
                         param.getApplicationId());
                     voList.add(appEntryToVo(param, null, applicationNodeResults));
                 }
             } else {
-                for (TApplicationMnt param : tApplicationMnts) {
+                for (ApplicationDetailResult param : tApplicationMnts) {
                     String applicationName = param.getApplicationName();
                     Optional<ApplicationResult> optional = applicationResultList.stream().filter(
                         applicationResult -> applicationResult.getAppName().equals(applicationName)).findFirst();
@@ -2213,7 +2205,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return voList;
     }
 
-    ApplicationVo appEntryToVo(TApplicationMnt param, ApplicationResult applicationResult,
+    ApplicationVo appEntryToVo(ApplicationDetailResult param, ApplicationResult applicationResult,
         List<ApplicationNodeResult> applicationNodeResultList) {
         ApplicationVo vo = new ApplicationVo();
         vo.setPrimaryKeyId(param.getId());
@@ -2251,8 +2243,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return vo;
     }
 
-    TApplicationMnt voToAppEntity(ApplicationVo param) {
-        TApplicationMnt dbData = new TApplicationMnt();
+   private ApplicationCreateParam voToAppEntity(ApplicationVo param) {
+       ApplicationCreateParam dbData = new ApplicationCreateParam();
         if (StringUtil.isNotEmpty(param.getId())) {
             dbData.setApplicationId(Long.parseLong(param.getId()));
         }
@@ -2276,8 +2268,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public TApplicationMnt queryTApplicationMntByName(String appName) {
-        return tApplicationMntDao.queryApplicationInfoByNameAndTenant(appName, WebPluginUtils.traceTenantId());
+    public ApplicationDetailResult queryTApplicationMntByName(String appName) {
+        return applicationDAO.getByName(appName);
     }
 
     /**

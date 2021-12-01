@@ -240,10 +240,11 @@ public class ApplicationDAOImpl
         return applicationResultList;
     }
 
+
     @Override
     public List<ApplicationDetailResult> getApplicationListByUserIds(List<Long> userIdList) {
         List<ApplicationDetailResult> applicationDetailResultList = Lists.newArrayList();
-        LambdaUpdateWrapper<ApplicationMntEntity> wrapper = new LambdaUpdateWrapper();
+        LambdaQueryWrapper<ApplicationMntEntity> wrapper = new LambdaQueryWrapper();
         if (!CollectionUtils.isEmpty(userIdList)) {
             wrapper.in(ApplicationMntEntity::getUserId, userIdList);
         }
@@ -259,6 +260,7 @@ public class ApplicationDAOImpl
         }).collect(Collectors.toList());
         return applicationDetailResultList;
     }
+
 
     @Override
     public List<ApplicationDetailResult> getApplicationByIds(List<Long> ids) {
@@ -469,4 +471,116 @@ public class ApplicationDAOImpl
             .in(ApplicationMntEntity::getApplicationName, applicationNameList)), Long.class);
     }
 
+    @Override
+    public String selectApplicationName(String applicationId) {
+        return applicationMntMapper.selectApplicationName(applicationId);
+    }
+
+    @Override
+    public void updateApplicaionAgentVersion(Long applicationId, String agentVersion, String pradarVersion) {
+        applicationMntMapper.updateApplicaionAgentVersion(applicationId,agentVersion,pradarVersion);
+    }
+
+    @Override
+    public Long queryIdByApplicationName(String applicationName) {
+        return applicationMntMapper.queryIdByApplicationName(applicationName);
+    }
+
+    @Override
+    public List<String> queryIdsByNameAndTenant(List<String> names, Long tenantId, String envCode) {
+        return applicationMntMapper.queryIdsByNameAndTenant(names,tenantId,envCode);
+    }
+
+    @Override
+    public List<ApplicationDetailResult> getAllApplications() {
+        List<ApplicationMntEntity> allApplications = applicationMntMapper.getAllApplications();
+        if(CollectionUtils.isEmpty(allApplications)) {
+            return Lists.newArrayList();
+        }
+        return DataTransformUtil.list2list(allApplications,ApplicationDetailResult.class);
+    }
+
+    @Override
+    public List<ApplicationDetailResult> getAllApplicationByStatus(List<Integer> statusList) {
+        List<ApplicationMntEntity> allApplications = applicationMntMapper.getAllApplicationByStatus(statusList);
+        if(CollectionUtils.isEmpty(allApplications)) {
+            return Lists.newArrayList();
+        }
+        return DataTransformUtil.list2list(allApplications,ApplicationDetailResult.class);
+    }
+
+    @Override
+    public List<ApplicationDetailResult> getApplicationMntByUserIdsAndKeyword(List<Long> userIds, String keyword) {
+        List<ApplicationMntEntity> allApplications = applicationMntMapper.getApplicationMntByUserIdsAndKeyword(userIds,keyword);
+        if(CollectionUtils.isEmpty(allApplications)) {
+            return Lists.newArrayList();
+        }
+        return DataTransformUtil.list2list(allApplications,ApplicationDetailResult.class);
+    }
+
+    @Override
+    public int applicationExistByTenantIdAndAppName(Long tenantId, String envCode, String applicationName) {
+        return applicationMntMapper.applicationExistByTenantIdAndAppName(tenantId,envCode,applicationName);
+    }
+
+    @Override
+    public List<ApplicationDetailResult> queryApplicationList(String applicationName, List<String> applicationIds, List<Long> userIds) {
+        List<ApplicationMntEntity> allApplications = applicationMntMapper.queryApplicationList(applicationName,applicationIds,userIds);
+        if(CollectionUtils.isEmpty(allApplications)) {
+            return Lists.newArrayList();
+        }
+        return DataTransformUtil.list2list(allApplications,ApplicationDetailResult.class);
+    }
+
+    @Override
+    public int applicationExist(String applicationName) {
+        return applicationMntMapper.applicationExist(applicationName);
+    }
+
+    @Override
+    public void updateApplicationinfo(ApplicationCreateParam updateParam) {
+        ApplicationMntEntity entity = new ApplicationMntEntity();
+        BeanUtils.copyProperties(updateParam,entity);
+        applicationMntMapper.updateApplicationinfo(entity);
+    }
+
+    @Override
+    public Map<String, Object> queryApplicationRelationBasicLinkByApplicationId(String applicationId) {
+        return applicationMntMapper.queryApplicationRelationBasicLinkByApplicationId(applicationId);
+    }
+
+    @Override
+    public void deleteApplicationInfoByIds(List<Long> applicationIdLists) {
+        applicationMntMapper.deleteApplicationInfoByIds(applicationIdLists);
+    }
+
+    @Override
+    public List<Map<String, Object>> queryApplicationListByIds(List<Long> applicationIds) {
+        return applicationMntMapper.queryApplicationListByIds(applicationIds);
+    }
+
+    @Override
+    public List<Map<String, Object>> queryApplicationData() {
+        return applicationMntMapper.queryApplicationData();
+    }
+
+    @Override
+    public void batchUpdateApplicationStatus(List<Long> applicationIds, Integer accessStatus) {
+        applicationMntMapper.batchUpdateApplicationStatus(applicationIds,accessStatus);
+    }
+
+    @Override
+    public Map<String, Object> queryCacheExpTime(String applicationId) {
+        return applicationMntMapper.queryCacheExpTime(applicationId);
+    }
+
+    @Override
+    public String selectScriptPath(String applicationId, String scriptType) {
+        return applicationMntMapper.selectScriptPath(applicationId,scriptType);
+    }
+
+    @Override
+    public String getIdByName(String applicationName) {
+        return applicationMntMapper.getIdByName(applicationName);
+    }
 }

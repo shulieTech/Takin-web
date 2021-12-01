@@ -1,21 +1,19 @@
 package io.shulie.takin.web.biz.service.dashboard.impl;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import org.springframework.stereotype.Service;
-import io.shulie.takin.web.common.common.Response;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
-import io.shulie.takin.web.biz.service.dashboard.WorkBenchService;
-import io.shulie.takin.web.biz.service.dashboard.ApplicationService;
-import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.TechQueryVo;
-import io.shulie.takin.web.biz.pojo.response.dashboard.UserWorkBenchResponse;
 import com.pamirs.takin.entity.domain.dto.linkmanage.SystemProcessViewListDto;
+import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.TechQueryVo;
 import io.shulie.takin.web.biz.pojo.response.dashboard.ApplicationSwitchStatusResponse;
+import io.shulie.takin.web.biz.pojo.response.dashboard.UserWorkBenchResponse;
+import io.shulie.takin.web.biz.service.dashboard.ApplicationService;
+import io.shulie.takin.web.biz.service.dashboard.WorkBenchService;
+import io.shulie.takin.web.common.common.Response;
+import org.springframework.stereotype.Service;
 
 @Service
 public class WorkBenchServiceImpl implements WorkBenchService {
@@ -35,7 +33,6 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         //压测开关
         ApplicationSwitchStatusResponse status = dashboardApplicationService.getUserAppSwitchInfo();
         result.setSwitchStatus(status.getSwitchStatus());
-        Map<String, List<Integer>> permissionData = WebPluginUtils.traceUser().getPermissionData();
 
         //应用数量
         ApplicationQueryParam queryParam = new ApplicationQueryParam();

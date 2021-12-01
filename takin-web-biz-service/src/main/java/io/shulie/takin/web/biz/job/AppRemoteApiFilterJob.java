@@ -136,10 +136,12 @@ public class AppRemoteApiFilterJob implements SimpleJob {
             if (CollectionUtils.isNotEmpty(filterList)) {
                 return;
             }
-            AppRemoteCallResult appRemoteCallResult = v.get(0);
-            appRemoteCallResult.setInterfaceName(k);
-            appRemoteCallResult.setId(null);
-            save.add(appRemoteCallResult);
+            if(CollectionUtils.isNotEmpty(v)) {
+                AppRemoteCallResult appRemoteCallResult = v.get(0);
+                appRemoteCallResult.setInterfaceName(k);
+                appRemoteCallResult.setId(null);
+                save.add(appRemoteCallResult);
+            }
         });
         appRemoteCallService.batchSave(save);
     }

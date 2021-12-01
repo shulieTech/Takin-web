@@ -31,9 +31,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public ApplicationSwitchStatusResponse getUserAppSwitchInfo() {
-        return new ApplicationSwitchStatusResponse() {{
+        ApplicationSwitchStatusResponse response = new ApplicationSwitchStatusResponse() {{
             setSwitchStatus(takinApplicationService.getUserSwitchStatusForVo());
         }};
+        WebPluginUtils.fillQueryResponse(response);
+        return response;
     }
 
     /**

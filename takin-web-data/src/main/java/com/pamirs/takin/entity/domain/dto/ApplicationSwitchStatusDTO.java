@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import lombok.Data;
 
 /**
@@ -13,7 +14,7 @@ import lombok.Data;
  */
 
 @Data
-public class ApplicationSwitchStatusDTO implements Serializable {
+public class ApplicationSwitchStatusDTO extends AuthQueryResponseCommonExt implements Serializable {
     private static final long serialVersionUID = -8743442521630586570L;
 
     /**

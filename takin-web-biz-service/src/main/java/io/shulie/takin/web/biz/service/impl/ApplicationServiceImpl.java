@@ -2368,6 +2368,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         } else {
             result.setSwitchStatus(getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId()));
         }
+        result.setUserId(WebPluginUtils.traceUserId());
         WebPluginUtils.fillQueryResponse(result);
         return Response.success(result);
     }

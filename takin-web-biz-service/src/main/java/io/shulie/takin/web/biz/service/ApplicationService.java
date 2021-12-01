@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
@@ -29,7 +28,12 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface ApplicationService {
 
-    List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList);
+    /**
+     * 插件里使用
+     * @param userIdList
+     * @return
+     */
+    List<ApplicationDetailResult> getApplicationsByUserIdList(List<Long> userIdList);
 
     /**
      * 带租户
@@ -157,9 +161,13 @@ public interface ApplicationService {
      */
     void modifyAccessStatusWithoutAuth(List<Long> applicationIds, Integer accessStatus);
 
-    List<TApplicationMnt> getAllApplications();
+    /**
+     * 获取应用
+     *
+     * @return
+     */
+    List<ApplicationDetailResult> getAllApplications();
 
-    String getIdByName(String applicationName);
 
     String getUserSwitchStatusForVo();
 
@@ -200,7 +208,12 @@ public interface ApplicationService {
      */
     String getApplicationNameByApplicationId(Long applicationId);
 
-    TApplicationMnt queryTApplicationMntByName(String appName);
+    /**
+     * 根据名字查询
+     * @param appName
+     * @return
+     */
+    ApplicationDetailResult queryTApplicationMntByName(String appName);
 
     /**
      * 一键卸载所有应用

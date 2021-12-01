@@ -11,15 +11,15 @@ import com.alibaba.fastjson.JSON;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.report.ReportApplicationDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.util.RedisHelper;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +55,7 @@ public class ReportDataCache {
     private static final String REPORT_APPLICATION_KEY = "takin:web:report:application:key:%s:%s:%s";
 
     @Autowired
-    private TApplicationMntDao tApplicationMntDao;
+    private ApplicationDAO applicationDAO;
 
     @Autowired
     private ReportService reportService;
@@ -202,12 +202,12 @@ public class ReportDataCache {
             log.debug("报告中关联的应用为空");
             return;
         }
-        List<TApplicationMnt> appsList = tApplicationMntDao.queryApplicationMntListByIds(Lists.newArrayList(appSet));
+        List<ApplicationDetailResult> appsList = applicationDAO.getApplicationByIds(Lists.newArrayList(appSet));
         if (CollectionUtils.isEmpty(appsList)) {
             log.debug("报告中关联的应用为空");
             return;
         }
-        List<String> applications = appsList.stream().map(TApplicationMnt::getApplicationName)
+        List<String> applications = appsList.stream().map(ApplicationDetailResult::getApplicationName)
             .filter(StringUtils::isNoneBlank).distinct().collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(applications)) {
             redisTemplate.opsForSet().add(getReportApplicationKey(reportId), applications.toArray());

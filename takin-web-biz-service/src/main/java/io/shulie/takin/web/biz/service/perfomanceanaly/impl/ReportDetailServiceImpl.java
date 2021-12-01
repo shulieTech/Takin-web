@@ -10,17 +10,17 @@ import java.util.stream.Collectors;
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.convert.Convert;
 import com.pamirs.takin.common.util.http.DateUtil;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
 import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
 import io.shulie.takin.web.data.dao.application.AppAgentConfigReportDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
 import io.shulie.takin.web.data.param.application.CreateAppAgentConfigReportParam;
 import io.shulie.takin.web.data.param.application.UpdateAppAgentConfigReportParam;
 import io.shulie.takin.web.data.result.application.AppAgentConfigReportDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -40,7 +40,7 @@ public class ReportDetailServiceImpl implements ReportDetailService {
     private ReportApplicationService reportApplicationService;
 
     @Autowired
-    private TApplicationMntDao tApplicationMntDao;
+    private ApplicationDAO applicationDAO;
 
     @Autowired
     private AppAgentConfigReportDAO agentConfigReportDAO;
@@ -68,7 +68,7 @@ public class ReportDetailServiceImpl implements ReportDetailService {
             log.error("uploadConfigInfo 上传参数不能为空");
             return;
         }
-        TApplicationMnt info = tApplicationMntDao.queryApplicationinfoByName(inputParam.getApplicationName());
+        ApplicationDetailResult info = applicationDAO.getByName(inputParam.getApplicationName());
         if (Objects.isNull(info)) {
             log.error("uploadConfigInfo 应用【{}】不存在",inputParam.getApplicationName());
             return ;

@@ -145,7 +145,7 @@ public class WhiteListDAOImpl extends ServiceImpl<WhiteListMapper, WhiteListEnti
     // ----- 迁移
 
     @Override
-    public void deleteApplicationInfoRelatedInterfaceByIds(List<String> applicationIdLists) {
+    public void deleteApplicationInfoRelatedInterfaceByIds(List<Long> applicationIdLists) {
         this.baseMapper.deleteApplicationInfoRelatedInterfaceByIds(applicationIdLists);
     }
 

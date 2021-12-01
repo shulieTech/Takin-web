@@ -32,7 +32,6 @@ import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.common.enums.ds.MiddleWareTypeEnum;
 import com.pamirs.takin.entity.dao.simplify.TAppBusinessTableInfoMapper;
 import com.pamirs.takin.entity.domain.entity.DsModelWithBLOBs;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.simplify.AppBusinessTableInfo;
 import com.pamirs.takin.entity.domain.query.agent.AppBusinessTableQuery;
 import com.pamirs.takin.entity.domain.vo.dsmanage.Configurations;
@@ -288,7 +287,7 @@ public class DsServiceImpl implements DsService {
     @Override
     public List<DsAgentVO> getConfigs(String appName) {
         List<DsAgentVO> dsAgentVOList = new ArrayList<>();
-        TApplicationMnt applicationMnt = applicationService.queryTApplicationMntByName(appName);
+        ApplicationDetailResult applicationMnt = applicationService.queryTApplicationMntByName(appName);
         if (applicationMnt != null) {
             List<DsModelWithBLOBs> dsModels = applicationDsDAO.selectByAppIdForAgent(applicationMnt.getApplicationId());
             if (CollectionUtils.isNotEmpty(dsModels)) {
@@ -330,7 +329,7 @@ public class DsServiceImpl implements DsService {
     @Override
     public List<DsServerVO> getShadowDsServerConfigs(String namespace, DsTypeEnum dsServer) {
         List<DsServerVO> responseList = new ArrayList<>();
-        TApplicationMnt applicationMnt = applicationService.queryTApplicationMntByName(namespace);
+        ApplicationDetailResult applicationMnt = applicationService.queryTApplicationMntByName(namespace);
         if (applicationMnt != null) {
             List<DsModelWithBLOBs> dsModels = applicationDsDAO.selectByAppIdForAgent(applicationMnt.getApplicationId());
             if (CollectionUtils.isNotEmpty(dsModels)) {

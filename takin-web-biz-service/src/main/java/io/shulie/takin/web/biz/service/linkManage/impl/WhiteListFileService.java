@@ -20,7 +20,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.ResponseOk;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
 import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.query.whitelist.AgentWhiteList;
@@ -64,8 +63,6 @@ public class WhiteListFileService {
     @Resource
     private WhiteListDAO whiteListDAO;
 
-    @Autowired
-    private TApplicationMntDao applicationMntDao;
 
     @Autowired
     private BlackListDAO blackListDAO;
@@ -297,7 +294,7 @@ public class WhiteListFileService {
 
     private List<AgentWhiteList> agentListWhitelist(TenantCommonExt ext) {
 
-        List<String> list = applicationMntDao.queryIdsByNameAndTenant(Lists.newArrayList(),
+        List<String> list = applicationDAO.queryIdsByNameAndTenant(Lists.newArrayList(),
             ext != null ? ext.getTenantId() : null, ext != null ? ext.getEnvCode() : null);
         if (CollectionUtils.isEmpty(list)) {
             return Lists.newArrayList();

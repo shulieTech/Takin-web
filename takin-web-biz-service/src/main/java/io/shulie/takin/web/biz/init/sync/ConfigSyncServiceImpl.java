@@ -13,11 +13,9 @@ import javax.annotation.Resource;
 import com.alibaba.excel.util.StringUtils;
 
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
 import com.pamirs.takin.entity.domain.entity.DsModelWithBLOBs;
 import com.pamirs.takin.entity.domain.entity.LinkGuardEntity;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.entity.TWList;
 import com.pamirs.takin.entity.domain.entity.configs.Configurations;
@@ -50,6 +48,8 @@ import io.shulie.takin.web.config.sync.api.ShadowConsumerSyncService;
 import io.shulie.takin.web.config.sync.api.ShadowDbSyncService;
 import io.shulie.takin.web.config.sync.api.ShadowJobSyncService;
 import io.shulie.takin.web.config.sync.api.SwitchSyncService;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -85,7 +85,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     @Autowired
     private LinkGuardService linkGuardService;
     @Resource
-    private TApplicationMntDao tApplicationMntDao;
+    private ApplicationDAO applicationDAO;
     @Autowired
     private ConfigService configService;
     @Autowired
@@ -110,7 +110,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     @Override
     public void syncGuard(TenantCommonExt commonExt, long applicationId, String applicationName) {
         if (StringUtils.isEmpty(applicationName)) {
-            TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
+            ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
         }
         guardSyncService.syncGuard(commonExt, applicationName, queryAndParseGuard(applicationId));
@@ -152,7 +152,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     @Override
     public void syncAllowList(TenantCommonExt commonExt, long applicationId, String applicationName) {
         if (StringUtils.isEmpty(applicationName)) {
-            TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
+            ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(applicationId);
             if (tApplicationMnt == null) {
                 throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_WHITELIST_VALIDATE_ERROR, "应用不存在!");
             }
@@ -205,7 +205,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     @Override
     public void syncShadowJob(TenantCommonExt commonExt, long applicationId, String applicationName) {
         if (StringUtils.isEmpty(applicationName)) {
-            TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
+            ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
         }
         shadowJobSyncService.syncShadowJob(commonExt, applicationName, queryAndParseShadowJob(applicationId));
@@ -255,7 +255,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     @Override
     public void syncShadowDB(TenantCommonExt commonExt, long applicationId, String applicationName) {
         if (StringUtils.isEmpty(applicationName)) {
-            TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
+            ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
         }
         shadowDbSyncService.syncShadowDataBase(commonExt, applicationName, queryAndParseShadowDatabase(applicationId));
@@ -264,7 +264,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
     @Override
     public void syncShadowConsumer(TenantCommonExt commonExt, long applicationId, String applicationName) {
         if (StringUtils.isEmpty(applicationName)) {
-            TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
+            ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(applicationId);
             applicationName = tApplicationMnt.getApplicationName();
         }
         shadowConsumerSyncService.syncShadowConsumer(commonExt, applicationName,

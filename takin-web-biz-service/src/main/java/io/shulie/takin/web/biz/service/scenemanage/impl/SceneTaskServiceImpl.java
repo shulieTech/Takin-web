@@ -21,11 +21,9 @@ import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParamNew;
@@ -71,6 +69,7 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.common.vo.scene.BaffleAppVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
@@ -106,8 +105,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     @Autowired
     private SceneManageService sceneManageService;
 
-    @Autowired
-    private TApplicationMntDao applicationMntDao;
 
     @Autowired
     private SceneTaskApi sceneTaskApi;
@@ -321,8 +318,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             .flatMap(appIds -> Arrays.stream(appIds.split(",")).map(Long::parseLong))
             .filter(data -> data > 0L).distinct().collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(applicationIds)) {
-            List<TApplicationMnt> applicationMntList = applicationMntDao.queryApplicationMntListByIds(applicationIds);
-            List<String> applicationNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName)
+            List<ApplicationDetailResult> applicationMntList = applicationDAO.getApplicationByIds(applicationIds);
+            List<String> applicationNames = applicationMntList.stream().map(ApplicationDetailResult::getApplicationName)
                 .collect(Collectors.toList());
             // 过期时间，根据 压测时间 + 10s
             redisClientUtils.set(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId), applicationNames,
@@ -457,7 +454,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         boolean checkApplication = ConfigServerHelper.getBooleanValueByKey(
             ConfigServerKeyEnum.TAKIN_START_TASK_CHECK_APPLICATION);
         if (!CollectionUtils.isEmpty(applicationIds) && checkApplication) {
-            List<TApplicationMnt> applicationMntList = applicationMntDao.queryApplicationMntListByIds(applicationIds);
+            List<ApplicationDetailResult> applicationMntList = applicationDAO.getApplicationByIds(applicationIds);
             // todo 临时方案，过滤挡板应用
             TBaseConfig config = baseConfigService.queryByConfigCode(ConfigConstants.SCENE_BAFFLE_APP_CONFIG);
             if (config != null && StringUtils.isNotBlank(config.getConfigValue())) {
@@ -470,7 +467,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                         .map(t -> t.get(0)).map(BaffleAppVO::getAppName).orElse(Lists.newArrayList());
                     List<Long> appIds = Lists.newArrayList();
 
-                    List<TApplicationMnt> tempApps = applicationMntList.stream().filter(app -> {
+                    List<ApplicationDetailResult> tempApps = applicationMntList.stream().filter(app -> {
                         if (appNames.contains(app.getApplicationName())) {
                             // 用于过滤应用id
                             appIds.add(app.getApplicationId());
@@ -529,9 +526,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
      * @return 错误信息
      */
     @Override
-    public String checkApplicationCorrelation(List<TApplicationMnt> applicationMntList) {
+    public String checkApplicationCorrelation(List<ApplicationDetailResult> applicationMntList) {
         // 查询下 应用节点信息 节点不一致 也需要返回异常
-        List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(
+        List<String> appNames = applicationMntList.stream().map(ApplicationDetailResult::getApplicationName).collect(
             Collectors.toList());
         // 从大数据里查出数据 todo 目前大数据不区分客户，所以有可能存在不准确问题
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames);

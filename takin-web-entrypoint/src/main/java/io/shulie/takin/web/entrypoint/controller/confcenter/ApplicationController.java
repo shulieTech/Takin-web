@@ -13,7 +13,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.github.pagehelper.util.StringUtil;
-import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
+import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
 import com.pamirs.takin.entity.domain.vo.AppUnstallAgentVo;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
@@ -85,7 +85,7 @@ public class ApplicationController {
         @ApiParam(name = "accessStatus", value = "接入状态") Integer accessStatus
     ) {
         current = current + 1;
-        ApplicationQueryParam param = new ApplicationQueryParam();
+        ApplicationQueryRequest param = new ApplicationQueryRequest();
         param.setCurrentPage(current);
         param.setPageSize(pageSize);
         param.setApplicationName(applicationName);

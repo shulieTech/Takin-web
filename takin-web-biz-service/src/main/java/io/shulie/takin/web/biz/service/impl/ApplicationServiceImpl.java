@@ -33,7 +33,6 @@ import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.AppConfigSheetEnum;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
-import com.pamirs.takin.common.util.PageInfo;
 import com.pamirs.takin.entity.dao.simplify.TAppMiddlewareInfoMapper;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
@@ -42,7 +41,7 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.InterfaceVo;
 import com.pamirs.takin.entity.domain.entity.ExceptionInfo;
 import com.pamirs.takin.entity.domain.entity.simplify.TAppMiddlewareInfo;
 import com.pamirs.takin.entity.domain.entity.simplify.TShadowJobConfig;
-import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
+import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
 import com.pamirs.takin.entity.domain.query.LinkGuardQueryParam;
 import com.pamirs.takin.entity.domain.query.agent.AppMiddlewareQuery;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
@@ -141,6 +140,7 @@ import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
+import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
@@ -363,14 +363,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public Response<List<ApplicationVo>> getApplicationList(ApplicationQueryParam queryParam) {
-        Map<String, Object> param = new HashMap<>();
-        param.put("applicationName", queryParam.getApplicationName());
-        param.put("pageSize", queryParam.getPageSize());
-        param.put("pageNum", queryParam.getCurrentPage());
-        param.put("applicationIds", queryParam.getApplicationIds());
+    public Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequest queryParam) {
 
-        PageInfo<ApplicationDetailResult> pageInfo = confCenterService.queryApplicationList(param);
+        PagingList<ApplicationDetailResult> pageInfo = confCenterService.queryApplicationList(queryParam);
         List<ApplicationDetailResult> list = pageInfo.getList();
         List<ApplicationVo> applicationVoList = appEntryListToVoList(list);
         //用户ids
@@ -392,13 +387,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public List<ApplicationVo> getApplicationListVo(ApplicationQueryParam queryParam) {
-        Map<String, Object> param = new HashMap<>();
-        param.put("applicationName", queryParam.getApplicationName());
-        param.put("pageSize", queryParam.getPageSize());
-        param.put("pageNum", queryParam.getCurrentPage());
-        param.put("applicationIds", queryParam.getApplicationIds());
-        PageInfo<ApplicationDetailResult> pageInfo = confCenterService.queryApplicationList(param);
+    public List<ApplicationVo> getApplicationListVo(ApplicationQueryRequest queryParam) {
+
+        PagingList<ApplicationDetailResult> pageInfo = confCenterService.queryApplicationList(queryParam);
         List<ApplicationDetailResult> list = pageInfo.getList();
         List<ApplicationVo> applicationVoList = appEntryListToVoList(list);
 
@@ -427,7 +418,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      * @return -
      */
     @Override
-    public Response<List<ApplicationVo>> getApplicationList(ApplicationQueryParam param, Integer accessStatus) {
+    public Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequest param, Integer accessStatus) {
         if (accessStatus == null) {
             return getApplicationList(param);
         }
@@ -1040,11 +1031,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public void uninstallAllAgent(List<String> appIds) {
         try {
             // 查询所有应用
-            List<ApplicationDetailResult> applicationList = applicationDAO.queryApplicationList(null, appIds,WebPluginUtils.getQueryAllowUserIdList());
-            if (CollectionUtil.isEmpty(applicationList)) {
+            ApplicationQueryParam queryParam = new ApplicationQueryParam();
+            queryParam.setPageSize(-1);
+            queryParam.setCurrentPage(-1);
+            queryParam.setApplicationIds(appIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+            PagingList<ApplicationDetailResult> applicationList = applicationDAO.queryApplicationList(queryParam);
+            if (CollectionUtil.isEmpty(applicationList.getList())) {
                 return;
             }
-            for (ApplicationDetailResult application : applicationList) {
+            for (ApplicationDetailResult application : applicationList.getList()) {
                 try {
                     ApplicationNodeOperateProbeRequest nodeRequest = new ApplicationNodeOperateProbeRequest();
                     nodeRequest.setApplicationId(application.getApplicationId());
@@ -2128,11 +2123,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public void resumeAllAgent(List<String> appIds) {
         try {
             // 查询所有应用
-            List<ApplicationDetailResult> applicationList = applicationDAO.queryApplicationList(null, appIds,WebPluginUtils.getQueryAllowUserIdList());
-            if (CollectionUtil.isEmpty(applicationList)) {
+            ApplicationQueryParam queryParam = new ApplicationQueryParam();
+            queryParam.setPageSize(-1);
+            queryParam.setCurrentPage(-1);
+            queryParam.setApplicationIds(appIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+            PagingList<ApplicationDetailResult> pagingList = applicationDAO.queryApplicationList(queryParam);
+            if (CollectionUtil.isEmpty(pagingList.getList())) {
                 return;
             }
-
+            List<ApplicationDetailResult> applicationList = pagingList.getList();
             List<String> appNames = applicationList.stream().map(ApplicationDetailResult :: getApplicationName).collect(Collectors.toList());
             applicationNodeProbeDAO.delByAppNamesAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
         } catch (Exception e) {

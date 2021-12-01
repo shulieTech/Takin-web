@@ -54,6 +54,7 @@ import com.pamirs.takin.entity.domain.entity.TLinkServiceMnt;
 import com.pamirs.takin.entity.domain.entity.TPradaHttpData;
 import com.pamirs.takin.entity.domain.entity.TSecondLinkMnt;
 import com.pamirs.takin.entity.domain.entity.TWList;
+import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
 import com.pamirs.takin.entity.domain.query.BListQueryParam;
 import com.pamirs.takin.entity.domain.query.Result;
 import com.pamirs.takin.entity.domain.query.TWListVo;
@@ -65,6 +66,7 @@ import com.pamirs.takin.entity.domain.vo.TLinkNodesVo;
 import com.pamirs.takin.entity.domain.vo.TLinkServiceMntVo;
 import com.pamirs.takin.entity.domain.vo.TLinkTopologyInfoVo;
 import com.pamirs.takin.entity.domain.vo.TUploadInterfaceDataVo;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.common.CommonService;
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
@@ -82,6 +84,7 @@ import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
 import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
+import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.blacklist.BlackListCreateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
@@ -302,20 +305,13 @@ public class ConfCenterService extends CommonService {
     /**
      * 说明: 查询应用列表信息
      *
-     * @param paramMap 参数集合
      * @return 应用列表
      * @author shulie
      */
-    public PageInfo<ApplicationDetailResult> queryApplicationList(Map<String, Object> paramMap) {
-        String applicationName = MapUtils.getString(paramMap, "applicationName");
-        List<String> applicationIds = (List<String>)MapUtils.getObject(paramMap, "applicationIds");
-        if (!StringUtils.equals("-1", MapUtils.getString(paramMap, "pageSize"))) {
-            PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
-        }
-        List<ApplicationDetailResult> queryApplicationList = applicationDAO.queryApplicationList(applicationName,
-            applicationIds,WebPluginUtils.getQueryAllowUserIdList());
-
-        return new PageInfo<>(queryApplicationList.isEmpty() ? Lists.newArrayList() : queryApplicationList);
+    public PagingList<ApplicationDetailResult> queryApplicationList(ApplicationQueryRequest request) {
+        ApplicationQueryParam param = new ApplicationQueryParam();
+        BeanUtils.copyProperties(request,param);
+        return applicationDAO.queryApplicationList(param);
     }
 
     /**

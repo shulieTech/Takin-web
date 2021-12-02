@@ -39,8 +39,8 @@ public class FinishReportJob implements SimpleJob {
     private ReportTaskService reportTaskService;
 
     @Autowired
-    @Qualifier("fastDebugThreadPool")
-    private ThreadPoolExecutor fastDebugThreadPool;
+    @Qualifier("reportFinishThreadPool")
+    private ThreadPoolExecutor reportThreadPool;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -56,7 +56,7 @@ public class FinishReportJob implements SimpleJob {
             for (Long reportId : reportIds) {
                 // 开始数据层分片
                 if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    fastDebugThreadPool.execute(() -> reportTaskService.finishReport(reportId,WebPluginUtils.setTraceTenantContext(WebPluginUtils.traceTenantId(),WebPluginUtils.traceTenantAppKey(),WebPluginUtils.traceEnvCode(),
+                    reportThreadPool.execute(() -> reportTaskService.finishReport(reportId,WebPluginUtils.setTraceTenantContext(WebPluginUtils.traceTenantId(),WebPluginUtils.traceTenantAppKey(),WebPluginUtils.traceEnvCode(),
                         WebPluginUtils.traceTenantCode(), ContextSourceEnum.JOB.getCode())));
                 }
             }
@@ -97,7 +97,7 @@ public class FinishReportJob implements SimpleJob {
             }
 
             // 开始数据分片
-            fastDebugThreadPool.execute(() -> {
+            reportThreadPool.execute(() -> {
                 boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
                 if(!tryLock) {
                     return;

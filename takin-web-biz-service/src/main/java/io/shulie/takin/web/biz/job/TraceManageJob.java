@@ -41,8 +41,8 @@ public class TraceManageJob implements SimpleJob {
     public static long timeout = 300 * 1000;
 
     @Autowired
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor jobThreadPool;
+    @Qualifier("traceManageThreadPool")
+    private ThreadPoolExecutor traceManageThreadPool;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -66,7 +66,7 @@ public class TraceManageJob implements SimpleJob {
                         if (distributedLock.checkLock(lockKey)) {
                             continue;
                         }
-                        jobThreadPool.execute(() ->  {
+                        traceManageThreadPool.execute(() ->  {
                             boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
                             if(!tryLock) {
                                 return;

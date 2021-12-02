@@ -42,8 +42,8 @@ public class CalcTpsTargetJob implements SimpleJob {
     private ReportTaskService reportTaskService;
 
     @Autowired
-    @Qualifier("fastDebugThreadPool")
-    private ThreadPoolExecutor fastDebugThreadPool;
+    @Qualifier("reportTpsThreadPool")
+    private ThreadPoolExecutor reportThreadPool;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -62,7 +62,7 @@ public class CalcTpsTargetJob implements SimpleJob {
             for (Long reportId : reportIds) {
                 // 开始数据层分片
                 if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    fastDebugThreadPool.execute(() -> reportTaskService.calcTpsTarget(reportId));
+                    reportThreadPool.execute(() -> reportTaskService.calcTpsTarget(reportId));
                 }
             }
         } else {
@@ -71,34 +71,6 @@ public class CalcTpsTargetJob implements SimpleJob {
             for (TenantInfoExt ext : tenantInfoExts) {
                 // 开始数据层分片
                 if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    // 根据环境 分线程
-                    //for (TenantEnv e : ext.getEnvs()) {
-                    //    // 分布式锁
-                    //    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(),e.getEnvCode(),shardingContext.getJobName());
-                    //    if (distributedLock.checkLock(lockKey)) {
-                    //        continue;
-                    //    }
-                    //    TenantCommonExt tenantCommonExt = WebPluginUtils.setTraceTenantContext(ext.getTenantId(), ext.getTenantAppKey(),
-                    //        e.getEnvCode(), ext.getTenantCode(),
-                    //        ContextSourceEnum.JOB.getCode());
-                    //
-                    //    if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
-                    //        continue;
-                    //    }
-                    //
-                    //    calcTpsTargetJobThreadPool.execute(() -> {
-                    //        boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
-                    //        if(!tryLock) {
-                    //            return;
-                    //        }
-                    //        try {
-                    //            this.calcTpsTarget(tenantCommonExt);
-                    //        } finally {
-                    //            distributedLock.unLockSafely(lockKey);
-                    //        }
-                    //    });
-                    //}
-
                     for (TenantEnv e : ext.getEnvs()) {
                         TenantCommonExt tenantCommonExt = WebPluginUtils.setTraceTenantContext(ext.getTenantId(), ext.getTenantAppKey(),
                             e.getEnvCode(), ext.getTenantCode(),
@@ -127,7 +99,7 @@ public class CalcTpsTargetJob implements SimpleJob {
                 continue;
             }
             // 开始数据层分片
-            fastDebugThreadPool.execute(() -> {
+            reportThreadPool.execute(() -> {
                 boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
                 if(!tryLock) {
                     return;

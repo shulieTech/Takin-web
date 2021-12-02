@@ -42,8 +42,8 @@ public class CalcApplicationSummaryJob implements SimpleJob {
     private ReportTaskService reportTaskService;
 
     @Autowired
-    @Qualifier("fastDebugThreadPool")
-    private ThreadPoolExecutor fastDebugThreadPool;
+    @Qualifier("reportSummaryThreadPool")
+    private ThreadPoolExecutor reportThreadPool;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -65,7 +65,7 @@ public class CalcApplicationSummaryJob implements SimpleJob {
             for (Long reportId : reportIds) {
                 // 开始数据层分片
                 if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    fastDebugThreadPool.execute(() -> {
+                    reportThreadPool.execute(() -> {
                         WebPluginUtils.setTraceTenantContext(commonExt);
                         reportTaskService.calcApplicationSummary(reportId);
                     });
@@ -107,7 +107,7 @@ public class CalcApplicationSummaryJob implements SimpleJob {
                 continue;
             }
             // 开始数据层分片
-            fastDebugThreadPool.execute(() -> {
+            reportThreadPool.execute(() -> {
                 boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
                 if(!tryLock) {
                     return;

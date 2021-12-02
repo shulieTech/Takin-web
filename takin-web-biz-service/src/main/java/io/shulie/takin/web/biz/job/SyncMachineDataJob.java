@@ -41,8 +41,8 @@ public class SyncMachineDataJob implements SimpleJob {
     private ReportTaskService reportTaskService;
 
     @Autowired
-    @Qualifier("fastDebugThreadPool")
-    private ThreadPoolExecutor fastDebugThreadPool;
+    @Qualifier("reportMachineThreadPool")
+    private ThreadPoolExecutor reportThreadPool;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -64,7 +64,7 @@ public class SyncMachineDataJob implements SimpleJob {
             for (Long reportId : reportIds) {
                 // 开始数据层分片
                 if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    fastDebugThreadPool.execute(() -> {
+                    reportThreadPool.execute(() -> {
                         WebPluginUtils.setTraceTenantContext(commonExt);
                         reportTaskService.syncMachineData(reportId);
                     });
@@ -101,7 +101,7 @@ public class SyncMachineDataJob implements SimpleJob {
                 continue;
             }
             // 开始数据层分片
-            fastDebugThreadPool.execute(() -> {
+            reportThreadPool.execute(() -> {
                 boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
                 if(!tryLock) {
                     return;

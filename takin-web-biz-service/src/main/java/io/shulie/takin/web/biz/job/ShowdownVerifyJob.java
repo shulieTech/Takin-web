@@ -33,8 +33,8 @@ public class ShowdownVerifyJob implements SimpleJob {
     private VerifyTaskService verifyTaskService;
 
     @Autowired
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor jobThreadPool;
+    @Qualifier("showdownVerifyThreadPool")
+    private ThreadPoolExecutor showdownVerifyThreadPool;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -57,7 +57,7 @@ public class ShowdownVerifyJob implements SimpleJob {
                         if (distributedLock.checkLock(lockKey)) {
                             continue;
                         }
-                        jobThreadPool.execute(() -> {
+                        showdownVerifyThreadPool.execute(() -> {
                             boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
                             if(!tryLock) {
                                 return;

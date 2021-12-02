@@ -73,8 +73,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private SceneTaskApi sceneTaskApi;
 
     @Autowired
-    @Qualifier("fastDebugThreadPool")
-    private ThreadPoolExecutor fastDebugThreadPool;
+    @Qualifier("collectDataThreadPool")
+    private ThreadPoolExecutor collectDataThreadPool;
 
     @Override
     public List<Long> getRunningReport() {
@@ -122,7 +122,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 log.info("finish report，total data  Running Report :{}", reportId);
 
                 // 收集数据 单独线程收集
-                fastDebugThreadPool.execute(collectData(reportId,commonExt));
+                collectDataThreadPool.execute(collectData(reportId,commonExt));
 
                 // 停止报告
                 Boolean webResponse = reportService.finishReport(reportId);

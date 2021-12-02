@@ -34,6 +34,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationSwitchStatusResponse response = new ApplicationSwitchStatusResponse() {{
             setSwitchStatus(takinApplicationService.getUserSwitchStatusForVo());
         }};
+        response.setUserId(WebPluginUtils.traceUserId());
         WebPluginUtils.fillQueryResponse(response);
         return response;
     }

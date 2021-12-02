@@ -5,7 +5,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import com.pamirs.takin.entity.domain.dto.linkmanage.SystemProcessViewListDto;
-import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
+import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.TechQueryVo;
 import io.shulie.takin.web.biz.pojo.response.dashboard.ApplicationSwitchStatusResponse;
@@ -35,7 +35,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         result.setSwitchStatus(status.getSwitchStatus());
 
         //应用数量
-        ApplicationQueryParam queryParam = new ApplicationQueryParam();
+        ApplicationQueryRequest queryParam = new ApplicationQueryRequest();
         queryParam.setPageSize(-1);
         //
         Response<List<ApplicationVo>> appResponse = applicationService.getApplicationList(queryParam);

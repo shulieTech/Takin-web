@@ -35,7 +35,17 @@ public class ApplicationController {
 
     @ApiOperation("获取应用压测开关状态接口")
     @GetMapping("center/app/switch")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public ApplicationSwitchStatusResponse getAppSwitchInfo() {
+        return applicationService.getUserAppSwitchInfo();
+    }
+
+    @ApiOperation("获取应用压测开关状态接口")
+    @GetMapping("center/app/switch/un_safe")
+    public ApplicationSwitchStatusResponse getAppSwitchInfoNoAuth() {
         return applicationService.getUserAppSwitchInfo();
     }
 

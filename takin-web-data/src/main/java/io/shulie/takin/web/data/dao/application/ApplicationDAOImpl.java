@@ -21,10 +21,10 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.alibaba.excel.util.CollectionUtils;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
@@ -34,8 +34,8 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationDTO;
 import io.shulie.takin.web.amdb.bean.result.application.InstanceInfoDTO;
 import io.shulie.takin.web.amdb.bean.result.application.LibraryDTO;
-import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationAttentionListMapper;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
@@ -52,6 +52,7 @@ import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -511,6 +512,7 @@ public class ApplicationDAOImpl
 
     @Override
     public List<ApplicationDetailResult> getApplicationMntByUserIdsAndKeyword(List<Long> userIds, String keyword) {
+
         List<ApplicationMntEntity> allApplications = applicationMntMapper.getApplicationMntByUserIdsAndKeyword(userIds,keyword);
         if(CollectionUtils.isEmpty(allApplications)) {
             return Lists.newArrayList();
@@ -524,12 +526,34 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    public List<ApplicationDetailResult> queryApplicationList(String applicationName, List<String> applicationIds, List<Long> userIds) {
-        List<ApplicationMntEntity> allApplications = applicationMntMapper.queryApplicationList(applicationName,applicationIds,userIds);
-        if(CollectionUtils.isEmpty(allApplications)) {
-            return Lists.newArrayList();
+    public PagingList<ApplicationDetailResult> queryApplicationList(ApplicationQueryParam queryParam) {
+        LambdaQueryWrapper<ApplicationMntEntity> queryWrapper = new LambdaQueryWrapper<>();
+        if(StringUtils.isNotBlank(queryParam.getApplicationName())) {
+            queryWrapper.like(ApplicationMntEntity::getApplicationName,queryParam.getApplicationName());
         }
-        return DataTransformUtil.list2list(allApplications,ApplicationDetailResult.class);
+        if(CollectionUtils.isNotEmpty(queryParam.getApplicationIds())) {
+            queryWrapper.in(ApplicationMntEntity::getApplicationId,queryParam.getApplicationIds());
+        }
+        if(CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
+            queryWrapper.in(ApplicationMntEntity::getUserId,WebPluginUtils.getQueryAllowUserIdList());
+        }
+        queryWrapper.orderByDesc(ApplicationMntEntity::getApplicationId);
+        if(queryParam.getPageSize() > 0) {
+            Page<ApplicationMntEntity> page = new Page<>(queryParam.getCurrent(), queryParam.getPageSize());
+            IPage<ApplicationMntEntity> entityIPage = applicationMntMapper.selectPage(page,queryWrapper);
+            if(entityIPage.getTotal() == 0) {
+                return PagingList.empty();
+            }
+            return PagingList.of(DataTransformUtil.list2list(entityIPage.getRecords(),ApplicationDetailResult.class),entityIPage.getTotal());
+        }else {
+            // 查询所有
+            List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(queryWrapper);
+            if(CollectionUtils.isEmpty(applicationMntEntities)) {
+                return PagingList.empty();
+            }
+           return PagingList.of(DataTransformUtil.list2list(applicationMntEntities,ApplicationDetailResult.class),applicationMntEntities.size());
+        }
+
     }
 
     @Override

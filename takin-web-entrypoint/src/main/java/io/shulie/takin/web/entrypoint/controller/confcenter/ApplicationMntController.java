@@ -1,13 +1,12 @@
 package io.shulie.takin.web.entrypoint.controller.confcenter;
 
-import java.util.Map;
-
 import javax.validation.Valid;
 
 import com.pamirs.takin.common.ResponseError;
 import com.pamirs.takin.common.ResponseOk;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
+import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationCreateRequest;
 import io.shulie.takin.web.biz.service.ConfCenterService;
 import io.shulie.takin.web.common.constant.ApiUrls;
@@ -83,9 +82,10 @@ public class ApplicationMntController {
      */
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_APPLICATIONINFO_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> queryApplicationinfo(@RequestBody Map<String, Object> paramMap) {
+    public ResponseEntity<Object> queryApplicationinfo(@RequestBody ApplicationQueryRequest request) {
         try {
-            return ResponseOk.create(confCenterService.queryApplicationList(paramMap));
+
+            return ResponseOk.create(confCenterService.queryApplicationList(request));
         } catch (Exception e) {
             LOGGER.error("ApplicationMntController.queryApplicationinfo 查询异常{}", e);
             return ResponseError.create(1010100102, "查询应用信息异常");

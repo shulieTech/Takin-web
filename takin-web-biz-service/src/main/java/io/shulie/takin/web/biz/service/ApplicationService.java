@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
-import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
+import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
@@ -48,9 +48,9 @@ public interface ApplicationService {
      * @param param -
      * @return -
      */
-    Response<List<ApplicationVo>> getApplicationList(ApplicationQueryParam param);
+    Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequest param);
 
-    List<ApplicationVo> getApplicationListVo(ApplicationQueryParam param);
+    List<ApplicationVo> getApplicationListVo(ApplicationQueryRequest param);
 
     /**
      * 添加接入状态进行过滤
@@ -59,7 +59,7 @@ public interface ApplicationService {
      * @param accessStatus -
      * @return -
      */
-    Response getApplicationList(ApplicationQueryParam param, Integer accessStatus);
+    Response getApplicationList(ApplicationQueryRequest param, Integer accessStatus);
 
     /**
      * 应用列表（全量应用列表，无鉴权）

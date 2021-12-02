@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
@@ -244,12 +245,10 @@ public interface ApplicationDAO {
 
     /**
      * 应用列表
-     * @param applicationName
-     * @param applicationIds
-     * @param userIds
+     * @param queryParam
      * @return
      */
-    List<ApplicationDetailResult> queryApplicationList(String applicationName, List<String> applicationIds,List<Long> userIds);
+    PagingList<ApplicationDetailResult> queryApplicationList(ApplicationQueryParam queryParam);
 
     /**
      * 是否重名

@@ -412,6 +412,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     }
 
     private String[] getTpsConfigLength(List<String> configs) {
+        String[] min = null;
         for (String config : configs) {
             if (StringUtils.isBlank(config)) {
                 continue;
@@ -420,9 +421,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
             if (array == null) {
                 continue;
             }
-            return array.getTime();
+
+            if(min == null || min.length > array.getTime().length) {
+                min = array.getTime();
+            }
         }
-        return null;
+        return min;
     }
 
     private BigDecimal avg(BigDecimal num1, Integer count) {

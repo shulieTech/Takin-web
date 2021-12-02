@@ -62,10 +62,12 @@ import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.common.vo.scene.BaffleAppVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -223,8 +225,26 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         }
         // 缓存 报告id
         cacheReportId(startResult, param);
+        // 入队列
+        pushTaskToRedis(startResult);
 
         return startResult;
+    }
+
+
+    private void pushTaskToRedis(SceneActionResp startResult){
+        final Long reportId = startResult.getData();
+        if (reportId!=null){
+            SceneTaskDto taskDto = new SceneTaskDto();
+            taskDto.setTenantId(WebPluginUtils.traceTenantId());
+            taskDto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            taskDto.setEnvCode(WebPluginUtils.traceEnvCode());
+            taskDto.setTenantCode(WebPluginUtils.traceTenantCode());
+            taskDto.setSource(ContextSourceEnum.JOB.getCode());
+            taskDto.setReportId(reportId);
+            //任务添加到redis队列
+            redisTemplate.opsForList().leftPush(WebRedisKeyConstant.SCENE_REPORTID_KEY,JSON.toJSONString(taskDto));
+        }
     }
 
     /**

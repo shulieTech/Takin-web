@@ -2,24 +2,21 @@ package io.shulie.takin.web.biz.job;
 
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+
+import com.alibaba.fastjson.JSON;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
-import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.biz.service.DistributedLock;
+import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
-import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
-import io.shulie.takin.web.common.enums.ContextSourceEnum;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
+import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -43,73 +40,58 @@ public class FinishReportJob implements SimpleJob {
     private ThreadPoolExecutor reportThreadPool;
 
     @Autowired
-    private DistributedLock distributedLock;
+    @Qualifier("redisTemplate")
+    private RedisTemplate redisTemplate;
 
     @Override
     public void execute(ShardingContext shardingContext) {
-
         long start = System.currentTimeMillis();
-        if(WebPluginUtils.isOpenVersion()) {
-            // 私有化 + 开源 根据 报告id进行分片
-            List<Long> reportIds =  reportTaskService.getRunningReport();
-            log.debug("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
-            for (Long reportId : reportIds) {
-                // 开始数据层分片
-                if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    reportThreadPool.execute(() -> reportTaskService.finishReport(reportId,WebPluginUtils.setTraceTenantContext(WebPluginUtils.traceTenantId(),WebPluginUtils.traceTenantAppKey(),WebPluginUtils.traceEnvCode(),
-                        WebPluginUtils.traceTenantCode(), ContextSourceEnum.JOB.getCode())));
-                }
-            }
-        }else {
-            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-            // saas 根据租户进行分片
-            for (TenantInfoExt ext : tenantInfoExts) {
-                // 开始数据层分片
-                if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    // 根据环境 分线程
-                    for (TenantEnv e : ext.getEnvs()) {
-                        final TenantCommonExt commonExt = WebPluginUtils.setTraceTenantContext(
-                            ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(), ext.getTenantCode(),
-                            ContextSourceEnum.JOB.getCode());
-                        this.finishReport(commonExt);
+        final Boolean openVersion = WebPluginUtils.isOpenVersion();
+        //任务开始
+        while (true){
+            List<SceneTaskDto> taskDtoList = getTaskFromRedis();
+            if (taskDtoList == null) { break; }
+            for (SceneTaskDto taskDto : taskDtoList) {
+                Long reportId = taskDto.getReportId();
+                if(openVersion) {
+                    // 私有化 + 开源 根据 报告id进行分片
+                    // 开始数据层分片
+                    if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                        reportThreadPool.execute(() -> reportTaskService.finishReport(reportId,taskDto));
                     }
-
+                }else {
+                    // saas 根据租户进行分片
+                    // 开始数据层分片
+                    if (taskDto.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                        this.finishReport(taskDto);
+                    }
                 }
             }
         }
         log.debug("finishReport 执行时间:{}", System.currentTimeMillis() - start);
     }
 
-    private void finishReport(TenantCommonExt commonExt) {
-        WebPluginUtils.setTraceTenantContext(commonExt);
-        List<Long> reportIds = reportTaskService.getRunningReport();
-        if (CollectionUtils.isEmpty(reportIds)){
-            log.debug("暂无压测中的报告！");
-            return;
+    private List<SceneTaskDto> getTaskFromRedis() {
+        Object o = redisTemplate.opsForList().range(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,-1);
+        List<SceneTaskDto> taskDtoList = null;
+        try {
+            taskDtoList = JSON.parseArray(o.toString(),SceneTaskDto.class);
+        }catch (Exception e){
+            log.error("格式有误，序列化失败！{}",o);
         }
-        log.debug("获取租户【{}】【{}】正在压测中的报告:{}", commonExt.getTenantId(),
-            commonExt.getEnvCode(), JsonHelper.bean2Json(reportIds));
-        for (Long reportId : reportIds) {
-            // 分布式锁
-            String lockKey = JobRedisUtils.getJobRedis(commonExt.getTenantId(),commonExt.getEnvCode(),"finishReport#"+reportId);
-            if (distributedLock.checkLock(lockKey)) {
-                continue;
-            }
+        if (CollectionUtils.isEmpty(taskDtoList)){
+            return null;
+        }
+        return taskDtoList;
+    }
 
-            // 开始数据分片
-            reportThreadPool.execute(() -> {
-                boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
-                if(!tryLock) {
-                    return;
-                }
-                try {
-                    WebPluginUtils.setTraceTenantContext(commonExt);
-                    reportTaskService.finishReport(reportId,commonExt);
-                } finally {
-                    distributedLock.unLockSafely(lockKey);
-                }
-            });
-        }
+    private void finishReport(SceneTaskDto taskDto) {
+        log.debug("获取租户【{}】【{}】正在压测中的报告:{}", taskDto.getTenantId(),
+            taskDto.getEnvCode(), taskDto.getReportId());
+        reportThreadPool.execute(() -> {
+            WebPluginUtils.setTraceTenantContext(taskDto);
+            reportTaskService.finishReport(taskDto.getReportId(),taskDto);
+        });
 
     }
 }

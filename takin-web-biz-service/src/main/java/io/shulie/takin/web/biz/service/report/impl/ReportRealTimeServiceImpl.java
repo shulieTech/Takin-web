@@ -144,7 +144,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         BiMap<Integer, Integer> node = HashBiMap.create();
         AtomicInteger integer = new AtomicInteger(0);
         List<ReportTraceDetailDTO> dto = this.coverEntryList(0L, Lists.newArrayList(),
-                rpcStack.getRpcEntries(), vos, node, -1, integer);
+            rpcStack.getRpcEntries(), vos, node, -1, integer);
 
         List<ReportTraceDetailDTO> result = Lists.newArrayList();
         this.coverResult(dto, amdbReportTraceId, result);
@@ -169,8 +169,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         if (id == 0) {
             if (dtoList.get(0).getNextNodes() != null) {
                 dtoList.get(0).getNextNodes().forEach(dto ->
-                        dto.setNextNodes(dto.getNextNodes() != null
-                                && dto.getNextNodes().size() > 0 ? Lists.newArrayList() : null));
+                    dto.setNextNodes(dto.getNextNodes() != null
+                        && dto.getNextNodes().size() > 0 ? Lists.newArrayList() : null));
             }
             result.addAll(dtoList);
             return;
@@ -192,15 +192,15 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     }
 
     private List<ReportTraceDetailDTO> coverEntryList(long startTime, List<String> convertedEntriesList,
-                                                      List<RpcEntry> rpcEntries, List<ReportTraceDetailDTO> vos,
-                                                      BiMap<Integer, Integer> node, Integer id, AtomicInteger integer) {
+        List<RpcEntry> rpcEntries, List<ReportTraceDetailDTO> vos,
+        BiMap<Integer, Integer> node, Integer id, AtomicInteger integer) {
         if (CollectionUtils.isEmpty(rpcEntries)) {
             return null;
         }
         return rpcEntries.stream().map(rpcEntry -> {
             String convertedEntriesKey = rpcEntry.getAppName() + "|" + rpcEntry.getServiceName() + "|" +
-                    rpcEntry.getMethodName() + "|" + rpcEntry.getRpcType() + "|" + rpcEntry.getMiddlewareName() +
-                    "|" + rpcEntry.getRpcId();
+                rpcEntry.getMethodName() + "|" + rpcEntry.getRpcType() + "|" + rpcEntry.getMiddlewareName() +
+                "|" + rpcEntry.getRpcId();
             if (convertedEntriesList.contains(convertedEntriesKey)) {
                 return null;
             }
@@ -215,8 +215,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             long offset = 0L;
             for (RpcEntry entry : rpcEntries) {
                 String tempKey = entry.getAppName() + "|" + entry.getServiceName() + "|" +
-                        entry.getMethodName() + "|" + entry.getRpcType() + "|" + entry.getMiddlewareName() +
-                        "|" + entry.getRpcId();
+                    entry.getMethodName() + "|" + entry.getRpcType() + "|" + entry.getMiddlewareName() +
+                    "|" + entry.getRpcId();
                 if (tempKey.equals(convertedEntriesKey)) {
                     break;
                 }
@@ -242,6 +242,16 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
                 reportTraceDetailDTO.setNodeIp(rpcEntry.getServerIp());
             }
             reportTraceDetailDTO.setResponse(rpcEntry.getResponse());
+
+            // by wuya 20211025
+            reportTraceDetailDTO.setMethodName(rpcEntry.getMethodName());
+            reportTraceDetailDTO.setLogType(rpcEntry.getLogType());
+            reportTraceDetailDTO.setLogTypeName(TraceNodeLogTypeEnum.judgeTraceNodeLogType(rpcEntry.getLogType()).getDesc());
+            reportTraceDetailDTO.setAsync(rpcEntry.isAsync());
+            reportTraceDetailDTO.setAsyncName(rpcEntry.isAsync()? TraceNodeAsyncEnum.ASYNC.getDesc():TraceNodeAsyncEnum.SYNCHRONIZE.getDesc());
+            reportTraceDetailDTO.setMiddlewareName(rpcEntry.getMiddlewareName());
+
+
             reportTraceDetailDTO.setNodeSuccess(true);
             if (!reportTraceDetailDTO.getSucceeded()) {
                 // 向上递归
@@ -249,9 +259,9 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             }
             vos.add(reportTraceDetailDTO);
             reportTraceDetailDTO.setNextNodes(
-                    coverEntryList(reportTraceDetailDTO.getOffsetStartTime(), convertedEntriesList,
-                            rpcEntry.getRpcEntries(), vos, node,
-                            reportTraceDetailDTO.getId(), integer));
+                coverEntryList(reportTraceDetailDTO.getOffsetStartTime(), convertedEntriesList,
+                    rpcEntry.getRpcEntries(), vos, node,
+                    reportTraceDetailDTO.getId(), integer));
             //rpcEntry = null;
             return reportTraceDetailDTO;
         }).filter(Objects::nonNull).collect(Collectors.toList());

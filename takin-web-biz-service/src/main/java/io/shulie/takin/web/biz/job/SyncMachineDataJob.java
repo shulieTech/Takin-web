@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSON;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
@@ -32,7 +33,7 @@ import org.springframework.stereotype.Component;
     cron = "*/10 * * * * ?",
     description = "同步应用基础信息")
 @Slf4j
-public class SyncMachineDataJob implements SimpleJob {
+public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
 
     @Autowired
     private ReportTaskService reportTaskService;
@@ -40,10 +41,6 @@ public class SyncMachineDataJob implements SimpleJob {
     @Autowired
     @Qualifier("reportMachineThreadPool")
     private ThreadPoolExecutor reportThreadPool;
-
-    @Autowired
-    @Qualifier("redisTemplate")
-    private RedisTemplate redisTemplate;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -71,20 +68,6 @@ public class SyncMachineDataJob implements SimpleJob {
 
 
         log.debug("syncMachineData 执行时间:{}", System.currentTimeMillis() - start);
-    }
-
-    private List<SceneTaskDto> getTaskFromRedis() {
-        Object o = redisTemplate.opsForList().range(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,-1);
-        List<SceneTaskDto> taskDtoList = null;
-        try {
-            taskDtoList = JSON.parseArray(o.toString(),SceneTaskDto.class);
-        }catch (Exception e){
-            log.error("格式有误，序列化失败！{}",o);
-        }
-        if (CollectionUtils.isEmpty(taskDtoList)){
-            return null;
-        }
-        return taskDtoList;
     }
 
     private void syncMachineData(SceneTaskDto taskDto) {

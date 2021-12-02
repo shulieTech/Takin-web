@@ -199,6 +199,7 @@ public class TagManageDAOImpl implements TagManageDAO {
             List<TagManageEntity> tagManageList = getByTagNameAndTagType(tagManageParam.getTagName(),tagManageParam.getTagType());
             if (CollectionUtils.isNotEmpty(tagManageList)) {
                 result.setId(tagManageList.get(0).getId());
+                tags.add(result);
                 continue;
             }
             TagManageEntity tagManageEntity = new TagManageEntity();

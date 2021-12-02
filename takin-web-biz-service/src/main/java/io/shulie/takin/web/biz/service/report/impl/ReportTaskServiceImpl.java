@@ -157,11 +157,18 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 //压测结束，生成压测报告异常，解锁报告
                 reportService.unLockReport(reportId);
                 log.error("Unlock Report Success, reportId={} ,errorMsg= {}...", reportId, e.getMessage());
+            } finally {
+                removeReportKey(reportId, commonExt);
             }
-            redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,JSON.toJSONString(new SceneTaskDto(commonExt,reportId)));
+
         } catch (Exception e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());
         }
+    }
+
+    private void removeReportKey(Long reportId, TenantCommonExt commonExt) {
+        redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,JSON.toJSONString(new SceneTaskDto(
+            commonExt, reportId)));
     }
 
     /**

@@ -27,9 +27,9 @@ public class E2ePluginUtils {
     /**
      * 根据租户ID 获取 e2e 模块的异常配置信息
      */
-    public static List<E2eExceptionConfigInfoExt> getExceptionConfig(Long tenantId, String envCode) {
+    public static List<E2eExceptionConfigInfoExt> getExceptionConfig(Long tenantId, String envCode, String ...service) {
         if (Objects.nonNull(inspectionExtApi)) {
-            return inspectionExtApi.getExceptionConfig(tenantId, envCode);
+            return inspectionExtApi.getExceptionConfig(tenantId, envCode, service);
         }
         return Lists.newArrayList();
     }

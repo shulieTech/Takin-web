@@ -78,7 +78,7 @@ public class ThreadPoolConfig {
     public ThreadPoolExecutor reportSummaryThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-summary-%d").build();
         return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
-            new ThreadPoolExecutor.DiscardOldestPolicy());
+            new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
@@ -90,7 +90,7 @@ public class ThreadPoolConfig {
     public ThreadPoolExecutor reportTpsThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-tps-%d").build();
         return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
-            new ThreadPoolExecutor.DiscardOldestPolicy());
+            new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
@@ -102,7 +102,7 @@ public class ThreadPoolConfig {
     public ThreadPoolExecutor reportFinishThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-finish-%d").build();
         return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
-            new ThreadPoolExecutor.DiscardOldestPolicy());
+            new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
@@ -114,7 +114,7 @@ public class ThreadPoolConfig {
     public ThreadPoolExecutor reportMachineThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-machine-%d").build();
         return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
-            new ThreadPoolExecutor.DiscardOldestPolicy());
+            new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**

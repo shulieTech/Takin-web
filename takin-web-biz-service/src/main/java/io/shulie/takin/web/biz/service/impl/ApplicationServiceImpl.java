@@ -418,13 +418,13 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             List<ApplicationNodeResult> nodeResults = applicationNodeResultMap.get(result.getApplicationName());
             List<ApplicationResult> appResults = appResultMap.get(result.getApplicationName());
             if(CollectionUtils.isEmpty(nodeResults) || CollectionUtils.isEmpty(appResults)) {
-                return false;
+                return true;
             }
             if (!appResults.get(0).getInstanceInfo().getInstanceOnlineAmount().equals(result.getNodeNum())
                 || nodeResults.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count() > 1) {
-               return false;
+               return true;
             }
-            return true;
+            return false;
         }).count();
     }
 

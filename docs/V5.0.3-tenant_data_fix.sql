@@ -67,10 +67,6 @@ update t_application_ds_cache_manage set tenant_id = 10 and env_code = 'test' wh
 update t_application_ds_db_manage set tenant_id = 10 and env_code = 'test' where  customer_id = 9
 
 -- todo 申通
--- 更新 t_scene_link_relate
-UPDATE t_scene_link_relate t1
-    LEFT JOIN t_scene t2 ON t1.SCENE_ID = t2.id
-    SET t1.env_code = t2.env_code ,t1.tenant_id = t2.TENANT_ID;
 
 ------脚本相关------
 -- t_script_debug
@@ -90,9 +86,6 @@ update t_script_manage set tenant_id = 5 and env_code = 'prod' where  customer_i
 update t_script_debug set tenant_id = 10 and env_code = 'test' where  customer_id = 9
 update t_script_manage set tenant_id = 10 and env_code = 'test' where  customer_id = 9
 
-UPDATE t_script_manage_deploy t1
-    LEFT JOIN t_script_manage t2 ON t1.script_id = t2.id
-    SET t1.env_code = t2.env_code ,t1.tenant_id = t2.TENANT_ID;
 -- t_shadow_job_config
 ---无涯
 
@@ -223,6 +216,18 @@ UPDATE t_fast_debug_result t1
     LEFT JOIN t_business_link_manage_table t2 ON t1.business_link_name = t2.LINK_NAME AND t1.customer_id=t2.customer_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
+UPDATE t_script_manage_deploy t1
+    LEFT JOIN t_script_manage t2 ON t1.script_id = t2.id
+    SET t1.env_code = t2.env_code;
+
+UPDATE t_script_debug t1
+    LEFT JOIN t_script_manage_deploy t2 ON t1.script_deploy_id = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
+UPDATE t_script_file_ref t1
+    LEFT JOIN t_script_manage_deploy t2 ON t1.script_deploy_id = t2.id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+
 -- t_file_manage
 UPDATE t_file_manage t1
     LEFT JOIN t_script_file_ref t2 ON t1.id = t2.file_id
@@ -306,12 +311,17 @@ UPDATE t_agent_config m
     LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=u.id
     SET m.env_code = IFNULL(fix.env_code,'test');
 
-
+-- 更新 t_scene_link_relate
+UPDATE t_scene_link_relate t1
+    LEFT JOIN t_scene t2 ON t1.SCENE_ID = t2.id
+    SET t1.env_code = t2.env_code;
 
 -- liuchuan end
 
 -- tenant_id
-update t_application_ds_manage ds set ds.tenant_id=IFNULL((select tenant_id from t_tro_user where id= ds.user_id),1);
+UPDATE t_application_ds_manage t1
+    LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.APPLICATION_ID
+    SET t1.tenant_id = IFNULL(t2.tenant_id,1);
 update t_application_mnt app set app.tenant_id=IFNULL((select tenant_id from t_tro_user where id= app.user_id),1);
 update t_application_node_probe probe set probe.tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = probe.application_name and customer_id=probe.customer_id),1);
 update t_black_list set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
@@ -320,6 +330,15 @@ update t_fast_debug_config_info set tenant_id=IFNULL((select tenant_id from t_bu
 update t_fast_debug_result set tenant_id=IFNULL((select tenant_id from t_fast_debug_config_info where id= config_id),1);
 update t_fast_debug_exception set tenant_id=IFNULL((select tenant_id from t_fast_debug_result where id= result_id),1);
 update t_script_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+UPDATE t_script_manage_deploy t1
+    LEFT JOIN t_script_manage t2 ON t1.script_id = t2.id
+    SET t1.tenant_id = t2.tenant_id;
+UPDATE t_script_debug t1
+    LEFT JOIN t_script_manage_deploy t2 ON t1.script_deploy_id = t2.id
+    SET t1.tenant_id = IFNULL(t2.tenant_id,1);
+UPDATE t_script_file_ref t1
+    LEFT JOIN t_script_manage_deploy t2 ON t1.script_deploy_id = t2.id
+    SET t1.tenant_id = IFNULL(t2.tenant_id,1);
 update t_file_manage t1
     LEFT JOIN t_script_file_ref t2 ON t1.id = t2.file_id
     LEFT JOIN t_script_manage_deploy t3 ON t3.id = t2.script_deploy_id
@@ -346,7 +365,10 @@ update t_ops_script_execute_result t set t.tenant_id=IFNULL((select tenant_id fr
 update t_ops_script_file t set t.tenant_id=IFNULL((select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_deleted=0),1);
 update t_performance_base_data t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = t.app_name),1);
 update t_performance_criteria_config t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_ID = t.app_id),1);
-update t_application_api_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+-- 更新 t_scene_link_relate
+UPDATE t_scene_link_relate t1
+    LEFT JOIN t_scene t2 ON t1.SCENE_ID = t2.id
+    SET t1.tenant_id = t2.tenant_id;
 COMMIT ;
 -- caijy end
 
@@ -419,11 +441,16 @@ update e_patrol_scene_check set env_code='test',tenant_id=1;
 -- 兮曦 --
 
 -- 额外 租户期间增加的表
-update t_mq_config_template set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
--- update t_application_ds_cache_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
--- update t_application_ds_db_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-update t_application_ds_db_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
-
+-- update t_mq_config_template set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
+UPDATE t_application_ds_db_table m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.app_id SET m.env_code = IFNULL(u.env_code,'test'),m.tenant_id = IFNULL(u.tenant_id,1);
+UPDATE t_application_ds_db_manage m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = IFNULL(u.env_code,'test'),m.tenant_id = IFNULL(u.tenant_id,1);
+UPDATE t_shadow_mq_consumer m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.application_id SET m.env_code = IFNULL(u.env_code,'test'),m.tenant_id = IFNULL(u.tenant_id,1);
+UPDATE t_application_api_manage m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = IFNULL(u.env_code,'test'),m.tenant_id=IFNULL(u.tenant_id,1);
+UPDATE t_application_ds_cache_manage m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = IFNULL(u.env_code,'test'),m.tenant_id=IFNULL(u.tenant_id,1);
+UPDATE t_pradar_zk_config set TENANT_ID = -1 and env_code = 'system';
+UPDATE t_trace_manage_deploy t1
+    LEFT JOIN t_trace_manage t2 ON t1.trace_manage_id = t2.id
+    SET t1.env_code = t2.env_code,t1.tenant_id = t2.TENANT_ID;
 -- 大表最后数据迁移
 -- t_fast_debug_stack_info
 UPDATE t_fast_debug_stack_info t1
@@ -562,6 +589,12 @@ DROP INDEX `name_version`;
 ALTER TABLE t_fast_debug_config_info DROP INDEX `name`;
 ALTER TABLE t_application_api_manage DROP INDEX IF EXISTS `APPLICATION_NAME`;
 ALTER TABLE t_datasource_tag_ref DROP INDEX `index_datasourceId_tagId`;
+
+ALTER TABLE t_app_remote_call
+DROP INDEX 	`idx_tenant_env`,
+ADD  UNIQUE KEY `idx_interface_name_app_tenant_env`(`APPLICATION_ID`,`interface_name`,`tenant_id`,`env_code`);
+
+
 -- 调试工具结果
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_trace_id` ( `trace_id`);
 ALTER TABLE t_fast_debug_result ADD INDEX `idx_config_Id` (`config_Id`);

@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.job;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import com.alibaba.fastjson.JSON;
@@ -40,6 +42,9 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
     @Qualifier("reportFinishThreadPool")
     private ThreadPoolExecutor reportThreadPool;
 
+    private static Map<Long, Object> runningTasks = new ConcurrentHashMap<>();
+    private static Object EMPTY = new Object();
+
     @Override
     public void execute(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
@@ -54,27 +59,40 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                     // 私有化 + 开源 根据 报告id进行分片
                     // 开始数据层分片
                     if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        reportThreadPool.execute(() -> reportTaskService.finishReport(reportId,taskDto));
+                        Object task = runningTasks.putIfAbsent(reportId, EMPTY);
+                        if (task == null) {
+                            reportThreadPool.execute(() -> {
+                                try {
+                                    reportTaskService.finishReport(reportId,taskDto);
+                                } catch (Throwable e) {
+                                    log.error("execute CalcTpsTargetJob occured error. reportId={}", reportId, e);
+                                } finally {
+                                    runningTasks.remove(reportId);
+                                }
+                            });
+                        }
                     }
                 }else {
                     // saas 根据租户进行分片
                     // 开始数据层分片
                     if (taskDto.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        this.finishReport(taskDto);
+                        Object task = runningTasks.putIfAbsent(taskDto.getTenantId(), EMPTY);
+                        if (task == null) {
+                            reportThreadPool.execute(() -> {
+                                try {
+                                    WebPluginUtils.setTraceTenantContext(taskDto);
+                                    reportTaskService.finishReport(taskDto.getReportId(),taskDto);
+                                } catch (Throwable e) {
+                                    log.error("execute CalcTpsTargetJob occured error. reportId={},tenantId={}", reportId,taskDto.getTenantId(), e);
+                                } finally {
+                                    runningTasks.remove(taskDto.getTenantId());
+                                }
+                            });
+                        }
                     }
                 }
             }
         }
         log.debug("finishReport 执行时间:{}", System.currentTimeMillis() - start);
-    }
-
-    private void finishReport(SceneTaskDto taskDto) {
-        log.debug("获取租户【{}】【{}】正在压测中的报告:{}", taskDto.getTenantId(),
-            taskDto.getEnvCode(), taskDto.getReportId());
-        reportThreadPool.execute(() -> {
-            WebPluginUtils.setTraceTenantContext(taskDto);
-            reportTaskService.finishReport(taskDto.getReportId(),taskDto);
-        });
-
     }
 }

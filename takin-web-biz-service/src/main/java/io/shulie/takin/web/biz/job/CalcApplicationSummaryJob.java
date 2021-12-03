@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.job;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import com.alibaba.fastjson.JSON;
@@ -41,6 +43,9 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
     @Qualifier("reportSummaryThreadPool")
     private ThreadPoolExecutor reportThreadPool;
 
+    private static Map<Long, Object> runningTasks = new ConcurrentHashMap<>();
+    private static Object EMPTY = new Object();
+
     @Override
     public void execute(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
@@ -51,36 +56,43 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
             for (SceneTaskDto taskDto : taskDtoList) {
                 Long reportId = taskDto.getReportId();
                 if (openVersion){
-                    // 临时做的开关 现在已不用
-                    //if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_REPORT_OPEN_TASK)) {
-                    //    return;
-                    //}
-                    // 私有化 + 开源 根据 报告id进行分片
-                    log.debug("获取正在压测中的报告:{}", reportId);
                     // 开始数据层分片
                     if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        reportThreadPool.execute(() -> {
-                            WebPluginUtils.setTraceTenantContext(taskDto);
-                            reportTaskService.calcApplicationSummary(reportId);
-                        });
+                        Object task = runningTasks.putIfAbsent(reportId, EMPTY);
+                        if (task == null) {
+                            reportThreadPool.execute(() -> {
+                                try {
+                                    reportTaskService.calcApplicationSummary(reportId);
+                                } catch (Throwable e) {
+                                    log.error("execute CalcApplicationSummaryJob occured error. reportId={}", reportId, e);
+                                } finally {
+                                    runningTasks.remove(reportId);
+                                }
+                            });
+                        }
                     }
                 }else {
                     if (taskDto.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        this.calcApplicationSummary(taskDto);
+                        Object task = runningTasks.putIfAbsent(taskDto.getTenantId(), EMPTY);
+                        if (task == null) {
+                            // 开始数据层分片
+                            reportThreadPool.execute(() -> {
+                                try {
+                                    WebPluginUtils.setTraceTenantContext(taskDto);
+                                    reportTaskService.calcApplicationSummary(taskDto.getReportId());
+                                } catch (Throwable e) {
+                                    log.error("execute CalcApplicationSummaryJob occured error. reportId={},tenantId={}",reportId, taskDto.getTenantId(), e);
+                                } finally {
+                                    runningTasks.remove(taskDto.getTenantId());
+                                }
+                            });
+                        }
                     }
                 }
             }
         }
 
         log.debug("calcApplicationSummaryJob 执行时间:{}", System.currentTimeMillis() - start);
-    }
-
-    private void calcApplicationSummary(SceneTaskDto taskDto) {
-        // 开始数据层分片
-        reportThreadPool.execute(() -> {
-            WebPluginUtils.setTraceTenantContext(taskDto);
-            reportTaskService.calcApplicationSummary(taskDto.getReportId());
-        });
     }
 
 }

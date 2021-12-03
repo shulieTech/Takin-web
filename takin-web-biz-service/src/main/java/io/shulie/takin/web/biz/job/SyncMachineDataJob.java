@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.job;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import com.alibaba.fastjson.JSON;
@@ -42,6 +44,10 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
     @Qualifier("reportMachineThreadPool")
     private ThreadPoolExecutor reportThreadPool;
 
+
+    private static Map<Long, Object> runningTasks = new ConcurrentHashMap<>();
+    private static Object EMPTY = new Object();
+
     @Override
     public void execute(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
@@ -53,27 +59,40 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
                 Long reportId = taskDto.getReportId();
                 if (openVersion){
                     if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        reportThreadPool.execute(() -> {
-                            WebPluginUtils.setTraceTenantContext(taskDto);
-                            reportTaskService.syncMachineData(reportId);
-                        });
+                        Object task = runningTasks.putIfAbsent(reportId, EMPTY);
+                        if (task == null) {
+                            reportThreadPool.execute(() -> {
+                                try {
+                                    reportTaskService.syncMachineData(reportId);
+                                } catch (Throwable e) {
+                                    log.error("execute SyncMachineDataJob occured error. reportId= {}", reportId, e);
+                                } finally {
+                                    runningTasks.remove(reportId);
+                                }
+                            });
+                        }
                     }
                 }else {
                     if (taskDto.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        this.syncMachineData(taskDto);
+
+                        Object task = runningTasks.putIfAbsent(taskDto.getTenantId(), EMPTY);
+                        if (task == null) {
+                            reportThreadPool.execute(() -> {
+                                try {
+                                    WebPluginUtils.setTraceTenantContext(taskDto);
+                                    reportTaskService.syncMachineData(taskDto.getReportId());
+                                } catch (Throwable e) {
+                                    log.error("execute SyncMachineDataJob occured error. reportId= {},tenantId={}",reportId,taskDto.getTenantId(), e);
+                                } finally {
+                                    runningTasks.remove(taskDto.getTenantId());
+                                }
+                            });
+                        }
                     }
                 }
             }
         }
 
-
         log.debug("syncMachineData 执行时间:{}", System.currentTimeMillis() - start);
-    }
-
-    private void syncMachineData(SceneTaskDto taskDto) {
-        reportThreadPool.execute(() -> {
-            WebPluginUtils.setTraceTenantContext(taskDto);
-            reportTaskService.syncMachineData(taskDto.getReportId());
-        });
     }
 }

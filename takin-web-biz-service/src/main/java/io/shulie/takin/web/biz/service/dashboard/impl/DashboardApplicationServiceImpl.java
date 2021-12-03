@@ -6,17 +6,21 @@ import com.pamirs.takin.common.constant.AppSwitchEnum;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.DashboardExceptionCode;
 import io.shulie.takin.web.biz.pojo.response.dashboard.AppPressureSwitchSetResponse;
+import io.shulie.takin.web.biz.pojo.response.dashboard.ApplicationStatusResponse;
 import io.shulie.takin.web.biz.pojo.response.dashboard.ApplicationSwitchStatusResponse;
-import io.shulie.takin.web.biz.service.dashboard.ApplicationService;
+import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.biz.service.dashboard.DashboardApplicationService;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service(value = "dashboard-ApplicationServiceImpl")
-public class ApplicationServiceImpl implements ApplicationService {
+public class DashboardApplicationServiceImpl implements DashboardApplicationService {
 
     private static final String NEED_VERIFY_USER_MAP = "NEED_VERIFY_USER_MAP";
     private static final String PRADAR_SWITCH_STATUS = "PRADAR_SWITCH_STATUS_";
@@ -27,12 +31,14 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Resource
     AgentConfigCacheManager agentConfigCacheManager;
     @Resource
-    io.shulie.takin.web.biz.service.ApplicationService takinApplicationService;
+    private ApplicationService applicationService;
+    @Autowired
+    private ApplicationDAO applicationDAO;
 
     @Override
     public ApplicationSwitchStatusResponse getUserAppSwitchInfo() {
         ApplicationSwitchStatusResponse response = new ApplicationSwitchStatusResponse() {{
-            setSwitchStatus(takinApplicationService.getUserSwitchStatusForVo());
+            setSwitchStatus(applicationService.getUserSwitchStatusForVo());
         }};
         response.setUserId(WebPluginUtils.traceUserId());
         WebPluginUtils.fillQueryResponse(response);
@@ -73,6 +79,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         agentConfigCacheManager.evictPressureSwitch();
         return result;
+    }
+
+    @Override
+    public ApplicationStatusResponse getAppStatusCount() {
+        ApplicationStatusResponse response = new ApplicationStatusResponse();
+        response.setApplicationNum(applicationDAO.getApplicationCount());
+        response.setAccessErrorNum(applicationService.getAccessErrorNum());
+        return response;
     }
 
     /**

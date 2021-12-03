@@ -42,7 +42,13 @@
 
     <select id="getAllTenantApp" resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">
         select APPLICATION_NAME,tenant_id,env_code from  t_application_mnt
-        where tenant_id = #{tenantId,jdbcType=VARCHAR}  and env_code = #{envCode,jdbcType=VARCHAR}
+        <where>
+            <if test="ext != null and ext.size() > 0">
+                <foreach collection="ext" item="item" open="(" close=")" separator="and">
+                    tenant_id = #{item.tenantId}  and env_code = #{item.envCode}
+                </foreach>
+            </if>
+        </where>
     </select>
     <select id="getApplicationByIdWithInterceptorIgnore"
             resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">

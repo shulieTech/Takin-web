@@ -794,7 +794,6 @@ public class WhiteListServiceImpl implements WhiteListService {
                 : Lists.newArrayList());
         // all
         ApplicationQueryParam queryParam = new ApplicationQueryParam();
-        queryParam.setTenantId(WebPluginUtils.traceTenantId());
         List<String> allAppNames = applicationDAO.getAllApplicationName(queryParam);
         vo.setAllAppNames(allAppNames);
         return vo;

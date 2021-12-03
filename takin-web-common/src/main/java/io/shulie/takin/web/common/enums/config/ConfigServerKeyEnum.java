@@ -109,6 +109,11 @@ public enum ConfigServerKeyEnum implements AppConstants {
     AGENT_HTTP_UPDATE_VERSION("agent.http.update.version", "agent.http.update.version", YES),
 
     /**
+     * 每个租户在定时任务中允许执行的最大线程数
+     */
+    PER_TENANT_ALLOW_TASK_THREADS_MAX("", "per.tenant.allow.task.threads.max", YES),
+
+    /**
      * 压测引擎上传时间间隔 单位毫秒
      */
     TAKIN_PRESSURE_MACHINE_UPLOAD_INTERVAL_TIME("pressure.machine.upload.interval.time",

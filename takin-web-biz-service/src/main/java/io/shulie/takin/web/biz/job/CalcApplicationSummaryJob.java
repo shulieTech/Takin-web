@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.fastjson.JSON;
 
@@ -13,7 +14,9 @@ import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,8 +46,8 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
     @Qualifier("reportSummaryThreadPool")
     private ThreadPoolExecutor reportThreadPool;
 
-    private static Map<Long, Object> runningTasks = new ConcurrentHashMap<>();
-    private static Object EMPTY = new Object();
+    private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
+    private static AtomicInteger EMPTY = new AtomicInteger();
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -73,19 +76,35 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
                     }
                 }else {
                     if (taskDto.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        Object task = runningTasks.putIfAbsent(taskDto.getTenantId(), EMPTY);
-                        if (task == null) {
-                            // 开始数据层分片
-                            reportThreadPool.execute(() -> {
-                                try {
-                                    WebPluginUtils.setTraceTenantContext(taskDto);
-                                    reportTaskService.calcApplicationSummary(taskDto.getReportId());
-                                } catch (Throwable e) {
-                                    log.error("execute CalcApplicationSummaryJob occured error. reportId={},tenantId={}",reportId, taskDto.getTenantId(), e);
-                                } finally {
-                                    runningTasks.remove(taskDto.getTenantId());
-                                }
-                            });
+                        AtomicInteger runningThreads = new AtomicInteger(0);
+                        AtomicInteger oldRunningThreads = runningTasks.putIfAbsent(taskDto.getTenantId(), runningThreads);
+                        if (oldRunningThreads != null) {
+                            runningThreads = oldRunningThreads;
+                        }
+                        //当前租户可以使用的最大线程数
+                        int totalThreads = ConfigServerHelper.getIntegerValueByKey(
+                            ConfigServerKeyEnum.PER_TENANT_ALLOW_TASK_THREADS_MAX);
+                        final int currentThreads = runningThreads.get();
+                        if (currentThreads + 1 <= totalThreads) {
+                            if (runningThreads.compareAndSet(currentThreads, currentThreads + 1)) {
+                                //将任务放入线程池
+                                reportThreadPool.execute(() -> {
+                                    try {
+                                        WebPluginUtils.setTraceTenantContext(taskDto);
+                                        reportTaskService.calcApplicationSummary(taskDto.getReportId());
+                                    } catch (Throwable e) {
+                                        log.error("execute CalcApplicationSummaryJob occured error. reportId={}", reportId, e);
+                                    } finally {
+                                        AtomicInteger currentRunningThreads = runningTasks.get(taskDto.getTenantId());
+                                        if (currentRunningThreads.get() - 1 <= 0) {
+                                            // 移除对应的租户
+                                            runningTasks.remove(taskDto.getTenantId());
+                                        } else {
+                                            currentRunningThreads.decrementAndGet();
+                                        }
+                                    }
+                                });
+                            }
                         }
                     }
                 }

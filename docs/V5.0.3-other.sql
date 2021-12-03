@@ -75,3 +75,6 @@ INSERT IGNORE INTO  `t_config_server` (`id`, `key`, `value`, `tenant_id`, `env_c
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+ALTER TABLE `t_report`
+    MODIFY COLUMN `features` longtext CHARACTER SET utf8 COLLATE utf8_bin NULL COMMENT '扩展字段，JSON数据格式' AFTER `operate_id`

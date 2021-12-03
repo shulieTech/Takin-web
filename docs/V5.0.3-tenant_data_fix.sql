@@ -140,12 +140,18 @@ BEGIN;
 -- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=24;
 
 -- demo环境
+-- 记录userid和envCode
 -- DROP TABLE IF EXISTS `DATA_FIX_TABLE`;
 -- CREATE TEMPORARY TABLE IF NOT EXISTS `DATA_FIX_TABLE` AS
--- SELECT id as user_id,tenant_id,'test' as env_code
+-- SELECT id as user_id,tenant_id,
+--        CASE
+--            WHEN id = tenant_id THEN
+--                'prod'
+--            ELSE
+--                'test'
+--            END AS env_code
 -- FROM t_tro_user;
---
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='pre' WHERE `user_id`=90424;
+-- ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
 
 -- env_code
 -- 应用表 t_application_mnt
@@ -287,6 +293,11 @@ UPDATE t_performance_criteria_config t1
     LEFT JOIN t_application_mnt t2 ON t1.app_id = t2.APPLICATION_ID
     SET t1.env_code = IFNULL(t2.env_code,'test');
 
+-- t_application_api_manage
+UPDATE t_application_api_manage m
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=m.user_id
+    SET m.env_code = IFNULL(fix.env_code,'test');
+
 -- liuchuan部分
 
 -- t_agent_config
@@ -335,7 +346,7 @@ update t_ops_script_execute_result t set t.tenant_id=IFNULL((select tenant_id fr
 update t_ops_script_file t set t.tenant_id=IFNULL((select tenant_id from t_ops_script_manage WHERE id=t.ops_script_id and is_deleted=0),1);
 update t_performance_base_data t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = t.app_name),1);
 update t_performance_criteria_config t set t.tenant_id= IFNULL((select tenant_id from t_application_mnt where APPLICATION_ID = t.app_id),1);
-
+update t_application_api_manage set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 COMMIT ;
 -- caijy end
 

@@ -72,7 +72,8 @@ CREATE TABLE `t_application_plugin_upgrade`
     `env_code`              varchar(100)                    DEFAULT 'test' COMMENT '环境标识',
     `tenant_id`             bigint(20) DEFAULT '1' COMMENT '租户 id, 默认 1',
     `IS_DELETED`            tinyint(2) NOT NULL DEFAULT 0 COMMENT '是否有效 0:有效;1:无效',
-    PRIMARY KEY (`id`) USING BTREE
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE KEY `uni_applicationId_upgradeBatch` (`application_id`,`upgrade_batch`) USING BTREE
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='应用升级单';
 
 DROP TABLE IF EXISTS `t_application_plugin_upgrade_ref`;

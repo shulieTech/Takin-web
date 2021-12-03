@@ -524,8 +524,8 @@ INSERT IGNORE INTO  `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`is_d
 INSERT IGNORE INTO  `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`desc`,`is_default`) VALUES (1, 'prod', '生产环境','当前环境为生产环境，请谨慎操作',0);
 INSERT IGNORE INTO  `t_tenant_info`(`key`, `name`, `nick`, `code`) VALUES ('5b06060a-17cb-4588-bb71-edd7f65035af', 'default', 'default', 'default');
 -- 系统信息的权限问题
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,`features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (510, NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, NULL, NULL, '2021-01-14 11:19:50',
+INSERT IGNORE INTO `t_tro_resource`( `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,`features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES ( NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, NULL, NULL, '2021-01-14 11:19:50',
         '2021-01-14 11:19:50', 0);
 COMMIT;
 

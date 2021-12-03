@@ -112,7 +112,7 @@ BEGIN;
 -- ALTER TABLE `DATA_FIX_TABLE` ADD PRIMARY KEY (`user_id`);
 
 -- saas
--- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=1;
+-- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=1;
 -- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=3;
 -- UPDATE `DATA_FIX_TABLE` SET `env_code`='test' WHERE `user_id`=4;
 -- UPDATE `DATA_FIX_TABLE` SET `env_code`='prod' WHERE `user_id`=5;

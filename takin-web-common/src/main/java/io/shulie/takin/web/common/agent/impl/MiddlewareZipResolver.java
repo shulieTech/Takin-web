@@ -44,9 +44,10 @@ public class MiddlewareZipResolver extends AgentZipResolverSupport {
         try (ZipFile zip = new ZipFile(new File(filePath))) {
             for (AgentModuleInfo agentModuleInfo : moduleInfos) {
                 middlewareResolverThreadPool.execute(() -> {
-                    ZipEntry zipEntry = zip.getEntry(agentModuleInfo.getModuleId());
+                    ZipEntry zipEntry = zip.getEntry(
+                        getZipBaseDirName() + File.separator + agentModuleInfo.getModuleId());
                     if (zipEntry == null) {
-                        errorList.add("module-id: " + agentModuleInfo.getModuleId() + " ,不存在！！");
+                        errorList.add(agentModuleInfo.getModuleId() + "模块不存在！！");
                     }
                     countDownLatch.countDown();
                 });

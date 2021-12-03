@@ -45,7 +45,7 @@
         <where>
             <if test="ext != null and ext.size() > 0">
                 <foreach collection="ext" item="item" open="(" close=")" separator="and">
-                    tenant_id = #{item.tenantId}  and env_code = #{item.envCode}
+                    tenant_id = #{item.tenantId,jdbcType=BIGINT}  and env_code = #{item.envCode}
                 </foreach>
             </if>
         </where>

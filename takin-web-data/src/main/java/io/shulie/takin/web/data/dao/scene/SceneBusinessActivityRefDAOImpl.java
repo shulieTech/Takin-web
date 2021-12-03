@@ -35,7 +35,7 @@ public class SceneBusinessActivityRefDAOImpl extends ServiceImpl<SceneBusinessAc
 
     @Override
     public List<Long> getAppIdList(Long businessActivityId) {
-        LambdaQueryWrapper<SceneBusinessActivityRefEntity> queryWrapper = this.buildQuery(this.getCustomerQueryWrapper().lambda());
+        LambdaQueryWrapper<SceneBusinessActivityRefEntity> queryWrapper = this.buildQuery(this.getQueryWrapper().lambda());
         queryWrapper.eq(SceneBusinessActivityRefEntity::getBusinessActivityId,businessActivityId);
         SceneBusinessActivityRefEntity entity = this.getOne(queryWrapper);
         if(Objects.isNull(entity)){

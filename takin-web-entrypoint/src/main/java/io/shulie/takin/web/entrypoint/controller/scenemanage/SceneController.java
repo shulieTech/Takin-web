@@ -54,8 +54,10 @@ import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.cloud.open.response.scene.manage.SceneDetailResponse;
+import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.response.leakcheck.LeakSqlBatchRefsResponse;
+import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 
 /**
  * 场景管理控制器 - 新
@@ -78,6 +80,11 @@ public class SceneController {
     ScriptFileRefDAO scriptFileRefDao;
     @Resource
     SceneManageService sceneManageService;
+    /**
+     * 定时压测
+     */
+    @Resource
+    SceneSchedulerTaskService sceneSchedulerTaskService;
 
     /**
      * 创建压测场景 - 新
@@ -94,8 +101,16 @@ public class SceneController {
     @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<Long> create(@RequestBody @Valid NewSceneRequest request) {
         SceneRequest sceneRequest = buildSceneRequest(request);
+
         WebPluginUtils.fillCloudUserData(sceneRequest);
-        return multipleSceneApi.create(sceneRequest);
+        ResponseResult<Long> createResult = multipleSceneApi.create(sceneRequest);
+        if (request.getBasicInfo().getIsScheduler() && createResult.getSuccess()) {
+            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+                setSceneId(createResult.getData());
+                setExecuteTime(request.getBasicInfo().getExecuteTime());
+            }});
+        }
+        return createResult;
     }
 
     /**
@@ -117,7 +132,14 @@ public class SceneController {
         }
         SceneRequest sceneRequest = buildSceneRequest(request);
         WebPluginUtils.fillCloudUserData(sceneRequest);
-        return multipleSceneApi.update(sceneRequest);
+        ResponseResult<Boolean> updateResult = multipleSceneApi.update(sceneRequest);
+        if (request.getBasicInfo().getIsScheduler() && updateResult.getSuccess()) {
+            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+                setSceneId(request.getBasicInfo().getSceneId());
+                setExecuteTime(request.getBasicInfo().getExecuteTime());
+            }});
+        }
+        return updateResult;
     }
 
     /**

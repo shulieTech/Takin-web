@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.pojo.request.scene;
 
 import java.util.Map;
+import java.util.Date;
 import java.util.List;
 
 import lombok.Data;
@@ -10,6 +11,8 @@ import javax.validation.constraints.NotBlank;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
 
@@ -50,6 +53,12 @@ public class NewSceneRequest {
         @NotNull(message = "业务流程主键不能为空")
         @ApiModelProperty(value = "业务流程主键")
         private Long businessFlowId;
+        @ApiModelProperty(value = "是否定时执行")
+        @NotNull(message = "是否定时执行配置不能为空")
+        private Boolean isScheduler;
+        @ApiModelProperty(name = "executeTime", value = "定时执行时间")
+        @JsonFormat(pattern = "yyyy-MM-dd hh:mm", timezone = "GMT+8")
+        private Date executeTime;
     }
 
     @Data

@@ -14,8 +14,9 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
-import com.google.common.collect.Lists;
+import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.SceneManageConstant;
 import com.pamirs.takin.common.constant.TimeUnitEnum;
 import com.pamirs.takin.common.exception.ApiException;
@@ -248,17 +249,21 @@ public class SceneManageServiceImpl implements SceneManageService {
         ResponseResult<List<SceneManageListResp>> sceneList = sceneManageApi.getSceneList(req);
         HttpAssert.isOk(sceneList, req, "cloud查询场景列表");
         List<SceneManageListOutput> listData = convertData(sceneList.getData());
+        List<Long> sceneIds = listData.stream().map(SceneManageListOutput::getId).collect(Collectors.toList());
         //计算场景的定时执行时间
-        //List<SceneSchedulerTaskResponse> responseList = sceneSchedulerTaskService.selectBySceneIds(sceneIds);
-        //Map<Long, String> sceneExcuteTimeMap = new HashMap<>();
-        //responseList.stream().forEach(response -> {
-        //    sceneExcuteTimeMap.put(response.getSceneId(), response.getExecuteTime());
-        //});
-        if (null != sceneList) {
-            webResponse.setTotal(sceneList.getTotalNum());
-        } else {
-            webResponse.setTotal(0L);
-        }
+        List<SceneSchedulerTaskResponse> responseList = sceneSchedulerTaskService.selectBySceneIds(sceneIds);
+        Map<Long, Date> sceneExecuteTimeMap = new HashMap<>();
+        responseList.forEach(response -> {
+            sceneExecuteTimeMap.put(response.getSceneId(), response.getExecuteTime());
+        });
+        listData.forEach(t -> {
+            Date date = sceneExecuteTimeMap.get(t.getId());
+            if (date != null) {
+                t.setIsScheduler(true);
+                t.setScheduleExecuteTime(DateUtil.formatDateTime(date));
+            }
+        });
+        webResponse.setTotal(sceneList.getTotalNum());
         webResponse.setSuccess(true);
         webResponse.setData(listData);
         return webResponse;
@@ -541,6 +546,7 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     /**
      * 通过业务活动id关联出应用id列表
+     *
      * @param businessActivityId 业务活动id
      * @return 应用id列表
      */
@@ -636,7 +642,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (scriptCheckResp == null || !scriptCheckResp.getSuccess()) {
             log.error("cloud检查并更新脚本出错：{}", sceneScriptRef.getUploadPath());
             StringBuilder sb = new StringBuilder();
-            sb.append(String.format("cloud检查并更新【%s】脚本异常,异常内容【%s】",sceneScriptRef.getUploadPath(),scriptCheckResp.getError().getMsg()));
+            sb.append(String.format("cloud检查并更新【%s】脚本异常,异常内容【%s】", sceneScriptRef.getUploadPath(), scriptCheckResp.getError().getMsg()));
             dto.setErrmsg("|");
             return dto;
         }
@@ -773,9 +779,9 @@ public class SceneManageServiceImpl implements SceneManageService {
                 if (resultData != null) {
                     ScenePositionPointResponse response = new ScenePositionPointResponse();
                     //false = 没有csv文件或位点均为0
-//                    Boolean hasUnread = resultData.getHasUnread();
+                    //                    Boolean hasUnread = resultData.getHasUnread();
                     List<SceneStartCheckResp.FileReadInfo> infos = resultData.getFileReadInfos();
-                    if (Objects.nonNull(infos)){
+                    if (Objects.nonNull(infos)) {
                         infos.stream().forEach(t -> {
                             response.setScriptName(t.getFileName());
                             response.setScriptSize(t.getFileSize());
@@ -783,7 +789,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                             list.add(response);
                         });
                     }
-//                    redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
+                    //                    redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
                 }
             }
         }

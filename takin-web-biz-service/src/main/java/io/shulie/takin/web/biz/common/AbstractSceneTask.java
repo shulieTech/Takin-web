@@ -5,7 +5,9 @@ import java.util.List;
 import com.alibaba.fastjson.JSON;
 
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,7 @@ public abstract class AbstractSceneTask {
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
-    public List<SceneTaskDto> getTaskFromRedis() {
+    protected List<SceneTaskDto> getTaskFromRedis() {
         Object o = redisTemplate.opsForList().range(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,-1);
         List<SceneTaskDto> taskDtoList = null;
         try {
@@ -34,6 +36,10 @@ public abstract class AbstractSceneTask {
             return null;
         }
         return taskDtoList;
+    }
+
+    protected int getAllowedTenantThreadMax(){
+        return ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.PER_TENANT_ALLOW_TASK_THREADS_MAX);
     }
 
 }

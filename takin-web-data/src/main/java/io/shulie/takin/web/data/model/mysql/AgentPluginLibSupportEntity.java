@@ -15,7 +15,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_agent_plugin_lib_support")
-public class AgentPluginLibSupportEntity extends TenantBaseEntity {
+public class AgentPluginLibSupportEntity {
     /**
      * id
      */

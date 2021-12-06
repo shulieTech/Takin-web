@@ -520,13 +520,10 @@ alter table e_patrol_scene_check ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_c
 -- 兮曦 --
 -- DML开始
 BEGIN;
-INSERT IGNORE INTO  `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`is_default`) VALUES (1, 'test', '测试环境',1);
-INSERT IGNORE INTO  `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`desc`,`is_default`) VALUES (1, 'prod', '生产环境','当前环境为生产环境，请谨慎操作',0);
-INSERT IGNORE INTO  `t_tenant_info`(`key`, `name`, `nick`, `code`) VALUES ('5b06060a-17cb-4588-bb71-edd7f65035af', 'default', 'default', 'default');
 -- 系统信息的权限问题
-INSERT IGNORE INTO `t_tro_resource` ( `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`, `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (NULL, 0, 'system_info', '系统信息', NULL, '[\"api/sys\"]', 9000, '[]', NULL, NULL, NULL, '2021-01-14 11:19:50', '2021-12-01 11:28:01', 0);
-
+INSERT IGNORE INTO `t_tro_resource`( `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,`features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES ( NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, NULL, NULL, '2021-01-14 11:19:50',
+        '2021-01-14 11:19:50', 0);
 COMMIT;
 
 -- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_stack_info

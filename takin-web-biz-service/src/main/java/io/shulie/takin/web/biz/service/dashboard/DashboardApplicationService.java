@@ -1,9 +1,10 @@
 package io.shulie.takin.web.biz.service.dashboard;
 
 import io.shulie.takin.web.biz.pojo.response.dashboard.AppPressureSwitchSetResponse;
+import io.shulie.takin.web.biz.pojo.response.dashboard.ApplicationStatusResponse;
 import io.shulie.takin.web.biz.pojo.response.dashboard.ApplicationSwitchStatusResponse;
 
-public interface ApplicationService {
+public interface DashboardApplicationService {
     /**
      * 获取用户应用开关信息
      *
@@ -18,4 +19,12 @@ public interface ApplicationService {
      * @return 设置结果
      */
     AppPressureSwitchSetResponse setUserAppPressureSwitch(Boolean enable);
+
+    /**
+     * 大盘获取应用状态
+     * @return
+     */
+    ApplicationStatusResponse getAppStatusCount();
+
+
 }

@@ -16,6 +16,7 @@ import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
+import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -75,6 +77,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     @Autowired
     @Qualifier("collectDataThreadPool")
     private ThreadPoolExecutor collectDataThreadPool;
+
+    @Autowired
+    @Qualifier("redisTemplate")
+    private RedisTemplate redisTemplate;
 
     @Override
     public List<Long> getRunningReport() {
@@ -151,10 +157,18 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 //压测结束，生成压测报告异常，解锁报告
                 reportService.unLockReport(reportId);
                 log.error("Unlock Report Success, reportId={} ,errorMsg= {}...", reportId, e.getMessage());
+            } finally {
+                removeReportKey(reportId, commonExt);
             }
+
         } catch (Exception e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());
         }
+    }
+
+    private void removeReportKey(Long reportId, TenantCommonExt commonExt) {
+        redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,JSON.toJSONString(new SceneTaskDto(
+            commonExt, reportId)));
     }
 
     /**

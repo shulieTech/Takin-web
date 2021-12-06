@@ -81,6 +81,11 @@ public interface ApplicationDAO {
 
     List<ApplicationDetailResult> getApplicationList(List<String> appNames);
 
+    /**
+     * 获取应用名
+     * @param param
+     * @return
+     */
     List<String> getAllApplicationName(ApplicationQueryParam param);
 
     int insert(ApplicationCreateParam param);
@@ -219,6 +224,13 @@ public interface ApplicationDAO {
     List<ApplicationDetailResult> getAllApplications();
 
     /**
+     * 大盘获取应用
+     * @return
+     */
+    List<ApplicationDetailResult> getDashboardAppData();
+
+
+    /**
      * 根据状态查
      *
      * @param statusList
@@ -333,4 +345,9 @@ public interface ApplicationDAO {
      */
     String getIdByName(String applicationName);
 
+    /**
+     * 获取应用个数
+     * @return
+     */
+    Long getApplicationCount();
 }

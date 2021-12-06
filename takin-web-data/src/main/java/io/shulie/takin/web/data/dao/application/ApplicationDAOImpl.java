@@ -301,11 +301,9 @@ public class ApplicationDAOImpl
     @Override
     public List<String> getAllApplicationName(ApplicationQueryParam param) {
         LambdaQueryWrapper<ApplicationMntEntity> wrapper = new LambdaQueryWrapper<>();
-        if (param.getTenantId() != null) {
-            wrapper.eq(ApplicationMntEntity::getTenantId, param.getTenantId());
-        }
-        if (param.getUserId() != null) {
-            wrapper.eq(ApplicationMntEntity::getUserId, param.getUserId());
+        wrapper.select(ApplicationMntEntity::getApplicationName);
+        if(CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
+            wrapper.in(ApplicationMntEntity::getUserId,WebPluginUtils.getQueryAllowUserIdList());
         }
         List<ApplicationMntEntity> entities = applicationMntMapper.selectList(wrapper);
         return entities.stream()
@@ -455,14 +453,14 @@ public class ApplicationDAOImpl
 
     @Override
     public List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts) {
-        List<ApplicationDetailResult> detailResults = Lists.newArrayList();
-        commonExts.forEach(ext -> {
-            List<ApplicationMntEntity> entities = applicationMntMapper.getAllTenantApp(ext);
-            if (!entities.isEmpty()) {
-                detailResults.addAll(DataTransformUtil.list2list(entities,ApplicationDetailResult.class));
-            }
-        });
-        return detailResults;
+        if(CollectionUtils.isEmpty(commonExts)) {
+            return Lists.newArrayList();
+        }
+        List<ApplicationMntEntity> entities = applicationMntMapper.getAllTenantApp(commonExts);
+        if(CollectionUtils.isEmpty(entities)) {
+            return Lists.newArrayList();
+        }
+        return DataTransformUtil.list2list(entities,ApplicationDetailResult.class);
     }
 
     @Override
@@ -499,6 +497,21 @@ public class ApplicationDAOImpl
             return Lists.newArrayList();
         }
         return DataTransformUtil.list2list(allApplications,ApplicationDetailResult.class);
+    }
+
+    @Override
+    public List<ApplicationDetailResult> getDashboardAppData() {
+        LambdaQueryWrapper<ApplicationMntEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(ApplicationMntEntity::getApplicationId,
+            ApplicationMntEntity::getApplicationName,ApplicationMntEntity::getNodeNum,ApplicationMntEntity::getAgentVersion);
+        if(CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
+            queryWrapper.in(ApplicationMntEntity::getUserId,WebPluginUtils.getQueryAllowUserIdList());
+        }
+        List<ApplicationMntEntity> applicationMntEntities = applicationMntMapper.selectList(queryWrapper);
+        if(CollectionUtils.isEmpty(applicationMntEntities)) {
+            return Lists.newArrayList();
+        }
+        return DataTransformUtil.list2list(applicationMntEntities,ApplicationDetailResult.class);
     }
 
     @Override
@@ -606,5 +619,14 @@ public class ApplicationDAOImpl
     @Override
     public String getIdByName(String applicationName) {
         return applicationMntMapper.getIdByName(applicationName);
+    }
+
+    @Override
+    public Long getApplicationCount() {
+        LambdaQueryWrapper<ApplicationMntEntity> queryWrapper = new LambdaQueryWrapper<>();
+        if(CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
+            queryWrapper.in(ApplicationMntEntity::getUserId,WebPluginUtils.getQueryAllowUserIdList());
+        }
+        return applicationMntMapper.selectCount(queryWrapper);
     }
 }

@@ -489,7 +489,7 @@ public class ActivityServiceImpl implements ActivityService {
         // 成功率 瓶颈
         if ((provider.getAllSuccessRateBottleneckType() != -1)) {
             activityBottleneckResponse.setAllSuccessRateBottleneckType(provider.getAllSuccessRateBottleneckType());
-            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getRtBottleneckId());
+            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getSuccessRateBottleneckId());
         }
         // 慢 sql 瓶颈
         if ((provider.getAllSqlTotalRtBottleneckType() != -1)) {

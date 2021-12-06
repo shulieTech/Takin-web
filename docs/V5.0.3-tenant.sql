@@ -158,10 +158,6 @@ ALTER TABLE `t_fast_debug_exception`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 
-ALTER TABLE `t_fast_debug_machine_performance`
-    ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
-    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
-
 ALTER TABLE `t_fast_debug_result`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
@@ -528,13 +524,16 @@ COMMIT;
 
 -- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_stack_info
 -- 方案1：
--- DELETE FROM t_fast_debug_stack_info WHERE id NOT IN (
---     SELECT * FROM (
---       SELECT t.id
---       FROM t_fast_debug_stack_info t
---                JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
---   )tmp
--- )
+DELETE FROM t_fast_debug_stack_info WHERE id NOT IN (
+    SELECT * FROM (
+      SELECT t.id
+      FROM t_fast_debug_stack_info t
+               JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
+  )tmp
+);
+ALTER TABLE t_fast_debug_stack_info
+    ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1',
+    ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识';
 -- 方案2
 -- 1. 创建临时表
 -- CREATE TABLE IF NOT EXISTS `tmp_stack_info` (
@@ -568,13 +567,16 @@ COMMIT;
 
 -- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_machine_performance
 -- 方案1：
--- DELETE FROM t_fast_debug_machine_performance WHERE id NOT IN (
---     SELECT * FROM (
---           SELECT t.id
---           FROM t_fast_debug_machine_performance t
---           JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
---       )tmp
--- )
+DELETE FROM t_fast_debug_machine_performance WHERE id NOT IN (
+    SELECT * FROM (
+          SELECT t.id
+          FROM t_fast_debug_machine_performance t
+          JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
+      )tmp
+);
+ALTER TABLE t_fast_debug_machine_performance
+    ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1',
+    ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识';
 -- 方案2：
 -- 1. 创建临时表
 -- CREATE TABLE IF NOT EXISTS `tmp_machine` (

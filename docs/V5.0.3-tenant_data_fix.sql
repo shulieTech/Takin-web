@@ -561,12 +561,12 @@ ALTER TABLE t_upload_interface_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`en
 ALTER TABLE t_white_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_whitelist_effective_app ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_fast_debug_stack_info ADD INDEX `idx_tenant_env` (`tenant_id`,`env_code` );
+-- 最后删除KEY
 -- t_base_config
 ALTER TABLE t_base_config
 DROP  PRIMARY KEY,
 DROP  INDEX `unique_idx_config_code`;
 ADD   PRIMARY KEY (`CONFIG_CODE`, `env_code`, `tenant_id`);
--- 最后删除KEY
 ALTER TABLE t_application_mnt
 DROP KEY `index_identifier_application_name`;
 ALTER TABLE t_pradar_zk_config

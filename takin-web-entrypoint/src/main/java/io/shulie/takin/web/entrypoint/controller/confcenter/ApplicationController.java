@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 
 import com.github.pagehelper.util.StringUtil;
 import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
-import com.pamirs.takin.entity.domain.vo.AppUnstallAgentVo;
+import com.pamirs.takin.entity.domain.vo.AppUninstallAgentVO;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
@@ -232,7 +232,7 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public void unstallAllAgent(@RequestBody AppUnstallAgentVo vo) {
+    public void uninstallAllAgent(@Validated @RequestBody AppUninstallAgentVO vo) {
         applicationService.uninstallAllAgent(vo.getAppIds());
     }
 
@@ -242,10 +242,9 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public void resumeAllAgent(@RequestBody AppUnstallAgentVo vo) {
+    public void resumeAllAgent(@Validated @RequestBody AppUninstallAgentVO vo) {
         applicationService.resumeAllAgent(vo.getAppIds());
     }
-
 
     @ApiOperation("编辑静默开关接口")
     @PutMapping("/application/center/app/switch/silence")

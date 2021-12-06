@@ -2,8 +2,6 @@ package io.shulie.takin.web.app.conf;
 
 import java.util.Optional;
 
-import javax.sql.DataSource;
-
 import com.dangdang.ddframe.job.event.JobEventConfiguration;
 import io.shulie.takin.job.ElasticJobProperties;
 import io.shulie.takin.job.ElasticRegCenterConfig;
@@ -39,7 +37,7 @@ public class ElasticJobAutoConfig {
     //
     @Bean
     @ConditionalOnMissingBean(JobEventConfiguration.class)
-    public SpringJobSchedulerFactory springJobSchedulerFactory(ElasticJobProperties elasticJobProperties,DataSource dataSource) {
+    public SpringJobSchedulerFactory springJobSchedulerFactory(ElasticJobProperties elasticJobProperties) {
         String zkAddr = environment.getProperty("takin.config.zk.addr");
         if (StringUtils.isEmpty(zkAddr)) {
             throw new RuntimeException("配置中心zk地址没有填写，请核对校验`takin.config.zk.addr`");
@@ -51,9 +49,8 @@ public class ElasticJobAutoConfig {
         zkClientConfig.setZkServers(zkAddr);
         zkClientConfig.setNamespace("takin-web-job-" + env);
         elasticJobConfig.setZkClientConfig(zkClientConfig);
-        elasticJobConfig.setDataSource(dataSource);
         ElasticRegCenterConfig elasticRegCenterConfig = new ElasticRegCenterConfig(elasticJobConfig);
-        return new SpringJobSchedulerFactory(elasticJobProperties, elasticRegCenterConfig.regCenter(),elasticRegCenterConfig.jobEventConfiguration());
+        return new SpringJobSchedulerFactory(elasticJobProperties, elasticRegCenterConfig.regCenter());
     }
 
     @Bean

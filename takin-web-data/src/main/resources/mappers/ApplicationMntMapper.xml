@@ -44,7 +44,7 @@
         select APPLICATION_NAME,tenant_id,env_code from  t_application_mnt
         <where>
             <if test="ext != null and ext.size() > 0">
-                <foreach collection="ext" item="item" open="(" close=")" separator="and">
+                <foreach collection="ext" item="item" open="(" close=")" separator="or">
                     tenant_id = #{item.tenantId,jdbcType=BIGINT}  and env_code = #{item.envCode}
                 </foreach>
             </if>

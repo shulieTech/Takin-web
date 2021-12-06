@@ -20,7 +20,7 @@ public interface InspectionExtApi extends ExtensionPoint {
     /**
      * 根据租户、环境 获取 e2e 模块的异常配置信息
      */
-    List<E2eExceptionConfigInfoExt> getExceptionConfig(Long tenantId,String envCode);
+    List<E2eExceptionConfigInfoExt> getExceptionConfig(Long tenantId,String envCode, String...service);
 
     /**
      * 瓶颈计算

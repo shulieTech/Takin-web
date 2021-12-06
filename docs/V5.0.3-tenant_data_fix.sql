@@ -408,17 +408,17 @@ update e_patrol_scene set tenant_id=7,env_code='test',user_id=8 where customer_i
 update e_patrol_scene set tenant_id=1,env_code='test',user_id=1 where customer_id=1;
 update e_patrol_scene a,t_tenant_info b set a.tenant_app_key = b.`key` where a.tenant_id=b.id and a.tenant_id is not null;
 
-update e_patrol_activity_assert set env_code='test',tenant_id=1;
+update e_patrol_scene_chain a,e_patrol_scene b set a.tenant_id=b.tenant_id,a.env_code=b.env_code where a.patrol_scene_id=b.id;
+
+update e_patrol_scene_check a,e_patrol_scene b set a.tenant_id=b.tenant_id,a.env_code=b.env_code where a.patrol_scene_id=b.id;
 
 update e_patrol_board set tenant_id=7,env_code='prod',user_id=7 where customer_id=7;
 update e_patrol_board set tenant_id=7,env_code='test',user_id=8 where customer_id=8;
 update e_patrol_board set tenant_id=1,env_code='test',user_id=1 where customer_id=1;
 
-update e_patrol_board_scene set env_code='test',tenant_id=1;
+update e_patrol_board_scene a,e_patrol_scene b set a.tenant_id=b.tenant_id,a.env_code=b.env_code where a.patrol_scene_id=b.id;
 
-update e_patrol_exception set env_code='test',tenant_id=1;
-update e_patrol_exception a,e_patrol_scene b set a.user_id= b.user_id where a.scene_id=b.id and a.scene_id <> '-1';
-
+update e_patrol_exception a,e_patrol_scene b set a.tenant_id=b.tenant_id,a.env_code=b.env_code,a.user_id= b.user_id where a.scene_id=b.id and a.scene_id <> '-1';
 -- 必须先订正数据才能加索引，否则会有冲突
 update e_patrol_exception_config set tenant_id=7,env_code='test' where customer_id=7;
 update e_patrol_exception_config set tenant_id=7,env_code='prod' where customer_id=8;
@@ -433,11 +433,7 @@ INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_val
 INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 4, 1, 30.00, 1, '一般慢SQL', -1, 'system');
 INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 4, 2, 60.00, 1, '严重慢SQL', -1, 'system');
 
-update e_patrol_exception_notice_config set env_code='test',tenant_id=1;
-
-update e_patrol_scene_chain set env_code='test',tenant_id=1;
-update e_patrol_scene_check set env_code='test',tenant_id=1;
-
+update e_patrol_exception_notice_config set env_code='test',tenant_id=1,user_id=modify_user_id;
 -- 兮曦 --
 
 -- 额外 租户期间增加的表

@@ -311,15 +311,50 @@ UPDATE t_agent_config m
     LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=u.id
     SET m.env_code = IFNULL(fix.env_code,'test');
 
+
+UPDATE t_scene m
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=m.user_id
+    SET m.env_code = IFNULL(fix.env_code,'test');
+
+
 -- 更新 t_scene_link_relate
 UPDATE t_scene_link_relate t1
     LEFT JOIN t_scene t2 ON t1.SCENE_ID = t2.id
     SET t1.env_code = t2.env_code;
 
+UPDATE t_shadow_job_config t1
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=t1.user_id
+    SET t1.env_code = IFNULL(fix.env_code,'test');
+
+UPDATE t_white_list  t1
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=t1.user_id
+    SET t1.env_code = IFNULL(fix.env_code,'test');
+
+
+UPDATE t_whitelist_effective_app  t1
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=t1.user_id
+    SET t1.env_code = IFNULL(fix.env_code,'test');
+
 -- liuchuan end
 
 -- tenant_id
+UPDATE t_scene m
+    LEFT JOIN t_tro_user u ON u.id=u.user_id
+    SET m.tenant_id = IFNULL(u.tenant_id,1);
 update t_application_mnt app set app.tenant_id=IFNULL((select tenant_id from t_tro_user where id= app.user_id),1);
+
+UPDATE t_shadow_job_config m
+    LEFT JOIN t_tro_user u ON u.id=m.user_id
+    SET m.tenant_id = IFNULL(u.tenant_id,1);
+
+UPDATE t_white_list  t1
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=t1.user_id
+    SET t1.tenant_id = IFNULL(fix.tenant_id,1);
+
+UPDATE t_whitelist_effective_app  t1
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=t1.user_id
+    SET t1.tenant_id = IFNULL(fix.tenant_id,1);
+
 UPDATE t_application_ds_manage t1
     LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.APPLICATION_ID
     SET t1.tenant_id = IFNULL(t2.tenant_id,1);
@@ -449,6 +484,12 @@ UPDATE t_pradar_zk_config set TENANT_ID = -1 and env_code = 'system';
 UPDATE t_trace_manage_deploy t1
     LEFT JOIN t_trace_manage t2 ON t1.trace_manage_id = t2.id
     SET t1.env_code = t2.env_code,t1.tenant_id = t2.TENANT_ID;
+-- t_trace_node_info
+UPDATE t_trace_node_info t1
+    LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_trace_node_info f SET f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
+
 -- 大表最后数据迁移
 -- t_fast_debug_stack_info
 UPDATE t_fast_debug_stack_info t1
@@ -565,7 +606,7 @@ ALTER TABLE t_fast_debug_stack_info ADD INDEX `idx_tenant_env` (`tenant_id`,`env
 -- t_base_config
 ALTER TABLE t_base_config
 DROP  PRIMARY KEY,
-DROP  INDEX `unique_idx_config_code`;
+DROP  INDEX `unique_idx_config_code`,
 ADD   PRIMARY KEY (`CONFIG_CODE`, `env_code`, `tenant_id`);
 ALTER TABLE t_application_mnt
 DROP KEY `index_identifier_application_name`;

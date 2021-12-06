@@ -660,9 +660,13 @@ public class LinkTopologyService extends CommonService {
         //SY:调用瓶颈计算接口
         //获取接口瓶颈配置
         String service = appProvider.getOwnerApps() + "#" + appProvider.getServiceName() + "#"
-            + appProvider.getMiddlewareName() + "#" + appProvider.getRpcType();
-        E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId(),
+            + appProvider.getRpcType();
+        List<E2eExceptionConfigInfoExt> exceptionConfig = E2ePluginUtils.getExceptionConfig(
+            WebPluginUtils.traceTenantId(),
             WebPluginUtils.traceEnvCode(), service);
+        if (CollectionUtils.isNotEmpty(exceptionConfig)) {
+            bottleneckConfig = exceptionConfig;
+        }
         Map<Integer, Integer> resultMap = E2ePluginUtils.bottleneckCompute(storageRequest, bottleneckConfig);
 
         // 没有瓶颈 则返回

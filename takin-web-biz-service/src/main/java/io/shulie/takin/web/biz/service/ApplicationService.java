@@ -50,6 +50,12 @@ public interface ApplicationService {
      */
     Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequest param);
 
+    /**
+     * 获取应用总数量
+     * @return
+     */
+    Long getAccessErrorNum();
+
     List<ApplicationVo> getApplicationListVo(ApplicationQueryRequest param);
 
     /**

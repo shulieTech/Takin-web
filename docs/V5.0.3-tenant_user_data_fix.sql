@@ -1,6 +1,8 @@
+-- 变更
 alter table t_business_link_manage_table modify LINK_NAME varchar(200) collate utf8_bin;
-update t_tro_resource set action = '[6]'  WHERE name = '全局配置'
 alter table t_tenant_info modify `code` varchar(200) collate utf8_bin;
+-- 后续更新
+update t_tro_resource set action = '[6]'  WHERE name = '全局配置'
 update t_tro_user set name = 'superadmin' WHERE name = 'admin'
 
 
@@ -42,7 +44,7 @@ update  t_tro_user set tenant_id = customer_id where customer_id is not null
 SELECT * from t_tenant_config
 
 -- 默认租户
-    INSERT INTO t_tro_user
+INSERT INTO t_tro_user
 ( `name`, `nick`, `salt`, `password`, `status`, `user_type`, `model`, `role`, `tenant_id` )
 VALUES ( 'admin@default', 'default', '$2a$10$MqkhiWRgANNXPlhM6uJdBe', '$2a$10$MqkhiWRgANNXPlhM6uJdBe0pT.SUmd9JdK9eIFp9CbcZSlOiAWL7S', 0, 2, 0, 0,1);
 -- 测试租户
@@ -122,7 +124,7 @@ ALTER TABLE t_tro_role ADD UNIQUE INDEX `unique_idx_name_tenant_env` ( `tenant_i
 SELECT * from t_tro_role_user_relation WHERE user_id in (3,4)  -- 2
 SELECT max(id) from t_tro_role
 -- 插入两个角色
-    INSERT INTO t_tro_role (`application_id`, `name`, `alias`, `code`, `description`, `status`, `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`, `tenant_id`, `env_code`)
+INSERT INTO t_tro_role (`application_id`, `name`, `alias`, `code`, `description`, `status`, `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`, `tenant_id`, `env_code`)
 VALUES (NULL, 'Takin Saas用户', NULL, NULL, 'Takin 使用，不包含 E2E', 0, NULL, NULL, NULL, '2021-08-16 14:37:36', '2021-11-24 13:39:53', 0, 3, 'prod');
 INSERT INTO t_tro_role (`application_id`, `name`, `alias`, `code`, `description`, `status`, `features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`, `tenant_id`, `env_code`)
 VALUES (NULL, 'Takin Saas用户', NULL, NULL, 'Takin 使用，不包含 E2E', 0, NULL, NULL, NULL, '2021-08-16 14:37:36', '2021-11-24 13:39:53', 0, 3, 'test');

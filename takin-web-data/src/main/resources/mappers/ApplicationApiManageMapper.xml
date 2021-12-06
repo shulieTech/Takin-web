@@ -12,11 +12,12 @@
         <result column="IS_DELETED" jdbcType="TINYINT" property="isDeleted"/>
         <result column="api" jdbcType="VARCHAR" property="api"/>
         <result column="method" jdbcType="VARCHAR" property="method"/>
+        <result column="user_id" jdbcType="BIGINT" property="userId"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
         ID, APPLICATION_ID, APPLICATION_NAME, CREATE_TIME, UPDATE_TIME, IS_DELETED, api,
-        `method`
+        `method`,USER_ID,TENANT_ID,ENV_CODE
     </sql>
 
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">

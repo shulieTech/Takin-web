@@ -311,18 +311,53 @@ UPDATE t_agent_config m
     LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=u.id
     SET m.env_code = IFNULL(fix.env_code,'test');
 
+
+UPDATE t_scene m
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=m.user_id
+    SET m.env_code = IFNULL(fix.env_code,'test');
+
+
 -- 更新 t_scene_link_relate
 UPDATE t_scene_link_relate t1
     LEFT JOIN t_scene t2 ON t1.SCENE_ID = t2.id
     SET t1.env_code = t2.env_code;
 
+UPDATE t_shadow_job_config t1
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=t1.user_id
+    SET t1.env_code = IFNULL(fix.env_code,'test');
+
+UPDATE t_white_list  t1
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=t1.user_id
+    SET t1.env_code = IFNULL(fix.env_code,'test');
+
+
+UPDATE t_whitelist_effective_app  t1
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=t1.user_id
+    SET t1.env_code = IFNULL(fix.env_code,'test');
+
 -- liuchuan end
 
 -- tenant_id
+UPDATE t_scene m
+    LEFT JOIN t_tro_user u ON u.id=m.user_id
+    SET m.tenant_id = IFNULL(u.tenant_id,1);
+update t_application_mnt app set app.tenant_id=IFNULL((select tenant_id from t_tro_user where id= app.user_id),1);
+
+UPDATE t_shadow_job_config m
+    LEFT JOIN t_tro_user u ON u.id=m.user_id
+    SET m.tenant_id = IFNULL(u.tenant_id,1);
+
+UPDATE t_white_list  t1
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=t1.user_id
+    SET t1.tenant_id = IFNULL(fix.tenant_id,1);
+
+UPDATE t_whitelist_effective_app  t1
+    LEFT JOIN DATA_FIX_TABLE fix ON fix.user_id=t1.user_id
+    SET t1.tenant_id = IFNULL(fix.tenant_id,1);
+
 UPDATE t_application_ds_manage t1
     LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.APPLICATION_ID
     SET t1.tenant_id = IFNULL(t2.tenant_id,1);
-update t_application_mnt app set app.tenant_id=IFNULL((select tenant_id from t_tro_user where id= app.user_id),1);
 update t_application_node_probe probe set probe.tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = probe.application_name and customer_id=probe.customer_id),1);
 update t_black_list set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_business_link_manage_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
@@ -403,26 +438,27 @@ COMMIT;
 
 -- 兮曦 --
 -- 场景数据必须优先订正
+begin;
 update e_patrol_scene set tenant_id=7,env_code='prod',user_id=7 where customer_id=7;
 update e_patrol_scene set tenant_id=7,env_code='test',user_id=8 where customer_id=8;
-update e_patrol_scene set tenant_id=1,env_code='test',user_id=1 where customer_id=1;
+update e_patrol_scene set tenant_id=1,env_code='prod',user_id=1 where customer_id=1;
 update e_patrol_scene a,t_tenant_info b set a.tenant_app_key = b.`key` where a.tenant_id=b.id and a.tenant_id is not null;
 
-update e_patrol_activity_assert set env_code='test',tenant_id=1;
+update e_patrol_scene_chain a,e_patrol_scene b set a.tenant_id=b.tenant_id,a.env_code=b.env_code where a.patrol_scene_id=b.id;
+
+update e_patrol_scene_check a,e_patrol_scene b set a.tenant_id=b.tenant_id,a.env_code=b.env_code where a.patrol_scene_id=b.id;
 
 update e_patrol_board set tenant_id=7,env_code='prod',user_id=7 where customer_id=7;
 update e_patrol_board set tenant_id=7,env_code='test',user_id=8 where customer_id=8;
-update e_patrol_board set tenant_id=1,env_code='test',user_id=1 where customer_id=1;
+update e_patrol_board set tenant_id=1,env_code='prod',user_id=1 where customer_id=1;
 
-update e_patrol_board_scene set env_code='test',tenant_id=1;
+update e_patrol_board_scene a,e_patrol_scene b set a.tenant_id=b.tenant_id,a.env_code=b.env_code where a.patrol_scene_id=b.id;
 
-update e_patrol_exception set env_code='test',tenant_id=1;
-update e_patrol_exception a,e_patrol_scene b set a.user_id= b.user_id where a.scene_id=b.id and a.scene_id <> '-1';
-
+update e_patrol_exception a,e_patrol_scene b set a.tenant_id=b.tenant_id,a.env_code=b.env_code,a.user_id= b.user_id where a.scene_id=b.id and a.scene_id <> '-1';
 -- 必须先订正数据才能加索引，否则会有冲突
 update e_patrol_exception_config set tenant_id=7,env_code='test' where customer_id=7;
 update e_patrol_exception_config set tenant_id=7,env_code='prod' where customer_id=8;
-update e_patrol_exception_config set tenant_id=1,env_code='test' where customer_id=1;
+update e_patrol_exception_config set tenant_id=1,env_code='prod' where customer_id=1;
 delete from e_patrol_exception_config where customer_id is null;
 ALTER TABLE `e_patrol_exception_config` ADD UNIQUE INDEX `idx_config` ( `tenant_id`, `env_code`, `type_value`,`level_value` ) USING BTREE;
 
@@ -433,13 +469,11 @@ INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_val
 INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (1, 4, 1, 30.00, 1, '一般慢SQL', -1, 'system');
 INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 4, 2, 60.00, 1, '严重慢SQL', -1, 'system');
 
-update e_patrol_exception_notice_config set env_code='test',tenant_id=1;
-
-update e_patrol_scene_chain set env_code='test',tenant_id=1;
-update e_patrol_scene_check set env_code='test',tenant_id=1;
-
+update e_patrol_exception_notice_config set user_id=modify_user_id;
+update e_patrol_exception_notice_config set env_code='prod',tenant_id=1 where user_id=1;
+commit;
 -- 兮曦 --
-
+BEGIN;
 -- 额外 租户期间增加的表
 -- update t_mq_config_template set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 UPDATE t_application_ds_db_table m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.app_id SET m.env_code = IFNULL(u.env_code,'test'),m.tenant_id = IFNULL(u.tenant_id,1);
@@ -451,6 +485,12 @@ UPDATE t_pradar_zk_config set TENANT_ID = -1 and env_code = 'system';
 UPDATE t_trace_manage_deploy t1
     LEFT JOIN t_trace_manage t2 ON t1.trace_manage_id = t2.id
     SET t1.env_code = t2.env_code,t1.tenant_id = t2.TENANT_ID;
+-- t_trace_node_info
+UPDATE t_trace_node_info t1
+    LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
+    SET t1.env_code = IFNULL(t2.env_code,'test');
+UPDATE t_trace_node_info f SET f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
+
 -- 大表最后数据迁移
 -- t_fast_debug_stack_info
 UPDATE t_fast_debug_stack_info t1
@@ -462,7 +502,7 @@ UPDATE t_fast_debug_machine_performance t1
     LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 UPDATE t_fast_debug_machine_performance f SET f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
-
+COMMIT;
 -- 最后加索引
 ALTER TABLE t_activity_node_service_state ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_agent_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
@@ -563,12 +603,12 @@ ALTER TABLE t_upload_interface_data ADD INDEX `idx_tenant_env` ( `tenant_id`,`en
 ALTER TABLE t_white_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_whitelist_effective_app ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_fast_debug_stack_info ADD INDEX `idx_tenant_env` (`tenant_id`,`env_code` );
--- t_base_config
+-- 最后删除KEY
+-- t_base_config 这个比较特殊 必须要DROP再ADD
 ALTER TABLE t_base_config
 DROP  PRIMARY KEY,
-DROP  INDEX `unique_idx_config_code`;
+DROP  INDEX `unique_idx_config_code`,
 ADD   PRIMARY KEY (`CONFIG_CODE`, `env_code`, `tenant_id`);
--- 最后删除KEY
 ALTER TABLE t_application_mnt
 DROP KEY `index_identifier_application_name`;
 ALTER TABLE t_pradar_zk_config

@@ -175,7 +175,7 @@ public class AmdbHelper {
             }
 
             if (CollectionUtils.isEmpty(amdbResponse.getData())) {
-                log.error("{}返回状态为成功，但数据为空！amdbUrl={},响应信息：{},{}", eventName, this.url, responseEntity,
+                log.debug("{}返回状态为成功，但数据为空！amdbUrl={},响应信息：{},{}", eventName, this.url, responseEntity,
                     "可通过arthas命令 watch io.shulie.takin.web.amdb.util.AmdbHelper$AmdbBuilder param '{params,returnObj,"
                         + "throwExp}'  -n 5  -x 3 获取参数！");
             } else {

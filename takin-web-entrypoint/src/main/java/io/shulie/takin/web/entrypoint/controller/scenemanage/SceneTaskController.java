@@ -104,7 +104,8 @@ public class SceneTaskController {
             // 解除 场景锁
             redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
             SceneActionResp sceneStart = new SceneActionResp();
-            sceneStart.setMsg(Arrays.asList(StringUtils.split(ex.getMessage(), Constants.SPLIT)));
+            //sceneStart.setMsg(Arrays.asList(StringUtils.split(ex.getMessage(), Constants.SPLIT)));
+            sceneStart.setMsg(Arrays.asList(ex.getMessage()));
             return WebResponse.success(sceneStart);
         }
     }

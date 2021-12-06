@@ -439,7 +439,7 @@ update e_patrol_scene_chain set env_code='test',tenant_id=1;
 update e_patrol_scene_check set env_code='test',tenant_id=1;
 
 -- 兮曦 --
-
+BEGIN;
 -- 额外 租户期间增加的表
 -- update t_mq_config_template set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 UPDATE t_application_ds_db_table m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.app_id SET m.env_code = IFNULL(u.env_code,'test'),m.tenant_id = IFNULL(u.tenant_id,1);
@@ -462,7 +462,7 @@ UPDATE t_fast_debug_machine_performance t1
     LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 UPDATE t_fast_debug_machine_performance f SET f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
-
+COMMIT ;
 -- 最后加索引
 ALTER TABLE t_activity_node_service_state ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_agent_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );

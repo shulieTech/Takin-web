@@ -403,6 +403,7 @@ COMMIT;
 
 -- 兮曦 --
 -- 场景数据必须优先订正
+begin;
 update e_patrol_scene set tenant_id=7,env_code='prod',user_id=7 where customer_id=7;
 update e_patrol_scene set tenant_id=7,env_code='test',user_id=8 where customer_id=8;
 update e_patrol_scene set tenant_id=1,env_code='test',user_id=1 where customer_id=1;
@@ -434,6 +435,7 @@ INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_val
 INSERT INTO `e_patrol_exception_config`(`order_number`, `type_value`, `level_value`, `threshold_value`, `contrast_factor`, `remarks`,`tenant_id`, `env_code`) VALUES (0, 4, 2, 60.00, 1, '严重慢SQL', -1, 'system');
 
 update e_patrol_exception_notice_config set env_code='test',tenant_id=1,user_id=modify_user_id;
+commit;
 -- 兮曦 --
 
 -- 额外 租户期间增加的表

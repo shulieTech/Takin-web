@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.common;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.fastjson.JSON;
 
@@ -41,5 +42,9 @@ public abstract class AbstractSceneTask {
     protected int getAllowedTenantThreadMax(){
         return ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.PER_TENANT_ALLOW_TASK_THREADS_MAX);
     }
+
+
+    protected abstract void runTaskInTenantIfNecessary(int allowedTenantThreadMax, SceneTaskDto tenantTask, Long reportId,
+        AtomicInteger runningThreads);
 
 }

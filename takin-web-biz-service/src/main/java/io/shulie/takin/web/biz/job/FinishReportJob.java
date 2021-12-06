@@ -78,6 +78,7 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                     }
                 }
             }else {
+                //每个租户可以使用的最大线程数
                 int allowedTenantThreadMax = this.getAllowedTenantThreadMax();
                 //筛选出租户的任务
                 final Map<Long, List<SceneTaskDto>> listMap = taskDtoList.stream().collect(
@@ -86,15 +87,10 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                     Long reportId = taskDto.getReportId();
                     final Long tenantId = taskDto.getTenantId();
                     // saas 根据租户进行分片
-                    // 开始数据层分片
                     if (tenantId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                         AtomicInteger runningThreads = new AtomicInteger(0);
                         final List<SceneTaskDto> tenantTasks = listMap.get(tenantId);
                         for (SceneTaskDto tenantTask : tenantTasks) {
-                            AtomicInteger oldRunningThreads = runningTasks.putIfAbsent(tenantId, runningThreads);
-                            if (oldRunningThreads != null) {
-                                runningThreads = oldRunningThreads;
-                            }
                             runTaskInTenantIfNecessary(allowedTenantThreadMax, tenantTask, reportId, runningThreads);
                         }
                     }
@@ -104,24 +100,28 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
         log.debug("finishReport 执行时间:{}", System.currentTimeMillis() - start);
     }
 
-    private void runTaskInTenantIfNecessary(int allowedTenantThreadMax, SceneTaskDto taskDto, Long reportId,
+    @Override
+    protected void runTaskInTenantIfNecessary(int allowedTenantThreadMax, SceneTaskDto tenantTask, Long reportId,
         AtomicInteger runningThreads) {
-        //当前租户可以使用的最大线程数
+        AtomicInteger oldRunningThreads = runningTasks.putIfAbsent(tenantTask.getTenantId(), runningThreads);
+        if (oldRunningThreads != null) {
+            runningThreads = oldRunningThreads;
+        }
         final int currentThreads = runningThreads.get();
         if (currentThreads + 1 <= allowedTenantThreadMax) {
             if (runningThreads.compareAndSet(currentThreads, currentThreads + 1)) {
                 //将任务放入线程池
                 reportThreadPool.execute(() -> {
                     try {
-                        WebPluginUtils.setTraceTenantContext(taskDto);
-                        reportTaskService.finishReport(reportId, taskDto);
+                        WebPluginUtils.setTraceTenantContext(tenantTask);
+                        reportTaskService.finishReport(reportId, tenantTask);
                     } catch (Throwable e) {
                         log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
                     } finally {
-                        AtomicInteger currentRunningThreads = runningTasks.get(taskDto.getTenantId());
+                        AtomicInteger currentRunningThreads = runningTasks.get(tenantTask.getTenantId());
                         if (currentRunningThreads.get() - 1 <= 0) {
                             // 移除对应的租户
-                            runningTasks.remove(taskDto.getTenantId());
+                            runningTasks.remove(tenantTask.getTenantId());
                         } else {
                             currentRunningThreads.decrementAndGet();
                         }

@@ -604,7 +604,7 @@ ALTER TABLE t_white_list ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_whitelist_effective_app ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_fast_debug_stack_info ADD INDEX `idx_tenant_env` (`tenant_id`,`env_code` );
 -- 最后删除KEY
--- t_base_config
+-- t_base_config 这个比较特殊 必须要DROP再ADD
 ALTER TABLE t_base_config
 DROP  PRIMARY KEY,
 DROP  INDEX `unique_idx_config_code`,

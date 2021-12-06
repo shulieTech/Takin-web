@@ -369,9 +369,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             ScriptCheckDTO checkDTO = this.checkScriptAndActivity(dto.getScriptType(), true, businessActivityList,
                 execList);
             if (StringUtils.isNoneBlank(checkDTO.getErrmsg())) {
-                return new WebResponse<List<SceneScriptRefOpen>>() {{
-                    setError(io.shulie.takin.web.common.domain.ErrorInfo.build("500", checkDTO.getErrmsg()));
-                }};
+                throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON,checkDTO.getErrmsg());
             }
         }
 

@@ -32,11 +32,28 @@ update trodb_cloud.t_report       set tenant_id = customer_id , env_code = 'prod
 -- 找出默认租户用户id
 -- 找出默认租户的报告id trodb_cloud找
 
+
+
+-- 更新修正报告相关
+-- 更新 t_report_application_summary |t_report_machine |t_report_summary --
+-- 默认租户 --
+-- 找出默认租户用户id
+-- 找出默认租户的报告id trodb_cloud找
+
+SELECT id from t_tro_user WHERE id = t_tro_user.tenant_id and tenant_id = 1
+
+SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE id != t_tro_user.tenant_id and tenant_id = 1)
 -- 更新报告 t_report_application_summary
-update t_report_application_summary set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE tenant_id = 1));
-update t_report_machine set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE tenant_id = 1));
-update t_report_summary set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE tenant_id = 1));
-update t_trace_manage set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE tenant_id = 1));
+update t_report_application_summary set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE id != t_tro_user.tenant_id and tenant_id = 1));
+update t_report_machine set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE id != t_tro_user.tenant_id and tenant_id = 1));
+update t_report_summary set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE id != t_tro_user.tenant_id and tenant_id = 1));
+update t_trace_manage set tenant_id = 1 , env_code = 'test' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE id != t_tro_user.tenant_id and tenant_id = 1));
+
+update t_report_application_summary set tenant_id = 1 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE id = t_tro_user.tenant_id and tenant_id = 1));
+update t_report_machine set tenant_id = 1 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE id = t_tro_user.tenant_id and tenant_id = 1));
+update t_report_summary set tenant_id = 1 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE id = t_tro_user.tenant_id and tenant_id = 1));
+update t_trace_manage set tenant_id = 1 , env_code = 'prod' WHERE report_id in (SELECT id from trodb_cloud.t_report WHERE user_id in(SELECT id from t_tro_user WHERE id = t_tro_user.tenant_id and tenant_id = 1));
+
 
 -- T3出行
 -- 测试环境 cloud查找

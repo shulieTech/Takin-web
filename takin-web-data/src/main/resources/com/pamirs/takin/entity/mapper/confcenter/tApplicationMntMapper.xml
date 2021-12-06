@@ -494,10 +494,7 @@
     </select>
     <select id="getAllApplications"
             resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
-        select application_id,
-               application_name,
-               user_id,
-               customer_id
+        select *
         from t_application_mnt
     </select>
 

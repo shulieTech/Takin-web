@@ -51,9 +51,8 @@ public class ElasticJobAutoConfig {
         zkClientConfig.setZkServers(zkAddr);
         zkClientConfig.setNamespace("takin-web-job-" + env);
         elasticJobConfig.setZkClientConfig(zkClientConfig);
-        elasticJobConfig.setDataSource(dataSource);
         ElasticRegCenterConfig elasticRegCenterConfig = new ElasticRegCenterConfig(elasticJobConfig);
-        return new SpringJobSchedulerFactory(elasticJobProperties, elasticRegCenterConfig.regCenter(),elasticRegCenterConfig.jobEventConfiguration());
+        return new SpringJobSchedulerFactory(elasticJobProperties, elasticRegCenterConfig.regCenter());
     }
 
     @Bean

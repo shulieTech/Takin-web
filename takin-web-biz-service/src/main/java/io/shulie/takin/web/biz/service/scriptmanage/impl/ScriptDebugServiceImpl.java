@@ -447,7 +447,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         queryLinkDetailDTO.setPageSize(request.getPageSize());
         queryLinkDetailDTO.setTaskId(scriptDebugEntity.getCloudReportId().toString());
         queryLinkDetailDTO.setStartTime(scriptDebugEntity.getCreatedAt().getTime());
-        queryLinkDetailDTO.setEndTime(scriptDebugEntity.getUpdatedAt().getTime());
+        queryLinkDetailDTO.setEndTime(DateUtil.offsetHour(scriptDebugEntity.getUpdatedAt(), 1).getTime());
 
         // entryList
         if (request.getBusinessActivityId() != null) {

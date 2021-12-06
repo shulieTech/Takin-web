@@ -318,10 +318,10 @@ UPDATE t_scene_link_relate t1
 -- liuchuan end
 
 -- tenant_id
+update t_application_mnt app set app.tenant_id=IFNULL((select tenant_id from t_tro_user where id= app.user_id),1);
 UPDATE t_application_ds_manage t1
     LEFT JOIN t_application_mnt t2 ON t1.APPLICATION_ID = t2.APPLICATION_ID
     SET t1.tenant_id = IFNULL(t2.tenant_id,1);
-update t_application_mnt app set app.tenant_id=IFNULL((select tenant_id from t_tro_user where id= app.user_id),1);
 update t_application_node_probe probe set probe.tenant_id=IFNULL((select tenant_id from t_application_mnt where APPLICATION_NAME = probe.application_name and customer_id=probe.customer_id),1);
 update t_black_list set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);
 update t_business_link_manage_table set tenant_id=IFNULL((select tenant_id from t_tro_user where id= user_id),1);

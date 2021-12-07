@@ -2,8 +2,8 @@ package io.shulie.takin.web.biz.service.impl;
 
 import java.util.concurrent.TimeUnit;
 
-import cn.hutool.core.lang.Assert;
 import io.shulie.takin.web.biz.service.DistributedLock;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
  * @date 2021/6/8 2:44 下午
  */
 @Service
+@Slf4j
 public class RedissonDistributedLock implements DistributedLock {
 
     @Qualifier("redisson")
@@ -37,7 +38,9 @@ public class RedissonDistributedLock implements DistributedLock {
         try {
             return lock.tryLock(waitTime, leaseTime, timeUnit);
         } catch (InterruptedException e) {
-            throw new RuntimeException("尝试获得锁失败!");
+            log.error("尝试获得锁失败!");
+            unLockSafely(lockKey);
+            return false;
         }
     }
 
@@ -58,8 +61,8 @@ public class RedissonDistributedLock implements DistributedLock {
     }
 
     @Override
-    public void checkLock(String lockKey) {
-        Assert.isTrue(redissonClient.getLock(lockKey).isLocked(), "has cancel lock:" + lockKey);
+    public Boolean checkLock(String lockKey) {
+       return redissonClient.getLock(lockKey).isLocked();
     }
 
 }

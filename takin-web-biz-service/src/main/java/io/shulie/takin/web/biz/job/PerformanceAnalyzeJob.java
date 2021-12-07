@@ -1,13 +1,25 @@
 package io.shulie.takin.web.biz.job;
 
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
-import io.shulie.takin.web.biz.service.perfomanceanaly.PerformanceBaseDataService;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ThreadAnalyService;
+import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,16 +32,54 @@ import org.springframework.stereotype.Component;
 public class PerformanceAnalyzeJob implements SimpleJob {
 
     @Autowired
-    private PerformanceBaseDataService performanceBaseDataService;
-    @Autowired
     private ThreadAnalyService threadAnalyService;
 
-    @Value("${performance.clear.second:172800}")
-    private String second;
+    @Autowired
+    @Qualifier("jobThreadPool")
+    private ThreadPoolExecutor jobThreadPool;
+
+    @Autowired
+    private DistributedLock distributedLock;
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        performanceBaseDataService.clearData(Integer.valueOf(second));
-        threadAnalyService.clearData(Integer.valueOf(second));
+        Integer second = Integer.valueOf(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_PERFORMANCE_CLEAR_SECOND));
+
+
+        if (WebPluginUtils.isOpenVersion()) {
+            // 私有化 + 开源
+            threadAnalyService.clearData(second);
+        } else {
+            List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
+            for (TenantInfoExt ext : tenantInfoExts) {
+                // 开始数据层分片
+                if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    // 根据环境 分线程
+                    for (TenantEnv e : ext.getEnvs()) {
+                        // 分布式锁
+                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(),e.getEnvCode(),shardingContext.getJobName());
+                        if (distributedLock.checkLock(lockKey)) {
+                            continue;
+                        }
+                        jobThreadPool.execute(() -> {
+                            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+                            if(!tryLock) {
+                                return;
+                            }
+                            try {
+                                WebPluginUtils.setTraceTenantContext(
+                                    new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                        ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                                threadAnalyService.clearData(second);
+                                WebPluginUtils.removeTraceContext();
+                            } finally {
+                                distributedLock.unLockSafely(lockKey);
+                            }
+                        });
+                    }
+                }
+            }
+        }
     }
 }

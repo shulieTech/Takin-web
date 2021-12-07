@@ -21,7 +21,7 @@ public class RechargeVO implements Serializable {
 
     @NotNull
     @ApiModelProperty(value = "客户ID")
-    private Long customerId;
+    private Long tenantId;
 
     @NotNull
     @ApiModelProperty(value = "充值现金")

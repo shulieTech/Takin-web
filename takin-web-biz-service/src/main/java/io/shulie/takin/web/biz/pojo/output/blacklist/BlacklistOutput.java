@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.output.blacklist;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -7,7 +8,7 @@ import lombok.Data;
  * @date 2021/4/6 2:25 下午
  */
 @Data
-public class BlacklistOutput {
+public class BlacklistOutput extends UserCommonExt {
     /**
      * 主键id
      */
@@ -45,13 +46,5 @@ public class BlacklistOutput {
      */
     private Integer useYn;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
-    /**
-     * 用户id
-     */
-    private Long userId;
 }

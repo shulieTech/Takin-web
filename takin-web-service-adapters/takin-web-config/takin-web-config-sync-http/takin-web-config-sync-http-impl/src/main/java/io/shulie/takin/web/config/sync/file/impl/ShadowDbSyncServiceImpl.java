@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.shulie.takin.web.config.entity.ShadowDB;
 import io.shulie.takin.web.config.sync.api.ShadowDbSyncService;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class ShadowDbSyncServiceImpl implements ShadowDbSyncService {
 
     @Override
-    public void syncShadowDataBase(String namespace, String applicationName, List<ShadowDB> shadowDataBases) {
+    public void syncShadowDataBase(TenantCommonExt commonExt, String applicationName, List<ShadowDB> shadowDataBases) {
         //TODO 写到redis，不写到文件
     }
 }

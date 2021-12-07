@@ -1,12 +1,12 @@
 package io.shulie.takin.web.data.model.mysql;
 
+import java.io.Serializable;
+
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  * MQ配置模版表(MqConfigTemplate)实体类
@@ -60,16 +60,6 @@ public class MqConfigTemplateEntity extends NewBaseEntity implements Serializabl
      * 备注
      */
     private String commit;
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
 
 }

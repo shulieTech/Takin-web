@@ -91,7 +91,7 @@ public interface AgentConfigDAO {
      * @param queryParam 查询对象
      * @return AgentConfigDetailResult集合
      */
-    List<AgentConfigDetailResult> findGlobalList(AgentConfigQueryParam queryParam);
+    List<AgentConfigDetailResult> listByTypeAndTenantIdAndEnvCode(AgentConfigQueryParam queryParam);
 
     /**
      * 查询应用的配置列表
@@ -105,9 +105,8 @@ public interface AgentConfigDAO {
      * 更新配置值
      *
      * @param updateParam 更新对象
-     * @return 影响的记录数
      */
-    Integer updateConfigValue(UpdateAgentConfigParam updateParam);
+    void updateConfigValue(UpdateAgentConfigParam updateParam);
 
     /**
      * 根据id删除对应的记录
@@ -116,6 +115,25 @@ public interface AgentConfigDAO {
      * @return 影响记录数
      */
     Integer deleteById(Long id);
+
+    /**
+     * 根据enKey，类型，获取租户下的配置
+     *
+     * @param enKey 英文key
+     * @param type 类型
+     * @return 详情
+     */
+    AgentConfigDetailResult getByEnKeyAndTypeWithTenant(String enKey, Integer type);
+
+    /**
+     * 根据enKey，类型，应用名称，获取租户下的应用的配置
+     *
+     * @param enKey 英文key
+     * @param type 类型
+     * @param projectName 应用名称
+     * @return 详情
+     */
+    AgentConfigDetailResult getByEnKeyAndTypeAndProjectNameWithTenant(String enKey, Integer type, String projectName);
 
 }
 

@@ -11,7 +11,7 @@ import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "console")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "console")
 @Api(tags = "挡板配置", value = "挡板配置")
 public class LinkGuardController {
 

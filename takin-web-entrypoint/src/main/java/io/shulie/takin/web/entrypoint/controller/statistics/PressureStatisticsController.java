@@ -13,7 +13,7 @@ import io.shulie.takin.web.biz.pojo.output.statistics.PressurePieTotalOutput;
 import io.shulie.takin.web.biz.pojo.output.statistics.ReportTotalOutput;
 import io.shulie.takin.web.biz.pojo.output.statistics.ScriptLabelListTotalOutput;
 import io.shulie.takin.web.biz.service.statistics.PressureStatisticsService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author 无涯
- * @Package io.shulie.takin.web.app.controller.statistic
  * @date 2020/11/30 7:07 下午
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "/statistic")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "/statistic")
 @Api(tags = "统计管理")
 public class PressureStatisticsController {
 
@@ -38,7 +37,7 @@ public class PressureStatisticsController {
     /**
      * 统计场景分类，脚本类型，返回饼状图数据
      *
-     * @return
+     * @return -
      */
     @GetMapping("/getPressurePieTotal")
     @ApiOperation(value = "统计压测场景分类以及脚本类型")
@@ -60,7 +59,7 @@ public class PressureStatisticsController {
     /**
      * 统计报告通过/未通过
      *
-     * @return
+     * @return -
      */
     @GetMapping("/getReportTotal")
     @ApiOperation(value = "统计报告通过以及未通过")
@@ -80,7 +79,7 @@ public class PressureStatisticsController {
     /**
      * 压测场景次数统计 && 压测脚本次数统计
      *
-     * @return
+     * @return -
      */
     @GetMapping("/getPressureListTotal")
     @ApiOperation(value = "统计压测场景次数以及压测脚本次数")
@@ -102,7 +101,7 @@ public class PressureStatisticsController {
     /**
      * 统计脚本标签
      *
-     * @return
+     * @return -
      */
     @GetMapping("/getScriptLabelListTotal")
     @ApiOperation(value = "统计脚本标签")

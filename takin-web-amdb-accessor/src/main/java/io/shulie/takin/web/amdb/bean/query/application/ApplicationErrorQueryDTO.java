@@ -12,4 +12,12 @@ public class ApplicationErrorQueryDTO {
      * 应用名称(单个)
      */
     private String appName;
+    /**
+     * 用户标识
+     */
+    private String tenantAppKey;
+    /**
+     * 环境编码
+     */
+    private String envCode;
 }

@@ -1,10 +1,10 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.time.LocalDateTime;
 import java.io.Serializable;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

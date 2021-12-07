@@ -13,7 +13,7 @@ public class WhitelistEffectiveAppDeleteParam {
     /**
      * 租户id
      */
-    private Long customerId;
+    private Long tenantId;
 
     /**
      * 用户id

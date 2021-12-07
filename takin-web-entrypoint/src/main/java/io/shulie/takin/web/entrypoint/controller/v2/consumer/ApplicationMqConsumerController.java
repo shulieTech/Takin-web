@@ -1,5 +1,9 @@
 package io.shulie.takin.web.entrypoint.controller.v2.consumer;
 
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
+
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
@@ -11,8 +15,7 @@ import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerQueryInputV2
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
 import io.shulie.takin.web.biz.service.ShadowConsumerService;
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -26,15 +29,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.constraints.NotNull;
-import java.util.List;
-
 /**
  * @Author: 南风
  * @Date: 2021/8/31 7:48 下午
  */
 @RestController("v2.application.consumer")
-@RequestMapping(APIUrls.TAKIN_API_URL+"v2")
+@RequestMapping(ApiUrls.TAKIN_API_URL+"v2")
 @Api(tags = "接口-v2:影子消费者管理", value = "影子消费者")
 public class ApplicationMqConsumerController {
 

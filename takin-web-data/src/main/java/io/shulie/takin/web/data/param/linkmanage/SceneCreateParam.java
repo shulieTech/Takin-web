@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.param.linkmanage;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2020/11/4 2:56 下午
  */
 @Data
-public class SceneCreateParam {
+public class SceneCreateParam extends UserCommonExt {
     /**
      * 主键id
      */
@@ -47,13 +48,4 @@ public class SceneCreateParam {
      */
     private Date updateTime;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 }

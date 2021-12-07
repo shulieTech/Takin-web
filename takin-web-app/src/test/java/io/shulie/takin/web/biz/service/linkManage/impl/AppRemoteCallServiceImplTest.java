@@ -24,6 +24,7 @@ import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.test.context.ContextConfiguration;
@@ -42,6 +43,9 @@ import org.springframework.transaction.TransactionStatus;
 @ContextConfiguration(classes = Application.class)
 public class AppRemoteCallServiceImplTest {
 
+    @Value("${data.path}")
+    protected String uploadPath;
+
     @Autowired
     DataSourceTransactionManager dataSourceTransactionManager;
     @Autowired
@@ -49,6 +53,9 @@ public class AppRemoteCallServiceImplTest {
 
     @Autowired
     private AppRemoteCallService appRemoteCallService;
+
+    //@Resource
+    //private PluginLibraryDAO pluginLibraryDAO;
 
     @Test
     public void batchConfigTest(){
@@ -58,5 +65,21 @@ public class AppRemoteCallServiceImplTest {
         request.setAppIds(Lists.newArrayList(6841250229157629952L,6846731729676275712L));
         appRemoteCallService.batchConfig(request);
         dataSourceTransactionManager.commit(transactionStatus);//提交
+    }
+
+    @Test
+    public void agentTest(){
+        //// 查询当前最高版本的agent、simulator、middleware的包
+        //PluginLibraryDetailResult agent = pluginLibraryDAO.queryMaxVersionPlugin(PluginTypeEnum.AGENT.getCode()).get(0);
+        //PluginLibraryDetailResult simulator = pluginLibraryDAO.queryMaxVersionPlugin(PluginTypeEnum.SIMULATOR.getCode())
+        //    .get(0);
+        //List<PluginLibraryDetailResult> middlewareList = pluginLibraryDAO.queryMaxVersionPlugin(
+        //    PluginTypeEnum.MIDDLEWARE.getCode());
+        //
+        //// 聚合包
+        //String completeAgentPath = AgentPkgUtil.aggregation(agent, simulator, middlewareList, uploadPath);
+        //String completeSimulatorPath = AgentPkgUtil.aggregation(null, simulator, middlewareList, uploadPath);
+        //System.out.println(completeAgentPath);
+        //System.out.println(completeSimulatorPath);
     }
 }

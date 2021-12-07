@@ -18,6 +18,7 @@ import io.shulie.takin.web.data.param.tracemanage.TraceManageDeployUpdateParam;
 import io.shulie.takin.web.data.param.tracemanage.TraceManageQueryParam;
 import io.shulie.takin.web.data.result.tracemanage.TraceManageDeployResult;
 import io.shulie.takin.web.data.result.tracemanage.TraceManageResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -233,6 +234,9 @@ public class TraceManageDAOImpl implements TraceManageDAO{
     public List<TraceManageDeployResult> queryTraceManageDeployByStatus(Integer status) {
         LambdaQueryWrapper<TraceManageDeployEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(TraceManageDeployEntity::getStatus,status);
+        wrapper.eq(TraceManageDeployEntity::getTenantId, WebPluginUtils.traceTenantId());
+        wrapper.eq(TraceManageDeployEntity::getEnvCode,WebPluginUtils.traceEnvCode());
+
         List<TraceManageDeployEntity> traceManageDeployEntities = traceManageDeployMapper.selectList(wrapper);
         if (CollectionUtils.isNotEmpty(traceManageDeployEntities)){
             return traceManageDeployEntities.stream().map(this::getTraceManageDeployResult).collect(Collectors.toList());

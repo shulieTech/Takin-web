@@ -2,10 +2,10 @@ package io.shulie.takin.web.biz.service.report.impl;
 
 import javax.annotation.Resource;
 
-import com.pamirs.takin.entity.dao.report.TReportApplicationSummaryMapper;
-import com.pamirs.takin.entity.dao.report.TReportBottleneckInterfaceMapper;
-import com.pamirs.takin.entity.dao.report.TReportMachineMapper;
-import com.pamirs.takin.entity.dao.report.TReportSummaryMapper;
+import io.shulie.takin.web.data.dao.report.ReportApplicationSummaryDAO;
+import io.shulie.takin.web.data.dao.report.ReportBottleneckInterfaceDAO;
+import io.shulie.takin.web.data.dao.report.ReportMachineDAO;
+import io.shulie.takin.web.data.dao.report.ReportSummaryDAO;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,25 +16,25 @@ import org.springframework.stereotype.Component;
 public class ReportClearService {
 
     @Resource
-    private TReportApplicationSummaryMapper tReportApplicationSummaryMapper;
+    private ReportApplicationSummaryDAO reportApplicationSummaryDAO;
 
     @Resource
-    private TReportBottleneckInterfaceMapper tReportBottleneckInterfaceMapper;
+    private ReportBottleneckInterfaceDAO reportBottleneckInterfaceDAO;
 
     @Resource
-    private TReportMachineMapper tReportMachineMapper;
+    private ReportMachineDAO reportMachineDAO;
 
     @Resource
-    private TReportSummaryMapper tReportSummaryMapper;
+    private ReportSummaryDAO reportSummaryDAO;
 
     public void clearReportData(Long reportId) {
         if (reportId == null) {
             return;
         }
-        tReportBottleneckInterfaceMapper.deleteByReportId(reportId);
-        tReportApplicationSummaryMapper.deleteByReportId(reportId);
-        tReportSummaryMapper.deleteByReportId(reportId);
-        tReportMachineMapper.deleteByReportId(reportId);
+        reportBottleneckInterfaceDAO.deleteByReportId(reportId);
+        reportApplicationSummaryDAO.deleteByReportId(reportId);
+        reportSummaryDAO.deleteByReportId(reportId);
+        reportMachineDAO.deleteByReportId(reportId);
     }
 }
 

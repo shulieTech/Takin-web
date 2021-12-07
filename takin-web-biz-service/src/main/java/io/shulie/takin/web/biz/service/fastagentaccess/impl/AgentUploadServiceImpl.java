@@ -19,7 +19,7 @@ import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentVersionListRes
 import io.shulie.takin.web.biz.service.ApiService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentUploadService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
+import io.shulie.takin.web.common.util.AppCommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,9 +27,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * @Description agent上传实现类
- * @Author ocean_wll
- * @Date 2021/8/12 10:34 上午
+ * agent上传实现类
+ *
+ * @author ocean_wll
+ * @date 2021/8/12 10:34 上午
  */
 @Service
 @Slf4j

@@ -3,9 +3,10 @@ package io.shulie.takin.web.biz.pojo.bo;
 import lombok.Data;
 
 /**
- * @Description 配置列表查询对象
- * @Author ocean_wll
- * @Date 2021/8/17 11:52 上午
+ * 配置列表查询对象
+ *
+ * @author ocean_wll
+ * @date 2021/8/17 11:52 上午
  */
 @Data
 public class ConfigListQueryBO {

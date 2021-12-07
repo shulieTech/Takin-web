@@ -35,7 +35,7 @@ public class LeakVerifyTaskController {
     @PostMapping("/start")
     @ApiOperation(value = "开始周期性验证任务")
     public void start(@RequestBody LeakVerifyTaskStartRequest startRequest) {
-        if (WebPluginUtils.checkUserData()) {
+        if (WebPluginUtils.checkUserPlugin()) {
             verifyTaskService.start(startRequest);
         }
 
@@ -44,7 +44,7 @@ public class LeakVerifyTaskController {
     @PostMapping("/stop")
     @ApiOperation(value = "停止周期性验证任务")
     public void stop(@RequestBody LeakVerifyTaskStopRequest stopRequest) {
-        if (WebPluginUtils.checkUserData()) {
+        if (WebPluginUtils.checkUserPlugin()) {
             verifyTaskService.stop(stopRequest);
         }
 
@@ -53,7 +53,7 @@ public class LeakVerifyTaskController {
     @PostMapping("/run")
     @ApiOperation(value = "运行单次验证任务")
     public LeakVerifyTaskResultResponse run(@RequestBody LeakVerifyTaskRunWithoutSaveRequest runRequest) {
-        if (WebPluginUtils.checkUserData()) {
+        if (WebPluginUtils.checkUserPlugin()) {
             return verifyTaskService.runWithoutResultSave(runRequest);
         }
         return null;
@@ -62,7 +62,7 @@ public class LeakVerifyTaskController {
     @GetMapping("/query")
     @ApiOperation(value = "查看所有验证任务")
     public Set<String> queryVerifyTask() {
-        if (WebPluginUtils.checkUserData()) {
+        if (WebPluginUtils.checkUserPlugin()) {
             return verifyTaskService.queryVerifyTask();
         }
         return null;

@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.param.scriptmanage;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -7,7 +8,7 @@ import lombok.Data;
  * @date 2021/5/11 5:14 下午
  */
 @Data
-public class SaveOrUpdateScriptDebugParam {
+public class SaveOrUpdateScriptDebugParam extends UserCommonExt {
 
     /**
      * 主键id
@@ -59,14 +60,5 @@ public class SaveOrUpdateScriptDebugParam {
      */
     private Long cloudReportId;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 租户下的用户id
-     */
-    private Long userId;
 
 }

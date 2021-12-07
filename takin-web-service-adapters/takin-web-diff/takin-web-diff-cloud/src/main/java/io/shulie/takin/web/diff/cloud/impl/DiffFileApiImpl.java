@@ -2,12 +2,12 @@ package io.shulie.takin.web.diff.cloud.impl;
 
 import java.util.Map;
 
-import io.shulie.takin.cloud.open.api.CloudFileApi;
-import io.shulie.takin.cloud.open.req.filemanager.FileContentParamReq;
-import io.shulie.takin.cloud.open.req.filemanager.FileCopyParamReq;
-import io.shulie.takin.cloud.open.req.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.cloud.open.req.filemanager.FileDeleteParamReq;
-import io.shulie.takin.cloud.open.req.filemanager.FileZipParamReq;
+import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileContentParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCopyParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileDeleteParamReq;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileZipParamReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.diff.api.DiffFileApi;
@@ -29,36 +29,32 @@ public class DiffFileApiImpl implements DiffFileApi {
     @Override
 
     public String getFileManageContextPath(FileContentParamReq req) {
-        ResponseResult<Map<String, Object>> fileContent = cloudFileApi.getFileContent(req);
-        if (fileContent != null && fileContent.getData() != null && fileContent.getData()
-            .containsKey(String.join(",", req.getPaths()))) {
-            return fileContent.getData().get(String.join(",", req.getPaths())).toString();
+        Map<String, Object> fileContent = cloudFileApi.getFileContent(req);
+        if (fileContent != null && fileContent.containsKey(String.join(",", req.getPaths()))) {
+            return fileContent.get(String.join(",", req.getPaths())).toString();
         }
         return "";
     }
 
     @Override
     public Boolean deleteFile(FileDeleteParamReq req) {
-        if (CollectionUtils.isEmpty(req.getPaths())) {
-            return true;
+        if (CollectionUtils.isEmpty(req.getPaths())) {return true;}
+        try {
+            return cloudFileApi.deleteFile(req);
+        } catch (Exception e) {
+            return false;
         }
-        ResponseResult<Boolean> result = cloudFileApi.deleteFile(req);
-        if (result.getSuccess()) {
-            return result.getData();
-        }
-        return false;
     }
 
     @Override
     public Boolean copyFile(FileCopyParamReq req) {
-        if (CollectionUtils.isEmpty(req.getSourcePaths()) || StringUtil.isBlank(req.getTargetPath())) {
-            return true;
+        if (CollectionUtils.isEmpty(req.getSourcePaths())
+            || StringUtil.isBlank(req.getTargetPath())) {return true;}
+        try {
+            return cloudFileApi.copyFile(req);
+        } catch (Exception e) {
+            return false;
         }
-        ResponseResult<Boolean> result = cloudFileApi.copyFile(req);
-        if (result.getSuccess()) {
-            return result.getData();
-        }
-        return false;
     }
 
     @Override
@@ -67,11 +63,11 @@ public class DiffFileApiImpl implements DiffFileApi {
             StringUtil.isBlank(req.getTargetPath()) || StringUtil.isBlank(req.getZipFileName())) {
             return false;
         }
-        ResponseResult<Boolean> result = cloudFileApi.zipFile(req);
-        if (result.getSuccess()) {
-            return result.getData();
+        try {
+            return cloudFileApi.zipFile(req);
+        } catch (Exception e) {
+            return false;
         }
-        return false;
     }
 
     @Override
@@ -79,11 +75,11 @@ public class DiffFileApiImpl implements DiffFileApi {
         if (StringUtil.isBlank(req.getFileContent()) || StringUtil.isBlank(req.getFilePath())) {
             return false;
         }
-        ResponseResult<Boolean> result = cloudFileApi.createFileByPathAndString(req);
-        if (result.getSuccess()) {
-            return result.getData();
+        try {
+            return cloudFileApi.createFileByPathAndString(req);
+        } catch (Exception e) {
+            return false;
         }
-        return false;
     }
 
 }

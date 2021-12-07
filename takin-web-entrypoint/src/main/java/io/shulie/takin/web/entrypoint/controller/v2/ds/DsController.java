@@ -1,5 +1,8 @@
 package io.shulie.takin.web.entrypoint.controller.v2.ds;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.pamirs.attach.plugin.dynamic.Converter;
 import com.pamirs.attach.plugin.dynamic.Type;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
@@ -16,7 +19,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationDsV2Response
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -32,16 +35,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @Author: 南风
  * @Date: 2021/8/27 1:56 下午
  */
 @Slf4j
 @RestController("v2.application.ds")
-@RequestMapping(APIUrls.TAKIN_API_URL+"v2")
+@RequestMapping(ApiUrls.TAKIN_API_URL+"v2")
 @Api(tags = "接口-v2:影子库表管理", value = "影子库表管理")
 public class DsController {
 

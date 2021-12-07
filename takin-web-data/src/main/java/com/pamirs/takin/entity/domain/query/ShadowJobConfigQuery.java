@@ -1,5 +1,7 @@
 package com.pamirs.takin.entity.domain.query;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -39,5 +41,7 @@ public class ShadowJobConfigQuery extends AbstractQueryPage {
 
     @ApiModelProperty(name = "remark", value = "备注")
     private String remark;
+
+    List<Long> userIds;
 
 }

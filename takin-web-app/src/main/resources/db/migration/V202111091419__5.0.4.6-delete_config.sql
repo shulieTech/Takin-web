@@ -1,0 +1,1 @@
+DELETE FROM t_agent_config WHERE en_key = "pradar.trace.log.version" or en_key = "pradar.monitor.log.version";

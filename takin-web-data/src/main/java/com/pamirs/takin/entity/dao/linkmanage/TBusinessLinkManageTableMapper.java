@@ -6,7 +6,6 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessActiveIdAndNameDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessLinkDto;
 import com.pamirs.takin.entity.domain.entity.linkmanage.BusinessLinkManageTable;
 import com.pamirs.takin.entity.domain.entity.linkmanage.LinkQueryVo;
-import io.shulie.takin.web.common.annocation.DataAuth;
 import org.apache.ibatis.annotations.Param;
 
 public interface TBusinessLinkManageTableMapper {
@@ -24,8 +23,7 @@ public interface TBusinessLinkManageTableMapper {
 
     int countByBussinessName(@Param("linkName") String linkName);
 
-    @DataAuth(tableAlias = "manage")
-    List<BusinessLinkDto> selectBussinessLinkListBySelective2(LinkQueryVo queryVo);
+    List<BusinessLinkDto> selectBussinessLinkListBySelective2(@Param("query") LinkQueryVo queryVo,@Param("userIds") List<Long> userIds);
 
     BusinessLinkDto selectBussinessLinkById(@Param("id") Long id);
 

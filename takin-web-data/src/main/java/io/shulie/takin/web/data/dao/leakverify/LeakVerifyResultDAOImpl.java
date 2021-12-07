@@ -60,7 +60,6 @@ public class LeakVerifyResultDAOImpl implements LeakVerifyResultDAO {
             LeakVerifyResultEntity::getDbresourceId,
             LeakVerifyResultEntity::getDbresourceName,
             LeakVerifyResultEntity::getDbresourceUrl,
-            LeakVerifyResultEntity::getCustomerId,
             LeakVerifyResultEntity::getUserId,
             LeakVerifyResultEntity::getUpdateTime);
         List<LeakVerifyResultEntity> entityList = leakVerifyResultMapper.selectList(queryWrapper);

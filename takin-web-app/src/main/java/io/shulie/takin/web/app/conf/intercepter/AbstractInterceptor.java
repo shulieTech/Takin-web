@@ -53,9 +53,12 @@ public class AbstractInterceptor implements HandlerInterceptor {
         {
             // 声明字符串
             String takinAuthorityHeaderName = "takin-authority";
+            // 声明租户
+            String takinTenantAuthorityHeaderName = "takin-tenant-authority";
             String accessControlExposeHeaderName = "Access-Control-Expose-Headers";
             // 填充请求头并对外暴露(Chrome安全策略)
-            response.setHeader(takinAuthorityHeaderName, WebPluginUtils.checkUserData().toString());
+            response.setHeader(takinAuthorityHeaderName, WebPluginUtils.checkUserPlugin().toString());
+            response.setHeader(takinTenantAuthorityHeaderName, WebPluginUtils.checkTenantPlugin().toString());
             Collection<String> headers = response.getHeaderNames();
             response.setHeader(accessControlExposeHeaderName, String.join(",", headers));
         }

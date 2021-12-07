@@ -2,17 +2,17 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 @Data
 @TableName(value = "t_application_ds_manage")
-public class ApplicationDsManageEntity {
+public class ApplicationDsManageEntity extends UserBaseEntity {
     /**
      * 主键
      */
@@ -67,17 +67,6 @@ public class ApplicationDsManageEntity {
     @TableField(value = "STATUS")
     private Integer status;
 
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 创建时间

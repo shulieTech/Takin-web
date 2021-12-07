@@ -15,7 +15,7 @@ import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "接口: 白名单管理接口")
 public class WhiteListConfigController {
 

@@ -6,10 +6,9 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
- * 横坐标
+ * 横坐标 time
  *
  * @author qianshui
- * @Description time
  * @date 2020/11/4 上午11:43
  */
 @Data

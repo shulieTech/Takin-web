@@ -69,10 +69,18 @@ public class QueryLinkDetailDTO extends PagingDevice {
      */
     private Long endTime;
 
-
     /**
      * 结束时间
      */
     private Integer clusterTest;
+
+    /**
+     * 用户编码
+     */
+    private String tenantAppKey;
+    /**
+     * 环境编码
+     */
+    private String envCode;
 
 }

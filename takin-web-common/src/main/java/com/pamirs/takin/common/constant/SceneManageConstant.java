@@ -68,4 +68,5 @@ public class SceneManageConstant {
     public static final String FEATURES_BUSINESS_FLOW_ID ="businessFlowId";
 
     public static final String FEATURES_SCHEDULE_INTERVAL = "scheduleInterval";
+    public static final String IS_BIG_FILE = "isBigFile";
 }

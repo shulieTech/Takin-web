@@ -2,9 +2,12 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -14,7 +17,20 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName(value = "t_link_guard")
-public class LinkGuardEntity extends BaseEntity {
+public class LinkGuardEntity extends UserBaseEntity {
+
+    /**
+     * 主键
+     */
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
+    /**
+     * 删除
+     * 1 删除, 0 未删除
+     */
+    @TableLogic
+    private Integer isDeleted;
 
     /**
      * 项目名称
@@ -41,18 +57,6 @@ public class LinkGuardEntity extends BaseEntity {
     private String groovy;
 
     /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
-
-    /**
      * 创建时间
      */
     @TableField(value = "create_time")
@@ -67,11 +71,6 @@ public class LinkGuardEntity extends BaseEntity {
     @TableField(value = "remark")
     private String remark;
 
-    /**
-     * 是否有效 0:有效;1:无效
-     */
-    @TableField(value = "is_deleted")
-    private Integer isDeleted;
 
     /**
      * 0:未启用；1:启用

@@ -11,7 +11,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import com.pamirs.takin.common.ResponseError;
 import com.pamirs.takin.common.ResponseOk;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date Create in 2018/6/11 16:50
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class ButtonAuthorityController {
 
     private static final Map<String, List<JSONObject>> MENU = new HashMap<>();
@@ -637,7 +637,7 @@ public class ButtonAuthorityController {
      * @author shulie
      * @date 2018/6/12 15:20
      */
-    @GetMapping(value = APIUrls.API_TAKIN_BUTTON_AUTHORITY_URI, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_BUTTON_AUTHORITY_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryButtonUrlAuthority(@RequestParam("buttonUrl") String buttonUrl) {
         try {
 
@@ -647,7 +647,7 @@ public class ButtonAuthorityController {
         }
     }
 
-    @GetMapping(value = "/authority/loadTree", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/authority/loadTree", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> loginTree(@RequestParam(value = "node") String id) {
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);

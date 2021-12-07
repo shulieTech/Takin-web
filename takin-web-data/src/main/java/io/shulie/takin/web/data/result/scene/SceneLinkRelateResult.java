@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.result.scene;
 
 import java.time.LocalDateTime;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2021/5/28 5:40 下午
  */
 @Data
-public class SceneLinkRelateResult {
+public class SceneLinkRelateResult extends TenantCommonExt {
     /**
      * 主键
      */

@@ -2,11 +2,11 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.time.LocalDateTime;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
@@ -14,7 +14,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_app_business_table_info")
-public class AppBusinessTableInfoEntity {
+public class AppBusinessTableInfoEntity extends UserBaseEntity {
     /**
      * 主键
      */
@@ -39,11 +39,6 @@ public class AppBusinessTableInfoEntity {
     @TableField(value = "url")
     private String url;
 
-    /**
-     * 用户ID
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 是否有效 0:有效;1:无效

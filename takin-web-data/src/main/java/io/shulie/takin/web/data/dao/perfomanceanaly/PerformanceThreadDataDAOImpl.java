@@ -18,6 +18,7 @@ import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceThreadDataParam
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceThreadQueryParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadCountResult;
 import io.shulie.takin.web.data.result.perfomanceanaly.PerformanceThreadDataResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -152,6 +153,9 @@ public class PerformanceThreadDataDAOImpl implements PerformanceThreadDataDAO {
         // mysql
         LambdaUpdateWrapper<PerformanceThreadStackDataEntity> stackWrapper = new LambdaUpdateWrapper<>();
         stackWrapper.lt(PerformanceThreadStackDataEntity::getGmtCreate,time);
+        stackWrapper.eq(PerformanceThreadStackDataEntity::getTenantId, WebPluginUtils.traceTenantId());
+        stackWrapper.eq(PerformanceThreadStackDataEntity::getEnvCode,WebPluginUtils.traceEnvCode());
+
         stackWrapper.last("limit 10000");
         return performanceThreadStackDataMapper.delete(stackWrapper) == 0;
     }
@@ -163,9 +167,10 @@ public class PerformanceThreadDataDAOImpl implements PerformanceThreadDataDAO {
         }
 
         // mysql
-        LambdaUpdateWrapper<PerformanceThreadStackDataEntity> stackWrapper = new LambdaUpdateWrapper<>();
         LambdaUpdateWrapper<PerformanceThreadDataEntity> wrapper = new LambdaUpdateWrapper<>();
         wrapper.lt(PerformanceThreadDataEntity::getGmtCreate,time);
+        wrapper.eq(PerformanceThreadDataEntity::getTenantId,WebPluginUtils.traceTenantId());
+        wrapper.eq(PerformanceThreadDataEntity::getEnvCode,WebPluginUtils.traceEnvCode());
         wrapper.last("limit 10000");
         return performanceThreadDataMapper.delete(wrapper) == 0;
     }

@@ -1,79 +1,117 @@
 package io.shulie.takin.web.diff.cloud.impl.scenetask;
 
-import io.shulie.takin.cloud.open.api.report.CloudReportApi;
-import io.shulie.takin.cloud.open.api.scenetask.CloudTaskApi;
-import io.shulie.takin.cloud.open.req.report.UpdateReportConclusionReq;
-import io.shulie.takin.cloud.open.req.report.WarnCreateReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneStartPreCheckReq;
-import io.shulie.takin.cloud.open.req.scenemanage.ScriptAssetBalanceReq;
-import io.shulie.takin.cloud.open.req.scenetask.SceneStartCheckResp;
-import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskCheckReq;
-import io.shulie.takin.cloud.open.req.scenetask.SceneTryRunTaskStartReq;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStartResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneTryRunTaskStatusResp;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneActionResp;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneJobStateResp;
-import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Service;
 
+import io.shulie.takin.cloud.sdk.model.request.report.WarnCreateReq;
+import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneJobStateResp;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneStartCheckResp;
+import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneStartPreCheckReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAssetBalanceReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskCheckReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskStartReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStartResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStatusResp;
+
 /**
-* @author qianshui
+ * @author qianshui
  * @date 2020/11/13 下午1:55
  */
 @Service
 public class SceneTaskApiImpl implements SceneTaskApi {
 
-    @Autowired
+    @Resource(type = CloudTaskApi.class)
     private CloudTaskApi cloudTaskApi;
 
-    @Autowired
+    @Resource(type = CloudReportApi.class)
     private CloudReportApi cloudReportApi;
 
     @Override
     public ResponseResult<String> stopTask(SceneManageIdReq req) {
-        return cloudTaskApi.stopTask(req);
+        try {
+            return ResponseResult.success(cloudTaskApi.stopTask(req));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<SceneActionResp> checkTask(SceneManageIdReq req) {
-        return cloudTaskApi.checkTask(req);
+        try {
+            return ResponseResult.success(cloudTaskApi.checkTask(req));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<String> addWarn(WarnCreateReq req) {
-        return cloudReportApi.addWarn(req);
+        try {
+            return ResponseResult.success(cloudReportApi.addWarn(req));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<SceneJobStateResp> checkJobStateStatus(SceneManageIdReq req) {
-        return cloudTaskApi.checkSceneJobSstatus(req);
+        try {
+            return ResponseResult.success(cloudTaskApi.checkSceneJobStatus(req));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<String> updateReportStatus(UpdateReportConclusionReq req) {
-        return cloudReportApi.updateReportConclusion(req);
+        try {
+            return ResponseResult.success(cloudReportApi.updateReportConclusion(req));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<SceneTryRunTaskStartResp> startTryRunTask(SceneTryRunTaskStartReq request) {
-        return cloudTaskApi.startTryRunTask(request);
+        try {
+            return ResponseResult.success(cloudTaskApi.startTryRunTask(request));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<SceneTryRunTaskStatusResp> checkTryRunTaskStatus(SceneTryRunTaskCheckReq request) {
-        return cloudTaskApi.checkTaskStatus(request);
+        try {
+            return ResponseResult.success(cloudTaskApi.checkTaskStatus(request));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<SceneStartCheckResp> sceneStartPreCheck(SceneStartPreCheckReq checkReq) {
-        return cloudTaskApi.sceneStartPreCheck(checkReq);
+        try {
+            return ResponseResult.success(cloudTaskApi.sceneStartPreCheck(checkReq));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 
     @Override
     public ResponseResult<Boolean> callBackToWriteBalance(ScriptAssetBalanceReq req) {
-        return cloudTaskApi.callBackToWriteBalance(req);
+        try {
+            return ResponseResult.success(cloudTaskApi.callBackToWriteBalance(req));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
     }
 }

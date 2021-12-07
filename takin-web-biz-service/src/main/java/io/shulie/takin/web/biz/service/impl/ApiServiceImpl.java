@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
@@ -21,15 +23,16 @@ import io.shulie.takin.web.biz.pojo.response.common.IsNewAgentResponse;
 import io.shulie.takin.web.biz.service.ApiService;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.DistributedLock;
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
+import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,15 +47,7 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
     /**
      * 上传文件的路径
      */
-    @Value("${data.path}")
     private String uploadPath;
-
-    /**
-     * 应用下的 新旧 agent 配置
-     * 1 新, 0 旧, null 无配置
-     */
-    @Value("${takin-web.application.new-agent: }")
-    private Integer newAgent;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -63,6 +58,11 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
     @Autowired
     private ApplicationService applicationService;
 
+    @PostConstruct
+    public void init() {
+        uploadPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH);
+    }
+
     @Override
     public FileUploadResponse uploadFile(FileUploadRequest request) {
         // 文件内容判断
@@ -72,7 +72,7 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
         // 原来的文件名称
         String originalName = file.getOriginalFilename();
         String lockKey = String.format(LockKeyConstants.LOCK_UPLOAD_FILE,
-            WebPluginUtils.getCustomerId(), originalName, file.getSize());
+            WebPluginUtils.traceTenantId(), originalName, file.getSize());
         AppCommonUtil.isCommonError(!distributedLock.tryLockZeroWait(lockKey), TOO_FREQUENTLY);
 
         // 保存的文件名称 时间戳-文件名
@@ -130,11 +130,13 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
      * @return 新旧 agent 响应
      */
     public IsNewAgentResponse getIsNewAgentResponseByConfig() {
-        if (newAgent == null) {
+        int newAgent = Integer.parseInt(
+            ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_APPLICATION_NEW_AGENT));
+        if (newAgent == NEW_AGENT_NONE) {
             return null;
         }
 
-        if (newAgent != AppConstants.YES && newAgent != AppConstants.NO) {
+        if (newAgent != YES && newAgent != NO) {
             return null;
         }
 
@@ -153,14 +155,14 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
         IsNewAgentResponse response = new IsNewAgentResponse();
         response.setAgentVersions(agentVersions);
         if (agentVersions.isEmpty()) {
-            response.setIsNew(AppConstants.YES);
+            response.setIsNew(YES);
         }
 
         // 判断是否有新版本
         for (String agentVersion : agentVersions) {
             // 只要有一个新版, 就是新版
             if (AppCommonUtil.isNewAgentVersion(agentVersion)) {
-                response.setIsNew(AppConstants.YES);
+                response.setIsNew(YES);
                 return response;
             }
         }

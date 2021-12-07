@@ -144,6 +144,7 @@ public class TApplicationMntConfig extends BaseEntity {
      * @return the value of t_application_mnt_config.UPDATE_TIME
      * @mbggenerated
      */
+    @Override
     public Date getUpdateTime() {
         return updateTime;
     }
@@ -155,6 +156,7 @@ public class TApplicationMntConfig extends BaseEntity {
      * @param updateTime the value for t_application_mnt_config.UPDATE_TIME
      * @mbggenerated
      */
+    @Override
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }

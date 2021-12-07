@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 @TableName(value = "t_pradar_zk_config")
 public class PradarZkConfigEntity {
+
     /**
      * id
      */
@@ -26,13 +27,13 @@ public class PradarZkConfigEntity {
     /**
      * 类型
      */
-    @TableField(value = "type")
+    @TableField("`type`")
     private String type;
 
     /**
      * 数值
      */
-    @TableField(value = "value")
+    @TableField("`value`")
     private String value;
 
     /**
@@ -53,9 +54,4 @@ public class PradarZkConfigEntity {
     @TableField(value = "modify_time")
     private Date modifyTime;
 
-    /**
-     * 状态 0: 正常 1： 删除
-     */
-    @TableField(value = "is_deleted")
-    private Integer isDeleted;
 }

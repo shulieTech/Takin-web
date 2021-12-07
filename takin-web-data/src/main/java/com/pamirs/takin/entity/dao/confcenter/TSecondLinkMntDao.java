@@ -3,7 +3,6 @@ package com.pamirs.takin.entity.dao.confcenter;
 import java.util.List;
 import java.util.Map;
 
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.TSecondLinkMnt;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -96,13 +95,7 @@ public interface TSecondLinkMntDao {
     @Deprecated
     List<TSecondLinkMnt> querySecondLinkListByView(Map<String, Object> paramMap);
 
-    /**
-     * 根据基础链路查询应用列表
-     *
-     * @param linkId 基础链路id
-     * @return 应用列表
-     */
-    List<TApplicationMnt> queryApplicationByBaseLinkId(@Param("linkId") String linkId);
+
 
     /**
      * @param paramMap 二级/基础链路名称（linkName/baseLinkName）

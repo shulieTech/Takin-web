@@ -45,12 +45,16 @@ public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
         {
             // 声明字符串
             String takinAuthorityHeaderName = "takin-authority";
+            // 声明租户
+            String takinTenantAuthorityHeaderName = "takin-tenant-authority";
             String accessControlExposeHeaderName = "Access-Control-Expose-Headers";
             // 填充请求头并对外暴露(Chrome安全策略)
             Set<String> headers = new HashSet<>(2);
             HttpHeaders header = response.getHeaders();
-            header.set(takinAuthorityHeaderName, WebPluginUtils.checkUserData().toString());
+            header.set(takinAuthorityHeaderName, WebPluginUtils.checkUserPlugin().toString());
+            header.set(takinTenantAuthorityHeaderName, WebPluginUtils.checkTenantPlugin().toString());
             headers.add(takinAuthorityHeaderName);
+            headers.add(takinTenantAuthorityHeaderName);
             headers.add(Response.PAGE_TOTAL_HEADER);
             header.set(accessControlExposeHeaderName, String.join(",", headers));
         }

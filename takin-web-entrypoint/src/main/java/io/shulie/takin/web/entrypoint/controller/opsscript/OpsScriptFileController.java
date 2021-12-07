@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 
 /**
@@ -14,7 +14,7 @@ import io.shulie.takin.web.biz.constant.BizOpConstants;
  * @since 2021-06-16 10:47:11
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "opsScriptFile")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "opsScriptFile")
 @Api(tags = "")
 public class OpsScriptFileController {
 

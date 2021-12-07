@@ -49,7 +49,7 @@ public class ApplicationMntConfigService extends CommonService {
         vo.setCheatCheck(Constants.N);
         //如果应用名称不为空
         if (StringUtils.isNotEmpty(applicationName)) {
-            UserExt user = WebPluginUtils.queryUserByKey();
+            UserExt user = WebPluginUtils.traceUser();
             TApplicationMntConfig tApplicationMntConfig = tApplicationMntConfigDao.queryByApplicationNameAndUserId(
                 applicationName, user == null ? null : user.getId());
             if (tApplicationMntConfig != null && Constants.INTEGER_USE.equals(tApplicationMntConfig.getCheatCheck())) {

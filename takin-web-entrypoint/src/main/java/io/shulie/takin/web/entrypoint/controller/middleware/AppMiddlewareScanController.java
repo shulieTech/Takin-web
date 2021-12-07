@@ -6,7 +6,7 @@
 //import io.shulie.takin.common.beans.annotation.ModuleDef;
 //import io.shulie.takin.common.beans.page.PagingList;
 //import io.shulie.takin.common.beans.annotation.AuthVerification;
-//import io.shulie.takin.web.common.constant.APIUrls;
+//import io.shulie.takin.web.common.constant.ApiUrls;
 //import io.shulie.takin.web.biz.constant.BizOpConstants;
 //import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
 //import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
@@ -37,7 +37,7 @@
 //// * @date 2021/2/24 4:59 下午
 // */
 //@RestController
-//@RequestMapping(APIUrls.takin_API_URL + "middleware")
+//@RequestMapping(ApiUrls.takin_API_URL + "middleware")
 //@Api("中间件扫描")
 //public class AppMiddlewareScanController {
 //

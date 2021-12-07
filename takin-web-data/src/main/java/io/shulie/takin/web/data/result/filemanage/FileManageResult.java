@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.result.filemanage;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 
@@ -9,7 +10,7 @@ import lombok.Data;
  * @author zhaoyong
  */
 @Data
-public class FileManageResult {
+public class FileManageResult extends UserCommonExt {
 
     private Long id;
 
@@ -42,11 +43,7 @@ public class FileManageResult {
      * }
      */
     private String fileExtend;
-
-    /**
-     * 客户id（当前登录用户对应的admin的id，数据隔离使用）
-     */
-    private Long customerId;
+    ;
 
     /**
      * 上传时间

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.pamirs.takin.entity.domain.entity.TBList;
-import io.shulie.takin.web.common.annocation.DataAuth;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -13,7 +12,7 @@ import org.apache.ibatis.annotations.Param;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月26日
+ * @date 2018年4月26日
  */
 @Mapper
 public interface TBListMntDao {
@@ -43,9 +42,8 @@ public interface TBListMntDao {
      * @return 黑名单列表
      * @author shulie
      */
-    @DataAuth()
     List<TBList> queryBList(@Param("redisKey") String redisKey,
-        @Param("principalNo") String principalNo);
+        @Param("principalNo") String principalNo,@Param("userIds") List<Long> userIds);
 
     /**
      * 说明: 根据id查询黑名单信息
@@ -94,6 +92,6 @@ public interface TBListMntDao {
      * @return 黑名单列表
      * @author shulie
      */
-    List<TBList> getAllEnabledBlockList();
+    List<TBList> getAllEnabledBlockList(@Param("tenantId") Long tenantId,@Param("envCode") String envCode);
 
 }

@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.pojo.output.middleware;
 
 import java.util.List;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2021/2/24 5:08 下午
  */
 @Data
-public class AppMiddlewareScanOutput {
+public class AppMiddlewareScanOutput extends TenantCommonExt {
     /**
      * 主键
      */
@@ -62,11 +63,6 @@ public class AppMiddlewareScanOutput {
      * 软删
      */
     private Boolean isDeleted;
-
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
     /**
      * 创建人

@@ -4,7 +4,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeQueryRequest;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2021/6/9 4:30 下午
  */
 @RestController("v2.application.node")
-@RequestMapping(APIUrls.TAKIN_API_URL + "v2/application/node/")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "v2/application/node/")
 @Api(tags = "接口-v2: 应用实例-节点管理")
 public class ApplicationNodeController {
 

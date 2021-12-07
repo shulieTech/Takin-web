@@ -111,8 +111,14 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
      */
     List<AppRemoteCallResult> getPartRecord(AppRemoteCallQueryParam param,long start,int size);
 
-    List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList,
-        Long customerId);
+    /**
+     * 批量配置
+     * @param type
+     * @param appIdList
+     * @param userIdList
+     * @return
+     */
+    List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList);
 
 
     /**

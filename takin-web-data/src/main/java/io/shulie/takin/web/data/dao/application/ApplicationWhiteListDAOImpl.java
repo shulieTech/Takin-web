@@ -41,7 +41,7 @@ public class ApplicationWhiteListDAOImpl implements ApplicationWhiteListDAO {
                 entity.setDictType(param.getDictType());
                 entity.setUseYn(Integer.parseInt(param.getUseYn()));
                 entity.setApplicationId(Long.parseLong(param.getApplicationId()));
-                entity.setCustomerId(param.getCustomerId());
+                entity.setTenantId(param.getTenantId());
                 entity.setUserId(param.getUserId());
                 entity.setIsHandwork(param.getIsHandwork());
                 entity.setIsGlobal(param.getIsGlobal());

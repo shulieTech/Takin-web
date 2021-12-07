@@ -1,17 +1,24 @@
 package io.shulie.takin.web.common.enums.fastagentaccess;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.AllArgsConstructor;
 
 /**
- * @Description 配置生效机制
- * @Author ocean_wll
- * @Date 2021/8/13 10:02 上午
+ * 配置生效机制
+ *
+ * @author ocean_wll
+ * @date 2021/8/13 10:02 上午
  */
-@AllArgsConstructor
 @Getter
+@AllArgsConstructor
 public enum AgentConfigEffectMechanismEnum {
+    /**
+     * 重启生效
+     */
     REBOOT(0, "重启生效"),
+    /**
+     * 立即生效
+     */
     IMMEDIATELY(1, "立即生效"),
     ;
 

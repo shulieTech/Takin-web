@@ -1,18 +1,25 @@
 package io.shulie.takin.web.biz.job;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadPoolExecutor;
+
+import com.alibaba.fastjson.JSON;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import com.google.common.collect.Lists;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
-import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.common.AbstractSceneTask;
+import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
-import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,34 +34,65 @@ import org.springframework.stereotype.Component;
     cron = "*/10 * * * * ?",
     description = "获取tps指标图")
 @Slf4j
-public class CalcTpsTargetJob implements SimpleJob {
+public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
+
     @Autowired
     private ReportTaskService reportTaskService;
-    @Autowired
-    private ReportService reportService;
 
-    @Value("${open.report.task:true}")
-    private Boolean openReportTask;
+    @Autowired
+    @Qualifier("reportTpsThreadPool")
+    private ThreadPoolExecutor reportThreadPool;
+
+    private static Map<Long, Object> runningTasks = new ConcurrentHashMap<>();
+    private static Object EMPTY = new Object();
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        if (!openReportTask) {
-            return;
-        }
         long start = System.currentTimeMillis();
-        List<Object> reportIds = Lists.newArrayList();
-        WebResponse runningResponse = reportService.queryListRunningReport();
-        if (runningResponse.getSuccess() == true && runningResponse.getData() != null) {
-            reportIds.addAll((List)runningResponse.getData());
-        }
-        log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
-        for (Object obj : reportIds) {
-            // 开始数据层分片
-            long reportId = Long.parseLong(String.valueOf(obj));
-            if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                reportTaskService.calcTpsTarget(reportId);
+        final Boolean openVersion = WebPluginUtils.isOpenVersion();
+        while (true) {
+            List<SceneTaskDto> taskDtoList = getTaskFromRedis();
+            if (taskDtoList == null) { break; }
+            for (SceneTaskDto taskDto : taskDtoList) {
+                Long reportId = taskDto.getReportId();
+                if (openVersion) {
+                    // 开始数据层分片
+                    if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                        Object task = runningTasks.putIfAbsent(reportId, EMPTY);
+                        if (task == null) {
+                            reportThreadPool.execute(() -> {
+                                try {
+                                    reportTaskService.calcTpsTarget(reportId);
+                                } catch (Throwable e) {
+                                    log.error("execute CalcTpsTargetJob occured error. reportId={}", reportId, e);
+                                } finally {
+                                    runningTasks.remove(reportId);
+                                }
+
+                            });
+                        }
+
+                    }
+                } else {
+                    if (taskDto.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext
+                        .getShardingItem()) {
+                        Object task = runningTasks.putIfAbsent(taskDto.getTenantId(), EMPTY);
+                        if (task == null) {
+                            reportThreadPool.execute(() -> {
+                                try {
+                                    WebPluginUtils.setTraceTenantContext(taskDto);
+                                    reportTaskService.calcTpsTarget(taskDto.getReportId());
+                                } catch (Throwable e) {
+                                    log.error("execute CalcTpsTargetJob occured error. reportId={},tenantId={}",reportId,taskDto.getTenantId(), e);
+                                } finally {
+                                    runningTasks.remove(taskDto.getTenantId());
+                                }
+                            });
+                        }
+                    }
+                }
             }
         }
-        log.info("calcTpsTargetJob 执行时间:{}", System.currentTimeMillis() - start);
+        log.debug("calcTpsTargetJob 执行时间:{}", System.currentTimeMillis() - start);
     }
 }

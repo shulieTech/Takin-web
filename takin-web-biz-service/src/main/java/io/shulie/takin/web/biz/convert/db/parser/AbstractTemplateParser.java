@@ -1,13 +1,13 @@
 package io.shulie.takin.web.biz.convert.db.parser;
 
+import java.util.List;
+import java.util.Map;
+
 import com.pamirs.attach.plugin.dynamic.Converter;
 import com.pamirs.attach.plugin.dynamic.template.Template;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @Author: 南风
@@ -21,6 +21,7 @@ public abstract class AbstractTemplateParser implements TemplateParser, StyleTem
      * @param recordId
      * @return
      */
+    @Override
     public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
         return null;
     }

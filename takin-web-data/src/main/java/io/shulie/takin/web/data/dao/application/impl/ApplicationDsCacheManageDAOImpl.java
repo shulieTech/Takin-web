@@ -46,7 +46,9 @@ public class ApplicationDsCacheManageDAOImpl  extends ServiceImpl<ApplicationDsC
             queryWrapper.eq(ApplicationDsCacheManageEntity::getIsDeleted, 0);
         }
         if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
-            queryWrapper.in(ApplicationDsCacheManageEntity::getUserId, param.getUserIdList());
+            if(!param.getUserIdList().contains(1)){
+                queryWrapper.in(ApplicationDsCacheManageEntity::getUserId, param.getUserIdList());
+            }
         }
         queryWrapper.orderByDesc(ApplicationDsCacheManageEntity::getGmtUpdate);
 

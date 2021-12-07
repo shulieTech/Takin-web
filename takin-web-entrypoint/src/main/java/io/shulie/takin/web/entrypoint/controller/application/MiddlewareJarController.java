@@ -2,13 +2,13 @@ package io.shulie.takin.web.entrypoint.controller.application;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,16 +32,17 @@ import io.shulie.takin.web.biz.pojo.response.application.MiddlewareCompareRespon
 import io.shulie.takin.web.biz.pojo.response.application.MiddlewareImportResponse;
 import io.shulie.takin.web.biz.pojo.response.application.MiddlewareJarResponse;
 import io.shulie.takin.web.biz.service.application.MiddlewareJarService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.model.mysql.MiddlewareJarEntity;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,7 +59,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author liqiyu
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + APIUrls.MIDDLEWARE_JAR)
+@RequestMapping(ApiUrls.TAKIN_API_URL + ApiUrls.MIDDLEWARE_JAR)
 @Api(tags = "接口: 中间件信息")
 @Slf4j
 public class MiddlewareJarController {
@@ -70,8 +71,12 @@ public class MiddlewareJarController {
     /**
      * 上传文件的路径
      */
-    @Value("${data.path}")
     private String uploadPath;
+
+    @PostConstruct
+    public void init() {
+        uploadPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH);
+    }
 
     /**
      * 对比
@@ -169,13 +174,13 @@ public class MiddlewareJarController {
             .collect(Collectors.toList());
 
         if (!collect.isEmpty()) {
-            boolean tempCanEdit = false;
-            if(WebPluginUtils.validateSuperAdmin()) {
+            boolean tempCanEdit;
+            if (WebPluginUtils.validateAdmin()) {
                 tempCanEdit = true;
             } else {
-                tempCanEdit  = WebPluginUtils.getUser() == null || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.getUser().getId());
+                tempCanEdit = WebPluginUtils.traceUser() == null || WebPluginUtils.getUpdateAllowUserIdList().contains(WebPluginUtils.traceUser().getId());
             }
-            final Boolean canEdit = tempCanEdit;
+            final boolean canEdit = tempCanEdit;
             collect.forEach(response -> response.setCanEdit(canEdit));
         }
 
@@ -183,8 +188,7 @@ public class MiddlewareJarController {
     }
 
     @GetMapping("file/{fileName}")
-    public void getFile(@PathVariable String fileName, HttpServletResponse response)
-        throws FileNotFoundException {
+    public void getFile(@PathVariable String fileName, HttpServletResponse response) {
         File file = new File(uploadPath + File.separator + MIDDLEWARE_MANAGE_DIR + File.separator + fileName);
         if (!file.exists()) {
             return;
@@ -198,7 +202,7 @@ public class MiddlewareJarController {
         try (
             // 使用sendfile:读取磁盘文件，并网络发送
             ServletOutputStream servletOutputStream = response.getOutputStream();
-            FileChannel channel = new FileInputStream(file).getChannel();) {
+            FileChannel channel = new FileInputStream(file).getChannel()) {
             response.setHeader("Content-Length", String.valueOf(channel.size()));
             channel.transferTo(0, channel.size(), Channels.newChannel(servletOutputStream));
         } catch (Exception e) {

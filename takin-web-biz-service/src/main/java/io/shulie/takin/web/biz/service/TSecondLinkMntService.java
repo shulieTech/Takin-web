@@ -5,7 +5,6 @@ import java.util.Map;
 
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.common.util.PageInfo;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.TSecondLinkMnt;
 
 /**
@@ -94,16 +93,4 @@ public interface TSecondLinkMntService {
      */
     void updateSecondLinkStatus(String secondLinkId, String testStatus);
 
-    /**
-     * 根据链路信息查询应用列表
-     *
-     * @param linkId    链路id
-     * @param linkLevel 链路级别（一级/二级）
-     * @return 应用列表
-     * @throws TakinModuleException 查询出错抛出异常
-     * @version v1.0
-     * @Date:
-     */
-    Map<String, List<TApplicationMnt>> queryApplicationListByLinkInfo(String linkId, String linkLevel)
-        throws TakinModuleException;
 }

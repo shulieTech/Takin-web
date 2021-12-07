@@ -1,18 +1,9 @@
 package io.shulie.takin.web.entrypoint.controller.whitelist;
 
-/**
- * 白名单列表，并非应用内的白名单。
- * 应用内的白名单列表，查看
- *
- * @author 无涯
- * @date 2021/4/13 3:28 下午
- * @see io.shulie.takin.web.entrypoint.controller.linkmanage.WhiteListConfigController
- */
-
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.linkManage.WhiteListService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistSearchInput;
 import io.shulie.takin.web.biz.pojo.request.whitelist.WhitelistSearchRequest;
@@ -27,9 +18,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 白名单列表，并非应用内的白名单。
+ * 应用内的白名单列表，查看
+ *
+ * @author 无涯
+ * @date 2021/4/13 3:28 下午
+ * @see io.shulie.takin.web.entrypoint.controller.linkmanage.WhiteListConfigController
+ */
+
 @Slf4j
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "whitelist")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "whitelist")
 @Api(tags = "白名单列表", value = "白名单管理接口")
 public class WhitelistController {
     @Autowired

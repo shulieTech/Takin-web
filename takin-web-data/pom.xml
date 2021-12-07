@@ -21,7 +21,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.0.2</version>
+        <version>takin-web-5.1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-data</artifactId>
@@ -29,7 +29,6 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-ext-api</artifactId>
-            <version>takin-web-5.0.2</version>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
@@ -97,7 +96,14 @@
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-common</artifactId>
+        </dependency>
 
     </dependencies>
 

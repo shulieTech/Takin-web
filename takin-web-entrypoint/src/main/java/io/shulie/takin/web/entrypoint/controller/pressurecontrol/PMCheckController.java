@@ -11,7 +11,7 @@ import com.pamirs.takin.common.constant.ResponseConstant;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import io.shulie.takin.web.biz.service.PressureReadyService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,11 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月13日
+ * @date 2018年4月13日
  */
 @Api(tags = "压测准备模块接口")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class PMCheckController {
     private final Logger LOGGER = LoggerFactory.getLogger(PMCheckController.class);
     @Autowired
@@ -49,20 +49,18 @@ public class PMCheckController {
      * 说明: API.02.02.001 查询压测检测列表接口(包含异常检测)
      *
      * @param paramMap 二级链路名称,基础链路名称,应用名称,负责人工号
-     *
      * @return 成功, 则返回检测列表信息, 失败则返回错误编码和错误信息
-     *
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_PMCHECK_QUERY_CHECKLIST_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_PMCHECK_QUERY_CHECKLIST_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryChecklist(@RequestBody Map<String, Object> paramMap) {
         try {
             return ResponseOk.create(pressureReadyService.queryChecklist(paramMap));
         } catch (Exception e) {
             LOGGER.error("PMCheckController.queryChecklist 查询压测检测信息异常{}", e);
             return ResponseError.create(TakinErrorEnum.PMCHECK_QUERY_CHECKLIST_EXCEPTION.getErrorCode(),
-                    TakinErrorEnum.PMCHECK_QUERY_CHECKLIST_EXCEPTION.getErrorMessage());
+                TakinErrorEnum.PMCHECK_QUERY_CHECKLIST_EXCEPTION.getErrorMessage());
         }
     }
 
@@ -70,24 +68,22 @@ public class PMCheckController {
      * 说明: API.02.02.002 影子库整体同步检测 接口(查询构建表)
      *
      * @param applicationId 应用id
-     *
      * @return 成功, 则返回影子库列结果, 失败则返回错误编码和错误信息
-     *
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_PMCHECK_CHECK_BASICDATA_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_PMCHECK_CHECK_BASICDATA_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryCheckShadowlib(@RequestParam("applicationId") String applicationId) {
         try {
             if (StringUtils.isEmpty(applicationId)) {
                 return ResponseError.create(TakinErrorEnum.PMCHECK_QUERY_CHECKSHADOWLIB_PARAMLACK.getErrorCode(),
-                        TakinErrorEnum.PMCHECK_QUERY_CHECKSHADOWLIB_PARAMLACK.getErrorMessage());
+                    TakinErrorEnum.PMCHECK_QUERY_CHECKSHADOWLIB_PARAMLACK.getErrorMessage());
             }
             return ResponseOk.create(pressureReadyService.queryCheckShadowlib(applicationId).call());
         } catch (Exception e) {
             LOGGER.error("PMCheckController.queryCheckShadowlib 影子库整体同步检测查询异常{}", e);
             return ResponseError.create(TakinErrorEnum.PMCHECK_QUERY_CHECKSHADOWLIB_EXCEPTION.getErrorCode(),
-                    TakinErrorEnum.PMCHECK_QUERY_CHECKSHADOWLIB_EXCEPTION.getErrorMessage());
+                TakinErrorEnum.PMCHECK_QUERY_CHECKSHADOWLIB_EXCEPTION.getErrorMessage());
         }
     }
 
@@ -95,20 +91,18 @@ public class PMCheckController {
      * 说明: API.02.02.003 白名单检测实时接口(包含dubbo和http)
      *
      * @param applicationId 应用id
-     *
      * @return 成功, 则返回白名单检测结果, 失败则返回错误编码和错误信息
-     *
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_PMCHECK_CHECK_WLIST_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_PMCHECK_CHECK_WLIST_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryCheckWhiteList(@RequestParam("applicationId") String applicationId) {
         try {
             return ResponseOk.create(pressureReadyService.queryCheckWList(applicationId).call());
         } catch (Exception e) {
             LOGGER.error("PMCheckController.queryCheckWList 白名单检测异常", e);
             return ResponseError.create(TakinErrorEnum.PMCHECK_QUERY_CHECKWLIST_EXCEPTION.getErrorCode(),
-                    TakinErrorEnum.PMCHECK_QUERY_CHECKWLIST_EXCEPTION.getErrorMessage());
+                TakinErrorEnum.PMCHECK_QUERY_CHECKWLIST_EXCEPTION.getErrorMessage());
         }
     }
 
@@ -116,20 +110,18 @@ public class PMCheckController {
      * 说明: API.02.02.004 缓存预热检测
      *
      * @param applicationId 应用id
-     *
      * @return 成功, 则返回缓存预热检测结果, 失败则返回错误编码和错误信息
-     *
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_CACHE_CHECK_CACHE_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_CACHE_CHECK_CACHE_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryCheckCache(@RequestParam("applicationId") String applicationId) {
         try {
             return ResponseOk.create(pressureReadyService.queryCheckCache(applicationId).call());
         } catch (Exception e) {
             LOGGER.error("PMCheckController.queryCheckCache 缓存预热检测异常{}", e);
             return ResponseError.create(TakinErrorEnum.PMCHECK_QUERY_CHECKCACHE_EXCEPTION.getErrorCode(),
-                    TakinErrorEnum.PMCHECK_QUERY_CHECKCACHE_EXCEPTION.getErrorMessage());
+                TakinErrorEnum.PMCHECK_QUERY_CHECKCACHE_EXCEPTION.getErrorMessage());
         }
     }
 
@@ -137,13 +129,11 @@ public class PMCheckController {
      * 说明: API.02.02.005 批量检测接口
      *
      * @param applicationIds 应用id
-     *
      * @return 成功, 则返回检测列表结果, 失败则返回错误编码和错误信息
-     *
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_PMCHECK_CHECK_BATCHCHECK_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_PMCHECK_CHECK_BATCHCHECK_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> batchCheck(@RequestParam("applicationIds") String applicationIds) {
         try {
             return ResponseOk.create(pressureReadyService.batchCheck(applicationIds));
@@ -153,7 +143,7 @@ public class PMCheckController {
         } catch (Exception e) {
             LOGGER.error("PMCheckController.batchCheck 批量检测失败{}", e);
             return ResponseError.create(TakinErrorEnum.PMCHECK_QUERY_BATCHCHECK_EXCEPTION.getErrorCode(),
-                    TakinErrorEnum.PMCHECK_QUERY_BATCHCHECK_EXCEPTION.getErrorMessage());
+                TakinErrorEnum.PMCHECK_QUERY_BATCHCHECK_EXCEPTION.getErrorMessage());
         }
     }
 
@@ -161,13 +151,11 @@ public class PMCheckController {
      * 说明: API.02.02.006 压测检测调试开关接口
      *
      * @param switchList 应用ids和开关数据
-     *
      * @return 成功, 更新所有的应用为成功状态, 则返回成功信息; 失败则返回构建应用失败错误编码和错误信息
-     *
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_PRESSUREREADY_PMCHECK_DEBUG_SWITCH_URI,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_PRESSUREREADY_PMCHECK_DEBUG_SWITCH_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> debugSwitch(@RequestBody List<Map<String, Object>> switchList) {
         try {
             pressureReadyService.debugSwitch(switchList, PressureOperateEnum.PRESSURE_CHECK_DEBUG_SWITCH);
@@ -175,7 +163,7 @@ public class PMCheckController {
         } catch (Exception e) {
             LOGGER.error("DataBuildController.debugSwitch 调试开关开启失败{}", e);
             return ResponseError.create(TakinErrorEnum.BUILDDATA_DEBUG_SWITCH_FAIL.getErrorCode(),
-                    TakinErrorEnum.BUILDDATA_DEBUG_SWITCH_FAIL.getErrorMessage());
+                TakinErrorEnum.BUILDDATA_DEBUG_SWITCH_FAIL.getErrorMessage());
         }
     }
 }

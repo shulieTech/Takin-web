@@ -2,11 +2,11 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
@@ -18,7 +18,7 @@ import lombok.Data;
     */
 @Data
 @TableName(value = "t_app_remote_call")
-public class AppRemoteCallEntity {
+public class AppRemoteCallEntity extends UserBaseEntity {
     /**
      * 主键
      */
@@ -67,18 +67,6 @@ public class AppRemoteCallEntity {
      */
     @TableField(value = "mock_return_value")
     private String mockReturnValue;
-
-    /**
-     * 租户id
-     */
-    @TableField(value = "CUSTOMER_ID", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "USER_ID", fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 是否有效 0:有效;1:无效

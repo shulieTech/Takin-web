@@ -26,5 +26,4 @@ public interface PerformanceBaseDataService {
      */
     List<String> getProcessName(Long reportId, String appName);
 
-    void clearData(Integer time);
 }

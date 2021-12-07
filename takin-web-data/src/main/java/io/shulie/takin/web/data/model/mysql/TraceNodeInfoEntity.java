@@ -2,11 +2,11 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 /**
@@ -15,7 +15,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_trace_node_info")
-public class TraceNodeInfoEntity {
+public class TraceNodeInfoEntity extends TenantBaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -152,11 +152,6 @@ public class TraceNodeInfoEntity {
     @TableField(value = "is_deleted")
     private Boolean isDeleted;
 
-    /**
-     * 租户 id customer
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
 
     /**
      * rpc类型

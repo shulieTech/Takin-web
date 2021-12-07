@@ -8,8 +8,10 @@
     <result column="business_activity_id" jdbcType="BIGINT" property="businessActivityId"/>
     <result column="datasource_id" jdbcType="BIGINT" property="datasourceId"/>
     <result column="leakcheck_sql_ids" jdbcType="LONGVARCHAR" property="leakcheckSqlIds"/>
-    <result column="customer_id" jdbcType="BIGINT" property="customerId"/>
-    <result column="user_id" jdbcType="BIGINT" property="userId"/>
+      <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+      <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
+
+      <result column="user_id" jdbcType="BIGINT" property="userId"/>
     <result column="remark" jdbcType="VARCHAR" property="remark"/>
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
@@ -17,7 +19,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, business_activity_id, datasource_id, leakcheck_sql_ids, customer_id, user_id, remark, create_time, update_time,
+    id, business_activity_id, datasource_id, leakcheck_sql_ids, tenant_id,env_code, user_id, remark, create_time, update_time,
     is_deleted
   </sql>
 </mapper>

@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月21日
+ * @date 2018年5月21日
  */
 public class Constants {
 
@@ -221,5 +221,20 @@ public class Constants {
      * 默认的zk命名空间
      */
     public static final String DEFAULT_NAMESPACE = "default";
+
+    /**
+     * agent 插件zip包根目录
+     */
+    public static final String AGENT_ZIP_BASE_DIR = "simulator-agent";
+
+    /**
+     * simulator 插件zip包根目录
+     */
+    public static final String SIMULATOR_ZIP_BASE_DIR = "simulator";
+
+    /**
+     * 中间件 插件zip包根目录
+     */
+    public static final String MIDDLEWARE_ZIP_BASE_DIR = "modules";
 
 }

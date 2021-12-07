@@ -57,6 +57,9 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     APPLICATION_ENTRANCE_THIRD_PARTY_ERROR("0305-" + ErrorConstant.THIRD_PARTY_ERROR, "应用入口链路第三方返回异常"),
     APPLICATION_UNSTALL_AGENT_ERROR("0306-" + ErrorConstant.THIRD_PARTY_ERROR, "卸载应用agent异常"),
     APPLICATION_RESUME_AGENT_ERROR("0307-" + ErrorConstant.THIRD_PARTY_ERROR, "恢复应用agent异常"),
+    APPLICATION_TRACE_LOG_AGENT_ERROR("0307-" + ErrorConstant.THIRD_PARTY_ERROR, "trace日志获取异常"),
+    APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP1_ERROR("0308-" + ErrorConstant.THIRD_PARTY_ERROR, "查询临时业务活动指标step1"),
+    APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP2_ERROR("0309-" + ErrorConstant.THIRD_PARTY_ERROR, "查询临时业务活动指标step2"),
 
     /**
      * agent
@@ -137,8 +140,28 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 影子配置
      */
     SHADOW_CONFIG_CREATE_ERROR("1400-"+ErrorConstant.VALIDATE_ERROR,"新增影子配置异常"),
-    ;
 
+
+    /**
+     *  agent指令操作
+     */
+    AGENT_COMMAND_VALID_ERROR("1500-"+ErrorConstant.VALIDATE_ERROR,"Agent 指令操作 数据校验异常"),
+
+    /**
+     * 插件根目录
+     */
+    PLUGIN_PATH_VALID_ERROR("1600-"+ErrorConstant.VALIDATE_ERROR,"探针根目录数据校验异常"),
+
+    /**
+     * 升级
+     */
+    PLUGIN_UPGRADE_VALID_ERROR("1700-"+ErrorConstant.VALIDATE_ERROR,"升级包数据异常"),
+
+    /**
+     * 应用标签
+     */
+    APPLICATION_TAG_CREATE_ERROR("1800-"+ErrorConstant.ADD_ERROR,"应用标签创建异常"),
+    ;
     private final String errorCode;
 
     private final String defaultValue;

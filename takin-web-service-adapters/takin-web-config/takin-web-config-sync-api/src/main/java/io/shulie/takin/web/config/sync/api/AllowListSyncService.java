@@ -3,6 +3,7 @@ package io.shulie.takin.web.config.sync.api;
 import java.util.List;
 
 import io.shulie.takin.web.config.entity.AllowList;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * 白名单 ( dubbo 、http )
@@ -14,6 +15,6 @@ import io.shulie.takin.web.config.entity.AllowList;
  */
 public interface AllowListSyncService {
 
-    void syncAllowList(String namespace, String applicationName, List<AllowList> allows);
+    void syncAllowList(TenantCommonExt commonExt, String applicationName, List<AllowList> allows);
 
 }

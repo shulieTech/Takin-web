@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
@@ -38,6 +39,29 @@ public class RedisHelper {
     }
 
     /**
+     * 对 redis key 设置过期时间
+     * 单位： 天
+     *
+     * @param redisKey redis key
+     * @param timeout 时长
+     * @param unit 单位
+     */
+    public static void expire(String redisKey, Long timeout, TimeUnit unit) {
+        redisTemplate.expire(redisKey, timeout, unit);
+    }
+
+    /**
+     * 对 redis key 设置过期时间
+     * 单位： 天
+     *
+     * @param redisKey redis key
+     * @param day 天数
+     */
+    public static void expireDay(String redisKey, Long day) {
+        redisTemplate.expire(redisKey, day, TimeUnit.DAYS);
+    }
+
+    /**
      * 根据 redis key, hash key, 获取 value
      *
      * @param redisKey redis key
@@ -64,6 +88,17 @@ public class RedisHelper {
      */
     public static Map<Object, Object> hashGetAll(String redisKey) {
         return redisTemplate.opsForHash().entries(redisKey);
+    }
+
+    /**
+     * 根据 redis key, 删除某个 hashKey 及值
+     * 或者全部
+     *
+     * @param redisKey redis key
+     * @param hashKey hash key, 不传则删除整个 hash
+     */
+    public static void hashDelete(String redisKey, Object... hashKey) {
+        redisTemplate.opsForHash().delete(redisKey, hashKey);
     }
 
     /**
@@ -146,6 +181,4 @@ public class RedisHelper {
         });
         return keys;
     }
-
-
 }

@@ -50,8 +50,8 @@ public class OpsScriptManageDAOImpl
         if (Objects.nonNull(param.getScriptType())) {
             wrapper.eq(OpsScriptManageEntity::getScriptType, param.getScriptType());
         }
-        if (param.getCustomerId() != null) {
-            wrapper.eq(OpsScriptManageEntity::getCustomerId, param.getCustomerId());
+        if (param.getTenantId() != null) {
+            wrapper.eq(OpsScriptManageEntity::getTenantId, param.getTenantId());
         }
         return this.list(wrapper);
     }

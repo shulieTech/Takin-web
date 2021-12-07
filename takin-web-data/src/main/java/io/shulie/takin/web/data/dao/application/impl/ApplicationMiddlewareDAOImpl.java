@@ -5,7 +5,7 @@ import java.util.List;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationMiddlewareDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationMiddlewareMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMiddlewareEntity;
@@ -44,12 +44,12 @@ public class ApplicationMiddlewareDAOImpl implements ApplicationMiddlewareDAO, M
 
         IPage<ApplicationMiddlewareListResult> resultPage = new Page<>();
         BeanUtils.copyProperties(entityPage, resultPage);
-        resultPage.setRecords(CommonUtil.list2list(entityPage.getRecords(), ApplicationMiddlewareListResult.class));
+        resultPage.setRecords(DataTransformUtil.list2list(entityPage.getRecords(), ApplicationMiddlewareListResult.class));
         return resultPage;
     }
 
     @Override
-    public Integer countByApplicationIdAndStatus(Long applicationId, Integer status) {
+    public Long countByApplicationIdAndStatus(Long applicationId, Integer status) {
         return applicationMiddlewareMapper.selectCount(this.getLambdaQueryWrapper()
             .eq(ApplicationMiddlewareEntity::getApplicationId, applicationId)
             .eq(status != null, ApplicationMiddlewareEntity::getStatus, status));
@@ -57,7 +57,7 @@ public class ApplicationMiddlewareDAOImpl implements ApplicationMiddlewareDAO, M
 
     @Override
     public boolean updateBatchById(List<UpdateApplicationMiddlewareParam> updateParamList) {
-        List<ApplicationMiddlewareEntity> applicationMiddlewares = CommonUtil.list2list(updateParamList,
+        List<ApplicationMiddlewareEntity> applicationMiddlewares = DataTransformUtil.list2list(updateParamList,
             ApplicationMiddlewareEntity.class);
         return applicationMiddlewares.stream().allMatch(applicationMiddleware ->
             SqlHelper.retBool(applicationMiddlewareMapper.updateById(applicationMiddleware)));
@@ -72,7 +72,7 @@ public class ApplicationMiddlewareDAOImpl implements ApplicationMiddlewareDAO, M
     @Override
     public boolean insertBatch(List<CreateApplicationMiddlewareParam> createApplicationMiddlewareParamList) {
         List<ApplicationMiddlewareEntity> applicationMiddlewareList =
-            CommonUtil.list2list(createApplicationMiddlewareParamList, ApplicationMiddlewareEntity.class);
+            DataTransformUtil.list2list(createApplicationMiddlewareParamList, ApplicationMiddlewareEntity.class);
         return SqlHelper.retBool(applicationMiddlewareMapper.insertBatch(applicationMiddlewareList));
     }
 
@@ -80,7 +80,7 @@ public class ApplicationMiddlewareDAOImpl implements ApplicationMiddlewareDAO, M
     public List<ApplicationMiddlewareListResult> listByApplicationId(Long applicationId) {
         List<ApplicationMiddlewareEntity> applicationMiddlewares = applicationMiddlewareMapper.selectList(
             this.getLambdaQueryWrapper().eq(ApplicationMiddlewareEntity::getApplicationId, applicationId));
-        return CommonUtil.list2list(applicationMiddlewares, ApplicationMiddlewareListResult.class);
+        return DataTransformUtil.list2list(applicationMiddlewares, ApplicationMiddlewareListResult.class);
     }
 
     @Override
@@ -91,9 +91,8 @@ public class ApplicationMiddlewareDAOImpl implements ApplicationMiddlewareDAO, M
 
     @Override
     public List<ApplicationMiddlewareStatusAboutCountResult> listStatusCountByAndGroupByApplicationNameListAndStatus(
-        List<String> applicationNameList, List<Integer> statusList) {
-        return applicationMiddlewareMapper.selectStatusCountByAndGroupByApplicationNameListAndStatusList(applicationNameList,
-            statusList);
+        List<Long> applicationIds, List<Integer> statusList) {
+        return applicationMiddlewareMapper.selectStatusCountByAndGroupByApplicationNameListAndStatusList(applicationIds, statusList);
     }
 
 }

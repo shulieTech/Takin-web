@@ -8,7 +8,7 @@ import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.entity.domain.vo.bottleneck.BottleCountVo;
 import com.pamirs.takin.entity.domain.vo.bottleneck.BottleNeckDetailVo;
 import io.shulie.takin.web.biz.service.LinkTopologyInfoService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Api(tags = "链路拓扑图接口类")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class LinkTopologyController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LinkTopologyController.class);
@@ -45,8 +45,8 @@ public class LinkTopologyController {
      * @param excel
      * @return
      */
-    @PostMapping(value = APIUrls.API_TAKIN_LINKTOPOLOGY_IMPORT_EXCEL_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_LINKTOPOLOGY_IMPORT_EXCEL_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> importExel(@Param("excel") MultipartFile excel) {
         try {
             linkTopologyInfoService.importExcelData(excel);
@@ -66,8 +66,8 @@ public class LinkTopologyController {
      * @param linkGroup
      * @return
      */
-    @GetMapping(value = APIUrls.API_TAKIN_LINKTOPOLOGY_QUERY_LINK_GROUP_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_LINKTOPOLOGY_QUERY_LINK_GROUP_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkTopologyByLinkGroup(@Param("linkGroup") String linkGroup,
         @Param("secondLinkId") String secondLinkId) {
         try {
@@ -88,8 +88,8 @@ public class LinkTopologyController {
      * @author shulie
      * @create 2019/6/12 19:19
      */
-    @GetMapping(value = APIUrls.API_TAKIN_LINKTOPOLOGY_QUERY_BOTTLENECK_COUNT_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_LINKTOPOLOGY_QUERY_BOTTLENECK_COUNT_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkBottleSummary() {
         try {
             BottleCountVo bottleCountVo = linkTopologyInfoService.queryLinkBottleSummary();
@@ -108,8 +108,8 @@ public class LinkTopologyController {
      * @author shulie
      * @create 2019/6/15 8:26
      */
-    @PostMapping(value = APIUrls.API_TAKIN_LINKTOPOLOGY_QUERY_BOTTLENECK_DETAIL_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_LINKTOPOLOGY_QUERY_BOTTLENECK_DETAIL_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkBottleDetail(@RequestBody Map<String, Object> paramMap) {
         try {
             BottleNeckDetailVo bottleNeckDetail = linkTopologyInfoService.queryLinkBottleDetail(paramMap);

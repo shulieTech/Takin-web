@@ -1,40 +1,51 @@
 package io.shulie.takin.web.biz.service.impl;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 
-import com.pamirs.takin.common.redis.RedisKey;
+import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.cloud.open.api.scenetask.CloudTaskApi;
-import io.shulie.takin.cloud.open.req.engine.EnginePluginsRefOpen;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneBusinessActivityRefOpen;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageWrapperReq;
-import io.shulie.takin.cloud.open.req.scenetask.TaskFlowDebugStartReq;
+import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
+import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.TaskFlowDebugStartReq;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
-import io.shulie.takin.web.biz.annotation.ActivityCache;
 import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.request.activity.*;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
@@ -47,28 +58,31 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
+import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.http.HttpAssert;
 import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityUpdateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
+import io.shulie.takin.web.ext.util.E2ePluginUtils;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
-import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
-import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * @author shiyajian
@@ -90,8 +104,6 @@ public class ActivityServiceImpl implements ActivityService {
     private LinkTopologyService linkTopologyService;
     @Autowired
     private ReportService reportService;
-    @Value("${link.flow.check.enable:false}")
-    private Boolean enableLinkFlowCheck;
     @Autowired
     private CloudTaskApi cloudTaskApi;
     @Autowired
@@ -126,6 +138,32 @@ public class ActivityServiceImpl implements ActivityService {
             request.getMethod(), request.getRpcType(), request.getExtend());
     }
 
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
+    public void createActivityWithoutAMDB(ActivityCreateRequest request) {
+        // 检查业务活动是否能入库
+        checkActivity(request);
+        ActivityCreateParam createParam = new ActivityCreateParam();
+        createParam.setActivityName(request.getActivityName());
+        createParam.setEntranceName(request.getServiceName());
+        createParam.setIsChange(false);
+        createParam.setApplicationName(request.getApplicationName());
+        createParam.setType(request.getType());
+        createParam.setActivityLevel(request.getActivityLevel());
+        createParam.setIsCore(request.getIsCore());
+        createParam.setBusinessDomain(request.getBusinessDomain());
+        createParam.setRpcType(request.getRpcType());
+        createParam.setMethod(request.getMethod());
+        createParam.setServiceName(request.getServiceName());
+        createParam.setExtend(request.getExtend());
+        createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+        createParam.setEntrance(
+            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
+                request.getRpcType()));
+        createParam.setPersistence(request.isPersistence());
+        activityDAO.createActivity(createParam);
+    }
+
     /**
      * 检查正常业务活动
      *
@@ -141,10 +179,9 @@ public class ActivityServiceImpl implements ActivityService {
                 String.format("保存失败，[名称:%s] 已被使用", request.getActivityName()));
         }
 
-        param = new ActivityExistsQueryParam();
-        param.setType(request.getType());
-        param.setEntranceName(request.getServiceName());
+        param.setActivityName(null);
         param.setApplicationName(request.getApplicationName());
+        param.setEntranceName(request.getServiceName());
         param.setExtend(request.getExtend());
         param.setMethod(request.getMethod());
         param.setRpcType(request.getRpcType());
@@ -222,7 +259,7 @@ public class ActivityServiceImpl implements ActivityService {
     /**
      * 校验虚拟入口更新参数
      *
-     * @return
+     * @return -
      */
     private ActivityResult checkVirtualActivityUpdate(VirtualActivityUpdateRequest request) {
         ActivityResult oldActivity = getActivityResult(request.getActivityId(), request.getActivityName());
@@ -303,9 +340,17 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setLinkId(oldActivity.getLinkId());
         activityDAO.updateActivity(updateParam);
 
-        notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(), request.getServiceName(),
-            request.getMethod(),
-            request.getRpcType(), request.getExtend());
+        // 非核心字段变动，不需要重建链路
+        if (StringUtil.equals(request.getApplicationName(), oldActivity.getApplicationName())
+            && StringUtil.equals(request.getServiceName(), oldActivity.getServiceName())
+            && StringUtil.equals(request.getMethod(), oldActivity.getMethod())
+            && StringUtil.equals(request.getRpcType(), oldActivity.getRpcType())
+            && StringUtil.equals(request.getExtend(), oldActivity.getExtend())) {
+            return;
+        }
+
+        notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(), oldActivity.getServiceName(),
+            oldActivity.getMethod(), oldActivity.getRpcType(), oldActivity.getExtend());
         notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
             request.getMethod(), request.getRpcType(), request.getExtend());
     }
@@ -354,9 +399,10 @@ public class ActivityServiceImpl implements ActivityService {
         activityDAO.deleteActivity(activityId);
         //记录业务活动删除事件
         redisClientUtils.hmset(Vars.ACTIVITY_DELETE_EVENT,
-                String.valueOf(activityId), 0);
+            oldActivity.getTenantId() + ":" + oldActivity.getEnvCode() + ":" + activityId, 0);
         // 正常业务活动
-        if (oldActivity.getBusinessType().equals(BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
+        if (oldActivity.getApplicationName() != null && oldActivity.getBusinessType().equals(
+            BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
             notifyClient.stopApplicationEntrancesCalculate(oldActivity.getApplicationName(),
                 oldActivity.getServiceName(),
                 oldActivity.getMethod(), oldActivity.getRpcType(), oldActivity.getExtend());
@@ -400,8 +446,34 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    public ActivityBottleneckResponse getBottleneckByActivityList(
+        ApplicationVisualInfoResponse applicationVisualInfoResponse,
+        LocalDateTime startDateTime, LocalDateTime endTime) {
+        // 查询 瓶颈阈值 配置
+        List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
+        if (WebPluginUtils.checkUserPlugin() && E2ePluginUtils.checkE2ePlugin()) {
+            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId(),
+                WebPluginUtils.traceEnvCode());
+        }
 
-    public ActivityBottleneckResponse getBottleneckByActivityList(List<ActivityInfoQueryRequest> activityList, String appName, String serviceName) {
+        ApplicationEntranceTopologyResponse.AppProvider provider
+            = new ApplicationEntranceTopologyResponse.AppProvider();
+        provider.setServiceAvgRt(applicationVisualInfoResponse.getResponseConsuming());
+        provider.setServiceAllSuccessRate(applicationVisualInfoResponse.getSuccessRatio());
+        provider.setOwnerApps(applicationVisualInfoResponse.getAppName());
+        provider.setServiceName(applicationVisualInfoResponse.getServiceAndMethod());
+        provider.setRpcType(String.valueOf(applicationVisualInfoResponse.getRpcType()));
+
+        // 瓶颈类型 init
+        int rateBottleneckType = -1; // 瓶颈类型(-1 没有瓶颈)
+        provider.setAllSuccessRateBottleneckType(rateBottleneckType);
+        provider.setAllTotalRtBottleneckType(rateBottleneckType);
+        provider.setAllSqlTotalRtBottleneckType(rateBottleneckType);
+
+        if (applicationVisualInfoResponse.getRequestCount() != 0) { // 如果不是初始值，再计算瓶颈
+            linkTopologyService.computeBottleneck(startDateTime.minusHours(8), null, bottleneckConfig, provider);
+        }
+
         ActivityBottleneckResponse activityBottleneckResponse = new ActivityBottleneckResponse();
         // -1 没有瓶颈
         int init = -1;
@@ -409,115 +481,93 @@ public class ActivityServiceImpl implements ActivityService {
         activityBottleneckResponse.setAllSuccessRateBottleneckType(init);
         activityBottleneckResponse.setAllSqlTotalRtBottleneckType(init);
 
-        for (ActivityInfoQueryRequest activityInfo : activityList) {
-            activityInfo.setStartTime(null);
-            activityInfo.setEndTime(null);
-            // 获取 拓扑图
-            ActivityResponse activityWithMetricsById = getActivityWithMetricsById(activityInfo);
-            for (ApplicationEntranceTopologyResponse.AbstractTopologyNodeResponse node : activityWithMetricsById.getTopology().getNodes()) {
-                if (node.getLabel().equals(appName)) {
-                    if (node.getProviderService() != null) {
-                        for (ApplicationEntranceTopologyResponse.AppProviderInfo appProviderInfo : node.getProviderService()) {
-                            for (ApplicationEntranceTopologyResponse.AppProvider appProvider : appProviderInfo.getDataSource()) {
-                                for (ApplicationEntranceTopologyResponse.AppProvider provider : appProvider.getContainRealAppProvider()) {
-                                    if (provider.getServiceName().equals(serviceName)) {
-                                        // 有 Rt 瓶颈
-                                        if ((provider.getAllTotalRtBottleneckType() != -1)) {
-                                            activityBottleneckResponse.setAllTotalRtBottleneckType(provider.getAllTotalRtBottleneckType());
-                                            activityBottleneckResponse.setRtBottleneckId(provider.getRtBottleneckId());
-                                        }
-                                        // 成功率 瓶颈
-                                        if ((provider.getAllSuccessRateBottleneckType() != -1)) {
-                                            activityBottleneckResponse.setAllSuccessRateBottleneckType(provider.getAllSuccessRateBottleneckType());
-                                            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getRtBottleneckId());
-                                        }
-                                        // 慢 sql 瓶颈
-                                        if ((provider.getAllSqlTotalRtBottleneckType() != -1)) {
-                                            activityBottleneckResponse.setAllSqlTotalRtBottleneckType(provider.getAllSqlTotalRtBottleneckType());
-                                            activityBottleneckResponse.setRtSqlBottleneckId(provider.getRtSqlBottleneckId());
-                                        }
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-                }
-
-            }
+        // 有 Rt 瓶颈
+        if ((provider.getAllTotalRtBottleneckType() != -1)) {
+            activityBottleneckResponse.setAllTotalRtBottleneckType(provider.getAllTotalRtBottleneckType());
+            activityBottleneckResponse.setRtBottleneckId(provider.getRtBottleneckId());
         }
+        // 成功率 瓶颈
+        if ((provider.getAllSuccessRateBottleneckType() != -1)) {
+            activityBottleneckResponse.setAllSuccessRateBottleneckType(provider.getAllSuccessRateBottleneckType());
+            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getSuccessRateBottleneckId());
+        }
+        // 慢 sql 瓶颈
+        if ((provider.getAllSqlTotalRtBottleneckType() != -1)) {
+            activityBottleneckResponse.setAllSqlTotalRtBottleneckType(provider.getAllSqlTotalRtBottleneckType());
+            activityBottleneckResponse.setRtSqlBottleneckId(provider.getRtSqlBottleneckId());
+        }
+
         return activityBottleneckResponse;
     }
 
     @Override
     public ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request) {
-        ActivityResponse activity = getActivityById(request.getActivityId());
+        ActivityResponse activity = getActivityById(request);
 
         // 非正常业务活动时，直接返回
         if (!activity.getBusinessType().equals(
-                BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
+            BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
             return activity;
         }
 
         // 正常业务活动时，才对 拓扑图处理
-        LocalDateTime startTime = request.getStartTime();
-        LocalDateTime endTime = request.getEndTime();
-        LocalDateTime allTotalCountStartDateTime = startTime;
 
-        if (null == startTime && null == endTime) {
-            /*
-            如果 起始时间 和 结束时间 为空，默认 查询5分钟的数据
-            总的 (TPS / RT)（最近5 min）
-            line : 成功率（最近5 min）
-            */
-            endTime = LocalDateTime.now().minusHours(8);
-            startTime = endTime.minusMinutes(5);
-
-            // line : 总调用量 startTime, 最近5 min
-//            allTotalCountStartDateTime = endTime.minusDays(1);
-            allTotalCountStartDateTime = startTime;
+        // 如果 起始时间 或 结束时间 为空，默认 查询5分钟的数据
+        if (null == request.getStartTime() || null == request.getEndTime()) {
+            LocalDateTime now = LocalDateTime.now();
+            request.setEndTime(now);
+            request.setStartTime(now.minusMinutes(5));
         }
 
+        LocalDateTime startTimeUseInInFluxDB = request.getStartTime().minusHours(8);
+        LocalDateTime endTimeUseInInFluxDB = request.getEndTime().minusHours(8);
+        // line : 总调用量 startTimeUseInInFluxDB, 最近5 min
+//            allTotalCountStartDateTimeUseInInFluxDB = endTimeUseInInFluxDB.minusDays(1);
+        LocalDateTime allTotalCountStartDateTimeUseInInFluxDB = startTimeUseInInFluxDB;
+
+
         linkTopologyService.fillMetrics(
-                request.getActivityId(),
+                request,
                 activity.getTopology(),
-                startTime, endTime,
-                allTotalCountStartDateTime,
-                request.getFlowTypeEnum());
+                startTimeUseInInFluxDB, endTimeUseInInFluxDB,
+                allTotalCountStartDateTimeUseInInFluxDB);
 
         return activity;
     }
 
     @Override
     public ActivityResponse getActivityWithMetricsByIdForReport(Long activityId,
-                                                                LocalDateTime startDateTime,
-                                                                LocalDateTime endDateTime) {
+        LocalDateTime startDateTime,
+        LocalDateTime endDateTime) {
 
-        ActivityResponse activity = getActivityById(activityId);
+        ActivityInfoQueryRequest activityInfoQueryRequest = new ActivityInfoQueryRequest();
+        activityInfoQueryRequest.setActivityId(activityId);
+        ActivityResponse activity = getActivityById(activityInfoQueryRequest);
 
         if (startDateTime == null || endDateTime == null) {
             return activity;
         }
 
+        ActivityInfoQueryRequest request = new ActivityInfoQueryRequest();
+        request.setActivityId(activityId);
+        request.setFlowTypeEnum(FlowTypeEnum.BLEND);
+
         linkTopologyService.fillMetrics(
-                activityId,
-                activity.getTopology(),
-                startDateTime, endDateTime,
-                //默认不区分流量类型，按照混合流量查询
-                startDateTime, FlowTypeEnum.BLEND);
+            request,
+            activity.getTopology(),
+            startDateTime, endDateTime,
+            //默认不区分流量类型，按照混合流量查询
+            startDateTime);
 
         return activity;
     }
 
     @Override
-    public ActivityResponse getActivityById(Long activityId) {
-        ActivityResult result = activityDAO.getActivityById(activityId);
+    public ActivityResponse getActivityById(ActivityInfoQueryRequest activityInfoQueryRequest) {
+        ActivityResult result = activityDAO.getActivityById(activityInfoQueryRequest.getActivityId());
         if (result == null) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
-                activityId + "对应的业务活动不存在");
+                    activityInfoQueryRequest.getActivityId() + "对应的业务活动不存在");
         }
         ActivityResponse activityResponse = new ActivityResponse();
         activityResponse.setActivityId(result.getActivityId());
@@ -565,7 +615,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setIsChange(result.getIsChange());
         activityResponse.setUserId(result.getUserId());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(Collections.singletonList(result.getUserId()));
-        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
+        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setActivityLevel(result.getActivityLevel());
         activityResponse.setIsCore(String.valueOf(result.getIsCore()));
@@ -581,13 +631,14 @@ public class ActivityServiceImpl implements ActivityService {
             request.setExtend(activityResponse.getExtend());
             request.setServiceName(activityResponse.getServiceName());
             request.setType(activityResponse.getType());
-            activityResponse.setEnableLinkFlowCheck(enableLinkFlowCheck);
+            activityResponse.setEnableLinkFlowCheck(ConfigServerHelper.getBooleanValueByKey(
+                ConfigServerKeyEnum.TAKIN_LINK_FLOW_CHECK_ENABLE));
 
             // 拓扑图查询
-            activityResponse.setTopology(linkTopologyService.getApplicationEntrancesTopology(request));
+            activityResponse.setTopology(linkTopologyService.getApplicationEntrancesTopology(request, activityInfoQueryRequest.isTempActivity()));
         }
 
-        Integer verifyStatus = this.getVerifyStatus(activityId).getVerifyStatus();
+        Integer verifyStatus = this.getVerifyStatus(activityInfoQueryRequest.getActivityId()).getVerifyStatus();
         activityResponse.setVerifyStatus(verifyStatus);
         activityResponse.setVerifiedFlag(
             verifyStatus.equals(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFIED));
@@ -612,7 +663,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setIsChange(result.getIsChange());
         activityResponse.setUserId(result.getUserId());
         Map<Long, UserExt> userExtMap = WebPluginUtils.getUserMapByIds(Collections.singletonList(result.getUserId()));
-        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(),userExtMap));
+        activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
         activityResponse.setExtend(result.getExtend());
         activityResponse.setMethod(result.getMethod());
         activityResponse.setRpcType(result.getRpcType());
@@ -697,21 +748,20 @@ public class ActivityServiceImpl implements ActivityService {
             ).collect(Collectors.toList()));
         }
         taskFlowDebugStartReq.setFeatures(req.getFeatures());
-        taskFlowDebugStartReq.setLicense(WebPluginUtils.getTenantUserAppKey());
-        UserExt user = WebPluginUtils.getUser();
+        UserExt user = WebPluginUtils.traceUser();
         if (user != null) {
-            taskFlowDebugStartReq.setOperateId(user.getId());
-            taskFlowDebugStartReq.setOperateName(user.getName());
+            taskFlowDebugStartReq.setUserId(user.getId());
+            taskFlowDebugStartReq.setUserName(user.getName());
         }
-        log.info("流量验证参数：{}", taskFlowDebugStartReq.toString());
-        ResponseResult<Long> longResponseResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
-        log.info("流量验证发起结果：{}", longResponseResult.toString());
-        HttpAssert.isOk(longResponseResult, taskFlowDebugStartReq, "cloud开始流量验证任务");
+        log.info("流量验证参数：{}", taskFlowDebugStartReq);
+        Long startResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
+        log.info("流量验证发起结果：{}", startResult.toString());
+        response.setTaskStatus(true);
         response.setVerifiedFlag(false);
         response.setVerifyStatus(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFYING);
         //3.缓存任务ID并返回
         redisClientUtils.setString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId,
-            String.valueOf(longResponseResult.getData()), BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY_EXPIRE,
+            String.valueOf(startResult), BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY_EXPIRE,
             TimeUnit.SECONDS);
         response.setScriptId(scriptId);
         return response;
@@ -727,20 +777,17 @@ public class ActivityServiceImpl implements ActivityService {
         String reportId = redisClientUtils.getString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId);
         //2.根据taskId获取报告状态即任务状态
         if (!StringUtil.isBlank(reportId)) {
-            WebResponse webResponse = reportService.getReportByReportId(Long.valueOf(reportId));
-            if (Objects.nonNull(webResponse) && Objects.nonNull(webResponse.getData())) {
-                ReportDetailOutput reportDetailOutput = (ReportDetailOutput)webResponse.getData();
-                Integer verifyStatus = reportDetailOutput.getTaskStatus();
-                response.setVerifyStatus(verifyStatus);
-                response.setVerifiedFlag(
-                    verifyStatus.equals(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFIED));
-            }
+            ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(Long.valueOf(reportId));
+            Integer verifyStatus = reportDetailOutput.getTaskStatus();
+            response.setVerifyStatus(verifyStatus);
+            response.setVerifiedFlag(
+                verifyStatus.equals(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFIED));
         }
         return response;
     }
 
     /**
-     * @param activityId 业务ID
+     * @param activityId  业务ID
      * @param ownerApps   应用名称
      * @param serviceName 服务名称
      * @param state       开关状态
@@ -755,8 +802,8 @@ public class ActivityServiceImpl implements ActivityService {
         try {
             String key = ActivityCacheAspect.REDIS_PREFIX_KEY + activityId + "::*";
             Set keys = redisTemplate.keys(key);
-            keys.forEach(k->redisTemplate.delete(k));
-        }catch (Exception e){
+            keys.forEach(k -> redisTemplate.delete(k));
+        } catch (Exception e) {
             //Ignore
         }
     }
@@ -764,6 +811,27 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public List<ActivityNodeState> getActivityNodeServiceState(long activityId) {
         return activityDAO.getActivityNodeServiceState(activityId);
+    }
+
+    @Override
+    public BusinessLinkManageTableEntity getActivityByName(String activityName) {
+        return activityDAO.getActivityByName(activityName);
+    }
+
+    @Override
+    public BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request) {
+        String entrance = ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(),
+            request.getServiceName(), request.getRpcType());
+        List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(request.getApplicationName(),
+            entrance);
+        if (CollectionUtils.isEmpty(serviceList)) {
+            return null;
+        }
+        BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
+        Map linkNameAndId = serviceList.get(0);
+        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkId").toString()));
+        businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName").toString());
+        return businessLinkManageTableEntity;
     }
 
     // TODO 变更逻辑后续看如何设计

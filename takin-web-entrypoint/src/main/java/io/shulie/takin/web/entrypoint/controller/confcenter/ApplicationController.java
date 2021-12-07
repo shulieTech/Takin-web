@@ -270,11 +270,6 @@ public class ApplicationController {
 
     @ApiOperation("获取静默开关状态接口")
     @GetMapping("/application/center/app/switch/silence")
-    @ModuleDef(
-            moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-            subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
-            logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
-    )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
             needAuth = ActionTypeEnum.QUERY
@@ -285,11 +280,6 @@ public class ApplicationController {
 
     @ApiOperation("按租户查询上报数据接口")
     @GetMapping("/application/center/app/report/config/info")
-    @ModuleDef(
-            moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-            subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
-            logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
-    )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
             needAuth = ActionTypeEnum.QUERY

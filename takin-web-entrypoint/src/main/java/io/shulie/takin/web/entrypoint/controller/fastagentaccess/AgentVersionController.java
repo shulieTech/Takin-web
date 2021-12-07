@@ -9,13 +9,15 @@ import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
+import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentInfoListQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentInfoListResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentVersionListResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentUploadService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
+import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentDownloadUrlVerifyUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.ResponseFileUtil;
 import io.shulie.takin.web.common.constant.ApiUrls;
@@ -152,5 +154,6 @@ public class AgentVersionController {
     public AgentVersionListResponse queryLatestOrFixedVersion(@RequestParam(required = false) String version) {
         return agentVersionService.queryLatestOrFixedVersion(version);
     }
+
 
 }

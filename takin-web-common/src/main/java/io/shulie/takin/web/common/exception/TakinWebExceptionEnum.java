@@ -141,8 +141,27 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      */
     SHADOW_CONFIG_CREATE_ERROR("1400-"+ErrorConstant.VALIDATE_ERROR,"新增影子配置异常"),
 
-    ;
 
+    /**
+     *  agent指令操作
+     */
+    AGENT_COMMAND_VALID_ERROR("1500-"+ErrorConstant.VALIDATE_ERROR,"Agent 指令操作 数据校验异常"),
+
+    /**
+     * 插件根目录
+     */
+    PLUGIN_PATH_VALID_ERROR("1600-"+ErrorConstant.VALIDATE_ERROR,"探针根目录数据校验异常"),
+
+    /**
+     * 升级
+     */
+    PLUGIN_UPGRADE_VALID_ERROR("1700-"+ErrorConstant.VALIDATE_ERROR,"升级包数据异常"),
+
+    /**
+     * 应用标签
+     */
+    APPLICATION_TAG_CREATE_ERROR("1800-"+ErrorConstant.ADD_ERROR,"应用标签创建异常"),
+    ;
     private final String errorCode;
 
     private final String defaultValue;

@@ -197,7 +197,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ConfCenterService confCenterService;
-    @Resource
+    @Autowired
+    private TApplicationMntDao tApplicationMntDao;
+    @Autowired
     private TAppMiddlewareInfoMapper tAppMiddlewareInfoMapper;
     @Autowired
     private ActivityService activityService;

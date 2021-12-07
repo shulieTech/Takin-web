@@ -272,7 +272,6 @@
         <dependency>
             <groupId>cn.afterturn</groupId>
             <artifactId>easypoi-base</artifactId>
-            <version>${easypoi-base.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>

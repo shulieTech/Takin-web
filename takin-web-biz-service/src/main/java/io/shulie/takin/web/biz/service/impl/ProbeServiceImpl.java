@@ -25,7 +25,7 @@ import io.shulie.takin.web.biz.pojo.output.probe.CreateProbeOutput;
 import io.shulie.takin.web.biz.pojo.output.probe.ProbeListOutput;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.ProbeService;
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
+import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;

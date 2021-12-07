@@ -60,4 +60,12 @@ public interface TagManageDAO {
      * @return
      */
     List<TagManageResult> selectTagByType(Integer type) ;
+
+    /**
+     * 新增tag
+     *
+     * @param tagManageParams
+     * @return
+     */
+    List<TagManageResult> addTags(List<TagManageParam> tagManageParams);
 }

@@ -1,19 +1,5 @@
 package io.shulie.takin.web.biz.service.fastagentaccess.impl;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
-
 import cn.hutool.core.collection.CollectionUtil;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.LoginConstant;
@@ -24,10 +10,11 @@ import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionQueryReq
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentVersionListResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentDownloadUrlVerifyUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectTypeEnum;
+import io.shulie.takin.web.common.util.AppCommonUtil;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentVersionDAO;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentVersionQueryParam;
@@ -44,6 +31,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 /**
  * agent版本管理(AgentVersion)service
@@ -95,6 +96,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     @Autowired
     private AgentConfigService agentConfigService;
+
+
 
     @Override
     public AgentVersionListResponse queryLatestOrFixedVersion(String version) {
@@ -402,4 +405,5 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         agentConfigList.add(userAppKeyObj);
         agentConfigList.add(pradarEnvCodeObj);
     }
+
 }

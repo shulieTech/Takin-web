@@ -419,6 +419,7 @@ ON t.bid = a.activity_id
 -- t_agent_config 根据 key, 获得用户id, 然后获得 租户id
 UPDATE t_agent_config m LEFT JOIN t_tro_user u ON u.`name` = m.operator SET m.tenant_id = IFNULL(u.tenant_id,1);
 UPDATE t_agent_config set tenant_id=-1,env_code='system' WHERE tenant_id=1 AND env_code='test';
+UPDATE t_agent_config SET tenant_id=-1 AND env_code='system' WHERE type=0;
 -- t_app_business_table_info 根据用户id查到租户id, 然后赋值
 UPDATE t_app_business_table_info m LEFT JOIN t_tro_user u ON u.id = m.user_id SET m.tenant_id = IFNULL(u.tenant_id,1);
 UPDATE t_app_business_table_info m LEFT JOIN t_application_mnt u ON u.APPLICATION_ID = m.APPLICATION_ID SET m.env_code = IFNULL(u.env_code,'test');

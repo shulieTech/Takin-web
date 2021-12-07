@@ -17,7 +17,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -197,8 +196,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ConfCenterService confCenterService;
-    @Autowired
-    private TApplicationMntDao tApplicationMntDao;
+
     @Autowired
     private TAppMiddlewareInfoMapper tAppMiddlewareInfoMapper;
     @Autowired

@@ -17,6 +17,7 @@ import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionListResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

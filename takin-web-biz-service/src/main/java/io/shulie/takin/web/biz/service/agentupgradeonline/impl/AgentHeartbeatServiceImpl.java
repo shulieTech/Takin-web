@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandResBO;
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentHeartbeatBO;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentHeartbeatRequest;
@@ -29,6 +28,7 @@ import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.ApplicationPluginUpgradeDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,7 +129,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
      * @return AgentHeartBeatBO对象
      */
     private AgentHeartbeatBO buildAgentHeartBeatBO(AgentHeartbeatRequest commandRequest) {
-        TApplicationMnt applicationMnt = applicationService.queryTApplicationMntByName(commandRequest.getProjectName());
+        ApplicationDetailResult applicationMnt = applicationService.queryTApplicationMntByName(commandRequest.getProjectName());
         if (applicationMnt == null) {
             throw new TakinWebException(ExceptionCode.AGENT_REGISTER_ERROR, "应用名不存在");
         }

@@ -20,7 +20,7 @@
     <parent>
         <artifactId>takin-web-config-sync-zk</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.1.0.0</version>
+        <version>takin-web-5.1.0.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>

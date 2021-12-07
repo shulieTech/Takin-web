@@ -138,20 +138,20 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
                 for (Map.Entry<String, Object> entry : exceptionMap.entrySet()) {
                     String message = String.valueOf(entry.getValue());
                     if (message.contains("errorCode")) {
+                        ExceptionInfo exceptionInfo = null;
                         try {
-                            ExceptionInfo exceptionInfo = JSONObject.parseObject(message,
-                                ExceptionInfo.class);
-                            ApplicationErrorOutput applicationErrorResponse
-                                = new ApplicationErrorOutput()
-                                .setExceptionId(exceptionInfo.getErrorCode())
-                                .setAgentIdList(Collections.singletonList(nodeUploadDataDTO.getAgentId()))
-                                .setDescription(exceptionInfo.getMessage())
-                                .setDetail(exceptionInfo.getDetail())
-                                .setTime(nodeUploadDataDTO.getExceptionTime());
-                            responseList.add(applicationErrorResponse);
+                             exceptionInfo = JSONObject.parseObject(message, ExceptionInfo.class);
                         } catch (Exception e) {
-                            log.error("异常转换失败：错误信息: {}", message, e);
+                            log.error("异常转换失败：错误信息: {},异常内容{}", message,e.getMessage());
                         }
+                        ApplicationErrorOutput applicationErrorResponse
+                            = new ApplicationErrorOutput()
+                            .setExceptionId(exceptionInfo != null?exceptionInfo.getErrorCode():"web-异常原文显示")
+                            .setAgentIdList(Collections.singletonList(nodeUploadDataDTO.getAgentId()))
+                            .setDescription(exceptionInfo != null?exceptionInfo.getMessage():message)
+                            .setDetail(exceptionInfo != null?exceptionInfo.getDetail():message)
+                            .setTime(nodeUploadDataDTO.getExceptionTime());
+                        responseList.add(applicationErrorResponse);
                     }
                 }
             }

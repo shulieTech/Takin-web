@@ -205,6 +205,7 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
      * @param param 筛选条件
      * @return 应用列表
      */
+    @InterceptorIgnore(tenantLine = "true")
     IPage<ApplicationListResult> selectApplicationListByParam(
         @Param("page") IPage<ApplicationMntEntity> page, @Param("param") QueryApplicationParam param);
 

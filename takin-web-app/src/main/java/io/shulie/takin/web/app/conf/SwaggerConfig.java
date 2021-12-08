@@ -51,7 +51,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 @EnableKnife4j
 @Import(BeanValidatorPluginsConfiguration.class)
 @Order(0)
-@Profile({"local","dev","test"})
+@Profile({"local","dev","test","web"})
 public class SwaggerConfig {
 
     @Value("${server.servlet.context-path:}")

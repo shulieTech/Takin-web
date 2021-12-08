@@ -142,7 +142,6 @@ CREATE TABLE `t_plugin_tenant_ref`
     `plugin_name`        varchar(100) DEFAULT '' COMMENT '插件名称',
     `plugin_version`     varchar(20)  DEFAULT '' COMMENT '插件版本',
     `owning_tenant_id`   bigint(20) NOT NUll COMMENT '所属租户id',
-    `owning_tenant_name` varchar(512) COMMENT '租户名称',
     `gmt_create`         datetime     DEFAULT CURRENT_TIMESTAMP,
     `gmt_update`         datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `IS_DELETED`         tinyint(2) NOT NULL DEFAULT 0 COMMENT '是否有效 0:有效;1:无效',

@@ -1,60 +1,61 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Collections;
 import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import lombok.extern.slf4j.Slf4j;
+
 import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
+import org.springframework.http.HttpMethod;
+import com.google.common.collect.HashBiMap;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import org.apache.commons.collections4.CollectionUtils;
+
+import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.pradar.log.parser.trace.RpcEntry;
 import com.pamirs.pradar.log.parser.trace.RpcStack;
-import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
 import com.pamirs.pradar.log.parser.utils.TraceIdUtil;
-import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
+import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
+import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDetailDTO;
 import com.pamirs.takin.entity.domain.entity.linkmanage.figure.RpcType;
-import io.shulie.takin.cloud.sdk.impl.scene.manage.CloudSceneApiImpl;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneBusinessActivityRefResp;
-import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.common.beans.response.ResponseResult;
+
 import io.shulie.takin.web.amdb.api.TraceClient;
-import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
-import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
-import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
-import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
-import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
-import io.shulie.takin.web.biz.service.report.ReportService;
-import io.shulie.takin.web.biz.service.risk.util.DateUtil;
-import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
-import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
-import io.shulie.takin.web.common.domain.PradarWebRequest;
-import io.shulie.takin.web.common.enums.trace.TraceNodeAsyncEnum;
-import io.shulie.takin.web.common.enums.trace.TraceNodeLogTypeEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.common.domain.PradarWebRequest;
+import io.shulie.takin.web.biz.service.risk.util.DateUtil;
+import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
+import io.shulie.takin.web.common.enums.trace.TraceNodeAsyncEnum;
+import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
+import io.shulie.takin.web.common.enums.trace.TraceNodeLogTypeEnum;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Service;
+import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
+import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
+import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
+import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.cloud.sdk.impl.scene.manage.CloudSceneApiImpl;
+import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneBusinessActivityRefResp;
 
 /**
  * @author qianshui
@@ -63,18 +64,15 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class ReportRealTimeServiceImpl implements ReportRealTimeService {
-
     @Resource
     CloudSceneApiImpl cloudSceneApi;
-    @Autowired
+    @Resource
     private ReportService reportService;
-    @Autowired
+    @Resource
     private TraceClient traceClient;
-
-    @Autowired
+    @Resource
     private SceneTaskService sceneTaskService;
-
-    @Autowired
+    @Resource
     private BusinessLinkManageDAO businessLinkManageDAO;
 
     @Override
@@ -92,7 +90,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         }
         // 取延迟1分钟时间 前5分钟数据 因为 agent上报数据需要1分钟计算出来
         return getReportTraceDtoList(reportId, sceneId, System.currentTimeMillis() - 6 * 60 * 1000L,
-            System.currentTimeMillis() - 1 * 60 * 1000L, type, current, pageSize);
+            System.currentTimeMillis() - (1 * 60 * 1000), type, current, pageSize);
     }
 
     @Override
@@ -157,7 +155,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
      * dto 列表扁平化
      *
      * @param dtoList trace 列表
-     * @param id      reportTraceDetai id
+     * @param id      reportTrace Detail id
      * @param result  处理后的 trace 列表
      */
     private void coverResult(List<ReportTraceDetailDTO> dtoList, Integer id, List<ReportTraceDetailDTO> result) {
@@ -242,7 +240,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             }
             reportTraceDetailDTO.setResponse(rpcEntry.getResponse());
 
-            // by wuya 20211025
+            // by 无涯 20211025
             reportTraceDetailDTO.setMethodName(rpcEntry.getMethodName());
             reportTraceDetailDTO.setLogType(rpcEntry.getLogType());
             reportTraceDetailDTO.setLogTypeName(TraceNodeLogTypeEnum.judgeTraceNodeLogType(rpcEntry.getLogType()).getDesc());
@@ -346,9 +344,9 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
 
             return traceDTO;
         }).collect(Collectors.toList());
-        PageInfo<ReportTraceDTO> reportTraceDTOPageInfo = new PageInfo<>(collect);
-        reportTraceDTOPageInfo.setTotal(entryTraceInfoDtoPagingList.getTotal());
-        return reportTraceDTOPageInfo;
+        PageInfo<ReportTraceDTO> reportTraceDtoPageInfo = new PageInfo<>(collect);
+        reportTraceDtoPageInfo.setTotal(entryTraceInfoDtoPagingList.getTotal());
+        return reportTraceDtoPageInfo;
     }
 
     /**

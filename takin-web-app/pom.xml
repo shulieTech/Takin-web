@@ -231,12 +231,6 @@
             <artifactId>knife4j-spring-boot-starter</artifactId>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>swagger-bootstrap-ui</artifactId>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>com.dangdang</groupId>
             <artifactId>elastic-job-lite-core</artifactId>
@@ -287,7 +281,7 @@
         </dependency>
 
         <dependency>
-           <groupId>io.shulie</groupId>
+            <groupId>io.shulie</groupId>
             <artifactId>tesla-sequence</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -309,6 +303,10 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.github.jsqlparser</groupId>

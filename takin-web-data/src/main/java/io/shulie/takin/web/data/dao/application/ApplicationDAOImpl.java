@@ -44,7 +44,9 @@ import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.data.result.application.LibraryResult;
@@ -629,4 +631,10 @@ public class ApplicationDAOImpl
         }
         return applicationMntMapper.selectCount(queryWrapper);
     }
+
+    @Override
+    public IPage<ApplicationListResult> listByParam(QueryApplicationParam param) {
+        return applicationMntMapper.selectApplicationListByParam(this.setPage(param), param);
+    }
+
 }

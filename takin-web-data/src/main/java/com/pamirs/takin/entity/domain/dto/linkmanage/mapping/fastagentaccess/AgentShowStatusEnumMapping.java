@@ -1,10 +1,10 @@
 package com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess;
 
-import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
-import io.shulie.takin.web.common.enums.fastagentaccess.AgentShowStatusEnum;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
+import io.shulie.takin.web.common.enums.fastagentaccess.AgentShowStatusEnum;
 
 /**
  * @Author: 南风

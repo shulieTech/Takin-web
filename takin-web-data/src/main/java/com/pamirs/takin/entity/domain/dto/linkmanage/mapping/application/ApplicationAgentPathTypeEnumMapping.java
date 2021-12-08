@@ -1,10 +1,10 @@
 package com.pamirs.takin.entity.domain.dto.linkmanage.mapping.application;
 
-import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
-import io.shulie.takin.web.common.enums.application.ApplicationAgentPathTypeEnum;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
+import io.shulie.takin.web.common.enums.application.ApplicationAgentPathTypeEnum;
 
 /**
  * @Author: 南风

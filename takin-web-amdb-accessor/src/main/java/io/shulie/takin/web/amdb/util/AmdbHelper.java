@@ -46,7 +46,7 @@ public class AmdbHelper {
          */
         private Object param;
         /**
-         * 事件（此次调用做什么 比如 amcb查询应用节点数据）
+         * 事件（此次调用做什么 比如 amdb查询应用节点数据）
          */
         private String eventName;
         /**
@@ -92,8 +92,8 @@ public class AmdbHelper {
          * 返回amdb的单个数据实体
          *
          * @param clazz 需要被转化的实体 class
-         * @param <T>
-         * @return
+         * @param <T>   实体泛型
+         * @return 实体
          */
         public <T> AmdbResult<T> one(Class<T> clazz) {
             Assert.notNull(this.url, "url 不能为空！");
@@ -139,8 +139,8 @@ public class AmdbHelper {
          * 返回amdb的数据集合
          *
          * @param clazz 需要被转化的VO class
-         * @param <T>
-         * @return
+         * @param <T>   实体泛型
+         * @return 实体
          */
         public <T> AmdbResult<List<T>> list(Class<T> clazz) {
             Assert.notNull(this.url, "url 不能为空！");
@@ -175,7 +175,7 @@ public class AmdbHelper {
             }
 
             if (CollectionUtils.isEmpty(amdbResponse.getData())) {
-                log.error("{}返回状态为成功，但数据为空！amdbUrl={},响应信息：{},{}", eventName, this.url, responseEntity,
+                log.debug("{}返回状态为成功，但数据为空！amdbUrl={},响应信息：{},{}", eventName, this.url, responseEntity,
                     "可通过arthas命令 watch io.shulie.takin.web.amdb.util.AmdbHelper$AmdbBuilder param '{params,returnObj,"
                         + "throwExp}'  -n 5  -x 3 获取参数！");
             } else {
@@ -190,9 +190,9 @@ public class AmdbHelper {
     /**
      * 用于单元测试调试amdb返回json 排查问题
      *
-     * @param resultJson
-     * @param clazz
-     * @param <T>
+     * @param resultJson 结果JSON
+     * @param clazz      需要被转化的实体 class
+     * @param <T>        实体泛型
      */
     public static <T> void debugList(String resultJson, Class<T> clazz) {
         AmdbResult<List<T>> amdbResponse = JSONUtil.toBean(resultJson,
@@ -204,9 +204,9 @@ public class AmdbHelper {
     /**
      * 用于单元测试调试amdb返回json 排查问题
      *
-     * @param resultJson
-     * @param clazz
-     * @param <T>
+     * @param resultJson 结果JSON
+     * @param clazz      需要被转化的实体 class
+     * @param <T>        实体泛型
      */
     public static <T> void debugOne(String resultJson, Class<T> clazz) {
         AmdbResult<T> amdbResponse = JSONUtil.toBean(resultJson,

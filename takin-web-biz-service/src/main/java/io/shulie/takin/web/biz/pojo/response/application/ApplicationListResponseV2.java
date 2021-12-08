@@ -30,4 +30,7 @@ public class ApplicationListResponseV2 {
     @ApiModelProperty("负责人")
     private String userName;
 
+    @ApiModelProperty("应用名称")
+    private String applicationName;
+
 }

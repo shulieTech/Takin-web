@@ -1180,7 +1180,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         QueryApplicationParam queryApplicationParam = BeanUtil.copyProperties(request, QueryApplicationParam.class);
         queryApplicationParam.setTenantId(WebPluginUtils.traceTenantId());
         queryApplicationParam.setEnvCode(WebPluginUtils.traceEnvCode());
-        queryApplicationParam.setUserId(WebPluginUtils.traceUserId());
+        queryApplicationParam.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
         IPage<ApplicationListResult> applicationListResultIPage = applicationDAO.listByParam(queryApplicationParam);
         if (applicationListResultIPage.getTotal() == 0) {
             return PagingList.empty();

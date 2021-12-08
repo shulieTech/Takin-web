@@ -1,5 +1,7 @@
 package io.shulie.takin.web.data.param.application;
 
+import java.util.List;
+
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,7 +24,8 @@ public class QueryApplicationParam extends PageBaseDTO {
      */
     private Integer accessStatus;
 
-    private Long userId;
+    private List<Long> userIds;
+
     private Long tenantId;
     private String envCode;
 

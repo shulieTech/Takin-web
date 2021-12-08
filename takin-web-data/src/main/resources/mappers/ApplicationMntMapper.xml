@@ -377,7 +377,7 @@
             AND a.ACCESS_STATUS = #{param.accessStatus}
         </if>
 
-        <if test="param.userIds != null and param.userIds > 0">
+        <if test="param.userIds != null and param.userIds.size > 0">
             <foreach collection = "param.userIds" item = "userId" open="(" close=")" separator=",">
                 AND a.USER_ID IN  #{userId}
             </foreach>

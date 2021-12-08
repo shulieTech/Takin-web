@@ -148,3 +148,5 @@ CREATE TABLE `t_plugin_tenant_ref`
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE KEY `pluginName_pluginVersion_owningTenantId` (`plugin_name`,`plugin_version`,`owning_tenant_id`) USING BTREE
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='插件租户关联表';
+
+UPDATE t_tro_resource SET IS_SUPER = 0 WHERE code = "admins_admin";

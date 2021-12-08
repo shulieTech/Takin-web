@@ -3,16 +3,7 @@ package io.shulie.takin.web.biz.service.scriptmanage;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -1681,6 +1672,26 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         if (CollectionUtils.isEmpty(scriptManageDeployCreateRequest.getFileManageCreateRequests())) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "文件列表为空！");
         }
+        if (CollectionUtils.isNotEmpty(scriptManageDeployCreateRequest.getFileManageCreateRequests())){
+            List<String> uploadFileNames = scriptManageDeployCreateRequest.getFileManageCreateRequests().stream()
+                    .filter(o -> o.getIsDeleted() != 1)
+                    .map(FileManageCreateRequest::getFileName)
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(uploadFileNames)){
+                Set<String> singleUploadFileNames = new HashSet<>(uploadFileNames);
+                ScriptManageExceptionUtil.isUpdateValidError(singleUploadFileNames.size() != uploadFileNames.size(), "数据文件名称重复!");
+            }
+        }
+        if (CollectionUtils.isNotEmpty(scriptManageDeployCreateRequest.getAttachmentManageCreateRequests())){
+            List<String> uploadAttachments = scriptManageDeployCreateRequest.getAttachmentManageCreateRequests().stream()
+                    .filter(o -> o.getIsDeleted() != 1)
+                    .map(FileManageCreateRequest::getFileName)
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(uploadAttachments)){
+                Set<String> singleUploadFileNames = new HashSet<>(uploadAttachments);
+                ScriptManageExceptionUtil.isUpdateValidError(singleUploadFileNames.size() != uploadAttachments.size(), "附件中文件名称重复!");
+            }
+        }
         boolean existJmx = false;
         for (FileManageCreateRequest fileManageCreateRequest : scriptManageDeployCreateRequest
             .getFileManageCreateRequests()) {
@@ -1725,6 +1736,27 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
         ScriptManageExceptionUtil.isUpdateValidError(
             CollectionUtils.isEmpty(scriptManageDeployUpdateRequest.getFileManageUpdateRequests()), "文件列表为空!");
+
+        if (CollectionUtils.isNotEmpty(scriptManageDeployUpdateRequest.getFileManageUpdateRequests())){
+            List<String> uploadFileNames = scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream()
+                    .filter(o -> o.getIsDeleted() != 1)
+                    .map(FileManageUpdateRequest::getFileName)
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(uploadFileNames)){
+                Set<String> singleUploadFileNames = new HashSet<>(uploadFileNames);
+                ScriptManageExceptionUtil.isUpdateValidError(singleUploadFileNames.size() != uploadFileNames.size(), "数据文件名称重复!");
+            }
+        }
+        if (CollectionUtils.isNotEmpty(scriptManageDeployUpdateRequest.getAttachmentManageUpdateRequests())){
+            List<String> uploadAttachments = scriptManageDeployUpdateRequest.getAttachmentManageUpdateRequests().stream()
+                    .filter(o -> o.getIsDeleted() != 1)
+                    .map(FileManageUpdateRequest::getFileName)
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(uploadAttachments)){
+                Set<String> singleUploadFileNames = new HashSet<>(uploadAttachments);
+                ScriptManageExceptionUtil.isUpdateValidError(singleUploadFileNames.size() != uploadAttachments.size(), "附件中文件名称重复!");
+            }
+        }
 
         boolean existJmx = false;
         for (FileManageUpdateRequest fileManageUpdateRequest : scriptManageDeployUpdateRequest

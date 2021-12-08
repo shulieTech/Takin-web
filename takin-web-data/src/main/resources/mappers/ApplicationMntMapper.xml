@@ -374,7 +374,7 @@
         </if>
 
         <if test="param.accessStatus != null">
-            AND a.ACCESS_STATUS = #{param.applicationName}
+            AND a.ACCESS_STATUS = #{param.accessStatus}
         </if>
 
         <if test="param.userIds != null and param.userIds > 0">

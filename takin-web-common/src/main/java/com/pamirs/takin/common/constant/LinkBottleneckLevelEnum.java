@@ -5,7 +5,7 @@ package com.pamirs.takin.common.constant;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月16日
+ * @date 2018年5月16日
  */
 public enum LinkBottleneckLevelEnum {
     BOTTLENECK_LEVEL_SERIOUS(1, "严重"),

@@ -11,7 +11,7 @@ import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.entity.domain.vo.TShadowTableConfigVo;
 import com.pamirs.takin.entity.domain.vo.TShadowTableDatasourceVo;
 import io.shulie.takin.web.biz.service.ShadowTableConfigService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Api(tags = "影子表配置")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class ShadowTableConfigController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(ShadowTableConfigController.class);
@@ -48,8 +48,8 @@ public class ShadowTableConfigController {
      *
      * @return 成功, 则返回影子表配置信息, 失败则返回错误编码和错误信息
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_AGENT_GET_SHADOWCONFIG_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_AGENT_GET_SHADOWCONFIG_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> agentGetShadowTableConfig(@RequestParam("appName") String appName) {
         try {
             return ResponseOk.create(shadowTableConfigService.agentGetShadowTable(appName));
@@ -64,8 +64,8 @@ public class ShadowTableConfigController {
     }
 
 
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_GET_CONFIG_PAGE_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_GET_CONFIG_PAGE_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryShadowTableConfigPage(@RequestBody Map<String, Object> paramMap) {
         try {
             return ResponseOk.create(shadowTableConfigService.queryShadowTableConfigPage(paramMap));
@@ -75,8 +75,8 @@ public class ShadowTableConfigController {
         }
     }
 
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_UPDATE_CONFIG_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_UPDATE_CONFIG_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateShadowTableConfig(@RequestBody TShadowTableConfigVo shadowTableConfigVo) {
         try {
             shadowTableConfigService.updateShadowTableConfig(shadowTableConfigVo);
@@ -90,8 +90,8 @@ public class ShadowTableConfigController {
         }
     }
 
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_DELETE_CONFIG_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_DELETE_CONFIG_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteShadowTableByIdList(@RequestParam("idList") String idList) {
         try {
             shadowTableConfigService.deleteShadowTableByIdList(idList);
@@ -105,8 +105,8 @@ public class ShadowTableConfigController {
         }
     }
 
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_QUERYIPPORTNAME_CONFIG_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_QUERYIPPORTNAME_CONFIG_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryApplicationDatabaseIpPortAndName(
             @RequestParam("applicationId") String applicationId) {
         try {
@@ -117,8 +117,8 @@ public class ShadowTableConfigController {
         }
     }
 
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_ADD_CONFIG_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_ADD_CONFIG_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> saveShadowTableConfig(@RequestBody TShadowTableConfigVo shadowTableConfigVo) {
         try {
             shadowTableConfigService.saveShadowTableConfig(shadowTableConfigVo);
@@ -143,8 +143,8 @@ public class ShadowTableConfigController {
      * @author shulie
      * @create 2019/3/14 10:38
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_QUERY_IPPORT_CONFIG_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_QUERY_IPPORT_CONFIG_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryDatabaseIpPortList(@RequestParam("applicationId") String applicationId,
                                                           @RequestParam("dbName") String dbName) {
         try {
@@ -168,8 +168,8 @@ public class ShadowTableConfigController {
      * @author shulie
      * @create 2019/3/14 10:38
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_QUERY_DBNAME_CONFIG_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_QUERY_DBNAME_CONFIG_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryDatabaseNameList(@RequestParam("applicationId") String applicationId,
                                                         @RequestParam("ipPort") String ipPort) {
         try {
@@ -189,8 +189,8 @@ public class ShadowTableConfigController {
      *
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_QUERY_SHADOWDB_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOWCONFIG_QUERY_SHADOWDB_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryShadowDatabaseApplicationList(@RequestBody Map<String, Object> paramMap) {
         try {
             return ResponseOk.create(shadowTableConfigService.queryShadowDatabaseApplicationList(paramMap));
@@ -208,8 +208,8 @@ public class ShadowTableConfigController {
      *
      * @return
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOW_DATASOURCE_SAVE_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOW_DATASOURCE_SAVE_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> saveShadowDatasource(
             @RequestBody @Valid TShadowTableDatasourceVo tShadowTableDatasourceVo, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -227,8 +227,8 @@ public class ShadowTableConfigController {
         }
     }
 
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOW_DATASOURCE_UPDATE_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOW_DATASOURCE_UPDATE_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateShadowDatasource(
             @RequestBody @Valid TShadowTableDatasourceVo tShadowTableDatasourceVo, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -251,8 +251,8 @@ public class ShadowTableConfigController {
      *
      * @return
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_SHADOW_DATASOURCE_GET_APPLICATION_URL,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_SHADOW_DATASOURCE_GET_APPLICATION_URL,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getDatasourceApplication(@RequestParam("useShadowTable") String useShadowTable) {
         try {
             return ResponseOk.create(shadowTableConfigService.getDatasourceApplication(useShadowTable));

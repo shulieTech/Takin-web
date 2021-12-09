@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -15,7 +16,7 @@ import lombok.Data;
  */
 @Data
 @ApiModel("数据源列表返回的简单对象")
-public class DatasourceListResponse {
+public class DatasourceListResponse extends AuthQueryResponseCommonExt {
 
     @ApiModelProperty("数据源ID")
     private Long datasourceId;

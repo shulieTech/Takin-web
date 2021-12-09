@@ -29,4 +29,12 @@ public class AgentConfigQueryDTO extends PageBaseDTO {
      * 配置状态 ture 校验成功 false校验失败
      */
     private Boolean status;
+    /**
+     * 租户的tenantAppKey
+     */
+    private String tenantAppKey;
+    /**
+     * 环境编码
+     */
+    private String envCode;
 }

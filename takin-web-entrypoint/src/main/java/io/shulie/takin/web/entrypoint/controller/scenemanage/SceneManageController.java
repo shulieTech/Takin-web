@@ -14,19 +14,21 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDT
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageIdVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerDeleteRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
@@ -206,7 +208,7 @@ public class SceneManageController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
         needAuth = ActionTypeEnum.DELETE
     )
-    public WebResponse delete(@RequestBody @Valid SceneManageIdVO deleteVO) {
+    public WebResponse<String> delete(@RequestBody @Valid SceneManageDeleteReq deleteVO) {
         ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(deleteVO.getId());
         if (Objects.isNull(webResponse.getData())) {
             OperationLogContextHolder.ignoreLog();
@@ -217,11 +219,8 @@ public class SceneManageController {
             SceneManageWrapperDTO.class);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneData.getId()));
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
-        WebResponse deleteSceneResponse = sceneManageService.deleteScene(deleteVO);
-        if (!deleteSceneResponse.getSuccess()) {
-            OperationLogContextHolder.ignoreLog();
-        }
-        return deleteSceneResponse;
+        String deleteSceneResponse = sceneManageService.deleteScene(deleteVO);
+        return WebResponse.success(deleteSceneResponse);
     }
 
     @GetMapping("/detail")
@@ -240,7 +239,7 @@ public class SceneManageController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public WebResponse getList(@ApiParam(name = "current", value = "页码", required = true) Integer current,
+    public Response<List<SceneManageListOutput>> getList(@ApiParam(name = "current", value = "页码", required = true) Integer current,
         @ApiParam(name = "pageSize", value = "页大小", required = true) Integer pageSize,
         @ApiParam(name = "sceneId", value = "压测场景ID") Long sceneId,
         @ApiParam(name = "sceneName", value = "压测场景名称") String sceneName,
@@ -250,8 +249,8 @@ public class SceneManageController {
         @ApiParam(name = "lastPtEndTime", value = "压测结束时间") String lastPtEndTime
     ) {
         SceneManageQueryVO queryVO = new SceneManageQueryVO();
-        queryVO.setCurrent(current);
-        queryVO.setCurrentPage(current);
+
+        queryVO.setPageNumber(current + 1);
         queryVO.setPageSize(pageSize);
         queryVO.setSceneId(sceneId);
         queryVO.setSceneName(sceneName);
@@ -259,7 +258,49 @@ public class SceneManageController {
         queryVO.setTagId(tagId);
         queryVO.setLastPtStartTime(lastPtStartTime);
         queryVO.setLastPtEndTime(lastPtEndTime);
-        return sceneManageService.getPageList(queryVO);
+        ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
+        return Response.success(responseResult.getData(), responseResult.getTotalNum());
+    }
+
+    /**
+     * 大盘无权限接口 场景接口
+     * @param current
+     * @param pageSize
+     * @param sceneId
+     * @param sceneName
+     * @param status
+     * @param tagId
+     * @param lastPtStartTime
+     * @param lastPtEndTime
+     * @return
+     */
+    @GetMapping("/list/un_safe")
+    @ApiOperation(value = "压测场景列表")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.DASHBOARD_SCENE,
+        needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<List<SceneManageListOutput>> getListNoAuth(@ApiParam(name = "current", value = "页码", required = true) Integer current,
+        @ApiParam(name = "pageSize", value = "页大小", required = true) Integer pageSize,
+        @ApiParam(name = "sceneId", value = "压测场景ID") Long sceneId,
+        @ApiParam(name = "sceneName", value = "压测场景名称") String sceneName,
+        @ApiParam(name = "status", value = "压测状态") Integer status,
+        @ApiParam(name = "tagId", value = "标签id") Long tagId,
+        @ApiParam(name = "lastPtStartTime", value = "压测结束时间") String lastPtStartTime,
+        @ApiParam(name = "lastPtEndTime", value = "压测结束时间") String lastPtEndTime
+    ) {
+        SceneManageQueryVO queryVO = new SceneManageQueryVO();
+
+        queryVO.setPageNumber(current + 1);
+        queryVO.setPageSize(pageSize);
+        queryVO.setSceneId(sceneId);
+        queryVO.setSceneName(sceneName);
+        queryVO.setStatus(status);
+        queryVO.setTagId(tagId);
+        queryVO.setLastPtStartTime(lastPtStartTime);
+        queryVO.setLastPtEndTime(lastPtEndTime);
+        ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
+        return Response.success(responseResult.getData(), responseResult.getTotalNum());
     }
 
     @GetMapping("/ipnum")

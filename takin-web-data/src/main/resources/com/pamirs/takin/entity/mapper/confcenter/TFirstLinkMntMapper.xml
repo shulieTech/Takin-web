@@ -100,10 +100,11 @@
         tflm.USE_YN,CREATE_TIME,UPDATE_TIME,REMARK
         FROM
         t_first_link_mnt tflm
-        WHERE 1=1
-        <if test="linkName!=null and linkName!=''">
-            AND tflm.LINK_NAME LIKE CONCAT('%',#{linkName},'%')
-        </if>
+        <where>
+            <if test="linkName!=null and linkName!=''">
+                tflm.LINK_NAME LIKE CONCAT('%',#{linkName},'%')
+            </if>
+        </where>
         ORDER BY tflm.UPDATE_TIME DESC
     </select>
 
@@ -121,11 +122,10 @@
         v.first_remark REMARK
         FROM
         v_first_second_link_ref v
-        WHERE 1=1
+        WHERE  v.second_link_name LIKE CONCAT('%',#{secondLinkName},'%')
         <if test="firstLinkName!=null and firstLinkName!=''">
             AND v.first_link_name LIKE CONCAT('%',#{firstLinkName},'%')
         </if>
-        AND v.second_link_name LIKE CONCAT('%',#{secondLinkName},'%')
         GROUP BY
         v.first_link_id
         ORDER BY v.first_update_time DESC

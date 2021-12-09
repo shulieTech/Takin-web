@@ -2,7 +2,7 @@ package io.shulie.takin.web.data.param.tracenode;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.TableField;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -11,7 +11,7 @@ import lombok.Data;
  * @date 2020/12/29 12:04 下午
  */
 @Data
-public class TraceNodeInfoParam {
+public class TraceNodeInfoParam extends TenantCommonExt {
     /**
      * 当前应用名称
      */
@@ -177,10 +177,6 @@ public class TraceNodeInfoParam {
      */
     private String agentId;
 
-    /**
-     * 负责人id
-     */
-    private Long customerId;
 
 
     /**

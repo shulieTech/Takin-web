@@ -5,19 +5,21 @@ import java.util.Date;
 import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
-import io.shulie.takin.cloud.common.bean.scenemanage.BusinessActivitySummaryBean;
 import io.shulie.takin.cloud.common.bean.scenemanage.StopReasonBean;
 import io.shulie.takin.cloud.common.bean.scenemanage.WarnBean;
 import io.shulie.takin.cloud.common.bean.sla.SlaBean;
+import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author 无涯
  * @date 2021/2/3 2:01 下午
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class ReportDetailOutput extends UserCommonExt {
 
     @ApiModelProperty(value = "报告状态：0/就绪状态，1/生成中, 2/完成生成")

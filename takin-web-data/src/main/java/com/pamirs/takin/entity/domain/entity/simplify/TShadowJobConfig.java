@@ -2,6 +2,7 @@ package com.pamirs.takin.entity.domain.entity.simplify;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +14,7 @@ import lombok.Data;
  */
 @ApiModel(value = "ShadowJobConfigQuery", description = "影子JOB配置实体类")
 @Data
-public class TShadowJobConfig {
+public class TShadowJobConfig extends UserCommonExt {
 
     @ApiModelProperty(name = "id", value = "id")
     private Long id;
@@ -42,10 +43,7 @@ public class TShadowJobConfig {
     @ApiModelProperty(name = "configCode", value = "JOB配置xml")
     private String configCode;
 
-    private Long customerId;
-
-    private Long userId;
-
     @ApiModelProperty(name = "remark", value = "备注")
     private String remark;
+
 }

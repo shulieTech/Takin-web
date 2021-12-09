@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.result.application;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2020/11/11 7:43 下午
  */
 @Data
-public class ApplicationDetailResult {
+public class ApplicationDetailResult extends TenantCommonExt {
     private Long id;
 
     private Long applicationId;
@@ -31,6 +32,5 @@ public class ApplicationDetailResult {
     private Date updateTime;
     private String alarmPerson;
     private String pradarVersion;
-    private Long customerId;
     private Long userId;
 }

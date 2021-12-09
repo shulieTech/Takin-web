@@ -21,26 +21,25 @@ import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParamNew;
 import com.pamirs.takin.entity.domain.vo.report.ScenePluginParam;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.cloud.open.api.scenetask.CloudTaskApi;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.open.req.scenetask.SceneTaskQueryTpsReq;
-import io.shulie.takin.cloud.open.req.scenetask.SceneTaskUpdateTpsReq;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp.SceneBusinessActivityRefResp;
-import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp.SceneSlaRefResp;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneActionResp;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneJobStateResp;
-import io.shulie.takin.cloud.open.resp.scenetask.SceneTaskAdjustTpsResp;
+import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneTaskStartReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTaskQueryTpsReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTaskUpdateTpsReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneBusinessActivityRefResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneSlaRefResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneJobStateResp;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneTaskAdjustTpsResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
@@ -49,7 +48,6 @@ import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.SqlTestRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.UpdateTpsRequest;
-import io.shulie.takin.web.biz.pojo.response.scene.StartResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ApplicationService;
@@ -62,46 +60,43 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
+import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
-import io.shulie.takin.web.common.constant.RemoteConstant;
-import io.shulie.takin.web.common.domain.ErrorInfo;
-import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.http.HttpWebClient;
+import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.common.vo.scene.BaffleAppVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 /**
  * @author 莫问
  * @date 2020-04-22
  */
-@Service
 @Slf4j
+@Service
 public class SceneTaskServiceImpl implements SceneTaskService {
 
     public static final String PRESSURE_REPORT_ID_SCENE_PREFIX = "pressure:reportId:scene:";
-
-    @Value("${takin.cloud.url}")
-    private String cloudUrl;
 
     @Autowired
     private LeakSqlService leakSqlService;
@@ -110,16 +105,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private DataSourceService dataSourceService;
 
     @Autowired
-    private HttpWebClient httpWebClient;
-
-    @Autowired
     private SceneManageService sceneManageService;
 
-    @Autowired
-    private TApplicationMntDao applicationMntDao;
-
-    @Value("${start.task.check.application: true}")
-    private Boolean checkApplication;
 
     @Autowired
     private SceneTaskApi sceneTaskApi;
@@ -161,14 +148,14 @@ public class SceneTaskServiceImpl implements SceneTaskService {
      * @return 启动结果
      */
     @Override
-    public WebResponse<StartResponse> startTask(SceneActionParam param) {
-
+    public SceneActionResp startTask(SceneActionParam param) {
         //探针总开关关闭状态禁止启动压测
-        if(applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.getCustomerId(),AppSwitchEnum.CLOSED)){
+        if (applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.traceTenantId(), AppSwitchEnum.CLOSED)) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_VALIDATE_ERROR, "启动压测场景失败，探针总开关已关闭");
         }
 
         SceneManageIdReq req = new SceneManageIdReq();
+        BeanUtils.copyProperties(param, req);
         req.setId(param.getSceneId());
         ResponseResult<SceneManageWrapperResp> resp = sceneManageApi.getSceneDetail(req);
         if (!resp.getSuccess()) {
@@ -211,101 +198,102 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                     }}).collect(Collectors.toList()));
             }
         }
+        param.setUserId(WebPluginUtils.traceUserId());
         //填充操作人信息
-        UserExt user = WebPluginUtils.getUser();
+        UserExt user = WebPluginUtils.traceUser();
         if (user != null) {
-            param.setOperateId(user.getId());
-            param.setOperateName(user.getName());
+            param.setUserId(user.getId());
+            param.setUserName(user.getName());
         }
-        param.setRequestUrl(RemoteConstant.SCENE_TASK_START_URL);
-        param.setHttpMethod(HttpMethod.POST);
-        //封装
-        WebResponse response = null;
+
         //兼容老版本
         if (StringUtils.isEmpty(param.getContinueRead())) {
             param.setContinueRead("-1");
         }
         //新版本位点
         SceneActionParamNew paramNew = this.getNewParam(param);
-        response = httpWebClient.request(paramNew);
+        //设置租户
+        paramNew.setEnvCode(WebPluginUtils.traceEnvCode());
+        paramNew.setTenantId(WebPluginUtils.traceTenantId());
 
-        if (!response.getSuccess()) {
-            ErrorInfo errorInfo = response.getError();
-            String errorMsg = Objects.isNull(errorInfo) ? "" : errorInfo.getMsg();
-            log.error("takin-cloud启动压测场景返回错误，id={},错误信息：{}", param.getSceneId(), errorMsg);
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR,
-                getCloudMessage(errorInfo.getCode(), errorInfo.getMsg()));
+        SceneActionResp startResult;
+        try {
+            startResult = cloudTaskApi.start(CopyUtils.copyFields(paramNew, SceneTaskStartReq.class));
+        } catch (Exception e) {
+            log.error("takin-cloud启动压测场景返回错误，id={}", param.getSceneId(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR,e.getMessage(), e);
         }
         // 缓存 报告id
-        cacheReportId(response, param);
+        cacheReportId(startResult, param);
+        // 入队列
+        pushTaskToRedis(startResult);
 
-        return response;
+        return startResult;
+    }
+
+
+    private void pushTaskToRedis(SceneActionResp startResult){
+        final Long reportId = startResult.getData();
+        if (reportId!=null){
+            SceneTaskDto taskDto = new SceneTaskDto();
+            taskDto.setTenantId(WebPluginUtils.traceTenantId());
+            taskDto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            taskDto.setEnvCode(WebPluginUtils.traceEnvCode());
+            taskDto.setTenantCode(WebPluginUtils.traceTenantCode());
+            taskDto.setSource(ContextSourceEnum.JOB.getCode());
+            taskDto.setReportId(reportId);
+            //任务添加到redis队列
+            redisTemplate.opsForList().leftPush(WebRedisKeyConstant.SCENE_REPORTID_KEY,JSON.toJSONString(taskDto));
+        }
     }
 
     /**
      * 返回cloud 数据
      *
-     * @param code
-     * @param errorMsg
-     * @return
+     * @param code     错误编码
+     * @param errorMsg 错误信息
+     * @return 拼接后的错误信息
      */
     private String getCloudMessage(String code, String errorMsg) {
         return String.format("takin-cloud启动场景失败，异常代码【%s】,异常原因【%s】", code, errorMsg);
     }
 
-    private void cacheReportId(WebResponse request, SceneActionParam param) {
-        Object data = request.getData();
-        if (data == null) {
+    private void cacheReportId(SceneActionResp request, SceneActionParam param) {
+        if (request == null) {
             log.info("start scene response return data is  illegal！ sceneId:{}", param.getSceneId());
             return;
         }
-        String jsonString = JsonHelper.bean2Json(data);
-        JSONObject jsonObject = JSONObject.parseObject(jsonString);
-        if (!jsonObject.containsKey("data")) {
-            log.info("start scene response return data is  illegal！ sceneId:{}", param.getSceneId());
-            return;
-        }
-        Integer reportId = (Integer)jsonObject.get("data");
-        redisTemplate.opsForValue().set(getCacheReportId(param.getSceneId()), reportId);
-        redisTemplate.expire(getCacheReportId(param.getSceneId()), 1L, TimeUnit.DAYS);
+        Long reportId = request.getData();
+        redisTemplate.opsForValue().set(getCacheReportId(param.getSceneId()), reportId, 1L, TimeUnit.DAYS);
+
     }
 
     private SceneActionParamNew getNewParam(SceneActionParam param) {
         SceneActionParamNew paramNew = CopyUtils.copyFields(param, SceneActionParamNew.class);
         try {
-            //            paramNew.setContinueRead(false);
-            //            if (!param.getContinueRead().equals("-1")) {
-            //                Object hasUnread = redisTemplate.opsForValue().get("hasUnread_" + param.getSceneId());
-            //                if (hasUnread == null) {
-            //                    throw ApiException.create(500,
-            //                    "缺少参数hasUnread！无法判断继续压测还是从头压测，请检查redis或者cloud返回的位点数据是否有问题，id=" + param.getSceneId());
-            //                }
-            //                if (param.getContinueRead().equals("1")) {
-            //                    paramNew.setContinueRead(Boolean.parseBoolean(hasUnread + ""));
-            //                } else {
-            //                    paramNew.setContinueRead(false);
-            //                }
-            //            }
             paramNew.setContinueRead(param.getContinueRead().equals("1"));
         } catch (Exception e) {
             log.error("未知异常", e);
-        } finally {
-            //            redisTemplate.delete("hasUnread_" + param.getSceneId());
         }
+        //finally {
+        //            redisTemplate.delete("hasUnread_" + param.getSceneId());
+        //}
         return paramNew;
     }
 
+    //RedisKey改造，在原有的sceneId前面追加tenantId:envCode:
     private String getCacheReportId(Long sceneId) {
-        return PRESSURE_REPORT_ID_SCENE_PREFIX + sceneId;
+        return PRESSURE_REPORT_ID_SCENE_PREFIX + TenantKeyUtils.getTenantKey() + sceneId;
     }
 
     @Override
-    public ResponseResult stopTask(SceneActionParam param) {
+    public ResponseResult<String> stopTask(SceneActionParam param) {
         // 释放 场景锁
         redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
         // 停止先删除 redis中的
         SceneManageIdReq req = new SceneManageIdReq();
         req.setId(param.getSceneId());
+        WebPluginUtils.fillCloudUserData(req);
         ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(req);
         if (!response.getSuccess()) {
             throw new TakinWebException(ExceptionCode.SCENE_STOP_ERROR, response.getError());
@@ -321,6 +309,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         SceneManageIdReq req = new SceneManageIdReq();
         req.setId(sceneId);
         req.setReportId(frontReportId);
+        WebPluginUtils.fillCloudUserData(req);
         ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(req);
         if (!response.getSuccess()) {
             throw new TakinWebException(ExceptionCode.SCENE_CHECK_ERROR, response.getError());
@@ -349,8 +338,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             .flatMap(appIds -> Arrays.stream(appIds.split(",")).map(Long::parseLong))
             .filter(data -> data > 0L).distinct().collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(applicationIds)) {
-            List<TApplicationMnt> applicationMntList = applicationMntDao.queryApplicationMntListByIds(applicationIds);
-            List<String> applicationNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName)
+            List<ApplicationDetailResult> applicationMntList = applicationDAO.getApplicationByIds(applicationIds);
+            List<String> applicationNames = applicationMntList.stream().map(ApplicationDetailResult::getApplicationName)
                 .collect(Collectors.toList());
             // 过期时间，根据 压测时间 + 10s
             redisClientUtils.set(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId), applicationNames,
@@ -374,10 +363,11 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         req.setSceneId(request.getSceneId());
         req.setReportId(request.getReportId());
         req.setTpsNum(request.getTargetTps());
-        req.setLicense(WebPluginUtils.getTenantUserAppKey());
-        ResponseResult responseResult = cloudTaskApi.updateSceneTaskTps(req);
-        if (responseResult == null || !responseResult.getSuccess()) {
-            throw new RuntimeException("修改TPS失败");
+        try {
+            cloudTaskApi.updateSceneTaskTps(req);
+        } catch (Throwable e) {
+            log.error("修改TPS失败", e);
+            throw new RuntimeException("修改TPS失败", e);
         }
     }
 
@@ -386,12 +376,13 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         SceneTaskQueryTpsReq req = new SceneTaskQueryTpsReq();
         req.setSceneId(sceneId);
         req.setReportId(reportId);
-        req.setLicense(WebPluginUtils.getTenantUserAppKey());
-        ResponseResult<SceneTaskAdjustTpsResp> respResponseResult = cloudTaskApi.queryAdjustTaskTps(req);
-        if (respResponseResult != null && respResponseResult.getData() != null) {
-            return respResponseResult.getData().getTotalTps();
+        try {
+            SceneTaskAdjustTpsResp sceneTaskAdjustTpsResp = cloudTaskApi.queryAdjustTaskTps(req);
+            return sceneTaskAdjustTpsResp.getTotalTps();
+        } catch (Throwable e) {
+            log.error("查询任务TPS失败", e);
+            return null;
         }
-        return null;
     }
 
     @Override
@@ -480,8 +471,10 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                 .map(Long::valueOf)).filter(data -> data > 0L).distinct().collect(Collectors.toList());
 
         // 应用相关检查
+        boolean checkApplication = ConfigServerHelper.getBooleanValueByKey(
+            ConfigServerKeyEnum.TAKIN_START_TASK_CHECK_APPLICATION);
         if (!CollectionUtils.isEmpty(applicationIds) && checkApplication) {
-            List<TApplicationMnt> applicationMntList = applicationMntDao.queryApplicationMntListByIds(applicationIds);
+            List<ApplicationDetailResult> applicationMntList = applicationDAO.getApplicationByIds(applicationIds);
             // todo 临时方案，过滤挡板应用
             TBaseConfig config = baseConfigService.queryByConfigCode(ConfigConstants.SCENE_BAFFLE_APP_CONFIG);
             if (config != null && StringUtils.isNotBlank(config.getConfigValue())) {
@@ -494,7 +487,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                         .map(t -> t.get(0)).map(BaffleAppVO::getAppName).orElse(Lists.newArrayList());
                     List<Long> appIds = Lists.newArrayList();
 
-                    List<TApplicationMnt> tempApps = applicationMntList.stream().filter(app -> {
+                    List<ApplicationDetailResult> tempApps = applicationMntList.stream().filter(app -> {
                         if (appNames.contains(app.getApplicationName())) {
                             // 用于过滤应用id
                             appIds.add(app.getApplicationId());
@@ -525,7 +518,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         String scriptCorrelation = this.checkScriptCorrelation(sceneData);
         errorMsg.append(scriptCorrelation == null ? "" : scriptCorrelation);
         if (errorMsg.length() > 0) {
-            String msg = "";
+            String msg;
             if (errorMsg.toString().endsWith(Constants.SPLIT)) {
                 msg = StringUtils.substring(errorMsg.toString(), 0, errorMsg.toString().length() - 1);
             } else {
@@ -553,9 +546,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
      * @return 错误信息
      */
     @Override
-    public String checkApplicationCorrelation(List<TApplicationMnt> applicationMntList) {
+    public String checkApplicationCorrelation(List<ApplicationDetailResult> applicationMntList) {
         // 查询下 应用节点信息 节点不一致 也需要返回异常
-        List<String> appNames = applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(
+        List<String> appNames = applicationMntList.stream().map(ApplicationDetailResult::getApplicationName).collect(
             Collectors.toList());
         // 从大数据里查出数据 todo 目前大数据不区分客户，所以有可能存在不准确问题
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames);

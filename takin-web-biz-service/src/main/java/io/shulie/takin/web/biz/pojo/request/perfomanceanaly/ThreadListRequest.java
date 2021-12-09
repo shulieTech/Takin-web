@@ -7,10 +7,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
- * @ClassName ThreadListRequest
- * @Description 线程列表
+ * 线程列表
+ *
  * @author qianshui
- * @Date 2020/11/4 上午11:30
+ * @date 2020/11/4 上午11:30
  */
 @Data
 @ApiModel("线程列表入参")

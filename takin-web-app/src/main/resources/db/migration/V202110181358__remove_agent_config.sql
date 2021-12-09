@@ -1,0 +1,1 @@
+DELETE FROM t_agent_config where en_key = 'user.app.key';

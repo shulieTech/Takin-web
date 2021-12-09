@@ -48,6 +48,36 @@ public class TBaseConfig extends BaseEntity {
     private Date updateTime;
 
     /**
+     * 租户ID
+     */
+    private Long tenantId;
+
+    /**
+     * 环境编码
+     */
+    private String envCode;
+
+    @Override
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    @Override
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    @Override
+    public String getEnvCode() {
+        return envCode;
+    }
+
+    @Override
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
+    }
+
+    /**
      * 全参数构造函数
      *
      * @param configCode
@@ -191,6 +221,7 @@ public class TBaseConfig extends BaseEntity {
      * @return the value of t_base_config.UPDATE_TIME
      * @mbggenerated
      */
+    @Override
     public Date getUpdateTime() {
         return updateTime;
     }
@@ -202,6 +233,7 @@ public class TBaseConfig extends BaseEntity {
      * @param updateTime the value for t_base_config.UPDATE_TIME
      * @mbggenerated
      */
+    @Override
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }

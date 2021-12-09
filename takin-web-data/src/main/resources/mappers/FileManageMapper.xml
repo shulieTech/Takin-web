@@ -10,7 +10,9 @@
         <result column="file_ext" jdbcType="VARCHAR" property="fileExt"/>
         <result column="file_type" jdbcType="TINYINT" property="fileType"/>
         <result column="file_extend" jdbcType="LONGVARCHAR" property="fileExtend"/>
-        <result column="customer_id" jdbcType="BIGINT" property="customerId"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
+
         <result column="upload_time" jdbcType="TIMESTAMP" property="uploadTime"/>
         <result column="upload_path" jdbcType="VARCHAR" property="uploadPath"/>
         <result column="is_deleted" jdbcType="BOOLEAN" property="isDeleted"/>
@@ -19,7 +21,7 @@
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
-        id, file_name, file_size, file_ext, file_type, file_extend, customer_id, upload_time,
+        id, file_name, file_size, file_ext, file_type, file_extend, tenant_id,env_code, upload_time,
         upload_path, is_deleted, gmt_create, gmt_update
     </sql>
 </mapper>

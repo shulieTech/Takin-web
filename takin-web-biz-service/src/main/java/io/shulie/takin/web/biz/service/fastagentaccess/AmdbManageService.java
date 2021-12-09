@@ -14,9 +14,10 @@ import io.shulie.takin.web.biz.pojo.response.fastagentaccess.PluginLoadListRespo
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentDiscoverStatusEnum;
 
 /**
- * @Description 大数据管理接口
- * @Author ocean_wll
- * @Date 2021/8/19 11:57 上午
+ * 大数据管理接口
+ *
+ * @author ocean_wll
+ * @date 2021/8/19 11:57 上午
  */
 public interface AmdbManageService {
 

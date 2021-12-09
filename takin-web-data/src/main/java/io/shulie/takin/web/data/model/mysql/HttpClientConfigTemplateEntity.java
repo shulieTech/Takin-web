@@ -1,11 +1,12 @@
 package io.shulie.takin.web.data.model.mysql;
 
+import java.io.Serializable;
+
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.io.Serializable;
 
 /**
  * http-client配置模版表(HttpClientConfigTemplate)实体类
@@ -80,15 +81,7 @@ public class HttpClientConfigTemplateEntity extends NewBaseEntity implements Ser
      */
     private String commit;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
 
-    /**
-     * 用户id
-     */
-    private Long userId;
 
 
 }

@@ -14,7 +14,7 @@ import org.apache.ibatis.annotations.Param;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月26日
+ * @date 2018年4月26日
  */
 @Mapper
 public interface TLinkDetectionDao {
@@ -104,7 +104,7 @@ public interface TLinkDetectionDao {
      * @param applicationIdLists 多个应用id
      * @author shulie
      */
-    void deleteApplicationToLinkDetection(@Param("applicationIdLists") List<String> applicationIdLists);
+    void deleteApplicationToLinkDetection(@Param("applicationIdLists") List<Long> applicationIdLists);
 
     /**
      * 说明: 根据应用id列表批量查询数据检测信息
@@ -114,7 +114,7 @@ public interface TLinkDetectionDao {
      * @author shulie
      * @date 2018/11/5 10:44
      */
-    List<Map<String, Object>> queryLinkDetectionListByIds(@Param("applicationIds") List<String> applicationIds);
+    List<Map<String, Object>> queryLinkDetectionListByIds(@Param("applicationIds") List<Long> applicationIds);
 
     /**
      * 说明: 校验压测是否可以开启

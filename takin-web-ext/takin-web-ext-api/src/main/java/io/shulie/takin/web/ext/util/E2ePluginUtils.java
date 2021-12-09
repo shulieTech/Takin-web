@@ -1,14 +1,14 @@
 package io.shulie.takin.web.ext.util;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.web.ext.entity.e2e.E2eBaseStorageParam;
 import io.shulie.takin.web.ext.entity.e2e.E2eBaseStorageRequest;
 import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import static io.shulie.takin.web.ext.util.WebPluginUtils.inspectionExtApi;
 
@@ -27,9 +27,9 @@ public class E2ePluginUtils {
     /**
      * 根据租户ID 获取 e2e 模块的异常配置信息
      */
-    public static List<E2eExceptionConfigInfoExt> getExceptionConfig(Long customerId) {
+    public static List<E2eExceptionConfigInfoExt> getExceptionConfig(Long tenantId, String envCode, String ...service) {
         if (Objects.nonNull(inspectionExtApi)) {
-            return inspectionExtApi.getExceptionConfig(customerId);
+            return inspectionExtApi.getExceptionConfig(tenantId, envCode, service);
         }
         return Lists.newArrayList();
     }
@@ -38,8 +38,8 @@ public class E2ePluginUtils {
      * 瓶颈计算
      */
     public static Map<Integer, Integer> bottleneckCompute(
-            E2eBaseStorageRequest baseStorageRequest,
-            List<E2eExceptionConfigInfoExt> configs) {
+        E2eBaseStorageRequest baseStorageRequest,
+        List<E2eExceptionConfigInfoExt> configs) {
 
         if (Objects.nonNull(inspectionExtApi)) {
             return inspectionExtApi.bottleneckCompute(baseStorageRequest, configs);

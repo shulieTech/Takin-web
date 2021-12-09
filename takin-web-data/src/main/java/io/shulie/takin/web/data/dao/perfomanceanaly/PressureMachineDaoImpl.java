@@ -1,5 +1,10 @@
 package io.shulie.takin.web.data.dao.perfomanceanaly;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
@@ -14,11 +19,6 @@ import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author mubai
@@ -39,7 +39,7 @@ public class PressureMachineDaoImpl implements PressureMachineDao {
     }
 
     @Override
-    public Integer getCountByIp(String ip) {
+    public Long getCountByIp(String ip) {
         LambdaQueryWrapper<PressureMachineEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PressureMachineEntity::getIp, ip);
         return pressureMachineMapper.selectCount(wrapper);

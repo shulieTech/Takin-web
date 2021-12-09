@@ -38,12 +38,12 @@ public class ApplicationVisualInfoQueryRequest extends PagingDevice {
      * 如果服务名称为空则查询全部服务，否则查询指定服务名称服务
      */
     @ApiModelProperty("服务名称")
-    private String label;
+    private String serviceName;
 
     /**
      * 业务活动
      */
-    @ApiModelProperty("业务活动名称")
+    @ApiModelProperty("服务名称")
     private String activityName;
 
     /**
@@ -64,4 +64,9 @@ public class ApplicationVisualInfoQueryRequest extends PagingDevice {
      */
     @ApiModelProperty("是否关注")
     private Boolean attend;
+
+    private String nameActivity;
+
+    private String tenantAppKey;
+    private String envCode;
 }

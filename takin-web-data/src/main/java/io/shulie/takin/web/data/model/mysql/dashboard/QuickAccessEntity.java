@@ -2,11 +2,11 @@ package io.shulie.takin.web.data.model.mysql.dashboard;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 /**
@@ -16,17 +16,13 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_quick_access")
-public class QuickAccessEntity {
+public class QuickAccessEntity extends TenantBaseEntity {
     /**
      * 主键
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-    /**
-     * 客户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
+
     /**
      * 快捷键名称
      */

@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.common;
 import java.util.List;
 import java.util.Collection;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Query;
@@ -11,7 +12,6 @@ import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.QueryResult;
 import org.springframework.stereotype.Service;
 import org.influxdb.impl.InfluxDBResultMapper;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 
 /**

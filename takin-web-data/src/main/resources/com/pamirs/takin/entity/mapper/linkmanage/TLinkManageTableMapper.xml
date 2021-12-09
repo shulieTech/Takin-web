@@ -352,28 +352,34 @@
         left join t_middleware_info middleware
         on middleware.ID = relate.MIDDLEWARE_ID
         <trim prefix="where" prefixOverrides="and | or">
-            <if test="name != null">
-                and manage.LINK_NAME = #{name}
+            <if test="queryVo != null and queryVo.name != null">
+                and manage.LINK_NAME = #{queryVo.name}
             </if>
-            <if test="entrance !=null">
-                and manage.ENTRACE = #{entrance,jdbcType=VARCHAR}
+            <if test="queryVo != null and queryVo.entrance !=null">
+                and manage.ENTRACE = #{queryVo.entrance,jdbcType=VARCHAR}
             </if>
-            <if test="isChange !=null">
-                and manage.IS_CHANGE = #{isChange,jdbcType=TINYINT}
+            <if test="queryVo != null and queryVo.isChange !=null">
+                and manage.IS_CHANGE = #{queryVo.isChange,jdbcType=TINYINT}
             </if>
-            <if test="middleWareType !=null">
-                and middleware.MIDDLEWARE_TYPE = #{middleWareType}
+            <if test="queryVo != null and queryVo.middleWareType !=null">
+                and middleware.MIDDLEWARE_TYPE = #{queryVo.middleWareType}
             </if>
-            <if test="middleWareName !=null">
-                and middleware.MIDDLEWARE_NAME = #{middleWareName}
+            <if test="queryVo != null and queryVo.middleWareName !=null">
+                and middleware.MIDDLEWARE_NAME = #{queryVo.middleWareName}
             </if>
-            <if test="middleWareVersion !=null">
-                and middleware.MIDDLEWARE_VERSION = #{middleWareVersion}
+            <if test="queryVo != null and queryVo.middleWareVersion !=null">
+                and middleware.MIDDLEWARE_VERSION = #{queryVo.middleWareVersion}
             </if>
-            <if test="id != null">
-                and manage.LINK_ID = #{id}
+            <if test="queryVo != null and queryVo.id != null">
+                and manage.LINK_ID = #{queryVo.id}
             </if>
             and manage.IS_DELETED = 0
+            <if test="userIds != null and userIds.size > 0">
+                AND manage.user_id IN
+                <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
         </trim>
         group by manage.LINK_ID order by manage.CREATE_TIME desc
     </select>

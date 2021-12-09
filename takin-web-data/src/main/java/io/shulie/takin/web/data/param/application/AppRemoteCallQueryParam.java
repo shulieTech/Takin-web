@@ -2,7 +2,7 @@ package io.shulie.takin.web.data.param.application;
 
 import java.util.List;
 
-import io.shulie.takin.common.beans.page.PagingDevice;
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -10,10 +10,9 @@ import lombok.Data;
  * @date 2021/5/29 12:18 上午
  */
 @Data
-public class AppRemoteCallQueryParam extends PagingDevice {
+public class AppRemoteCallQueryParam extends UserCommonExt {
     private Integer type;
     private String interfaceName;
-    private Long customerId;
     private Integer status;
     private Long applicationId;
     private List<Long> applicationIds;

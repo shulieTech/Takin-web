@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 
 import com.alibaba.excel.util.StringUtils;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.dao.linkmanage.TSceneLinkRelateMapper;
-import com.pamirs.takin.entity.domain.entity.linkmanage.SceneLinkRelate;
 import io.shulie.takin.web.data.convert.linkmanage.BusinessLinkManageConvert;
+import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.LinkManageTableMapper;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
@@ -22,6 +22,8 @@ import io.shulie.takin.web.data.param.linkmanage.BusinessLinkManageQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.BusinessLinkManageUpdateParam;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.TechLinkResult;
+import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
+import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,16 +35,16 @@ import org.springframework.stereotype.Component;
  * @date 2020/10/16 5:21 下午
  */
 @Component
-public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO {
-
-    @Autowired
-    private TSceneLinkRelateMapper tSceneLinkRelateMapper;
+public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<BusinessLinkManageTableEntity> {
 
     @Autowired
     private BusinessLinkManageTableMapper businessLinkManageTableMapper;
 
     @Autowired
     private LinkManageTableMapper linkManageTableMapper;
+
+    @Autowired
+    private SceneLinkRelateDAO sceneLinkRelateDAO;
 
     @Override
     public BusinessLinkResult selectBussinessLinkById(Long id) {
@@ -60,7 +62,8 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO {
             BusinessLinkManageTableEntity::getBusinessDomain,
             BusinessLinkManageTableEntity::getLinkLevel,
             BusinessLinkManageTableEntity::getRelatedTechLink,
-            BusinessLinkManageTableEntity::getCustomerId,
+            BusinessLinkManageTableEntity::getTenantId,
+            BusinessLinkManageTableEntity::getEnvCode,
             BusinessLinkManageTableEntity::getUserId
         );
         businessLinkManageWrapper.eq(BusinessLinkManageTableEntity::getLinkId, id);
@@ -79,7 +82,8 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO {
             businessLinkResult.setIsCore(String.valueOf(businessLinkManageTableEntity.getIsCore()));
             businessLinkResult.setLinkLevel(businessLinkManageTableEntity.getLinkLevel());
             businessLinkResult.setBusinessDomain(businessLinkManageTableEntity.getBusinessDomain());
-            businessLinkResult.setCustomerId(businessLinkManageTableEntity.getCustomerId());
+            businessLinkResult.setTenantId(businessLinkManageTableEntity.getTenantId());
+            businessLinkResult.setEnvCode(businessLinkManageTableEntity.getEnvCode());
             businessLinkResult.setUserId(businessLinkManageTableEntity.getUserId());
         }
 
@@ -111,24 +115,25 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO {
 
     @Override
     public List<BusinessLinkResult> selectBussinessLinkByIdList(List<Long> ids) {
-        List<BusinessLinkResult> resultList = Lists.newArrayList();
-        LambdaQueryWrapper<BusinessLinkManageTableEntity> businessLinkManageWrapper = new LambdaQueryWrapper<>();
-        businessLinkManageWrapper.select(
-                BusinessLinkManageTableEntity::getLinkId,
-                BusinessLinkManageTableEntity::getLinkName
-        );
-        businessLinkManageWrapper.in(BusinessLinkManageTableEntity::getLinkId, ids);
-        businessLinkManageWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
-        List<BusinessLinkManageTableEntity> entityList = businessLinkManageTableMapper.selectList(businessLinkManageWrapper);
-        if (CollectionUtils.isNotEmpty(entityList)) {
-            resultList = entityList.stream().map(businessLinkManageTableEntity -> {
-                BusinessLinkResult businessLinkResult = new BusinessLinkResult();
-                businessLinkResult.setId(String.valueOf(businessLinkManageTableEntity.getLinkId()));
-                businessLinkResult.setLinkName(businessLinkManageTableEntity.getLinkName());
-                return businessLinkResult;
-            }).collect(Collectors.toList());
+        List<BusinessLinkManageTableEntity> entityList = businessLinkManageTableMapper.selectList(this.getLambdaQueryWrapper()
+            .select(BusinessLinkManageTableEntity::getLinkId, BusinessLinkManageTableEntity::getLinkName,
+                BusinessLinkManageTableEntity::getEntrace, BusinessLinkManageTableEntity::getServerMiddlewareType,
+                BusinessLinkManageTableEntity::getType)
+            .in(BusinessLinkManageTableEntity::getLinkId, ids)
+            .eq(BusinessLinkManageTableEntity::getIsDeleted, 0));
+        if (CollectionUtil.isEmpty(entityList)) {
+            return Collections.emptyList();
         }
-        return resultList;
+
+        return entityList.stream().map(businessLinkManageTableEntity -> {
+            BusinessLinkResult businessLinkResult = new BusinessLinkResult();
+            businessLinkResult.setId(String.valueOf(businessLinkManageTableEntity.getLinkId()));
+            businessLinkResult.setLinkName(businessLinkManageTableEntity.getLinkName());
+            businessLinkResult.setEntrace(businessLinkManageTableEntity.getEntrace());
+            businessLinkResult.setType(businessLinkManageTableEntity.getType());
+            businessLinkResult.setServerMiddlewareType(businessLinkManageTableEntity.getServerMiddlewareType());
+            return businessLinkResult;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -198,7 +203,7 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO {
 
     @Override
     public List<Long> listIdsByBusinessFlowId(Long businessFlowId) {
-        List<SceneLinkRelate> sceneLinkRelates = tSceneLinkRelateMapper.selectBySceneId(businessFlowId);
+        List<SceneLinkRelateResult> sceneLinkRelates = sceneLinkRelateDAO.selectBySceneId(businessFlowId);
         return CollectionUtils.isEmpty(sceneLinkRelates)
             ? Collections.emptyList()
             : sceneLinkRelates.stream()

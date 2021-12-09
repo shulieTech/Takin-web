@@ -1,12 +1,10 @@
 package io.shulie.takin.web.entrypoint.controller.fastagentaccess;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
-import io.shulie.takin.cloud.common.constants.APIUrls;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -20,6 +18,7 @@ import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
 import io.shulie.takin.web.biz.utils.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentDownloadUrlVerifyUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.ResponseFileUtil;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -43,7 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @date 2021-08-11 19:43:34
  */
 @RestController
-@RequestMapping(APIUrls.TRO_API_URL + "fast/agent/access")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "fast/agent/access")
 @Api(tags = "接口：agent版本管理")
 @Validated
 @Slf4j
@@ -98,31 +97,33 @@ public class AgentVersionController {
         moduleCode = ModuleCode.AGENT_VERSION,
         needAuth = ActionTypeEnum.DOWNLOAD
     )
-    public void getFile(@RequestParam String version, HttpServletResponse response)
-        throws FileNotFoundException {
+    public void getFile(@RequestParam String version, HttpServletResponse response) {
         ResponseFileUtil.transfer(agentVersionService.getFile(version), false, null, false, response);
     }
 
     @ApiOperation("|_ 应用探针包下载（指令）")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "projectName", value = "应用名", required = true),
-        @ApiImplicitParam(name = "userAppKey", value = "用户key", required = true),
+        @ApiImplicitParam(name = "tenantAppKey", value = "用户key", required = true),
+        @ApiImplicitParam(name = "userId", value = "用户id", required = true),
         @ApiImplicitParam(name = "version", value = "agent版本号", required = true),
+        @ApiImplicitParam(name = "envCode", value = "环境标识", required = true),
         @ApiImplicitParam(name = "expireDate", value = "过期时间", required = true),
         @ApiImplicitParam(name = "flag", value = "验证标识", required = true),
     })
     @GetMapping("/project/download")
-    public void getProjectFile(@RequestParam String projectName, @RequestParam String userAppKey,
-        @RequestParam String version, @RequestParam Long expireDate, @RequestParam String flag,
-        HttpServletResponse response) {
-        if (!AgentDownloadUrlVerifyUtil.checkFlag(projectName, userAppKey, version, expireDate, flag)) {
+    public void getProjectFile(@RequestParam String projectName, @RequestParam String tenantAppKey,
+        @RequestParam String userId, @RequestParam String version, @RequestParam String envCode,
+        @RequestParam Long expireDate, @RequestParam String flag, HttpServletResponse response) {
+        if (!AgentDownloadUrlVerifyUtil.checkFlag(projectName, tenantAppKey, userId, version, envCode, expireDate,
+            flag)) {
             throw AppCommonUtil.getCommonError("非法请求");
         }
         if (expireDate < System.currentTimeMillis()) {
             throw AppCommonUtil.getCommonError("链接已过期");
         }
-        ResponseFileUtil.transfer(agentVersionService.getProjectFile(projectName, userAppKey, version), true, null,
-            false, response);
+        ResponseFileUtil.transfer(agentVersionService.getProjectFile(projectName, tenantAppKey, userId, version, envCode),
+            true, null, false, response);
     }
 
     @ApiOperation("|_ 下载安装脚本")

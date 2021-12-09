@@ -1,25 +1,24 @@
 package io.shulie.takin.web.entrypoint.controller.agent;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
-import io.shulie.takin.web.biz.service.AgentService;
-import io.shulie.takin.web.common.constant.AgentUrls;
+import io.shulie.takin.web.biz.pojo.request.agent.GetFileRequest;
 import io.shulie.takin.web.biz.pojo.request.agent.PushOperateRequest;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResponse;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResultResponse;
+import io.shulie.takin.web.biz.service.AgentService;
+import io.shulie.takin.web.common.constant.AgentUrls;
+import io.shulie.takin.web.common.constant.CacheConstants;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,6 +48,7 @@ public class AgentApplicationNodeController {
             dataType = "string", paramType = "query")
     })
     @GetMapping("operate")
+    @Cacheable(CacheConstants.CACHE_KEY_AGENT_APPLICATION_NODE)
     public AgentApplicationNodeProbeOperateResponse getOperate(@RequestParam String appName,
         @RequestParam String agentId) {
         return agentService.getOperateResponse(appName, agentId);
@@ -62,28 +62,13 @@ public class AgentApplicationNodeController {
             dataType = "string", paramType = "query")
     })
     @GetMapping("file")
-    public void getFile(@RequestParam String appName, @RequestParam String agentId, HttpServletResponse response)
-        throws FileNotFoundException {
-        File file = agentService.getFile(appName, agentId);
+    public void getFile(GetFileRequest getFileRequest, HttpServletResponse response) {
+        File file = agentService.getFile(getFileRequest);
         if (file == null || !file.exists()) {
             return;
         }
 
-        try {
-            // 响应头设置
-            response.setHeader("Content-Disposition", String.format("attachment;filename=%s", file.getName()));
-            response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
-            response.setHeader("Pragma", "no-cache");
-            response.setHeader("Expires", "0");
-
-            // 使用sendfile:读取磁盘文件，并网络发送
-            ServletOutputStream servletOutputStream = response.getOutputStream();
-            FileChannel channel = new FileInputStream(file).getChannel();
-            response.setHeader("Content-Length", String.valueOf(channel.size()));
-            channel.transferTo(0, channel.size(), Channels.newChannel(servletOutputStream));
-        } catch (Exception e) {
-            log.error("agent 下载探针包 --> 错误: {}", e.getMessage(), e);
-        }
+        CommonUtil.zeroCopyDownload(file, response);
     }
 
     @ApiOperation("|_ 探针操作结果")

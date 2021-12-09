@@ -5,12 +5,13 @@
         <!--@mbg.generated-->
         <!--@Table t_shadow_mq_consumer-->
         <id column="id" jdbcType="BIGINT" property="id"/>
-        <result column="topicGroup" jdbcType="VARCHAR" property="topic_group"/>
+        <result column="topic_group" jdbcType="VARCHAR" property="topicGroup"/>
         <result column="type" jdbcType="VARCHAR" property="type"/>
         <result column="application_id" jdbcType="BIGINT" property="applicationId"/>
         <result column="application_name" jdbcType="VARCHAR" property="applicationName"/>
         <result column="status" jdbcType="INTEGER" property="status"/>
-        <result column="customer_id" jdbcType="BIGINT" property="customerId"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
         <result column="user_id" jdbcType="BIGINT" property="userId"/>
         <result column="deleted" jdbcType="INTEGER" property="deleted"/>
         <result column="feature" jdbcType="LONGVARCHAR" property="feature"/>
@@ -20,7 +21,7 @@
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
-        id, `type`, `topic_group`, application_id, application_name, `status`, customer_id,
+        id, `type`, `topic_group`, application_id, application_name, `status`, tenant_id,env_code,
         user_id, deleted, feature, create_time, update_time,manualTag
     </sql>
 </mapper>

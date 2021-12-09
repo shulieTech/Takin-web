@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.param.application;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2020/11/9 9:19 下午
  */
 @Data
-public class ApplicationWhiteListCreateParam {
+public class ApplicationWhiteListCreateParam extends TenantCommonExt {
 
     /**
      * 白名单id
@@ -19,7 +20,6 @@ public class ApplicationWhiteListCreateParam {
     /**
      * 接口名称
      */
-    //    @NotBlank(message = "接口名称不能为空")
     private String interfaceName;
 
     /**
@@ -89,8 +89,6 @@ public class ApplicationWhiteListCreateParam {
 
     // @Field updateTime : 数据更新时间
     private Date updateTime;
-
-    private Long customerId;
 
     private Long userId;
 

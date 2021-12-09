@@ -8,7 +8,7 @@ import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.entity.domain.entity.TSecondLinkMnt;
 import io.shulie.takin.web.biz.service.TSecondLinkMntService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Api(tags = "二级链路管理接口")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class SecondLinkMntController {
     private final Logger LOGGER = LoggerFactory.getLogger(SecondLinkMntController.class);
 
@@ -46,8 +46,8 @@ public class SecondLinkMntController {
      * @param bindingResult 绑定结果验证
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_ADD_SECOND_LINK_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_ADD_SECOND_LINK_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> saveSecondLink(@RequestBody @Valid TSecondLinkMnt secondLinkMnt,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -75,8 +75,8 @@ public class SecondLinkMntController {
      * @param pageSize     每页显示数目
      * @return 成功, 则返回链路信息列表, 失败则返回错误编码和错误信息
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_SECOND_LINKLIST_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_SECOND_LINKLIST_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkList(@RequestParam("linkName") String linkName,
         @RequestParam("baseLinkName") String baseLinkName,
         @RequestParam("pageNum") Integer pageNum,
@@ -99,8 +99,8 @@ public class SecondLinkMntController {
      * @param linkId 链路id
      * @return 成功, 则返回链路详情, 失败则返回错误编码和错误信息
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_SECOND_LINKINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_SECOND_LINKINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkByLinkId(@RequestParam("linkId") String linkId) {
         try {
             return ResponseOk.create(secondLinkService.queryLinkMapByLinkId(linkId));
@@ -120,8 +120,8 @@ public class SecondLinkMntController {
      * @param linkIds 二级链路id列表，逗号分隔
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_DELETE_SECOND_LINKINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_SECOND_LINKINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteLinkByLinkIds(@RequestParam("linkIds") String linkIds) {
         try {
             secondLinkService.deleteLinkByLinkIds(linkIds);
@@ -143,8 +143,8 @@ public class SecondLinkMntController {
      * @param bindingResult 绑定结果验证
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_UPDATE_SECOND_LINKINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_SECOND_LINKINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateLinkinfo(@RequestBody @Valid TSecondLinkMnt secondLinkMnt,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -169,7 +169,7 @@ public class SecondLinkMntController {
      * @param linkLevel
      * @return
      */
-    //    @GetMapping(value = "/queryApplicationInfo", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    //    @GetMapping(value = "/queryApplicationInfo", produces = MediaType.APPLICATION_JSON_VALUE)
     //    public ResponseEntity<Object> updateLinkinfo(@RequestParam("linkId") String linkId, @RequestParam
     //    ("linkLevel") String linkLevel) {
     //        try {

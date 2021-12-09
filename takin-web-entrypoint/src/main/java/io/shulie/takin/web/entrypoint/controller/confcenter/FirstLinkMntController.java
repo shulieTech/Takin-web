@@ -10,7 +10,7 @@ import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.entity.domain.entity.TFirstLinkMnt;
 import io.shulie.takin.web.biz.service.TFirstLinkMntService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Api(tags = "一级链路管理接口")
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 public class FirstLinkMntController {
     private final Logger LOGGER = LoggerFactory.getLogger(FirstLinkMntController.class);
 
@@ -50,8 +50,8 @@ public class FirstLinkMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_ADD_FIRST_LINK_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_ADD_FIRST_LINK_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> saveLink(@RequestBody @Valid TFirstLinkMnt firstLinkMnt,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -80,8 +80,8 @@ public class FirstLinkMntController {
      * @return 成功, 则返回链路信息列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_FIRST_LINKLIST_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_FIRST_LINKLIST_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkList(@RequestParam("firstLinkName") String firstLinkName,
         @RequestParam("secondLinkName") String secondLinkName,
         @RequestParam("pageNum") Integer pageNum,
@@ -106,8 +106,8 @@ public class FirstLinkMntController {
      * @return 成功, 则返回链路详情, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_FIRST_LINKINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_FIRST_LINKINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryLinkByLinkId(@RequestParam("linkId") String linkId) {
         if (StringUtils.isEmpty(linkId)) {
             return ResponseError.create(TakinErrorEnum.CONFCENTER_QUERY_FIRST_LINKINFO_PARAMLACK.getErrorCode(),
@@ -131,8 +131,8 @@ public class FirstLinkMntController {
      * @param linkIds 链路id列表，逗号分隔
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_DELETE_FIRST_LINKINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_FIRST_LINKINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteLinkByLinkIds(@RequestParam("linkIds") String linkIds) {
         try {
             firstLinkService.deleteLinkByLinkIds(linkIds);
@@ -155,8 +155,8 @@ public class FirstLinkMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @PostMapping(value = APIUrls.API_TAKIN_CONFCENTER_UPDATE_FIRST_LINKINFO_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_FIRST_LINKINFO_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateLinkinfo(@RequestBody @Valid TFirstLinkMnt firstLinkMnt,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -182,8 +182,8 @@ public class FirstLinkMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_QUERY_LINK_TOPOLOGY_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_LINK_TOPOLOGY_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getLinkTopologyByFirstLinkId(@RequestParam("linkId") String linkId) {
         try {
             return ResponseOk.create(firstLinkService.getLinkTopologyByFirstLinkId(linkId));
@@ -204,8 +204,8 @@ public class FirstLinkMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
-    @GetMapping(value = APIUrls.API_TAKIN_CONFCENTER_EXIST_FIRST_LINK_URI,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_EXIST_FIRST_LINK_URI,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> existFirstLinkBySecondLinkId(@RequestParam("secondLinkId") String secondLinkId) {
         if (StringUtils.isEmpty(secondLinkId)) {
             LOGGER.error("FirstLinkMntController.existFirstLinkBySecondLinkId接收了非法的参数：" + secondLinkId);
@@ -220,7 +220,7 @@ public class FirstLinkMntController {
         }
     }
 
-    @GetMapping(value = "/emptyUrl", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/emptyUrl", produces = MediaType.APPLICATION_JSON_VALUE)
     public String emptyUrl() {
         return "success";
     }

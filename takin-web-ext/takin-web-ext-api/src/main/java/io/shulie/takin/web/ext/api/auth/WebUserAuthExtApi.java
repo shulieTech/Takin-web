@@ -10,9 +10,9 @@ import io.shulie.takin.plugin.framework.core.extension.ExtensionPoint;
  */
 public interface WebUserAuthExtApi extends ExtensionPoint {
     /**
-     * 验证是否是超级管理员
+     * 验证是否是管理员
      *
      * @return -
      */
-    boolean validateSuperAdmin();
+    boolean validateAdmin();
 }

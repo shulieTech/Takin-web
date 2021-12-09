@@ -39,7 +39,8 @@ public class LinkManageDAOImpl implements LinkManageDAO, MPUtil<LinkManageTableE
                 LinkManageTableEntity::getLinkId,
                 LinkManageTableEntity::getLinkName,
                 LinkManageTableEntity::getApplicationName,
-                LinkManageTableEntity::getCustomerId,
+                LinkManageTableEntity::getTenantId,
+                LinkManageTableEntity::getEnvCode,
                 LinkManageTableEntity::getUserId,
                 LinkManageTableEntity::getFeatures
             );
@@ -63,7 +64,8 @@ public class LinkManageDAOImpl implements LinkManageDAO, MPUtil<LinkManageTableE
             LinkManageTableEntity::getLinkId,
             LinkManageTableEntity::getLinkName,
             LinkManageTableEntity::getApplicationName,
-            LinkManageTableEntity::getCustomerId,
+            LinkManageTableEntity::getTenantId,
+            LinkManageTableEntity::getEnvCode,
             LinkManageTableEntity::getUserId,
             LinkManageTableEntity::getFeatures
         );
@@ -84,7 +86,8 @@ public class LinkManageDAOImpl implements LinkManageDAO, MPUtil<LinkManageTableE
                 linkManageResult.setLinkId(linkManageTableEntity.getLinkId());
                 linkManageResult.setLinkName(linkManageTableEntity.getLinkName());
                 linkManageResult.setApplicationName(linkManageTableEntity.getApplicationName());
-                linkManageResult.setCustomerId(linkManageTableEntity.getCustomerId());
+                linkManageResult.setTenantId(linkManageTableEntity.getTenantId());
+                linkManageResult.setEnvCode(linkManageTableEntity.getEnvCode());
                 linkManageResult.setUserId(linkManageTableEntity.getUserId());
                 linkManageResult.setFeatures(linkManageTableEntity.getFeatures());
                 return linkManageResult;

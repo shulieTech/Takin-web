@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
  * @author mubai
  * @date 2021-01-04 17:38
  */
-
 @Configuration
 @Slf4j
 public class CommandChannelConfig {
@@ -23,7 +22,6 @@ public class CommandChannelConfig {
 
     @Bean
     public ServerChannel registerChannel() {
-
         ServerChannel channel = null;
         try {
             ZkClientConfig config = new ZkClientConfig();

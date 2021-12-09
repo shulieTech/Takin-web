@@ -20,7 +20,7 @@
     <parent>
         <artifactId>takin-web-diff</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.0.2</version>
+        <version>takin-web-5.1.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>takin-web-diff-cloud</artifactId>
@@ -61,17 +61,7 @@
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-cloud-open-client-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-cloud-open-api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.github.pagehelper</groupId>
-                    <artifactId>pagehelper-spring-boot-starter</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>takin-cloud-sdk</artifactId>
         </dependency>
     </dependencies>
 </project>

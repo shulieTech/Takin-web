@@ -81,4 +81,9 @@ public class ScriptManageDeployDetailResponse implements Serializable {
     @JsonProperty("pluginConfigs")
     private List<PluginConfigDetailResponse> pluginConfigDetailResponseList;
 
+    /**
+     * hasBigFile 是否有大文件
+     */
+    private Integer hasBigFile;
+
 }

@@ -1,10 +1,11 @@
 package io.shulie.takin.web.data.param.application;
 
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
+import io.shulie.takin.web.ext.entity.UserCommonExt;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 /**
  * (ApplicationPluginsConfig)实体类
@@ -14,14 +15,13 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 @Valid
-public class ApplicationPluginsConfigParam {
+public class ApplicationPluginsConfigParam extends UserCommonExt {
     private Long id;
     @ApiModelProperty(value = "应用ID")
     @NotNull
     private Long applicationId;
     @ApiModelProperty(value = "应用名称")
     private String applicationName;
-    private Long customerId;
     @ApiModelProperty(value = "配置项")
     private String configItem;
     @ApiModelProperty(value = "配置项key")
@@ -30,8 +30,4 @@ public class ApplicationPluginsConfigParam {
     private String configValue;
     @ApiModelProperty(value = "配置说明")
     private String configDesc;
-    private Long userId;
-    //分页参数
-    private Integer pageNum = 1;
-    private Integer pageSize = 10;
 }

@@ -15,7 +15,6 @@ import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
 import io.shulie.takin.web.biz.pojo.request.application.ShadowConsumerDeleteRequest;
-import io.shulie.takin.web.common.constant.APIUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

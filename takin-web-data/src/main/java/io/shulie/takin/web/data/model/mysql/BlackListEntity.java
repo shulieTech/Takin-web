@@ -1,16 +1,21 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import com.baomidou.mybatisplus.annotation.*;
-import lombok.Data;
-
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
+import lombok.Data;
 
 /**
  * 黑名单管理
  */
 @Data
 @TableName(value = "t_black_list")
-public class BlackListEntity {
+public class BlackListEntity extends UserBaseEntity {
     /**
      * 主键id
      */
@@ -54,19 +59,6 @@ public class BlackListEntity {
      */
     @TableField(value = "USE_YN")
     private Integer useYn;
-
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
-
 
     /**
      * 是否删除 0-未删除、1-已删除

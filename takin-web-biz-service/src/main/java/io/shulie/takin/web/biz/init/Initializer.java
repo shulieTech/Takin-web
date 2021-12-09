@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.init;
 
 import io.shulie.takin.web.biz.init.fix.BlacklistDataFixer;
 import io.shulie.takin.web.biz.init.fix.LinkManageFixer;
-import io.shulie.takin.web.biz.init.fix.RemoteCallFixer;
 import io.shulie.takin.web.biz.init.fix.WhitelistDataFixer;
 import io.shulie.takin.web.biz.init.fix.WhitelistEffectAppNameDataFixer;
 import io.shulie.takin.web.biz.init.sync.ConfigSynchronizer;
@@ -39,9 +38,6 @@ public class Initializer implements InitializingBean {
     private WhitelistEffectAppNameDataFixer whitelistEffectAppNameDataFixer;
 
     @Autowired
-    private RemoteCallFixer remoteCallFixer;
-
-    @Autowired
     ApplicationPluginsConfigService configService;
 
     @Autowired
@@ -51,14 +47,14 @@ public class Initializer implements InitializingBean {
      * 所有项目启动需要做的事情都统一注册在这里
      */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         // 将agent需要的配置同步到文件、redis、zk等
         new Thread(() -> configSynchronizer.initSyncAgentConfig()).start();
         new Thread(() -> linkManageFixer.fix()).start();
         // 黑名单数据补全
         new Thread(() -> blacklistDataFixer.fix()).start();
         // 白名单生效应用数据订正
-        new Thread(() -> whitelistEffectAppNameDataFixer.fix()).start();
+        //new Thread(() -> whitelistEffectAppNameDataFixer.fix()).start();
         new Thread(() -> pradarConfigService.initZooKeeperData()).start();
         // 白名单数据修复
         new Thread(() -> whitelistDataFixer.fix()).start();
@@ -66,7 +62,5 @@ public class Initializer implements InitializingBean {
         new Thread(() -> configService.init()).start();
         // 白名单数据迁移
         //new Thread(() -> remoteCallFixer.fix()).start();
-        // 校验是否有此用户，没有则创建。用于用户执行运维脚本
-        new Thread(() -> opsScriptManageService.init()).start();
     }
 }

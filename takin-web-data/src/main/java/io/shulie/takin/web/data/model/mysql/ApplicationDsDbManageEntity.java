@@ -1,14 +1,14 @@
 package io.shulie.takin.web.data.model.mysql;
 
+import java.io.Serializable;
+
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  * db连接池影子库表配置表(ApplicationDsDbManage)实体类
@@ -102,12 +102,6 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
      * 状态 0:启用；1:禁用
      */
     private Integer status;
-
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
 
     /**
      * 用户id

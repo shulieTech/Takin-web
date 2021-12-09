@@ -553,7 +553,7 @@ public class LinkTopologyInfoService extends CommonService {
         //根据接口类型和名称查询白名单
         String type = "";
         if (entranceType.equalsIgnoreCase(Constants.HTTP)) {
-            TWList wList = tWListMntDao.getWhiteListByParam(new HashMap<String, String>(10) {{
+            TWList wList = whiteListDAO.getWhiteListByParam(new HashMap<String, String>(10) {{
                 put("url", linkEntrance);
                 put("type", "1");
             }});

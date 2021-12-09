@@ -29,9 +29,13 @@ public class ApplicationQueryDTO extends PagingDevice {
     private List<String> appNames;
 
     /**
-     * 客户Id
+     * 租户标识
      */
-    private String customerId;
+    private String tenantAppKey;
+    /**
+     * 环境编码
+     */
+    private String envCode;
 
     /**
      * 拓展信息

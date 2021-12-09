@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -34,6 +35,9 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
         return result;
     }
 
+    /**
+     * @param namespace
+     */
     @Override
     public void evict(String namespace) {
         redisTemplate.delete(getCacheKey(namespace));
@@ -46,31 +50,45 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
     private void reset() {
         String beClearKey = this.cacheName + "*";
         if (!"*".equals(beClearKey)) {
-            Set keys = redisTemplate.keys(beClearKey);
+            Set<String> keys = redisTemplate.keys(beClearKey);
             if (CollectionUtils.isNotEmpty(keys)) {
-                keys.forEach(key -> {
-                    redisTemplate.delete(key);
-                });
+                keys.forEach(redisTemplate::delete);
                 log.info("清除key:{}对应的缓存成功", beClearKey);
             }
         }
     }
 
+    /**
+     * @param namespace
+     * @return
+     */
     private String getCacheKey(String namespace) {
-        String key = cacheName + ":" + WebPluginUtils.getCustomerId();
-        if (namespace != null) {
-            key += ":";
-            key += namespace;
-        }
-        return key;
+
+        return CommonUtil.generateRedisKey(cacheName,
+            WebPluginUtils.traceTenantCode(), WebPluginUtils.traceEnvCode(), namespace);
+
     }
 
     /**
      * 查询值
      *
-     * @param namespace 命名空间
+     * @param userAppKey 租户标识
+     * @param envCode    环境编码
+     * @param namespace  命名空间
      * @return 值
      */
-    protected abstract T queryValue(String namespace);
+    protected T queryValue(String userAppKey, String envCode, String namespace) {
+        // TODO 具体实现 - 张天赐修改,为了编译通过
+        return null;
+    }
 
+    /**
+     * 新版本貌似用上面的方法替代了
+     *
+     *  TODO 具体实现 - 张天赐修改,为了编译通过
+     *
+     * @param namespace -
+     * @return -
+     */
+    protected abstract T queryValue(String namespace);
 }

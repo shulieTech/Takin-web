@@ -1,6 +1,10 @@
 package io.shulie.takin.web.biz.aspect;
 
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
 import com.alibaba.fastjson.JSON;
+
 import io.shulie.takin.web.biz.annotation.ActivityCache;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
@@ -13,9 +17,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 @Component
 @Aspect
@@ -48,7 +49,7 @@ public class ActivityCacheAspect {
             redisTemplate.opsForValue().set(key, JSON.toJSONString(activityResponse), expireTime, TimeUnit.SECONDS);
         } else {
             activityResponse = JSON.parseObject(cacheResponse.toString(), ActivityResponse.class);
-            log.info("ActivityCacheAspect.advice()...[{}]", request.getActivityId());
+            log.debug("ActivityCacheAspect.advice()...[{}]", request.getActivityId());
         }
         return activityResponse;
     }

@@ -7,9 +7,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * @Description agent版本查询对象
- * @Author ocean_wll
- * @Date 2021/8/12 3:39 下午
+ * agent版本查询对象
+ *
+ * @author ocean_wll
+ * @date 2021/8/12 3:39 下午
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

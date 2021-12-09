@@ -2,11 +2,11 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
@@ -15,7 +15,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_leakcheck_config_detail")
-public class LeakcheckConfigDetailEntity {
+public class LeakcheckConfigDetailEntity extends UserBaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -31,11 +31,7 @@ public class LeakcheckConfigDetailEntity {
      */
     @TableField(value = "sql_content")
     private String sqlContent;
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
+
 
     /**
      * 备注
@@ -64,13 +60,6 @@ public class LeakcheckConfigDetailEntity {
     public static final String COL_ID = "id";
 
     public static final String COL_DATASOURCE_ID = "datasource_id";
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
-
-    public static final String COL_CUSTOMER_ID = "customer_id";
 
     public static final String COL_USER_ID = "user_id";
 

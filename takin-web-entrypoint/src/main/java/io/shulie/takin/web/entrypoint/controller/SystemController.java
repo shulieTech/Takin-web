@@ -11,23 +11,22 @@ import java.util.Objects;
 import com.alibaba.fastjson.JSONObject;
 
 import com.google.common.collect.Lists;
-import io.shulie.takin.cloud.open.req.common.CloudCommonInfoWrapperReq;
-import io.shulie.takin.cloud.open.resp.common.CommonInfosResp;
+import io.shulie.takin.cloud.sdk.model.request.common.CloudCommonInfoWrapperReq;
+import io.shulie.takin.cloud.sdk.model.response.common.CommonInfosResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
-import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.data.result.system.SystemInfoItemVo;
 import io.shulie.takin.web.data.result.system.SystemInfoVo;
 import io.shulie.takin.web.diff.api.common.CloudCommonApi;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
-import org.springframework.core.env.Environment;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,23 +39,26 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "sys")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "sys")
 @Api(tags = "接口: 系统信息")
 public class SystemController {
 
     private static final String UI_VERSION_FILE = "version.json";
 
-    @Autowired
-    private Environment environment;
+    @Value("${takin.web.version}")
+    private String takinWebVersion;
+
+    @Value("${takin.web.url}")
+    private String takinWebUrl;
+
+    @Value("${takin.config.zk.addr}")
+    private String zkAddr;
 
     @Autowired
     private CloudCommonApi commonApi;
 
     @Autowired
     private AmdbClientProperties properties;
-
-    @Value("${agent.interactive.takin.web.url:http://127.0.0.1:10086/takin-web}")
-    private String takinWebUrl;
 
     @ApiOperation("系统信息")
     @GetMapping()
@@ -93,7 +95,7 @@ public class SystemController {
         SystemInfoItemVo itemVo = new SystemInfoItemVo();
         itemVo.setTitle("产品版本信息");
         HashMap<String, String> dataMap = new LinkedHashMap<>();
-        dataMap.put("takin版本", ifNull(environment.getProperty("takin.web.version")));
+        dataMap.put("takin版本", ifNull(takinWebVersion));
         dataMap.put("cloud版本", ifNull(data.getCloudVersion()));
         dataMap.put("流量引擎版本", ifNull(data.getPressureEngineVersion()));
         dataMap.put("前端版本", ifNull(this.getUiVersion(uiVersion)));
@@ -104,13 +106,10 @@ public class SystemController {
     }
 
     private SystemInfoItemVo buildProductConfInfo() {
-        //        String takinPath = "http://" + getLocalIp() + ":" + environment.getProperty("server.port") + environment.getProperty("server
-        //        .servlet.context-path");
         SystemInfoItemVo itemVo = new SystemInfoItemVo();
         itemVo.setTitle("产品配置信息");
         HashMap<String, String> dataMap = new LinkedHashMap<>();
-        dataMap.put("zk地址", ifNull(environment.getProperty("takin.config.zk.addr")));
-        //        dataMap.put("takin地址", ifNull(takinPath));
+        dataMap.put("zookeeper 地址", ifNull(zkAddr));
         dataMap.put("takin地址", ifNull(takinWebUrl));
 
         itemVo.setDataMap(dataMap);
@@ -138,9 +137,9 @@ public class SystemController {
                     for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
                         InetAddress inetAddress = enumIpAddr.nextElement();
                         if (!inetAddress.isLoopbackAddress()) {
-                            String ipaddress = inetAddress.getHostAddress().toString();
+                            String ipaddress = inetAddress.getHostAddress();
                             if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
-                                    && !ipaddress.contains("fe80")) {
+                                && !ipaddress.contains("fe80")) {
                                 ip = ipaddress;
                             }
                         }
@@ -173,12 +172,12 @@ public class SystemController {
             String webUrl = takinWebUrl.substring(0, takinWebUrl.lastIndexOf("/"));
             json = HttpClientUtil.sendGet(webUrl + "/tro/" + UI_VERSION_FILE);
 
-            if (StringUtil.isBlank(json)){
+            if (StringUtil.isBlank(json)) {
                 json = HttpClientUtil.sendGet(webUrl + "/" + UI_VERSION_FILE);
             }
         }
 
-        if (StringUtil.isNotBlank(json)){
+        if (StringUtil.isNotBlank(json)) {
             JSONObject parseObject = JSONObject.parseObject(json);
             String version = parseObject.getString("version");
             if (StringUtil.isNotBlank(version)) {

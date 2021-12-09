@@ -6,7 +6,6 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.BusinessFlowIdAndNameDto;
 import com.pamirs.takin.entity.domain.dto.linkmanage.SceneDto;
 import com.pamirs.takin.entity.domain.entity.linkmanage.Scene;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
-import io.shulie.takin.web.common.annocation.DataAuth;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -27,8 +26,7 @@ public interface TSceneMapper {
     //根据场景名集合将场景的状态该为ischange
     void updateBySceneIdList(@Param("list") List<Long> changeToZeroSceneNameList, @Param("ischange") Integer ischange);
 
-    @DataAuth(tableAlias = "scene")
-    List<SceneDto> selectByRelatedQuery(SceneQueryVo vo);
+    List<SceneDto> selectByRelatedQuery(@Param("vo") SceneQueryVo vo,@Param("userIds") List<Long> userIds);
 
     long count();
 

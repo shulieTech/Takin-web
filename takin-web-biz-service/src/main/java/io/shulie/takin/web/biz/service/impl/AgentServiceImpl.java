@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.impl;
 import java.io.File;
 
 import cn.hutool.core.util.StrUtil;
+import io.shulie.takin.web.biz.pojo.request.agent.GetFileRequest;
 import io.shulie.takin.web.biz.pojo.request.agent.PushOperateRequest;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResponse;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResultResponse;
@@ -19,6 +20,8 @@ import io.shulie.takin.web.data.dao.ProbeDAO;
 import io.shulie.takin.web.data.param.probe.UpdateOperateResultParam;
 import io.shulie.takin.web.data.result.application.ApplicationNodeProbeResult;
 import io.shulie.takin.web.data.result.probe.ProbeDetailResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +35,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AgentServiceImpl implements AgentService {
 
-    @Value("${agent.interactive.takin.web.url:http://127.0.0.1:10008/takin-web}")
+    @Value("${takin.web.url}")
     private String takinWebUrl;
 
     @Autowired
@@ -67,10 +70,8 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Override
-    public File getFile(String applicationName, String agentId) {
-        // 根据应用名称, agentId 查出节点探针的操作记录
-        ApplicationNodeProbeResult applicationNodeProbeResult =
-            applicationNodeProbeDAO.getByApplicationNameAndAgentId(applicationName, agentId);
+    public File getFile(GetFileRequest getFileRequest) {
+        ApplicationNodeProbeResult applicationNodeProbeResult = this.getApplicationNodeProbeByUserAppKey(getFileRequest);
         this.isGetFileError(applicationNodeProbeResult == null, "操作记录不存在!");
 
         // 根据操作类型, 获取文件
@@ -95,14 +96,21 @@ public class AgentServiceImpl implements AgentService {
         ApplicationNodeProbeResult applicationNodeProbeResult =
             applicationNodeProbeDAO.getByApplicationNameAndAgentId(appName, agentId);
 
-        log.info("探针操作结果上报 --> 查询操作记录!");
-        if (applicationNodeProbeResult == null) {
-            throw new TakinWebException(ExceptionCode.AGENT_APPLICATION_NODE_PROBE_UPDATE_OPERATE_RESULT_ERROR,
-                "操作记录不存在!");
+        if (log.isInfoEnabled()) {
+            log.info("探针操作结果上报 --> 查询操作记录!");
         }
 
-        log.info("探针操作结果上报 --> 更新操作记录!");
         AgentApplicationNodeProbeOperateResultResponse response = new AgentApplicationNodeProbeOperateResultResponse();
+        if (applicationNodeProbeResult == null) {
+            response.setBusinessCode(99);
+            response.setMessage("操作记录不存在");
+            return response;
+        }
+
+        if (log.isInfoEnabled()) {
+            log.info("探针操作结果上报 --> 更新操作记录!");
+        }
+
         // 比对操作结果, 如果是一样, 且是成功, 就不往下了
         Integer operateResult = pushOperateRequest.getOperateResult();
         if (operateResult.equals(applicationNodeProbeResult.getOperateResult())
@@ -155,6 +163,33 @@ public class AgentServiceImpl implements AgentService {
         if (condition) {
             throw new TakinWebException(ExceptionCode.AGENT_APPLICATION_NODE_PROBE_GET_FILE_ERROR, message);
         }
+    }
+
+    /**
+     * 兼容以前
+     * 根据 userAppKey 获取相应的探针操作命令
+     *
+     * @param getFileRequest 获取操作请求
+     * @return 节点探针的操作记录
+     */
+    private ApplicationNodeProbeResult getApplicationNodeProbeByUserAppKey(GetFileRequest getFileRequest) {
+        // 判断是否有 userAppKey, 如果没有, 就保持和以前一样
+        String applicationName = getFileRequest.getAppName();
+        String agentId = getFileRequest.getAgentId();
+
+        String userAppKey = getFileRequest.getUserAppKey();
+        if (StrUtil.isBlank(userAppKey)) {
+            // 因为此接口 controller 没有做登录拦截, 所以可能没有 tenant_id, 所以 tenantId 倒序查找第一个
+            // 可能有一个问题就是 admin 操作, 其他租户没操作, 导致探针包不一样
+            // 根据应用名称, agentId 查出节点探针的操作记录, tenant_id 倒序查找第一个
+            return applicationNodeProbeDAO.getByApplicationNameAndAgentIdAndMaxTenantId(applicationName, agentId, null);
+        }
+
+        // 根据 userAppKey 查出用户
+        // 然后根据用户的 tenantId 去查询操作
+        TenantInfoExt tenant = WebPluginUtils.getTenantInfo(userAppKey, null);
+        this.isGetFileError(tenant == null, "userAppKey 对应的租户不存在!");
+        return applicationNodeProbeDAO.getByApplicationNameAndAgentIdAndMaxTenantId(applicationName, agentId, tenant.getTenantId());
     }
 
 }

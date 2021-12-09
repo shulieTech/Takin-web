@@ -57,6 +57,12 @@ public interface ErrorConstant {
      */
     String FILE_CREATE_ERROR = "S0109";
 
+
+    /**
+     * 数据查询异常
+     */
+    String DATA_QUERY_ERROR = "S0110";
+
     //*************用户**************
 
     /**

@@ -4,7 +4,7 @@ import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2021-05-18 17:22:49
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "应用管理-插件管理接口")
 public class ApplicationPluginsConfigController {
 

@@ -6,7 +6,6 @@ import java.util.List;
 import com.pamirs.takin.entity.domain.dto.linkmanage.TechLinkDto;
 import com.pamirs.takin.entity.domain.entity.linkmanage.LinkManageTable;
 import com.pamirs.takin.entity.domain.entity.linkmanage.LinkQueryVo;
-import io.shulie.takin.web.common.annocation.DataAuth;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -30,8 +29,7 @@ public interface TLinkManageTableMapper {
     List<LinkManageTable> selectBySelective(LinkManageTable table);
 
     //条件查询
-    @DataAuth(tableAlias = "manage")
-    List<TechLinkDto> selectTechLinkListBySelective2(LinkQueryVo queryVo);
+    List<TechLinkDto> selectTechLinkListBySelective2(@Param("queryVo")LinkQueryVo queryVo,@Param("userIds") List<Long> userIds);
 
     TechLinkDto selectTechLinkById(@Param("linkId") Long linkId);
 

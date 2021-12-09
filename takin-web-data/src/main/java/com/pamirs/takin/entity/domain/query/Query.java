@@ -9,7 +9,7 @@ import java.io.Serializable;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月17日
+ * @date 2018年5月17日
  */
 public class Query<T> extends QueryBase implements Serializable {
 

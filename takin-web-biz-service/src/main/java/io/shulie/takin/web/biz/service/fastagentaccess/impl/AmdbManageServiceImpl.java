@@ -55,8 +55,6 @@ public class AmdbManageServiceImpl implements AmdbManageService {
         ErrorLogQueryDTO queryDTO = new ErrorLogQueryDTO();
         BeanUtils.copyProperties(queryRequest, queryDTO);
         queryDTO.setAgentInfo(queryRequest.getKeyword());
-        //queryDTO.setUserAppKey(WebPluginUtils.getTenantUserAppKey());
-
         if (StringUtils.isEmpty(queryRequest.getProjectName())) {
             List<String> appNameList = agentConfigService.getAllApplication("");
             if (CollectionUtils.isEmpty(appNameList)) {
@@ -67,7 +65,14 @@ public class AmdbManageServiceImpl implements AmdbManageService {
         } else {
             queryDTO.setAppName(queryRequest.getProjectName());
         }
-
+        if (queryRequest.getStartDate()!=null){
+            queryDTO.setStartDate(queryRequest.getStartDate().getTime());
+        }
+        if (queryRequest.getEndDate()!=null){
+            queryDTO.setEndDate(queryRequest.getEndDate().getTime());
+        }
+        queryDTO.setCurrentPage(queryRequest.getCurrent());
+        queryDTO.setPageSize(queryRequest.getPageSize());
         PagingList<AgentInfoDTO> pagingList = applicationClient.pageErrorLog(queryDTO);
         List<ErrorLogListResponse> list = pagingList.getList().stream().map(item -> {
             ErrorLogListResponse response = new ErrorLogListResponse();

@@ -40,7 +40,7 @@
 //        OpsScriptManageEntity manageEntity = new OpsScriptManageEntity();
 //        manageEntity.setScriptType(4);
 //        manageEntity.setName("测试脚本");
-//        manageEntity.setCustomerId("1");
+//        manageEntity.setTenantId("1");
 //        manageEntity.setUserId("1");
 //        opsScriptManageDAO.save(manageEntity);
 //

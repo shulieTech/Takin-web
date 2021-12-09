@@ -4,10 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import lombok.Data;
 
 @Data
-public class ApplicationSwitchStatusResponse {
+public class ApplicationSwitchStatusResponse extends AuthQueryResponseCommonExt {
     /**
      * 应用名称
      */

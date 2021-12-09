@@ -11,7 +11,7 @@ import com.pamirs.takin.entity.domain.entity.TReport;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月17日
+ * @date 2018年5月17日
  * @since 2018/05/08
  */
 public class TReportDetail implements Serializable {

@@ -9,7 +9,7 @@ import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.service.config.ConfigService;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "控制台白名单配置")
 @Slf4j
 public class GlobalController {
@@ -37,7 +37,7 @@ public class GlobalController {
     public Response<WhiteListSwitchDTO> getWhiteListSwitch() {
         WhiteListSwitchDTO switchDTO = new WhiteListSwitchDTO();
         switchDTO.setConfigCode(ConfigConstants.WHITE_LIST_SWITCH);
-        switchDTO.setSwitchFlagFix(configService.getAllowListSwitch(WebPluginUtils.getTenantUserAppKey()));
+        switchDTO.setSwitchFlagFix(configService.getAllowListSwitch(WebPluginUtils.traceTenantCommonExt()));
         return Response.success(switchDTO);
     }
 
@@ -45,18 +45,18 @@ public class GlobalController {
     @ApiOperation(value = "打开全局白名单开关")
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_WHITELIST_SWITCH,
+        subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITELIST_SWITCH_ACTION
     )
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_WHITELIST_SWITCH,
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
         needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response openWhiteListSwitch() {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.OPEN);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION, BizOpConstants.OpTypes.OPEN);
 
-        configService.updateAllowListSwitch(WebPluginUtils.getTenantUserAppKey(), true);
+        configService.updateAllowListSwitch(WebPluginUtils.traceTenantCommonExt(), true);
         agentConfigCacheManager.evictAllowListSwitch();
         return Response.success();
     }
@@ -65,17 +65,17 @@ public class GlobalController {
     @ApiOperation(value = "关闭全局白名单开关")
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_WHITELIST_SWITCH,
+        subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
         logMsgKey = BizOpConstants.Message.MESSAGE_WHITELIST_SWITCH_ACTION
     )
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_WHITELIST_SWITCH,
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
         needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response closeWhiteListSwitch() {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CLOSE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION, BizOpConstants.OpTypes.CLOSE);
-        configService.updateAllowListSwitch(WebPluginUtils.getTenantUserAppKey(), false);
+        configService.updateAllowListSwitch(WebPluginUtils.traceTenantCommonExt(), false);
         agentConfigCacheManager.evictAllowListSwitch();
         return Response.success();
     }

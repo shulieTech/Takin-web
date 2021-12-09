@@ -1,19 +1,25 @@
 package io.shulie.takin.web.biz.job;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadPoolExecutor;
+
+import com.alibaba.fastjson.JSON;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
-import com.google.common.collect.Lists;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
-import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.common.AbstractSceneTask;
+import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
-import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -28,38 +34,65 @@ import org.springframework.stereotype.Component;
     cron = "*/10 * * * * ?",
     description = "压测报告状态，汇总报告")
 @Slf4j
-public class FinishReportJob implements SimpleJob {
+public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
     @Autowired
     private ReportTaskService reportTaskService;
+
     @Autowired
-    private ReportService reportService;
+    @Qualifier("reportFinishThreadPool")
+    private ThreadPoolExecutor reportThreadPool;
+
+    private static Map<Long, Object> runningTasks = new ConcurrentHashMap<>();
+    private static Object EMPTY = new Object();
 
     @Override
     public void execute(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
-        List<Object> reportIds = Lists.newArrayList();
-        WebResponse runningResponse = reportService.queryListRunningReport();
-        if (runningResponse.getSuccess() == true && runningResponse.getData() != null) {
-            reportIds.addAll((List)runningResponse.getData());
-        }
-        log.info("获取正在压测中的报告:{}", JsonHelper.bean2Json(reportIds));
-        for (Object obj : reportIds) {
-            // 开始数据分片
-            long reportId = Long.parseLong(String.valueOf(obj));
-            if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                log.info("------Thread ID: {}, {},任务总片数: {}, 当前分片项: {},当前参数:{}, 当前任务名称: {},当前任务参数 {},reportId :{}",
-                    Thread.currentThread().getId(),
-                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                    shardingContext.getShardingTotalCount(),
-                    shardingContext.getShardingItem(),
-                    shardingContext.getShardingParameter(),
-                    shardingContext.getJobName(),
-                    shardingContext.getJobParameter(),
-                    reportId
-                );
-                reportTaskService.finishReport(reportId);
+        final Boolean openVersion = WebPluginUtils.isOpenVersion();
+        //任务开始
+        while (true){
+            List<SceneTaskDto> taskDtoList = getTaskFromRedis();
+            if (taskDtoList == null) { break; }
+            for (SceneTaskDto taskDto : taskDtoList) {
+                Long reportId = taskDto.getReportId();
+                if(openVersion) {
+                    // 私有化 + 开源 根据 报告id进行分片
+                    // 开始数据层分片
+                    if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                        Object task = runningTasks.putIfAbsent(reportId, EMPTY);
+                        if (task == null) {
+                            reportThreadPool.execute(() -> {
+                                try {
+                                    reportTaskService.finishReport(reportId,taskDto);
+                                } catch (Throwable e) {
+                                    log.error("execute CalcTpsTargetJob occured error. reportId={}", reportId, e);
+                                } finally {
+                                    runningTasks.remove(reportId);
+                                }
+                            });
+                        }
+                    }
+                }else {
+                    // saas 根据租户进行分片
+                    // 开始数据层分片
+                    if (taskDto.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                        Object task = runningTasks.putIfAbsent(taskDto.getTenantId(), EMPTY);
+                        if (task == null) {
+                            reportThreadPool.execute(() -> {
+                                try {
+                                    WebPluginUtils.setTraceTenantContext(taskDto);
+                                    reportTaskService.finishReport(taskDto.getReportId(),taskDto);
+                                } catch (Throwable e) {
+                                    log.error("execute CalcTpsTargetJob occured error. reportId={},tenantId={}", reportId,taskDto.getTenantId(), e);
+                                } finally {
+                                    runningTasks.remove(taskDto.getTenantId());
+                                }
+                            });
+                        }
+                    }
+                }
             }
         }
-        log.info("finishReport 执行时间:{}", System.currentTimeMillis() - start);
+        log.debug("finishReport 执行时间:{}", System.currentTimeMillis() - start);
     }
 }

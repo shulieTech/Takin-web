@@ -117,10 +117,5 @@ public class PressureMachineStatisticsServiceImpl implements PressureMachineStat
         return pressureMachineStatisticsDao.statistics();
     }
 
-    @Override
-    public void clearRubbishData() {
-        Date previousDays = DateUtils.getPreviousNDay(91);
-        pressureMachineStatisticsDao.clearRubbishData(DateUtils.dateToString(previousDays, DateUtils.FORMATE_YMDHMS));
-    }
 
 }

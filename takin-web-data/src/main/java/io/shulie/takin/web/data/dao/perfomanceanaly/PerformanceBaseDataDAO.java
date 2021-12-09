@@ -43,6 +43,4 @@ public interface PerformanceBaseDataDAO {
      */
     List<PerformanceBaseDataResult> getPerformanceBaseDataList(PerformanceBaseQueryParam param);
 
-    void clearData(String time);
-
 }

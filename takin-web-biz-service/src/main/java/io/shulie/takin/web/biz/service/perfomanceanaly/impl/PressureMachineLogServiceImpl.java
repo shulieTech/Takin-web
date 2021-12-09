@@ -14,6 +14,7 @@ import io.shulie.takin.web.biz.service.perfomanceanaly.PressureMachineLogService
 import io.shulie.takin.web.data.dao.perfomanceanaly.PressureMachineLogDao;
 import io.shulie.takin.web.data.param.machine.PressureMachineLogQueryParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineLogResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,12 +48,6 @@ public class PressureMachineLogServiceImpl implements PressureMachineLogService 
         List<PressureMachineLogResult> pressureMachineLogResults = pointSample(dbList, 200);
         return assembleData(pressureMachineLogResults);
 
-    }
-
-    @Override
-    public void clearRubbishData() {
-        Date previousDays = DateUtils.getPreviousNDay(21);
-        pressureMachineLogDao.clearRubbishData(DateUtils.dateToString(previousDays, DateUtils.FORMATE_YMDHMS));
     }
 
     List<PressureMachineLogResult> pointSample(List<PressureMachineLogResult> source, int pointNum) {

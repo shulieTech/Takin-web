@@ -27,18 +27,15 @@ import org.springframework.beans.factory.annotation.Value;
  */
 public class WhitelistUtil {
 
-
     /**
      * 校验白名单 接口格式
      * 不允许 单独 空格 斜杠 *
-     * @param interfaceName
-     * @return
+     *
+     * @param interfaceName 接口名称
+     * @return 是否正确
      */
-    public static Boolean checkWhiteFormatError(String interfaceName,Integer number) {
-        if(StringUtils.isBlank(interfaceName) || interfaceName.trim().length() < number) {
-            return true;
-        }
-        return false;
+    public static boolean checkWhiteFormatError(String interfaceName, Integer number) {
+        return StringUtils.isBlank(interfaceName) || interfaceName.trim().length() < number;
     }
 
 

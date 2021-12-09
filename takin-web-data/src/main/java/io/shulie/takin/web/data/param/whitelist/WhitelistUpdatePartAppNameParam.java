@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.param.whitelist;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2021/4/12 5:58 下午
  */
 @Data
-public class WhitelistUpdatePartAppNameParam {
+public class WhitelistUpdatePartAppNameParam extends UserCommonExt {
 
     private Long id;
 
@@ -23,15 +24,6 @@ public class WhitelistUpdatePartAppNameParam {
 
     private Date gmtCreate;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     private Long wlistId;
 

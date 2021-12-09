@@ -1,12 +1,12 @@
 package io.shulie.takin.web.data.model.mysql;
 
+import java.io.Serializable;
+
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 连接池配置模版表(ConnectpoolConfigTemplate)实体类
@@ -76,15 +76,6 @@ public class ConnectpoolConfigTemplateEntity extends NewBaseEntity implements Se
      */
     private String commit;
 
-    /**
-     * 租户id
-     */
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
 
 }

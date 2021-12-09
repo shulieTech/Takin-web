@@ -6,6 +6,7 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pamirs.takin.common.util.DateToStringFormatSerialize;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -14,10 +15,10 @@ import org.springframework.format.annotation.DateTimeFormat;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月20日
+ * @date 2018年4月20日
  */
 @JsonIgnoreProperties(value = {"handler"})
-public class BaseEntity implements Serializable {
+public class BaseEntity extends UserBaseEntity implements Serializable {
 
     //序列号
     private static final long serialVersionUID = 1L;

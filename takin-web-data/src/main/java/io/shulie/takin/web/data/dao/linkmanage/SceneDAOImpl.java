@@ -67,7 +67,7 @@ public class SceneDAOImpl implements SceneDAO {
         queryWrapper.select(
             SceneEntity::getId,
             SceneEntity::getSceneName,
-            SceneEntity::getCustomerId,
+            SceneEntity::getTenantId,
             SceneEntity::getUserId);
         List<SceneEntity> sceneEntityList = sceneMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(sceneEntityList)) {
@@ -75,7 +75,7 @@ public class SceneDAOImpl implements SceneDAO {
                 SceneResult sceneResult = new SceneResult();
                 sceneResult.setId(sceneEntity.getId());
                 sceneResult.setSceneName(sceneEntity.getSceneName());
-                sceneResult.setCustomerId(sceneEntity.getCustomerId());
+                sceneResult.setTenantId(sceneEntity.getTenantId());
                 sceneResult.setUserId(sceneEntity.getUserId());
                 return sceneResult;
             }).collect(Collectors.toList());

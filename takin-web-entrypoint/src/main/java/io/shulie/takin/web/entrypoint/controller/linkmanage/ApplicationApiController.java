@@ -6,14 +6,15 @@ import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiDeleteVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.APIUrls;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
+import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -33,12 +34,15 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2020/4/2 13:09
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL)
+@RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "applicationApi", value = "应用api")
 public class ApplicationApiController {
 
     @Autowired
     private ApplicationApiService apiService;
+
+    @Autowired
+    private ApplicationApiManageAmdbCache applicationApiManageAmdbCache;
 
     //@ApiOperation("agent注册api")
     //@PostMapping(value = "/agent/api/register")
@@ -52,12 +56,32 @@ public class ApplicationApiController {
     //    }
     //}
 
+    /**
+     * 老版
+     * @param appName
+     * @return
+     */
     @ApiOperation("storm拉取api")
     @GetMapping(value = "/api/pull")
     public Response pull(@RequestParam(value = "appName", required = false) String appName) {
         try {
             return apiService.pullApi(appName);
 
+        } catch (Exception e) {
+            return Response.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * 新版
+     * @param appName
+     * @return
+     */
+    @ApiOperation("storm拉取api")
+    @GetMapping(value = "/v1/api/pull")
+    public Response pullV1(@RequestParam(value = "appName") String appName) {
+        try {
+            return Response.success(applicationApiManageAmdbCache.get(appName));
         } catch (Exception e) {
             return Response.fail(e.getMessage());
         }
@@ -150,7 +174,6 @@ public class ApplicationApiController {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.APPLICATION_NAME, vo.getApplicationName());
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ENTRY_API, vo.getApi());
-        // TODO: 2020/6/15
         try {
             return apiService.create(vo);
         } catch (Exception e) {

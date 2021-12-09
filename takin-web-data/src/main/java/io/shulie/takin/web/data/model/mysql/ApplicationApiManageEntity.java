@@ -2,16 +2,16 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 @Data
 @TableName(value = "t_application_api_manage")
-public class ApplicationApiManageEntity {
+public class ApplicationApiManageEntity extends UserBaseEntity {
     /**
      * 主键
      */
@@ -30,17 +30,6 @@ public class ApplicationApiManageEntity {
     @TableField(value = "APPLICATION_NAME")
     private String applicationName;
 
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 创建时间
@@ -71,4 +60,7 @@ public class ApplicationApiManageEntity {
      */
     @TableField(value = "method")
     private String method;
+
+    @TableField(value = "is_agent_registe")
+    private Integer isAgentRegiste;
 }

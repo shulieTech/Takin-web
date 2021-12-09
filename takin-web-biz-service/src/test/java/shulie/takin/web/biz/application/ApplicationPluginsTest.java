@@ -35,17 +35,10 @@
 //    @Autowired
 //    RestTemplate restTemplate;
 //
-//    @Value("${login.dingding.push.enable}")
-//    private Boolean pushEnable;
-//
-//    /* 登录  钉钉url */
-//    @Value("${login.dingding.push.url}")
-//    public String DINGDING_URL;
-//
 //    @Before
 //    public void test() {
 //        UserExt user = new UserExt();
-//        user.setCustomerId(1L);
+//        user.setTenantId(1L);
 //
 //    }
 //
@@ -53,7 +46,7 @@
 //    public void testList() {
 //        ApplicationPluginsConfigParam param = new ApplicationPluginsConfigParam();
 //        param.setApplicationId(101L);
-//        param.setCustomerId(1L);
+//        param.setTenantId(1L);
 //        PagingList<ApplicationPluginsConfigVO> listByParam = configService.getPageByParam(param);
 //        log.info(JSON.toJSONString(listByParam));
 //    }
@@ -61,7 +54,7 @@
 //    @Test
 //    public void testSave() {
 //        ApplicationPluginsConfigParam param = new ApplicationPluginsConfigParam();
-//        param.setCustomerId(1L);
+//        param.setTenantId(1L);
 //        param.setApplicationId(6800689288141869056L);
 //        param.setApplicationName("testSave");
 //        param.setUserId(1L);
@@ -76,7 +69,7 @@
 //    public void testUpdate() {
 //        ApplicationPluginsConfigParam param = new ApplicationPluginsConfigParam();
 //        param.setId(1394840796766085121L);
-//        param.setCustomerId(1L);
+//        param.setTenantId(1L);
 //        param.setApplicationId(101L);
 //        param.setApplicationName("测试testSave");
 //        param.setUserId(1L);

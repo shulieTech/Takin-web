@@ -22,7 +22,8 @@
     <result column="cluster_test" jdbcType="BOOLEAN" property="clusterTest" />
     <result column="host_ip" jdbcType="VARCHAR" property="hostIp" />
     <result column="agent_id" jdbcType="VARCHAR" property="agentId" />
-    <result column="customer_id" jdbcType="VARCHAR" property="customerId" />
+    <result column="tenant_id" jdbcType="BIGINT" property="tenantId" />
+    <result column="env_code" jdbcType="VARCHAR" property="envCode" />
     <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
     <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
     <result column="is_deleted" jdbcType="BOOLEAN" property="isDeleted" />
@@ -31,6 +32,6 @@
     <!--@mbg.generated-->
     id, app_name, trace_id, rpc_id, trace_app_name, up_app_name, start_time, cost, middleware_name, 
     service_name, method_name, remote_ip, result_code, request, response, cluster_test, 
-    host_ip, agent_id, customer_id, gmt_create, gmt_modified, is_deleted
+    host_ip, agent_id, tenant_id,env_code, gmt_create, gmt_modified, is_deleted
   </sql>
 </mapper>

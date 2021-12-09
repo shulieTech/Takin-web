@@ -5,7 +5,7 @@ import io.shulie.takin.web.biz.pojo.output.probe.CreateProbeOutput;
 import io.shulie.takin.web.biz.pojo.output.probe.ProbeListOutput;
 import io.shulie.takin.web.biz.pojo.request.probe.CreateProbeRequest;
 import io.shulie.takin.web.biz.service.ProbeService;
-import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +25,7 @@ import springfox.documentation.annotations.ApiIgnore;
  * @since 2021-06-03 13:40:57
  */
 @RestController
-@RequestMapping(APIUrls.TAKIN_API_URL + "probe")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "probe")
 @Api(tags = "接口: 探针")
 public class ProbeController {
 

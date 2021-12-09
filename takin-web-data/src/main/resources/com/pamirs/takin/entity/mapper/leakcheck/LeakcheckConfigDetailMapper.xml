@@ -7,7 +7,8 @@
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="datasource_id" jdbcType="BIGINT" property="datasourceId" />
     <result column="sql_content" jdbcType="VARCHAR" property="sqlContent"/>
-    <result column="customer_id" jdbcType="BIGINT" property="customerId" />
+    <result column="tenant_id" jdbcType="BIGINT" property="tenantId" />
+    <result column="env_code" jdbcType="VARCHAR" property="envCode" />
     <result column="user_id" jdbcType="BIGINT" property="userId" />
     <result column="remark" jdbcType="VARCHAR" property="remark" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
@@ -16,7 +17,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, datasource_id, `sql_content`, customer_id, user_id, remark, create_time, update_time,
+    id, datasource_id, `sql_content`, tenant_id,env_code, user_id, remark, create_time, update_time,
     is_deleted
   </sql>
 </mapper>

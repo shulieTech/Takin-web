@@ -42,8 +42,9 @@ public final class BizOpConstants {
         public static final String REMOTE_CALL = "远程调用";
         public static final String SHADOW_CONSUMER = "影子消费者";
         public static final String PRESSURE_TEST_SCENE = "压测场景";
-        public static final String PRESSURE_TEST_SWITCH = "压测开关";
-        public static final String PRESSURE_WHITELIST_SWITCH = "白名单开关";
+
+        public static final String PRESSURE_CONFIG_SWITCH = "全局开关";
+
         public static final String BLACKLIST = "黑名单";
         public static final String ENTRYRULE = "入口规则";
         public static final String SCRIPT_MANAGE = "脚本管理";
@@ -71,7 +72,7 @@ public final class BizOpConstants {
     }
 
     public static class ModuleCode {
-        public static final String DASHBOARD = "dashboard";
+
         public static final String LINK_CARDING = "linkTease";
         public static final String SYSTEM_PROCESS = "systemFlow";
         public static final String BUSINESS_ACTIVITY = "businessActivity";
@@ -81,8 +82,8 @@ public final class BizOpConstants {
         public static final String PRESSURE_TEST_SCENE = "pressureTestManage_pressureTestScene";
         public static final String PRESSURE_TEST_REPORT = "pressureTestManage_pressureTestReport";
         public static final String PRESSURE_STATISTIC = "pressureTestManage_pressureTestStatistic";
-        public static final String CONFIG_CENTER = "configCenter";
-        public static final String PRESSURE_TEST_SWITCH = "configCenter_pressureMeasureSwitch";
+        public static final String CONFIG_CENTER = "configCenter_globalConfig";
+        //public static final String PRESSURE_TEST_SWITCH = "configCenter_pressureMeasureSwitch";
         public static final String PRESSURE_WHITELIST_SWITCH = "configCenter_whitelistSwitch";
         public static final String BLACKLIST = "configCenter_blacklist";
         public static final String ENTRYRULE = "configCenter_entryRule";
@@ -109,6 +110,14 @@ public final class BizOpConstants {
         public static final String AGENT_CONFIG = "admins_simulationConfig";
         public static final String AGENT_VERSION= "admins_admin";
         public static final String NEW_PROJECT_ACCESS= "appManage_appAccess";
+
+
+
+        // 大盘查询放开  dashboard 不允许用到其他地方
+        public static final String DASHBOARD = "dashboard";
+        public static final String DASHBOARD_APPMANAGE = "dashboard_"+ APPLICATION_MANAGE ;
+        public static final String DASHBOARD_SCENE = "dashboard_" + PRESSURE_TEST_SCENE;
+        public static final String DASHBOARD_REPORT = "dashboard_" + PRESSURE_TEST_REPORT;
     }
 
     public static class OpTypes {

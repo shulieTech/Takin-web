@@ -116,7 +116,9 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
             }
             else{
                 Converter.TemplateConverter.TemplateEnum templateEnum = templateParser.convert(entity.getConnPoolName());
-                entity.setAgentSourceType(templateEnum.getKey());
+                if (templateEnum != null) {
+                    entity.setAgentSourceType(templateEnum.getKey());
+                }
             }
         }
         return entity;

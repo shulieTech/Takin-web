@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.takin.common.util.http.DateUtil;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceAnalyzeRequest;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.PerformanceCommonRequest;
 import io.shulie.takin.web.biz.pojo.request.perfomanceanaly.ThreadCpuUseRateRequest;
@@ -235,10 +234,11 @@ public class ThreadAnalyServiceImpl implements ThreadAnalyService {
         return performanceThreadDataDAO.getThreadStackInfo(link);
     }
 
+
     @Override
     public void clearData(Integer time) {
-        Date nSecond = DateUtils.getPreviousNSecond(time);
-        String timeString = DateUtils.dateToString(nSecond, DateUtils.FORMATE_YMDHMS);
+
+        String timeString = DateUtils.dateToString(DateUtils.getPreviousNSecond(time), DateUtils.FORMATE_YMDHMS);
 
         boolean dataCleanComplete = false;
         boolean stackDataCleanComplete = false;

@@ -1,12 +1,13 @@
 package io.shulie.takin.web.data.param.scriptmanage;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
  * @author shulie
  */
 @Data
-public class ScriptManageDeployCreateParam {
+public class ScriptManageDeployCreateParam extends TenantCommonExt {
 
 
     private Long scriptId;
@@ -53,8 +54,6 @@ public class ScriptManageDeployCreateParam {
      * 拓展字段
      */
     private String feature;
-
-    private Long customerId;
 
     /**
      * 描述

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.AppConfigSheetEnum;
@@ -15,9 +17,10 @@ import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.cloud.common.constants.Constants;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerCreateInput;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
-import io.shulie.takin.web.biz.pojo.request.application.ShadowConsumerCreateRequest;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
@@ -30,7 +33,6 @@ import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -47,8 +49,12 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
     @Autowired
     private AppRemoteCallDAO appRemoteCallDAO;
 
-    @Value("${whitelist.number.limit:5}")
     private Integer number;
+
+    @PostConstruct
+    public void init() {
+        number = ConfigServerHelper.getWrapperIntegerValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_NUMBER_LIMIT);
+    }
 
     /**
      * 将数组转化为entity
@@ -185,7 +191,7 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
             newParam.setUseYn(Integer.valueOf(arrayList.get(1)));
             newParam.setApplicationId(applicationId);
             if (result != null) {
-                newParam.setCustomerId(result.getCustomerId());
+                newParam.setTenantId(result.getTenantId());
                 newParam.setUserId(result.getUserId());
             }
             params.add(newParam);
@@ -242,7 +248,7 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
             input.setMockReturnValue(arrayList.get(4).equals(Constants.NULL_SIGN) ? "" : arrayList.get(4));
             input.setApplicationId(applicationId);
             input.setAppName(applicationDetailResult.getApplicationName());
-            input.setCustomerId(applicationDetailResult.getCustomerId());
+            input.setTenantId(applicationDetailResult.getTenantId());
             input.setUserId(applicationDetailResult.getUserId());
             input.setGmtCreate(new Date());
             String buildImportRemoteCallName = RemoteCallUtils.buildImportRemoteCallName(input.getInterfaceName(), input.getInterfaceType());

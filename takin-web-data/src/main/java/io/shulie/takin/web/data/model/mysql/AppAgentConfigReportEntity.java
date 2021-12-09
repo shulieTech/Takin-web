@@ -1,11 +1,16 @@
 package io.shulie.takin.web.data.model.mysql;
 
+import java.io.Serializable;
+import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.io.Serializable;
 
 /**
  * agent配置上报详情(AppAgentConfigReport)实体类
@@ -17,8 +22,21 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_app_agent_config_report")
 @ToString(callSuper = true)
-public class AppAgentConfigReportEntity extends NewBaseEntity implements Serializable {
+public class AppAgentConfigReportEntity extends UserBaseEntity implements Serializable {
     private static final long serialVersionUID = 614299322159620031L;
+
+    /**
+     * 主键
+     */
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
+    /**
+     * 删除
+     * 1 删除, 0 未删除
+     */
+    @TableLogic
+    private Integer isDeleted;
 
     /**
      * AgentId
@@ -56,13 +74,13 @@ public class AppAgentConfigReportEntity extends NewBaseEntity implements Seriali
     private String commit;
 
     /**
-     * 租户id
+     * 创建时间
      */
-    private Long customerId;
+    private Date gmtCreate;
 
     /**
-     * 用户id
+     * 更新时间
      */
-    private Long userId;
+    private Date gmtUpdate;
 
 }

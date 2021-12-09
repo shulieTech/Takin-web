@@ -5,7 +5,7 @@ package com.pamirs.takin.common.exception;
  *
  * @author shulie
  * @version v1.0
- * @2018年5月16日
+ * @date 2018年5月16日
  */
 @Deprecated
 public class ApiException extends RuntimeException {

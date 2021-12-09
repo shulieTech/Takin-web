@@ -13,7 +13,7 @@ import org.apache.ibatis.annotations.Param;
  *
  * @author shulie
  * @version v1.0
- * @2018年4月26日
+ * @date 2018年4月26日
  */
 @Mapper
 public interface CommonDao {

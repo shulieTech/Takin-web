@@ -10,8 +10,10 @@
     <result column="username" jdbcType="VARCHAR" property="username" />
     <result column="password" jdbcType="VARCHAR" property="password" />
     <result column="features" jdbcType="LONGVARCHAR" property="features" />
-    <result column="customer_id" jdbcType="BIGINT" property="customerId" />
-    <result column="user_id" jdbcType="BIGINT" property="userId" />
+     <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+      <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
+
+      <result column="user_id" jdbcType="BIGINT" property="userId" />
     <result column="remark" jdbcType="VARCHAR" property="remark" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
@@ -19,7 +21,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, `type`, jdbc_url, username, `password`, features, customer_id, user_id, remark, 
+    id, `type`, jdbc_url, username, `password`, features, tenant_id,env_code, user_id, remark,
     create_time, update_time, is_deleted
   </sql>
 </mapper>

@@ -1,5 +1,10 @@
 package io.shulie.takin.web.data.dao.perfomanceanaly;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.web.data.common.InfluxDatabaseWriter;
@@ -8,13 +13,10 @@ import io.shulie.takin.web.data.param.perfomanceanaly.PressureMachineStatisticsI
 import io.shulie.takin.web.data.param.perfomanceanaly.PressureMachineStatisticsQueryParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineStatisticsDTO;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineStatisticsResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
-import java.util.*;
 
 /**
  * @author mubai
@@ -43,6 +45,9 @@ public class PressureMachineStatisticsDaoImpl implements PressureMachineStatisti
         fields.put("machine_free", baseEntity.getMachineFree());
         fields.put("machine_offline", baseEntity.getMachineOffline());
         Map<String, String> tags = Maps.newHashMap();
+        tags.put("tenant_id", String.valueOf(WebPluginUtils.traceTenantId()));
+        tags.put("tenant_app_key", WebPluginUtils.traceTenantAppKey() + "");
+        tags.put("env_code", String.valueOf(WebPluginUtils.traceEnvCode()));
         influxDatabaseWriter.insert("t_pressure_machine_statistics", tags, fields, System.currentTimeMillis());
     }
 
@@ -60,6 +65,8 @@ public class PressureMachineStatisticsDaoImpl implements PressureMachineStatisti
                 " where " +
                 "  time >= " + "'" + param.getStartTime() + "'" +
                 " and time <= " + "'" + param.getEndTime() + "'" +
+                " and tenant_id = " + "'" + WebPluginUtils.traceTenantId() + "'" +
+                " and env_code = " + "'" + WebPluginUtils.traceEnvCode() + "'" +
                 " TZ('Asia/Shanghai')";
 
         List<PressureMachineStatisticsResult> dataList = influxDatabaseWriter.query(influxDatabaseSql,
@@ -77,6 +84,8 @@ public class PressureMachineStatisticsDaoImpl implements PressureMachineStatisti
         String influxDatabaseSql = "select" +
                 " machine_total ,machine_pressured,machine_free,machine_offline,time as gmtCreate  " +
                 " from t_pressure_machine_statistics" +
+                " where  tenant_id = " + "'" + WebPluginUtils.traceTenantId() + "'" +
+                " and env_code = " + "'" + WebPluginUtils.traceEnvCode() + "'" +
                 " order by time desc limit 1 " +
                 " TZ('Asia/Shanghai')";
 
@@ -110,15 +119,5 @@ public class PressureMachineStatisticsDaoImpl implements PressureMachineStatisti
         return result;
     }
 
-    @Override
-    public void clearRubbishData(String time) {
-        if (StringUtils.isBlank(time)) {
-            return;
-        }
-        String influxDatabaseSql = "delete" +
-                " from t_pressure_machine_statistics" +
-                " where time <= '" + time + "'";
 
-        influxDatabaseWriter.query(influxDatabaseSql, PressureMachineStatisticsResult.class);
-    }
 }

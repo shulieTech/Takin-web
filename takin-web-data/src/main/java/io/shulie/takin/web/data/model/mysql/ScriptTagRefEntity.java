@@ -6,11 +6,12 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
 
 @Data
 @TableName(value = "t_script_tag_ref")
-public class ScriptTagRefEntity {
+public class ScriptTagRefEntity extends TenantBaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 

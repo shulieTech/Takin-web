@@ -2,13 +2,14 @@ package io.shulie.takin.web.data.param.filemanage;
 
 import java.util.Date;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
  * @author zhaoyong
  */
 @Data
-public class FileManageCreateParam {
+public class FileManageCreateParam extends TenantCommonExt {
 
     private Long id;
 
@@ -29,7 +30,6 @@ public class FileManageCreateParam {
 
     private String fileExtend;
 
-    private Long customerId;
 
     private String uploadPath;
 

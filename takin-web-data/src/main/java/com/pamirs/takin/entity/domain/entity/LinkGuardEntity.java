@@ -2,6 +2,7 @@ package com.pamirs.takin.entity.domain.entity;
 
 import java.util.Date;
 
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
@@ -10,7 +11,7 @@ import lombok.Data;
  */
 
 @Data
-public class LinkGuardEntity {
+public class LinkGuardEntity extends UserBaseEntity {
 
     private Long id;
     private String applicationName;
@@ -21,7 +22,6 @@ public class LinkGuardEntity {
     private Date updateTime;
     private Boolean isDeleted;
     private Boolean isEnable;
-    private Long customerId;
-    private Long userId;
+
     private String remark;
 }

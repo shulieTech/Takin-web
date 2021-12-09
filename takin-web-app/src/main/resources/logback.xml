@@ -2,6 +2,28 @@
 <configuration debug="false">
     <property name="LOG_NAME" value="service"/>
     <property name="LOG_HOME" value="./logs/takin-web/"/>
+
+    <!-- 按照每天生成日志文件 -->
+    <appender name="FILE_ERROR"  class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--如果只是想要 Error 级别的日志，那么需要过滤一下，默认是 info 级别的，ThresholdFilter-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>Error</level>
+        </filter>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/error/error.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>30</MaxHistory>
+            <maxFileSize>5MB</maxFileSize>
+            <totalSizeCap>50MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <!-- sys log file setting -->
     <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${LOG_NAME}.log</file>
@@ -34,6 +56,7 @@
     <root level="INFO">
         <appender-ref ref="file"/>
         <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE_ERROR"/>
     </root>
 
     <!-- mybatis日志打印-->
@@ -65,6 +88,5 @@
     </appender>
     <logger name="io.shulie.takin.job" level="INFO" additivity="false">
         <appender-ref ref="job"/>
-    </logger>
-
+    </logger>>
 </configuration>

@@ -1,11 +1,11 @@
 package com.pamirs.takin.entity.domain.vo.scenemanage;
 
-import java.io.Serializable;
 import java.util.List;
 
-import io.shulie.takin.ext.content.user.CloudUserCommonRequestExt;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import io.shulie.takin.cloud.ext.content.trace.PagingContextExt;
 
 /**
  * 场景列表查询
@@ -13,9 +13,9 @@ import lombok.EqualsAndHashCode;
  * @author qianshui
  * @date 2020/4/17 下午2:18
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class SceneManageQueryVO extends CloudUserCommonRequestExt implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class SceneManageQueryVO extends PagingContextExt {
 
     private Long sceneId;
 

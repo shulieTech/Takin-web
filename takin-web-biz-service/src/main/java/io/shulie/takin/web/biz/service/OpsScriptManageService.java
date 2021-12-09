@@ -30,6 +30,4 @@ public interface OpsScriptManageService {
 
     String getExcutionResult(String id);
 
-    void init();
-
 }

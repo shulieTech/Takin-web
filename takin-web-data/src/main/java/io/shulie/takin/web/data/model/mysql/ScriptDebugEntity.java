@@ -3,9 +3,12 @@ package io.shulie.takin.web.data.model.mysql;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -18,8 +21,21 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_script_debug")
-public class ScriptDebugEntity extends BaseEntity implements Serializable {
+public class ScriptDebugEntity extends UserBaseEntity implements Serializable {
     private static final long serialVersionUID = -11150233689819474L;
+
+    /**
+     * 主键
+     */
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
+    /**
+     * 删除
+     * 1 删除, 0 未删除
+     */
+    @TableLogic
+    private Integer isDeleted;
 
     /**
      * 脚本发布id
@@ -67,18 +83,6 @@ public class ScriptDebugEntity extends BaseEntity implements Serializable {
      * 对应的 cloud 报告id
      */
     private Long cloudReportId;
-
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 租户下的用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 创建时间

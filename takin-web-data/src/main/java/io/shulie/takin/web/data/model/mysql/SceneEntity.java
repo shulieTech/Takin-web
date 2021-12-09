@@ -2,11 +2,11 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.time.LocalDateTime;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
@@ -14,7 +14,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_scene")
-public class SceneEntity {
+public class SceneEntity extends UserBaseEntity {
     /**
      * 主键
      */
@@ -50,18 +50,6 @@ public class SceneEntity {
      */
     @TableField(value = "IS_CHANGED")
     private Integer isChanged;
-
-    /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
 
     /**
      * 是否有效 0:有效;1:无效

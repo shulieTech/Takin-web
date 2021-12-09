@@ -14,7 +14,7 @@ public class WebRedisKeyConstant {
     public final static String REPORT_WARN_PREFIX = "report:warn:";
 
     //压测中报告id
-    public final static String PTING_REPORTID_KEY = "pting.reportid:set";
+    public final static String SCENE_REPORTID_KEY = "scene.report.list";
 
     /**
      * 压测 应用名列表

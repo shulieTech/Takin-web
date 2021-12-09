@@ -2,19 +2,21 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 业务链路管理表
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @TableName(value = "t_business_link_manage_table")
-public class BusinessLinkManageTableEntity {
+public class BusinessLinkManageTableEntity extends UserBaseEntity {
     /**
      * 主键
      */
@@ -70,18 +72,6 @@ public class BusinessLinkManageTableEntity {
     private Integer isDeleted;
 
     /**
-     * 租户id
-     */
-    @TableField(value = "customer_id", fill = FieldFill.INSERT)
-    private Long customerId;
-
-    /**
-     * 用户id
-     */
-    @TableField(value = "user_id", fill = FieldFill.INSERT)
-    private Long userId;
-
-    /**
      * 创建时间
      */
     @TableField(value = "CREATE_TIME")
@@ -122,4 +112,7 @@ public class BusinessLinkManageTableEntity {
      */
     @TableField(value = "SERVER_MIDDLEWARE_TYPE")
     private String serverMiddlewareType;
+
+    @TableField(value = "persistence")
+    private boolean persistence = true;
 }

@@ -2,6 +2,8 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.io.Serializable;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
@@ -74,13 +76,14 @@ public class AgentReportEntity extends NewBaseEntity implements Serializable {
     /**
      * 环境标识
      */
+    @TableField(value = "env_code", fill = FieldFill.INSERT)
     private String envCode;
 
     /**
      * 租户Id
      */
+    @TableField(value = "tenant_id", fill = FieldFill.INSERT)
     private Long tenantId;
-
     /**
      * 逻辑删除
      */

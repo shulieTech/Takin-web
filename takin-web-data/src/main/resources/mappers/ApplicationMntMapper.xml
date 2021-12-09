@@ -84,10 +84,7 @@
 
     <select id="getAllApplications"
             resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">
-        select application_id,
-               application_name,
-               user_id,
-               tenant_id,env_code
+        select *
         from t_application_mnt
     </select>
 

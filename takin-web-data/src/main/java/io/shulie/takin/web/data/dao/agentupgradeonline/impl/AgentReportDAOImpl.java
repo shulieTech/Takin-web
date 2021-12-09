@@ -19,6 +19,7 @@ import io.shulie.takin.web.data.model.mysql.AgentReportEntity;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
 import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -78,14 +79,15 @@ public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentRepo
     public Integer insertOrUpdate(CreateAgentReportParam createAgentReportParam) {
         AgentReportEntity entity = new AgentReportEntity();
         BeanUtils.copyProperties(createAgentReportParam, entity);
+        entity.setTenantId(WebPluginUtils.traceTenantId());
+        entity.setEnvCode(WebPluginUtils.traceEnvCode());
         return agentReportMapper.insertOrUpdate(entity);
     }
 
     @Override
     public void clearExpiredData() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        agentReportMapper.delete(this.getLambdaQueryWrapper()
-            .lt(AgentReportEntity::getGmtUpdate, simpleDateFormat.format(System.currentTimeMillis() - 5 * 60 * 1000)));
+        agentReportMapper.selfDelete(simpleDateFormat.format(System.currentTimeMillis() - 5 * 60 * 1000));
     }
 
     @Override

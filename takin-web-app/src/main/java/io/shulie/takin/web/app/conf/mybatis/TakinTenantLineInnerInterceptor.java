@@ -72,7 +72,8 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_agent_plugin_lib_support",
         "t_plugin_library",
         "t_plugin_dependent",
-        "t_plugin_tenant_ref"
+        "t_plugin_tenant_ref",
+        "t_agent_report"
     };
 
     private String[] tableArrWithoutEnvCode=new String[]{
@@ -100,7 +101,8 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_agent_plugin_lib_support",
         "t_plugin_library",
         "t_plugin_dependent",
-        "t_plugin_tenant_ref"
+        "t_plugin_tenant_ref",
+        "t_agent_report"
     };
 
     private String[] tableArrWithoutUserId =new String[]{
@@ -128,7 +130,8 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_agent_plugin_lib_support",
         "t_plugin_library",
         "t_plugin_dependent",
-        "t_plugin_tenant_ref"
+        "t_plugin_tenant_ref",
+        "t_agent_report"
     };
 
     /**

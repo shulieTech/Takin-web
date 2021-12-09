@@ -121,7 +121,7 @@ DROP TABLE IF EXISTS `t_application_plugin_download_path`;
 CREATE TABLE `t_application_plugin_download_path`
 (
     `id`               bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-    `application_id`   bigint(20) NOT NULL COMMENT '应用id',
+    `application_id`   bigint(20) DEFAULT 0 NOT NULL COMMENT '应用id',
     `application_name` varchar(20)  DEFAULT '' COMMENT '应用名',
     `path_type`        tinyint(4) NOT NULL DEFAULT 0 COMMENT '类型 0:oss;1:ftp;2:nginx',
     `context`          varchar(255) NOT NULL COMMENT '配置内容',

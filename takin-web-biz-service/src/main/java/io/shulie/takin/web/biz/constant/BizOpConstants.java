@@ -215,6 +215,9 @@ public final class BizOpConstants {
          */
         public static final String MESSAGE_REMOTE_CALL_CREATE = "message.remote_call.create";
         public static final String MESSAGE_REMOTE_CALL_UPDATE = "message.remote_call.update";
+        public static final String MESSAGE_BATCH_REMOTE_CALL_UPDATE = "message.remote_call.batch.update";
+        public static final String MESSAGE_MANUAL_REMOTE_CALL_CREATE = "message.manual.remote_call.create";
+
         public static final String MESSAGE_REMOTE_CALL_DELETE = "message.remote_call.delete";
 
         /**
@@ -320,6 +323,11 @@ public final class BizOpConstants {
          * 接口
          */
         public static final String INTERFACE = "interface";
+
+        /**
+         * 应用id
+         */
+        public static final String APPLICATION_ID = "applicationId";
 
         /**
          * 接口类型
@@ -484,5 +492,8 @@ public final class BizOpConstants {
         public static final String OPS_SCRIPT_NAME = "opsScriptName";
 
         public static final String ACTIVITY_DELETE_EVENT = "activity_delete_event";
+
+        public static final String CONFIG_NAME = "configName";
+        public static final String CONFIG_VALUE = "configValue";
     }
 }

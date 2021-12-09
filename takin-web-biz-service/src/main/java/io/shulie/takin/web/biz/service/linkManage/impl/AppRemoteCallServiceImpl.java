@@ -47,6 +47,7 @@ import io.shulie.takin.web.amdb.bean.query.application.ApplicationRemoteCallQuer
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallTypeTemplateDTO;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
+import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
@@ -181,6 +182,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         // 补充插件内容
         WebPluginUtils.fillUserData(input);
         if (input.getId() != null && input.getId() != 0) {
+            OperationLogContextHolder.operationType(OpTypes.UPDATE);
             getCallResult(input.getId());
             AppRemoteCallUpdateParam param = new AppRemoteCallUpdateParam();
             BeanUtils.copyProperties(input, param);
@@ -189,12 +191,14 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             param.setAppName(detailResult.getApplicationName());
             appRemoteCallDAO.update(param);
         } else {
+            OperationLogContextHolder.operationType(OpTypes.CREATE);
             AppRemoteCallCreateParam param = new AppRemoteCallCreateParam();
             BeanUtils.copyProperties(input, param);
             param.setTenantId(detailResult.getTenantId());
             param.setAppName(detailResult.getApplicationName());
             appRemoteCallDAO.insert(param);
         }
+
         agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
 
     }
@@ -250,7 +254,6 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     public void deleteById(Long id) {
         AppRemoteCallResult result = getCallResult(id);
         OperationLogContextHolder.addVars(Vars.INTERFACE, result.getInterfaceName());
-        OperationLogContextHolder.addVars(Vars.INTERFACE_TYPE, AppRemoteCallTypeEnum.getEnum(result.getInterfaceType()).getDesc());
         appRemoteCallDAO.deleteById(id);
         agentConfigCacheManager.evictRecallCalls(result.getAppName());
     }

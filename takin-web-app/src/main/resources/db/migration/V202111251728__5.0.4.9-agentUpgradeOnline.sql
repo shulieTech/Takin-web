@@ -56,25 +56,25 @@ CREATE TABLE `t_plugin_dependent`
 DROP TABLE IF EXISTS `t_application_plugin_upgrade`;
 CREATE TABLE `t_application_plugin_upgrade`
 (
-    `id`                    bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-    `application_id`        bigint(20) DEFAULT 0 COMMENT '应用id',
-    `application_name`      varchar(20)                     DEFAULT '' COMMENT '应用名',
-    `upgrade_batch`         varchar(64) NOT NULL COMMENT '升级批次 根据升级内容生成MD5',
-    `upgrade_context`       varchar(10240)                  DEFAULT '' COMMENT '升级内容 格式 {pluginId,pluginId}',
-    `upgrade_agent_id`      varchar(40) COMMENT '处理升级对应的agentId',
-    `download_path`         varchar(255)                    DEFAULT '' COMMENT '下载地址',
-    `plugin_upgrade_status` tinyint(2) DEFAULT 0 COMMENT '升级状态 0 未升级 1升级成功 2升级失败 3已回滚',
-    `error_info`            varchar(2048) COMMENT '升级失败信息',
-    `type`                  tinyint(2) COMMENT '升级单类型 0 agent上报，1 主动升级',
-    `remark`                varchar(500) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
-    `gmt_create`            datetime                        DEFAULT CURRENT_TIMESTAMP,
-    `gmt_update`            datetime                        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    `env_code`              varchar(100)                    DEFAULT 'test' COMMENT '环境标识',
-    `tenant_id`             bigint(20) DEFAULT '1' COMMENT '租户 id, 默认 1',
-    `IS_DELETED`            tinyint(2) NOT NULL DEFAULT 0 COMMENT '是否有效 0:有效;1:无效',
-    PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY `uni_applicationId_upgradeBatch` (`application_id`,`upgrade_batch`,`env_code`,`tenant_id`) USING BTREE
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='应用升级单';
+   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+   `application_id` bigint(20) DEFAULT '0' COMMENT '应用id',
+   `application_name` varchar(20) DEFAULT '' COMMENT '应用名',
+   `upgrade_batch` varchar(64) NOT NULL COMMENT '升级批次 根据升级内容生成MD5',
+   `upgrade_context` varchar(10240) DEFAULT '' COMMENT '升级内容 格式 {pluginId,pluginId}',
+   `upgrade_agent_id` varchar(40) DEFAULT NULL COMMENT '处理升级对应的agentId',
+   `download_path` varchar(255) DEFAULT '' COMMENT '下载地址',
+   `plugin_upgrade_status` tinyint(2) DEFAULT '0' COMMENT '升级状态 0 未升级 1升级成功 2升级失败 3已回滚',
+   `error_info` varchar(2048) DEFAULT NULL COMMENT '升级失败信息',
+   `type` tinyint(2) DEFAULT NULL COMMENT '升级单类型 0 agent上报，1 主动升级',
+   `remark` varchar(500) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
+   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
+   `gmt_update` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   `env_code` varchar(100) DEFAULT 'test' COMMENT '环境标识',
+   `tenant_id` bigint(20) DEFAULT '1' COMMENT '租户 id, 默认 1',
+   `IS_DELETED` tinyint(2) NOT NULL DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
+   PRIMARY KEY (`id`) USING BTREE,
+   UNIQUE KEY `uni_applicationId_upgradeBatch_env` (`application_id`,`upgrade_batch`,`env_code`,`tenant_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='应用升级单';
 
 DROP TABLE IF EXISTS `t_application_plugin_upgrade_ref`;
 CREATE TABLE `t_application_plugin_upgrade_ref`
@@ -91,7 +91,7 @@ CREATE TABLE `t_application_plugin_upgrade_ref`
     `tenant_id`          bigint(20) DEFAULT '1' COMMENT '租户 id, 默认 1',
     `IS_DELETED`         tinyint(4) NOT NULL DEFAULT 0 COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY `uni_upgradeBatch_plugin` (`upgrade_batch`,`plugin_name`,`plugin_version`,`env_code`,`tenant_id`) USING BTREE
+    UNIQUE KEY `uni_upgradeBatch_plugin_env` (`upgrade_batch`,`plugin_name`,`plugin_version`,`env_code`,`tenant_id`) USING BTREE
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='应用升级批次明细';
 
 DROP TABLE IF EXISTS `t_agent_report`;
@@ -114,7 +114,7 @@ CREATE TABLE `t_agent_report`
     `tenant_id`            bigint(20) DEFAULT '1' COMMENT '租户 id, 默认 1',
     `IS_DELETED`           tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY `plugin` (`application_id`,`cur_upgrade_batch`,`agent_id`,`env_code`,`tenant_id`) USING BTREE
+    UNIQUE KEY `plugin_env` (`application_id`,`cur_upgrade_batch`,`agent_id`,`env_code`,`tenant_id`) USING BTREE
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='探针心跳数据';
 
 DROP TABLE IF EXISTS `t_application_plugin_download_path`;

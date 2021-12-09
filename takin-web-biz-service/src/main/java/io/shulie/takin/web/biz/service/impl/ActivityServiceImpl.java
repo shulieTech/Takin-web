@@ -415,6 +415,7 @@ public class ActivityServiceImpl implements ActivityService {
         param.setActivityName(request.getActivityName());
         param.setDomain(request.getDomain());
         param.setIsChange(request.getIsChange());
+        param.setLinkLevel(request.getLinkLevel());
         param.setCurrent(request.getCurrent());
         param.setPageSize(request.getPageSize());
         WebPluginUtils.fillQueryParam(param);

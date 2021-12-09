@@ -183,7 +183,8 @@
         scene.SCENE_NAME,
         scene.CREATE_TIME,
         scene.USER_ID,
-        scene.IS_CHANGED as SCENE_IS_CHANGED
+        scene.IS_CHANGED as SCENE_IS_CHANGED,
+        business_manage.LINK_LEVEL as linkLevel
         from t_scene scene
         left join t_scene_link_relate scene_relate
         on scene_relate.SCENE_ID = scene.ID
@@ -216,6 +217,9 @@
             </if>
             <if test="vo != null and vo.sceneId != null">
                 and scene.ID = #{vo.sceneId}
+            </if>
+            <if test="vo != null and vo.linkLevel != null">
+                and business_manage.LINK_LEVEL = #{vo.linkLevel}
             </if>
             <if test="userIds != null and userIds.size > 0">
                 AND scene.user_id IN

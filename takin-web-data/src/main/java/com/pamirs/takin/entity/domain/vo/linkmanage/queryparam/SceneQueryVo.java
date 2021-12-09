@@ -39,6 +39,9 @@ public class SceneQueryVo extends PagingDevice {
     @ApiModelProperty(name = "version", value = "中间件版本")
     private String middleWareVersion;
 
+    @ApiModelProperty(name = "linkLevel", value = "业务活动级别")
+    private String linkLevel;
+
     /**
      * 业务活动类型
      */

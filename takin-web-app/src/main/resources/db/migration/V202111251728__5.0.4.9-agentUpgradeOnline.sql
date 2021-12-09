@@ -114,7 +114,7 @@ CREATE TABLE `t_agent_report`
     `tenant_id`            bigint(20) DEFAULT '1' COMMENT '租户 id, 默认 1',
     `IS_DELETED`           tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY `plugin_env` (`application_id`,`cur_upgrade_batch`,`agent_id`,`env_code`,`tenant_id`) USING BTREE
+    UNIQUE KEY `uni_applicationId_agentId_envCode_tenantId` (`application_id`,`agent_id`,`env_code`,`tenant_id`) USING BTREE
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='探针心跳数据';
 
 DROP TABLE IF EXISTS `t_application_plugin_download_path`;

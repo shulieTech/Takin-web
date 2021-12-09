@@ -129,7 +129,8 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
      * @return AgentHeartBeatBO对象
      */
     private AgentHeartbeatBO buildAgentHeartBeatBO(AgentHeartbeatRequest commandRequest) {
-        ApplicationDetailResult applicationMnt = applicationService.queryTApplicationMntByName(commandRequest.getProjectName());
+        ApplicationDetailResult applicationMnt = applicationService.queryTApplicationMntByName(
+            commandRequest.getProjectName());
         if (applicationMnt == null) {
             throw new TakinWebException(ExceptionCode.AGENT_REGISTER_ERROR, "应用名不存在");
         }
@@ -144,7 +145,6 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
 
         return agentHeartbeatBO;
     }
-
 
     /**
      * 获取agent状态
@@ -201,7 +201,6 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         return AgentReportStatusEnum.UNKNOWN;
     }
 
-
     /**
      * 异步处理上报数据
      *
@@ -217,7 +216,9 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         // 异步处理上报的命令数据
         if (!CollectionUtils.isEmpty(commandRequest.getCommandResult())) {
             // 记录日志
-            reportLog.info("agentHeartbeatBO:{}, commands:{}",
+            reportLog.info("envCode:{}, tenantId:{}, agentHeartbeatBO:{}, commands:{}",
+                WebPluginUtils.traceEnvCode(),
+                WebPluginUtils.traceTenantId(),
                 agentHeartbeatBO,
                 commandRequest.getCommandResult());
 
@@ -233,7 +234,6 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         }
         return skipCommandIds;
     }
-
 
     /**
      * 心跳数据入库
@@ -286,7 +286,8 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
 
         // 记录日志
         if (!CollectionUtils.isEmpty(result)) {
-            distributionLog.info("agentHeartbeatBO:{}, commands:{}", agentHeartbeatBO, result);
+            distributionLog.info("envCode:{}, tenantId:{}, agentHeartbeatBO:{}, commands:{}",
+                WebPluginUtils.traceEnvCode(), WebPluginUtils.traceTenantId(), agentHeartbeatBO, result);
         }
 
         return result;

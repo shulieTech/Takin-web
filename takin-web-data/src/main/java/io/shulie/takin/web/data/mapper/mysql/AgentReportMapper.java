@@ -18,5 +18,12 @@ public interface AgentReportMapper extends BaseMapper<AgentReportEntity> {
      * @return 影响记录数
      */
     Integer insertOrUpdate(AgentReportEntity agentReportEntity);
+
+    /**
+     * 删除指定时间之前的数据
+     *
+     * @param date yyyy-MM-dd HH:mm:ss
+     */
+    void selfDelete(String date);
 }
 

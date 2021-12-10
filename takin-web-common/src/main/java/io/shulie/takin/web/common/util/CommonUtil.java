@@ -9,7 +9,9 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +32,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -42,6 +43,16 @@ import org.springframework.util.StringUtils;
  */
 @Slf4j
 public class CommonUtil implements AppConstants {
+
+    /**
+     * middleware 相关使用
+     *
+     * @param args 参数
+     * @return 拼接好的字符串
+     */
+    public static String joinAgv(String... args) {
+        return Arrays.stream(args).map(item -> item == null ? "" : item).collect(Collectors.joining(UNDERLINE));
+    }
 
     /**
      * 零拷贝下载

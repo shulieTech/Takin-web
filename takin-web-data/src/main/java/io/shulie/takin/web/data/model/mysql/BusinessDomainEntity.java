@@ -58,14 +58,4 @@ public class BusinessDomainEntity extends BaseEntity implements Serializable {
    */  
     private Date updateTime;
     
-   /**
-   * 租户id
-   */  
-    private Long tenantId;
-    
-   /**
-   * 环境变量
-   */  
-    private String envCode;
-    
 }

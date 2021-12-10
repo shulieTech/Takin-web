@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.mapper.mysql;
 
+import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.shulie.takin.web.data.model.mysql.AgentReportEntity;
 
@@ -24,6 +25,7 @@ public interface AgentReportMapper extends BaseMapper<AgentReportEntity> {
      *
      * @param date yyyy-MM-dd HH:mm:ss
      */
+    @InterceptorIgnore(tenantLine = "true")
     void selfDelete(String date);
 }
 

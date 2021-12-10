@@ -359,5 +359,10 @@
         where application_name = #{applicationName}
     </select>
 
+    <select id="getAllApplicationsByField"
+            resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">
+        select *
+        from t_application_mnt
+    </select>
 
 </mapper>

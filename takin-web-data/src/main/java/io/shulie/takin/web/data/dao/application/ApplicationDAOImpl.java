@@ -629,4 +629,13 @@ public class ApplicationDAOImpl
         }
         return applicationMntMapper.selectCount(queryWrapper);
     }
+
+    @Override
+    public List<ApplicationDetailResult> getAllApplicationsByField() {
+        List<ApplicationMntEntity> allApplications = applicationMntMapper.getAllApplicationsByField();
+        if(CollectionUtils.isEmpty(allApplications)) {
+            return Lists.newArrayList();
+        }
+        return DataTransformUtil.list2list(allApplications,ApplicationDetailResult.class);
+    }
 }

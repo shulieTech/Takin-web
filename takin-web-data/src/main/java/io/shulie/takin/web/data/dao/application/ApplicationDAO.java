@@ -350,4 +350,10 @@ public interface ApplicationDAO {
      * @return
      */
     Long getApplicationCount();
+
+    /**
+     * 获取应用
+     * @return
+     */
+    List<ApplicationDetailResult> getAllApplicationsByField();
 }

@@ -19,6 +19,7 @@ import io.shulie.takin.web.biz.pojo.request.domain.BusinessDomainDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.domain.BusinessDomainQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.domain.BusinessDomainUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.domain.BusinessDomainListResponse;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.domain.BusinessDomainService;
 import io.shulie.takin.web.common.constant.BusinessDomainConstant;
 import io.shulie.takin.web.common.enums.domain.DomainType;
@@ -64,6 +65,9 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
 
     @Autowired
     private RedisClientUtils redisClientUtils;
+
+    @Autowired
+    private DistributedLock distributedLock;
 
     @Override
     public void create(BusinessDomainCreateRequest createRequest) {
@@ -204,15 +208,24 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
         if (StringUtils.isNotBlank(initFlag)) {
             return true;
         }
+        String lockKey = tenantSuffix + BusinessDomainConstant.BUSINESS_DOMAIN_INIT_LOCK_KEY;
+        if (distributedLock.checkLock(lockKey)) {
+            // 有锁，说明已经有web节点在初始化
+            return true;
+        }
+        // 锁60秒后自动失效
+        boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
+        if (!tryLock) {
+            // 没有获取到锁，说明已经有web节点在初始化
+            return true;
+        }
         // 再查数据库
         BusinessDomainQueryParam queryParam = new BusinessDomainQueryParam();
         queryParam.setDomainCodes(voList.stream().map(TDictionaryVo::getValueCode).collect(Collectors.toList()));
         List<BusinessDomainListResult> results = businessDomainDAO.selectList(queryParam);
         if (CollectionUtils.isNotEmpty(results)) {
             redisClientUtils.setString(BusinessDomainConstant.BUSINESS_DOMAIN_INIT_FLAG_KEY + tenantSuffix,
-                "INITIALIZED",
-                1,
-                TimeUnit.DAYS);
+                "INITIALIZED");
             return true;
         }
         return false;
@@ -227,6 +240,10 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
             createParam.setDomainCode(tDictionaryVo.getValueCode());
             businessDomainDAO.insert(createParam);
         });
+        // 设置初始化标志为：已初始化
+        String tenantSuffix = WebPluginUtils.traceTenantId() + ":" + WebPluginUtils.traceEnvCode();
+        redisClientUtils.setString(BusinessDomainConstant.BUSINESS_DOMAIN_INIT_FLAG_KEY + tenantSuffix,
+            "INITIALIZED");
     }
 
     private List<TDictionaryVo> getDefaultDomain() {

@@ -7,4 +7,5 @@ package io.shulie.takin.web.common.constant;
  */
 public class BusinessDomainConstant {
     public static final String BUSINESS_DOMAIN_INIT_FLAG_KEY = "business_domain_init_flag:";
+    public static final String BUSINESS_DOMAIN_INIT_LOCK_KEY =":init_default_domain_lock";
 }

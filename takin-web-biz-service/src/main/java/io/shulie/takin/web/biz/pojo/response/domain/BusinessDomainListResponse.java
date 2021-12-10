@@ -22,4 +22,6 @@ public class BusinessDomainListResponse {
     @ApiModelProperty("业务域编码")
     private Integer domainCode;
 
+    @ApiModelProperty("业务域类型:0默认 1自定义")
+    private Integer type;
 }

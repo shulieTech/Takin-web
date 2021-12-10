@@ -162,6 +162,11 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
         if (CollectionUtils.isEmpty(results)) {
             throw new TakinWebException(TakinWebExceptionEnum.BUSINESS_DOMAIN_DELETE_ERROR, "业务域不存在");
         }
+        long systemBusinessDomainCount = results.stream().filter(
+            result -> DomainType.DEFAULT.getType() == result.getType()).count();
+        if (systemBusinessDomainCount > 0) {
+            throw new TakinWebException(TakinWebExceptionEnum.BUSINESS_DOMAIN_DELETE_ERROR, "系统业务域禁止删除");
+        }
         List<String> codes = results.stream().map(BusinessDomainEntity::getDomainCode).collect(Collectors.toList());
         List<BusinessLinkManageTableEntity> activities = businessLinkManageDAO.listByBusinessDomain(codes);
         if (CollectionUtils.isNotEmpty(activities)) {

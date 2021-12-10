@@ -70,6 +70,12 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-amdb-accessor</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.shulie</groupId>

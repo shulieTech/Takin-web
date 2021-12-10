@@ -259,6 +259,17 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 钉钉推送 url
      */
     TAKIN_LOGIN_DING_DING_PUSH_URL("login.dingding.push.url", "takin.login.dingding.push.url", NO),
+
+    /**
+     * 试用用户的默认流量
+     */
+    TAKIN_ASSET_BALANCE_DEFAULT_TRY("", "takin.asset.balance.default.try", NO),
+
+    /**
+     * 正式用户的默认流量
+     */
+    TAKIN_ASSET_BALANCE_DEFAULT_FORMAL("", "takin.asset.balance.default.formal", NO),
+
     ;
 
     /**

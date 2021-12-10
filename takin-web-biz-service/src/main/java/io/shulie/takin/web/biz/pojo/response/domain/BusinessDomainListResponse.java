@@ -20,6 +20,6 @@ public class BusinessDomainListResponse {
     private String name;
 
     @ApiModelProperty("业务域编码")
-    private String domainCode;
+    private Integer domainCode;
 
 }

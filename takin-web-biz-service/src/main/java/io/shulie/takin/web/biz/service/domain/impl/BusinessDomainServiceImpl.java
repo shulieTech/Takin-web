@@ -167,7 +167,8 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
         if (systemBusinessDomainCount > 0) {
             throw new TakinWebException(TakinWebExceptionEnum.BUSINESS_DOMAIN_DELETE_ERROR, "系统业务域禁止删除");
         }
-        List<String> codes = results.stream().map(BusinessDomainEntity::getDomainCode).collect(Collectors.toList());
+        List<String> codes = results.stream().map(BusinessDomainEntity::getDomainCode).map(String::valueOf).collect(
+            Collectors.toList());
         List<BusinessLinkManageTableEntity> activities = businessLinkManageDAO.listByBusinessDomain(codes);
         if (CollectionUtils.isNotEmpty(activities)) {
             throw new TakinWebException(TakinWebExceptionEnum.BUSINESS_DOMAIN_DELETE_ERROR, "业务域已被业务活动引用，删除失败");
@@ -188,10 +189,10 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
         int maxCode = businessDomainDAO.selectMaxDomainCode();
         if (maxCode == 0) {
             //表中业务域数据为空，设置默认的业务域编码100，0-99为系统定义，100+为用户自定义
-            createParam.setDomainCode("100");
+            createParam.setDomainCode(100);
         } else {
             int currentCode = ++maxCode;
-            createParam.setDomainCode(String.valueOf(currentCode));
+            createParam.setDomainCode(currentCode);
         }
     }
 
@@ -226,7 +227,7 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
         }
         // 再查数据库
         BusinessDomainQueryParam queryParam = new BusinessDomainQueryParam();
-        queryParam.setDomainCodes(voList.stream().map(TDictionaryVo::getValueCode).collect(Collectors.toList()));
+        queryParam.setDomainCodes(voList.stream().map(TDictionaryVo::getValueCode).map(Integer::parseInt).collect(Collectors.toList()));
         List<BusinessDomainListResult> results = businessDomainDAO.selectList(queryParam);
         if (CollectionUtils.isNotEmpty(results)) {
             redisClientUtils.setString(BusinessDomainConstant.BUSINESS_DOMAIN_INIT_FLAG_KEY + tenantSuffix,
@@ -242,7 +243,7 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
             createParam.setName(tDictionaryVo.getValueName());
             createParam.setType(DomainType.DEFAULT.getType());
             createParam.setDomainOrder(Integer.parseInt(tDictionaryVo.getValueOrder()));
-            createParam.setDomainCode(tDictionaryVo.getValueCode());
+            createParam.setDomainCode(Integer.parseInt(tDictionaryVo.getValueCode()));
             businessDomainDAO.insert(createParam);
         });
         // 设置初始化标志为：已初始化

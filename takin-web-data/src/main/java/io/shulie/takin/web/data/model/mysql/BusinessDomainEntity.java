@@ -41,7 +41,7 @@ public class BusinessDomainEntity extends BaseEntity implements Serializable {
    /**
    * 业务域编码
    */  
-    private String domainCode;
+    private Integer domainCode;
     
    /**
    * 业务域状态;0为可用,1为不可用

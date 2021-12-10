@@ -16,5 +16,5 @@ public class BusinessDomainQueryParam extends PageBaseDTO {
 
     private List<Long> ids;
     private String name;
-    private List<String> domainCodes;
+    private List<Integer> domainCodes;
 }

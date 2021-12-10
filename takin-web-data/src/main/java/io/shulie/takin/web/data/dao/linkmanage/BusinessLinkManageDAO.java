@@ -65,7 +65,7 @@ public interface BusinessLinkManageDAO {
 
     /**
      * 通过业务域筛选业务活动
-     * @param businessDomainNames
+     * @param businessDomain
      * @return
      */
     List<BusinessLinkManageTableEntity> listByBusinessDomain(List<String> businessDomain);

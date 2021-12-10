@@ -119,7 +119,7 @@ public class BusinessDomainDAOImpl extends ServiceImpl<BusinessDomainMapper, Bus
             .eq(BusinessDomainEntity::getIsDeleted, 0)
             .orderByDesc(BusinessDomainEntity::getDomainCode));
         if (Objects.nonNull(entity)) {
-            return Integer.parseInt(entity.getDomainCode());
+            return entity.getDomainCode();
         }
         return 0;
     }

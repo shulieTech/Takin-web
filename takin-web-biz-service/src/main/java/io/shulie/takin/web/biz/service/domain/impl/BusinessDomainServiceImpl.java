@@ -147,6 +147,9 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
         if (Objects.isNull(detailResult)) {
             throw new TakinWebException(TakinWebExceptionEnum.BUSINESS_DOMAIN_UPDATE_ERROR, "业务域不存在");
         }
+        if (DomainType.DEFAULT.getType() == detailResult.getType()) {
+            throw new TakinWebException(TakinWebExceptionEnum.BUSINESS_DOMAIN_UPDATE_ERROR, "系统业务域禁止编辑");
+        }
         if (StringUtils.isNotBlank(updateRequest.getName()) && !updateRequest.getName().equals(
             detailResult.getName())) {
             if (this.isExistName(updateRequest.getName())) {

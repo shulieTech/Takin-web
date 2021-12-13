@@ -74,26 +74,6 @@ public class ApplicationController {
     @Autowired
     private ActivityService activityService;
 
-    //@GetMapping("/application/center/list")
-    //@ApiOperation("应用列表查询接口")
-    //@AuthVerification(
-    //    moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-    //    needAuth = ActionTypeEnum.QUERY
-    //)
-    //public Response<List<ApplicationVo>> getApplicationListWithAuth(
-    //    @ApiParam(name = "applicationName", value = "系统名字") String applicationName,
-    //    @RequestParam(defaultValue = "0") Integer current,
-    //    Integer pageSize,
-    //    @ApiParam(name = "accessStatus", value = "接入状态") Integer accessStatus
-    //) {
-    //    current = current + 1;
-    //    ApplicationQueryRequest param = new ApplicationQueryRequest();
-    //    param.setCurrentPage(current);
-    //    param.setPageSize(pageSize);
-    //    param.setApplicationName(applicationName);
-    //    return applicationService.getApplicationList(param, accessStatus);
-    //}
-
     @GetMapping("/application/center/list")
     @ApiOperation("|_ 应用列表查询接口")
     @AuthVerification(

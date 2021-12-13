@@ -231,6 +231,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
             applicationErrorResponse.setExceptionId("-");
             applicationErrorResponse.setAgentIdList(Collections.singletonList("-"));
             applicationErrorResponse.setDescription("已安装探针节点数 与 配置的节点总数 不一致");
+            applicationErrorResponse.setTime(DateUtils.getNowDateStr());
 
             Integer onlineNodeNum = 0;
             if (!CollectionUtils.isEmpty(applicationResultList)) {

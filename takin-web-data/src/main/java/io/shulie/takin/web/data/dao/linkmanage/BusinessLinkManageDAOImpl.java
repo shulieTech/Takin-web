@@ -216,4 +216,14 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<
          return businessLinkManageTableMapper.selectBatchIds(businessActivityIds);
     }
 
+    @Override
+    public List<BusinessLinkManageTableEntity> listByBusinessDomain(List<String> businessDomain) {
+        if(CollectionUtils.isEmpty(businessDomain)){
+            return Collections.emptyList();
+        }
+        LambdaQueryWrapper<BusinessLinkManageTableEntity> wrapper = new LambdaQueryWrapper();
+        wrapper.in(BusinessLinkManageTableEntity::getBusinessDomain,businessDomain);
+        wrapper.eq(BusinessLinkManageTableEntity::getIsDeleted,0);
+        return businessLinkManageTableMapper.selectList(wrapper);
+    }
 }

@@ -443,6 +443,24 @@ public class SwaggerConfig {
     }
 
     /**
+     * 业务域管理
+     * @return
+     */
+    @Bean
+    public Docket api_business_domain() {
+        return new Docket(DocumentationType.SWAGGER_2)
+            .groupName("业务域管理")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(getRegex("/api/domain.*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo())
+            ;
+    }
+
+    /**
      * api info
      *
      * @return ApiInfo

@@ -522,15 +522,14 @@ public class ActivityServiceImpl implements ActivityService {
         LocalDateTime startTimeUseInInFluxDB = request.getStartTime().minusHours(8);
         LocalDateTime endTimeUseInInFluxDB = request.getEndTime().minusHours(8);
         // line : 总调用量 startTimeUseInInFluxDB, 最近5 min
-//            allTotalCountStartDateTimeUseInInFluxDB = endTimeUseInInFluxDB.minusDays(1);
+        //            allTotalCountStartDateTimeUseInInFluxDB = endTimeUseInInFluxDB.minusDays(1);
         LocalDateTime allTotalCountStartDateTimeUseInInFluxDB = startTimeUseInInFluxDB;
 
-
         linkTopologyService.fillMetrics(
-                request,
-                activity.getTopology(),
-                startTimeUseInInFluxDB, endTimeUseInInFluxDB,
-                allTotalCountStartDateTimeUseInInFluxDB);
+            request,
+            activity.getTopology(),
+            startTimeUseInInFluxDB, endTimeUseInInFluxDB,
+            allTotalCountStartDateTimeUseInInFluxDB);
 
         return activity;
     }
@@ -567,7 +566,7 @@ public class ActivityServiceImpl implements ActivityService {
         ActivityResult result = activityDAO.getActivityById(activityInfoQueryRequest.getActivityId());
         if (result == null) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
-                    activityInfoQueryRequest.getActivityId() + "对应的业务活动不存在");
+                activityInfoQueryRequest.getActivityId() + "对应的业务活动不存在");
         }
         ActivityResponse activityResponse = new ActivityResponse();
         activityResponse.setActivityId(result.getActivityId());
@@ -635,7 +634,8 @@ public class ActivityServiceImpl implements ActivityService {
                 ConfigServerKeyEnum.TAKIN_LINK_FLOW_CHECK_ENABLE));
 
             // 拓扑图查询
-            activityResponse.setTopology(linkTopologyService.getApplicationEntrancesTopology(request, activityInfoQueryRequest.isTempActivity()));
+            activityResponse.setTopology(linkTopologyService
+                .getApplicationEntrancesTopology(request, activityInfoQueryRequest.isTempActivity()));
         }
 
         Integer verifyStatus = this.getVerifyStatus(activityInfoQueryRequest.getActivityId()).getVerifyStatus();

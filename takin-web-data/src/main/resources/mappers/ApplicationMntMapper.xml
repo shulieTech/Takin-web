@@ -367,10 +367,29 @@
         where application_name = #{applicationName}
     </select>
 
-    <select id="getAllApplicationsByField"
-            resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">
-        select *
-        from t_application_mnt
+    <select id="selectApplicationListByParam"
+            resultType="io.shulie.takin.web.data.result.application.ApplicationListResult">
+        SELECT a.APPLICATION_ID application_id, a.APPLICATION_NAME application_name,
+               a.UPDATE_TIME update_time, a.ACCESS_STATUS access_status, u.`name` user_name
+        FROM t_application_mnt a LEFT JOIN t_tro_user u ON u.id = a.USER_ID
+
+        WHERE a.tenant_id = #{param.tenantId} AND a.env_code = #{param.envCode}
+        <if test="param.applicationName != null and param.applicationName != ''">
+            AND a.APPLICATION_NAME LIKE CONCAT('%', #{param.applicationName}, '%')
+        </if>
+
+        <if test="param.accessStatus != null">
+            AND a.ACCESS_STATUS = #{param.accessStatus}
+        </if>
+
+        <if test="param.userIds != null and param.userIds.size > 0">
+            AND a.USER_ID IN
+            <foreach collection = "param.userIds" item = "userId" open="(" close=")" separator=",">
+                #{userId}
+            </foreach>
+        </if>
+
+        ORDER BY a.id DESC
     </select>
 
 </mapper>

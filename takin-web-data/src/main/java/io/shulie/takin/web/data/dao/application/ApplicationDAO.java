@@ -18,6 +18,7 @@ package io.shulie.takin.web.data.dao.application;
 import java.util.List;
 import java.util.Map;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
@@ -26,7 +27,9 @@ import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.apache.ibatis.annotations.Param;
@@ -360,8 +363,11 @@ public interface ApplicationDAO {
     Long getApplicationCount();
 
     /**
-     * 获取应用
-     * @return
+     * 查询应用列表
+     *
+     * @param param 筛选条件
+     * @return 应用列表
      */
-    List<ApplicationDetailResult> getAllApplicationsByField();
+    IPage<ApplicationListResult> listByParam(QueryApplicationParam param);
+
 }

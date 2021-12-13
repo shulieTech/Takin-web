@@ -119,7 +119,8 @@ public class ReportServiceImpl implements ReportService {
         }};
         ReportDetailResp detailResponse = cloudReportApi.detail(idReq);
         // sa超过100 显示100
-        if(detailResponse != null && detailResponse.getSa() != null && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
+        if(detailResponse != null && detailResponse.getSa() != null
+            && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
             detailResponse.setSa(BigDecimal.valueOf(100));
         }
         ReportDetailOutput output = new ReportDetailOutput();

@@ -5,8 +5,11 @@ import java.util.Map;
 
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
+import io.shulie.takin.web.data.param.application.QueryApplicationParam;
+import io.shulie.takin.web.data.result.application.ApplicationListResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.apache.ibatis.annotations.Param;
 
@@ -196,6 +199,16 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
      */
     String getIdByName(@Param("applicationName") String applicationName);
 
+    /**
+     * 查询应用列表
+     *
+     *
+     * @param page 分页参数
+     * @param param 筛选条件
+     * @return 应用列表
+     */
+    @InterceptorIgnore(tenantLine = "true")
+    IPage<ApplicationListResult> selectApplicationListByParam(
+        @Param("page") IPage<ApplicationMntEntity> page, @Param("param") QueryApplicationParam param);
 
-    List<ApplicationMntEntity> getAllApplicationsByField();
 }

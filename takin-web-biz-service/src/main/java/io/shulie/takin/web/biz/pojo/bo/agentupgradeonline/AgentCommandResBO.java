@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.pojo.bo.agentupgradeonline;
 import java.util.UUID;
 
 import com.pamirs.takin.common.util.MD5Util;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -10,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
  * @Author ocean_wll
  * @Date 2021/11/17 10:29 上午
  */
+@ToString
 public class AgentCommandResBO {
 
     /**

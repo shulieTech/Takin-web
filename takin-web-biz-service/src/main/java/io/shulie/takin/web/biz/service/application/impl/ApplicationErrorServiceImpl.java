@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
@@ -85,9 +87,11 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
             }
             convertNodeUploadDataList(responseList, nodeUploadDataDTOList);
         }
+
         // 按照时间倒序输出
-        responseList.sort((a1, a2) -> a2.getTime().compareTo(a1.getTime()));
-        return responseList;
+        return responseList.stream().filter(response -> StrUtil.isNotBlank(response.getTime()))
+            .sorted((a1, a2) -> a2.getTime().compareTo(a1.getTime()))
+            .collect(Collectors.toList());
     }
 
     private ApplicationDetailResult ensureApplicationExist(ApplicationErrorQueryInput queryRequest) {
@@ -231,6 +235,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
             applicationErrorResponse.setExceptionId("-");
             applicationErrorResponse.setAgentIdList(Collections.singletonList("-"));
             applicationErrorResponse.setDescription("已安装探针节点数 与 配置的节点总数 不一致");
+            applicationErrorResponse.setTime(DateUtils.getNowDateStr());
 
             Integer onlineNodeNum = 0;
             if (!CollectionUtils.isEmpty(applicationResultList)) {

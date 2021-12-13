@@ -224,7 +224,7 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public void uninstallAllAgent(@Validated @RequestBody AppUninstallAgentVO vo) {
+    public void uninstallAllAgent(@RequestBody AppUninstallAgentVO vo) {
         applicationService.uninstallAllAgent(vo.getAppIds());
     }
 
@@ -234,7 +234,7 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public void resumeAllAgent(@Validated @RequestBody AppUninstallAgentVO vo) {
+    public void resumeAllAgent(@RequestBody AppUninstallAgentVO vo) {
         applicationService.resumeAllAgent(vo.getAppIds());
     }
 

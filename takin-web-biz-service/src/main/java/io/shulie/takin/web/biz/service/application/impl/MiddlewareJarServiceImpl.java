@@ -51,13 +51,13 @@ import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.mapper.mysql.MiddlewareJarMapper;
 import io.shulie.takin.web.data.model.mysql.MiddlewareJarEntity;
 import io.shulie.takin.web.data.model.mysql.MiddlewareSummaryEntity;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -160,7 +160,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
             .map(importExcelVO -> {
                 final QueryWrapper<MiddlewareJarEntity> queryWrapper = new QueryWrapper<>();
                 queryWrapper.lambda().eq(MiddlewareJarEntity::getAgv,
-                    joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId(), importExcelVO.getVersion()));
+                    CommonUtil.joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId(), importExcelVO.getVersion()));
                 // 因为 agv在表 t_middleware_jar 中设置了唯一主键，所以这里getOne不会有问题。
                 final MiddlewareJarEntity one = this.getOne(queryWrapper);
                 // 不确定查询为空的情况会不会返回null，所以对空结果做一次处理
@@ -171,7 +171,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                 ImportExcelVO importExcelVO = (ImportExcelVO)objects[0];
                 final QueryWrapper<MiddlewareSummaryEntity> queryWrapper = new QueryWrapper<>();
                 queryWrapper.lambda().eq(MiddlewareSummaryEntity::getAg,
-                    joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId()));
+                    CommonUtil.joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId()));
                 // 因为 agv在表 t_middleware_summary 中设置了唯一主键，所以这里getOne不会有问题。
                 final MiddlewareSummaryEntity one = middlewareSummaryService.getOne(queryWrapper);
                 // 不确定查询为空的情况会不会返回null，所以对空结果做一次处理
@@ -250,7 +250,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                         MiddlewareJarEntity middlewareJarEntity = BeanUtil.copyProperties(importExcelVO,
                             MiddlewareJarEntity.class);
                         middlewareJarEntity.setAgv(
-                            joinAgv(middlewareJarEntity.getArtifactId(), middlewareJarEntity.getGroupId(),
+                            CommonUtil.joinAgv(middlewareJarEntity.getArtifactId(), middlewareJarEntity.getGroupId(),
                                 middlewareJarEntity.getVersion()));
                         middlewareJarEntity.setStatus(
                             Objects.requireNonNull(getByDesc(importExcelVO.getStatusDesc())).getCode());
@@ -274,7 +274,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                     middlewareSummaryEntity.setArtifactId(importExcelVO.getArtifactId());
                     middlewareSummaryEntity.setGroupId(importExcelVO.getGroupId());
                     middlewareSummaryEntity.setAg(
-                        joinAgv(middlewareSummaryEntity.getArtifactId(), middlewareSummaryEntity.getGroupId()));
+                        CommonUtil.joinAgv(middlewareSummaryEntity.getArtifactId(), middlewareSummaryEntity.getGroupId()));
                 }
                 return middlewareSummaryEntity;
             })
@@ -353,7 +353,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
             .map(importExcelVO -> {
                 final QueryWrapper<MiddlewareJarEntity> queryWrapper = new QueryWrapper<>();
                 queryWrapper.lambda().eq(MiddlewareJarEntity::getAgv,
-                    joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId(), importExcelVO.getVersion()));
+                    CommonUtil.joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId(), importExcelVO.getVersion()));
                 // 因为 agv在表 t_middleware_jar 中设置了唯一主键，所以这里getOne不会有问题。
                 final MiddlewareJarEntity one = this.getOne(queryWrapper);
                 // 不确定查询为空的情况会不会返回null，所以对空结果做一次处理
@@ -364,7 +364,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                 ImportExcelVO importExcelVO = (ImportExcelVO)objects[0];
                 final QueryWrapper<MiddlewareSummaryEntity> queryWrapper = new QueryWrapper<>();
                 queryWrapper.lambda().eq(MiddlewareSummaryEntity::getAg,
-                    joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId()));
+                    CommonUtil.joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId()));
                 // 因为 agv在表 t_middleware_summary 中设置了唯一主键，所以这里getOne不会有问题。
                 final MiddlewareSummaryEntity one = middlewareSummaryService.getOne(queryWrapper);
                 // 不确定查询为空的情况会不会返回null，所以对空结果做一次处理
@@ -443,7 +443,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                         MiddlewareJarEntity middlewareJarEntity = BeanUtil.copyProperties(importExcelVO,
                             MiddlewareJarEntity.class);
                         middlewareJarEntity.setAgv(
-                            joinAgv(middlewareJarEntity.getArtifactId(), middlewareJarEntity.getGroupId(),
+                            CommonUtil.joinAgv(middlewareJarEntity.getArtifactId(), middlewareJarEntity.getGroupId(),
                                 middlewareJarEntity.getVersion()));
                         middlewareJarEntity.setStatus(
                             Objects.requireNonNull(getByDesc(importExcelVO.getStatusDesc())).getCode());
@@ -467,7 +467,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                     middlewareSummaryEntity.setArtifactId(importExcelVO.getArtifactId());
                     middlewareSummaryEntity.setGroupId(importExcelVO.getGroupId());
                     middlewareSummaryEntity.setAg(
-                        joinAgv(middlewareSummaryEntity.getArtifactId(), middlewareSummaryEntity.getGroupId()));
+                        CommonUtil.joinAgv(middlewareSummaryEntity.getArtifactId(), middlewareSummaryEntity.getGroupId()));
                 }
                 return middlewareSummaryEntity;
             })
@@ -560,15 +560,11 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
         }
         final QueryWrapper<MiddlewareSummaryEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(MiddlewareSummaryEntity::getAg,
-            joinAgv(middlewareJarEntity.getArtifactId(), middlewareJarEntity.getGroupId()));
+            CommonUtil.joinAgv(middlewareJarEntity.getArtifactId(), middlewareJarEntity.getGroupId()));
         final MiddlewareSummaryEntity one = middlewareSummaryService.getOne(queryWrapper);
         Assert.isTrue(one != null, "状态异常");
         reCompute(one);
         middlewareSummaryService.updateById(one);
-    }
-
-    private String joinAgv(String... agv) {
-        return Strings.join(Arrays.stream(agv).map(item -> item == null ? "" : item).collect(Collectors.toList()), '_');
     }
 
     @Override
@@ -599,7 +595,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
 
                 // 标记同一个文件中同一中间件字段不一致的问题
                 list.parallelStream().collect(Collectors
-                    .groupingBy(importExcelVO -> joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId()),
+                    .groupingBy(importExcelVO -> CommonUtil.joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId()),
                         Collectors.toList())).values().parallelStream().forEach(importExcelVOList -> {
                     if (importExcelVOList.parallelStream().anyMatch(
                         importExcelVO -> NO_SUPPORT_REQUIRED.getDesc().equals(importExcelVO.getStatusDesc())) &&
@@ -641,7 +637,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
             .map(importExcelVO -> {
                 final QueryWrapper<MiddlewareJarEntity> queryWrapper = new QueryWrapper<>();
                 queryWrapper.lambda().eq(MiddlewareJarEntity::getAgv,
-                    joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId(), importExcelVO.getVersion()));
+                    CommonUtil.joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId(), importExcelVO.getVersion()));
                 // 因为 agv在表 t_middleware_jar 中设置了唯一主键，所以这里getOne不会有问题。
                 final MiddlewareJarEntity one = this.getOne(queryWrapper);
                 // 不确定查询为空的情况会不会返回null，所以对空结果做一次处理
@@ -652,7 +648,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                 ImportExcelVO importExcelVO = (ImportExcelVO)objects[0];
                 final QueryWrapper<MiddlewareSummaryEntity> queryWrapper = new QueryWrapper<>();
                 queryWrapper.lambda().eq(MiddlewareSummaryEntity::getAg,
-                    joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId()));
+                    CommonUtil.joinAgv(importExcelVO.getArtifactId(), importExcelVO.getGroupId()));
                 // 因为 agv在表 t_middleware_summary 中设置了唯一主键，所以这里getOne不会有问题。
                 final MiddlewareSummaryEntity one = middlewareSummaryService.getOne(queryWrapper);
                 // 不确定查询为空的情况会不会返回null，所以对空结果做一次处理
@@ -668,7 +664,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                 if (middlewareJarEntity.getId() == null) {
                     BeanUtil.copyProperties(importExcelVO, middlewareJarEntity);
                     middlewareJarEntity.setAgv(
-                        joinAgv(middlewareJarEntity.getArtifactId(), middlewareJarEntity.getGroupId(),
+                        CommonUtil.joinAgv(middlewareJarEntity.getArtifactId(), middlewareJarEntity.getGroupId(),
                             middlewareJarEntity.getVersion()));
                     middlewareJarEntity.setGmtCreate(new Date());
                     middlewareJarEntity.setGmtUpdate(middlewareJarEntity.getGmtCreate());
@@ -728,7 +724,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
                     middlewareSummaryEntity.setArtifactId(importExcelVO.getArtifactId());
                     middlewareSummaryEntity.setGroupId(importExcelVO.getGroupId());
                     middlewareSummaryEntity.setAg(
-                        joinAgv(middlewareSummaryEntity.getArtifactId(), middlewareSummaryEntity.getGroupId()));
+                        CommonUtil.joinAgv(middlewareSummaryEntity.getArtifactId(), middlewareSummaryEntity.getGroupId()));
                     middlewareSummaryEntity.setStatus(
                         Objects.requireNonNull(getByDesc(importExcelVO.getStatusDesc()), "中间件状态不能为空").getCode());
                 } else {

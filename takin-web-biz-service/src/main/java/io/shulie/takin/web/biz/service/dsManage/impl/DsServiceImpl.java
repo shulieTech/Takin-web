@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -90,7 +91,6 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -639,7 +639,7 @@ public class DsServiceImpl implements DsService {
     @Override
     public Response dsQueryConfigTemplate(String agentSourceType, Integer dsType, Boolean isNewData, String cacheType, String connectionPool) {
         Converter.TemplateConverter.TemplateEnum templateEnum;
-        if (Strings.isNotBlank(connectionPool)) {
+        if (StrUtil.isNotBlank(connectionPool)) {
             templateEnum = redisTemplateParser.convert(connectionPool);
             if (Objects.isNull(templateEnum)) {
                 templateEnum = dbTemplateParser.convert(connectionPool);

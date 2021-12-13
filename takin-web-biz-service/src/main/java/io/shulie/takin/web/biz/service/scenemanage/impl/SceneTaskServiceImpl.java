@@ -61,6 +61,7 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.biz.utils.TenantKeyUtils;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
@@ -68,6 +69,7 @@ import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.common.vo.scene.BaffleAppVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -299,7 +301,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             throw new TakinWebException(ExceptionCode.SCENE_STOP_ERROR, response.getError());
         }
         SceneActionResp resp = response.getData();
-        redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, resp.getReportId()));
+        String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+            String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, resp.getReportId()));
+        redisClientUtils.del(redisKey);
         // 最后删除
         return sceneTaskApi.stopTask(req);
     }
@@ -342,8 +346,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             List<String> applicationNames = applicationMntList.stream().map(ApplicationDetailResult::getApplicationName)
                 .collect(Collectors.toList());
             // 过期时间，根据 压测时间 + 10s
-            redisClientUtils.set(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId), applicationNames,
-                wrapperResp.getPressureTestSecond() + 10);
+            String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+                String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
+            redisClientUtils.set(redisKey, applicationNames, wrapperResp.getPressureTestSecond() + 10);
         }
         Map<String, List<SceneSlaRefResp>> slaMap = getSceneSla(wrapperResp);
         if (MapUtils.isNotEmpty(slaMap)) {

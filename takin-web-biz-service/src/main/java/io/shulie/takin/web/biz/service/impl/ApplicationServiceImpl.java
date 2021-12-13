@@ -431,6 +431,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 || nodeResults.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count() > 1) {
                 return true;
             }
+            // 自身异常
+            if(AppAccessStatusEnum.EXCEPTION.getCode().equals(result.getAccessStatus())) {
+                return true;
+            }
             return false;
         }).count();
     }

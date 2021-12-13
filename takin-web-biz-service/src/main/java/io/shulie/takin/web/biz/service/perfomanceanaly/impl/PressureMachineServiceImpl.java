@@ -125,16 +125,16 @@ public class PressureMachineServiceImpl implements PressureMachineService {
             isUpdate = true;
         }
         //组装网络带宽利用率
-        if (result == null || result.getTransmittedTotal() == null || result.getTransmittedTotal().longValue() == 0) {
+        if (result == null || result.getTransmittedTotal() == null || result.getTransmittedTotal() == 0) {
             param.setTransmittedInUsage(new BigDecimal(0));
             param.setTransmittedOutUsage(new BigDecimal(0));
             param.setTransmittedUsage(new BigDecimal(0));
         } else {
-            Long total = result.getTransmittedTotal().longValue();
+            Long total = result.getTransmittedTotal();
             total = total * 1024 * 1024;
             BigDecimal inPer = new BigDecimal(param.getTransmittedIn() * 8.0 / total).setScale(4, BigDecimal.ROUND_HALF_UP);
             BigDecimal outPer = new BigDecimal(param.getTransmittedOut() * 8.0 / total).setScale(4, BigDecimal.ROUND_HALF_UP);
-            BigDecimal per = inPer.compareTo(outPer) == 1 ? inPer : outPer;
+            BigDecimal per = inPer.compareTo(outPer) > 0 ? inPer : outPer;
             param.setTransmittedOutUsage(outPer);
             param.setTransmittedInUsage(inPer);
             param.setTransmittedUsage(per);

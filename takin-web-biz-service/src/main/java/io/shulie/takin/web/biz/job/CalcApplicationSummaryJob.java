@@ -64,7 +64,7 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
                                 try {
                                     reportTaskService.calcApplicationSummary(reportId);
                                 } catch (Throwable e) {
-                                    log.error("execute CalcApplicationSummaryJob occured error. reportId={}", reportId, e);
+                                    log.error("execute CalcApplicationSummaryJob occured error. reportId= {},errorMsg={}", reportId, e.getMessage(),e);
                                 } finally {
                                     runningTasks.remove(reportId);
                                 }
@@ -81,7 +81,7 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
                                     WebPluginUtils.setTraceTenantContext(taskDto);
                                     reportTaskService.calcApplicationSummary(taskDto.getReportId());
                                 } catch (Throwable e) {
-                                    log.error("execute CalcApplicationSummaryJob occured error. reportId={},tenantId={}",reportId, taskDto.getTenantId(), e);
+                                    log.error("execute CalcApplicationSummaryJob occured error. reportId={},tenantId={},errorMsg={}",reportId, taskDto.getTenantId(), e.getMessage(),e);
                                 } finally {
                                     runningTasks.remove(taskDto.getTenantId());
                                 }

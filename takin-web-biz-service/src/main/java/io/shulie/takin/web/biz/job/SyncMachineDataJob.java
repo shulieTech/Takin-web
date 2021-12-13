@@ -65,7 +65,7 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
                                 try {
                                     reportTaskService.syncMachineData(reportId);
                                 } catch (Throwable e) {
-                                    log.error("execute SyncMachineDataJob occured error. reportId= {}", reportId, e);
+                                    log.error("execute SyncMachineDataJob occured error. reportId= {},errorMsg={}", reportId, e.getMessage(),e);
                                 } finally {
                                     runningTasks.remove(reportId);
                                 }
@@ -82,7 +82,7 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
                                     WebPluginUtils.setTraceTenantContext(taskDto);
                                     reportTaskService.syncMachineData(taskDto.getReportId());
                                 } catch (Throwable e) {
-                                    log.error("execute SyncMachineDataJob occured error. reportId= {},tenantId={}",reportId,taskDto.getTenantId(), e);
+                                    log.error("execute SyncMachineDataJob occured error. reportId= {},errorMsg={}", taskDto.getTenantId(), e.getMessage(),e);
                                 } finally {
                                     runningTasks.remove(taskDto.getTenantId());
                                 }

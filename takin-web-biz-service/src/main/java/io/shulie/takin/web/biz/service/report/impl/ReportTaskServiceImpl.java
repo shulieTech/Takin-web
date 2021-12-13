@@ -16,7 +16,9 @@ import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
@@ -119,7 +121,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 //删除redis数据
                 redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
                 // 删除key
-                redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
+                String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+                    String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
+                redisClientUtils.del(redisKey);
                 long startTime = System.currentTimeMillis();
                 Boolean lockResponse = reportService.lockReport(reportId);
                 if (!lockResponse) {

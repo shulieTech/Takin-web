@@ -10,6 +10,9 @@ import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
+import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutputV2;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallCreateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallDelV2Request;
@@ -19,6 +22,8 @@ import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallV2Response
 import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -71,13 +76,18 @@ public class AppRemoteCallController {
     @ModuleDef(
             moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
             subModuleName = BizOpConstants.SubModules.REMOTE_CALL,
-            logMsgKey = BizOpConstants.Message.MESSAGE_REMOTE_CALL_CREATE
+            logMsgKey = BizOpConstants.Message.MESSAGE_MANUAL_REMOTE_CALL_CREATE
     )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
             needAuth = ActionTypeEnum.CREATE
     )
     public AppRemoteCallStringResponse insert(@ApiParam(required=true) @Valid @RequestBody AppRemoteCallCreateV2Request request) {
+        OperationLogContextHolder.operationType(OpTypes.CREATE);
+        OperationLogContextHolder.addVars(Vars.APPLICATION_ID, String.valueOf(request.getApplicationId()));
+        OperationLogContextHolder.addVars(Vars.INTERFACE, request.getInterfaceName());
+        OperationLogContextHolder.addVars(Vars.INTERFACE_TYPE, request.getInterfaceType());
+        OperationLogContextHolder.addVars(Vars.REMOTE_CALL_CONFIG, AppRemoteCallConfigEnum.getEnum(request.getType()).getConfigName());
         appRemoteCallService.create(request);
         return new AppRemoteCallStringResponse("操作成功");
     }
@@ -87,13 +97,16 @@ public class AppRemoteCallController {
     @ModuleDef(
             moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
             subModuleName = BizOpConstants.SubModules.REMOTE_CALL,
-            logMsgKey = BizOpConstants.Message.MESSAGE_REMOTE_CALL_CREATE
+            logMsgKey = Message.MESSAGE_REMOTE_CALL_UPDATE
     )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
             needAuth = ActionTypeEnum.UPDATE
     )
     public AppRemoteCallStringResponse update(@ApiParam(required=true) @Valid @RequestBody AppRemoteCallUpdateV2Request request) {
+        OperationLogContextHolder.operationType(OpTypes.UPDATE);
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.INTERFACE, request.getInterfaceName());
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.REMOTE_CALL_CONFIG, AppRemoteCallConfigEnum.getEnum(request.getType()).getConfigName());
         appRemoteCallService.updateV2(request);
         return new AppRemoteCallStringResponse("操作成功");
     }
@@ -114,11 +127,17 @@ public class AppRemoteCallController {
 
     @ApiOperation("远程调用删除接口")
     @DeleteMapping("/application/remote/call/delete")
+    @ModuleDef(
+        moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
+        subModuleName = BizOpConstants.SubModules.REMOTE_CALL,
+        logMsgKey = Message.MESSAGE_REMOTE_CALL_DELETE
+    )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
             needAuth = ActionTypeEnum.DELETE
     )
     public Response delete(@ApiParam(required=true) @Valid @RequestBody AppRemoteCallDelV2Request request) {
+        OperationLogContextHolder.operationType(OpTypes.DELETE);
         appRemoteCallService.deleteById(request.getId());
         return Response.success();
     }

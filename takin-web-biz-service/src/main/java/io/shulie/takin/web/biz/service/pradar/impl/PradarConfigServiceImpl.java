@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.pradar.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigDeleteRequest;
 import io.shulie.takin.web.biz.pojo.request.pradar.PradarZKConfigQueryRequest;
@@ -9,6 +10,7 @@ import io.shulie.takin.web.biz.pojo.request.pradar.PradarZkConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.pradar.PradarZKConfigResponse;
 import io.shulie.takin.web.biz.service.pradar.PradarConfigService;
 import io.shulie.takin.web.biz.utils.ZkHelper;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.pradar.PradarZkConfigDAO;
 import io.shulie.takin.web.data.param.pradarconfig.PradarConfigCreateParam;
@@ -58,6 +60,9 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         Assert.notNull(config, "配置不存在！");
         if (pradarZkConfigDAO.update(updateParam)) {
             zkHelper.updateNode(config.getZkPath(), updateRequest.getValue());
+            // 记录日志
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME,config.getZkPath());
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_VALUE,updateRequest.getValue());
         }
     }
 
@@ -72,6 +77,9 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         PradarConfigCreateParam createParam = BeanUtil.copyProperties(createRequest, PradarConfigCreateParam.class);
         if (pradarZkConfigDAO.insert(createParam)) {
             zkHelper.addPersistentNode(zkPath, createParam.getValue());
+            // 记录日志
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME,createRequest.getZkPath());
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_VALUE,createRequest.getValue());
         }
     }
 
@@ -82,6 +90,8 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         Assert.notNull(config, "配置不存在！");
         if (pradarZkConfigDAO.deleteById(deleteRequest.getId())) {
             zkHelper.deleteNode(config.getZkPath());
+            // 记录日志
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME,config.getZkPath());
         }
     }
 

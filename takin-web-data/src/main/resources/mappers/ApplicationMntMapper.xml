@@ -33,26 +33,30 @@
         UPDATE_TIME, ALARM_PERSON, PRADAR_VERSION, USER_ID
     </sql>
 
-    <update id="batchUpdateAppNodeNum">
-        <foreach collection="list" item="item" separator=";">
-            UPDATE t_application_mnt SET node_num = #{item.nodeNum,jdbcType=INTEGER} WHERE application_name =
-            #{item.appName,jdbcType=VARCHAR} AND tenant_id = #{teanntId,jdbcType=BIGINT}
-        </foreach>
+    <update id="updateAppNodeNum">
+        UPDATE t_application_mnt
+        SET node_num = #{param.nodeNum,jdbcType=INTEGER}
+        WHERE application_name =
+              #{param.appName,jdbcType=VARCHAR}
+          AND env_code = #{envCode}
+          AND tenant_id = #{tenantId,jdbcType=BIGINT}
     </update>
 
     <select id="getAllTenantApp" resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">
-        select APPLICATION_NAME,tenant_id,env_code from  t_application_mnt
+        select APPLICATION_NAME,tenant_id,env_code from t_application_mnt
         <where>
             <if test="ext != null and ext.size() > 0">
                 <foreach collection="ext" item="item" open="(" close=")" separator="or">
-                    tenant_id = #{item.tenantId,jdbcType=BIGINT}  and env_code = #{item.envCode}
+                    tenant_id = #{item.tenantId,jdbcType=BIGINT} and env_code = #{item.envCode}
                 </foreach>
             </if>
         </where>
     </select>
     <select id="getApplicationByIdWithInterceptorIgnore"
             resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">
-        select * from  t_application_mnt where APPLICATION_ID = #{appId}
+        select *
+        from t_application_mnt
+        where APPLICATION_ID = #{appId}
     </select>
 
     <select id="getApplicationMntByUserIdsAndKeyword"
@@ -87,7 +91,8 @@
         select application_id,
                application_name,
                user_id,
-               tenant_id,env_code
+               tenant_id,
+               env_code
         from t_application_mnt
     </select>
 

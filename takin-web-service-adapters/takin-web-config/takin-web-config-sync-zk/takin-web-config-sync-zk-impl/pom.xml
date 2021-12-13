@@ -20,7 +20,7 @@
     <parent>
         <artifactId>takin-web-config-sync-zk</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.1.0.1</version>
+        <version>takin-web-5.1.0.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -70,6 +70,10 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
                 </exclusion>
             </exclusions>
         </dependency>

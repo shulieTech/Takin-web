@@ -203,43 +203,31 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 
     @Override
     public void syncMachineData(Long reportId) {
-        try {
-            //Ready 数据准备
-            reportDataCache.readyCloudReportData(reportId);
-            //first 同步应用基础信息
-            long startTime = System.currentTimeMillis();
-            problemAnalysisService.syncMachineData(reportId);
-            log.debug("reportId={} syncMachineData success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
-        } catch (Exception e) {
-            log.error("reportId={} syncMachineData false,errorMsg= {}", reportId, e.getMessage());
-        }
+        //Ready 数据准备
+        reportDataCache.readyCloudReportData(reportId);
+        //first 同步应用基础信息
+        long startTime = System.currentTimeMillis();
+        problemAnalysisService.syncMachineData(reportId);
+        log.debug("reportId={} syncMachineData success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
     }
 
     @Override
     public void calcTpsTarget(Long reportId) {
-        try {
-            long startTime = System.currentTimeMillis();
-            //Ready 数据准备
-            reportDataCache.readyCloudReportData(reportId);
-            //then tps指标图
-            summaryService.calcTpsTarget(reportId);
-            log.debug("reportId={} calcTpsTarget success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
-        } catch (Exception e) {
-            log.error("reportId={} calcTpsTarget false,errorMsg= {}", reportId, e.getMessage());
-        }
+        long startTime = System.currentTimeMillis();
+        //Ready 数据准备
+        reportDataCache.readyCloudReportData(reportId);
+        //then tps指标图
+        summaryService.calcTpsTarget(reportId);
+        log.debug("reportId={} calcTpsTarget success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
     }
 
     @Override
     public void calcApplicationSummary(Long reportId) {
-        try {
-            long startTime = System.currentTimeMillis();
-            //Ready 数据准备
-            reportDataCache.readyCloudReportData(reportId);
-            //汇总应用 机器数 风险机器数
-            summaryService.calcApplicationSummary(reportId);
-            log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
-        } catch (Exception e) {
-            log.error("reportId={} calcApplicationSummary false,errorMsg= {}", reportId, e.getMessage());
-        }
+        long startTime = System.currentTimeMillis();
+        //Ready 数据准备
+        reportDataCache.readyCloudReportData(reportId);
+        //汇总应用 机器数 风险机器数
+        summaryService.calcApplicationSummary(reportId);
+        log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
     }
 }

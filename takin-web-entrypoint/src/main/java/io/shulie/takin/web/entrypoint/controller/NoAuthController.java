@@ -5,6 +5,9 @@ import java.util.Map;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.common.common.Separator;
+import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +34,9 @@ public class NoAuthController {
             ResponseResult.fail("reportId cannot be null,", "");
         }
         redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
-        redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY,reportId));
+        String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+            String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
+        redisClientUtils.del(redisKey);
         return ResponseResult.success("resume success");
     }
 }

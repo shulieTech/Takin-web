@@ -1,7 +1,6 @@
 package io.shulie.takin.web.biz.job;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -25,10 +24,10 @@ import io.shulie.takin.web.biz.job.entity.OrgMavenResponse;
 import io.shulie.takin.web.biz.service.application.MiddlewareJarService;
 import io.shulie.takin.web.biz.service.application.MiddlewareSummaryService;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.model.mysql.MiddlewareJarEntity;
 import io.shulie.takin.web.data.model.mysql.MiddlewareSummaryEntity;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -83,7 +82,7 @@ public class MavenNewVersionPullJob implements SimpleJob {
                             .filter(jarInfo -> !"unknown".equalsIgnoreCase(jarInfo.getV()))
                             .collect(Collectors.collectingAndThen(
                                 Collectors.toCollection(() -> new TreeSet<>(
-                                    Comparator.comparing(o -> joinAgv(o.getA(),
+                                    Comparator.comparing(o -> CommonUtil.joinAgv(o.getA(),
                                         o.getG(), o.getV())))),
                                 ArrayList::new));
                         if (collect.size() == middlewareSummaryEntity.getTotalNum()) {
@@ -114,7 +113,7 @@ public class MavenNewVersionPullJob implements SimpleJob {
                     Collectors.toMap(MiddlewareJarEntity::getVersion,
                         Function.identity()));
                 final List<MiddlewareJarEntity> collect = jarInfoList.parallelStream().map(jarInfo -> {
-                    final String agv = joinAgv(middlewareSummaryEntity.getArtifactId(),
+                    final String agv = CommonUtil.joinAgv(middlewareSummaryEntity.getArtifactId(),
                         middlewareSummaryEntity.getGroupId(),
                         jarInfo.getV()
                     );
@@ -148,7 +147,4 @@ public class MavenNewVersionPullJob implements SimpleJob {
             });
     }
 
-    private String joinAgv(String... agv) {
-        return Strings.join(Arrays.stream(agv).map(item -> item == null ? "" : item).collect(Collectors.toList()), '_');
-    }
 }

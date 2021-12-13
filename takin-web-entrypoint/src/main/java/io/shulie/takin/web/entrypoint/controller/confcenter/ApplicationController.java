@@ -13,18 +13,20 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.github.pagehelper.util.StringUtil;
-import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
 import com.pamirs.takin.entity.domain.vo.AppUninstallAgentVO;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationQueryRequestV2;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntrancesResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationListResponseV2;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.ApplicationService;
@@ -72,24 +74,34 @@ public class ApplicationController {
     @Autowired
     private ActivityService activityService;
 
+    //@GetMapping("/application/center/list")
+    //@ApiOperation("应用列表查询接口")
+    //@AuthVerification(
+    //    moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+    //    needAuth = ActionTypeEnum.QUERY
+    //)
+    //public Response<List<ApplicationVo>> getApplicationListWithAuth(
+    //    @ApiParam(name = "applicationName", value = "系统名字") String applicationName,
+    //    @RequestParam(defaultValue = "0") Integer current,
+    //    Integer pageSize,
+    //    @ApiParam(name = "accessStatus", value = "接入状态") Integer accessStatus
+    //) {
+    //    current = current + 1;
+    //    ApplicationQueryRequest param = new ApplicationQueryRequest();
+    //    param.setCurrentPage(current);
+    //    param.setPageSize(pageSize);
+    //    param.setApplicationName(applicationName);
+    //    return applicationService.getApplicationList(param, accessStatus);
+    //}
+
     @GetMapping("/application/center/list")
-    @ApiOperation("应用列表查询接口")
+    @ApiOperation("|_ 应用列表查询接口")
     @AuthVerification(
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response<List<ApplicationVo>> getApplicationListWithAuth(
-        @ApiParam(name = "applicationName", value = "系统名字") String applicationName,
-        @RequestParam(defaultValue = "0") Integer current,
-        Integer pageSize,
-        @ApiParam(name = "accessStatus", value = "接入状态") Integer accessStatus
-    ) {
-        current = current + 1;
-        ApplicationQueryRequest param = new ApplicationQueryRequest();
-        param.setCurrentPage(current);
-        param.setPageSize(pageSize);
-        param.setApplicationName(applicationName);
-        return applicationService.getApplicationList(param, accessStatus);
+    public PagingList<ApplicationListResponseV2> listApplicationWithAuthV2(ApplicationQueryRequestV2 request) {
+        return applicationService.listApplication(request);
     }
 
     @GetMapping("/application/center/list/dictionary")

@@ -23,8 +23,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.github.pagehelper.util.StringUtil;
@@ -65,8 +67,10 @@ import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationList
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationQueryRequestV2;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationListResponseV2;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoardResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
@@ -141,12 +145,14 @@ import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
 import io.shulie.takin.web.data.result.application.AppAgentConfigReportDetailResult;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResult;
 import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
@@ -973,6 +979,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<ApplicationDsManageEntity> applicationDsManages = applicationDsManageDao.listByApplicationId(
             applicationId);
         // 导出对象创建
+
         ExcelSheetVO<ApplicationDsManageExportVO> sheet = new ExcelSheetVO<>();
         sheet.setExcelModelClass(ApplicationDsManageExportVO.class);
         sheet.setSheetName(AppConfigSheetEnum.DADABASE.name());
@@ -1173,6 +1180,26 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts) {
         return applicationDAO.getAllTenantApp(commonExts);
+    }
+
+    @Override
+    public PagingList<ApplicationListResponseV2> listApplication(ApplicationQueryRequestV2 request) {
+        QueryApplicationParam queryApplicationParam = BeanUtil.copyProperties(request, QueryApplicationParam.class);
+        queryApplicationParam.setTenantId(WebPluginUtils.traceTenantId());
+        queryApplicationParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        queryApplicationParam.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
+        IPage<ApplicationListResult> applicationListResultIPage = applicationDAO.listByParam(queryApplicationParam);
+        if (applicationListResultIPage.getTotal() == 0) {
+            return PagingList.empty();
+        }
+
+        List<ApplicationListResult> records = applicationListResultIPage.getRecords();
+        List<ApplicationListResponseV2> responseList = records.stream().map(result -> {
+            ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
+            response.setId(result.getApplicationId().toString());
+            return response;
+        }).collect(Collectors.toList());
+        return PagingList.of(responseList, applicationListResultIPage.getTotal());
     }
 
     /**
@@ -2236,6 +2263,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     }
                 }
             }
+
             if (CollectionUtils.isEmpty(applicationResultList)) {
                 for (ApplicationDetailResult param : tApplicationMnts) {
                     List<ApplicationNodeResult> applicationNodeResults = applicationNodeResultMap.get(

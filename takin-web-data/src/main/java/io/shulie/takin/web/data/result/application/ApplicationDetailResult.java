@@ -4,11 +4,13 @@ import java.util.Date;
 
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author fanxx
  * @date 2020/11/11 7:43 下午
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class ApplicationDetailResult extends TenantCommonExt {
     private Long id;

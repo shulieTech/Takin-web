@@ -4,9 +4,15 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-dev</version>
-    <packaging>pom</packaging>
 
+
+
+
+
+
+
+    <packaging>pom</packaging>
+    <version>takin-web-dev</version>
     <url>https://github.com/shulieTech/Takin-web.git</url>
     <description>控制台，用于agent交互，大数据交互，云控制台（cloud）交互</description>
     <name>takin-web</name>

@@ -211,4 +211,7 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
     IPage<ApplicationListResult> selectApplicationListByParam(
         @Param("page") IPage<ApplicationMntEntity> page, @Param("param") QueryApplicationParam param);
 
+
+    List<ApplicationMntEntity> getAllApplicationsByField();
+
 }

@@ -642,4 +642,13 @@ public class ApplicationDAOImpl
         return applicationMntMapper.selectApplicationListByParam(this.setPage(param), param);
     }
 
+
+    @Override
+    public List<ApplicationDetailResult> getAllApplicationsByField() {
+        List<ApplicationMntEntity> allApplications = applicationMntMapper.getAllApplications();
+        if (CollectionUtils.isEmpty(allApplications)) {
+            return Lists.newArrayList();
+        }
+        return DataTransformUtil.list2list(allApplications, ApplicationDetailResult.class);
+    }
 }

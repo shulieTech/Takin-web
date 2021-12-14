@@ -28,11 +28,4 @@ public class AgentVersionUtil {
         }
         return rs;
     }
-
-    public static void main(String[] args) {
-        System.out.println(AgentVersionUtil.string2Long("5.0.0.0"));
-        System.out.println(AgentVersionUtil.string2Long("1.0.3.2"));
-
-    }
-
 }

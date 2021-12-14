@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,6 +45,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.application.QueryMetricsFromAMDB;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery1;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery2;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationNodeDTO;
@@ -228,16 +230,10 @@ public class LinkTopologyService extends CommonService {
         // endTime
         long endMilliUseInInFluxDB = endTimeUseInInFluxDB.toInstant(ZoneOffset.of("+0")).toEpochMilli();
 
-        // 由于 机器性能 / Trace数据量 等问题， 大数据在入库时 时间有延迟
-        // 这里要查询真实 Trace数据的时间范围，应该是小于 startMilliUseInInFluxDB
-        long realSeconds = getTracePeriod(startMilliUseInInFluxDB, endMilliUseInInFluxDB, startTimeUseInInFluxDB,
-            endTimeUseInInFluxDB);
-
         /*
         填充 Node
             总Tps / 总Rt
         */
-        AbstractTopologyNodeResponse rootNode = null;
 
         // 查询 瓶颈阈值 配置
         List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
@@ -245,27 +241,36 @@ public class LinkTopologyService extends CommonService {
             bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId(),
                 WebPluginUtils.traceEnvCode());
         }
+
         // 查询 该业务活动 的所有开关状态
         List<ActivityNodeState> dbActivityNodeServiceState = activityService.getActivityNodeServiceState(
             request.getActivityId());
 
+
+        List<ApplicationEntranceTopologyEdgeResponse> reduceEdges = topologyResponse.getEdges();
         List<AbstractTopologyNodeResponse> allNodes = topologyResponse.getNodes();
+
+        // 找到 root 节点
+        final AbstractTopologyNodeResponse rootNode = allNodes.stream()
+                .filter(AbstractTopologyNodeResponse::getRoot)
+                .findFirst().get();
+
+        // 仅在 临时业务活动时，圈定一个入口范围
+        String response1 = "";
+        response1 = getString(request, rootNode, response1, reduceEdges, allNodes);
+
         for (AbstractTopologyNodeResponse node : allNodes) {
             // 填充 节点服务的 总调用量 / 总成功率 / 总Tps / 总Rt
-            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
+            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse) node;
             if (appnode.getProviderService() != null) {
                 List<AppProviderInfo> appProviderInfos =
-                    fillAppNodeServiceSuccessRateAndRt(
-                        request, appnode, startTimeUseInInFluxDB, endTimeUseInInFluxDB, startMilliUseInInFluxDB,
-                        endMilliUseInInFluxDB, realSeconds, metricsType, bottleneckConfig,
-                        dbActivityNodeServiceState);
+                        fillAppNodeServiceSuccessRateAndRt(
+                                request, appnode, startTimeUseInInFluxDB, endTimeUseInInFluxDB, startMilliUseInInFluxDB,
+                                endMilliUseInInFluxDB, metricsType, bottleneckConfig,
+                                dbActivityNodeServiceState, response1);
 
                 // 设置 拓扑图中节点上显示哪一个服务性能指标
                 setTopologyNodeServiceMetrics(node, appProviderInfos);
-            }
-
-            if (node.getRoot()) {
-                rootNode = node;
             }
         }
 
@@ -276,7 +281,6 @@ public class LinkTopologyService extends CommonService {
         填充 Edge
             总调用量 / 主干
         */
-        List<ApplicationEntranceTopologyEdgeResponse> reduceEdges = topologyResponse.getEdges();
         for (ApplicationEntranceTopologyEdgeResponse edge : reduceEdges) {
             edge.setAllTotalCount(getAllServiceAllTotalCount(allNodes, edge));
 
@@ -292,6 +296,54 @@ public class LinkTopologyService extends CommonService {
         }
         int loopCounter = 0;
         setMainEdge(reduceEdges, rootNode.getId(), loopCounter);
+    }
+
+    private String getString(ActivityInfoQueryRequest request, AbstractTopologyNodeResponse rootNode, String response1, List<ApplicationEntranceTopologyEdgeResponse> reduceEdges, List<AbstractTopologyNodeResponse> allNodes) {
+        if (request.isTempActivity()) {
+
+            // 找到 连接 root 节点的边
+            ApplicationEntranceTopologyEdgeResponse rootEdge = reduceEdges.stream()
+                    .filter(s -> s.getSource().equals(rootNode.getId()))
+                    .findFirst().get();
+
+            // 找到 对应的 linkEdgeDTO
+            for (AbstractTopologyNodeResponse node : allNodes) {
+                TopologyAppNodeResponse appnode = (TopologyAppNodeResponse) node;
+                if (appnode.getProviderService() != null) {
+                    for (AppProviderInfo appProviderInfo : node.getProviderService()) {
+                        for (AppProvider appProvider : appProviderInfo.getDataSource()) {
+
+                            for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
+                                String eagleId = linkEdgeDTO.getEagleId();
+
+                                if(!rootEdge.getId().equals(eagleId)) continue;
+
+                                String serviceName = appProvider.getServiceName();
+                                String[] split = serviceName.split("#");
+                                String service = split[0];
+                                String method = split[1];
+
+                                // step 1
+                                String startTime = DateUtils.formatLocalDateTime(request.getStartTime());
+                                String endTime = DateUtils.formatLocalDateTime(request.getEndTime());
+
+                                TempTopologyQuery1 query1 = TempTopologyQuery1.builder()
+                                        .inAppName(appProvider.getOwnerApps())
+                                        .inService(service)
+                                        .inMethod(method)
+                                        .startTime(startTime)
+                                        .endTime(endTime)
+                                        .timeGap(request.getTimeGap())
+                                        .build();
+
+                                response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return response1;
     }
 
     private void setTopologyLevelBottleneck(ApplicationEntranceTopologyResponse topologyResponse) {
@@ -358,7 +410,7 @@ public class LinkTopologyService extends CommonService {
         appProviderList.stream()
             // 如果服务打开，则更新值
             .filter(a -> {
-                if (a.getSwitchState() == null) {return true;} else {return a.getSwitchState();}
+                if (a.getSwitchState() == null) { return true; } else { return a.getSwitchState(); }
             })
             .forEach(appProvider -> {
                 appProviderContainer.setServiceAllTotalCount(
@@ -389,10 +441,10 @@ public class LinkTopologyService extends CommonService {
     }
 
     private List<AppProviderInfo> fillAppNodeServiceSuccessRateAndRt(
-        ActivityInfoQueryRequest request, TopologyAppNodeResponse node,
-        LocalDateTime startTimeUseInInFluxDB, LocalDateTime endTimeUseInInFluxDB, long startMilli, long endMilli,
-        long realSeconds, Boolean metricsType, List<E2eExceptionConfigInfoExt> bottleneckConfig,
-        List<ActivityNodeState> dbActivityNodeServiceState) {
+            ActivityInfoQueryRequest request, TopologyAppNodeResponse node,
+            LocalDateTime startTimeUseInInFluxDB, LocalDateTime endTimeUseInInFluxDB, long startMilli, long endMilli,
+            Boolean metricsType, List<E2eExceptionConfigInfoExt> bottleneckConfig,
+            List<ActivityNodeState> dbActivityNodeServiceState, String response1) {
 
         // 节点 所有有服务，包含 不同的中间件，不同的 serviceMethod
         List<AppProvider> allAppProviderServiceList = new ArrayList<>();
@@ -402,12 +454,12 @@ public class LinkTopologyService extends CommonService {
 
             for (AppProvider appProvider : appProviderInfo.getDataSource()) {
                 // 对服务包含的每条边，填充指标数据
-                fillMetrixFromDB(request, startMilli, endMilli, realSeconds, metricsType, appProvider);
+                fillMetrixFromAMDB(request, startMilli, endMilli, metricsType, appProvider, response1);
 
                 // 合并 同一上游 的多条边
                 mergeSameBeforeApp(appProvider);
 
-                // 计算瓶颈t h
+                // 计算瓶颈
                 appProvider.getContainRealAppProvider().stream()
                     // 如果不是初始值，再计算瓶颈
                     .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT))
@@ -453,8 +505,7 @@ public class LinkTopologyService extends CommonService {
         appProvider.setContainRealAppProvider(new ArrayList(appProviderHashMap.values()));
     }
 
-    private void fillMetrixFromDB(ActivityInfoQueryRequest request, long startMilli, long endMilli, long realSeconds,
-        Boolean metricsType, AppProvider appProvider) {
+    private void fillMetrixFromAMDB(ActivityInfoQueryRequest request, long startMilli, long endMilli, Boolean metricsType, AppProvider appProvider, String response1) {
         appProvider.setContainRealAppProvider(new ArrayList<>());
 
         HashMap<String, Boolean> isContainSame = new HashMap<>();
@@ -466,10 +517,10 @@ public class LinkTopologyService extends CommonService {
             // 根据服务边，查询指标
             AppProvider appProviderFromDb;
             if (request.isTempActivity()) {
-                appProviderFromDb = queryMetricsFromAMDB(isContainSame, beforeApps, appProvider.getOwnerApps(),
-                    appProvider.getMiddlewareName(), appProvider.getServiceName(), request);
+                // 应用管理->服务监控  查询 临时业务活动时 使用
+                appProviderFromDb = queryTempMetricsFromAMDB(response1, isContainSame, beforeApps, appProvider.getOwnerApps(), appProvider.getMiddlewareName(), appProvider.getServiceName(), request);
             } else {
-                appProviderFromDb = queryMetricsFromDb(startMilli, endMilli, realSeconds, metricsType, eagleId);
+                appProviderFromDb = queryMetricsFromAMDB(startMilli, endMilli, metricsType, eagleId);
             }
 
             appProviderFromDb.setBeforeApps(beforeApps);
@@ -491,9 +542,8 @@ public class LinkTopologyService extends CommonService {
         }
     }
 
-    private AppProvider queryMetricsFromAMDB(
-        HashMap<String, Boolean> isContainSame, String beforeApps, String toAppName, String middlewareName,
-        String serviceName, ActivityInfoQueryRequest request) {
+    private AppProvider queryTempMetricsFromAMDB(
+           String response1, HashMap<String, Boolean> isContainSame, String beforeApps, String toAppName, String middlewareName, String serviceName, ActivityInfoQueryRequest request) {
 
         String[] split = serviceName.split("#");
         String service = split[0];
@@ -509,29 +559,14 @@ public class LinkTopologyService extends CommonService {
             return getAppProvider(0L, Collections.emptyList());
         }
 
-        // step 1
         String startTime = DateUtils.formatLocalDateTime(request.getStartTime());
         String endTime = DateUtils.formatLocalDateTime(request.getEndTime());
-
-        TempTopologyQuery1 query1 = TempTopologyQuery1.builder()
-            .inAppName(toAppName)
-            .inService(service)
-            .inMethod(method)
-            .startTime(startTime)
-            .endTime(endTime)
-            .timeGap(request.getTimeGap())
-            .envCode(WebPluginUtils.traceEnvCode())
-            .traceTenantAppKey(WebPluginUtils.traceTenantAppKey())
-            .build();
-
-        String response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
 
         // step 2
         ArrayList<TraceMetricsResult> traceMetricsResultList = new ArrayList<>();
         Integer realSeconds = 0;
 
-        if (StringUtils.isNotBlank(response1)) {
-            TempTopologyQuery2 query2 = TempTopologyQuery2.builder()
+        TempTopologyQuery2 query2 = TempTopologyQuery2.builder()
                 .fromAppName(beforeApps)
                 .appName(toAppName)
                 .middlewareName(middlewareName)
@@ -546,29 +581,32 @@ public class LinkTopologyService extends CommonService {
                 .traceTenantAppKey(WebPluginUtils.traceTenantAppKey())
                 .build();
 
-            JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);
+        JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);
 
-            TraceMetricsResult traceMetricsResult = new TraceMetricsResult();
+        fillTraceMetricsResultList(traceMetricsResultList, jsonObject);
 
-            Integer allTotalCount = (Integer)jsonObject.get("allTotalCount");
-            traceMetricsResult.setAllTotalCount(allTotalCount.doubleValue());
-
-            Integer allSuccessCount = (Integer)jsonObject.get("allSuccessCount");
-            traceMetricsResult.setAllSuccessCount(allSuccessCount.doubleValue());
-
-            Integer allTotalRt = (Integer)jsonObject.get("allTotalRt");
-            traceMetricsResult.setAllTotalRt(allTotalRt.doubleValue());
-
-            Integer allMaxRt = (Integer)jsonObject.get("allMaxRt");
-            traceMetricsResult.setAllMaxRt(allMaxRt.doubleValue());
-
-            traceMetricsResultList.add(traceMetricsResult);
-
-            realSeconds = (Integer)jsonObject.get("realSeconds");
-        }
+        realSeconds = (Integer) jsonObject.get("realSeconds");
 
         AppProvider appProvider = getAppProvider(realSeconds, traceMetricsResultList);
         return appProvider;
+    }
+
+    private void fillTraceMetricsResultList(ArrayList<TraceMetricsResult> traceMetricsResultList, JSONObject jsonObject) {
+        TraceMetricsResult traceMetricsResult = TraceMetricsResult.builder().build();
+
+        Integer allTotalCount = (Integer) jsonObject.get("allTotalCount");
+        traceMetricsResult.setAllTotalCount(allTotalCount.doubleValue());
+
+        Integer allSuccessCount = (Integer) jsonObject.get("allSuccessCount");
+        traceMetricsResult.setAllSuccessCount(allSuccessCount.doubleValue());
+
+        Integer allTotalRt = (Integer) jsonObject.get("allTotalRt");
+        traceMetricsResult.setAllTotalRt(allTotalRt.doubleValue());
+
+        Integer allMaxRt = (Integer) jsonObject.get("allMaxRt");
+        traceMetricsResult.setAllMaxRt(allMaxRt.doubleValue());
+
+        traceMetricsResultList.add(traceMetricsResult);
     }
 
     private void setNodeBottleneck(TopologyAppNodeResponse node, List<AppProvider> allAppProviderServiceList) {
@@ -764,32 +802,24 @@ public class LinkTopologyService extends CommonService {
         }
     }
 
-    private AppProvider queryMetricsFromDb(long startMilli, long endMilli, long realSeconds, Boolean metricsType,
-        String eagleId) {
-        String allTotalTpsAndRtCountQuerySql =
-            "SELECT" +
-                " SUM(successCount) as allSuccessCount," +
-                " SUM(totalCount) as allTotalCount," +
-                " SUM(totalTps) as allTotalTps," +
-                " MAX(maxRt) as allMaxRt," +
-                " SUM(totalRt) as allTotalRt" +
-                " FROM trace_metrics" +
-                " where" +
-                " edgeId = '" + eagleId + "'" +
-                " and time >= " + formatTimestamp(startMilli) +
-                " and time <= " + formatTimestamp(endMilli) +
-                // 加租户
-                " and tenantAppKey = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                " and envCode = '" + WebPluginUtils.traceEnvCode() + "'";
+    private AppProvider queryMetricsFromAMDB(long startMilli, long endMilli,
+                                             Boolean metricsType, String eagleId) {
 
-        // 如果不是 混合流量 则需要增加条件
-        if (null != metricsType) {
-            allTotalTpsAndRtCountQuerySql += " AND clusterTest = '" + metricsType + "'";
-        }
-        Collection<TraceMetricsResult> allTotalTpsAndRtCountResult = influxDBManager.query(TraceMetricsResult.class,
-            allTotalTpsAndRtCountQuerySql, pradarDatabase);
-        ArrayList<TraceMetricsResult> allTotalTpsAndRtCountResults = new ArrayList<>(allTotalTpsAndRtCountResult);
+        QueryMetricsFromAMDB queryMetricsFromAMDB = QueryMetricsFromAMDB.builder()
+                .startMilli(startMilli)
+                .endMilli(endMilli)
+                .metricsType(metricsType)
+                .eagleId(eagleId)
+                .tenantAppKey(WebPluginUtils.traceTenantAppKey())
+                .envCode(WebPluginUtils.traceEnvCode())
+                .build();
 
+        JSONObject jsonObject = applicationEntranceClient.queryMetrics(queryMetricsFromAMDB);
+
+        ArrayList<TraceMetricsResult> allTotalTpsAndRtCountResults = new ArrayList<>();
+        fillTraceMetricsResultList(allTotalTpsAndRtCountResults, jsonObject);
+
+        long realSeconds = (Integer) jsonObject.get("realSeconds");
         AppProvider appProvider = getAppProvider(realSeconds, allTotalTpsAndRtCountResults);
         return appProvider;
     }
@@ -840,66 +870,6 @@ public class LinkTopologyService extends CommonService {
             appProvider.setServiceAllMaxRt(allMaxRt);
         }
         return appProvider;
-    }
-
-    private long getTracePeriod(long startMilli, long endMilli, LocalDateTime startDateTime,
-        LocalDateTime endDateTime) {
-        String firstTime =
-            "SELECT" +
-                " time, totalTps" +
-                " FROM trace_metrics" +
-                " where" +
-                " time >= " + formatTimestamp(startMilli) +
-                " and time <= " + formatTimestamp(endMilli) +
-                // 增加租户
-                " and tenantAppKey = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                " and envCode = '" + WebPluginUtils.traceEnvCode() + "'" +
-                " order by time" +
-                " limit 1";
-
-        String lastTime =
-            "SELECT" +
-                " time, totalTps" +
-                " FROM trace_metrics" +
-                " where" +
-                " time >= " + formatTimestamp(startMilli) +
-                " and time <= " + formatTimestamp(endMilli) +
-                // 增加租户
-                " and tenantAppKey = '" + WebPluginUtils.traceTenantAppKey() + "'" +
-                " and envCode = '" + WebPluginUtils.traceEnvCode() + "'" +
-                " order by time desc" +
-                " limit 1";
-
-        Collection<TraceMetricsResult> firstTimeResult = influxDBManager.query(TraceMetricsResult.class, firstTime,
-            pradarDatabase);
-        Collection<TraceMetricsResult> lastTimeResult = influxDBManager.query(TraceMetricsResult.class, lastTime,
-            pradarDatabase);
-        ArrayList<TraceMetricsResult> firstTraceMetricsResultList = new ArrayList<>(firstTimeResult);
-        ArrayList<TraceMetricsResult> lastTraceMetricsResultList = new ArrayList<>(lastTimeResult);
-
-        long seconds = 0;
-        if (firstTraceMetricsResultList.size() != 0 && lastTraceMetricsResultList.size() != 0) {
-            TraceMetricsResult firstTraceMetricsResult = firstTraceMetricsResultList.get(0);
-            TraceMetricsResult lastTraceMetricsResult = lastTraceMetricsResultList.get(0);
-            Duration d3 = Duration.between(firstTraceMetricsResult.getTime(), lastTraceMetricsResult.getTime());
-            seconds = d3.getSeconds();
-
-            log.info("get data between [{}] --> [{}], [{}] seconds ",
-                getLocalDateTime(firstTraceMetricsResult),
-                getLocalDateTime(lastTraceMetricsResult),
-                seconds);
-        }
-
-        long realSeconds = seconds;
-        double realMinute = bigDecimalDivide(new Long(realSeconds).doubleValue(), new Long(60L).doubleValue());
-        log.info("get real trace-data in [{}] minute, query data in [{} - {}]",
-            realMinute, startDateTime, endDateTime);
-
-        return realSeconds;
-    }
-
-    private LocalDateTime getLocalDateTime(TraceMetricsResult firstTraceMetricsResult) {
-        return LocalDateTime.ofInstant(firstTraceMetricsResult.getTime(), ZoneId.systemDefault());
     }
 
     private void setMainEdge(
@@ -1030,72 +1000,69 @@ public class LinkTopologyService extends CommonService {
         AtomicLong nextNumber = new AtomicLong();
 
         return applicationEntrancesTopology.getNodes().stream().map(node -> {
-                // other
-                if (NodeTypeGroupEnum.OTHER.getType().equals(node.getNodeTypeGroup())) {
+            // other
+            if (NodeTypeGroupEnum.OTHER.getType().equals(node.getNodeTypeGroup())) {
 
-                    if (isVirtualNode(node)) {
-                        TopologyVirtualNodeResponse nodeResponse = new TopologyVirtualNodeResponse();
-                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                        setVirtualResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                            appNodeMap);
-                        return nodeResponse;
-                    } else if (isOuterService(node)) {
-                        TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
-                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                        setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                            appNodeMap);
-                        return nodeResponse;
-                    } else if (isUnknownNode(node)) {
-                        TopologyUnknownNodeResponse nodeResponse = new TopologyUnknownNodeResponse();
-                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                        setUnknownResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                            appNodeMap);
-                        return nodeResponse;
-                    } else {
-                        TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
-                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                        setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                            appNodeMap);
-                        return nodeResponse;
-                    }
-
-                    // 能区分类型的
-                } else if (NodeTypeGroupEnum.APP.getType().equals(node.getNodeTypeGroup())) {
-                    TopologyAppNodeResponse nodeResponse = new TopologyAppNodeResponse();
+                if (isVirtualNode(node)) {
+                    TopologyVirtualNodeResponse nodeResponse = new TopologyVirtualNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setAppNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                    setVirtualResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
                         appNodeMap);
                     return nodeResponse;
-                } else if (NodeTypeGroupEnum.OSS.getType().equals(node.getNodeTypeGroup())) {
-                    TopologyOssNodeResponse nodeResponse = new TopologyOssNodeResponse();
+                } else if (isOuterService(node)) {
+                    TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setOssNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                    setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
                     return nodeResponse;
-                } else if (NodeTypeGroupEnum.CACHE.getType().equals(node.getNodeTypeGroup())) {
-                    TopologyCacheNodeResponse nodeResponse = new TopologyCacheNodeResponse();
+                } else if (isUnknownNode(node)) {
+                    TopologyUnknownNodeResponse nodeResponse = new TopologyUnknownNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setCacheNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                    setUnknownResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                        appNodeMap);
                     return nodeResponse;
-                } else if (NodeTypeGroupEnum.DB.getType().equals(node.getNodeTypeGroup())) {
-                    TopologyDbNodeResponse nodeResponse = new TopologyDbNodeResponse();
+                } else {
+                    TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setDbNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                    return nodeResponse;
-                } else if (NodeTypeGroupEnum.MQ.getType().equals(node.getNodeTypeGroup())) {
-                    TopologyMqNodeResponse nodeResponse = new TopologyMqNodeResponse();
-                    setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setMqNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                    return nodeResponse;
-                } else if (NodeTypeGroupEnum.SEARCH.getType().equals(node.getNodeTypeGroup())) {
-                    TopologySearchNodeResponse nodeResponse = new TopologySearchNodeResponse();
-                    setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setSearchNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                    setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
                     return nodeResponse;
                 }
-                return null;
-            })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+
+            // 能区分类型的
+            } else if (NodeTypeGroupEnum.APP.getType().equals(node.getNodeTypeGroup())) {
+                TopologyAppNodeResponse nodeResponse = new TopologyAppNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setAppNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap, appNodeMap);
+                return nodeResponse;
+            } else if (NodeTypeGroupEnum.OSS.getType().equals(node.getNodeTypeGroup())) {
+                TopologyOssNodeResponse nodeResponse = new TopologyOssNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setOssNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                return nodeResponse;
+            } else if (NodeTypeGroupEnum.CACHE.getType().equals(node.getNodeTypeGroup())) {
+                TopologyCacheNodeResponse nodeResponse = new TopologyCacheNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setCacheNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                return nodeResponse;
+            } else if (NodeTypeGroupEnum.DB.getType().equals(node.getNodeTypeGroup())) {
+                TopologyDbNodeResponse nodeResponse = new TopologyDbNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setDbNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                return nodeResponse;
+            } else if (NodeTypeGroupEnum.MQ.getType().equals(node.getNodeTypeGroup())) {
+                TopologyMqNodeResponse nodeResponse = new TopologyMqNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setMqNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                return nodeResponse;
+            } else if (NodeTypeGroupEnum.SEARCH.getType().equals(node.getNodeTypeGroup())) {
+                TopologySearchNodeResponse nodeResponse = new TopologySearchNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setSearchNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                return nodeResponse;
+            }
+            return null;
+        })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private void setUnknownResponse(TopologyUnknownNodeResponse nodeResponse, LinkNodeDTO node,

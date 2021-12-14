@@ -68,7 +68,7 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
                                 try {
                                     reportTaskService.calcApplicationSummary(reportId);
                                 } catch (Throwable e) {
-                                    log.error("execute CalcApplicationSummaryJob occured error. reportId={}", reportId, e);
+                                    log.error("execute CalcApplicationSummaryJob occured error. reportId= {},errorMsg={}", reportId, e.getMessage(),e);
                                 } finally {
                                     runningTasks.remove(reportId);
                                 }

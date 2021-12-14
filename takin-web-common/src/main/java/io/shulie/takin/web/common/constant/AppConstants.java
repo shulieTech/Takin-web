@@ -120,6 +120,11 @@ public interface AppConstants {
     String COMMA = ",";
 
     /**
+     * 下划线
+     */
+    String UNDERLINE = "_";
+
+    /**
      * 时间格式, 字符串形式
      */
     String DATE_FORMAT_STRING = "yyyy-MM-dd HH:mm:ss";

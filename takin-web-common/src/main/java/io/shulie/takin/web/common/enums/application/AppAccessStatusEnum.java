@@ -2,6 +2,7 @@ package io.shulie.takin.web.common.enums.application;
 
 import java.util.Arrays;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -9,10 +10,11 @@ import lombok.Getter;
  */
 
 @Getter
+@AllArgsConstructor
 public enum AppAccessStatusEnum {
 
     /**
-     *
+     * 正常
      */
     NORMAL(0,"正常"),
     UN_CONFIG(1,"待配置"),
@@ -20,18 +22,12 @@ public enum AppAccessStatusEnum {
     EXCEPTION(3,"异常");
 
 
-    private Integer code;
-    private String desc;
-
-    AppAccessStatusEnum(Integer code, String desc) {
-        this.code = code;
-        this.desc = desc;
-    }
+    private final Integer code;
+    private final String desc;
 
     public static AppAccessStatusEnum getAppAccessStatusEnumByCode(Integer code){
-        return Arrays.stream(values())
-            .filter(statusEnum -> statusEnum.getCode().equals(code))
-            .findFirst()
-            .orElse(null);
+        return Arrays.stream(values()).filter(statusEnum -> statusEnum.getCode().equals(code))
+            .findFirst().orElse(null);
     }
+
 }

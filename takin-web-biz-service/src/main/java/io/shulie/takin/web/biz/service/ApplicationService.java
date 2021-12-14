@@ -13,9 +13,12 @@ import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationQueryRequestV2;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationListResponseV2;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
@@ -289,4 +292,13 @@ public interface ApplicationService {
      * @return
      */
     List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts);
+
+    /**
+     * 应用列表
+     *
+     * @param request 请求入参
+     * @return 应用列表
+     */
+    PagingList<ApplicationListResponseV2> listApplication(ApplicationQueryRequestV2 request);
+
 }

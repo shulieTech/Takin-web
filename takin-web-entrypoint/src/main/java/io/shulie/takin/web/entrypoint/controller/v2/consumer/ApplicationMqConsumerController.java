@@ -101,13 +101,4 @@ public class ApplicationMqConsumerController {
         return shadowConsumerService.pageMqConsumersV2(request);
     }
 
-//    @GetMapping("/consumers/delete")
-//    @ApiOperation("删除影子消费者记录")
-//    @AuthVerification(
-//            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-//            needAuth = ActionTypeEnum.DELETE
-//    )
-//    public Response delete(@ApiParam(name = "id",value = "记录id",required = true)  @RequestParam("id") Long id) {
-//        return Response.success();
-//    }
 }

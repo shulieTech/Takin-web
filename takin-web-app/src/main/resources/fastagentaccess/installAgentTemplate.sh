@@ -34,7 +34,7 @@ else
 fi
 
 echo "开始解压agent包"
-unzip -o simulator-agent.zip -x __MACOSX/*
+unzip -d ./simulator-agent/ -o simulator-agent.zip -x __MACOSX/*
 exit_check
 
 echo "开始生成启动参数"

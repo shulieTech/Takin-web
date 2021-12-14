@@ -131,7 +131,7 @@ CREATE TABLE `t_application_plugin_download_path`
     `env_code`         varchar(100) DEFAULT 'test' COMMENT '环境标识',
     `tenant_id`        bigint(20) DEFAULT '1' COMMENT '租户 id, 默认 1',
     `valid_status`     tinyint(4) DEFAULT 0 COMMENT '检测状态 0:未检测,1:检测失败,2:检测成功',
-    `valid_error_info`     varchar(1024) DEFAULT '' COMMENT '检测异常信息',
+    `valid_error_info`     varchar(10240) DEFAULT '' COMMENT '检测异常信息',
     `IS_DELETED`       tinyint(4) NOT NULL DEFAULT 0 COMMENT '是否有效 0:有效;1:无效',
     PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='探针根目录';

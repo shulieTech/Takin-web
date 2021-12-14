@@ -1,67 +1,65 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-import javax.validation.Valid;
 import javax.annotation.Resource;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import javax.validation.Valid;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
+import io.shulie.takin.cloud.open.req.scenemanage.SceneTaskStartReq;
+import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
+import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.common.beans.response.ResponseResult.ErrorInfo;
+import io.shulie.takin.ext.content.enginecall.PtConfigExt;
+import io.shulie.takin.ext.content.enginecall.ThreadGroupConfigExt;
+import io.shulie.takin.ext.content.script.ScriptNode;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
+import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse.BasicInfo;
+import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
+import io.shulie.takin.web.biz.pojo.response.leakcheck.LeakSqlBatchRefsResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
+import io.shulie.takin.web.biz.service.LeakSqlService;
+import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
+import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
+import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.ext.content.script.ScriptNode;
-import io.shulie.takin.web.biz.service.LeakSqlService;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.data.model.mysql.SceneEntity;
-import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.service.scene.SceneService;
-import io.shulie.takin.ext.content.enginecall.PtConfigExt;
-import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
-import io.shulie.takin.web.data.result.linkmange.SceneResult;
-import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
-import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
-import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
-import io.shulie.takin.ext.content.enginecall.ThreadGroupConfigExt;
-import io.shulie.takin.cloud.open.req.scenemanage.SceneTaskStartReq;
-import io.shulie.takin.cloud.open.api.scene.manage.MultipleSceneApi;
-import io.shulie.takin.cloud.open.request.scene.manage.SceneRequest;
-import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
-import io.shulie.takin.common.beans.response.ResponseResult.ErrorInfo;
-import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
-import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
-import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
-import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
-import io.shulie.takin.web.biz.pojo.response.leakcheck.LeakSqlBatchRefsResponse;
-import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse.BasicInfo;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
-import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 
 /**
  * 场景管理控制器 - 新
@@ -143,6 +141,12 @@ public class SceneController {
                 setExecuteTime(request.getBasicInfo().getExecuteTime());
             }});
         }
+        // 操作日志
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(request.getBasicInfo().getSceneId()));
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
+        //OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_SELECTIVE_CONTENT, selectiveContent);
+
         return updateResult;
     }
 
@@ -241,11 +245,6 @@ public class SceneController {
      */
     @GetMapping("detail")
     @ApiOperation("获取压测场景详情 - 新")
-    @ModuleDef(
-        moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
-        logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_UPDATE
-    )
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<SceneDetailResponse> detail(@RequestParam(required = false) Long sceneId) {
         SceneTaskStartReq request = new SceneTaskStartReq() {{setSceneId(sceneId);}};

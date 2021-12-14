@@ -18,7 +18,7 @@ import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.common.vo.FileWrapperVO;
-import io.shulie.takin.web.diff.api.DiffFileApi;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -47,9 +47,6 @@ public class FileController {
 
     @Autowired
     private HttpWebClient httpWebClient;
-
-    @Autowired
-    private DiffFileApi fileApi;
 
     @Value("${file.upload.user.data.dir:/data/tmp}")
     private String fileDir;
@@ -102,52 +99,53 @@ public class FileController {
         return httpWebClient.request(vo);
     }
 
+    @ApiOperation("|_ 文件下载")
+    @GetMapping("/download")
+    public void download(@RequestParam("filePath") String filePath, HttpServletResponse response) {
+        if (!this.filePathValidate(filePath)) {
+            log.error("非法下载路径文件，禁止下载：{}", filePath);
+            return;
+        }
+        File file = new File(filePath);
+        if (!file.exists()) {
+            log.warn("文件不存在，地址：{}", filePath);
+            return;
+        }
+        CommonUtil.zeroCopyDownload(file, response);
+    }
+
     @ApiOperation("文件下载")
     @GetMapping(value = "/downloadFileByPath")
     public void downloadFileByPath(@RequestParam("filePath") String filePath, HttpServletResponse response) {
-        try {
-
-            if (!filePathValidate(filePath)) {
-                log.warn("非法下载路径文件，禁止下载：{}", filePath);
-                return;
-            }
-
-            if (new File(filePath).exists()) {
-                ServletOutputStream outputStream = response.getOutputStream();
-                Files.copy(Paths.get(filePath), outputStream);
-                response.setContentType("application/octet-stream");
-                String saveName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
-                response.setHeader("Content-Disposition",
-                    "attachment;filename=" + new String(saveName.getBytes("UTF-8"), "iso-8859-1"));
-            }
-            // 最后删除文件
-            FileManagerHelper.deleteFilesByPath(filePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.download(filePath, response);
+        // 删除文件
+        //cn.hutool.core.io.FileUtil.del(filePath);
     }
 
     /**
      * 文件路径是否管理策略
      *
      * @param filePath 文件路径
-     * @return
+     * @return 是/否
      */
     private boolean filePathValidate(String filePath) {
-        List<String> arrayList = init();
-
-        for (int i = 0; i < arrayList.size(); i++) {
-            if (filePath.startsWith(arrayList.get(i))) {
-                return true;
-            }
-        }
-        return false;
+        return this.pathInit().stream().anyMatch(filePath::startsWith);
     }
 
-    private List<String> init() {
+    /**
+     * 文件路径初始化
+     *
+     * @return 文件路径列表
+     */
+    private List<String> pathInit() {
         List<String> arrayList = new ArrayList<>();
+        // 新版
+        //arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR));
+        //arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH));
+        //arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH));
+        //arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH));
+        // 旧版
         arrayList.add(fileDir);
-        // 特殊处理
         arrayList.add("/data/nfs_dir");
         return arrayList;
     }

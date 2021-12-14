@@ -108,7 +108,7 @@ public class SceneController {
 
         WebPluginUtils.fillCloudUserData(sceneRequest);
         ResponseResult<Long> createResult = multipleSceneApi.create(sceneRequest);
-        if (request.getBasicInfo().getIsScheduler() && createResult.getSuccess()) {
+        if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler()) && createResult.getSuccess()) {
             sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
                 setSceneId(createResult.getData());
                 setExecuteTime(request.getBasicInfo().getExecuteTime());

@@ -1,7 +1,11 @@
 package io.shulie.takin.web.common.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.io.FileInputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -9,13 +13,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -26,7 +34,32 @@ import org.springframework.util.StringUtils;
  * @author liuchuan
  * @date 2021/6/3 4:43 下午
  */
+@Slf4j
 public class CommonUtil implements AppConstants {
+
+    /**
+     * 零拷贝下载
+     *
+     * @param file     文件
+     * @param response 响应实例
+     */
+    public static void zeroCopyDownload(File file, HttpServletResponse response) {
+        try {
+            // 响应头设置
+            response.setHeader("Content-Disposition", String.format("attachment;filename=%s", file.getName()));
+            response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Expires", "0");
+
+            // 使用sendfile:读取磁盘文件，并网络发送
+            ServletOutputStream servletOutputStream = response.getOutputStream();
+            FileChannel channel = new FileInputStream(file).getChannel();
+            response.setHeader("Content-Length", String.valueOf(channel.size()));
+            channel.transferTo(0, channel.size(), Channels.newChannel(servletOutputStream));
+        } catch (IOException e) {
+            log.error("文件下载错误: 文件地址: {}, 错误信息: {}", file.getAbsolutePath(), e.getMessage(), e);
+        }
+    }
 
     /**
      * 按照Bean对象属性创建对应的Class对象，并忽略某些属性
@@ -87,7 +120,7 @@ public class CommonUtil implements AppConstants {
      * 根据租户id区分文件夹
      *
      * @param uploadPath 上传的文件夹
-     * @param folder 分类目录
+     * @param folder     分类目录
      * @return 文件所在文件夹的绝对路径
      */
     public static String getAbsoluteUploadPath(String uploadPath, String folder) {
@@ -101,7 +134,7 @@ public class CommonUtil implements AppConstants {
      * /data/path/probe/20210610/
      *
      * @param uploadPath 上传的文件路径
-     * @param folder 分类目录
+     * @param folder     分类目录
      * @return 上传文件的临时路径
      */
     public static String getUploadPath(String uploadPath, String folder) {
@@ -143,9 +176,9 @@ public class CommonUtil implements AppConstants {
      * 数据越多, 此方法愈快一些,
      * stream 方法加了 try/catch 是一部分原因, newInstance 可能也是一部分原因
      *
-     * @param sourceList 源list
+     * @param sourceList  源list
      * @param targetClazz 目标对象类对象
-     * @param <T> 要转换的类
+     * @param <T>         要转换的类
      * @return 另一个对象的list
      */
     public static <T> List<T> list2list(List<?> sourceList, Class<T> targetClazz) {
@@ -163,9 +196,9 @@ public class CommonUtil implements AppConstants {
      *
      * 100000 数据, 花费时间 1622712560395
      *
-     * @param sourceList 源list
+     * @param sourceList  源list
      * @param targetClazz 目标对象类对象
-     * @param <T> 要转换的类
+     * @param <T>         要转换的类
      * @return 另一个对象的list
      */
     public static <T> List<T> list2listByStream(List<?> sourceList, Class<T> targetClazz) {

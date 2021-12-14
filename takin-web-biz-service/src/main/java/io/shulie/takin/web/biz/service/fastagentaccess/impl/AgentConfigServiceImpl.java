@@ -120,7 +120,12 @@ public class AgentConfigServiceImpl implements AgentConfigService {
         List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
         List<TApplicationMnt> applicationMntList = tApplicationMntDao.getApplicationMntByUserIdsAndKeyword(userIdList,
             keyword);
-        return applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(Collectors.toList());
+        List<String> result = applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(
+            Collectors.toList());
+        if (!CollectionUtils.isEmpty(result)){
+            result = result.stream().distinct().collect(Collectors.toList());
+        }
+        return result;
     }
 
     @Override

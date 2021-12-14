@@ -231,10 +231,10 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         // 原：在amdb自动梳理的基础上，补充数据库里面的记录，有的话用数据的记录
         for (Entry<String, ShadowConsumerOutput> dbEntry : dbMap.entrySet()) {
             amdbMap.merge(dbEntry.getKey(), dbEntry.getValue(), (amdbValue, dbValue) -> {
-                amdbValue.setCanEdit(true);
-                amdbValue.setCanRemove(dbValue.getIsManual());
-                amdbValue.setCanEnableDisable(dbValue.getCanEnableDisable());
-                return amdbValue;
+                dbValue.setCanEdit(true);
+                dbValue.setCanRemove(dbValue.getIsManual());
+                dbValue.setCanEnableDisable(dbValue.getCanEnableDisable());
+                return dbValue;
             });
         }
         return Lists.newArrayList(amdbMap.values());
@@ -629,9 +629,9 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getType, request.getType());
             queryInput.setType(ShadowMqConsumerType.getByName(request.getType()));
         }
-        if (StringUtils.isNotBlank(request.getShadowconsumerEnable())) {
-            lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus, request.getShadowconsumerEnable());
-        }
+        // if (StringUtils.isNotBlank(request.getShadowconsumerEnable())) {
+        //     lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus, request.getShadowconsumerEnable());
+        // }
         if (CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
             lambdaQueryWrapper.in(ShadowMqConsumerEntity::getUserId, WebPluginUtils.getQueryAllowUserIdList());
         }

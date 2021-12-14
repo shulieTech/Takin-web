@@ -4,8 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-<!--    <version>takin-web-5.1.0.5</version>-->
-    <version>takin-web-5asasasa</version>
+    <version>takin-web-5.1.0.5</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>

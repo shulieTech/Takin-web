@@ -3,7 +3,7 @@ CREATE TABLE `t_application_tag_ref`
 (
     `id`               bigint(20) unsigned NOT NULL AUTO_INCREMENT,
     `application_id`   bigint(20) NOT NULL COMMENT '应用id',
-    `application_name` varchar(20)  DEFAULT '' COMMENT '应用名',
+    `application_name` varchar(64)  DEFAULT '' COMMENT '应用名',
     `tag_id`           bigint(20) NOT NULL COMMENT '标签id',
     `tag_name`         varchar(64) NOT NULL COMMENT '标签名',
     `gmt_create`       datetime     DEFAULT CURRENT_TIMESTAMP,
@@ -58,7 +58,7 @@ CREATE TABLE `t_application_plugin_upgrade`
 (
    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
    `application_id` bigint(20) DEFAULT '0' COMMENT '应用id',
-   `application_name` varchar(20) DEFAULT '' COMMENT '应用名',
+   `application_name` varchar(64) DEFAULT '' COMMENT '应用名',
    `upgrade_batch` varchar(64) NOT NULL COMMENT '升级批次 根据升级内容生成MD5',
    `upgrade_context` varchar(10240) DEFAULT '' COMMENT '升级内容 格式 {pluginId,pluginId}',
    `upgrade_agent_id` varchar(40) DEFAULT NULL COMMENT '处理升级对应的agentId',
@@ -99,7 +99,7 @@ CREATE TABLE `t_agent_report`
 (
     `id`                   bigint(20) unsigned NOT NULL AUTO_INCREMENT,
     `application_id`       bigint(20) DEFAULT 0 COMMENT '应用id',
-    `application_name`     varchar(20)  DEFAULT '' COMMENT '应用名',
+    `application_name`     varchar(64)  DEFAULT '' COMMENT '应用名',
     `agent_id`             varchar(40) NOT NULL COMMENT 'agentId',
     `ip_address`           varchar(20)  DEFAULT '' COMMENT '节点ip',
     `progress_id`          varchar(20)  DEFAULT '' COMMENT '进程号',
@@ -122,7 +122,7 @@ CREATE TABLE `t_application_plugin_download_path`
 (
     `id`               bigint(20) unsigned NOT NULL AUTO_INCREMENT,
     `application_id`   bigint(20) DEFAULT 0 NOT NULL COMMENT '应用id',
-    `application_name` varchar(20)  DEFAULT '' COMMENT '应用名',
+    `application_name` varchar(64)  DEFAULT '' COMMENT '应用名',
     `path_type`        tinyint(4) NOT NULL DEFAULT 0 COMMENT '类型 0:oss;1:ftp;2:nginx',
     `context`          varchar(255) NOT NULL COMMENT '配置内容',
     `salt`             varchar(60)  NOT NULL COMMENT '密码加密的密钥',

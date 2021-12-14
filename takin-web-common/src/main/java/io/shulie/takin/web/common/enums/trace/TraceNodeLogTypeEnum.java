@@ -14,8 +14,10 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum TraceNodeLogTypeEnum {
-    LOG_TYPE_RPC_CLIENT(0,"客户端"),
-    LOG_TYPE_RPC_SERVER(1,"服务端");
+    //LOG_TYPE_RPC_CLIENT(0,"客户端"),
+    //LOG_TYPE_RPC_SERVER(1,"服务端");
+    LOG_TYPE_RPC_CLIENT(0,"被调用方"),
+    LOG_TYPE_RPC_SERVER(1,"调用方");
     private Integer logType;
     private String desc;
 

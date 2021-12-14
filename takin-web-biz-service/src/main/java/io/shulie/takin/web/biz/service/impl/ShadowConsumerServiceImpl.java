@@ -234,7 +234,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                 amdbValue.setCanEdit(true);
                 amdbValue.setCanRemove(dbValue.getIsManual());
                 amdbValue.setCanEnableDisable(dbValue.getCanEnableDisable());
-                return dbValue;
+                return amdbValue;
             });
         }
         return Lists.newArrayList(amdbMap.values());

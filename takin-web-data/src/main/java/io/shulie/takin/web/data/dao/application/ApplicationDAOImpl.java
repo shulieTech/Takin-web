@@ -645,7 +645,7 @@ public class ApplicationDAOImpl
 
     @Override
     public List<ApplicationDetailResult> getAllApplicationsByField() {
-        List<ApplicationMntEntity> allApplications = applicationMntMapper.getAllApplications();
+        List<ApplicationMntEntity> allApplications = applicationMntMapper.getAllApplicationsByField();
         if (CollectionUtils.isEmpty(allApplications)) {
             return Lists.newArrayList();
         }

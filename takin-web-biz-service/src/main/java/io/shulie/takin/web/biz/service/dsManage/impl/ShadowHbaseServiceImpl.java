@@ -16,6 +16,8 @@ import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.dsManage.AbstractDsService;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDAO;
@@ -105,7 +107,11 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
     }
 
     private Map<String, Object> parseConfig(String config) {
-        return JSON.parseObject(config, Map.class);
+        try {
+            return JSON.parseObject(config, Map.class);
+        }catch (Throwable e){
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_CONFIG_FILE_VALIDATE_ERROR,"JSON 格式解析出错！请检查格式是否正确！");
+        }
     }
 
     private Response validator(Map<String, Object> map) {

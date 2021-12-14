@@ -1,27 +1,36 @@
 package io.shulie.takin.web.entrypoint.controller.businessflow;
 
+import io.shulie.takin.cloud.common.utils.JsonUtil;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.constant.APIUrls;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -38,7 +47,7 @@ public class BusinessFlowController {
     @ModuleDef(
             moduleName = BizOpConstants.Modules.LINK_CARDING,
             subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
-            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_CREATE
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_CREATE2
     )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
@@ -46,6 +55,13 @@ public class BusinessFlowController {
     )
     public ResponseResult<BusinessFlowDetailResponse> parseScriptAndSave(@RequestBody @Valid BusinessFlowParseRequest businessFlowParseRequest) {
         BusinessFlowDetailResponse sceneDetailDto = sceneService.parseScriptAndSave(businessFlowParseRequest);
+
+        // 操作日志
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
+        if (null != sceneDetailDto) {
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_FLOW_ID, String.valueOf(sceneDetailDto.getId()));
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_FLOW_NAME, sceneDetailDto.getBusinessProcessName());
+        }
         return ResponseResult.success(sceneDetailDto);
     }
 
@@ -54,7 +70,7 @@ public class BusinessFlowController {
     @ModuleDef(
             moduleName = BizOpConstants.Modules.LINK_CARDING,
             subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
-            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATE
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATEFile
     )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
@@ -62,6 +78,35 @@ public class BusinessFlowController {
     )
     public ResponseResult<BusinessFlowDetailResponse> uploadDataFile(@RequestBody @Valid BusinessFlowDataFileRequest businessFlowDataFileRequest) {
         BusinessFlowDetailResponse sceneDetailDto = sceneService.uploadDataFile(businessFlowDataFileRequest);
+        // 操作日志
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
+        if (null != businessFlowDataFileRequest) {
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_FLOW_ID, String.valueOf(businessFlowDataFileRequest.getId()));
+            List<FileManageUpdateRequest> files = businessFlowDataFileRequest.getFileManageUpdateRequests();
+            if (CollectionUtils.isNotEmpty(files)) {
+                String newFiles = files.stream().filter(Objects::nonNull)
+                        .filter(f -> null == f.getId())
+                        .map(FileManageUpdateRequest::getFileName)
+                        .collect(Collectors.joining(","));
+                OperationLogContextHolder.addVars("newFiles", newFiles);
+                String updateFiles = files.stream().filter(Objects::nonNull)
+                        .filter(f -> null != f.getId())
+                        .filter(f -> f.getIsDeleted() != 1)
+                        .map(FileManageUpdateRequest::getFileName)
+                        .collect(Collectors.joining(","));
+                String deleteFiles = files.stream().filter(Objects::nonNull)
+                        .filter(f -> f.getIsDeleted() == 1)
+                        .map(FileManageUpdateRequest::getFileName)
+                        .collect(Collectors.joining(","));
+                OperationLogContextHolder.addVars("newFiles", newFiles);
+                OperationLogContextHolder.addVars("updateFiles", updateFiles);
+                OperationLogContextHolder.addVars("deleteFiles", deleteFiles);
+            }
+            List<PluginConfigUpdateRequest> plugins = businessFlowDataFileRequest.getPluginConfigUpdateRequests();
+            if (CollectionUtils.isNotEmpty(plugins)) {
+                OperationLogContextHolder.addVars("plugins", JsonUtil.toJson(plugins));
+            }
+        }
         return ResponseResult.success(sceneDetailDto);
     }
 
@@ -86,7 +131,7 @@ public class BusinessFlowController {
     @ModuleDef(
             moduleName = BizOpConstants.Modules.LINK_CARDING,
             subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
-            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATE
+            logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_FLOW
     )
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
@@ -94,6 +139,11 @@ public class BusinessFlowController {
     )
     public ResponseResult<Boolean> matchActivity(@RequestBody @Valid SceneLinkRelateRequest sceneLinkRelateRequest) {
         sceneService.matchActivity(sceneLinkRelateRequest);
+        // 操作日志
+        if (null != sceneLinkRelateRequest) {
+            OperationLogContextHolder.operationType(null == sceneLinkRelateRequest.getId() ? BizOpConstants.OpTypes.CREATE : BizOpConstants.OpTypes.UPDATE);
+            OperationLogContextHolder.addVars("data", JsonUtil.toJson(sceneLinkRelateRequest));
+        }
         return ResponseResult.success(Boolean.TRUE);
     }
 

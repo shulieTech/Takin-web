@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.request.scriptmanage;
 
+import io.shulie.takin.cloud.common.pojo.AbstractEntry;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -8,7 +9,7 @@ import lombok.Data;
  * @date 2021/1/20 5:42 下午
  */
 @Data
-public class PluginConfigUpdateRequest {
+public class PluginConfigUpdateRequest extends AbstractEntry {
     @ApiModelProperty(name = "type", value = "插件类型")
     private String type;
 

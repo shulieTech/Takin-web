@@ -112,6 +112,14 @@ public class SceneController {
                 setExecuteTime(request.getBasicInfo().getExecuteTime());
             }});
         }
+        // 操作日志
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
+        if (null != createResult && null != createResult.getData()) {
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(createResult.getData()));
+        }
+        if (null != request && null != request.getBasicInfo() && null != request.getBasicInfo().getName()) {
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
+        }
         return createResult;
     }
 
@@ -143,8 +151,10 @@ public class SceneController {
         }
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(request.getBasicInfo().getSceneId()));
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
+        if (null != request.getBasicInfo()) {
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(request.getBasicInfo().getSceneId()));
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
+        }
         //OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_SELECTIVE_CONTENT, selectiveContent);
 
         return updateResult;

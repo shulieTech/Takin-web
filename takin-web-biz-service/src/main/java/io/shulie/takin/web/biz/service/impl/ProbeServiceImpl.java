@@ -12,8 +12,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.io.FileUtil;
@@ -25,14 +23,13 @@ import io.shulie.takin.web.biz.pojo.output.probe.CreateProbeOutput;
 import io.shulie.takin.web.biz.pojo.output.probe.ProbeListOutput;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.ProbeService;
-import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.ProbeConstants;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
+import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.ProbeDAO;
@@ -40,13 +37,13 @@ import io.shulie.takin.web.data.param.probe.CreateProbeParam;
 import io.shulie.takin.web.data.param.probe.UpdateProbeParam;
 import io.shulie.takin.web.data.result.probe.ProbeDetailResult;
 import io.shulie.takin.web.data.result.probe.ProbeListResult;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -62,6 +59,7 @@ public class ProbeServiceImpl implements ProbeService, ProbeConstants, AppConsta
     /**
      * 上传文件的路径
      */
+    @Value("${takin.data.path}")
     private String uploadPath;
 
     @Autowired
@@ -69,11 +67,6 @@ public class ProbeServiceImpl implements ProbeService, ProbeConstants, AppConsta
 
     @Autowired
     private DistributedLock distributedLock;
-
-    @PostConstruct
-    public void init() {
-        uploadPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH);
-    }
 
     @Override
     public PagingList<ProbeListOutput> pageProbe(PageBaseDTO pageDTO) {

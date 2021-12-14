@@ -8,8 +8,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
+import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationParam;
 import io.shulie.takin.web.data.result.application.ApplicationListResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.apache.ibatis.annotations.Param;
 
@@ -214,4 +216,8 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
 
     List<ApplicationMntEntity> getAllApplicationsByField();
 
+
+    @InterceptorIgnore(tenantLine = "true")
+    IPage<ApplicationListResultByUpgrade> selectApplicationListByUpgrade(
+            @Param("page") IPage<ApplicationMntEntity> page, @Param("param") QueryApplicationByUpgradeParam param);
 }

@@ -44,9 +44,11 @@ import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationListResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.data.result.application.LibraryResult;
@@ -650,5 +652,11 @@ public class ApplicationDAOImpl
             return Lists.newArrayList();
         }
         return DataTransformUtil.list2list(allApplications, ApplicationDetailResult.class);
+    }
+
+    @Override
+    public IPage<ApplicationListResultByUpgrade> getApplicationList(QueryApplicationByUpgradeParam param) {
+
+        return applicationMntMapper.selectApplicationListByUpgrade(this.setPage(param), param);
     }
 }

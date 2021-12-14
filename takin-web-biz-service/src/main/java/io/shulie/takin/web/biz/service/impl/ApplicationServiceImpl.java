@@ -65,10 +65,12 @@ import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInpu
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationListByUpgradeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationQueryRequestV2;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationListByUpgradeResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationListResponseV2;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationNodeDashBoardResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
@@ -144,6 +146,7 @@ import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
@@ -152,6 +155,7 @@ import io.shulie.takin.web.data.result.application.AppAgentConfigReportDetailRes
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationListResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
 import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
@@ -1204,6 +1208,27 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return response;
         }).collect(Collectors.toList());
         return PagingList.of(responseList, applicationListResultIPage.getTotal());
+    }
+
+    @Override
+    public PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest request) {
+        QueryApplicationByUpgradeParam param = BeanUtil.copyProperties(request, QueryApplicationByUpgradeParam.class);
+        param.setTenantId(WebPluginUtils.traceTenantId());
+        param.setEnvCode(WebPluginUtils.traceEnvCode());
+        param.setUserIds(WebPluginUtils.getQueryAllowUserIdList());
+        IPage<ApplicationListResultByUpgrade> applicationList = applicationDAO.getApplicationList(param);
+        if (applicationList.getTotal() == 0) {
+            return PagingList.empty();
+        }
+
+        List<ApplicationListResultByUpgrade> records = applicationList.getRecords();
+        List<ApplicationListByUpgradeResponse> responseList = records.stream().map(result -> {
+            ApplicationListByUpgradeResponse response = BeanUtil.copyProperties(result, ApplicationListByUpgradeResponse.class);
+            response.setId(result.getApplicationId().toString());
+            response.setGmtUpdate(result.getUpdateTime());
+            return response;
+        }).collect(Collectors.toList());
+        return PagingList.of(responseList, applicationList.getTotal());
     }
 
     /**

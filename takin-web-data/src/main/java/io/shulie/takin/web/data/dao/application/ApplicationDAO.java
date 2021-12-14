@@ -370,4 +370,6 @@ public interface ApplicationDAO {
      */
     IPage<ApplicationListResult> listByParam(QueryApplicationParam param);
 
+    List<ApplicationDetailResult> getAllApplicationsByField();
+
 }

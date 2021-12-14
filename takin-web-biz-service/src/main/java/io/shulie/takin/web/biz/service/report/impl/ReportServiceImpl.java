@@ -53,6 +53,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 /**
  * @author qianshui
@@ -198,6 +199,7 @@ public class ReportServiceImpl implements ReportService {
         req.setSceneId(sceneId);
         ResponseResult<ReportDetailResp> result = reportApi.tempReportDetail(req);
         ReportDetailResp resp = result.getData();
+        Assert.notNull(resp, "压测实况报告暂未生成!");
         ReportDetailTempOutput output = new ReportDetailTempOutput();
         BeanUtils.copyProperties(resp, output);
 

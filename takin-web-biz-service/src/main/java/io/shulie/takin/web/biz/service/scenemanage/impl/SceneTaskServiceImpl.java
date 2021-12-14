@@ -272,6 +272,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         Integer reportId = (Integer)jsonObject.get("data");
         redisTemplate.opsForValue().set(getCacheReportId(param.getSceneId()), reportId);
         redisTemplate.expire(getCacheReportId(param.getSceneId()), 1L, TimeUnit.DAYS);
+        checkStatus(param.getSceneId(), Long.valueOf(reportId));
     }
 
     private SceneActionParamNew getNewParam(SceneActionParam param) {

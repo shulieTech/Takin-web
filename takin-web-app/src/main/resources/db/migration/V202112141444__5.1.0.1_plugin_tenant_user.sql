@@ -5,8 +5,14 @@ CREATE PROCEDURE add_column()
 BEGIN
 	IF NOT EXISTS( SELECT * FROM  information_schema.columns WHERE table_schema= DATABASE() AND table_name='t_tro_user' AND column_name='is_super')
 	THEN
-    ALTER TABLE `t_tro_user`
-        ADD COLUMN `is_super` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否有超管权限，1=是，0=否，默认0';
+ALTER TABLE `t_tro_user`
+    ADD COLUMN `is_super` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否有超管权限，1=是，0=否，默认0';
+END IF;
+
+    IF NOT EXISTS( SELECT * FROM  information_schema.columns WHERE table_schema= DATABASE() AND table_name='t_tenant_info' AND column_name='create_by')
+    THEN
+ALTER TABLE `t_tenant_info`
+    ADD COLUMN `create_by` BIGINT(20) NOT NULL COMMENT '创建者，用户ID';
 END IF;
 END $$
 DELIMITER ;

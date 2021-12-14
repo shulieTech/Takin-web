@@ -147,6 +147,8 @@ public class FileController {
     private List<String> init() {
         List<String> arrayList = new ArrayList<>();
         arrayList.add(fileDir);
+        // 特殊处理
+        arrayList.add("/data/nfs_dir");
         return arrayList;
     }
 

@@ -23,10 +23,16 @@ public class AgentVersionUtil {
 
         long rs = 0;
         for (int i = 0; i < arr.length; i++) {
-            int e = Integer.parseInt(arr[i]) << (10 * (arr.length - i - 1));
+            long e = Long.parseLong(arr[i]) << (10 * (arr.length - i - 1));
             rs += e;
         }
         return rs;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(AgentVersionUtil.string2Long("5.0.0.0"));
+        System.out.println(AgentVersionUtil.string2Long("1.0.3.2"));
+
     }
 
 }

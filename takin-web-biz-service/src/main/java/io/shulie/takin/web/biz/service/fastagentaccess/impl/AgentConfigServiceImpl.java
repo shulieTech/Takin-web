@@ -386,6 +386,8 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
     @Override
     public PagingList<AgentConfigEffectListResponse> queryConfigEffectList(AgentConfigEffectQueryRequest queryRequest) {
+        boolean needEffectValue = queryRequest.getNeedEffectValue() == null || queryRequest.getNeedEffectValue();
+
         // 1、调用大数据接口查询生效列表
         AgentConfigQueryDTO queryDTO = new AgentConfigQueryDTO();
         BeanUtils.copyProperties(queryRequest, queryDTO);
@@ -408,11 +410,14 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
                 response.setProgram("重启后生效");
             }
 
-            // 根据应用名，userAppKey 和 enKey查询应该生效的value
-            AgentConfigDetailResult configDetailResult = queryByEnKeyAndProject(queryRequest.getEnKey(),
-                item.getAppName());
-            if (configDetailResult != null) {
-                response.setEffectVal(configDetailResult.getDefaultValue());
+            // 优化性能，列表接口不需要查询生效值
+            if(needEffectValue){
+                // 根据应用名，userAppKey 和 enKey查询应该生效的value
+                AgentConfigDetailResult configDetailResult = queryByEnKeyAndProject(queryRequest.getEnKey(),
+                    item.getAppName());
+                if (configDetailResult != null) {
+                    response.setEffectVal(configDetailResult.getDefaultValue());
+                }
             }
             return response;
         }).collect(Collectors.toList());
@@ -497,6 +502,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
                 queryRequest.setEnKey(item.getEnKey());
                 queryRequest.setProjectName(query.getProjectName());
                 queryRequest.setIsEffect(false);
+                queryRequest.setNeedEffectValue(false);
                 PagingList<AgentConfigEffectListResponse> effectListResponsePagingList = queryConfigEffectList(
                     queryRequest);
                 if (effectListResponsePagingList.getTotal() > 0) {

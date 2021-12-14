@@ -50,6 +50,8 @@ public class FileController {
 
     @Value("${file.upload.user.data.dir:/data/tmp}")
     private String fileDir;
+    @Value("${file.upload.script.path:/data/nfs_dir}")
+    private String fileScriptPath;
 
     @PostMapping("/upload")
     @ApiOperation(value = "文件上传")
@@ -146,7 +148,7 @@ public class FileController {
         //arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH));
         // 旧版
         arrayList.add(fileDir);
-        arrayList.add("/data/nfs_dir");
+        arrayList.add(fileScriptPath);
         return arrayList;
     }
 

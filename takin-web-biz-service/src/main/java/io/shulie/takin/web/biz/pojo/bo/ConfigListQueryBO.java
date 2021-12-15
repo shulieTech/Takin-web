@@ -42,4 +42,9 @@ public class ConfigListQueryBO {
      * 仅看应用配置
      */
     private Boolean readProjectConfig;
+
+    /**
+     * 环境标识
+     */
+    private String envCode;
 }

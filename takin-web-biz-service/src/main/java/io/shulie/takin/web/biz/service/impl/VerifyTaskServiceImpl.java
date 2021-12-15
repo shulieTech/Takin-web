@@ -381,7 +381,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                         if (VerifyResultStatusEnum.LEAKED.getCode().equals(count)) {
                             SceneManageIdReq queryReq = new SceneManageIdReq();
                             queryReq.setId(refId);
-                            queryReq.setReportId(resultId);
+                            queryReq.setReportId(reportId);
                             WebPluginUtils.fillCloudUserData(queryReq);
                             ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(queryReq);
                             if (!Objects.isNull(response.getData())) {

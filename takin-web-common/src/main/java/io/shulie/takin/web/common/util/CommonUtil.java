@@ -1,15 +1,16 @@
 package io.shulie.takin.web.common.util;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.util.List;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
+import java.net.InetAddress;
+import java.io.FileInputStream;
+import java.nio.channels.Channels;
+import java.util.stream.Collectors;
+import java.net.UnknownHostException;
+import java.nio.channels.FileChannel;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -46,7 +47,7 @@ public class CommonUtil implements AppConstants {
     /**
      * 零拷贝下载
      *
-     * @param file 文件
+     * @param file     文件
      * @param response 响应实例
      */
     public static void zeroCopyDownload(File file, HttpServletResponse response) {
@@ -106,7 +107,7 @@ public class CommonUtil implements AppConstants {
     /**
      * 获得 zk 租户, 环境隔离后的路径
      *
-     * @param path 节点路径
+     * @param path      节点路径
      * @param commonExt 租户属性
      * @return 租户, 环境隔离后的路径
      */
@@ -116,11 +117,12 @@ public class CommonUtil implements AppConstants {
 
     /**
      * 获取NameSpace
-     * @param commonExt
-     * @return
+     *
+     * @param commonExt 溯源信息
+     * @return nameSpace
      */
     public static String getZkNameSpace(TenantCommonExt commonExt) {
-        return commonExt != null ? CommonUtil.getZkTenantAndEnvPath(APP,commonExt): Constants.DEFAULT_NAMESPACE;
+        return commonExt != null ? CommonUtil.getZkTenantAndEnvPath(APP, commonExt) : Constants.DEFAULT_NAMESPACE;
     }
 
     /**
@@ -215,8 +217,9 @@ public class CommonUtil implements AppConstants {
 
     /**
      * redis key
-     * @param keyPart
-     * @return
+     *
+     * @param keyPart RedisKey的组成部分
+     * @return RedisKey
      */
     public static String generateRedisKey(String... keyPart) {
         return generateRedisKeyWithSeparator(Separator.defautSeparator(), keyPart);
@@ -234,28 +237,33 @@ public class CommonUtil implements AppConstants {
     public static void main(String[] args) {
         TenantCommonExt ext = new TenantCommonExt();
         ext.setTenantAppKey("sasa");
-        ext.setEnvCode("asaa");
-        System.out.println(getZkTenantAndEnvPath("apps",ext));;
+        ext.setEnvCode("test");
+        System.out.println(getZkTenantAndEnvPath("apps", ext));
 
         // 生成一万个A, 转B
         long startAt = System.currentTimeMillis();
 
-        List<A> aList = new ArrayList<>(10000);
+        List<ModelA> aList = new ArrayList<>(10000);
         for (long i = 0; i < 1000000; i++) {
-            aList.add(new A(i, RandomUtil.randomString(5)));
+            aList.add(new ModelA(i, RandomUtil.randomString(5)));
         }
 
         long middleAt = System.currentTimeMillis() - startAt;
         System.out.printf("生成数据花费时间: %d%n", middleAt);
 
-        DataTransformUtil.list2list(aList, B.class);
+        DataTransformUtil.list2list(aList, ModelB.class);
         //list2listByStream(aList, B.class);
         System.out.printf("转换数据花费时间: %d%n", System.currentTimeMillis() - middleAt);
     }
 
     /**
      * 该方法废弃, 移到
-     * @see io.shulie.takin.web.common.util.DataTransformUtil.list2list
+     *
+     * @param targetClazz 目标对象类对象
+     * @param sourceList  源list
+     * @param <T>         要转换的类
+     * @return 另一个对象的list
+     * @see io.shulie.takin.web.common.util.DataTransformUtil#list2list
      *
      * 一个象的list 转 另一个对象的list
      * 适合两者的字段名称及类型, 都一样
@@ -266,11 +274,6 @@ public class CommonUtil implements AppConstants {
      * 100000 数据, 花费时间 1622712527764
      * 数据越多, 此方法愈快一些,
      * stream 方法加了 try/catch 是一部分原因, newInstance 可能也是一部分原因
-     *
-     * @param sourceList  源list
-     * @param targetClazz 目标对象类对象
-     * @param <T>         要转换的类
-     * @return 另一个对象的list
      */
     @Deprecated
     public static <T> List<T> list2list(List<?> sourceList, Class<T> targetClazz) {
@@ -280,26 +283,53 @@ public class CommonUtil implements AppConstants {
 
     /**
      * 该方法废弃, 移到
-     * @see io.shulie.takin.web.common.util.DataTransformUtil.copyBeanPropertiesWithNull
-     *
-     * 按照Bean对象属性创建对应的Class对象，并忽略某些属性
-     * 如果源头bean为null, 则吐出的也是null
      *
      * @param <T>              对象类型
      * @param source           源Bean对象
      * @param tClass           目标Class
      * @param ignoreProperties 不拷贝的的属性列表
      * @return 目标对象
+     * @see io.shulie.takin.web.common.util.DataTransformUtil#copyBeanPropertiesWithNull
+     *
+     * 按照Bean对象属性创建对应的Class对象，并忽略某些属性
+     * 如果源头bean为null, 则吐出的也是null
      */
     @Deprecated
     public static <T> T copyBeanPropertiesWithNull(Object source, Class<T> tClass, String... ignoreProperties) {
         return source == null ? null : BeanUtil.copyProperties(source, tClass, ignoreProperties);
     }
 
+    /**
+     * 一个象的list 转 另一个对象的list
+     * 适合两者的字段名称及类型, 都一样
+     *
+     * 要转换的类, 需要有无参构造器
+     *
+     * 使用 stream 方式
+     *
+     * 100000 数据, 花费时间 1622712560395
+     *
+     * @param sourceList  源list
+     * @param targetClazz 目标对象类对象
+     * @param <T>         要转换的类
+     * @return 另一个对象的list
+     */
+    public static <T> List<T> list2listByStream(List<?> sourceList, Class<T> targetClazz) {
+        return sourceList.stream().map(source -> {
+            try {
+                T target = targetClazz.newInstance();
+                BeanUtils.copyProperties(source, target);
+                return target;
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException("目标对象实例化错误!");
+            }
+        }).collect(Collectors.toList());
+    }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    private static class A {
+    private static class ModelA {
         private Long id;
         private String name;
     }
@@ -307,7 +337,7 @@ public class CommonUtil implements AppConstants {
     @AllArgsConstructor
     @Data
     @NoArgsConstructor
-    private static class B {
+    private static class ModelB {
         private Long id;
         private String name;
     }

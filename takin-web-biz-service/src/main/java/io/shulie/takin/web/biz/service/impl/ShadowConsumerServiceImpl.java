@@ -1,5 +1,16 @@
 package io.shulie.takin.web.biz.service.impl;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.BooleanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -44,20 +55,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -69,20 +68,15 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
 
     @Resource
     private ShadowMqConsumerMapper shadowMqConsumerMapper;
-
-    @Autowired
+    @Resource
     private ApplicationDAO applicationDAO;
-
-    @Autowired
+    @Resource
     private ApplicationEntranceClient applicationEntranceClient;
-
-    @Autowired
+    @Resource
     private AgentConfigCacheManager agentConfigCacheManager;
-
-    @Autowired
+    @Resource
     private ShadowMqConsumerDAO shadowMqConsumerDAO;
-
-    @Autowired
+    @Resource
     private MqConfigTemplateDAO mqConfigTemplateDAO;
 
     @Override
@@ -205,7 +199,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                 })
                 .collect(Collectors.toMap(ShadowConsumerOutput::getUnionId, e -> e, (oV, nV) -> nV));
         }
-        Map<String, ShadowConsumerOutput> dbMap = new HashMap<>();
+        Map<String, ShadowConsumerOutput> dbMap = new HashMap<>(dbResult.size());
         if (CollectionUtils.isNotEmpty(dbResult)) {
             dbMap = dbResult.stream()
                 .filter(item -> ShadowMqConsumerType.getByName(item.getType()) != null)
@@ -228,7 +222,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                 })
                 .collect(Collectors.toMap(ShadowConsumerOutput::getUnionId, e -> e, (oV, nV) -> nV));
         }
-        // 在amdb自动梳理的基础上，补充数据库里面的记录，有的话用数据的记录
+        // 原：在amdb自动梳理的基础上，补充数据库里面的记录，有的话用数据的记录
         for (Entry<String, ShadowConsumerOutput> dbEntry : dbMap.entrySet()) {
             amdbMap.merge(dbEntry.getKey(), dbEntry.getValue(), (amdbValue, dbValue) -> {
                 dbValue.setCanEdit(true);
@@ -581,7 +575,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void createMqConsumersV2(ShadowConsumerCreateInput request, Boolean ManualTag) {
+    public void createMqConsumersV2(ShadowConsumerCreateInput request, Boolean manualTag) {
         if (!request.getTopicGroup().contains("#")) {
             throw new RuntimeException("请求参数不正确，Group和Topic以#号拼接");
         }
@@ -610,7 +604,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
 
         Integer status = StringUtils.isBlank(request.getShadowconsumerEnable()) ? ShadowConsumerConstants.DISABLE : Integer.parseInt(request.getShadowconsumerEnable());
         shadowMqConsumerEntity.setStatus(status);
-        shadowMqConsumerEntity.setManualTag(ManualTag ? 1 : 0);
+        shadowMqConsumerEntity.setManualTag(manualTag ? 1 : 0);
         shadowMqConsumerEntity.setDeleted(ShadowConsumerConstants.LIVED);
         shadowMqConsumerMapper.insert(shadowMqConsumerEntity);
         agentConfigCacheManager.evictShadowConsumer(application.getApplicationName());
@@ -632,9 +626,9 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getType, request.getType());
             queryInput.setType(ShadowMqConsumerType.getByName(request.getType()));
         }
-        if (StringUtils.isNotBlank(request.getShadowconsumerEnable())) {
-            lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus, request.getShadowconsumerEnable());
-        }
+        // if (StringUtils.isNotBlank(request.getShadowConsumerEnable())) {
+        //     lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus, request.getShadowConsumerEnable());
+        // }
         if (CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
             lambdaQueryWrapper.in(ShadowMqConsumerEntity::getUserId, WebPluginUtils.getQueryAllowUserIdList());
         }

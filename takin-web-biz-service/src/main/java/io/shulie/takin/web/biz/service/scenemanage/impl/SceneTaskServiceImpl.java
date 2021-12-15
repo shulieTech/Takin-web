@@ -85,7 +85,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -101,55 +100,39 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     public static final String PRESSURE_REPORT_ID_SCENE_PREFIX = "pressure:reportId:scene:";
 
-    @Value("${takin.cloud.url}")
-    private String cloudUrl;
     @Value("${file.upload.script.path:/nfs/takin/script/}")
     private String scriptFilePath;
 
     @Resource
     private LeakSqlService leakSqlService;
-
     @Resource
     private DataSourceService dataSourceService;
-
     @Resource
     private SceneManageService sceneManageService;
-
     @Resource
     private TApplicationMntDao applicationMntDao;
-
     @Resource
     private SceneTaskApi sceneTaskApi;
-
-    @Autowired
+    @Resource
     private SceneManageApi sceneManageApi;
-
-    @Autowired
+    @Resource
     private ReportApplicationService reportApplicationService;
-
-    @Autowired
+    @Resource
     private AsyncService asyncService;
-
-    @Autowired
+    @Resource
     private ApplicationService applicationService;
-
-    @Autowired
+    @Resource
     private CloudTaskApi cloudTaskApi;
-
-    @Autowired
+    @Resource
     private ScriptManageService scriptManageService;
-
-    @Autowired
+    @Resource
     private RedisClientUtils redisClientUtils;
-
-    @Autowired
+    @Resource
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
-
-    @Autowired
+    @Resource
     private ApplicationDAO applicationDAO;
-
-    @Autowired
+    @Resource
     private BaseConfigService baseConfigService;
 
     /**
@@ -258,13 +241,12 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         }
         Long reportId = request.getData();
         redisTemplate.opsForValue().set(getCacheReportId(param.getSceneId()), reportId, 1L, TimeUnit.DAYS);
-
     }
 
     private SceneActionParamNew getNewParam(SceneActionParam param) {
         SceneActionParamNew paramNew = CopyUtils.copyFields(param, SceneActionParamNew.class);
         try {
-            paramNew.setContinueRead(param.getContinueRead().equals("1"));
+            paramNew.setContinueRead("1".equals(param.getContinueRead()));
         } catch (Exception e) {
             log.error("未知异常", e);
         }
@@ -274,7 +256,12 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         return paramNew;
     }
 
-    //RedisKey改造，在原有的sceneId前面追加tenantId:envCode:
+    /**
+     * RedisKey改造，在原有的sceneId前面追加tenantId:envCode:
+     *
+     * @param sceneId 场景主键
+     * @return RedisKey
+     */
     private String getCacheReportId(Long sceneId) {
         return PRESSURE_REPORT_ID_SCENE_PREFIX + TenantKeyUtils.getTenantKey() + sceneId;
     }
@@ -326,8 +313,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         List<SceneBusinessActivityRefResp> sceneBusinessActivityRefList = wrapperResp.getBusinessActivityConfig();
         //从活动中提取应用ID，去除重复ID
         List<Long> applicationIds = sceneBusinessActivityRefList.stream()
-            .filter(data -> StringUtils.isNotEmpty(data.getApplicationIds()))
             .map(SceneBusinessActivityRefResp::getApplicationIds)
+            .filter(StringUtils::isNotEmpty)
             .flatMap(appIds -> Arrays.stream(appIds.split(",")).map(Long::parseLong))
             .filter(data -> data > 0L).distinct().collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(applicationIds)) {

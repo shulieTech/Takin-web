@@ -1,7 +1,8 @@
 package io.shulie.takin.web.biz.pojo.request.scriptmanage;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author fanxx

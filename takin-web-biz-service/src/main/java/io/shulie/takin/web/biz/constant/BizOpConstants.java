@@ -152,8 +152,11 @@ public final class BizOpConstants {
          * 业务流程
          */
         public static final String MESSAGE_BUSINESS_PROCESS_CREATE = "message.business_process.create";
+        public static final String MESSAGE_BUSINESS_PROCESS_CREATE2 = "message.business_process.create2";
         public static final String MESSAGE_BUSINESS_PROCESS_DELETE = "message.business_process.delete";
         public static final String MESSAGE_BUSINESS_PROCESS_UPDATE = "message.business_process.update";
+        public static final String MESSAGE_BUSINESS_FLOW = "message.business_flow.update";
+        public static final String MESSAGE_BUSINESS_PROCESS_UPDATEFile = "message.business_process.updatefile";
 
         /**
          * 基础信息
@@ -364,7 +367,14 @@ public final class BizOpConstants {
          * 业务活动
          */
         public static final String BUSINESS_ACTIVITY = "businessActivity";
-
+        /**
+         * 业务流程id
+         */
+        public static final String BUSINESS_FLOW_ID = "businessFlowId";
+        /**
+         * 业务流程名称
+         */
+        public static final String BUSINESS_FLOW_NAME = "businessFlowName";
         /**
          * 业务流程
          */
@@ -399,6 +409,7 @@ public final class BizOpConstants {
          * 场景ID
          */
         public static final String SCENE_ID = "sceneId";
+
 
         /**
          * 场景名称

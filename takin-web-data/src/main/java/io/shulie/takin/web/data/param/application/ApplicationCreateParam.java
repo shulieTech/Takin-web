@@ -1,5 +1,7 @@
 package io.shulie.takin.web.data.param.application;
 
+import java.util.Objects;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
@@ -17,7 +19,7 @@ public class ApplicationCreateParam extends UserCommonExt {
 
     //@Field applicationId : 应用编号
     @JsonSerialize(using = LongToStringFormatSerialize.class)
-    private long applicationId;
+    private Long applicationId;
 
     //@Field applicationName : 应用名称
     @NotBlank(message = "应用名称不能为空")
@@ -133,7 +135,7 @@ public class ApplicationCreateParam extends UserCommonExt {
             return false;
         }
         ApplicationCreateParam other = (ApplicationCreateParam)obj;
-        if (applicationId != other.applicationId) {
+        if (!Objects.equals(applicationId, other.applicationId)) {
             return false;
         }
         if (applicationName == null) {

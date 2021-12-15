@@ -168,20 +168,6 @@ public class ConfCenterService extends CommonService {
         addPluginsConfig(tApplicationMnt);//插件管理-添加影子key默认过期时间
     }
 
-    private void addPluginsConfig(ApplicationCreateParam applicationMnt) {
-        ApplicationPluginsConfigParam param = new ApplicationPluginsConfigParam();
-        param.setConfigItem("redis影子key有效期");
-        param.setConfigKey("redis_expire");
-        param.setConfigDesc("可自定义设置redis影子key有效期，默认与业务key有效期一致。若设置时间比业务key有效期长，不生效，仍以业务key有效期为准。");
-        param.setConfigValue("-1");
-        param.setApplicationName(applicationMnt.getApplicationName());
-        param.setApplicationId(applicationMnt.getApplicationId());
-        param.setTenantId(applicationMnt.getTenantId());
-        param.setEnvCode(applicationMnt.getEnvCode());
-        param.setUserId(applicationMnt.getUserId());
-        pluginsConfigService.add(param);
-    }
-
     @Transactional(rollbackFor = Exception.class)
     public void saveAgentRegisterApplication(ApplicationCreateParam tApplicationMnt) {
         int applicationExist = applicationDAO.applicationExistByTenantIdAndAppName(
@@ -193,9 +179,8 @@ public class ConfCenterService extends CommonService {
         addApplication(tApplicationMnt);
         addApplicationToDataBuild(tApplicationMnt);
         addApplicationToLinkDetection(tApplicationMnt);
-        //应用自动上报需要设置插件管理的redis影子key默认值
+        // 应用自动上报需要设置插件管理的redis影子key默认值
         addPluginsConfig(tApplicationMnt);
-
     }
 
     /**
@@ -2103,4 +2088,20 @@ public class ConfCenterService extends CommonService {
             return this;
         }
     }
+
+
+    private void addPluginsConfig(ApplicationCreateParam applicationMnt) {
+        ApplicationPluginsConfigParam param = new ApplicationPluginsConfigParam();
+        param.setConfigItem("redis影子key有效期");
+        param.setConfigKey("redis_expire");
+        param.setConfigDesc("可自定义设置redis影子key有效期，默认与业务key有效期一致。若设置时间比业务key有效期长，不生效，仍以业务key有效期为准。");
+        param.setConfigValue("-1");
+        param.setApplicationName(applicationMnt.getApplicationName());
+        param.setApplicationId(applicationMnt.getApplicationId());
+        param.setTenantId(applicationMnt.getTenantId());
+        param.setEnvCode(applicationMnt.getEnvCode());
+        param.setUserId(applicationMnt.getUserId());
+        pluginsConfigService.add(param);
+    }
+
 }

@@ -252,8 +252,8 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
      */
     private List<ApplicationErrorOutput> processErrorList(List<ApplicationErrorOutput> responseList) {
         // 按照时间倒序输出
-        List<ApplicationErrorOutput> sortedList = responseList.stream().filter(
-            response -> StrUtil.isNotBlank(response.getTime()))
+        List<ApplicationErrorOutput> sortedList = responseList.stream()
+            .filter(response -> StrUtil.isNotBlank(response.getTime()))
             .sorted((a1, a2) -> a2.getTime().compareTo(a1.getTime()))
             .collect(Collectors.toList());
 

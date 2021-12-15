@@ -11,12 +11,14 @@ import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
  * @date 2020-03-16 15:03
  */
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @ApiModel(value = "ApplicationVo", description = "应用配置入参")
 public class ApplicationVo extends AuthQueryResponseCommonExt implements Serializable, AppConstants {

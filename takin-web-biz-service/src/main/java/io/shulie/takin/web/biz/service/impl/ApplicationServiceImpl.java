@@ -517,13 +517,14 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (tApplicationMnt == null) {
             return Response.success(new ApplicationVo());
         }
-        //取应用节点数信息
+
+        // 取应用节点数信息
         List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(
             Collections.singletonList(tApplicationMnt.getApplicationName()));
-        ApplicationResult applicationResult = CollectionUtils.isEmpty(applicationResultList) ? null
-            : applicationResultList.get(0);
+        ApplicationResult applicationResult = CollectionUtils.isEmpty(applicationResultList)
+            ? null : applicationResultList.get(0);
 
-        //取应用节点版本信息
+        // 取应用节点版本信息
         ApplicationNodeQueryParam queryParam = new ApplicationNodeQueryParam();
         queryParam.setCurrent(0);
         queryParam.setPageSize(99999);
@@ -692,56 +693,61 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public void syncApplicationAccessStatus() {
-        long startTime = System.currentTimeMillis();
         try {
-            //查询出所有待检测状态的应用
+            // 查询出所有待检测状态的应用
             List<ApplicationDetailResult> applicationMntList = applicationDAO.getAllApplicationByStatus(
                 Arrays.asList(0, 1, 2, 3));
-            if (!CollectionUtils.isEmpty(applicationMntList)) {
-                List<String> appNames = applicationMntList.stream().map(ApplicationDetailResult::getApplicationName)
-                    .collect(
-                        Collectors.toList());
-                List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames);
-                if (!CollectionUtils.isEmpty(applicationResultList)) {
-                    Set<Long> errorApplicationIdSet = Sets.newSet();
-                    Set<Long> normalApplicationIdSet = Sets.newSet();
-                    applicationMntList.forEach(applicationMnt -> {
-                        String appName = applicationMnt.getApplicationName();
-                        Optional<ApplicationResult> optional =
-                            applicationResultList.stream().filter(
-                                applicationResult -> applicationResult.getAppName().equals(appName)).findFirst();
-                        if (optional.isPresent()) {
-                            ApplicationResult applicationResult = optional.get();
-                            Boolean appIsException = applicationResult.getAppIsException();
-                            if (appIsException) {
-                                //异常
-                                if (applicationMnt.getAccessStatus() != 3) {
-                                    errorApplicationIdSet.add(applicationMnt.getApplicationId());
-                                }
-                            } else {
-                                //正常
-                                if (applicationMnt.getAccessStatus() != 0) {
-                                    normalApplicationIdSet.add(applicationMnt.getApplicationId());
-                                }
-                            }
+
+            if (CollectionUtils.isEmpty(applicationMntList)) {
+                return;
+            }
+
+            List<String> appNames = applicationMntList.stream()
+                .map(ApplicationDetailResult::getApplicationName)
+                .collect(Collectors.toList());
+
+            // amdb应用信息
+            List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNames);
+            if (CollectionUtils.isEmpty(applicationResultList)) {
+                return;
+            }
+
+            Set<Long> errorApplicationIdSet = Sets.newSet();
+            Set<Long> normalApplicationIdSet = Sets.newSet();
+            applicationMntList.forEach(applicationMnt -> {
+                String appName = applicationMnt.getApplicationName();
+                Optional<ApplicationResult> optional =
+                    applicationResultList.stream().filter(
+                        applicationResult -> applicationResult.getAppName().equals(appName)).findFirst();
+                if (optional.isPresent()) {
+                    ApplicationResult applicationResult = optional.get();
+                    Boolean appIsException = applicationResult.getAppIsException();
+                    if (appIsException) {
+                        //异常
+                        if (applicationMnt.getAccessStatus() != 3) {
+                            errorApplicationIdSet.add(applicationMnt.getApplicationId());
                         }
-                    });
-                    if (errorApplicationIdSet.size() > 0) {
-                        modifyAccessStatusWithoutAuth(new ArrayList<>(errorApplicationIdSet), 3);
-                    }
-                    if (normalApplicationIdSet.size() > 0) {
-                        modifyAccessStatusWithoutAuth(new ArrayList<>(normalApplicationIdSet), 0);
+                    } else {
+                        //正常
+                        if (applicationMnt.getAccessStatus() != 0) {
+                            normalApplicationIdSet.add(applicationMnt.getApplicationId());
+                        }
                     }
                 }
-            } else {
-                log.debug("暂无待检测应用");
+            });
+
+            if (errorApplicationIdSet.size() > 0) {
+                modifyAccessStatusWithoutAuth(new ArrayList<>(errorApplicationIdSet), 3);
             }
+            if (normalApplicationIdSet.size() > 0) {
+                modifyAccessStatusWithoutAuth(new ArrayList<>(normalApplicationIdSet), 0);
+            }
+
         } catch (Exception e) {
-            log.error("执行定时同步应用状态异常", e);
-        } finally {
-            long endTime = System.currentTimeMillis();
-            log.debug("执行定时同步应用状态完成，执行耗时：{}", (endTime - startTime));
+            log.error("定时同步应用状态错误, 错误信息: {}", e.getMessage(), e);
         }
+
+        log.debug("定时同步应用状态完成!");
     }
 
     @Override
@@ -2292,68 +2298,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return voList;
     }
 
-    ApplicationVo appEntryToVo(ApplicationDetailResult param, ApplicationResult applicationResult,
-        List<ApplicationNodeResult> applicationNodeResultList) {
-        ApplicationVo vo = new ApplicationVo();
-        vo.setPrimaryKeyId(param.getId());
-        vo.setId(String.valueOf(param.getApplicationId()));
-        vo.setApplicationName(param.getApplicationName());
-        vo.setUpdateTime(param.getUpdateTime());
-        vo.setApplicationDesc(param.getApplicationDesc());
-        vo.setBasicScriptPath(param.getBasicScriptPath());
-        vo.setCacheScriptPath(param.getCacheScriptPath());
-        vo.setCleanScriptPath(param.getCleanScriptPath());
-        vo.setDdlScriptPath(param.getDdlScriptPath());
-        vo.setReadyScriptPath(param.getReadyScriptPath());
-        vo.setNodeNum(param.getNodeNum());
-        vo.setSwitchStutus(param.getSwitchStatus());
-        vo.setUserId(param.getUserId());
-        if (Objects.isNull(applicationResult)
-            || !applicationResult.getInstanceInfo().getInstanceOnlineAmount().equals(param.getNodeNum())
-            || CollectionUtils.isEmpty(applicationNodeResultList)
-            || applicationNodeResultList.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count() > 1) {
-            vo.setAccessStatus(3);
-            vo.setExceptionInfo("agent状态:" + param.getAccessStatus() + ",节点状态: 3");
-        } else {
-            vo.setAccessStatus(param.getAccessStatus());
-            String exceptionMsg = "agent状态:" + param.getAccessStatus();
-            if (!applicationResult.getInstanceInfo().getInstanceOnlineAmount().equals(param.getNodeNum())
-                || CollectionUtils.isEmpty(applicationNodeResultList)
-                || applicationNodeResultList.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count()
-                > 1) {
-                exceptionMsg = exceptionMsg + ",节点状态: 3";
-            }
-            vo.setExceptionInfo(exceptionMsg);
-        }
-        vo.setUserId(param.getUserId());
-        WebPluginUtils.fillQueryResponse(vo);
-        return vo;
-    }
-
-    private ApplicationCreateParam voToAppEntity(ApplicationVo param) {
-        ApplicationCreateParam dbData = new ApplicationCreateParam();
-        if (StringUtil.isNotEmpty(param.getId())) {
-            dbData.setApplicationId(Long.parseLong(param.getId()));
-        }
-        dbData.setApplicationName(param.getApplicationName());
-        dbData.setApplicationDesc(param.getApplicationDesc());
-        dbData.setBasicScriptPath(param.getBasicScriptPath());
-        dbData.setCacheScriptPath(param.getCacheScriptPath());
-        dbData.setCleanScriptPath(param.getCleanScriptPath());
-        dbData.setDdlScriptPath(param.getDdlScriptPath());
-        dbData.setReadyScriptPath(param.getReadyScriptPath());
-        dbData.setNodeNum(param.getNodeNum());
-        dbData.setAccessStatus(param.getAccessStatus());
-        dbData.setExceptionInfo(param.getExceptionInfo());
-        dbData.setSwitchStatus(param.getSwitchStutus());
-        if (param.getAccessStatus() == null) {
-            dbData.setAccessStatus(1);
-        } else {
-            dbData.setAccessStatus(param.getAccessStatus());
-        }
-        return dbData;
-    }
-
     @Override
     public ApplicationDetailResult queryTApplicationMntByName(String appName) {
         return applicationDAO.getByName(appName);
@@ -2487,6 +2431,87 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Boolean silenceSwitchStatusIsTrue(Long uid, AppSwitchEnum appSwitchEnum) {
         String status = this.getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId());
         return appSwitchEnum.getCode().equals(status);
+    }
+
+    /**
+     * 获得应用创建入参类
+     *
+     * @param param 入参
+     * @return 应用创建入参类
+     */
+    private ApplicationCreateParam voToAppEntity(ApplicationVo param) {
+        ApplicationCreateParam dbData = new ApplicationCreateParam();
+
+        if (StringUtil.isNotEmpty(param.getId())) {
+            dbData.setApplicationId(Long.valueOf(param.getId()));
+        }
+
+        dbData.setApplicationName(param.getApplicationName());
+        dbData.setApplicationDesc(param.getApplicationDesc());
+        dbData.setBasicScriptPath(param.getBasicScriptPath());
+        dbData.setCacheScriptPath(param.getCacheScriptPath());
+        dbData.setCleanScriptPath(param.getCleanScriptPath());
+        dbData.setDdlScriptPath(param.getDdlScriptPath());
+        dbData.setReadyScriptPath(param.getReadyScriptPath());
+        dbData.setNodeNum(param.getNodeNum());
+        dbData.setExceptionInfo(param.getExceptionInfo());
+        dbData.setSwitchStatus(param.getSwitchStutus());
+
+        // 应用状态, 没有传值, 默认1, 待配置
+        if (param.getAccessStatus() == null) {
+            dbData.setAccessStatus(1);
+        } else {
+            dbData.setAccessStatus(param.getAccessStatus());
+        }
+
+        return dbData;
+    }
+
+    /**
+     * 应用详情出参转换
+     * 包含节点异常判断
+     *
+     * @param application 应用详情
+     * @param amdbApplicationResult 大数据应用详情
+     * @param amdbApplicationNodeResultList 大数据应用节点列表
+     * @return 应用详情
+     */
+    private ApplicationVo appEntryToVo(ApplicationDetailResult application, ApplicationResult amdbApplicationResult,
+        List<ApplicationNodeResult> amdbApplicationNodeResultList) {
+        ApplicationVo vo = new ApplicationVo();
+        vo.setPrimaryKeyId(application.getId());
+        vo.setId(String.valueOf(application.getApplicationId()));
+        vo.setApplicationName(application.getApplicationName());
+        vo.setUpdateTime(application.getUpdateTime());
+        vo.setApplicationDesc(application.getApplicationDesc());
+        vo.setBasicScriptPath(application.getBasicScriptPath());
+        vo.setCacheScriptPath(application.getCacheScriptPath());
+        vo.setCleanScriptPath(application.getCleanScriptPath());
+        vo.setDdlScriptPath(application.getDdlScriptPath());
+        vo.setReadyScriptPath(application.getReadyScriptPath());
+        vo.setNodeNum(application.getNodeNum());
+        vo.setSwitchStutus(application.getSwitchStatus());
+        vo.setUserId(application.getUserId());
+        vo.setUserId(application.getUserId());
+        WebPluginUtils.fillQueryResponse(vo);
+
+        // 异常判断
+        if (amdbApplicationResult == null
+            || !amdbApplicationResult.getInstanceInfo().getInstanceOnlineAmount().equals(application.getNodeNum())) {
+            // 在线节点数量判断
+            vo.setAccessStatus(AppAccessStatusEnum.EXCEPTION.getCode());
+            vo.setExceptionInfo("agent状态: " + application.getAccessStatus() + ", 节点状态: 3, 异常");
+        } else if (CollectionUtil.isEmpty(amdbApplicationNodeResultList)
+            || amdbApplicationNodeResultList.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count()
+            > 1) {
+            // 节点版本统一判断
+            vo.setAccessStatus(AppAccessStatusEnum.EXCEPTION.getCode());
+            vo.setExceptionInfo("应用节点, agent 版本不一致");
+        } else {
+            vo.setAccessStatus(application.getAccessStatus());
+        }
+
+        return vo;
     }
 
 }

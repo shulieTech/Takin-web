@@ -59,9 +59,10 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         PradarZkConfigResult config = pradarZkConfigDAO.getById(updateRequest.getId());
         Assert.notNull(config, "配置不存在！");
         if (pradarZkConfigDAO.update(updateParam)) {
-            zkHelper.updateNode(config.getZkPath(), updateRequest.getValue());
+            this.processZk(config.getZkPath(), updateRequest.getValue());
+
             // 记录日志
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME,config.getZkPath());
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME, config.getZkPath());
             OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_VALUE,updateRequest.getValue());
         }
     }
@@ -76,7 +77,9 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         Assert.isNull(pradarZkConfig, "zkPath已存在！");
         PradarConfigCreateParam createParam = BeanUtil.copyProperties(createRequest, PradarConfigCreateParam.class);
         if (pradarZkConfigDAO.insert(createParam)) {
-            zkHelper.addPersistentNode(zkPath, createParam.getValue());
+            // 如果zk存在, 更新值
+            this.processZk(zkPath, createRequest.getValue());
+
             // 记录日志
             OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME,createRequest.getZkPath());
             OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_VALUE,createRequest.getValue());
@@ -92,6 +95,22 @@ public class PradarConfigServiceImpl implements PradarConfigService {
             zkHelper.deleteNode(config.getZkPath());
             // 记录日志
             OperationLogContextHolder.addVars(BizOpConstants.Vars.CONFIG_NAME,config.getZkPath());
+        }
+    }
+
+    /**
+     * 处理 zk
+     *
+     * @param zkPath zk 路径
+     * @param value 值
+     */
+    private void processZk(String zkPath, String value) {
+        // 如果zk存在, 更新值
+        if (zkHelper.isNodeExists(zkPath)) {
+            zkHelper.updateNode(zkPath, value);
+        } else {
+            // 不存在, 插入
+            zkHelper.addPersistentNode(zkPath, value);
         }
     }
 

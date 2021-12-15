@@ -155,9 +155,11 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         entitys.forEach(entity -> {
             entity.setCreateTime(now);
             entity.setModifieTime(now);
-            entity.setCreatorId(user.getId());
-            entity.setModifierId(user.getId());
-            entity.setCustomerId(user.getCustomerId());
+            if(user != null) {
+                entity.setCreatorId(user.getId());
+                entity.setModifierId(user.getId());
+                entity.setCustomerId(user.getCustomerId());
+            }
         });
 
         return applicationPluginsConfigDAO.updateBatchById(entitys);

@@ -733,7 +733,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Response<Integer> calculateUserSwitch(Long uid) {
         if (uid == null) {
             UserExt user = WebPluginUtils.getUser();
-            if (user == null) {
+            if (WebPluginUtils.checkUserData() && user == null) {
                 return Response.fail(FALSE_CORE, "当前用户为空");
             }
             uid = user.getId();
@@ -2332,7 +2332,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (WebPluginUtils.checkUserData()) {
             if (uid == null) {
                 UserExt user = WebPluginUtils.getUser();
-                if (user == null) {
+                if (WebPluginUtils.checkUserData() && user == null) {
                     return Response.fail(FALSE_CORE, "当前用户为空", null);
                 }
                 uid = user.getCustomerId();
@@ -2392,7 +2392,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         Long uid;
         if (WebPluginUtils.checkUserData()) {
             UserExt user = WebPluginUtils.getUser();
-            if (user == null) {
+            if (WebPluginUtils.checkUserData() && user == null) {
                 return Response.fail(FALSE_CORE, "当前用户为空", null);
             }
             uid = user.getCustomerId();

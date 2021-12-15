@@ -811,7 +811,7 @@ public class WhiteListServiceImpl implements WhiteListService {
             return;
         }
         UserExt user = WebPluginUtils.getUser();
-        if (user == null) {
+        if (WebPluginUtils.checkUserData() && user == null) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_WHITELIST_VALIDATE_ERROR, "未找到登录账号信息");
         }
 

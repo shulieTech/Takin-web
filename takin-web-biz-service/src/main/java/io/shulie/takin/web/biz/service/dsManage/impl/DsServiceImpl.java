@@ -1,11 +1,25 @@
 package io.shulie.takin.web.biz.service.dsManage.impl;
 
-import cn.hutool.core.collection.CollStreamUtil;
-import cn.hutool.core.util.BooleanUtil;
-import cn.hutool.json.JSONUtil;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+
+import cn.hutool.core.collection.CollStreamUtil;
+import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.json.JSONUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
@@ -33,7 +47,6 @@ import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.convert.db.parser.AbstractTemplateParser;
 import io.shulie.takin.web.biz.convert.db.parser.DbTemplateParser;
 import io.shulie.takin.web.biz.convert.db.parser.RedisTemplateParser;
-import io.shulie.takin.web.biz.convert.db.parser.TemplateParser;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
@@ -83,18 +96,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author fanxx
@@ -357,7 +358,9 @@ public class DsServiceImpl implements DsService {
         query.setUrl(info.getUrl());
         // 补充用户数据
         UserExt user = WebPluginUtils.getUser();
-        query.setUserId(user.getId());
+        if(user != null) {
+            query.setUserId(user.getId());
+        }
         Long count = tAppBusinessTableInfoMapper.selectCountByUserIdAndUrl(query);
         if (count == 1) {
             AppBusinessTableInfo updateInfo = tAppBusinessTableInfoMapper.selectByUserIdAndUrl(query);
@@ -375,7 +378,7 @@ public class DsServiceImpl implements DsService {
     @Override
     public Response queryPageBusiness(AppBusinessTableQuery query) {
         UserExt user = WebPluginUtils.getUser();
-        if (1 == user.getRole()) {
+        if (user != null && 1 == user.getRole()) {
             query.setUserId(user.getId());
         }
         PageHelper.startPage(query.getPageNum(), query.getPageSize());

@@ -9,18 +9,16 @@ import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.BizOpConstants.ModuleCode;
-import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentInfoListQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentInfoListResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentVersionListResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentUploadService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
-import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentDownloadUrlVerifyUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.ResponseFileUtil;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -106,7 +104,7 @@ public class AgentVersionController {
     @ApiOperation("|_ 应用探针包下载（指令）")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "projectName", value = "应用名", required = true),
-        @ApiImplicitParam(name = "tenantAppKey", value = "用户key", required = true),
+        @ApiImplicitParam(name = "tenantAppKey", value = "租户key", required = true),
         @ApiImplicitParam(name = "userId", value = "用户id", required = true),
         @ApiImplicitParam(name = "version", value = "agent版本号", required = true),
         @ApiImplicitParam(name = "envCode", value = "环境标识", required = true),

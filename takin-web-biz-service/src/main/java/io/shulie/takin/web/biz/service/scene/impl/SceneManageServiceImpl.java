@@ -1,13 +1,12 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
+import java.util.Map;
+import java.util.Date;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -24,9 +23,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.apache.commons.collections4.CollectionUtils;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Lists;
+
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.ListHelper;
 import com.pamirs.takin.common.util.parse.UrlUtil;
@@ -34,14 +33,10 @@ import com.pamirs.takin.common.constant.TimeUnitEnum;
 import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.common.constant.SceneManageConstant;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
-import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
-import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
-import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
+import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
@@ -62,6 +57,7 @@ import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.common.enums.script.ScriptTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.cloud.entrypoint.scenemanage.CloudSceneApi;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTagService;
@@ -96,35 +92,6 @@ import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskRespo
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
-import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
-import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
-import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
-import io.shulie.takin.web.biz.service.scenemanage.SceneTagService;
-import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
-import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
-import io.shulie.takin.web.common.domain.WebResponse;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.common.enums.script.FileTypeEnum;
-import io.shulie.takin.web.common.enums.script.ScriptTypeEnum;
-import io.shulie.takin.web.common.exception.ExceptionCode;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
-import io.shulie.takin.web.data.dao.application.ApplicationDAO;
-import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
-import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
-import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * @author qianshui
@@ -145,8 +112,6 @@ public class SceneManageServiceImpl implements SceneManageService {
     private SceneManageApi sceneManageApi;
     @Resource
     private SceneTagService sceneTagService;
-    @Resource
-    private TApplicationMntDao tApplicationMntDao;
     @Resource
     private ScriptManageService scriptManageService;
     @Resource
@@ -799,7 +764,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         ResponseResult<SceneStartCheckResp> result = sceneTaskApi.sceneStartPreCheck(checkReq);
         if (result != null) {
             if (!result.getSuccess()) {
-                ResponseResult.ErrorInfo error = Optional.ofNullable(result.getError()).orElse(null);
+                ResponseResult.ErrorInfo error = result.getError();
                 if (error != null) {
                     throw new TakinWebException(ExceptionCode.SCENE_CHECK_ERROR, "cloud查询位点返回错误！" + error.getMsg());
                 }
@@ -809,7 +774,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 if (resultData != null) {
                     ScenePositionPointResponse response = new ScenePositionPointResponse();
                     //false = 没有csv文件或位点均为0
-                    //                    Boolean hasUnread = resultData.getHasUnread();
+                    //  Boolean hasUnread = resultData.getHasUnread();
                     List<SceneStartCheckResp.FileReadInfo> infos = resultData.getFileReadInfos();
                     if (Objects.nonNull(infos)) {
                         infos.forEach(t -> {
@@ -819,7 +784,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                             list.add(response);
                         });
                     }
-                    //                    redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
+                    // redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
                 }
             }
         }

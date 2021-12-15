@@ -20,7 +20,7 @@ public class TempTopologyQuery2 {
     /**
      * 租户ID
      */
-    private String traceTenantAppKey;
+    private String tenantAppKey;
     /**
      * 环境编码
      */

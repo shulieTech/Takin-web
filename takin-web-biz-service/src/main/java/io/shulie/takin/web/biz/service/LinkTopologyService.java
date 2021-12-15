@@ -579,7 +579,7 @@ public class LinkTopologyService extends CommonService {
             .endTime(endTime)
             .timeGap(request.getTimeGap())
             .envCode(WebPluginUtils.traceEnvCode())
-            .traceTenantAppKey(WebPluginUtils.traceTenantAppKey())
+            .tenantAppKey(WebPluginUtils.traceTenantAppKey())
             .build();
 
         JSONObject jsonObject = applicationEntranceClient.queryMetricsFromAMDB2(query2);

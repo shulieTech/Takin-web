@@ -158,10 +158,6 @@ ALTER TABLE `t_fast_debug_exception`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
 
-ALTER TABLE `t_fast_debug_machine_performance`
-    ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
-    ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
-
 ALTER TABLE `t_fast_debug_result`
     ADD COLUMN `env_code` varchar(20) NULL DEFAULT 'test'  COMMENT '环境code' ,
     ADD COLUMN `tenant_id` bigint(20) NULL DEFAULT 1 COMMENT '租户id' AFTER `env_code`;
@@ -520,25 +516,24 @@ alter table e_patrol_scene_check ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_c
 -- 兮曦 --
 -- DML开始
 BEGIN;
-INSERT IGNORE INTO  `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`is_default`) VALUES (1, 'test', '测试环境',1);
-INSERT IGNORE INTO  `t_tenant_env_ref`(`tenant_id`, `env_code`, `env_name`,`desc`,`is_default`) VALUES (1, 'prod', '生产环境','当前环境为生产环境，请谨慎操作',0);
-INSERT IGNORE INTO  `t_tenant_info`(`key`, `name`, `nick`, `code`) VALUES ('5b06060a-17cb-4588-bb71-edd7f65035af', 'default', 'default', 'default');
 -- 系统信息的权限问题
-INSERT IGNORE INTO `t_tro_resource`(`id`, `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,`features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
-VALUES (510, NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, NULL, NULL, '2021-01-14 11:19:50',
+INSERT IGNORE INTO `t_tro_resource`( `parent_id`, `type`, `code`, `name`, `alias`, `value`, `sequence`, `action`,`features`, `customer_id`, `remark`, `create_time`, `update_time`, `is_deleted`)
+VALUES ( NULL, 0, 'systemInfo', '系统信息', NULL, '', 9000, '[]', NULL, NULL, NULL, '2021-01-14 11:19:50',
         '2021-01-14 11:19:50', 0);
-
 COMMIT;
 
 -- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_stack_info
 -- 方案1：
--- DELETE FROM t_fast_debug_stack_info WHERE id NOT IN (
---     SELECT * FROM (
---       SELECT t.id
---       FROM t_fast_debug_stack_info t
---                JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
---   )tmp
--- )
+DELETE FROM t_fast_debug_stack_info WHERE id NOT IN (
+    SELECT * FROM (
+      SELECT t.id
+      FROM t_fast_debug_stack_info t
+               JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
+  )tmp
+);
+ALTER TABLE t_fast_debug_stack_info
+    ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1',
+    ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识';
 -- 方案2
 -- 1. 创建临时表
 -- CREATE TABLE IF NOT EXISTS `tmp_stack_info` (
@@ -572,13 +567,16 @@ COMMIT;
 
 -- 大表操作 删除agent异常上报的无用数据(只有调试的数据才是有用数据) t_fast_debug_machine_performance
 -- 方案1：
--- DELETE FROM t_fast_debug_machine_performance WHERE id NOT IN (
---     SELECT * FROM (
---           SELECT t.id
---           FROM t_fast_debug_machine_performance t
---           JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
---       )tmp
--- )
+DELETE FROM t_fast_debug_machine_performance WHERE id NOT IN (
+    SELECT * FROM (
+          SELECT t.id
+          FROM t_fast_debug_machine_performance t
+          JOIN t_fast_debug_result t2 ON t2.trace_id=t.trace_id
+      )tmp
+);
+ALTER TABLE t_fast_debug_machine_performance
+    ADD COLUMN `tenant_id` bigint(0) NULL DEFAULT 1 COMMENT '租户 id, 默认 1',
+    ADD COLUMN `env_code` varchar(100) NULL DEFAULT 'test' COMMENT '环境标识';
 -- 方案2：
 -- 1. 创建临时表
 -- CREATE TABLE IF NOT EXISTS `tmp_machine` (

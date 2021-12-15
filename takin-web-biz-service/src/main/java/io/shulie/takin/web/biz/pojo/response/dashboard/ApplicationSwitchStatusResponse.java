@@ -1,13 +1,20 @@
 package io.shulie.takin.web.biz.pojo.response.dashboard;
 
-import java.util.List;
 import java.util.Map;
+import java.util.List;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import lombok.Data;
+import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 
+/**
+ * @author TODO
+ */
 @Data
-public class ApplicationSwitchStatusResponse {
+@EqualsAndHashCode(callSuper = true)
+public class ApplicationSwitchStatusResponse extends AuthQueryResponseCommonExt {
     /**
      * 应用名称
      */

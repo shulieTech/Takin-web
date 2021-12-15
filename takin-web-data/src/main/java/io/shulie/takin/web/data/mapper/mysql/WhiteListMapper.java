@@ -20,7 +20,7 @@ public interface WhiteListMapper extends BaseMapper<WhiteListEntity> {
      * @author shulie
      */
     void deleteApplicationInfoRelatedInterfaceByIds(
-        @Param("applicationRelatedInterfaceLists") List<String> applicationIdLists);
+        @Param("applicationRelatedInterfaceLists") List<Long> applicationIdLists);
 
     /**
      * 说明: 判断该白名单接口是否已经存在

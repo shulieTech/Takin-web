@@ -143,13 +143,14 @@
         <include refid="TReportAppIpDetailField"/>
         FROM
         t_report_app_ip_list
-        WHERE 1=1
-        <if test="reportId!=null and reportId!=''">
-            AND report_id = #{reportId}
-        </if>
-        <if test="linkId!=null and linkId!=''">
-            AND link_id = #{linkId}
-        </if>
+        <where>
+            <if test="reportId!=null and reportId!=''">
+                report_id = #{reportId}
+            </if>
+            <if test="linkId!=null and linkId!=''">
+                AND link_id = #{linkId}
+            </if>
+        </where>
         GROUP BY application_name,type,system_name,ip
     </select>
 

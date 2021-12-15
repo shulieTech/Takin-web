@@ -1,21 +1,21 @@
 package io.shulie.takin.web.entrypoint.controller.confcenter;
 
-import java.util.Map;
-
+import javax.annotation.Resource;
 import javax.validation.Valid;
 
 import com.pamirs.takin.common.ResponseError;
 import com.pamirs.takin.common.ResponseOk;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
+import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationCreateRequest;
 import io.shulie.takin.web.biz.service.ConfCenterService;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -33,14 +33,13 @@ import org.springframework.web.bind.annotation.RestController;
  * @version v1.0
  * @date 2018年4月13日
  */
+@Slf4j
 @Api(tags = "应用管理接口")
 @RestController
 @RequestMapping(ApiUrls.TAKIN_API_URL)
 public class ApplicationMntController {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ApplicationMntController.class);
-
-    @Autowired
+    @Resource
     private ConfCenterService confCenterService;
 
     /**
@@ -51,21 +50,23 @@ public class ApplicationMntController {
      */
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_ADD_APPLICATION_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> saveApplication(@RequestBody @Valid TApplicationMnt tApplicationMnt,
+    public ResponseEntity<Object> saveApplication(@RequestBody @Valid ApplicationCreateRequest tApplicationMnt,
         BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             return ResponseError.create(1010100101, bindingResult.getFieldError().getDefaultMessage());
         }
         try {
-            confCenterService.saveApplication(tApplicationMnt);
+            ApplicationCreateParam param = new ApplicationCreateParam();
+            BeanUtils.copyProperties(tApplicationMnt, param);
+            confCenterService.saveApplication(param);
             //不想service嵌套service 特地 controller层做 以后可能facade层
             return ResponseOk.create("succeed");
         } catch (TakinModuleException e) {
-            LOGGER.error("ConfCenterController.queryWList 应用已经存在,请勿重新添加 {}", e);
+            log.error("ConfCenterController.queryWList 应用已经存在,请勿重新添加", e);
             return ResponseError.create(e.getErrorCode(), e.getErrorMessage());
         } catch (Exception e) {
-            LOGGER.error("ApplicationMntController.saveApplication 新增应用异常{}", e);
+            log.error("ApplicationMntController.saveApplication 新增应用异常", e);
             return ResponseError.create(TakinErrorEnum.CONFCENTER_ADD_APPLICATION_EXCEPTION.getErrorCode(),
                 TakinErrorEnum.CONFCENTER_ADD_APPLICATION_EXCEPTION.getErrorMessage());
         }
@@ -79,11 +80,12 @@ public class ApplicationMntController {
      */
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_APPLICATIONINFO_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> queryApplicationinfo(@RequestBody Map<String, Object> paramMap) {
+    public ResponseEntity<Object> queryApplicationInfo(@RequestBody ApplicationQueryRequest request) {
         try {
-            return ResponseOk.create(confCenterService.queryApplicationList(paramMap));
+
+            return ResponseOk.create(confCenterService.queryApplicationList(request));
         } catch (Exception e) {
-            LOGGER.error("ApplicationMntController.queryApplicationinfo 查询异常{}", e);
+            log.error("ApplicationMntController.queryApplicationInfo 查询异常", e);
             return ResponseError.create(1010100102, "查询应用信息异常");
         }
     }
@@ -96,14 +98,14 @@ public class ApplicationMntController {
      */
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_MODIFY_APPLICATIONINFO_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> queryApplicationinfoById(@RequestParam("applicationId") long applicationId) {
+    public ResponseEntity<Object> queryApplicationInfoById(@RequestParam("applicationId") long applicationId) {
         if (StringUtils.isEmpty(String.valueOf(applicationId))) {
             return ResponseError.create(1010100301, "参数缺失");
         }
         try {
-            return ResponseOk.create(confCenterService.queryApplicationinfoById(applicationId));
+            return ResponseOk.create(confCenterService.queryApplicationInfoById(applicationId));
         } catch (Exception e) {
-            LOGGER.error("ApplicationMntController.queryApplicationinfoById 查询异常{}", e);
+            log.error("ApplicationMntController.queryApplicationInfoById 查询异常", e);
             return ResponseError.create(1010100302, "根据应用id查询异常");
         }
     }
@@ -116,17 +118,17 @@ public class ApplicationMntController {
      */
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_APPLICATIONINFO_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> deleteApplicationinfoByIds(@RequestParam("applicationIds") String applicationIds) {
+    public ResponseEntity<Object> deleteApplicationInfoByIds(@RequestParam("applicationIds") String applicationIds) {
 
         try {
-            String diableDeleteApplication = confCenterService.deleteApplicationinfoByIds(applicationIds);
-            if (StringUtils.isNotEmpty(diableDeleteApplication)) {
-                return ResponseError.create("该应用{ " + diableDeleteApplication + " }在基础链路中使用,不允许删除");
+            String disableDeleteApplication = confCenterService.deleteApplicationInfoByIds(applicationIds);
+            if (StringUtils.isNotEmpty(disableDeleteApplication)) {
+                return ResponseError.create("该应用{ " + disableDeleteApplication + " }在基础链路中使用,不允许删除");
             } else {
                 return ResponseOk.create("succeed");
             }
         } catch (Exception e) {
-            LOGGER.error("ApplicationMntController.deleteApplicationinfoById 删除应用异常{}", e);
+            log.error("ApplicationMntController.deleteApplicationInfoById 删除应用异常", e);
             return ResponseError.create(1010100102, "批量删除应用异常");
         }
     }
@@ -139,12 +141,12 @@ public class ApplicationMntController {
      */
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_APPLICATIONDATA_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> queryApplicationdata() {
+    public ResponseEntity<Object> queryApplicationData() {
 
         try {
             return ResponseOk.create(confCenterService.queryApplicationdata());
         } catch (Exception e) {
-            LOGGER.error("ConfCenterController.queryWList 查询应用下拉框数据异常{}", e);
+            log.error("ConfCenterController.queryWList 查询应用下拉框数据异常", e);
             return ResponseError.create(1010100102, "查询应用下拉框数据异常");
         }
     }
@@ -157,19 +159,21 @@ public class ApplicationMntController {
      */
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_APPLICATIONINFO_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> updateApplicationinfo(@RequestBody @Valid TApplicationMnt tApplicationMnt,
+    public ResponseEntity<Object> updateApplicationInfo(@RequestBody @Valid ApplicationCreateRequest tApplicationMnt,
         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseError.create(1010100601, bindingResult.getFieldError().getDefaultMessage());
         }
         try {
-            confCenterService.updateApplicationinfo(tApplicationMnt);
+            ApplicationCreateParam param = new ApplicationCreateParam();
+            BeanUtils.copyProperties(tApplicationMnt, param);
+            confCenterService.updateApplicationInfo(param);
             return ResponseOk.create("succeed");
         } catch (TakinModuleException e) {
-            LOGGER.error("ConfCenterController.updateApplicationinfo 创建应用脚本存放路径不存在{}", e);
+            log.error("ConfCenterController.updateApplicationInfo 创建应用脚本存放路径不存在", e);
             return ResponseError.create(e.getErrorCode(), e.getErrorMessage());
         } catch (Exception e) {
-            LOGGER.error("ConfCenterController.updateApplicationinfo 根据应用id更新应用信息异常{}", e);
+            log.error("ConfCenterController.updateApplicationInfo 根据应用id更新应用信息异常", e);
             return ResponseError.create(1010100602, "根据应用id更新应用信息异常");
         }
     }
@@ -187,32 +191,8 @@ public class ApplicationMntController {
             String result = "{\"success\":\"true\",\"code\":200,\"data\":null}";
             return ResponseOk.create(result);
         } catch (Exception e) {
-            LOGGER.error("ApplicationMntController.queryAppNameByPradar 查询异常{}", e);
+            log.error("ApplicationMntController.queryAppNameByPradar 查询异常", e);
             return ResponseError.create(1010100702, "查询应用信息异常");
         }
     }
-
-    /**
-     * 更新 应用agentVersion版本
-     *
-     * @param appName
-     * @param agentVersion
-     * @return
-     */
-    //@GetMapping(value = ApiUrls.API_TAKIN_UPDATE_APP_AGENT_VERSION_URI, produces = MediaType.APPLICATION_JSON_VALUE)
-    //public ResponseEntity<Object> appAgentVersionUpdate(@RequestParam("appName") String appName,
-    //    @RequestParam(value = "agentVersion", required = false) String agentVersion,
-    //    @RequestParam(value = "pradarVersion", required = false) String pradarVersion) {
-    //    try {
-    //        confCenterService.updateAppAgentVersion(appName, agentVersion, pradarVersion);
-    //        return ResponseOk.create("succeed");
-    //    } catch (TakinModuleException e) {
-    //        LOGGER.error("ApplicationMntController.appAgentVersionUpdate 更新应用版本异常 {}", e);
-    //        return ResponseError.create(e.getErrorCode(), e.getErrorMessage());
-    //    } catch (Exception e) {
-    //        LOGGER.error("ApplicationMntController.appAgentVersionUpdate 更新应用版本异常 {}", e);
-    //        return ResponseError.create(1010100102, "更新应用版本异常");
-    //    }
-    //}
-
 }

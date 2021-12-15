@@ -132,7 +132,7 @@ public interface TShadowTableDataSourceDao {
      * @param applicationIdList
      * @return
      */
-    int deleteByApplicationIdList(@Param("applicationIdList") List<String> applicationIdList);
+    int deleteByApplicationIdList(@Param("applicationIdList") List<Long> applicationIdList);
 
     /**
      * 获取有数据源配置  且使用影子表的 应用

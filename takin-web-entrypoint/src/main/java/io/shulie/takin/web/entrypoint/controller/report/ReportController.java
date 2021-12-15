@@ -50,6 +50,22 @@ public class ReportController {
         return Response.success(response.getData(), response.getTotalNum());
     }
 
+    /**
+     * 报告列表无权限
+     * @param reportQuery
+     * @return
+     */
+    @GetMapping("report/listReport/un_safe")
+    @ApiOperation("大盘使用报告列表")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.DASHBOARD_REPORT,
+        needAuth = ActionTypeEnum.QUERY
+    )
+    public Response<List<ReportDTO>> listReportNoAuth(ReportQueryParam reportQuery) {
+        ResponseResult<List<ReportDTO>> response = reportService.listReport(reportQuery);
+        return Response.success(response.getData(), response.getTotalNum());
+    }
+
     @GetMapping(value = "report/getReportByReportId")
     @ApiOperation("报告详情")
     @ApiImplicitParam(name = "reportId", value = "报告ID")

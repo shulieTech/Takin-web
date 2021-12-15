@@ -32,7 +32,7 @@ public class ShadowConsumerOutput extends AuthQueryResponseCommonExt {
 
     private Date gmtCreate;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date gmtUpdate;
 
     private Integer deleted;

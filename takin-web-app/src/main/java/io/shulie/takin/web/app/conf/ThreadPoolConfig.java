@@ -5,6 +5,7 @@ import java.util.concurrent.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,12 +26,13 @@ public class ThreadPoolConfig {
 
     /**
      * 用于定时任务
-     * @return
+     *
+     * @return 线程池
      */
     @Bean(name = "jobThreadPool")
     public ThreadPoolExecutor jobThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-        return new ThreadPoolExecutor(100, 500, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory,
+        return new ThreadPoolExecutor(5, 10, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
@@ -40,17 +42,110 @@ public class ThreadPoolConfig {
         return new ThreadPoolExecutor(100, 100, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory);
     }
 
+    /**
+     * 方法追踪超时检测
+     *
+     * @return
+     */
+    @Bean(name = "traceManageThreadPool")
+    public ThreadPoolExecutor traceManageThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-trace-%d").build();
+        return new ThreadPoolExecutor(5, 10, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 单独做数据收集
+     *
+     * @return
+     */
+    @Bean(name = "collectDataThreadPool")
+    public ThreadPoolExecutor collectDataThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-%d").build();
+        return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 漏数验证单独做
+     *
+     * @return
+     */
+    @Bean(name = "showdownVerifyThreadPool")
+    public ThreadPoolExecutor showdownVerifyThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-showdown-verify-%d").build();
+        return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 四大报告Job分开线程池单独使用
+     *
+     * @return
+     * @see io.shulie.takin.web.biz.job.CalcApplicationSummaryJob
+     */
+    @Bean(name = "reportSummaryThreadPool")
+    public ThreadPoolExecutor reportSummaryThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-summary-%d").build();
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 四大报告Job分开线程池单独使用
+     *
+     * @return
+     * @see io.shulie.takin.web.biz.job.CalcTpsTargetJob
+     */
+    @Bean(name = "reportTpsThreadPool")
+    public ThreadPoolExecutor reportTpsThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-tps-%d").build();
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 四大报告Job分开线程池单独使用
+     *
+     * @return
+     * @see io.shulie.takin.web.biz.job.FinishReportJob
+     */
+    @Bean(name = "reportFinishThreadPool")
+    public ThreadPoolExecutor reportFinishThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-finish-%d").build();
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 四大报告Job分开线程池单独使用
+     *
+     * @return
+     * @see io.shulie.takin.web.biz.job.SyncMachineDataJob
+     */
+    @Bean(name = "reportMachineThreadPool")
+    public ThreadPoolExecutor reportMachineThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-machine-%d").build();
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 仅链路调试用的job
+     *
+     * @return
+     */
     @Bean(name = "fastDebugThreadPool")
     public ThreadPoolExecutor fastDebug() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("fast-debug-%d").build();
-        return new ThreadPoolExecutor(10, 20, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory,
+        return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(2000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "modifyMonitorThreadPool")
     public ThreadPoolExecutor modifyMonitorExecutor() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("modify-monitor-%d").build();
-        return new ThreadPoolExecutor(10, 20, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), nameThreadFactory,
+        return new ThreadPoolExecutor(5, 5, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
@@ -68,29 +163,28 @@ public class ThreadPoolConfig {
     @Bean(name = "ScriptThreadPool")
     public ThreadPoolExecutor runShellTaskExecutor() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("script-thread-%d").build();
-        return new ThreadPoolExecutor(10, 20, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), nameThreadFactory,
+        return new ThreadPoolExecutor(5, 5, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "loadDataThreadPool")
     public ThreadPoolExecutor loadDataTaskExecutor() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("loaddata-thread-%d").build();
-        return new ThreadPoolExecutor(10, 20, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), nameThreadFactory,
+        return new ThreadPoolExecutor(5, 5, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
-
 
     @Bean(name = "agentDataThreadPool")
     public ThreadPoolExecutor agentDataTaskExecutor() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("agentdata-thread-%d").build();
-        return new ThreadPoolExecutor(5, 10, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+        return new ThreadPoolExecutor(5, 5, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "backgroundMonitorThreadPool")
     public ThreadPoolExecutor backgroundMonitorThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("background-monitor-thread-%d").build();
-        return new ThreadPoolExecutor(20, 20, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+        return new ThreadPoolExecutor(5, 5, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
@@ -98,9 +192,9 @@ public class ThreadPoolConfig {
     public Executor myAsync() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         //核心线程数
-        executor.setCorePoolSize(10);
+        executor.setCorePoolSize(5);
         //最大核心线程数
-        executor.setMaxPoolSize(20);
+        executor.setMaxPoolSize(10);
         //心态检测，超过设置时间回收线程,线程空闲时的存活时间
         executor.setKeepAliveSeconds(0);
         //队列深度
@@ -118,8 +212,8 @@ public class ThreadPoolConfig {
     @Bean(name = "opsScriptThreadPool")
     public ThreadPoolExecutor runOPSShellTaskExecutor() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("ops-script-thread-%d").build();
-        return new ThreadPoolExecutor(10, 20, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), nameThreadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
+        return new ThreadPoolExecutor(1, 5, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Primary
@@ -154,24 +248,35 @@ public class ThreadPoolConfig {
 
     /**
      * 数据查询分片线程池
+     *
      * @return
      */
     @Bean(name = "queryAsyncThreadPool")
     public ThreadPoolExecutor queryAsyncThreadPool() {
-        final int coreSize = Runtime.getRuntime().availableProcessors();
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("query-async-thread-%d").build();
-        return new ThreadPoolExecutor(coreSize, coreSize * 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), nameThreadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
+        return new ThreadPoolExecutor(1, 10, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
     }
+
+    @Value("${poolConfig.e2e.coreSize: 20}")
+    private Integer e2eCoreSize;
+
+    @Value("${poolConfig.e2e.maxSize: 20}")
+    private Integer e2eMaxSize;
+
+    @Value("${poolConfig.e2e.queueSize: 10000}")
+    private Integer e2eQueueSize;
 
     /**
      * e2e线程池
+     *
      * @return
      */
     @Bean(name = "e2eThreadPool")
     public ThreadPoolExecutor e2eThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("e2e-job-%d").build();
-        return new ThreadPoolExecutor(16, 1000, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory,
-            new ThreadPoolExecutor.AbortPolicy());
+        return new ThreadPoolExecutor(e2eCoreSize, e2eMaxSize, 60L, TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(e2eQueueSize), nameThreadFactory, new ThreadPoolExecutor.AbortPolicy());
     }
+
 }

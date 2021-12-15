@@ -9,14 +9,16 @@ import javax.servlet.http.HttpServletResponse;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
-import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
+import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.JarVersionVo;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationQueryRequestV2;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationListResponseV2;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
@@ -29,7 +31,12 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface ApplicationService {
 
-    List<TApplicationMnt> getApplicationsByUserIdList(List<Long> userIdList);
+    /**
+     * 插件里使用
+     * @param userIdList
+     * @return
+     */
+    List<ApplicationDetailResult> getApplicationsByUserIdList(List<Long> userIdList);
 
     /**
      * 带租户
@@ -44,9 +51,15 @@ public interface ApplicationService {
      * @param param -
      * @return -
      */
-    Response<List<ApplicationVo>> getApplicationList(ApplicationQueryParam param);
+    Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequest param);
 
-    List<ApplicationVo> getApplicationListVo(ApplicationQueryParam param);
+    /**
+     * 获取应用总数量
+     * @return
+     */
+    Long getAccessErrorNum();
+
+    List<ApplicationVo> getApplicationListVo(ApplicationQueryRequest param);
 
     /**
      * 添加接入状态进行过滤
@@ -55,7 +68,7 @@ public interface ApplicationService {
      * @param accessStatus -
      * @return -
      */
-    Response getApplicationList(ApplicationQueryParam param, Integer accessStatus);
+    Response getApplicationList(ApplicationQueryRequest param, Integer accessStatus);
 
     /**
      * 应用列表（全量应用列表，无鉴权）
@@ -157,9 +170,13 @@ public interface ApplicationService {
      */
     void modifyAccessStatusWithoutAuth(List<Long> applicationIds, Integer accessStatus);
 
-    List<TApplicationMnt> getAllApplications();
+    /**
+     * 获取应用
+     *
+     * @return
+     */
+    List<ApplicationDetailResult> getAllApplications();
 
-    String getIdByName(String applicationName);
 
     String getUserSwitchStatusForVo();
 
@@ -200,7 +217,12 @@ public interface ApplicationService {
      */
     String getApplicationNameByApplicationId(Long applicationId);
 
-    TApplicationMnt queryTApplicationMntByName(String appName);
+    /**
+     * 根据名字查询
+     * @param appName
+     * @return
+     */
+    ApplicationDetailResult queryTApplicationMntByName(String appName);
 
     /**
      * 一键卸载所有应用
@@ -266,8 +288,17 @@ public interface ApplicationService {
 
     /**
      * 获取租户应用，用于amdb
-     * @param commonExts
+     * @param commonExtList
      * @return
      */
-    List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts);
+    List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExtList);
+
+    /**
+     * 应用列表
+     *
+     * @param request 请求入参
+     * @return 应用列表
+     */
+    PagingList<ApplicationListResponseV2> listApplication(ApplicationQueryRequestV2 request);
+
 }

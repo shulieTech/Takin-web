@@ -1,7 +1,12 @@
 package io.shulie.takin.web.biz.constant;
 
+import com.alibaba.fastjson.JSON;
+
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 正常每个客户部署完客户端之后，整个平台使用一个开关。
@@ -10,6 +15,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
  * @author shiyajian
  * create: 2020-09-18
  */
+@Slf4j
 public class SwitchKeyFactory {
 
     public static final String CLUSTER_TEST_SWITCH_REDIS_KEY = "TAKIN_CLUSTER_TEST_SWITCH#@customerKey@@envCode@";
@@ -24,6 +30,10 @@ public class SwitchKeyFactory {
      * 开关先按客户端分，再按租户分。
      */
     public static String getClusterTestSwitchRedisKey(TenantCommonExt commonExt) {
+        if (commonExt == null || commonExt.getTenantAppKey() == null ||  commonExt.getEnvCode() == null){
+            log.error("租户信息缺失,commonExt=", JSON.toJSONString(commonExt));
+            throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON,"租户信息缺失");
+        }
         String key = CLUSTER_TEST_SWITCH_REDIS_KEY.replace(KEY_PLACEHOLDER, commonExt.getTenantAppKey());
         return key.replace(ENV_CODE_PLACEHOLDER, commonExt.getEnvCode());
 

@@ -1,16 +1,17 @@
 package io.shulie.takin.web.biz.service.linkmanage;
 
-import java.util.List;
 import java.util.Map;
+import java.util.List;
 
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
+
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 
 /**
- * @author  vernon
+ * @author vernon
  * @date 2020/4/2 13:10
  */
 public interface ApplicationApiService {
@@ -19,6 +20,7 @@ public interface ApplicationApiService {
 
     /**
      * 老版
+     *
      * @param appName
      * @return
      */
@@ -26,11 +28,11 @@ public interface ApplicationApiService {
 
     /**
      * 新版
+     *
      * @param appName
      * @return
      */
-    Response pullApiV1(String appName);
-
+    Map<String, List<String>> pullApiV1(String appName);
 
     Response delete(String id);
 
@@ -42,6 +44,6 @@ public interface ApplicationApiService {
 
     Response queryDetail(String id);
 
-    Map<Long,List<ApplicationApiManageVO>> selectListGroupByAppId();
+    Map<Long, List<ApplicationApiManageVO>> selectListGroupByAppId();
 
 }

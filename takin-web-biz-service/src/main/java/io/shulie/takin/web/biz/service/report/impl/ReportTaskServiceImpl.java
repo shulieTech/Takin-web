@@ -16,6 +16,9 @@ import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
+import io.shulie.takin.web.common.common.Separator;
+import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
@@ -25,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -71,17 +75,21 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private SceneTaskApi sceneTaskApi;
 
     @Autowired
-    @Qualifier("fastDebugThreadPool")
-    private ThreadPoolExecutor fastDebugThreadPool;
+    @Qualifier("collectDataThreadPool")
+    private ThreadPoolExecutor collectDataThreadPool;
+
+    @Autowired
+    @Qualifier("redisTemplate")
+    private RedisTemplate redisTemplate;
 
     @Override
     public List<Long> getRunningReport() {
         List<Long> reportIds = reportService.queryListRunningReport();
         if (CollectionUtils.isEmpty(reportIds)) {
-            log.warn("暂无压测中的报告！");
+            log.debug("暂无压测中的报告！");
             return Lists.newArrayList();
         }
-        log.info("获取租户【{}】，环境【{}】的正在压测中的报告:{}",
+        log.debug("获取租户【{}】，环境【{}】的正在压测中的报告:{}",
             WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
         return reportIds;
     }
@@ -123,7 +131,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 //删除redis数据
                 redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
                 // 删除key
-                redisClientUtils.del(String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
+                String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+                    String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
+                redisClientUtils.del(redisKey);
                 long startTime = System.currentTimeMillis();
                 Boolean lockResponse = reportService.lockReport(reportId);
                 if (!lockResponse) {
@@ -132,7 +142,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 log.info("finish report，total data  Running Report reportId=" + reportId);
 
                 // 收集数据 单独线程收集
-                fastDebugThreadPool.execute(collectData(reportId, commonExt));
+                collectDataThreadPool.execute(collectData(reportId, commonExt));
 
                 Boolean isLeaked = leakVerifyResultDAO.querySceneIsLeaked(reportId);
                 if (isLeaked) {
@@ -158,18 +168,21 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 // log.error("客户端生成报告id={}数据异常:{}", reportId, e.getMessage(), e);
                 //生成报告异常，清空本轮生成表数据
                 reportClearService.clearReportData(reportId);
-                //                //压测结束，生成压测报告异常，解锁报告
-                //                reportService.unLockReport(reportId);
-                log.error("Unlock Report Success, reportId={}", reportId, e);
-            } finally {
                 //压测结束，生成压测报告异常，解锁报告
                 reportService.unLockReport(reportId);
-                redisClientUtils.unlock(lockKey, "0");
-                log.info("finishReport end reportId=" + reportId);
+                log.error("Unlock Report Success, reportId={}", reportId, e);
+            } finally {
+                removeReportKey(reportId, commonExt);
             }
+
         } catch (Exception e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());
         }
+    }
+
+    private void removeReportKey(Long reportId, TenantCommonExt commonExt) {
+        redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY, 0, JSON.toJSONString(new SceneTaskDto(
+            commonExt, reportId)));
     }
 
     /**
@@ -178,7 +191,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
      * @param reportId 报告 id
      * @return 可运行
      */
-    private Runnable collectData(Long reportId, TenantCommonExt commonExt) {
+    private synchronized Runnable collectData(Long reportId,TenantCommonExt commonExt) {
         return () -> {
             WebPluginUtils.setTraceTenantContext(commonExt);
             try {
@@ -204,43 +217,31 @@ public class ReportTaskServiceImpl implements ReportTaskService {
 
     @Override
     public void syncMachineData(Long reportId) {
-        try {
-            //Ready 数据准备
-            reportDataCache.readyCloudReportData(reportId);
-            //first 同步应用基础信息
-            long startTime = System.currentTimeMillis();
-            problemAnalysisService.syncMachineData(reportId);
-            log.info("reportId={} syncMachineData success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
-        } catch (Exception e) {
-            log.error("reportId={} syncMachineData false,errorMsg= {}", reportId, e.getMessage());
-        }
+        //Ready 数据准备
+        reportDataCache.readyCloudReportData(reportId);
+        //first 同步应用基础信息
+        long startTime = System.currentTimeMillis();
+        problemAnalysisService.syncMachineData(reportId);
+        log.debug("reportId={} syncMachineData success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
     }
 
     @Override
     public void calcTpsTarget(Long reportId) {
-        try {
-            long startTime = System.currentTimeMillis();
-            //Ready 数据准备
-            reportDataCache.readyCloudReportData(reportId);
-            //then tps指标图
-            summaryService.calcTpsTarget(reportId);
-            log.info("reportId={} calcTpsTarget success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
-        } catch (Exception e) {
-            log.error("reportId={} calcTpsTarget false,errorMsg= {}", reportId, e.getMessage());
-        }
+        long startTime = System.currentTimeMillis();
+        //Ready 数据准备
+        reportDataCache.readyCloudReportData(reportId);
+        //then tps指标图
+        summaryService.calcTpsTarget(reportId);
+        log.debug("reportId={} calcTpsTarget success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
     }
 
     @Override
     public void calcApplicationSummary(Long reportId) {
-        try {
-            long startTime = System.currentTimeMillis();
-            //Ready 数据准备
-            reportDataCache.readyCloudReportData(reportId);
-            //汇总应用 机器数 风险机器数
-            summaryService.calcApplicationSummary(reportId);
-            log.info("reportId={} calcApplicationSummary success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
-        } catch (Exception e) {
-            log.error("reportId={} calcApplicationSummary false,errorMsg= {}", reportId, e.getMessage());
-        }
+        long startTime = System.currentTimeMillis();
+        //Ready 数据准备
+        reportDataCache.readyCloudReportData(reportId);
+        //汇总应用 机器数 风险机器数
+        summaryService.calcApplicationSummary(reportId);
+        log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
     }
 }

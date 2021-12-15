@@ -32,10 +32,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.TakinDictTypeEnum;
 import com.pamirs.takin.common.constant.YNEnum;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.dao.dict.TDictionaryTypeMapper;
 import com.pamirs.takin.entity.domain.dto.linkmanage.InterfaceVo;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.TDictionaryType;
 import com.pamirs.takin.entity.domain.entity.TWList;
 import com.pamirs.takin.entity.domain.query.whitelist.WhiteListCreateListVO;
@@ -60,7 +58,6 @@ import io.shulie.takin.web.common.enums.whitelist.WhitelistTagEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.whitelist.WhiteListVO;
 import io.shulie.takin.web.common.vo.whitelist.WhitelistPartVO;
@@ -82,6 +79,7 @@ import io.shulie.takin.web.data.param.whitelist.WhitelistUpdatePartAppNameParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -106,8 +104,7 @@ public class WhiteListServiceImpl implements WhiteListService {
     private WhiteListDAO whiteListDAO;
     @Resource
     private TDictionaryTypeMapper tDictionaryTypeMapper;
-    @Resource
-    private TApplicationMntDao applicationMntDao;
+
     @Autowired
     private ApplicationClient applicationClient;
     @Autowired
@@ -445,8 +442,7 @@ public class WhiteListServiceImpl implements WhiteListService {
                 }
             }
         }
-        TApplicationMnt tApplicationMnt = applicationMntDao.queryApplicationinfoById(vo.getApplicationId());
-
+        ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(vo.getApplicationId());
         whiteListFileService.writeWhiteListFile();
         TenantCommonExt tenantCommonExt = WebPluginUtils.fillTenantCommonExt(tApplicationMnt.getTenantId(), tApplicationMnt.getEnvCode());
         configSyncService.syncAllowList(tenantCommonExt, vo.getApplicationId(), tApplicationMnt.getApplicationName());
@@ -504,7 +500,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         Map<String, WhiteListVO> totalResult = Maps.newHashMap();
 
         List<TWList> dbResult = whiteListDAO.queryDistinctWhiteListTotalByApplicationId(vo.getApplicationId());
-        String applicationName = applicationMntDao.selectApplicationName(String.valueOf(vo.getApplicationId()));
+        String applicationName = applicationDAO.selectApplicationName(String.valueOf(vo.getApplicationId()));
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(vo.getApplicationId());
         if (applicationName == null) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_WHITELIST_VALIDATE_ERROR, "根据应用id 找不到应用名");
@@ -798,7 +794,6 @@ public class WhiteListServiceImpl implements WhiteListService {
                 : Lists.newArrayList());
         // all
         ApplicationQueryParam queryParam = new ApplicationQueryParam();
-        queryParam.setTenantId(WebPluginUtils.traceTenantId());
         List<String> allAppNames = applicationDAO.getAllApplicationName(queryParam);
         vo.setAllAppNames(allAppNames);
         return vo;

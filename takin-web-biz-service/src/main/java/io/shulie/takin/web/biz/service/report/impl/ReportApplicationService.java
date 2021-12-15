@@ -10,12 +10,12 @@ import javax.annotation.Resource;
 import cn.hutool.core.bean.BeanUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.report.ReportApplicationDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +36,7 @@ public class ReportApplicationService {
     private ReportService reportService;
 
     @Resource
-    private TApplicationMntDao tApplicationMntDao;
+    private ApplicationDAO applicationDAO;
 
     public ReportDetailDTO getDetail(Long reportId) {
         ReportDetailOutput response = reportService.getReportByReportId(reportId);
@@ -56,12 +56,12 @@ public class ReportApplicationService {
         if (appSet.size() == 0) {
             return reportApplication;
         }
-        List<TApplicationMnt> appsList = tApplicationMntDao.queryApplicationMntListByIds(Lists.newArrayList(appSet));
+        List<ApplicationDetailResult> appsList = applicationDAO.getApplicationByIds(Lists.newArrayList(appSet));
         if (CollectionUtils.isEmpty(appsList)) {
             return reportApplication;
         }
         reportApplication.setApplicationNames(appsList.stream().filter(data -> StringUtils.isNoneBlank(data.getApplicationName()))
-            .map(TApplicationMnt::getApplicationName).distinct().collect(Collectors.toList()));
+            .map(ApplicationDetailResult::getApplicationName).distinct().collect(Collectors.toList()));
 
         return reportApplication;
     }

@@ -135,9 +135,13 @@ public class SummaryService {
         ReportSummaryResult summary = reportSummaryDAO.selectOneByReportId(reportId);
 
         if (summary == null) {
-            reportSummaryDAO.insert(reportSummary);
+            try {
+                reportSummaryDAO.insert(reportSummary);
+            }catch (Exception e){
+                log.error("Build ReportSummary error, reportId={},tenantId={},envCode={}", reportId,WebPluginUtils.traceTenantId(),WebPluginUtils.traceEnvCode());
+            }
         }
-        log.info("Build ReportSummary Success, reportId={}", reportId);
+        log.debug("Build ReportSummary Success, reportId={}", reportId);
     }
 
     public void calcTpsTarget(Long reportId) {
@@ -181,7 +185,7 @@ public class SummaryService {
                 " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
 
             Collection<BaseServerResult> appIds = influxDatabaseManager.query(BaseServerResult.class, searchAppIdSql);
-            log.info("search appIds :{},cost time : {}", searchAppIdSql, System.currentTimeMillis() - startTime);
+            log.debug("search appIds :{},cost time : {}", searchAppIdSql, System.currentTimeMillis() - startTime);
             if (CollectionUtils.isEmpty(appIds)) {
                 continue;
             }
@@ -195,7 +199,7 @@ public class SummaryService {
                     " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                     " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
                 Collection<BaseServerResult> bases = influxDatabaseManager.query(BaseServerResult.class, searchBaseSql);
-                log.info("search baseSql :{},cost time = {} ", searchBaseSql, System.currentTimeMillis() - baseTime);
+                log.debug("search baseSql :{},cost time = {} ", searchBaseSql, System.currentTimeMillis() - baseTime);
                 TpsTargetArray array = calcTpsTarget(metrics, bases);
                 if (array == null) {
                     continue;

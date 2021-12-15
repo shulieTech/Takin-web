@@ -76,7 +76,7 @@ public interface TDataBuildDao {
      * @param applicationIdLists 多个应用id
      * @author shulie
      */
-    void deleteApplicationToDataBuild(@Param("applicationIdLists") List<String> applicationIdLists);
+    void deleteApplicationToDataBuild(@Param("applicationIdLists") List<Long> applicationIdLists);
 
     /**
      * 说明: 根据应用id列表批量查询构建信息
@@ -86,7 +86,7 @@ public interface TDataBuildDao {
      * @author shulie
      * @date 2018/11/5 10:39
      */
-    List<Map<String, Object>> queryDataBuildListByIds(@Param("applicationIds") List<String> applicationIds);
+    List<Map<String, Object>> queryDataBuildListByIds(@Param("applicationIds") List<Long> applicationIds);
 
     /**
      * 说明: 数据构建调试开关

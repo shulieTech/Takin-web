@@ -3,76 +3,73 @@ package io.shulie.takin.web.entrypoint.controller.agent;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 
-import com.pamirs.takin.common.ResponseError;
 import com.pamirs.takin.common.ResponseOk;
+import com.pamirs.takin.common.ResponseError;
+import com.pamirs.takin.entity.domain.vo.JarVersionVo;
+import com.pamirs.takin.entity.domain.vo.ApplicationVo;
+import com.pamirs.takin.entity.domain.vo.TUploadNeedVo;
+import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import com.pamirs.takin.entity.domain.vo.JarVersionVo;
-import com.pamirs.takin.entity.domain.vo.TUploadInterfaceVo;
-import com.pamirs.takin.entity.domain.vo.TUploadNeedVo;
 import io.shulie.takin.channel.bean.CommandPacket;
-import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.biz.service.ConfCenterService;
-import io.shulie.takin.web.biz.service.UploadInterfaceService;
-import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
-import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
-import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.utils.XmlUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.AgentUrls;
-import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.service.ConfCenterService;
 import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.biz.service.UploadInterfaceService;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
+import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
 import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
+import io.shulie.takin.web.biz.service.perfomanceanaly.TraceManageService;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.annotations.Api;
 import org.springframework.http.MediaType;
+import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * @author TODO
+ */
 @RestController
 @RequestMapping(AgentUrls.PREFIX_URL)
 @Api(tags = "接口: Agent全局配置")
 @Slf4j
 public class AgentPushController {
 
-    @Autowired
+    @Resource
     private ApplicationService applicationService;
-
-    @Autowired
+    @Resource
     private ApplicationApiService apiService;
-
-    @Autowired
+    @Resource
     private ShadowJobConfigService shadowJobConfigService;
-
-    @Autowired
+    @Resource
     private UploadInterfaceService uploadInterfaceService;
-
-    @Autowired
+    @Resource
     private ConfCenterService confCenterService;
-
-    @Autowired
+    @Resource
     private TraceManageService traceManageService;
-
-    @Autowired
+    @Resource
     private ReportDetailService reportDetailService;
 
     @ApiOperation("|_ agent注册api")
@@ -86,7 +83,7 @@ public class AgentPushController {
     }
 
     /**
-     * @return
+     * @return 响应体
      */
 
     @PostMapping(value = AgentUrls.MIDDLE_STAUTS_URL)
@@ -106,8 +103,8 @@ public class AgentPushController {
     /**
      * 应用注册
      *
-     * @param vo
-     * @return
+     * @param vo 入参
+     * @return 响应体
      */
     @PostMapping(value = AgentUrls.APP_INSERT_URL)
     @ApiOperation("上传应用")
@@ -120,7 +117,7 @@ public class AgentPushController {
     /**
      * 接口需要有，防止大数据出现问题
      *
-     * @return
+     * @return 响应体
      */
 
     @PostMapping(value = AgentUrls.UPLOAD_ACCESS_STATUS)
@@ -186,7 +183,7 @@ public class AgentPushController {
     /**
      * 更新 应用agentVersion版本
      *
-     * @return
+     * @return 响应体
      */
     @Deprecated
     @GetMapping(value = AgentUrls.AGENT_VERSION, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -213,19 +210,17 @@ public class AgentPushController {
     @PostMapping(value = AgentUrls.PERFORMANCE_TRACE_URL)
     @ApiOperation(value = "agent上传trace信息")
     public void uploadTraceInfo(@RequestBody CommandPacket commandPacket) {
-        log.info("agent上传trace信息，入参为:{}", JsonHelper.bean2Json(commandPacket));
         traceManageService.uploadTraceInfo(commandPacket);
     }
 
     /**
      * 配置数据上报
      *
-     * @param inputParam
+     * @param inputParam 入参
      */
     @PostMapping(value = AgentUrls.AGENT_PUSH_APPLICATION_CONFIG)
     @ApiOperation(value = "agent上传配置信息")
     public void uploadConfigInfo(@Validated @RequestBody ConfigReportInputParam inputParam) {
-        log.info("agent上传配置信息，入参为:{}", JsonHelper.bean2Json(inputParam));
         reportDetailService.uploadConfigInfo(inputParam);
     }
 }

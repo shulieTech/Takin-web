@@ -88,6 +88,5 @@
     </appender>
     <logger name="io.shulie.takin.job" level="INFO" additivity="false">
         <appender-ref ref="job"/>
-    </logger>
-
+    </logger>>
 </configuration>

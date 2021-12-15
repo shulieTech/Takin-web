@@ -16,12 +16,12 @@ public class UserWorkBenchResponse {
      * 应用接入数量
      */
     @ApiModelProperty(value = "应用数量")
-    private Integer applicationNum;
+    private Long applicationNum;
     /**
      * 接入异常数量
      */
     @ApiModelProperty(value = "应用接入异常数量")
-    private Integer accessErrorNum;
+    private Long accessErrorNum;
     /**
      * 系统流程数量
      */

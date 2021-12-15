@@ -3,14 +3,12 @@ package io.shulie.takin.web.biz.service.scenemanage;
 import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneJobStateResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.UpdateTpsRequest;
-import io.shulie.takin.web.biz.pojo.response.scene.StartResponse;
-import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 
 /**
  * @author 莫问
@@ -50,7 +48,7 @@ public interface SceneTaskService {
      * @param applicationMntList 应用列表
      * @return 错误信息
      */
-    String checkApplicationCorrelation(List<TApplicationMnt> applicationMntList);
+    String checkApplicationCorrelation(List<ApplicationDetailResult> applicationMntList);
 
     /**
      * 通过场景ID从缓存获取报告ID

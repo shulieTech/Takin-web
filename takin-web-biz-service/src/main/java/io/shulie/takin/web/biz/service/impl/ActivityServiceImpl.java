@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 
 import com.google.common.collect.Lists;
@@ -18,37 +20,36 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
-import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
-import io.shulie.takin.cloud.sdk.model.request.scenetask.TaskFlowDebugStartReq;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
-import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
+import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
-import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
-import io.shulie.takin.web.biz.convert.activity.ActivityServiceConvert;
+import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.convert.activity.ActivityServiceConvert;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
+import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
+import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.TaskFlowDebugStartReq;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
-import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
@@ -84,7 +85,6 @@ import io.shulie.takin.web.ext.util.E2ePluginUtils;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,23 +97,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class ActivityServiceImpl implements ActivityService {
 
-    @Autowired
+    @Resource
     RedisClientUtils redisClientUtils;
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
-    @Autowired
+    @Resource
     private NotifyClient notifyClient;
-    @Autowired
+    @Resource
     private ActivityDAO activityDAO;
-    @Autowired
+    @Resource
     private LinkTopologyService linkTopologyService;
-    @Autowired
+    @Resource
     private ReportService reportService;
-    @Autowired
+    @Resource
     private CloudTaskApi cloudTaskApi;
-    @Autowired
+    @Resource
     private ScriptManageService scriptManageService;
-    @Autowired
+    @Resource
     private SceneManageService sceneManageService;
 
     @Override
@@ -148,7 +148,7 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void createActivityWithoutAMDB(ActivityCreateRequest request) {
+    public void createActivityWithoutAmdb(ActivityCreateRequest request) {
         // 检查业务活动是否能入库
         checkActivity(request);
         ActivityCreateParam createParam = new ActivityCreateParam();
@@ -414,9 +414,8 @@ public class ActivityServiceImpl implements ActivityService {
         OperationLogContextHolder.addVars(Vars.SERVICE_NAME, oldActivity.getServiceName());
         activityDAO.deleteActivity(activityId);
         //记录业务活动删除事件
-        redisClientUtils.hmset(
-            oldActivity.getTenantId() + ":" + oldActivity.getEnvCode() + ":" + Vars.ACTIVITY_DELETE_EVENT,
-            String.valueOf(activityId), 0);
+        redisClientUtils.hmset(Vars.ACTIVITY_DELETE_EVENT,
+            oldActivity.getTenantId() + ":" + oldActivity.getEnvCode() + ":" + activityId, 0);
         // 正常业务活动
         if (oldActivity.getApplicationName() != null && oldActivity.getBusinessType().equals(
             BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
@@ -506,7 +505,7 @@ public class ActivityServiceImpl implements ActivityService {
         // 成功率 瓶颈
         if ((provider.getAllSuccessRateBottleneckType() != -1)) {
             activityBottleneckResponse.setAllSuccessRateBottleneckType(provider.getAllSuccessRateBottleneckType());
-            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getRtBottleneckId());
+            activityBottleneckResponse.setSuccessRateBottleneckId(provider.getSuccessRateBottleneckId());
         }
         // 慢 sql 瓶颈
         if ((provider.getAllSqlTotalRtBottleneckType() != -1)) {
@@ -651,7 +650,8 @@ public class ActivityServiceImpl implements ActivityService {
                 ConfigServerKeyEnum.TAKIN_LINK_FLOW_CHECK_ENABLE));
 
             // 拓扑图查询
-            activityResponse.setTopology(linkTopologyService.getApplicationEntrancesTopology(request, activityInfoQueryRequest.isTempActivity()));
+            activityResponse.setTopology(linkTopologyService
+                .getApplicationEntrancesTopology(request, activityInfoQueryRequest.isTempActivity()));
         }
 
         Integer verifyStatus = this.getVerifyStatus(activityInfoQueryRequest.getActivityId()).getVerifyStatus();
@@ -861,13 +861,19 @@ public class ActivityServiceImpl implements ActivityService {
             return null;
         }
         BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
-        Map linkNameAndId = serviceList.get(0);
-        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkId").toString()));
-        businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName").toString());
+        Map<String, String> linkNameAndId = serviceList.get(0);
+        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkId")));
+        businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName"));
         return businessLinkManageTableEntity;
     }
 
-    // TODO 变更逻辑后续看如何设计
+    /**
+     * TODO 变更逻辑后续看如何设计
+     *
+     * @param oldActivity 旧业务活动
+     * @param newActivity 新业务活动
+     * @return 是否变更
+     */
     private boolean isChange(ActivityResult oldActivity, ActivityUpdateRequest newActivity) {
         return false;
     }

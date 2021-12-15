@@ -17,6 +17,7 @@
 package io.shulie.takin.web.entrypoint.controller.linkmanage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -26,7 +27,9 @@ import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
 import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
@@ -74,14 +77,13 @@ public class AppRemoteCallController {
     @ModuleDef(
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.REMOTE_CALL,
-        logMsgKey = BizOpConstants.Message.MESSAGE_REMOTE_CALL_CREATE
+        logMsgKey = Message.MESSAGE_REMOTE_CALL_CREATE
     )
     @AuthVerification(
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.UPDATE
     )
     public AppRemoteCallStringResponse insert(@Valid @RequestBody AppRemoteCallUpdateRequest request) {
-        OperationLogContextHolder.operationType(OpTypes.UPDATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.INTERFACE, request.getInterfaceName());
         OperationLogContextHolder.addVars(BizOpConstants.Vars.INTERFACE_TYPE, AppRemoteCallTypeEnum.getEnum(request.getInterfaceType()).getDesc());
         OperationLogContextHolder.addVars(BizOpConstants.Vars.REMOTE_CALL_CONFIG, AppRemoteCallConfigEnum.getEnum(request.getType()).getConfigName());
@@ -142,7 +144,7 @@ public class AppRemoteCallController {
     @ModuleDef(
         moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
         subModuleName = BizOpConstants.SubModules.REMOTE_CALL,
-        logMsgKey = BizOpConstants.Message.MESSAGE_REMOTE_CALL_CREATE
+        logMsgKey = Message.MESSAGE_BATCH_REMOTE_CALL_UPDATE
     )
     @AuthVerification(
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
@@ -154,7 +156,8 @@ public class AppRemoteCallController {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR, "参数type值不合法");
         }
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.REMOTE_CALL_CONFIG, AppRemoteCallConfigEnum.OPEN_WHITELIST.getConfigName());
+        OperationLogContextHolder.addVars(Vars.INTERFACE, request.getAppIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
+        OperationLogContextHolder.addVars(Vars.REMOTE_CALL_CONFIG, AppRemoteCallConfigEnum.OPEN_WHITELIST.getConfigName());
         appRemoteCallService.batchConfig(request);
         return new AppRemoteCallConfigResponse("操作成功");
     }

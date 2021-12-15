@@ -10,9 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.common.constant.JobEnum;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.dao.simplify.TShadowJobConfigMapper;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.simplify.TShadowJobConfig;
 import com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery;
 import com.pamirs.takin.entity.domain.vo.ShadowJobConfigVo;
@@ -22,8 +20,10 @@ import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.utils.Estimate;
 import io.shulie.takin.web.biz.utils.XmlUtil;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationShadowJobDAO;
 import io.shulie.takin.web.data.param.application.ShadowJobCreateParam;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -47,7 +47,7 @@ public class ShadowJobConfigService {
     @Resource
     private TShadowJobConfigMapper tShadowJobConfigMapper;
     @Resource
-    private TApplicationMntDao tApplicationMntDao;
+    private ApplicationDAO applicationDAO;
 
     @Autowired
     private ConfigSyncService configSyncService;
@@ -89,8 +89,8 @@ public class ShadowJobConfigService {
         applicationShadowJobDAO.insert(shadowJobCreateParam);
         configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), tShadowJobConfig.getApplicationId(),
             null);
-        TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(
-            tShadowJobConfig.getApplicationId());
+        ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(tShadowJobConfig.getApplicationId());
+
         if (null == tApplicationMnt) {
             return Response.fail("未查询到相关应用信息");
         }
@@ -107,8 +107,8 @@ public class ShadowJobConfigService {
         if (shadowJobConfig == null) {
             return Response.fail("未查询到相关数据");
         }
-        TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(
-            shadowJobConfig.getApplicationId());
+        ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(shadowJobConfig.getApplicationId());
+
         if (null == tApplicationMnt) {
             return Response.fail("未查询到相关应用信息");
         }
@@ -158,9 +158,8 @@ public class ShadowJobConfigService {
             updateRemark.setRemark(query.getRemark());
             tShadowJobConfigMapper.update(updateRemark);
         }
+        ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(shadowJobConfig.getApplicationId());
 
-        TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(
-            shadowJobConfig.getApplicationId());
         if (null == tApplicationMnt) {
             return Response.fail("未查询到相关应用信息");
         }
@@ -179,8 +178,8 @@ public class ShadowJobConfigService {
         if (null == shadowJobConfig) {
             return Response.fail("根据ID未查询到相关信息");
         }
-        TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(
-            shadowJobConfig.getApplicationId());
+        ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(shadowJobConfig.getApplicationId());
+        ;
         if (null == tApplicationMnt) {
             return Response.fail("未查询到相关应用信息");
         }
@@ -234,7 +233,7 @@ public class ShadowJobConfigService {
 
     public List<TShadowJobConfig> queryByAppName(String appName) {
         Estimate.notBlank(appName, "应用名称不能为空");
-        TApplicationMnt tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
+        ApplicationDetailResult tApplicationMnt = applicationDAO.getByName(appName);
         if (null == tApplicationMnt) {
             log.warn("未查询到应用相关数据 appName:{}", appName);
             return new ArrayList<>();

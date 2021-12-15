@@ -193,7 +193,7 @@ public class PressureReadyService extends CommonService {
         if (StringUtils.isEmpty(applicationId) && StringUtils.isEmpty(scriptType)) {
             throw new TakinModuleException(TakinErrorEnum.BUILDDATA_EXECUTE_SCRIPT_PARAMLACK);
         }
-        Map<String, Object> cacheExpTimeMap = tApplicationMntDao.queryCacheExpTime(applicationId);
+        Map<String, Object> cacheExpTimeMap = applicationDAO.queryCacheExpTime(applicationId);
         if ("0".equals(MapUtils.getString(cacheExpTimeMap, LinkDetectionConstants.CACHE_EXP_TIME)) && "2".equals(
             scriptType)) {
             throw new TakinModuleException(TakinErrorEnum.BUILDDATA_EXECUTE_SCRIPTPATH_NOTCACHE);
@@ -215,8 +215,8 @@ public class PressureReadyService extends CommonService {
      */
 
     public Runnable executeScript(String applicationId, String scriptType) {
-        String scriptPath = tApplicationMntDao.selectScriptPath(applicationId, scriptType);
-        String applicationName = tApplicationMntDao.selectApplicationName(applicationId);
+        String scriptPath = applicationDAO.selectScriptPath(applicationId, scriptType);
+        String applicationName = applicationDAO.selectApplicationName(applicationId);
         return () -> {
             if (StringUtils.isEmpty(scriptPath)) {
                 updateScriptStatus(applicationId, scriptType, "3");
@@ -641,7 +641,7 @@ public class PressureReadyService extends CommonService {
                     return newHashMap;
                 }
                 String applicationName = MapUtils.getString(cacheStatusMap, LinkDetectionConstants.APPLICATION_NAME);
-                Map<String, Object> cacheExpTimeMap = tApplicationMntDao.queryCacheExpTime(applicationId);
+                Map<String, Object> cacheExpTimeMap = applicationDAO.queryCacheExpTime(applicationId);
                 String cacheExpTimeS = MapUtils.getString(cacheExpTimeMap, LinkDetectionConstants.CACHE_EXP_TIME);
 
                 if ("0".equals(cacheExpTimeS)) {

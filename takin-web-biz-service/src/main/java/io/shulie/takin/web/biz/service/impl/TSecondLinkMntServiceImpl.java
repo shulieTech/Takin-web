@@ -24,7 +24,6 @@ import com.pamirs.takin.common.constant.LinkLevelEnum;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.common.util.PageInfo;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.TFirstLinkMnt;
 import com.pamirs.takin.entity.domain.entity.TLinkMnt;
 import com.pamirs.takin.entity.domain.entity.TSecondBasic;
@@ -360,82 +359,13 @@ public class TSecondLinkMntServiceImpl extends CommonService implements TSecondL
         secondLinkMntDao.updateLink(tSecondLinkMnt);
     }
 
-    @Override
-    public Map<String, List<TApplicationMnt>> queryApplicationListByLinkInfo(String linkId, String linkLevel)
-        throws TakinModuleException {
-        Map<String, List<TApplicationMnt>> resultMap = new HashMap<>();
-        //1，判断是一级链路还是二级链路
-        //2_0,基础链路
-        if (LinkLevelEnum.BASE_LINK_LEVEL.getName().equals(linkLevel)) {
-            resultMap.put(linkId, queryApplicationByBaseLinkId(linkId));
-        }
-        //2_1, 二级链路
-        if (LinkLevelEnum.SECOND_LINK_LEVEL.getName().equals(linkLevel)) {
-            //根据二级链路找到基础链路列表
-            resultMap.putAll(queryApplicationBySecondLinkId(linkId));
-        }
-        //2_2，一级链路
-        if (LinkLevelEnum.FIRST_LINK_LEVEL.getName().equals(linkLevel)) {
-            resultMap.putAll(queryApplicationByFirstLinkId(linkId));
-        }
-        return resultMap;
-    }
+
 
     //-------------------------------------private method area-------------------------------------------------
 
-    /**
-     * @param linkId 一级链路id
-     * @return void
-     * @throws TakinModuleException 异常
-     * @description 根据一级链路id查询应用信息
-     * @author shulie
-     * @create 2018/6/19 19:43
-     */
-    private Map<String, List<TApplicationMnt>> queryApplicationByFirstLinkId(String linkId) throws TakinModuleException {
-        TFirstLinkMnt firstLinkMnt = firstLinkMntDao.queryLinkByLinkId(linkId);
-        Map<String, List<TApplicationMnt>> resultMap = new HashMap<>();
-        if (firstLinkMnt != null) {
-            String secondLinks = firstLinkMnt.getSecondLinks();
-            if (secondLinks == null) {
-                LOGGER.error("二级基础链路为NULL！");
-                throw new TakinModuleException(TakinErrorEnum.CONFCENTER_SECOND_LINKID_LIST_IS_NULL_EXCEPTION);
-            }
-            String[] secondLinkIdArr = secondLinks.split(",");
-            for (String secondLinkId : secondLinkIdArr) {
-                resultMap.putAll(queryApplicationBySecondLinkId(secondLinkId));
-            }
-        }
-        return resultMap;
-    }
 
-    /**
-     * 根据二级链路id获取应用信息
-     *
-     * @param secondLinkId 二级链路id
-     * @return 应用信息
-     */
-    private Map<String, List<TApplicationMnt>> queryApplicationBySecondLinkId(String secondLinkId) {
-        Map<String, List<TApplicationMnt>> resultMap = new HashMap<>();
-        List<TSecondBasic> secondBasicList = secondBasicDao.querySecondBasicLinkBySecondLinkId(secondLinkId);
-        if (secondBasicList != null && secondBasicList.size() > 0) {
-            for (TSecondBasic secondBasic : secondBasicList) {
-                long basicLinkId = secondBasic.getBasicLinkId();
-                String linkId = String.valueOf(basicLinkId);
-                resultMap.put(linkId, queryApplicationByBaseLinkId(linkId));
-            }
-        }
-        return resultMap;
-    }
 
-    /**
-     * 根据基础链路id获取应用信息
-     *
-     * @param baseLinkId 基础链路id
-     * @return 应用信息
-     */
-    private List<TApplicationMnt> queryApplicationByBaseLinkId(String baseLinkId) {
-        return secondLinkMntDao.queryApplicationByBaseLinkId(baseLinkId);
-    }
+
 
     /**
      * @param secondLinkId 　二级链路id

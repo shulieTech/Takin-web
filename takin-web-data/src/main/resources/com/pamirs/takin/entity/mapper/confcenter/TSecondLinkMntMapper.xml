@@ -101,10 +101,12 @@
         tslm.LINK_TPS_RULE,tslm.USE_YN,tslm.REMARK,CREATE_TIME,UPDATE_TIME,TEST_STATUS
         FROM
         t_second_link_mnt tslm
-        WHERE 1=1
-        <if test="linkName!=null and linkName!=''">
-            AND tslm.LINK_NAME like CONCAT('%',#{linkName},'%')
-        </if>
+        <where>
+            <if test="linkName!=null and linkName!=''">
+                 tslm.LINK_NAME like CONCAT('%',#{linkName},'%')
+            </if>
+        </where>
+
         ORDER BY tslm.UPDATE_TIME DESC
     </select>
 
@@ -156,36 +158,13 @@
         v.second_update_time UPDATE_TIME
         FROM
         v_second_base_link_ref v
-        WHERE 1=1
+        WHERE v.base_link_name LIKE CONCAT('%',#{baseLinkName},'%')
         <if test="linkName!=null and linkName!=''">
             AND v.second_link_name LIKE CONCAT('%',#{linkName},'%')
         </if>
-        AND v.base_link_name LIKE CONCAT('%',#{baseLinkName},'%')
     </select>
 
-    <!--  根据基础链路id查询出应用列表 -->
-    <select id="queryApplicationByBaseLinkId" parameterType="String"
-            resultType="com.pamirs.takin.entity.domain.entity.TApplicationMnt">
-        SELECT tam.APPLICATION_ID,
-               tam.APPLICATION_NAME,
-               tam.APPLICATION_DESC,
-               tam.DDL_SCRIPT_PATH,
-               tam.CLEAN_SCRIPT_PATH,
-               tam.READY_SCRIPT_PATH,
-               tam.BASIC_SCRIPT_PATH,
-               tam.CACHE_SCRIPT_PATH,
-               tam.CACHE_EXP_TIME,
-               tam.USE_YN,
-               tam.CREATE_TIME,
-               tam.UPDATE_TIME
-        FROM t_white_list twl,
-             t_application_mnt tam,
-             t_link_service_mnt tlsm
-        WHERE tam.APPLICATION_ID = twl.APPLICATION_ID
-          AND twl.INTERFACE_NAME = tlsm.INTERFACE_NAME
-          AND tlsm.LINK_ID = #{linkId}
-        GROUP BY tlsm.LINK_ID, tam.APPLICATION_ID
-    </select>
+
     <select id="queryAppIdByAppName" resultType="java.lang.String" parameterType="java.lang.String">
         select LINK_ID
         from t_second_link_mnt t

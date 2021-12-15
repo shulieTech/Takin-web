@@ -56,7 +56,6 @@ import com.pamirs.takin.entity.dao.assist.loaddata.TLoadDataDao;
 import com.pamirs.takin.entity.dao.assist.loaddata.TReturnDataDao;
 import com.pamirs.takin.entity.dao.common.CommonDao;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationIpDao;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TBaseConfigDao;
 import com.pamirs.takin.entity.dao.confcenter.TFirstLinkMntDao;
@@ -86,8 +85,8 @@ import io.shulie.takin.web.biz.service.TAlarmService;
 import io.shulie.takin.web.biz.service.TFirstLinkMntService;
 import io.shulie.takin.web.biz.service.TReportService;
 import io.shulie.takin.web.biz.service.TSecondLinkMntService;
-import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.WhiteListDAO;
 import io.shulie.takin.web.data.mapper.mysql.BaseConfigMapper;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
@@ -116,7 +115,7 @@ import org.springframework.web.client.RestTemplate;
  * @author shulie
  * @version V1.0
  * @date 2018年3月15日 下午2:06:52
- * @see CommonServiceTest
+ * @see shulie.takin.web.biz.common.CommonServiceTest
  */
 @Service
 @SuppressWarnings("all")
@@ -129,7 +128,7 @@ public class CommonService {
     private String basePath;
 
     @Autowired
-    protected TApplicationMntDao tApplicationMntDao;
+    protected ApplicationDAO applicationDAO;
 
     @Autowired
     protected TBListMntDao tBListMntDao;

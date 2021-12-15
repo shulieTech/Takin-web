@@ -7,90 +7,54 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import java.util.List;
-
-import javax.validation.Valid;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
 import com.github.pagehelper.util.StringUtil;
+
+import io.shulie.takin.web.common.util.MD5Tool;
+import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
-import com.pamirs.takin.entity.domain.query.ApplicationQueryParam;
-import com.pamirs.takin.entity.domain.vo.AppUnstallAgentVo;
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
-import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
-import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
-import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
-import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
+import io.shulie.takin.web.biz.service.ApplicationService;
+import com.pamirs.takin.entity.domain.vo.AppUninstallAgentVO;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationQueryRequestV2;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationListResponseV2;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntrancesResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
-import io.shulie.takin.web.biz.service.ActivityService;
-import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.ApiUrls;
-import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.web.common.util.MD5Tool;
-import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.collections4.CollectionUtils;
-import io.swagger.annotations.*;
-import org.apache.commons.collections4.CollectionUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
@@ -103,32 +67,23 @@ import java.util.stream.Collectors;
 @Api(tags = "接口: 应用管理中心", value = "应用管理中心")
 public class ApplicationController {
 
-    private static String FALSE_CODE = "0";
-    @Autowired
-    private ApplicationService applicationService;
-    @Autowired
-    private ApplicationEntranceClient applicationEntranceClient;
-    @Autowired
+    private static final String FALSE_CODE = "0";
+
+    @Resource
     private ActivityService activityService;
+    @Resource
+    private ApplicationService applicationService;
+    @Resource
+    private ApplicationEntranceClient applicationEntranceClient;
 
     @GetMapping("/application/center/list")
-    @ApiOperation("应用列表查询接口")
+    @ApiOperation("|_ 应用列表查询接口")
     @AuthVerification(
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response<List<ApplicationVo>> getApplicationListWithAuth(
-        @ApiParam(name = "applicationName", value = "系统名字") String applicationName,
-        @RequestParam(defaultValue = "0") Integer current,
-        Integer pageSize,
-        @ApiParam(name = "accessStatus", value = "接入状态") Integer accessStatus
-    ) {
-        current = current + 1;
-        ApplicationQueryParam param = new ApplicationQueryParam();
-        param.setCurrentPage(current);
-        param.setPageSize(pageSize);
-        param.setApplicationName(applicationName);
-        return applicationService.getApplicationList(param, accessStatus);
+    public PagingList<ApplicationListResponseV2> listApplicationWithAuthV2(ApplicationQueryRequestV2 request) {
+        return applicationService.listApplication(request);
     }
 
     @GetMapping("/application/center/list/dictionary")
@@ -163,8 +118,8 @@ public class ApplicationController {
     /**
      * 新增应用接口
      *
-     * @param vo
-     * @return
+     * @param vo 入参
+     * @return 响应体
      */
     @PostMapping("/console/application/center/app/info")
     @ApiOperation("新增应用接口")
@@ -272,7 +227,7 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public void unstallAllAgent(@RequestBody AppUnstallAgentVo vo) {
+    public void uninstallAllAgent(@RequestBody AppUninstallAgentVO vo) {
         applicationService.uninstallAllAgent(vo.getAppIds());
     }
 
@@ -282,7 +237,7 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public void resumeAllAgent(@RequestBody AppUnstallAgentVo vo) {
+    public void resumeAllAgent(@RequestBody AppUninstallAgentVO vo) {
         applicationService.resumeAllAgent(vo.getAppIds());
     }
 
@@ -290,14 +245,14 @@ public class ApplicationController {
     @PutMapping("/application/center/app/switch/silence")
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
+        subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
         needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
-    public Response UpdateAppSilenceSwitch(@RequestBody ApplicationVo vo) {
+    public Response updateAppSilenceSwitch(@RequestBody ApplicationVo vo) {
         if (vo == null || vo.getSilenceEnable() == null) {
             return Response.fail(FALSE_CODE, "silenceEnable 不能为空");
         }
@@ -310,31 +265,21 @@ public class ApplicationController {
 
     @ApiOperation("获取静默开关状态接口")
     @GetMapping("/application/center/app/switch/silence")
-    @ModuleDef(
-        moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
-        logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
-    )
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
-        needAuth = ActionTypeEnum.ENABLE_DISABLE
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
+        needAuth = ActionTypeEnum.QUERY
     )
-    public Response AppSilenceSwitch() {
+    public Response appSilenceSwitch() {
         return applicationService.userAppSilenceSwitchInfo();
     }
 
     @ApiOperation("按租户查询上报数据接口")
     @GetMapping("/application/center/app/report/config/info")
-    @ModuleDef(
-        moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
-        logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
-    )
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
-        needAuth = ActionTypeEnum.ENABLE_DISABLE
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
+        needAuth = ActionTypeEnum.QUERY
     )
-    public Response AppConfigReportInfo(@ApiParam(name = "bizType", value = "业务类型") @NotNull Integer bizType,
+    public Response appConfigReportInfo(@ApiParam(name = "bizType", value = "业务类型") @NotNull Integer bizType,
         @ApiParam(name = "appName", value = "应用名称") String appName) {
         return applicationService.getApplicationReportConfigInfo(bizType, appName);
     }
@@ -399,8 +344,8 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.CREATE
     )
-    public Map gotoActivityInfo(@Validated @RequestBody ActivityCreateRequest request) throws Exception {
-        HashMap result = new HashMap();
+    public Map<Long, Boolean> gotoActivityInfo(@Validated @RequestBody ActivityCreateRequest request) throws Exception {
+        HashMap<Long, Boolean> result = new HashMap<>(1);
         //业务活动名称模糊搜索
         // todo 有可能要修改
         String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.traceTenantId() + WebPluginUtils.traceEnvCode());

@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.apache.commons.collections4.CollectionUtils;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
@@ -34,6 +35,9 @@ import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.common.constant.SceneManageConstant;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
@@ -92,6 +96,35 @@ import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskRespo
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
+import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneTagService;
+import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
+import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
+import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.common.enums.script.FileTypeEnum;
+import io.shulie.takin.web.common.enums.script.ScriptTypeEnum;
+import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
+import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author qianshui
@@ -104,6 +137,8 @@ public class SceneManageServiceImpl implements SceneManageService {
     private SceneTaskApi sceneTaskApi;
     @Resource
     private SceneService sceneService;
+    @Resource
+    private ApplicationDAO applicationDAO;
     @Resource
     private CloudSceneApi cloudSceneApi;
     @Resource
@@ -367,9 +402,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             ScriptCheckDTO checkDTO = this.checkScriptAndActivity(dto.getScriptType(), true, businessActivityList,
                 execList);
             if (StringUtils.isNoneBlank(checkDTO.getErrmsg())) {
-                return new WebResponse<List<SceneScriptRefOpen>>() {{
-                    setError(io.shulie.takin.web.common.domain.ErrorInfo.build("500", checkDTO.getErrmsg()));
-                }};
+                throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, checkDTO.getErrmsg());
             }
         }
 
@@ -685,7 +718,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (CollectionUtils.isEmpty(nameList)) {
             return new ArrayList<>(0);
         }
-        return tApplicationMntDao.queryIdsByNameAndTenant(nameList, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode());
+        return applicationDAO.queryIdsByNameAndTenant(nameList, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode());
     }
 
     private List<String> getAppsById(Long id) {

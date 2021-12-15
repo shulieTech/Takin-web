@@ -17,19 +17,16 @@ import cn.hutool.core.util.StrUtil;
 
 import com.google.common.collect.ImmutableMap;
 
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
-
-import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
+import io.shulie.amdb.common.dto.agent.AgentConfigDTO;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.utils.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.TestZkConnUtils;
 import io.shulie.takin.web.amdb.api.AgentConfigClient;
 import io.shulie.amdb.common.dto.agent.AgentConfigDTO;
 import io.shulie.takin.web.biz.constant.LoginConstant;
 import io.shulie.takin.web.biz.pojo.bo.ConfigListQueryBO;
 import io.shulie.takin.web.common.constant.CacheConstants;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentConfigDAO;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
@@ -50,6 +47,9 @@ import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentDynamicConfigQu
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigEffectListResponse;
 
 import org.springframework.util.Assert;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.stereotype.Service;
@@ -66,13 +66,13 @@ import org.springframework.cache.annotation.CacheEvict;
 @Service
 public class AgentConfigServiceImpl implements AgentConfigService, CacheConstants {
     @Resource
-    private AgentConfigService agentConfigService;
+    private ApplicationDAO applicationDAO;
     @Resource
     private AgentConfigDAO agentConfigDAO;
     @Resource
-    private TApplicationMntDao tApplicationMntDao;
-    @Resource
     private AgentConfigClient agentConfigClient;
+    @Resource
+    private AgentConfigService agentConfigService;
 
     /**
      * 对应的zk地址key
@@ -130,14 +130,9 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
     @Override
     public List<String> getAllApplication(String keyword) {
         List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
-        List<TApplicationMnt> applicationMntList = tApplicationMntDao.getApplicationMntByUserIdsAndKeyword(userIdList,
+        List<ApplicationDetailResult> applicationMntList = applicationDAO.getApplicationMntByUserIdsAndKeyword(userIdList,
             keyword);
-        List<String> result = applicationMntList.stream().map(TApplicationMnt::getApplicationName).collect(
-            Collectors.toList());
-        if (!CollectionUtils.isEmpty(result)) {
-            result = result.stream().distinct().collect(Collectors.toList());
-        }
-        return result;
+        return applicationMntList.stream().map(ApplicationDetailResult::getApplicationName).collect(Collectors.toList());
     }
 
     @Override

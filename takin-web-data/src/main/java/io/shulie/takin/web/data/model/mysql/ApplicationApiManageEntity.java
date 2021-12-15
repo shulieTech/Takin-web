@@ -2,14 +2,21 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
-import lombok.Data;
+import com.baomidou.mybatisplus.annotation.TableField;
 
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
+
+/**
+ * @author TODO
+ */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_application_api_manage")
 public class ApplicationApiManageEntity extends UserBaseEntity {
     /**
@@ -29,7 +36,6 @@ public class ApplicationApiManageEntity extends UserBaseEntity {
      */
     @TableField(value = "APPLICATION_NAME")
     private String applicationName;
-
 
     /**
      * 创建时间
@@ -60,4 +66,7 @@ public class ApplicationApiManageEntity extends UserBaseEntity {
      */
     @TableField(value = "method")
     private String method;
+
+    @TableField(value = "is_agent_registe")
+    private Integer isAgentRegiste;
 }

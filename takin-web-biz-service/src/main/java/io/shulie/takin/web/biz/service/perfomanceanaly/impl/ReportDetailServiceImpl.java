@@ -10,21 +10,19 @@ import java.util.stream.Collectors;
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.convert.Convert;
 import com.pamirs.takin.common.util.http.DateUtil;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
 import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
-import io.shulie.takin.web.common.exception.ExceptionCode;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.AppAgentConfigReportDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.param.application.ConfigReportInputParam;
 import io.shulie.takin.web.data.param.application.CreateAppAgentConfigReportParam;
 import io.shulie.takin.web.data.param.application.UpdateAppAgentConfigReportParam;
 import io.shulie.takin.web.data.result.application.AppAgentConfigReportDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,13 +33,14 @@ import org.springframework.transaction.annotation.Transactional;
  * @date 2020/11/9 下午4:40
  */
 @Service
+@Slf4j
 public class ReportDetailServiceImpl implements ReportDetailService {
 
     @Autowired
     private ReportApplicationService reportApplicationService;
 
     @Autowired
-    private TApplicationMntDao tApplicationMntDao;
+    private ApplicationDAO applicationDAO;
 
     @Autowired
     private AppAgentConfigReportDAO agentConfigReportDAO;
@@ -66,12 +65,13 @@ public class ReportDetailServiceImpl implements ReportDetailService {
     @Override
     public void uploadConfigInfo(ConfigReportInputParam inputParam) {
         if (inputParam == null) {
-            throw new TakinWebException(TakinWebExceptionEnum.AGENT_UPLOAD_CONFIG_MSG_ERROR, "上传参数不能为空！");
+            log.error("uploadConfigInfo 上传参数不能为空");
+            return;
         }
-        TApplicationMnt info = tApplicationMntDao.queryApplicationinfoByName(inputParam.getApplicationName());
+        ApplicationDetailResult info = applicationDAO.getByName(inputParam.getApplicationName());
         if (Objects.isNull(info)) {
-            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR,
-                "应用【" + inputParam.getApplicationName() + "】不存在");
+            log.error("uploadConfigInfo 应用【{}】不存在", inputParam.getApplicationName());
+            return;
         }
 
         List<CreateAppAgentConfigReportParam> saveList = new ArrayList<>();
@@ -110,33 +110,77 @@ public class ReportDetailServiceImpl implements ReportDetailService {
             });
         }
 
+
         List<AppAgentConfigReportDetailResult> dbResults = agentConfigReportDAO.listByAppId(info.getApplicationId());
-        Map<Integer, List<AppAgentConfigReportDetailResult>> dbMap = CollStreamUtil.groupByKey(dbResults,
-            AppAgentConfigReportDetailResult::getConfigType);
-        Map<Integer, List<CreateAppAgentConfigReportParam>> reportMap = CollStreamUtil.groupByKey(saveList,
-            CreateAppAgentConfigReportParam::getConfigType);
+
+
+
+        Map<String, Map<Integer, List<AppAgentConfigReportDetailResult>>> dbMap = CollStreamUtil.groupBy2Key(dbResults,
+                AppAgentConfigReportDetailResult::getAgentId, AppAgentConfigReportDetailResult::getConfigType);
+
+        Map<String, Map<Integer, List<CreateAppAgentConfigReportParam>>> reportMap = CollStreamUtil.groupBy2Key(saveList,
+                CreateAppAgentConfigReportParam::getAgentId, CreateAppAgentConfigReportParam::getConfigType);
 
         List<UpdateAppAgentConfigReportParam> updateList = new ArrayList<>();
 
-        dbMap.forEach((k, v) -> {
-            if (reportMap.containsKey(k)) {
-                List<CreateAppAgentConfigReportParam> params = reportMap.get(k);
-                Map<String, AppAgentConfigReportDetailResult> m1 = v.stream().
-                    collect(Collectors.toMap(AppAgentConfigReportDetailResult::getConfigKey, Function.identity()));
-                Map<String, CreateAppAgentConfigReportParam> m2 = params.stream().collect(
-                    Collectors.toMap(CreateAppAgentConfigReportParam::getConfigKey, Function.identity()));
+        dbMap.forEach((agentId, report2TypeForDbMap) -> {
+            if (reportMap.containsKey(agentId)) {
+                Map<Integer, List<CreateAppAgentConfigReportParam>> report2TypeForReportMap = reportMap.get(agentId);
+                report2TypeForDbMap.forEach((configType, reports) -> {
+                    if (report2TypeForReportMap.containsKey(configType)) {
+                        List<CreateAppAgentConfigReportParam> params = report2TypeForReportMap.get(configType);
+                        Map<String, CreateAppAgentConfigReportParam> report2KeyForParamsMap = params.stream()
+                                .collect(Collectors
+                                        .toMap(CreateAppAgentConfigReportParam::getConfigKey, Function.identity()));
 
-                m1.forEach((key, data) -> {
-                    if (m2.containsKey(key)) {
-                        saveList.remove(m2.get(key));
-                        UpdateAppAgentConfigReportParam convert = Convert.convert(UpdateAppAgentConfigReportParam.class,
-                            m2.get(key));
-                        convert.setId(data.getId());
-                        updateList.add(convert);
+
+                        Map<String, AppAgentConfigReportDetailResult> report2KeyForDbMap = reports.stream()
+                                .collect(Collectors
+                                        .toMap(AppAgentConfigReportDetailResult::getConfigKey, Function.identity()));
+
+
+                        report2KeyForDbMap.forEach((configKey, data) -> {
+                            if (report2KeyForParamsMap.containsKey(configKey)) {
+                                CreateAppAgentConfigReportParam removeObj = report2KeyForParamsMap.get(configKey);
+                                saveList.remove(removeObj);
+                                UpdateAppAgentConfigReportParam convert = Convert.convert(UpdateAppAgentConfigReportParam.class,
+                                        removeObj);
+                                convert.setId(data.getId());
+                                updateList.add(convert);
+                            }
+                        });
                     }
                 });
             }
         });
+
+
+//        Map<Integer, List<AppAgentConfigReportDetailResult>> dbMap = CollStreamUtil.groupByKey(dbResults,
+//            AppAgentConfigReportDetailResult::getConfigType);
+//        Map<Integer, List<CreateAppAgentConfigReportParam>> reportMap = CollStreamUtil.groupByKey(saveList,
+//            CreateAppAgentConfigReportParam::getConfigType);
+//
+//        List<UpdateAppAgentConfigReportParam> updateList = new ArrayList<>();
+//
+//        dbMap.forEach((k, v) -> {
+//            if (reportMap.containsKey(k)) {
+//                List<CreateAppAgentConfigReportParam> params = reportMap.get(k);
+//                Map<String, AppAgentConfigReportDetailResult> m1 = v.stream().
+//                    collect(Collectors.toMap(AppAgentConfigReportDetailResult::getConfigKey, Function.identity()));
+//                Map<String, CreateAppAgentConfigReportParam> m2 = params.stream().collect(
+//                    Collectors.toMap(CreateAppAgentConfigReportParam::getConfigKey, Function.identity()));
+//
+//                m1.forEach((key, data) -> {
+//                    if (m2.containsKey(key)) {
+//                        saveList.remove(m2.get(key));
+//                        UpdateAppAgentConfigReportParam convert = Convert.convert(UpdateAppAgentConfigReportParam.class,
+//                            m2.get(key));
+//                        convert.setId(data.getId());
+//                        updateList.add(convert);
+//                    }
+//                });
+//            }
+//        });
 
         agentConfigReportDAO.batchSave(saveList);
         agentConfigReportDAO.batchUpdate(updateList);

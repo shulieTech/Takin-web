@@ -140,6 +140,14 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 影子配置
      */
     SHADOW_CONFIG_CREATE_ERROR("1400-" + ErrorConstant.VALIDATE_ERROR, "新增影子配置异常"),
+
+    /**
+     * 业务域管理
+     */
+    BUSINESS_DOMAIN_ADD_ERROR("1500-" + ErrorConstant.ADD_ERROR, "新增业务域异常"),
+    BUSINESS_DOMAIN_UPDATE_ERROR("1500-"+ErrorConstant.UPDATE_ERROR,"更新业务域异常"),
+    BUSINESS_DOMAIN_DELETE_ERROR("1500-" + ErrorConstant.DELETE_ERROR, "删除业务域异常"),
+
     ;
 
     private final String errorCode;

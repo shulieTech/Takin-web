@@ -9,18 +9,18 @@ import javax.annotation.Resource;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationPluginsConfigMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationPluginsConfigVO;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
     ApplicationPluginsConfigMapper applicationPluginsConfigMapper;
 
     @Autowired
-    TApplicationMntDao tApplicationMntDao;
+    private ApplicationDAO applicationDAO;
 
     @Override
     public ApplicationPluginsConfigVO getById(Long id) {
@@ -115,7 +115,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         if (StringUtil.isBlank(entity.getConfigValue())) {
             throw new TakinWebException(ExceptionCode.POD_NUM_EMPTY, "配置值不能为空！");
         }
-        //优先取参数内的 否则从restcontext取
+        //优先取参数内的 否则从UserExt取
         if (param.getUserId() != null && param.getTenantId() != null) {
             entity.setCreatorId(param.getUserId());
             entity.setModifierId(param.getUserId());
@@ -144,10 +144,10 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             }
         });
 
-        List<ApplicationPluginsConfigEntity> entitys = CopyUtils.copyFieldsList(params,
+        List<ApplicationPluginsConfigEntity> entityList = CopyUtils.copyFieldsList(params,
             ApplicationPluginsConfigEntity.class);
         Date now = new Date();
-        entitys.forEach(entity -> {
+        entityList.forEach(entity -> {
             entity.setCreateTime(now);
             entity.setModifieTime(now);
             entity.setCreatorId(WebPluginUtils.traceUserId());
@@ -155,7 +155,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             entity.setTenantId(WebPluginUtils.traceTenantId());
         });
 
-        return applicationPluginsConfigDAO.updateBatchById(entitys);
+        return applicationPluginsConfigDAO.updateBatchById(entityList);
     }
 
     @Override
@@ -200,7 +200,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
     @Transactional(rollbackFor = Exception.class)
     public void init() {
         log.info("开始补充每个应用的插件配置");
-        List<TApplicationMnt> applications = tApplicationMntDao.getAllApplications();
+        List<ApplicationDetailResult> applications = applicationDAO.getAllApplications();
         ApplicationPluginsConfigParam param = new ApplicationPluginsConfigParam();
         List<ApplicationPluginsConfigEntity> list = applicationPluginsConfigDAO.findList(param);
         List<Long> applicationIds = Lists.newArrayList();
@@ -209,7 +209,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
                 Collectors.toList());
         }
         List<Long> finalApplicationIds = applicationIds;
-        List<TApplicationMnt> needInitList = applications.stream().filter(
+        List<ApplicationDetailResult> needInitList = applications.stream().filter(
             t -> !finalApplicationIds.contains(t.getApplicationId())).collect(
             Collectors.toList());
         needInitList.forEach(applicationMnt -> {

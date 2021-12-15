@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -123,6 +124,11 @@ public class ReportServiceImpl implements ReportService {
             setReportId(reportId);
         }};
         ReportDetailResp detailResponse = cloudReportApi.detail(idReq);
+        // sa超过100 显示100
+        if(detailResponse != null && detailResponse.getSa() != null
+            && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
+            detailResponse.setSa(BigDecimal.valueOf(100));
+        }
         ReportDetailOutput output = new ReportDetailOutput();
         BeanUtils.copyProperties(detailResponse, output);
         assembleVerifyResult(output);

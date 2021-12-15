@@ -1,7 +1,5 @@
 package io.shulie.takin.web.app.conf;
 
-import javax.sql.DataSource;
-
 import com.dangdang.ddframe.job.event.JobEventConfiguration;
 
 import org.springframework.context.annotation.Bean;
@@ -33,7 +31,7 @@ public class ElasticJobAutoConfig {
 
     @Bean
     @ConditionalOnMissingBean(JobEventConfiguration.class)
-    public SpringJobSchedulerFactory springJobSchedulerFactory(ElasticJobProperties elasticJobProperties, DataSource dataSource) {
+    public SpringJobSchedulerFactory springJobSchedulerFactory(ElasticJobProperties elasticJobProperties) {
         ElasticJobConfig elasticJobConfig = new ElasticJobConfig();
         ZkClientConfig zkClientConfig = new ZkClientConfig();
         zkClientConfig.setZkServers(zkAddress);

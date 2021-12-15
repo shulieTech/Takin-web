@@ -46,16 +46,15 @@ import com.pamirs.takin.common.redis.RedisKey;
 import com.pamirs.takin.common.redis.WhiteBlackListRedisKey;
 import com.pamirs.takin.common.util.PageInfo;
 import com.pamirs.takin.common.util.TakinFileUtil;
-import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
 import com.pamirs.takin.entity.dao.confcenter.TLinkMntDao;
 import com.pamirs.takin.entity.domain.entity.TAlarm;
 import com.pamirs.takin.entity.domain.entity.TApplicationIp;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.entity.TLinkServiceMnt;
 import com.pamirs.takin.entity.domain.entity.TPradaHttpData;
 import com.pamirs.takin.entity.domain.entity.TSecondLinkMnt;
 import com.pamirs.takin.entity.domain.entity.TWList;
+import com.pamirs.takin.entity.domain.query.ApplicationQueryRequest;
 import com.pamirs.takin.entity.domain.query.BListQueryParam;
 import com.pamirs.takin.entity.domain.query.Result;
 import com.pamirs.takin.entity.domain.query.TWListVo;
@@ -67,6 +66,7 @@ import com.pamirs.takin.entity.domain.vo.TLinkNodesVo;
 import com.pamirs.takin.entity.domain.vo.TLinkServiceMntVo;
 import com.pamirs.takin.entity.domain.vo.TLinkTopologyInfoVo;
 import com.pamirs.takin.entity.domain.vo.TUploadInterfaceDataVo;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.common.CommonService;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
@@ -84,7 +84,9 @@ import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
 import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
+import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.blacklist.BlackListCreateParam;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -154,8 +156,8 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveApplication(TApplicationMnt tApplicationMnt) throws TakinModuleException {
-        int applicationExist = tApplicationMntDao.applicationExistByTenantIdAndAppName(
+    public void saveApplication(ApplicationCreateParam tApplicationMnt) throws TakinModuleException {
+        int applicationExist = applicationDAO.applicationExistByTenantIdAndAppName(
             WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),tApplicationMnt.getApplicationName());
         if (applicationExist > 0) {
             throw new TakinModuleException(TakinErrorEnum.CONFCENTER_ADD_APPLICATION_DUPICATE_EXCEPTION);
@@ -166,7 +168,7 @@ public class ConfCenterService extends CommonService {
         addPluginsConfig(tApplicationMnt);//插件管理-添加影子key默认过期时间
     }
 
-    private void addPluginsConfig(TApplicationMnt applicationMnt) {
+    private void addPluginsConfig(ApplicationCreateParam applicationMnt) {
         ApplicationPluginsConfigParam param = new ApplicationPluginsConfigParam();
         param.setConfigItem("redis影子key有效期");
         param.setConfigKey("redis_expire");
@@ -181,8 +183,8 @@ public class ConfCenterService extends CommonService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveAgentRegisterApplication(TApplicationMnt tApplicationMnt) {
-        int applicationExist = tApplicationMntDao.applicationExistByTenantIdAndAppName(
+    public void saveAgentRegisterApplication(ApplicationCreateParam tApplicationMnt) {
+        int applicationExist = applicationDAO.applicationExistByTenantIdAndAppName(
             WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), tApplicationMnt.getApplicationName());
         if (applicationExist > 0) {
             OperationLogContextHolder.ignoreLog();
@@ -201,7 +203,7 @@ public class ConfCenterService extends CommonService {
      *
      * @author shulie
      */
-    private void addApplicationToLinkDetection(TApplicationMnt tApplicationMnt) {
+    private void addApplicationToLinkDetection(ApplicationCreateParam tApplicationMnt) {
         Map<String, Object> map = new HashMap<String, Object>(10) {
             private static final long serialVersionUID = 1L;
 
@@ -219,7 +221,7 @@ public class ConfCenterService extends CommonService {
      * @param tApplicationMnt 应用实体对象
      * @author shulie
      */
-    private void addApplicationToDataBuild(TApplicationMnt tApplicationMnt) {
+    private void addApplicationToDataBuild(ApplicationCreateParam tApplicationMnt) {
         Map<String, Object> map = new HashMap<String, Object>(10) {
             private static final long serialVersionUID = 1L;
 
@@ -245,13 +247,12 @@ public class ConfCenterService extends CommonService {
      * @param tApplicationMnt 应用管理实体类
      * @author shulie
      */
-    private void addApplication(TApplicationMnt tApplicationMnt) {
+    private void addApplication(ApplicationCreateParam tApplicationMnt) {
         tApplicationMnt.setApplicationId(snowflake.next());
         tApplicationMnt.setCacheExpTime(
             StringUtils.isEmpty(tApplicationMnt.getCacheExpTime()) ? "0" : tApplicationMnt.getCacheExpTime());
-        ApplicationCreateParam createParam = new ApplicationCreateParam();
-        BeanUtils.copyProperties(tApplicationMnt, createParam);
-        applicationDAO.insert(createParam);
+
+        applicationDAO.insert(tApplicationMnt);
 
         try {
             TakinFileUtil.createFile(getBasePath() + tApplicationMnt.getApplicationName());
@@ -304,20 +305,13 @@ public class ConfCenterService extends CommonService {
     /**
      * 说明: 查询应用列表信息
      *
-     * @param paramMap 参数集合
      * @return 应用列表
      * @author shulie
      */
-    public PageInfo<TApplicationMnt> queryApplicationList(Map<String, Object> paramMap) {
-        String applicationName = MapUtils.getString(paramMap, "applicationName");
-        List<String> applicationIds = (List<String>)MapUtils.getObject(paramMap, "applicationIds");
-        if (!StringUtils.equals("-1", MapUtils.getString(paramMap, "pageSize"))) {
-            PageHelper.startPage(PageInfo.getPageNum(paramMap), PageInfo.getPageSize(paramMap));
-        }
-        List<TApplicationMnt> queryApplicationList = tApplicationMntDao.queryApplicationList(applicationName,
-            applicationIds,WebPluginUtils.getQueryAllowUserIdList());
-
-        return new PageInfo<>(queryApplicationList.isEmpty() ? Lists.newArrayList() : queryApplicationList);
+    public PagingList<ApplicationDetailResult> queryApplicationList(ApplicationQueryRequest request) {
+        ApplicationQueryParam param = new ApplicationQueryParam();
+        BeanUtils.copyProperties(request,param);
+        return applicationDAO.queryApplicationList(param);
     }
 
     /**
@@ -327,8 +321,8 @@ public class ConfCenterService extends CommonService {
      * @return 应用对象
      * @author shulie
      */
-    public TApplicationMnt queryApplicationinfoById(long applicationId) {
-        return tApplicationMntDao.queryApplicationinfoById(applicationId);
+    public ApplicationDetailResult queryApplicationInfoById(long applicationId) {
+        return applicationDAO.getApplicationById(applicationId);
     }
 
     /**
@@ -338,8 +332,8 @@ public class ConfCenterService extends CommonService {
      * @return 应用对象
      * @author JasonYan
      */
-    public TApplicationMnt queryApplicationinfoByIdAndRole(long applicationId) {
-        TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(applicationId);
+    public ApplicationDetailResult queryApplicationInfoByIdAndRole(long applicationId) {
+        ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(applicationId);
         return tApplicationMnt;
     }
 
@@ -350,14 +344,13 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     @Transactional(rollbackFor = Exception.class)
-    public String deleteApplicationinfoByIds(String applicationIds) {
-        GetDeleteIds deleteIds = new GetDeleteIds(applicationIds, "applicationName").invoke(tApplicationMntDao);
-        List<String> ableDeleteApplicationList = deleteIds.getAbleDeleteList();
+    public String deleteApplicationInfoByIds(String applicationIds) {
+        GetDeleteIds deleteIds = new GetDeleteIds(applicationIds, "applicationName").invoke(applicationDAO);
+        List<Long> ableDeleteApplicationList = deleteIds.getAbleDeleteList();
         if (!ableDeleteApplicationList.isEmpty()) {
             whiteListDAO.deleteApplicationInfoRelatedInterfaceByIds(ableDeleteApplicationList);
             ableDeleteApplicationList.forEach(applicationId -> {
-                TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(
-                    Long.parseLong(applicationId));
+                ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(applicationId);
                 redisManager.removeKey(
                     WhiteBlackListRedisKey.TAKIN_WHITE_LIST_KEY + tApplicationMnt.getApplicationName());
                 redisManager.removeKey(
@@ -369,15 +362,15 @@ public class ConfCenterService extends CommonService {
             //删除白名单需要更新缓存
             redisManager.removeKey(WhiteBlackListRedisKey.TAKIN_WHITE_LIST_KEY);
             redisManager.removeKey(WhiteBlackListRedisKey.TAKIN_WHITE_LIST_KEY_METRIC);
-            tApplicationMntDao.queryApplicationName(ableDeleteApplicationList).forEach(
+            applicationDAO.getApplicationByIds(ableDeleteApplicationList).forEach(
                 applicationName -> TakinFileUtil.recursiveDeleteFile(new File(getBasePath() + applicationName)));
-            tApplicationMntDao.deleteApplicationinfoByIds(ableDeleteApplicationList);
+            applicationDAO.deleteApplicationInfoByIds(ableDeleteApplicationList);
             TDataBuildDao.deleteApplicationToDataBuild(ableDeleteApplicationList);
             TLinkDetectionDao.deleteApplicationToLinkDetection(ableDeleteApplicationList);
             tShadowTableDataSourceDao.deleteByApplicationIdList(ableDeleteApplicationList);
 
             Map<String, Object> logMap = Maps.newHashMap();
-            List<Map<String, Object>> ableDeleteApplicationWlistData = tApplicationMntDao.queryApplicationListByIds(
+            List<Map<String, Object>> ableDeleteApplicationWlistData = applicationDAO.queryApplicationListByIds(
                 ableDeleteApplicationList);
             List<Map<String, Object>> ableDeleteDataBuild = TDataBuildDao.queryDataBuildListByIds(
                 ableDeleteApplicationList);
@@ -403,7 +396,7 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     public List<Map<String, Object>> queryApplicationdata() {
-        List<Map<String, Object>> list = transferElementToString(tApplicationMntDao.queryApplicationdata());
+        List<Map<String, Object>> list = transferElementToString(applicationDAO.queryApplicationData());
 
         return list;
     }
@@ -415,13 +408,16 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     @Transactional(rollbackFor = Exception.class)
-    public void updateApplicationinfo(TApplicationMnt tApplicationMnt) throws TakinModuleException {
-        TApplicationMnt originApplicationMnt = tApplicationMntDao.queryApplicationinfoById(
-            tApplicationMnt.getApplicationId());
+    public void updateApplicationInfo(ApplicationCreateParam tApplicationMnt) throws TakinModuleException {
+        ApplicationDetailResult originApplicationMnt = applicationDAO.getApplicationById(tApplicationMnt.getApplicationId());
+        if(originApplicationMnt == null) {
+            log.error("updateApplicationInfo 应用不存在 【{}】",tApplicationMnt.getApplicationName());
+            return;
+        }
         String originApplicationName = originApplicationMnt.getApplicationName();
         //比较是否更改了  applicationName  ，再看这个appName是否存在
         if (!StringUtils.equals(originApplicationName, tApplicationMnt.getApplicationName())) {
-            int applicationExist = tApplicationMntDao.applicationExist(tApplicationMnt.getApplicationName());
+            int applicationExist = applicationDAO.applicationExist(tApplicationMnt.getApplicationName());
             if (applicationExist > 0) {
 
                 throw new TakinModuleException(TakinErrorEnum.CONFCENTER_UPDATE_APPLICATION_DUPICATE_EXCEPTION);
@@ -429,13 +425,13 @@ public class ConfCenterService extends CommonService {
             TakinFileUtil.recursiveDeleteFile(new File(getBasePath() + originApplicationName));
             TakinFileUtil.createFile(getBasePath() + tApplicationMnt.getApplicationName());
         }
-        tApplicationMntDao.updateApplicationinfo(tApplicationMnt);
+        applicationDAO.updateApplicationInfo(tApplicationMnt);
         //之所以这里要多维护一次是因为 agent也要使用这个表的applicationName
         updatePlugins(tApplicationMnt);
 
     }
 
-    private void updatePlugins(TApplicationMnt tApplicationMnt) {
+    private void updatePlugins(ApplicationCreateParam tApplicationMnt) {
         ApplicationPluginsConfigParam param = new ApplicationPluginsConfigParam();
         param.setApplicationId(tApplicationMnt.getApplicationId());
         List<ApplicationPluginsConfigEntity> list = applicationPluginsConfigDAO.findList(param);
@@ -620,8 +616,7 @@ public class ConfCenterService extends CommonService {
             whiteListDAO.deleteWhiteListByIds(ableDeleteWhiteList);
             //删除白名单需要更新缓存
             ableDeleteWhiteLists.stream().map(TWList::getApplicationId).distinct().forEach(applicationId -> {
-                TApplicationMnt tApplicationMnt = tApplicationMntDao.queryApplicationinfoById(
-                    Long.parseLong(applicationId));
+
             });
 
         }
@@ -1515,29 +1510,6 @@ public class ConfCenterService extends CommonService {
         return filterList;
     }
 
-    /**
-     * 说明: 查询应用信息列表(prada同步表查数据)
-     *
-     * @return 应用列表
-     * @author shulie
-     * @date 2019/3/7 9:20
-     */
-    public List<?> queryAppNameList() {
-
-        List<Object> returnList = Lists.newArrayListWithCapacity(200);
-        List<String> list = tApplicationMntDao.queryAppNameList();
-        if (CollectionUtils.isEmpty(list)) {
-            return Lists.newArrayList();
-        }
-        list.sort(String::compareTo);
-        list.forEach(appName -> {
-                Map<String, Object> map = Maps.newHashMapWithExpectedSize(1);
-                map.put("key", appName);
-                returnList.add(map);
-            }
-        );
-        return returnList;
-    }
 
     /**
      * 查询白名单列表
@@ -1696,7 +1668,7 @@ public class ConfCenterService extends CommonService {
 
                 }
                 vo.setPrincipalNo("000000");
-                Long id = tApplicationMntDao.queryIdByApplicationName(String.valueOf(excelVo.get(1)));
+                Long id = applicationDAO.queryIdByApplicationName(String.valueOf(excelVo.get(1)));
                 vo.setApplicationId(String.valueOf(id));
                 //植入白名单类型的值
                 WListTypeEnum[] wListTypeEnums = WListTypeEnum.values();
@@ -1809,12 +1781,12 @@ public class ConfCenterService extends CommonService {
         if (StringUtils.isEmpty(appName)) {
             throw new TakinModuleException(TakinErrorEnum.CONFCENTER_UPDATE_APPLICATION_AGENT_VERSION_EXCEPTION);
         }
-        TApplicationMnt applicationMnt = applicationService.queryTApplicationMntByName(appName);
+        ApplicationDetailResult applicationMnt = applicationService.queryTApplicationMntByName(appName);
         if (applicationMnt == null) {
             log.warn("应用查询异常，未查到, updateAppAgentVersion fail!");
             return;
         }
-        tApplicationMntDao.updateApplicaionAgentVersion(applicationMnt.getApplicationId(), agentVersion, pradarVersion);
+        applicationDAO.updateApplicationAgentVersion(applicationMnt.getApplicationId(), agentVersion, pradarVersion);
     }
 
     /**
@@ -2093,7 +2065,7 @@ public class ConfCenterService extends CommonService {
     private class GetDeleteIds<T> {
         private String ids;
         private String disableName;
-        private List<String> ableDeleteList;
+        private List<Long> ableDeleteList;
         private String result;
 
         public GetDeleteIds(String ids, String disableName) {
@@ -2101,7 +2073,7 @@ public class ConfCenterService extends CommonService {
             this.disableName = disableName;
         }
 
-        public List<String> getAbleDeleteList() {
+        public List<Long> getAbleDeleteList() {
             return ableDeleteList;
         }
 
@@ -2114,15 +2086,15 @@ public class ConfCenterService extends CommonService {
             StringBuffer sb = new StringBuffer();
             Splitter.on(",").omitEmptyStrings().trimResults().splitToList(ids).stream().distinct().forEach(id -> {
                 Map<String, Object> map = null;
-                if (t instanceof TApplicationMntDao) {
-                    map = tApplicationMntDao.queryApplicationRelationBasicLinkByApplicationId(id);
+                if (t instanceof ApplicationDAO) {
+                    map = applicationDAO.queryApplicationRelationBasicLinkByApplicationId(id);
                 } else if (t instanceof WhiteListDAO) {
                     map = whiteListDAO.queryWhiteListRelationBasicLinkByWhiteListId(id);
                 } else if (t instanceof TLinkMntDao) {
                     map = tLinkMnDao.querySecondLinkRelationBasicLinkByBasicLinkId(id);
                 }
                 if (Objects.isNull(map)) {
-                    ableDeleteList.add(id);
+                    ableDeleteList.add(Long.valueOf(id));
                 } else {
                     sb.append(MapUtils.getString(map, disableName)).append(",");
                 }

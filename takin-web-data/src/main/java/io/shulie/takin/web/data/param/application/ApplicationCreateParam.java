@@ -3,10 +3,13 @@ package io.shulie.takin.web.data.param.application;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.pamirs.takin.common.util.LongToStringFormatSerialize;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import com.pamirs.takin.common.util.LongToStringFormatSerialize;
+
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 
 /**
  * @author fanxx
@@ -68,5 +71,78 @@ public class ApplicationCreateParam extends UserCommonExt {
     private String alarmPerson;
     private String pradarVersion;
 
+    /**
+     * 2018年5月17日
+     *
+     * @return 实体字符串
+     * @author shulie
+     */
+    @Override
+    public String toString() {
+        return "TApplicationMnt{" +
+            "applicationId=" + applicationId +
+            ", applicationName='" + applicationName + '\'' +
+            ", applicationDesc='" + applicationDesc + '\'' +
+            ", ddlScriptPath='" + ddlScriptPath + '\'' +
+            ", cleanScriptPath='" + cleanScriptPath + '\'' +
+            ", readyScriptPath='" + readyScriptPath + '\'' +
+            ", basicScriptPath='" + basicScriptPath + '\'' +
+            ", cacheScriptPath='" + cacheScriptPath + '\'' +
+            ", alarmPerson='" + alarmPerson + '\'' +
+            ", useYn='" + useYn + '\'' +
+            ", cacheExpTime='" + cacheExpTime + '\'' +
+            '}';
+    }
+    // add by 557092, in order to compare the object is equals to other or not.
+
+    /**
+     * 重写hashCode值，判断对象是否相等
+     * 2018年5月17日
+     *
+     * @return hashCode
+     * @author shulie
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int)(applicationId ^ (applicationId >>> 32));
+        result = prime * result + ((applicationName == null) ? 0 : applicationName.hashCode());
+        return result;
+    }
+
+    // add by 557092, in order to compare the object is equals to other or not.
+
+    /**
+     * 重写equals()，判断对象是否相等
+     * 2018年5月17日
+     *
+     * @return true相等 false不相等
+     * @author shulie
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ApplicationCreateParam other = (ApplicationCreateParam)obj;
+        if (applicationId != other.applicationId) {
+            return false;
+        }
+        if (applicationName == null) {
+            if (other.applicationName != null) {
+                return false;
+            }
+        } else if (!applicationName.equals(other.applicationName)) {
+            return false;
+        }
+        return true;
+    }
 
 }

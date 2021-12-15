@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.pamirs.takin.common.enums.ds.DbTypeEnum;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import com.pamirs.takin.entity.domain.entity.simplify.AppBusinessTableInfo;
 import com.pamirs.takin.entity.domain.query.agent.AppBusinessTableQuery;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
@@ -23,11 +22,11 @@ import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -262,7 +261,7 @@ public class DsController {
         if (null == requestMap || requestMap.size() < 1) {
             return ResponseResult.fail("请求数据null", "请联系agent");
         }
-        TApplicationMnt tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
+        ApplicationDetailResult tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
         if (null == tApplicationMnt) {
             return ResponseResult.fail("应用信息不存在", "请联系控制台");
         }

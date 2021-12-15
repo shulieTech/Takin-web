@@ -17,7 +17,6 @@ import com.pamirs.attach.plugin.dynamic.template.RedisTemplate;
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.entity.DsModelWithBLOBs;
-import com.pamirs.takin.entity.domain.entity.TApplicationMnt;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.convert.db.parser.RedisTemplateParser;
 import io.shulie.takin.web.biz.init.sync.ConfigSyncService;
@@ -220,7 +219,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
 
     public List<ShadowServerConfigurationOutput> getShadowServerConfigs(String appName) {
         List<ShadowServerConfigurationOutput> responseList = new ArrayList<>();
-        TApplicationMnt applicationMnt = applicationService.queryTApplicationMntByName(appName);
+        ApplicationDetailResult applicationMnt = applicationService.queryTApplicationMntByName(appName);
         if (applicationMnt != null) {
             List<DsModelWithBLOBs> dsModels = applicationDsDAO.selectByAppIdForAgent(applicationMnt.getApplicationId());
             if (CollectionUtils.isNotEmpty(dsModels)) {

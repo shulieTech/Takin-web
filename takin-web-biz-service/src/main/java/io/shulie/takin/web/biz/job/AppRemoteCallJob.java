@@ -3,21 +3,24 @@ package io.shulie.takin.web.biz.job;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import javax.annotation.Resource;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 /**
  * @author 无涯
@@ -29,12 +32,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AppRemoteCallJob implements SimpleJob {
 
-    @Autowired
+    @Resource
     private AppRemoteCallService appRemoteCallService;
-
-    @Autowired
+    @Resource
     @Qualifier("jobThreadPool")
     private ThreadPoolExecutor jobThreadPool;
+    @Resource
+    private DistributedLock distributedLock;
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -47,16 +51,18 @@ public class AppRemoteCallJob implements SimpleJob {
 
         } else {
             List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
-            // saas
-            tenantInfoExts.forEach(ext -> {
-                // 根据环境 分线程
-                ext.getEnvs().forEach(e -> {
-                    WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(),ext.getTenantAppKey(),e.getEnvCode(),ext.getTenantCode(),ContextSourceEnum.JOB.getCode()));
-                    jobThreadPool.execute(() -> appRemoteCallService.syncAmdb());
-                    WebPluginUtils.removeTraceContext();
-                });
-            });
-
+            for (TenantInfoExt ext : tenantInfoExts) {
+                // 开始数据层分片
+                if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    // 根据环境 分线程
+                    for (TenantEnv e : ext.getEnvs()) {
+                        WebPluginUtils.setTraceTenantContext(
+                            new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                        appRemoteCallService.syncAmdb();
+                    }
+                }
+            }
         }
     }
 

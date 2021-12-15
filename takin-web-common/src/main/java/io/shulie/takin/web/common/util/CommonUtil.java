@@ -2,6 +2,7 @@ package io.shulie.takin.web.common.util;
 
 import java.io.File;
 import java.util.List;
+import java.util.Arrays;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -43,6 +44,16 @@ import org.springframework.util.StringUtils;
  */
 @Slf4j
 public class CommonUtil implements AppConstants {
+
+    /**
+     * middleware 相关使用
+     *
+     * @param args 参数
+     * @return 拼接好的字符串
+     */
+    public static String joinAgv(String... args) {
+        return Arrays.stream(args).map(item -> item == null ? "" : item).collect(Collectors.joining(UNDERLINE));
+    }
 
     /**
      * 零拷贝下载

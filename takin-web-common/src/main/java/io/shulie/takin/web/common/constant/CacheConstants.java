@@ -11,4 +11,9 @@ public interface CacheConstants {
      */
     String CACHE_KEY_AGENT_CONFIG = "agentConfig";
 
+    /**
+     * 缓存键, agent应用节点
+     */
+    String CACHE_KEY_AGENT_APPLICATION_NODE = "agentApplicationNode";
+
 }

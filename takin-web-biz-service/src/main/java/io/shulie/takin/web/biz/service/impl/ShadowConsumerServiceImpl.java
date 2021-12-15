@@ -223,11 +223,12 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                 .collect(Collectors.toMap(ShadowConsumerOutput::getUnionId, e -> e, (oV, nV) -> nV));
         }
         // 原：在amdb自动梳理的基础上，补充数据库里面的记录，有的话用数据的记录
+        // 现：在db的基础上，补充amdb自动梳理的数据。
         for (Entry<String, ShadowConsumerOutput> dbEntry : dbMap.entrySet()) {
             amdbMap.merge(dbEntry.getKey(), dbEntry.getValue(), (amdbValue, dbValue) -> {
-                dbValue.setCanEdit(true);
-                dbValue.setCanRemove(dbValue.getIsManual());
-                dbValue.setCanEnableDisable(dbValue.getCanEnableDisable());
+                amdbValue.setCanEdit(true);
+                amdbValue.setCanRemove(dbValue.getIsManual());
+                amdbValue.setCanEnableDisable(dbValue.getCanEnableDisable());
                 return dbValue;
             });
         }

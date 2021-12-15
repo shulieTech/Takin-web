@@ -17,7 +17,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.biz.constant.DashboardExceptionCode;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.biz.service.dashboard.ApplicationService;
+import io.shulie.takin.web.biz.service.dashboard.DashboardApplicationService;
 import io.shulie.takin.web.biz.pojo.response.dashboard.AppPressureSwitchSetResponse;
 import io.shulie.takin.web.biz.pojo.response.dashboard.ApplicationSwitchStatusResponse;
 
@@ -31,11 +31,21 @@ import io.shulie.takin.web.biz.pojo.response.dashboard.ApplicationSwitchStatusRe
 @Api(tags = "接口: 应用管理中心", value = "应用管理中心")
 public class ApplicationController {
     @Resource
-    private ApplicationService applicationService;
+    private DashboardApplicationService applicationService;
 
     @ApiOperation("获取应用压测开关状态接口")
     @GetMapping("center/app/switch")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public ApplicationSwitchStatusResponse getAppSwitchInfo() {
+        return applicationService.getUserAppSwitchInfo();
+    }
+
+    @ApiOperation("获取应用压测开关状态接口")
+    @GetMapping("center/app/switch/un_safe")
+    public ApplicationSwitchStatusResponse getAppSwitchInfoNoAuth() {
         return applicationService.getUserAppSwitchInfo();
     }
 
@@ -43,11 +53,11 @@ public class ApplicationController {
     @PutMapping("center/app/switch")
     @ModuleDef(
         moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SWITCH,
+        subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SWITCH,
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
         needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public AppPressureSwitchSetResponse getAppSwitch(

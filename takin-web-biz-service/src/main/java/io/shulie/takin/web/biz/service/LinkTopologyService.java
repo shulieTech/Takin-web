@@ -334,6 +334,7 @@ public class LinkTopologyService extends CommonService {
                                         .startTime(startTime)
                                         .endTime(endTime)
                                         .timeGap(request.getTimeGap())
+                                        .traceTenantAppKey(WebPluginUtils.traceTenantAppKey())
                                         .build();
 
                                 response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);

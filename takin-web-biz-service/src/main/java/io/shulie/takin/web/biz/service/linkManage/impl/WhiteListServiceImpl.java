@@ -757,8 +757,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         }).collect(Collectors.toList());
         whitelistEffectiveAppDao.updatePartAppName(params);
         whiteListFileService.writeWhiteListFile();
-        configSyncService.syncAllowList(WebPluginUtils.getUser().getCustomerKey(), whiteListEntity.getApplicationId(),
-                null);
+        configSyncService.syncAllowList(WebPluginUtils.getTenantUserAppKey(), whiteListEntity.getApplicationId(), null);
     }
 
     @Override
@@ -778,7 +777,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         whitelistEffectiveAppDao.batchDelete(deleteParam);
         whiteListFileService.writeWhiteListFile();
         listEntities.forEach(entry -> configSyncService
-                .syncAllowList(WebPluginUtils.getUser().getCustomerKey(), entry.getApplicationId(), null));
+                .syncAllowList(WebPluginUtils.getTenantUserAppKey(), entry.getApplicationId(), null));
     }
 
     @Override
@@ -841,7 +840,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         whiteListDAO.updateWhitelistGlobal(param);
         // agent生效
         whiteListFileService.writeWhiteListFile();
-        configSyncService.syncAllowList(WebPluginUtils.getUser().getCustomerKey(), whitelistResult.getApplicationId(),
+        configSyncService.syncAllowList(WebPluginUtils.getTenantUserAppKey(), whitelistResult.getApplicationId(),
                 null);
     }
 
@@ -870,7 +869,7 @@ public class WhiteListServiceImpl implements WhiteListService {
         whiteListDAO.updateWhitelistGlobal(param);
         // agent生效
         whiteListFileService.writeWhiteListFile();
-        configSyncService.syncAllowList(WebPluginUtils.getUser().getCustomerKey(), whitelistResult.getApplicationId(),
+        configSyncService.syncAllowList(WebPluginUtils.getTenantUserAppKey(), whitelistResult.getApplicationId(),
                 null);
     }
 

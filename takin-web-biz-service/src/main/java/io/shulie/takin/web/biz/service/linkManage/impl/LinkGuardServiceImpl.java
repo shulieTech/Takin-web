@@ -19,12 +19,11 @@ import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
 import io.shulie.takin.web.data.param.application.LinkGuardCreateParam;
 import io.shulie.takin.web.data.result.linkguard.LinkGuardResult;
-import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -136,8 +135,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         try {
             LinkGuardEntity linkGuardEntity = tLinkGuardMapper.selectById(id);
             tLinkGuardMapper.deleteById(id);
-            UserExt user = WebPluginUtils.getUser();
-            configSyncService.syncGuard(user.getKey(), linkGuardEntity.getApplicationId(), null);
+            configSyncService.syncGuard(WebPluginUtils.getTenantUserAppKey(), linkGuardEntity.getApplicationId(), null);
             agentConfigCacheManager.evictGuards(linkGuardEntity.getApplicationName());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -224,8 +222,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         entity.setId(id);
         entity.setIsEnable(target);
         tLinkGuardMapper.update(entity);
-        UserExt user = WebPluginUtils.getUser();
-        configSyncService.syncGuard(user.getKey(), linkGuardEntity.getApplicationId(), null);
+        configSyncService.syncGuard(WebPluginUtils.getTenantUserAppKey(),linkGuardEntity.getApplicationId(), null);
         agentConfigCacheManager.evictGuards(linkGuardEntity.getApplicationName());
         return Response.success();
     }

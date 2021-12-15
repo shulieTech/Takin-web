@@ -7,7 +7,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import io.shulie.takin.cloud.entrypoint.engine.CloudEngineApi;
-import io.shulie.takin.cloud.entrypoint.scenemanage.CloudSceneApi;
+import io.shulie.takin.cloud.entrypoint.process.ProcessApi;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginDetailsWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginFetchWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.CloudUpdateSceneFileRequest;
@@ -30,7 +30,6 @@ import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -39,11 +38,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class SceneManageApiImpl implements SceneManageApi {
 
-    @Resource(type = CloudSceneApi.class)
-    private CloudSceneApi cloudSceneApi;
+    @Resource(type = io.shulie.takin.cloud.entrypoint.scene.manage.SceneManageApi.class)
+    private io.shulie.takin.cloud.entrypoint.scene.manage.SceneManageApi cloudSceneApi;
 
     @Resource(type = CloudEngineApi.class)
     private CloudEngineApi cloudEngineApi;
+    @Resource(type = ProcessApi.class)
+    private ProcessApi processApi;
 
     @Override
     public ResponseResult<Object> updateSceneFileByScriptId(CloudUpdateSceneFileRequest updateSceneFileRequest) {
@@ -170,10 +171,8 @@ public class SceneManageApiImpl implements SceneManageApi {
     }
 
     @Override
-    public ResponseResult<List<ScriptNode>> scriptAnalyze(ScriptAnalyzeRequest request) {
+    public List<ScriptNode> scriptAnalyze(ScriptAnalyzeRequest request) {
         WebPluginUtils.fillCloudUserData(request);
-        //return cloudSceneApi.scriptAnalyze(request);
-        // TODO 调整SDK
-        return null;
+        return processApi.scriptAnalyze(request);
     }
 }

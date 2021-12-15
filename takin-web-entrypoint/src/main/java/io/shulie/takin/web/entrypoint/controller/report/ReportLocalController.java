@@ -94,7 +94,7 @@ public class ReportLocalController {
     @GetMapping("/report/businessActivity/summary/list")
     @ApiOperation("压测明细")
     public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
-        return reportService.querySummaryList(reportId);
+        return ResponseResult.success(reportService.querySummaryList(reportId));
     }
 
     @GetMapping("/report/machine/detail")

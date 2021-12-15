@@ -17,11 +17,13 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.common.beans.response.ResponseResult.ErrorInfo;
 import io.shulie.takin.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.ext.content.script.ScriptNode;
@@ -45,7 +47,6 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
-import io.shulie.takin.cloud.entrypoint.scenemanage.MultipleSceneApi;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -59,7 +60,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneTaskStartReq;
 
 /**
  * 场景管理控制器 - 新
@@ -77,7 +77,7 @@ public class SceneController {
     @Resource
     LeakSqlService leakSqlService;
     @Resource
-    MultipleSceneApi multipleSceneApi;
+    SceneMixApi multipleSceneApi;
     @Resource
     ScriptFileRefDAO scriptFileRefDao;
     @Resource
@@ -105,22 +105,20 @@ public class SceneController {
         SceneRequest sceneRequest = buildSceneRequest(request);
 
         WebPluginUtils.fillCloudUserData(sceneRequest);
-        ResponseResult<Long> createResult = multipleSceneApi.create(sceneRequest);
-        if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler()) && createResult.getSuccess()) {
-            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
-                setSceneId(createResult.getData());
-                setExecuteTime(request.getBasicInfo().getExecuteTime());
-            }});
-        }
+        Long sceneId = multipleSceneApi.create(sceneRequest);
+
+        sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+            setSceneId(sceneId);
+            setExecuteTime(request.getBasicInfo().getExecuteTime());
+        }});
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
-        if (null != createResult && null != createResult.getData()) {
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(createResult.getData()));
-        }
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneId));
+
         if (null != request.getBasicInfo() && null != request.getBasicInfo().getName()) {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
         }
-        return createResult;
+        return ResponseResult.success(sceneId);
     }
 
     /**
@@ -142,13 +140,11 @@ public class SceneController {
         }
         SceneRequest sceneRequest = buildSceneRequest(request);
         WebPluginUtils.fillCloudUserData(sceneRequest);
-        ResponseResult<Boolean> updateResult = multipleSceneApi.update(sceneRequest);
-        if (request.getBasicInfo().getIsScheduler() && updateResult.getSuccess()) {
-            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
-                setSceneId(request.getBasicInfo().getSceneId());
-                setExecuteTime(request.getBasicInfo().getExecuteTime());
-            }});
-        }
+        Boolean updateResult = multipleSceneApi.update(sceneRequest);
+        sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+            setSceneId(request.getBasicInfo().getSceneId());
+            setExecuteTime(request.getBasicInfo().getExecuteTime());
+        }});
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
         if (null != request.getBasicInfo()) {
@@ -156,7 +152,7 @@ public class SceneController {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_SELECTIVE_CONTENT, "");
         }
-        return updateResult;
+        return ResponseResult.success(updateResult);
     }
 
     /**
@@ -256,25 +252,21 @@ public class SceneController {
     @ApiOperation("获取压测场景详情 - 新")
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<SceneDetailResponse> detail(@RequestParam(required = false) Long sceneId) {
-        SceneTaskStartReq request = new SceneTaskStartReq() {{setSceneId(sceneId);}};
+        SceneManageQueryReq request = new SceneManageQueryReq() {{setSceneId(sceneId);}};
         WebPluginUtils.fillCloudUserData(request);
-        ResponseResult<io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response> detailResult = multipleSceneApi.detail(request);
-        if (detailResult.getSuccess()) {
-            SceneDetailResponse copyDetailResult = BeanUtil.copyProperties(detailResult.getData(), SceneDetailResponse.class);
-            copyDetailResult.setBasicInfo(BeanUtil.copyProperties(detailResult.getData().getBasicInfo(), BasicInfo.class));
-            //计算场景的定时执行时间
-            SceneSchedulerTaskResponse sceneSchedulerResponse = sceneSchedulerTaskService.selectBySceneId(sceneId);
-            if (sceneSchedulerResponse == null) {
-                copyDetailResult.getBasicInfo().setIsScheduler(false);
-            } else {
-                copyDetailResult.getBasicInfo().setIsScheduler(true);
-                copyDetailResult.getBasicInfo().setExecuteTime(DateUtil.formatDateTime(sceneSchedulerResponse.getExecuteTime()));
-            }
-            return ResponseResult.success(copyDetailResult);
+        SceneDetailV2Response detailResult = multipleSceneApi.detail(request);
+
+        SceneDetailResponse copyDetailResult = BeanUtil.copyProperties(detailResult, SceneDetailResponse.class);
+        copyDetailResult.setBasicInfo(BeanUtil.copyProperties(detailResult.getBasicInfo(), BasicInfo.class));
+        //计算场景的定时执行时间
+        SceneSchedulerTaskResponse sceneSchedulerResponse = sceneSchedulerTaskService.selectBySceneId(sceneId);
+        if (sceneSchedulerResponse == null) {
+            copyDetailResult.getBasicInfo().setIsScheduler(false);
         } else {
-            ErrorInfo cloudError = detailResult.getError();
-            return ResponseResult.fail(cloudError.getCode(), cloudError.getMsg(), cloudError.getSolution());
+            copyDetailResult.getBasicInfo().setIsScheduler(true);
+            copyDetailResult.getBasicInfo().setExecuteTime(DateUtil.formatDateTime(sceneSchedulerResponse.getExecuteTime()));
         }
+        return ResponseResult.success(copyDetailResult);
     }
 
     /**

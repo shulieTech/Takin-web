@@ -59,7 +59,6 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.cloud.entrypoint.scenemanage.CloudSceneApi;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTagService;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
@@ -107,7 +106,7 @@ public class SceneManageServiceImpl implements SceneManageService {
     @Resource
     private ApplicationDAO applicationDAO;
     @Resource
-    private CloudSceneApi cloudSceneApi;
+    private io.shulie.takin.cloud.entrypoint.scene.manage.SceneManageApi cloudSceneManageApi;
     @Resource
     private SceneManageApi sceneManageApi;
     @Resource
@@ -453,7 +452,7 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     @Override
     public String deleteScene(SceneManageDeleteReq vo) {
-        return cloudSceneApi.deleteScene(vo);
+        return cloudSceneManageApi.deleteScene(vo);
     }
 
     @Override

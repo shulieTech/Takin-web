@@ -5,39 +5,39 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.cloud.common.utils.CommonUtil;
-import io.shulie.takin.cloud.entrypoint.scenemanage.MultipleSceneApi;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SynchronizeRequest;
+import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigUpdateRequest;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
-import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
-import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
+import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
-import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SynchronizeRequest;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigUpdateRequest;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
+import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
+
 import lombok.extern.slf4j.Slf4j;
 
+import cn.hutool.core.date.DateUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-
-import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 
 import io.shulie.takin.utils.json.JsonHelper;
@@ -53,7 +53,6 @@ import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
 import io.shulie.takin.web.biz.service.scene.SceneService;
-import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.common.enums.scene.SceneTypeEnum;
 import io.shulie.takin.web.common.enums.script.FileTypeEnum;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
@@ -119,7 +118,7 @@ public class SceneServiceImpl implements SceneService {
     @Resource
     private FileManageDAO fileManageDAO;
     @Resource
-    private MultipleSceneApi multipleSceneApi;
+    private SceneMixApi sceneMixApi;
     @Resource
     private SceneManageService sceneManageService;
 
@@ -167,7 +166,6 @@ public class SceneServiceImpl implements SceneService {
                 if (CollectionUtils.isNotEmpty(businessActivitySet) && businessActivitySet.size() == 1) {
                     link = links.get(0);
                 }
-                //noinspection unchecked
             }
         }
         //没有在关联关系中匹配到，去业务活动中匹配
@@ -177,7 +175,6 @@ public class SceneServiceImpl implements SceneService {
             List<ActivityListResult> activities = activityDao.getActivityList(param);
             //只有匹配到一个业务活动，才可以进行自动匹配
             if (CollectionUtils.isNotEmpty(activities) && activities.size() == 1) {
-                //noinspection unchecked
                 activity = activities.get(0);
             }
         }
@@ -251,11 +248,7 @@ public class SceneServiceImpl implements SceneService {
         }
         //解析脚本
 
-        ResponseResult<List<ScriptNode>> listResponseResult = sceneManageApi.scriptAnalyze(analyzeRequest);
-        if (!listResponseResult.getSuccess() || CollectionUtils.isEmpty(listResponseResult.getData())) {
-            throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件解析失败！" + listResponseResult.getError().getMsg());
-        }
-        List<ScriptNode> data = listResponseResult.getData();
+        List<ScriptNode> data = sceneManageApi.scriptAnalyze(analyzeRequest);
         List<ScriptNode> testPlan = JmxUtil.getScriptNodeByType(NodeTypeEnum.TEST_PLAN, data);
         if (CollectionUtils.isEmpty(testPlan)) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
@@ -279,7 +272,7 @@ public class SceneServiceImpl implements SceneService {
         sceneQueryParam.setSceneName(testName);
         List<SceneResult> sceneResultList = sceneDao.selectListByName(sceneQueryParam);
         if (CollectionUtils.isNotEmpty(sceneResultList)) {
-            testName = testName + "_" + DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+            testName = testName + "_" + DateUtil.formatDateTime(new Date());
         }
         //保存业务流程
         SceneCreateParam sceneCreateParam = new SceneCreateParam();
@@ -297,7 +290,7 @@ public class SceneServiceImpl implements SceneService {
         String scriptName = sceneCreateParam.getSceneName();
         List<ScriptManageResult> scriptManageResults = scriptManageDao.selectScriptManageByName(sceneCreateParam.getSceneName());
         if (CollectionUtils.isNotEmpty(scriptManageResults)) {
-            scriptName = sceneCreateParam.getSceneName() + "_" + DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+            scriptName = sceneCreateParam.getSceneName() + "_" + DateUtil.formatDateTime(new Date());
         }
         createRequest.setFileManageCreateRequests(Collections.singletonList(LinkManageConvert.INSTANCE.ofFileManageCreateRequest(fileManageCreateRequest)));
         createRequest.setName(scriptName);
@@ -517,7 +510,7 @@ public class SceneServiceImpl implements SceneService {
             }));
         synchronizeRequest.setBusinessActivityInfo(businessActivityInfo);
         WebPluginUtils.fillCloudUserData(synchronizeRequest);
-        multipleSceneApi.synchronize(synchronizeRequest);
+        sceneMixApi.synchronize(synchronizeRequest);
     }
 
     @Override

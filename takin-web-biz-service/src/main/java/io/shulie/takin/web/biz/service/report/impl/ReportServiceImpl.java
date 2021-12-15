@@ -21,6 +21,7 @@ import io.shulie.takin.cloud.sdk.model.request.common.CloudCommonInfoWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdReq;
 import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailBySceneIdReq;
 import io.shulie.takin.cloud.sdk.model.request.report.ReportQueryReq;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.cloud.sdk.model.request.report.ScriptNodeTreeQueryReq;
 import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
 import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
@@ -29,6 +30,7 @@ import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
 import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
 import io.shulie.takin.cloud.sdk.model.response.report.ReportDetailResp;
 import io.shulie.takin.cloud.sdk.model.response.report.ReportResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
 import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
 import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
@@ -125,7 +127,7 @@ public class ReportServiceImpl implements ReportService {
         }};
         ReportDetailResp detailResponse = cloudReportApi.detail(idReq);
         // sa超过100 显示100
-        if(detailResponse != null && detailResponse.getSa() != null
+        if (detailResponse != null && detailResponse.getSa() != null
             && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
             detailResponse.setSa(BigDecimal.valueOf(100));
         }
@@ -196,7 +198,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public TrendResponse queryReportTrend(TrendRequest param) {
+    public ReportTrendResp queryReportTrend(ReportTrendQueryReq param) {
         return cloudReportApi.trend(param);
     }
 
@@ -226,7 +228,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public TrendResponse queryTempReportTrend(TrendRequest param) {
+    public ReportTrendResp queryTempReportTrend(ReportTrendQueryReq param) {
         return cloudReportApi.tempTrend(param);
     }
 
@@ -251,7 +253,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ResponseResult<NodeTreeSummaryResp> querySummaryList(Long reportId) {
+    public NodeTreeSummaryResp querySummaryList(Long reportId) {
         return reportApi.getSummaryList(reportId);
     }
 
@@ -320,11 +322,11 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ResponseResult<List<ScriptNodeTreeResp>> queryNodeTree(ReportQueryRequest request) {
-        ResponseResult<List<ScriptNodeTreeResp>> listResponseResult = reportApi.scriptNodeTree(
+        List<ScriptNodeTreeResp> listResponseResult = reportApi.scriptNodeTree(
             new ScriptNodeTreeQueryReq() {{
                 setSceneId(request.getSceneId());
                 setReportId(request.getReportId());
             }});
-        return listResponseResult;
+        return ResponseResult.success(listResponseResult);
     }
 }

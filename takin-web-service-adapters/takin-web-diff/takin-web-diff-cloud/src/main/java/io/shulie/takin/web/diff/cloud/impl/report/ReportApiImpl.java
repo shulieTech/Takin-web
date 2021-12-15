@@ -58,29 +58,25 @@ public class ReportApiImpl implements ReportApi {
     }
 
     @Override
-    public ResponseResult<List<ScriptNodeTreeResp>> scriptNodeTree(ScriptNodeTreeQueryReq req) {
+    public List<ScriptNodeTreeResp> scriptNodeTree(ScriptNodeTreeQueryReq req) {
         return cloudReportApi.queryNodeTree(req);
     }
 
     @Override
-    public ResponseResult<ReportTrendResp> tmpReportTrend(ReportTrendQueryReq req) {
-        //return cloudReportApi.tempTrend(req);
-        // TODO 调整SDK
-        return null;
+    public ReportTrendResp tmpReportTrend(ReportTrendQueryReq req) {
+        return cloudReportApi.tempTrend(req);
     }
 
     @Override
-    public ResponseResult<ReportTrendResp> reportTrend(ReportTrendQueryReq req) {
-        //return cloudReportApi.queryReportTrend(req);
-        // TODO 调整SDK
-        return null;
+    public ReportTrendResp reportTrend(ReportTrendQueryReq req) {
+        return cloudReportApi.trend(req);
     }
 
     @Override
-    public ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId) {
+    public NodeTreeSummaryResp getSummaryList(Long reportId) {
         ReportDetailByIdReq request = new ReportDetailByIdReq() {{setReportId(reportId);}};
         WebPluginUtils.fillCloudUserData(request);
-        return cloudReportApi.getSummaryList(request);
+        return cloudReportApi.summary(request);
     }
 
 }

@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
 import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
@@ -30,11 +32,11 @@ public interface ReportService {
 
     ReportDetailOutput getReportByReportId(Long reportId);
 
-    TrendResponse queryReportTrend(TrendRequest param);
+    ReportTrendResp queryReportTrend(ReportTrendQueryReq param);
 
     ReportDetailTempOutput tempReportDetail(Long sceneId);
 
-    TrendResponse queryTempReportTrend(TrendRequest param);
+    ReportTrendResp queryTempReportTrend(ReportTrendQueryReq param);
 
     ResponseResult<List<WarnDetailResponse>> listWarn(WarnQueryReq req);
 
@@ -42,7 +44,7 @@ public interface ReportService {
 
     List<ActivityResponse> queryReportActivityBySceneId(Long sceneId);
 
-    ResponseResult<NodeTreeSummaryResp> querySummaryList(Long reportId);
+    NodeTreeSummaryResp querySummaryList(Long reportId);
 
     /**
      * 获取指标列表

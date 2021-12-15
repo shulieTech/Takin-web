@@ -4,10 +4,12 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
 import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
 import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
 import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
 import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
@@ -52,6 +54,7 @@ public class ReportController {
 
     /**
      * 报告列表无权限
+     *
      * @param reportQuery
      * @return
      */
@@ -75,7 +78,7 @@ public class ReportController {
 
     @GetMapping("report/queryReportTrend")
     @ApiOperation("报告链路趋势")
-    public TrendResponse queryReportTrend(TrendRequest reportTrendQuery) {
+    public ReportTrendResp queryReportTrend(ReportTrendQueryReq reportTrendQuery) {
         return reportService.queryReportTrend(reportTrendQuery);
     }
 
@@ -95,7 +98,7 @@ public class ReportController {
 
     @GetMapping("/report/queryTempReportTrend")
     @ApiOperation("实况报告链路趋势")
-    public TrendResponse queryTempReportTrend(TrendRequest reportTrendQuery) {
+    public ReportTrendResp queryTempReportTrend(ReportTrendQueryReq reportTrendQuery) {
         return reportService.queryTempReportTrend(reportTrendQuery);
     }
 
@@ -125,7 +128,7 @@ public class ReportController {
         needAuth = ActionTypeEnum.START_STOP
     )
     public ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId) {
-        return reportService.querySummaryList(reportId);
+        return ResponseResult.success(reportService.querySummaryList(reportId));
     }
 
 }

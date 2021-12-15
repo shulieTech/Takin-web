@@ -21,51 +21,58 @@ public interface ReportApi {
 
     /**
      * 根据租户查询报告数据
-     * @param req
-     * @return
+     *
+     * @param req -
+     * @return -
      */
     ResponseResult<List<Long>> queryListRunningReport(CloudCommonInfoWrapperReq req);
 
     /**
      * 根据报告id获取报告详情
      *
-     * @return
+     * @param req -
+     * @return -
      */
     ResponseResult<ReportDetailResp> getReportByReportId(ReportDetailByIdReq req);
 
     /**
      * 根据场景id获取报告详情
      *
-     * @return
+     * @param req -
+     * @return -
      */
     ResponseResult<ReportDetailResp> tempReportDetail(ReportDetailBySceneIdReq req);
 
     /**
      * 查询报告对应的脚本节点树
+     *
      * @param req 请求参数
-     * @return
+     * @return -
      */
-    ResponseResult<List<ScriptNodeTreeResp>> scriptNodeTree(ScriptNodeTreeQueryReq req);
+    List<ScriptNodeTreeResp> scriptNodeTree(ScriptNodeTreeQueryReq req);
 
     /**
      * 查询报告实况趋势
+     *
      * @param req 请求参数
-     * @return
+     * @return -
      */
-    ResponseResult<ReportTrendResp> tmpReportTrend(ReportTrendQueryReq req);
+    ReportTrendResp tmpReportTrend(ReportTrendQueryReq req);
 
     /**
      * 查询报告趋势
+     *
      * @param req 请求参数
-     * @return
+     * @return -
      */
-    ResponseResult<ReportTrendResp> reportTrend(ReportTrendQueryReq req);
+    ReportTrendResp reportTrend(ReportTrendQueryReq req);
 
     /**
      * 查询报告详情
+     *
      * @param reportId 报告ID
-     * @return
+     * @return -
      */
-    ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId);
+    NodeTreeSummaryResp getSummaryList(Long reportId);
 
 }

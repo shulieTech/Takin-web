@@ -124,9 +124,10 @@ public interface SceneManageApi {
     ResponseResult<ScriptCheckResp> checkAndUpdateScript(ScriptCheckAndUpdateReq scriptCheckAndUpdateReq);
 
     /**
-     * 解析脚本获取到脚本节点信息
-     * @param request
-     * @return
+     * 解析脚本
+     *
+     * @param request 入参
+     * @return 脚本节点信息
      */
-    ResponseResult<List<ScriptNode>> scriptAnalyze(ScriptAnalyzeRequest request);
+    List<ScriptNode> scriptAnalyze(ScriptAnalyzeRequest request);
 }

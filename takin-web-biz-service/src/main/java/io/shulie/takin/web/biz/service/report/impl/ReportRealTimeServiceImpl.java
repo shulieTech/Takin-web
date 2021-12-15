@@ -11,6 +11,7 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import io.shulie.takin.cloud.entrypoint.scene.manage.SceneManageApi;
 import lombok.extern.slf4j.Slf4j;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -49,7 +50,6 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.cloud.sdk.impl.scene.manage.CloudSceneApiImpl;
 import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
@@ -65,7 +65,7 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperRe
 @Slf4j
 public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     @Resource
-    CloudSceneApiImpl cloudSceneApi;
+    SceneManageApi cloudSceneApi;
     @Resource
     private ReportService reportService;
     @Resource

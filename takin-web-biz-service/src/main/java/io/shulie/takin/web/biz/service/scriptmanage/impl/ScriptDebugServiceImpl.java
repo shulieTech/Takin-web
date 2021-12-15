@@ -964,7 +964,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @return 启动后返回的数据
      */
     private SceneTryRunTaskStartResp doDebug(SceneTryRunTaskStartReq debugCloudRequest) {
-        // 启动
+        // 启动前先加上租户
+        debugCloudRequest.setTenantId(WebPluginUtils.traceTenantId());
+        debugCloudRequest.setEnvCode(WebPluginUtils.traceEnvCode());
         log.info("调试 --> 调用 cloud 启动, 入参: {}", JSONUtil.toJsonStr(debugCloudRequest));
         ResponseResult<SceneTryRunTaskStartResp> result = sceneTaskApi.startTryRunTask(debugCloudRequest);
         log.info("调试 --> 调用 cloud 启动, 出参: {}", JSONUtil.toJsonStr(result));

@@ -26,3 +26,8 @@ INSERT IGNORE INTO `t_config_server` (`key`, `value`, `tenant_id`, `env_code`, `
 
 UPDATE `t_tro_user` SET  `is_super`= 1 WHERE name='superadmin';
 
+UPDATE t_tro_resource SET is_super=1 WHERE code='flowAccount';
+UPDATE t_tro_resource SET is_super=1 WHERE code='configCenter_bigDataConfig';
+UPDATE t_tro_resource SET is_super=1 WHERE code='admins_admin';
+UPDATE t_tro_resource SET is_super=1 WHERE code='configCenter_middlewareManage';
+

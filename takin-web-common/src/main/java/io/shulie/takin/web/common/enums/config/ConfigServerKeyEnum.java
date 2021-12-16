@@ -161,11 +161,6 @@ public enum ConfigServerKeyEnum implements AppConstants {
     TAKIN_LINK_FIX_ENABLE("link.fix.enable", "takin.link.fix.enable", NO),
 
     /**
-     * 文件上传到 cloud 的地址
-     */
-    TAKIN_FILE_UPLOAD_URL("file.upload.url", "takin.file.upload.url", NO),
-
-    /**
      * 文件上传地址
      */
     TAKIN_FILE_UPLOAD_USER_DATA_DIR("file.upload.user.data.dir", "takin.file.upload.user.data.dir", NO),

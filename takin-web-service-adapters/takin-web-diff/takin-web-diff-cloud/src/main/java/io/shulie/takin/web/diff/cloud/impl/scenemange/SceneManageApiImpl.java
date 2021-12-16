@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author zhaoyong
  */
-@Component
+@Component("WebSceneManageApiImpl")
 public class SceneManageApiImpl implements SceneManageApi {
 
     @Resource(type = io.shulie.takin.cloud.entrypoint.scene.manage.SceneManageApi.class)

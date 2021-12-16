@@ -32,7 +32,7 @@ public class AppAccessStatusJob implements SimpleJob {
     @Override
     public void execute(ShardingContext shardingContext) {
         if (WebPluginUtils.isOpenVersion()) {
-            // 私有化 + 开源 版本
+            // 私有化 + 开源
             applicationService.syncApplicationAccessStatus();
             return;
         }

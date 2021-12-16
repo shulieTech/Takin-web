@@ -693,72 +693,92 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void syncApplicationAccessStatus() {
         try {
-            // 分页查询数据库应用列表
+            // 应用分页大小
+            int pageSize = 20;
+            // 查出的应用数量, 如果小于pageSize, 则无需下一页
+            int applicationNumber;
+
             PageBaseDTO pageBaseDTO = new PageBaseDTO();
-            pageBaseDTO.setPageSize(20);
-            List<ApplicationListResult> applicationMntList = applicationDAO.pageFromSync(pageBaseDTO);
-            if (applicationMntList.isEmpty()) {
-                return;
-            }
+            pageBaseDTO.setPageSize(pageSize);
 
-            // 收集应用名称
-            List<String> appNames = applicationMntList.stream()
-                .map(ApplicationListResult::getApplicationName)
-                .collect(Collectors.toList());
-
-            // 大数据应用的map, key 应用名称, value amdb应用实例
-            Map<String, ApplicationResult> amdbApplicationMap = this.getAmdbApplicationMap(appNames);
-
-            // 大数据应用节点的map, key 应用名称, value amdb节点列表
-            Map<String, List<ApplicationNodeResult>> amdbApplicationNodeMap = this.getAmdbApplicationNodeMap(appNames);
-
-            // 异常的应用
-            Set<Long> errorApplicationIdSet = new HashSet<>(20);
-            // 正常的应用
-            Set<Long> normalApplicationIdSet = new HashSet<>(20);
-
-            // 遍历比对
-            for (ApplicationListResult application : applicationMntList) {
-                String applicationName = application.getApplicationName();
-                Long applicationId = application.getApplicationId();
-                Integer nodeNum = application.getNodeNum();
-
-                ApplicationResult amdbApplication;
-                List<ApplicationNodeResult> amdbApplicationNodeList;
-
-                if (amdbApplicationMap.isEmpty()
-                    || (amdbApplication = amdbApplicationMap.get(applicationName)) == null
-                    || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
-                    // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
-                    errorApplicationIdSet.add(applicationId);
-
-                } else if (!amdbApplicationMap.isEmpty()
-                    && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
-                    && amdbApplication.getAppIsException()) {
-                    // map 存在, map.get 存在, amdb应用为异常
-                    errorApplicationIdSet.add(applicationId);
-
-                } else if (!amdbApplicationNodeMap.isEmpty()
-                    && CollectionUtil.isNotEmpty(amdbApplicationNodeList = amdbApplicationNodeMap.get(applicationName))
-                    && amdbApplicationNodeList.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count()
-                    > 1) {
-                    // 判断agent版本号是否一致
-                    errorApplicationIdSet.add(applicationId);
-
-                } else {
-                    normalApplicationIdSet.add(applicationId);
+            do {
+                // 分页查询数据库应用列表
+                List<ApplicationListResult> applicationList = applicationDAO.pageFromSync(pageBaseDTO);
+                if (applicationList.isEmpty()) {
+                    return;
                 }
-            }
 
-            if (errorApplicationIdSet.size() > 0) {
-                modifyAccessStatusWithoutAuth(new ArrayList<>(errorApplicationIdSet),
-                    AppAccessStatusEnum.EXCEPTION.getCode());
-            }
+                // 下一页
+                pageBaseDTO.setCurrent(pageBaseDTO.getCurrent() + 1);
+                // 赋值查询出的应用数量
+                applicationNumber = applicationList.size();
 
-            if (normalApplicationIdSet.size() > 0) {
-                modifyAccessStatusWithoutAuth(new ArrayList<>(normalApplicationIdSet),
-                    AppAccessStatusEnum.NORMAL.getCode());
-            }
+                // 收集应用名称
+                List<String> appNames = applicationList.stream()
+                    .map(ApplicationListResult::getApplicationName)
+                    .collect(Collectors.toList());
+
+                // 大数据应用的map, key 应用名称, value amdb应用实例
+                Map<String, ApplicationResult> amdbApplicationMap = this.getAmdbApplicationMap(appNames);
+
+                // 大数据应用节点的map, key 应用名称, value amdb节点列表
+                Map<String, List<ApplicationNodeResult>> amdbApplicationNodeMap = this.getAmdbApplicationNodeMap(
+                    appNames);
+
+                // 异常的应用
+                Set<Long> errorApplicationIdSet = new HashSet<>(20);
+                // 正常的应用
+                Set<Long> normalApplicationIdSet = new HashSet<>(20);
+
+                // 遍历比对
+                for (ApplicationListResult application : applicationList) {
+                    String applicationName = application.getApplicationName();
+                    Long applicationId = application.getApplicationId();
+                    Integer nodeNum = application.getNodeNum();
+
+                    // 该应用对应的大数据应用实例
+                    ApplicationResult amdbApplication;
+                    // 该应用对应的大数据节点列表
+                    List<ApplicationNodeResult> amdbApplicationNodeList;
+
+                    if (amdbApplicationMap.isEmpty()
+                        || (amdbApplication = amdbApplicationMap.get(applicationName)) == null
+                        || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
+                        // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
+                        errorApplicationIdSet.add(applicationId);
+
+                    } else if (!amdbApplicationMap.isEmpty()
+                        && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
+                        && amdbApplication.getAppIsException()) {
+                        // map 存在, map.get 存在, amdb应用为异常
+                        errorApplicationIdSet.add(applicationId);
+
+                    } else if (!amdbApplicationNodeMap.isEmpty()
+                        && CollectionUtil.isNotEmpty(
+                        amdbApplicationNodeList = amdbApplicationNodeMap.get(applicationName))
+                        && amdbApplicationNodeList.stream().map(ApplicationNodeResult::getAgentVersion).distinct()
+                        .count()
+                        > 1) {
+                        // 判断agent版本号是否一致
+                        errorApplicationIdSet.add(applicationId);
+
+                    } else {
+                        normalApplicationIdSet.add(applicationId);
+                    }
+                }
+
+                if (!errorApplicationIdSet.isEmpty()) {
+                    modifyAccessStatusWithoutAuth(new ArrayList<>(errorApplicationIdSet),
+                        AppAccessStatusEnum.EXCEPTION.getCode());
+                }
+
+                if (!normalApplicationIdSet.isEmpty()) {
+                    modifyAccessStatusWithoutAuth(new ArrayList<>(normalApplicationIdSet),
+                        AppAccessStatusEnum.NORMAL.getCode());
+                }
+
+            } while (applicationNumber == pageSize);
+            // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
         } catch (Exception e) {
             log.error("定时同步应用状态错误, 错误信息: {}", e.getMessage(), e);

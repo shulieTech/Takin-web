@@ -16,16 +16,19 @@
 package io.shulie.takin.web.data.dao.application;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
@@ -653,6 +656,14 @@ public class ApplicationDAOImpl
                 ApplicationMntEntity::getApplicationName, ApplicationMntEntity::getAccessStatus,
                 ApplicationMntEntity::getNodeNum));
         return DataTransformUtil.list2list(applicationMntEntityPage.getRecords(), ApplicationListResult.class);
+    }
+
+    @Override
+    public boolean updateStatusByApplicationIds(Collection<Long> applicationIds, Integer status) {
+        return CollectionUtil.isNotEmpty(applicationIds)
+            && SqlHelper.retBool(applicationMntMapper.update(null, this.getLambdaUpdateWrapper()
+            .set(ApplicationMntEntity::getAccessStatus, status)
+            .in(ApplicationMntEntity::getApplicationId, applicationIds)));
     }
 
 }

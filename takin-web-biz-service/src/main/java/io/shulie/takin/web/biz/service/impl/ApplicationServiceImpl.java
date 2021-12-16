@@ -828,13 +828,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public void modifyAccessStatusWithoutAuth(List<Long> applicationIds, Integer accessStatus) {
-        if (CollectionUtils.isNotEmpty(applicationIds)) {
-            applicationDAO.batchUpdateApplicationStatus(applicationIds, accessStatus);
-        }
-    }
-
-    @Override
     public List<ApplicationDetailResult> getAllApplications() {
         return applicationDAO.getAllApplications();
     }

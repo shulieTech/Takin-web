@@ -15,6 +15,7 @@
 
 package io.shulie.takin.web.data.dao.application;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -386,5 +387,14 @@ public interface ApplicationDAO {
      * @return 应用列表
      */
     List<ApplicationListResult> pageFromSync(PageBaseDTO pageBaseDTO);
+
+    /**
+     * 根据应用ids, 更新应用状态
+     *
+     * @param applicationIds 应用ids
+     * @param status         状态
+     * @return 是否成功
+     */
+    boolean updateStatusByApplicationIds(Collection<Long> applicationIds, Integer status);
 
 }

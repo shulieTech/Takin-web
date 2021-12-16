@@ -87,7 +87,8 @@ public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentRepo
     @Override
     public void clearExpiredData() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        agentReportMapper.selfDelete(simpleDateFormat.format(System.currentTimeMillis() - 5 * 60 * 1000));
+        // 删除1分钟前的数据
+        agentReportMapper.selfDelete(simpleDateFormat.format(System.currentTimeMillis() - 60 * 1000));
     }
 
     @Override

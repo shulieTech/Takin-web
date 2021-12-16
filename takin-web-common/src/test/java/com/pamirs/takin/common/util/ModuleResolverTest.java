@@ -3,12 +3,8 @@ package com.pamirs.takin.common.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import io.shulie.takin.web.common.agent.ModulePropertiesResolver;
-import io.shulie.takin.web.common.pojo.bo.agent.AgentModuleInfo;
 
 /**
  * @Description
@@ -30,9 +26,9 @@ public class ModuleResolverTest {
             sb.append(new String(buf, 0, len));
         }
 
-        List<AgentModuleInfo> moduleInfoList = ModulePropertiesResolver.resolver(sb.toString());
+        //List<AgentModuleInfo> moduleInfoList = ModulePropertiesResolver.resolver(sb.toString());
         System.out.println(sb.toString());
-        System.out.println(moduleInfoList);
+        //System.out.println(moduleInfoList);
         System.out.println(11);
 
     }

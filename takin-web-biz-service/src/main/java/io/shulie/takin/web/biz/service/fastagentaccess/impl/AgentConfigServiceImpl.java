@@ -43,6 +43,7 @@ import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentConfigParam;
 import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -347,8 +348,20 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
 
         // 1.2 租户下的全局配置
-        queryParam.setTenantId(WebPluginUtils.traceTenantId());
-        queryParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        if (!StringUtils.isEmpty(queryBO.getUserAppKey()) && !StringUtils.isEmpty(queryBO.getEnvCode())) {
+            TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(queryBO.getUserAppKey(), queryBO.getEnvCode());
+            if (tenantInfoExt != null) {
+                queryParam.setTenantId(tenantInfoExt.getTenantId());
+            }
+        } else {
+            queryParam.setTenantId(WebPluginUtils.traceTenantId());
+        }
+
+        if (!StringUtils.isEmpty(queryBO.getEnvCode())) {
+            queryParam.setEnvCode(queryBO.getEnvCode());
+        } else {
+            queryParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        }
         queryParam.setType(AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
         List<AgentConfigDetailResult> tenantGlobalConfigList = agentConfigDAO.listByTypeAndTenantIdAndEnvCode(
             queryParam);
@@ -411,7 +424,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             }
 
             // 优化性能，列表接口不需要查询生效值
-            if(needEffectValue){
+            if (needEffectValue) {
                 // 根据应用名，userAppKey 和 enKey查询应该生效的value
                 AgentConfigDetailResult configDetailResult = queryByEnKeyAndProject(queryRequest.getEnKey(),
                     item.getAppName());

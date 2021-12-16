@@ -163,14 +163,6 @@ public interface ApplicationService {
     void modifyAccessStatus(String id, Integer accessStatus, String exceptionInfo);
 
     /**
-     * 修改应用状态（无需鉴权）
-     *
-     * @param applicationIds -
-     * @param accessStatus   -
-     */
-    void modifyAccessStatusWithoutAuth(List<Long> applicationIds, Integer accessStatus);
-
-    /**
      * 获取应用
      *
      * @return

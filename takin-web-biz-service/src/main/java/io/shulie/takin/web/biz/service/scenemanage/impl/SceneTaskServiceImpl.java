@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.scenemanage.impl;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -228,13 +229,13 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         // 缓存 报告id
         cacheReportId(startResult, param);
         // 入队列
-        pushTaskToRedis(startResult);
+        pushTaskToRedis(startResult,sceneData);
 
         return startResult;
     }
 
 
-    private void pushTaskToRedis(SceneActionResp startResult){
+    private void pushTaskToRedis(SceneActionResp startResult,SceneManageWrapperDTO sceneData){
         final Long reportId = startResult.getData();
         if (reportId!=null){
             SceneTaskDto taskDto = new SceneTaskDto();
@@ -244,6 +245,12 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             taskDto.setTenantCode(WebPluginUtils.traceTenantCode());
             taskDto.setSource(ContextSourceEnum.JOB.getCode());
             taskDto.setReportId(reportId);
+
+            //计算结束时间
+            if (sceneData.getPressureTestSecond() == null){
+                throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR,"获取压测时长失败！压测时长为"+ sceneData.getPressureTestSecond());
+            }
+            taskDto.setEndTime(LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()));
             //任务添加到redis队列
             redisTemplate.opsForList().leftPush(WebRedisKeyConstant.SCENE_REPORTID_KEY,JSON.toJSONString(taskDto));
         }

@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,11 @@ public abstract class AbstractSceneTask {
 
     protected int getAllowedTenantThreadMax(){
         return ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.PER_TENANT_ALLOW_TASK_THREADS_MAX);
+    }
+
+    protected void removeReportKey(Long reportId, TenantCommonExt commonExt) {
+        redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,JSON.toJSONString(new SceneTaskDto(
+            commonExt, reportId)));
     }
 
 

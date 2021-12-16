@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.job;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +19,7 @@ import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -67,7 +69,10 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                         if (task == null) {
                             reportThreadPool.execute(() -> {
                                 try {
-                                    reportTaskService.finishReport(reportId,taskDto);
+                                    boolean ifFinish = reportTaskService.finishReport(reportId,taskDto);
+                                    if (!ifFinish){
+                                        removeTaskIfNecessary(taskDto);
+                                    }
                                 } catch (Throwable e) {
                                     log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
                                 } finally {
@@ -114,7 +119,10 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                 reportThreadPool.execute(() -> {
                     try {
                         WebPluginUtils.setTraceTenantContext(tenantTask);
-                        reportTaskService.finishReport(reportId, tenantTask);
+                        boolean ifFinish = reportTaskService.finishReport(reportId, tenantTask);
+                        if (!ifFinish){
+                            removeTaskIfNecessary(tenantTask);
+                        }
                     } catch (Throwable e) {
                         log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
                     } finally {
@@ -128,6 +136,12 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                     }
                 });
             }
+        }
+    }
+
+    public void removeTaskIfNecessary(SceneTaskDto tenantTask){
+        if (LocalDateTime.now().compareTo(tenantTask.getEndTime()) > 0){
+            this.removeReportKey(tenantTask.getReportId(),tenantTask);
         }
     }
 }

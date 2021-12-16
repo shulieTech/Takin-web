@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -97,7 +98,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     }
 
     @Override
-    public void finishReport(Long reportId,TenantCommonExt commonExt) {
+    public Boolean finishReport(Long reportId,TenantCommonExt commonExt) {
         try {
             try {
                 //Ready 数据准备
@@ -107,12 +108,12 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             }
             ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
             if (reportDetailDTO == null) {
-                return;
+                return false;
             }
             // 压测结束才锁报告
             Date endTime = reportDetailDTO.getEndTime();
             if (endTime == null) {
-                return;
+                return false;
             }
             // 解除 场景锁
             redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
@@ -161,13 +162,14 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 //压测结束，生成压测报告异常，解锁报告
                 reportService.unLockReport(reportId);
                 log.error("Unlock Report Success, reportId={} ,errorMsg= {}...", reportId, e.getMessage());
+            } finally {
+                removeReportKey(reportId, commonExt);
             }
 
         } catch (Exception e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());
-        } finally {
-            removeReportKey(reportId, commonExt);
         }
+        return true;
     }
 
     private void removeReportKey(Long reportId, TenantCommonExt commonExt) {

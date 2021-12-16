@@ -69,6 +69,8 @@ CREATE TABLE `t_application_plugin_upgrade`
    `remark` varchar(500) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
    `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
    `gmt_update` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   `user_id` bigint(20) DEFAULT '0' COMMENT '操作人id',
+   `user_name` varchar(64) DEFAULT '' COMMENT '操作人',
    `env_code` varchar(100) DEFAULT 'test' COMMENT '环境标识',
    `tenant_id` bigint(20) DEFAULT '1' COMMENT '租户 id, 默认 1',
    `IS_DELETED` tinyint(2) NOT NULL DEFAULT '0' COMMENT '是否有效 0:有效;1:无效',

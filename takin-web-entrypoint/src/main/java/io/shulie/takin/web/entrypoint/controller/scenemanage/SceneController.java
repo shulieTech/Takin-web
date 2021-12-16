@@ -106,11 +106,12 @@ public class SceneController {
 
         WebPluginUtils.fillCloudUserData(sceneRequest);
         Long sceneId = multipleSceneApi.create(sceneRequest);
-
-        sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
-            setSceneId(sceneId);
-            setExecuteTime(request.getBasicInfo().getExecuteTime());
-        }});
+        if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler())) {
+            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+                setSceneId(sceneId);
+                setExecuteTime(request.getBasicInfo().getExecuteTime());
+            }});
+        }
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneId));
@@ -141,10 +142,12 @@ public class SceneController {
         SceneRequest sceneRequest = buildSceneRequest(request);
         WebPluginUtils.fillCloudUserData(sceneRequest);
         Boolean updateResult = multipleSceneApi.update(sceneRequest);
-        sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
-            setSceneId(request.getBasicInfo().getSceneId());
-            setExecuteTime(request.getBasicInfo().getExecuteTime());
-        }});
+        if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler())) {
+            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
+                setSceneId(request.getBasicInfo().getSceneId());
+                setExecuteTime(request.getBasicInfo().getExecuteTime());
+            }});
+        }
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
         if (null != request.getBasicInfo()) {

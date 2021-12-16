@@ -299,6 +299,6 @@ public interface ApplicationService {
      * @param request 请求入参
      * @return 应用列表
      */
-    PagingList<ApplicationListResponseV2> listApplication(ApplicationQueryRequestV2 request);
+    PagingList<ApplicationListResponseV2> pageApplication(ApplicationQueryRequestV2 request);
 
 }

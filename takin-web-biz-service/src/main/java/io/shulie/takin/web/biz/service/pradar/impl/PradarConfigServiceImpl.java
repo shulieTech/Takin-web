@@ -36,9 +36,7 @@ public class PradarConfigServiceImpl implements PradarConfigService {
     public void initZooKeeperData() {
         // 放入zk，只放入系统的
         for (PradarZkConfigResult config : pradarZkConfigDAO.list()) {
-            if (!zkHelper.isNodeExists(config.getZkPath())) {
-                zkHelper.addPersistentNode(config.getZkPath(), config.getValue());
-            }
+            this.processZk(config.getZkPath(), config.getValue());
         }
     }
 

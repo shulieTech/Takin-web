@@ -36,15 +36,8 @@ public class ThreadPoolConfig {
             new ThreadPoolExecutor.AbortPolicy());
     }
 
-    @Bean(name = "commThreadPool")
-    public ThreadPoolExecutor commThreadPool() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("comm-thread-%d").build();
-        return new ThreadPoolExecutor(100, 100, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(500), nameThreadFactory);
-    }
-
     /**
      * 方法追踪超时检测
-     *
      * @return
      */
     @Bean(name = "traceManageThreadPool")
@@ -56,7 +49,6 @@ public class ThreadPoolConfig {
 
     /**
      * 单独做数据收集
-     *
      * @return
      */
     @Bean(name = "collectDataThreadPool")
@@ -68,7 +60,6 @@ public class ThreadPoolConfig {
 
     /**
      * 漏数验证单独做
-     *
      * @return
      */
     @Bean(name = "showdownVerifyThreadPool")
@@ -80,9 +71,8 @@ public class ThreadPoolConfig {
 
     /**
      * 四大报告Job分开线程池单独使用
-     *
-     * @return
      * @see io.shulie.takin.web.biz.job.CalcApplicationSummaryJob
+     * @return
      */
     @Bean(name = "reportSummaryThreadPool")
     public ThreadPoolExecutor reportSummaryThreadPool() {
@@ -93,46 +83,42 @@ public class ThreadPoolConfig {
 
     /**
      * 四大报告Job分开线程池单独使用
-     *
-     * @return
      * @see io.shulie.takin.web.biz.job.CalcTpsTargetJob
+     * @return
      */
     @Bean(name = "reportTpsThreadPool")
     public ThreadPoolExecutor reportTpsThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-tps-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+        return new ThreadPoolExecutor(10, 20,20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
      * 四大报告Job分开线程池单独使用
-     *
-     * @return
      * @see io.shulie.takin.web.biz.job.FinishReportJob
+     * @return
      */
     @Bean(name = "reportFinishThreadPool")
     public ThreadPoolExecutor reportFinishThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-finish-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+        return new ThreadPoolExecutor(10, 20,20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
      * 四大报告Job分开线程池单独使用
-     *
-     * @return
      * @see io.shulie.takin.web.biz.job.SyncMachineDataJob
+     * @return
      */
     @Bean(name = "reportMachineThreadPool")
     public ThreadPoolExecutor reportMachineThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-machine-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+        return new ThreadPoolExecutor(10, 20,20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
      * 仅链路调试用的job
-     *
      * @return
      */
     @Bean(name = "fastDebugThreadPool")
@@ -173,6 +159,7 @@ public class ThreadPoolConfig {
         return new ThreadPoolExecutor(5, 5, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
+
 
     @Bean(name = "agentDataThreadPool")
     public ThreadPoolExecutor agentDataTaskExecutor() {
@@ -248,7 +235,6 @@ public class ThreadPoolConfig {
 
     /**
      * 数据查询分片线程池
-     *
      * @return
      */
     @Bean(name = "queryAsyncThreadPool")
@@ -269,7 +255,6 @@ public class ThreadPoolConfig {
 
     /**
      * e2e线程池
-     *
      * @return
      */
     @Bean(name = "e2eThreadPool")

@@ -1,9 +1,7 @@
 package io.shulie.takin.web.biz.service.perfomanceanaly.impl;
 
-import java.util.Date;
 import java.util.List;
 
-import com.pamirs.takin.common.util.DateUtils;
 import io.shulie.takin.web.biz.convert.performace.PerformanceBaseInputConvert;
 import io.shulie.takin.web.biz.pojo.input.PerformanceBaseDataCreateInput;
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
@@ -13,6 +11,7 @@ import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
 import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseDataParam;
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseQueryParam;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +36,8 @@ public class PerformanceBaseDataServiceImpl implements PerformanceBaseDataServic
     @Override
     public void cache(PerformanceBaseDataCreateInput input) {
         PerformanceBaseDataParam param = PerformanceBaseInputConvert.INSTANCE.inputToParam(input);
+        // 补充header头
+        WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(),param);
         asyncService.savePerformanceBaseData(param);
     }
 

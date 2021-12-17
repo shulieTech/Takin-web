@@ -43,6 +43,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,12 +72,8 @@ public class MiddlewareJarController {
     /**
      * 上传文件的路径
      */
+    @Value("${takin.data.path}")
     private String uploadPath;
-
-    @PostConstruct
-    public void init() {
-        uploadPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH);
-    }
 
     /**
      * 对比

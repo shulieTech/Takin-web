@@ -11,12 +11,17 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
+import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
+import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
+import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
@@ -25,6 +30,7 @@ import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq
 import io.shulie.takin.cloud.sdk.model.request.scenetask.TaskFlowDebugStartReq;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
 import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
@@ -54,6 +60,7 @@ import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
+import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebResponse;
@@ -64,8 +71,11 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
+import io.shulie.takin.web.data.mapper.mysql.LinkManageTableMapper;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
+import io.shulie.takin.web.data.model.mysql.LinkManageTableEntity;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
@@ -83,6 +93,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 /**
  * @author shiyajian
@@ -110,6 +122,12 @@ public class ActivityServiceImpl implements ActivityService {
     private ScriptManageService scriptManageService;
     @Autowired
     private SceneManageService sceneManageService;
+    @Autowired
+    private BusinessLinkManageTableMapper businessLinkManageTableMapper;
+    @Autowired
+    private LinkManageTableMapper linkManageTableMapper;
+    @Autowired
+    private ApplicationEntranceClient applicationEntranceClient;
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
@@ -832,6 +850,57 @@ public class ActivityServiceImpl implements ActivityService {
         businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkId").toString()));
         businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName").toString());
         return businessLinkManageTableEntity;
+    }
+
+
+    /**
+     * 根据业务活动id,查询关联应用名
+     *
+     * @param activityId
+     * @return
+     */
+    @Override
+    public List<String> processAppNameByBusinessActiveId(Long activityId) {
+        BusinessLinkManageTableEntity businessLinkManageTableEntity =
+                businessLinkManageTableMapper.selectById(activityId);
+        if (businessLinkManageTableEntity == null) {
+            return Lists.newArrayList();
+        }
+        // 虚拟入口 返回数据
+        if (!ActivityUtil.isNormalBusiness(businessLinkManageTableEntity.getType())) {
+            return Lists.newArrayList();
+        }
+
+        LinkManageTableEntity linkManageTableEntity =
+                linkManageTableMapper.selectById(businessLinkManageTableEntity.getRelatedTechLink());
+        if (linkManageTableEntity == null) {
+            return Lists.newArrayList();
+        }
+
+        String features = linkManageTableEntity.getFeatures();
+        if (StrUtil.isBlank(features)) {
+            return new ArrayList<>(0);
+        }
+
+        Map<String, String> map = JSON.parseObject(features, Map.class);
+        if (CollectionUtil.isEmpty(map)) {
+            return new ArrayList<>(0);
+        }
+
+        String serviceName = map.get(FeaturesConstants.SERVICE_NAME_KEY);
+        String methodName = map.get(FeaturesConstants.METHOD_KEY);
+        String rpcType = map.get(FeaturesConstants.RPC_TYPE_KEY);
+        String extend = map.get(FeaturesConstants.EXTEND_KEY);
+        LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
+                false, linkManageTableEntity.getApplicationName(), null, serviceName, methodName,
+                rpcType, extend);
+        if (applicationEntrancesTopology == null || CollectionUtils.isEmpty(applicationEntrancesTopology.getNodes())) {
+            return new ArrayList<>(Collections.singleton(linkManageTableEntity.getApplicationName()));
+        }
+        return applicationEntrancesTopology.getNodes().stream()
+                .filter(node -> node.getNodeType().equals(NodeTypeEnum.APP.getType()))
+                .map(LinkNodeDTO::getNodeName)
+                .collect(Collectors.toList());
     }
 
     // TODO 变更逻辑后续看如何设计

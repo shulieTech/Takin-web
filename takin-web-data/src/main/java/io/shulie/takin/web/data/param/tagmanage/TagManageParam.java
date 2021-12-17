@@ -13,7 +13,7 @@ public class TagManageParam {
     private String tagName;
 
     /**
-     * 标签类型;0为脚本标签; 1:场景标签
+     * 标签类型;0为脚本标签; 1:场景标签;2:应用
      */
     private Integer tagType;
 

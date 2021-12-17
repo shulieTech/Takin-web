@@ -17,11 +17,13 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.LinkChangeEnumMappi
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.LinkChangeTypeEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.LinkLevelEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.LinkTypeEnumMapping;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.application.ApplicationAgentPathTypeEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentConfigEditableEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentConfigEffectMechanismEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentConfigEffectTypeEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentConfigTypeEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentConfigValueTypeEnumMapping;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentShowStatusEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.AgentStatusEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.PluginStatusEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastagentaccess.ProbeStatusEnumMapping;
@@ -101,6 +103,13 @@ public class DictionaryCache {
         DICTIONARY_MAP.put("agent_status", AgentStatusEnumMapping.neededEnumResults());
         DICTIONARY_MAP.put("agent_plugin_status", PluginStatusEnumMapping.neededEnumResults());
         DICTIONARY_MAP.put("agent_probe_status", ProbeStatusEnumMapping.neededEnumResults());
+
+        // 探针根目录
+        DICTIONARY_MAP.put("plugin_upload_path", ApplicationAgentPathTypeEnumMapping.neededEnumResults());
+
+        //应用探针接入状态
+        DICTIONARY_MAP.put("application_agent_status", AgentShowStatusEnumMapping.neededEnumResults());
+
 
         //数据字段
         fillDictFromDatabase();

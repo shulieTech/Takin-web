@@ -24,10 +24,10 @@ import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionQueryReq
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentVersionListResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentVersionService;
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentDownloadUrlVerifyUtil;
 import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
 import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectTypeEnum;
+import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentVersionDAO;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentVersionQueryParam;
@@ -95,6 +95,8 @@ public class AgentVersionServiceImpl implements AgentVersionService {
 
     @Autowired
     private AgentConfigService agentConfigService;
+
+
 
     @Override
     public AgentVersionListResponse queryLatestOrFixedVersion(String version) {
@@ -202,6 +204,7 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         queryBO.setProjectName(projectName);
         queryBO.setEffectMinVersionNum(AgentVersionUtil.string2Long(version));
         queryBO.setUserAppKey(tenantAppKey);
+        queryBO.setEnvCode(envCode);
         Map<String, AgentConfigDetailResult> configMap = agentConfigService.getConfigList(queryBO);
 
         // 3、将对应的配置写入文件中
@@ -402,4 +405,5 @@ public class AgentVersionServiceImpl implements AgentVersionService {
         agentConfigList.add(userAppKeyObj);
         agentConfigList.add(pradarEnvCodeObj);
     }
+
 }

@@ -15,7 +15,6 @@ import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -71,7 +70,6 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
         return this.count(wrapper);
     }
 
-    @NotNull
     private List<SceneLinkRelateResult> getSceneLinkRelateResults(LambdaQueryWrapper<SceneLinkRelateEntity> wrapper) {
         wrapper.eq(SceneLinkRelateEntity::getIsDeleted, 0);
         List<SceneLinkRelateEntity> entities = this.list(wrapper);

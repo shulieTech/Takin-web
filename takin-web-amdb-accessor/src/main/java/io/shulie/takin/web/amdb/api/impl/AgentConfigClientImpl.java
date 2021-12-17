@@ -5,7 +5,6 @@ import java.util.List;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import io.shulie.amdb.common.dto.agent.AgentConfigDTO;
@@ -58,7 +57,7 @@ public class AgentConfigClientImpl implements AgentConfigClient {
 
         try {
             //添加请求头参数
-            String responseEntity = HttpRequest.post(url).addHeaders(null).form(JSON.toJSONString(queryDTO)).execute().body();
+            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)));
             if (StringUtils.isEmpty(responseEntity)) {
                 return null;
             }

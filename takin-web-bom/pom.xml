@@ -115,14 +115,14 @@
 
     <distributionManagement>
         <repository>
-            <id>${releases.id}</id>
-            <name>${releases.name}</name>
-            <url>${releases.url}</url>
+            <id>rdc-releases</id>
+            <name>rdc Releases Repository</name>
+            <url>https://packages.aliyun.com/maven/repository/2101190-release-xxuvBf/</url>
         </repository>
         <snapshotRepository>
-            <id>${snapshots.id}</id>
-            <name>${snapshots.name}</name>
-            <url>${snapshots.url}</url>
+            <id>rdc-snapshots</id>
+            <name>rdc Snapshots Repository</name>
+            <url>https://packages.aliyun.com/maven/repository/2101190-snapshot-EQD7pQ/</url>
         </snapshotRepository>
     </distributionManagement>
 

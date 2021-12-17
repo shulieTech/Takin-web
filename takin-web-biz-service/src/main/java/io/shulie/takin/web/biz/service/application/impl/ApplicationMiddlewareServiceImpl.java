@@ -27,7 +27,9 @@ import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusE
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.pojo.dto.mq.MqApplicationMiddlewareCompareDTO;
 import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationMiddlewareDAO;
 import io.shulie.takin.web.data.param.application.CreateApplicationMiddlewareParam;
@@ -208,10 +210,12 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
 
         // 将应用id加入消息队列, 慢慢消费
         log.info("应用中间件上报 --> 异步消息发送, applicationId: {}", application.getApplicationId());
-        String message = String.format("%d,%s,%d", WebPluginUtils.traceTenantId(),
-            WebPluginUtils.traceEnvCode(), application.getApplicationId());
+        MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO = new MqApplicationMiddlewareCompareDTO();
+        mqApplicationMiddlewareCompareDTO.setApplicationId(application.getApplicationId());
+        mqApplicationMiddlewareCompareDTO.setEnvCode(WebPluginUtils.traceEnvCode());
+        mqApplicationMiddlewareCompareDTO.setTenantId(WebPluginUtils.traceTenantId());
         MessageDTO messageDTO = new MessageDTO();
-        messageDTO.setMessage(message);
+        messageDTO.setMessage(JsonUtil.bean2Json(mqApplicationMiddlewareCompareDTO));
         messageDTO.setTopic(MqConstants.MQ_REDIS_PUSH_APPLICATION_MIDDLEWARE);
         producer.produce(messageDTO);
 

@@ -45,13 +45,19 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
     @Transactional(rollbackFor = Throwable.class)
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO
-            = getMqApplicationMiddlewareCompareDTO(message);
+        String messageBody = new String(message.getBody());
+        if (StringUtils.isEmpty(messageBody)) {
+            return;
+        }
+
+        messageBody = messageBody.substring(1, messageBody.length() - 1);
+        MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO = JsonUtil.json2Bean(messageBody,
+            MqApplicationMiddlewareCompareDTO.class);
         if (mqApplicationMiddlewareCompareDTO == null) {
             return;
         }
 
-        log.info("应用中间件上报 --> 异步消息处理 --> 消息体: {}", JsonUtil.bean2Json(mqApplicationMiddlewareCompareDTO));
+        log.info("应用中间件上报 --> 异步消息处理 --> 消息体: {}", messageBody);
 
         // 锁住 applicationId
         Long applicationId = mqApplicationMiddlewareCompareDTO.getApplicationId();

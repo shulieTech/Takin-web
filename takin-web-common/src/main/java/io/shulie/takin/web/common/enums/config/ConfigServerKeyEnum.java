@@ -270,6 +270,11 @@ public enum ConfigServerKeyEnum implements AppConstants {
      */
     TAKIN_ASSET_BALANCE_DEFAULT_FORMAL("", "takin.asset.balance.default.formal", NO),
 
+    /**
+     * 创建租户默认的密码
+     */
+    TAKIN_TENANT_DEFAULT_PASSWORD("", "takin.tenant.default.password", YES),
+
     ;
 
     /**

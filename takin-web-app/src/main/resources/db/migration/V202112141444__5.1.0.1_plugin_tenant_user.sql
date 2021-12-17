@@ -23,6 +23,7 @@ ALTER TABLE `t_tenant_info`
 
 INSERT IGNORE INTO `t_config_server` (`key`, `value`, `tenant_id`, `env_code`, `tenant_app_key`, `is_tenant`, `is_global`, `edition`, `gmt_create`, `gmt_update`, `is_deleted`) VALUES ('takin.asset.balance.default.try', '10000', -99, 'test', 'default', 1, 1, 2, '2021-12-03 18:22:46', NULL, 0);
 INSERT IGNORE INTO `t_config_server` (`key`, `value`, `tenant_id`, `env_code`, `tenant_app_key`, `is_tenant`, `is_global`, `edition`, `gmt_create`, `gmt_update`, `is_deleted`) VALUES ('takin.asset.balance.default.formal', '100000', -99, 'test', 'default', 1, 1, 2, '2021-12-03 18:22:46', NULL, 0);
+INSERT IGNORE INTO `t_config_server` (`key`, `value`, `tenant_id`, `env_code`, `tenant_app_key`, `is_tenant`, `is_global`, `edition`, `gmt_create`, `gmt_update`, `is_deleted`) VALUES ('takin.tenant.default.password', 'shulie@2021', -99, 'test', 'default', 1, 1, 2, '2021-12-03 18:22:46', NULL, 0);
 
 UPDATE `t_tro_user` SET  `is_super`= 1 WHERE name='superadmin';
 

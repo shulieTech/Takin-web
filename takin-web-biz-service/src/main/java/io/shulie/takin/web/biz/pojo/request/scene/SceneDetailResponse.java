@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SceneDetailResponse extends io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailResponse {
+public class SceneDetailResponse extends io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response {
     /**
      * 基础信息
      */

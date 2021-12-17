@@ -6,6 +6,7 @@ import cn.hutool.core.bean.BeanUtil;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
 import io.shulie.takin.web.biz.utils.PageUtils;
+import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.MqConstants;
 import io.shulie.takin.web.common.pojo.dto.mq.MqApplicationMiddlewareCompareDTO;
@@ -44,18 +45,13 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
     @Transactional(rollbackFor = Throwable.class)
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        String messageBody = new String(message.getBody());
-        if (StringUtils.isEmpty(messageBody)) {
-            return;
-        }
-
-        MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO = JsonUtil.json2Bean(messageBody,
-            MqApplicationMiddlewareCompareDTO.class);
+        MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO
+            = getMqApplicationMiddlewareCompareDTO(message);
         if (mqApplicationMiddlewareCompareDTO == null) {
             return;
         }
 
-        log.info("应用中间件上报 --> 异步消息处理 --> 消息体: {}", messageBody);
+        log.info("应用中间件上报 --> 异步消息处理 --> 消息体: {}", JsonUtil.bean2Json(mqApplicationMiddlewareCompareDTO));
 
         // 锁住 applicationId
         Long applicationId = mqApplicationMiddlewareCompareDTO.getApplicationId();
@@ -87,6 +83,31 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
         } finally {
             distributedLock.unLockSafely(lockKey);
         }
+    }
+
+    /**
+     * 获得入参
+     *
+     * @param message 消息体
+     * @return 相应数据
+     */
+    private MqApplicationMiddlewareCompareDTO getMqApplicationMiddlewareCompareDTO(
+        Message message) {
+        String messageBody = new String(message.getBody());
+        if (StringUtils.isEmpty(messageBody)) {
+            return null;
+        }
+
+        String[] messageArray = messageBody.split(AppConstants.COMMA);
+        if (messageArray == null || messageArray.length != 3) {
+            return null;
+        }
+
+        MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO = new MqApplicationMiddlewareCompareDTO();
+        mqApplicationMiddlewareCompareDTO.setTenantId(Long.valueOf(messageArray[0]));
+        mqApplicationMiddlewareCompareDTO.setEnvCode(String.valueOf(messageArray[1]));
+        mqApplicationMiddlewareCompareDTO.setApplicationId(Long.valueOf(messageArray[2]));
+        return mqApplicationMiddlewareCompareDTO;
     }
 
 }

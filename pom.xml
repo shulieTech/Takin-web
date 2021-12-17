@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-5.1.0.6</version>
+    <version>takin-web-5.1.0.7</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -41,7 +41,7 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-5.1.0.6</takin.web.version>
+        <takin.web.version>takin-web-5.1.0.7</takin.web.version>
         <takin.cloud.sdk.version>takin-cloud-sdk-tenant-SNAPSHOT</takin.cloud.sdk.version>
         <takin.cloud.version>takin-cloud-tenant-SNAPSHOT</takin.cloud.version>
         <takin.common.version>common-2.0.0-SNAPSHOT</takin.common.version>

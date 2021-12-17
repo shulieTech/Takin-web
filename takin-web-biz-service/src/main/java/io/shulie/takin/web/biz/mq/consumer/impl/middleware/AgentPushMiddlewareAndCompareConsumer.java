@@ -49,7 +49,7 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
 
         // 锁住 applicationId
         Long applicationId = Long.valueOf(applicationIdString);
-        String lockKey = String.format(LockKeyConstants.LOCK_PUSH_APPLICATION_MIDDLEWARE, applicationId);
+        String lockKey = String.format(LockKeyConstants.LOCK_HANDLE_PUSH_APPLICATION_MIDDLEWARE, applicationId);
         if (!distributedLock.tryLockZeroWait(lockKey)) {
             return;
         }

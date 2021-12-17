@@ -413,7 +413,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             return PagingList.empty();
         }
 
-        List<AgentConfigEffectListResponse> responseList = dtoList.stream().map(item -> {
+        List<AgentConfigEffectListResponse> responseList = dtoList.parallelStream().map(item -> {
             AgentConfigEffectListResponse response = new AgentConfigEffectListResponse();
             response.setAgentId(item.getAgentId());
             response.setIsEffect(item.getStatus());

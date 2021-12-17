@@ -8,6 +8,7 @@ import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
 import io.shulie.takin.web.biz.service.async.AsyncService;
 import io.shulie.takin.web.biz.service.perfomanceanaly.PerformanceBaseDataService;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseDataParam;
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseQueryParam;
@@ -37,7 +38,9 @@ public class PerformanceBaseDataServiceImpl implements PerformanceBaseDataServic
     public void cache(PerformanceBaseDataCreateInput input) {
         PerformanceBaseDataParam param = PerformanceBaseInputConvert.INSTANCE.inputToParam(input);
         // 补充header头
+        param.setSource(ContextSourceEnum.AGENT.getCode());
         WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(),param);
+
         asyncService.savePerformanceBaseData(param);
     }
 

@@ -3,10 +3,12 @@
 <mapper namespace="io.shulie.takin.web.data.mapper.mysql.ApplicationMiddlewareMapper">
 
     <insert id="insertBatch">
-        INSERT INTO t_application_middleware(application_id, application_name, artifact_id, group_id, version) VALUES
+        INSERT INTO t_application_middleware(application_id, application_name, artifact_id, group_id, version,
+                                             env_code, tenant_id) VALUES
         <foreach collection ="applicationMiddlewares" item="applicationMiddleware" separator =",">
-            (#{applicationMiddleware.applicationId}, #{applicationMiddleware.applicationName}, #{applicationMiddleware.artifactId},
-             #{applicationMiddleware.groupId}, #{applicationMiddleware.version})
+            (#{applicationMiddleware.applicationId}, #{applicationMiddleware.applicationName},
+             #{applicationMiddleware.artifactId}, #{applicationMiddleware.groupId}, #{applicationMiddleware.version},
+            #{applicationMiddleware.envCode}, #{applicationMiddleware.tenantId})
         </foreach >
     </insert>
 

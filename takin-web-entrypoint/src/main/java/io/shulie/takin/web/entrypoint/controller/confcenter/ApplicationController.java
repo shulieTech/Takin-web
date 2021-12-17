@@ -80,8 +80,8 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public PagingList<ApplicationListResponseV2> listApplicationWithAuthV2(ApplicationQueryRequestV2 request) {
-        return applicationService.listApplication(request);
+    public PagingList<ApplicationListResponseV2> pageApplicationWithAuth(ApplicationQueryRequestV2 request) {
+        return applicationService.pageApplication(request);
     }
 
     @GetMapping("/application/center/list/dictionary")

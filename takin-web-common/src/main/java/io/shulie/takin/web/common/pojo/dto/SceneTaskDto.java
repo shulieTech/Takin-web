@@ -1,5 +1,7 @@
 package io.shulie.takin.web.common.pojo.dto;
 
+import java.time.LocalDateTime;
+
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
@@ -24,4 +26,6 @@ public class SceneTaskDto extends TenantCommonExt {
      * 报告ID
      */
     private Long reportId;
+
+    private LocalDateTime endTime;
 }

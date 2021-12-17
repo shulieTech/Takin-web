@@ -50,7 +50,7 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
             return;
         }
 
-        messageBody = messageBody.substring(1, messageBody.length() - 1);
+        messageBody = messageBody.substring(1, messageBody.length() - 1).replace("\\", "");
         MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO = JsonUtil.json2Bean(messageBody,
             MqApplicationMiddlewareCompareDTO.class);
         if (mqApplicationMiddlewareCompareDTO == null) {

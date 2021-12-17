@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
@@ -48,9 +49,9 @@ public class ReportController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_REPORT,
         needAuth = ActionTypeEnum.QUERY
     )
-    public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam reportQuery) {
+    public Response<List<ReportDTO>> listReport(ReportQueryParam reportQuery) {
         ResponseResult<List<ReportDTO>> response = reportService.listReport(reportQuery);
-        return ResponseResult.success(response.getData(), response.getTotalNum());
+        return Response.success(response.getData(), response.getTotalNum());
     }
 
     /**
@@ -123,9 +124,9 @@ public class ReportController {
 
     @GetMapping("/report/listWarn")
     @ApiOperation("警告列表")
-    public ResponseResult<List<WarnDetailResponse>> listWarn(WarnQueryReq param) {
+    public Response<List<WarnDetailResponse>> listWarn(WarnQueryReq param) {
         ResponseResult<List<WarnDetailResponse>> response = reportService.listWarn(param);
-        return ResponseResult.success(response.getData(), response.getTotalNum());
+        return Response.success(response.getData(), response.getTotalNum());
     }
 
     @GetMapping("/report/queryReportActivityByReportId")

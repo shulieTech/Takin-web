@@ -7,6 +7,7 @@ import com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery;
 import com.pamirs.takin.entity.domain.vo.ShadowJobConfigVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.utils.Estimate;
 import io.shulie.takin.web.biz.utils.XmlUtil;
@@ -138,7 +139,7 @@ public class ShadowJobConfigController {
             if (StringUtils.isNotBlank(query.getRemark()) && query.getRemark().length() > 200) {
                 throw new TakinWebException(ExceptionCode.JOB_PARAM_ERROR, "备注长度不得超过200字符");
             }
-            OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
+            OperationLogContextHolder.operationType(OpTypes.UPDATE);
             Map<String, String> xmlMap = XmlUtil.readStringXml(query.getConfigCode());
             String className = xmlMap.get("className");
             OperationLogContextHolder.addVars(BizOpConstants.Vars.TASK, className);

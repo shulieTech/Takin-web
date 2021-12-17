@@ -279,6 +279,11 @@ public final class BizOpConstants {
         public static final String SCRIPT_MANAGE_CREATE = "message.script_manage.create";
         public static final String SCRIPT_MANAGE_UPDATE = "message.script_manage.update";
         public static final String SCRIPT_MANAGE_DELETE = "message.script_manage.delete";
+        /**
+         * 脚本调试
+         */
+        public static final String SCRIPT_MANAGE_DEBUG = "message.script_manage.debug";
+
 
         public static final String SCRIPT_MANAGE_SCRIPTID_DELETE = "message.script_manage.scriptId.delete";
         public static final String SCRIPT_MANAGE_EXECUTE = "message.script_manage.execute";

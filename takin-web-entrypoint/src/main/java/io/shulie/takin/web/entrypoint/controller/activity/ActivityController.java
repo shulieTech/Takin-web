@@ -180,7 +180,6 @@ public class ActivityController {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_ACTIVITY, request.getActivityName());
         OperationLogContextHolder.addVars(Vars.VIRTUAL_ENTRANCE, request.getVirtualEntrance());
         OperationLogContextHolder.addVars(Vars.ENTRANCE_TYPE, request.getType().getType());
-        OperationLogContextHolder.addVars(Vars.BIND_BUSINESS_ID, request.getBindBusinessId() == null ? "无绑定" : request.getBindBusinessId());
         activityService.createVirtualActivity(request);
     }
 
@@ -200,7 +199,6 @@ public class ActivityController {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_ACTIVITY, request.getActivityName());
         OperationLogContextHolder.addVars(Vars.ENTRANCE_TYPE, request.getType().getType());
         OperationLogContextHolder.addVars(Vars.VIRTUAL_ENTRANCE, request.getVirtualEntrance());
-        OperationLogContextHolder.addVars(Vars.BIND_BUSINESS_ID, request.getBindBusinessId() == null ? "无绑定" : request.getBindBusinessId());
         activityService.updateVirtualActivity(request);
     }
 

@@ -5,6 +5,7 @@ import java.util.List;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.shulie.takin.web.data.param.application.CreateApplicationMiddlewareParam;
 import io.shulie.takin.web.data.param.application.PageApplicationMiddlewareParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationMiddlewareParam;
 import io.shulie.takin.web.data.param.application.UpdateApplicationMiddlewareParam;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareListResult;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareStatusAboutCountResult;
@@ -62,10 +63,10 @@ public interface ApplicationMiddlewareDAO {
     /**
      * 根据 applicationId 查询中间件列表
      *
-     * @param applicationId 应用id
      * @return 中间件列表
+     * @param param
      */
-    List<ApplicationMiddlewareListResult> listByApplicationId(Long applicationId);
+    List<ApplicationMiddlewareListResult> listByQueryParam(QueryApplicationMiddlewareParam param);
 
     /**
      * 根据状态, 查询状态对应的统计

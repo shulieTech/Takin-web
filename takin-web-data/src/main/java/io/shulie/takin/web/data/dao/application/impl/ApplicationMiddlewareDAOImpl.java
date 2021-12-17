@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.dao.application.impl;
 
 import java.util.List;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
@@ -11,6 +12,7 @@ import io.shulie.takin.web.data.mapper.mysql.ApplicationMiddlewareMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMiddlewareEntity;
 import io.shulie.takin.web.data.param.application.CreateApplicationMiddlewareParam;
 import io.shulie.takin.web.data.param.application.PageApplicationMiddlewareParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationMiddlewareParam;
 import io.shulie.takin.web.data.param.application.UpdateApplicationMiddlewareParam;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareListResult;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareStatusAboutCountResult;
@@ -77,9 +79,12 @@ public class ApplicationMiddlewareDAOImpl implements ApplicationMiddlewareDAO, M
     }
 
     @Override
-    public List<ApplicationMiddlewareListResult> listByApplicationId(Long applicationId) {
+    public List<ApplicationMiddlewareListResult> listByQueryParam(QueryApplicationMiddlewareParam param) {
         List<ApplicationMiddlewareEntity> applicationMiddlewares = applicationMiddlewareMapper.selectList(
-            this.getLambdaQueryWrapper().eq(ApplicationMiddlewareEntity::getApplicationId, applicationId));
+            this.getLambdaQueryWrapper()
+                .eq(ApplicationMiddlewareEntity::getApplicationId, param.getApplicationId())
+                .eq(param.getTenantId() != null, ApplicationMiddlewareEntity::getTenantId, param.getTenantId())
+                .eq(StrUtil.isNotBlank(param.getEnvCode()), ApplicationMiddlewareEntity::getEnvCode, param.getEnvCode()));
         return DataTransformUtil.list2list(applicationMiddlewares, ApplicationMiddlewareListResult.class);
     }
 

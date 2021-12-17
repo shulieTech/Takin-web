@@ -8,10 +8,8 @@ import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.mq.producer.Producer;
-import io.shulie.takin.web.biz.utils.PageUtils;
-import io.shulie.takin.web.common.exception.ExceptionCode;
-import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.biz.pojo.dto.application.CompareApplicationMiddlewareDTO;
 import io.shulie.takin.web.biz.pojo.dto.mq.MessageDTO;
 import io.shulie.takin.web.biz.pojo.request.agent.PushMiddlewareListRequest;
@@ -22,16 +20,21 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationMiddlewareLi
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
 import io.shulie.takin.web.biz.service.application.MiddlewareJarService;
+import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.MqConstants;
 import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum;
+import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.pojo.dto.mq.MqApplicationMiddlewareCompareDTO;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationMiddlewareDAO;
 import io.shulie.takin.web.data.param.application.CreateApplicationMiddlewareParam;
 import io.shulie.takin.web.data.param.application.PageApplicationMiddlewareParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationMiddlewareParam;
 import io.shulie.takin.web.data.param.application.UpdateApplicationMiddlewareParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareListResult;
@@ -135,7 +138,9 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
 
         try {
             // 查询应用中间件列表
-            List<ApplicationMiddlewareListResult> results = applicationMiddlewareDAO.listByApplicationId(applicationId);
+            QueryApplicationMiddlewareParam param = new QueryApplicationMiddlewareParam();
+            param.setApplicationId(applicationId);
+            List<ApplicationMiddlewareListResult> results = applicationMiddlewareDAO.listByQueryParam(param);
             if (results.isEmpty()) {
                 return;
             }
@@ -204,11 +209,13 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
         }
 
         // 将应用id加入消息队列, 慢慢消费
-        Long applicationId = application.getApplicationId();
-        log.info("应用中间件上报 --> 异步消息发送, applicationId: {}", applicationId);
-
+        log.info("应用中间件上报 --> 异步消息发送, applicationId: {}", application.getApplicationId());
+        MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO = new MqApplicationMiddlewareCompareDTO();
+        mqApplicationMiddlewareCompareDTO.setApplicationId(application.getApplicationId());
+        mqApplicationMiddlewareCompareDTO.setEnvCode(WebPluginUtils.traceEnvCode());
+        mqApplicationMiddlewareCompareDTO.setTenantId(WebPluginUtils.traceTenantId());
         MessageDTO messageDTO = new MessageDTO();
-        messageDTO.setMessage(applicationId);
+        messageDTO.setMessage(JsonHelper.bean2Json(mqApplicationMiddlewareCompareDTO));
         messageDTO.setTopic(MqConstants.MQ_REDIS_PUSH_APPLICATION_MIDDLEWARE);
         producer.produce(messageDTO);
 

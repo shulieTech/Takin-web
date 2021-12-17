@@ -16,9 +16,6 @@ public class AgentShowStatusEnumMapping {
         EnumResult result = new EnumResult();
         if (agentShowStatusEnum != null) {
             switch (agentShowStatusEnum) {
-                case UPGRADE:
-                    result.label(agentShowStatusEnum.getDesc()).value(agentShowStatusEnum.getVal().toString()).num(0);
-                    break;
                 case NORMAL:
                     result.label(agentShowStatusEnum.getDesc()).value(agentShowStatusEnum.getVal().toString()).num(1);
                     break;

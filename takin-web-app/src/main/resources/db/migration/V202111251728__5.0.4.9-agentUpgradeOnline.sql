@@ -126,7 +126,7 @@ CREATE TABLE `t_application_plugin_download_path`
     `application_id`   bigint(20) DEFAULT 0 NOT NULL COMMENT '应用id',
     `application_name` varchar(64)  DEFAULT '' COMMENT '应用名',
     `path_type`        tinyint(4) NOT NULL DEFAULT 0 COMMENT '类型 0:oss;1:ftp;2:nginx',
-    `context`          varchar(255) NOT NULL COMMENT '配置内容',
+    `context`          varchar(1000) NOT NULL COMMENT '配置内容',
     `salt`             varchar(60)  NOT NULL COMMENT '密码加密的密钥',
     `gmt_create`       datetime     DEFAULT CURRENT_TIMESTAMP,
     `gmt_update`       datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

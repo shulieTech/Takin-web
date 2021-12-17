@@ -895,7 +895,7 @@ public class ActivityServiceImpl implements ActivityService {
                 false, linkManageTableEntity.getApplicationName(), null, serviceName, methodName,
                 rpcType, extend);
         if (applicationEntrancesTopology == null || CollectionUtils.isEmpty(applicationEntrancesTopology.getNodes())) {
-            return new ArrayList<>(0);
+            return new ArrayList<>(Collections.singleton(linkManageTableEntity.getApplicationName()));
         }
         return applicationEntrancesTopology.getNodes().stream()
                 .filter(node -> node.getNodeType().equals(NodeTypeEnum.APP.getType()))

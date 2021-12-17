@@ -138,7 +138,11 @@ public class ShadowJobConfigController {
             if (StringUtils.isNotBlank(query.getRemark()) && query.getRemark().length() > 200) {
                 throw new TakinWebException(ExceptionCode.JOB_PARAM_ERROR, "备注长度不得超过200字符");
             }
-
+            OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
+            Map<String, String> xmlMap = XmlUtil.readStringXml(query.getConfigCode());
+            String className = xmlMap.get("className");
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.TASK, className);
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.TASKConfig, query.getConfigCode());
             shadowJobConfigService.update(query);
             return Response.success();
         } catch (Exception e) {

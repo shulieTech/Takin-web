@@ -1095,7 +1095,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             String features = linkManageResult.getFeatures();
             ScriptDebugExceptionUtil.isDebugError(StringUtils.isBlank(features),
                 "业务活动关联的技术链路中没有 features 字段, 无法判断业务活动 mq 的类型!");
-            LinkManageTableFeaturesVO featureObject = JsonUtil.json2bean(features, LinkManageTableFeaturesVO.class);
+            LinkManageTableFeaturesVO featureObject = JsonUtil.json2Bean(features, LinkManageTableFeaturesVO.class);
 
             // 配置的支持类型, 是否包含
             List<String> supportRpcTypeList = Arrays.asList(supportRpcType.split(AppConstants.COMMA));

@@ -30,6 +30,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.dto.mq.MqApplicationMiddlewareCompareDTO;
 import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationMiddlewareDAO;
 import io.shulie.takin.web.data.param.application.CreateApplicationMiddlewareParam;
@@ -215,7 +216,7 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
         mqApplicationMiddlewareCompareDTO.setEnvCode(WebPluginUtils.traceEnvCode());
         mqApplicationMiddlewareCompareDTO.setTenantId(WebPluginUtils.traceTenantId());
         MessageDTO messageDTO = new MessageDTO();
-        messageDTO.setMessage(JsonHelper.bean2Json(mqApplicationMiddlewareCompareDTO));
+        messageDTO.setMessage(JsonUtil.bean2Json(mqApplicationMiddlewareCompareDTO));
         messageDTO.setTopic(MqConstants.MQ_REDIS_PUSH_APPLICATION_MIDDLEWARE);
         producer.produce(messageDTO);
 

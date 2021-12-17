@@ -3,13 +3,13 @@ package io.shulie.takin.web.biz.mq.consumer.impl.middleware;
 import java.util.List;
 
 import cn.hutool.core.bean.BeanUtil;
-import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.MqConstants;
 import io.shulie.takin.web.common.pojo.dto.mq.MqApplicationMiddlewareCompareDTO;
+import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationMiddlewareDAO;
 import io.shulie.takin.web.data.param.application.QueryApplicationMiddlewareParam;
 import io.shulie.takin.web.data.param.application.UpdateApplicationMiddlewareParam;
@@ -49,7 +49,7 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
             return;
         }
 
-        MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO = JsonHelper.json2Bean(messageBody,
+        MqApplicationMiddlewareCompareDTO mqApplicationMiddlewareCompareDTO = JsonUtil.json2Bean(messageBody,
             MqApplicationMiddlewareCompareDTO.class);
         if (mqApplicationMiddlewareCompareDTO == null) {
             return;

@@ -176,7 +176,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             result.setEntranceName(entranceJoinEntity.getServiceName());
             Map<String, String> features = new HashMap<>(16);
             if (StringUtils.isNotBlank(linkManageTableEntity.getFeatures())) {
-                features = JsonUtil.json2bean(linkManageTableEntity.getFeatures(), Map.class);
+                features = JsonUtil.json2Bean(linkManageTableEntity.getFeatures(), Map.class);
             }
 
             result.setExtend(features.get(FeaturesConstants.EXTEND_KEY));

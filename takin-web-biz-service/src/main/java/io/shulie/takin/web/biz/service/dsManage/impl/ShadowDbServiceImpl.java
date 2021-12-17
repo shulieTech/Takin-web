@@ -505,7 +505,7 @@ public class ShadowDbServiceImpl extends AbstractDsService {
         if (StringUtils.isBlank(source)) {
             return;
         }
-        Configurations config = JsonUtil.json2bean(source, Configurations.class);
+        Configurations config = JsonUtil.json2Bean(source, Configurations.class);
         if (config == null) {
             return;
         }

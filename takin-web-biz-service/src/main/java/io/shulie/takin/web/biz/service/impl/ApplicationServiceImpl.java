@@ -841,7 +841,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Response<Integer> calculateUserSwitch(Long uid) {
         if (uid == null) {
             UserExt user = WebPluginUtils.traceUser();
-            if (user == null) {
+            if (WebPluginUtils.checkUserPlugin() && user == null) {
                 return Response.fail(FALSE_CORE, "当前用户为空");
             }
             uid = user.getId();
@@ -2232,7 +2232,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response<Integer> uploadMiddlewareStatus(Map<String, JarVersionVo> requestMap, String appName) {
         try {
-            UserExt userExt = WebPluginUtils.traceUser();
             AppMiddlewareQuery query = new AppMiddlewareQuery();
             ApplicationDetailResult tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
             if (null == tApplicationMnt) {
@@ -2255,7 +2254,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 info.setJarName(entryValue.getJarName());
                 info.setPluginName(entryValue.getPluginName());
                 info.setJarType(entryValue.getJarType());
-                info.setUserId(userExt.getId());
+                info.setUserId(WebPluginUtils.traceUserId());
                 info.setHidden(entryValue.getHidden());
                 tAppMiddlewareInfoMapper.insert(info);
             }
@@ -2438,7 +2437,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (WebPluginUtils.checkUserPlugin()) {
             if (uid == null) {
                 UserExt user = WebPluginUtils.traceUser();
-                if (user == null) {
+                if (WebPluginUtils.checkUserPlugin() && user == null) {
                     return Response.fail(FALSE_CORE, "当前用户为空", null);
                 }
                 uid = WebPluginUtils.traceTenantId();

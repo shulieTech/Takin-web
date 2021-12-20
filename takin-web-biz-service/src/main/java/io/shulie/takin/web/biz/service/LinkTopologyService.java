@@ -1677,19 +1677,20 @@ public class LinkTopologyService extends CommonService {
                         sb.append("该应用存在 ");
                         if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()) != null
                             && statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()) > 0) {
-                            sb.append("无状态 ");
+                            sb.append("<无状态>, ");
                         }
 
                         if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.UNKNOWN.getCode()) != null
                             && statusAboutCount.get(ApplicationMiddlewareStatusEnum.UNKNOWN.getCode()) > 0) {
-                            sb.append("未知 ");
+                            sb.append("<未知>, ");
                         }
 
                         if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()) != null
                             && statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()) > 0) {
-                            sb.append("未支持 ");
+                            sb.append("<未支持>, ");
                         }
 
+                        sb.delete(sb.length() - 2, sb.length());
                         sb.append("的中间件, 请前往查看");
                         exception.setSuggest(sb.toString());
                         return exception;

@@ -10,6 +10,7 @@ import io.shulie.amdb.common.request.link.ServiceQueryParam;
 import io.shulie.amdb.common.request.link.TopologyQueryParam;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeInfo;
+import io.shulie.takin.web.amdb.bean.query.application.BatchNodeMetricsQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.QueryMetricsFromAMDB;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery1;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery2;
@@ -45,6 +46,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP1 = "/amdb/db/api/metrics/entranceFromChickHouse";
     public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP2 = "/amdb/db/api/metrics/metricFromChickHouse";
     public static final String QUERY_METRICS = "/amdb/db/api/metrics/metricFromInfluxdb";
+    public static final String QUERY_BATCH_METRICS = "/amdb/db/api/traceMetric/nodeMetrics";
+
 
     @Autowired
     private AmdbClientProperties properties;
@@ -105,7 +108,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 
         try {
             AmdbResult<JSONObject> amdbResponse = AmdbHelper.builder().url(url)
-                    .httpMethod(HttpMethod.POST)
+                .httpMethod(HttpMethod.POST)
                     .param(tempTopologyQuery1)
                     .eventName("查询临时业务活动指标step2")
                     .exception(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP2_ERROR)
@@ -133,6 +136,25 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 
             JSONObject data = amdbResponse.getData();
             return data;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
+    public List<JSONObject> queryBatchMetrics(BatchNodeMetricsQueryDTO batchNodeMetricsQueryDTO) {
+        String url = properties.getUrl().getAmdb() + QUERY_BATCH_METRICS;
+
+        try {
+            AmdbResult<List<JSONObject>> amdbResponse = AmdbHelper.builder().url(url)
+                .httpMethod(HttpMethod.POST)
+                .param(batchNodeMetricsQueryDTO)
+                .eventName("批量查询指标")
+                .exception(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR)
+                .list(JSONObject.class);
+
+            return amdbResponse.getData();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR, e.getMessage());

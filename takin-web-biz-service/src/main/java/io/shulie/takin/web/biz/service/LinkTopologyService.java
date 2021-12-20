@@ -41,6 +41,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
+import io.shulie.takin.web.amdb.bean.query.application.BatchNodeMetricsQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.QueryMetricsFromAMDB;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery1;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery2;
@@ -509,6 +510,9 @@ public class LinkTopologyService extends CommonService {
 
         HashMap<String, Boolean> isContainSame = new HashMap<>();
 
+        List<String> eagleIds = appProvider.getContainEdgeList().stream().map(LinkEdgeDTO::getEagleId).collect(
+            Collectors.toList());
+        Map<String, JSONObject> metricsMap = queryBatchMetricsFromAMDB(startMilli, endMilli, metricsType, eagleIds);
         for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
             String eagleId = linkEdgeDTO.getEagleId();
             String beforeApps = appProvider.getBeforeAppsMap().get(linkEdgeDTO.getSourceId());
@@ -520,7 +524,7 @@ public class LinkTopologyService extends CommonService {
                 appProviderFromDb = queryTempMetricsFromAMDB(response1, isContainSame, beforeApps,
                     appProvider.getOwnerApps(), appProvider.getMiddlewareName(), appProvider.getServiceName(), request);
             } else {
-                appProviderFromDb = queryMetricsFromAMDB(startMilli, endMilli, metricsType, eagleId);
+                appProviderFromDb = queryMetricsFromAMDB(metricsMap.get(eagleId));
             }
 
             appProviderFromDb.setBeforeApps(beforeApps);
@@ -824,6 +828,43 @@ public class LinkTopologyService extends CommonService {
         long realSeconds = (Integer)jsonObject.get("realSeconds");
         AppProvider appProvider = getAppProvider(realSeconds, allTotalTpsAndRtCountResults);
         return appProvider;
+    }
+
+    private AppProvider queryMetricsFromAMDB(JSONObject jsonObject) {
+        ArrayList<TraceMetricsResult> allTotalTpsAndRtCountResults = new ArrayList<>();
+        fillTraceMetricsResultList(allTotalTpsAndRtCountResults, jsonObject);
+
+        long realSeconds = (Integer)jsonObject.get("realSeconds");
+        AppProvider appProvider = getAppProvider(realSeconds, allTotalTpsAndRtCountResults);
+        return appProvider;
+    }
+
+
+
+    private Map<String, JSONObject> queryBatchMetricsFromAMDB(Long startMilli, Long endMilli,
+        Boolean metricsType, List<String> eagleIds) {
+
+        if (CollectionUtils.isEmpty(eagleIds)) {
+            return Maps.newHashMap();
+        }
+
+        BatchNodeMetricsQueryDTO batchNodeMetricsQueryDTO = BatchNodeMetricsQueryDTO.builder()
+            .startTime(startMilli)
+            .endTime(endMilli)
+            // 压测流量(true:1)，业务流量(false:0)，混合流量(null:-1)
+            .clusterTest(Objects.isNull(metricsType) ? -1 : (metricsType ? 1 : 0))
+            .eagleIds(eagleIds)
+            .tenantAppKey(WebPluginUtils.traceTenantAppKey())
+            .envCode(WebPluginUtils.traceEnvCode())
+            .build();
+
+        List<JSONObject> jsonObjects = applicationEntranceClient.queryBatchMetrics(batchNodeMetricsQueryDTO);
+        if (CollectionUtils.isEmpty(jsonObjects)) {
+            return Maps.newHashMap();
+        }
+        Map<String, JSONObject> metricsMap = jsonObjects.stream().collect(
+            Collectors.toMap(jsonObject -> String.valueOf(jsonObject.get("edgeId")), self -> self));
+        return metricsMap;
     }
 
     public AppProvider getAppProvider(long realSeconds, List<TraceMetricsResult> allTotalTpsAndRtCountResults) {

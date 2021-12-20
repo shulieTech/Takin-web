@@ -93,6 +93,8 @@ public class ReportServiceImpl implements ReportService {
             }
         }
         ResponseResult<List<ReportResp>> reportResponseList = cloudReportApi.listReport(new ReportQueryReq() {{
+            setSceneId(param.getSceneId());
+            setReportId(param.getReportId());
             setSceneName(param.getSceneName());
             setStartTime(param.getStartTime());
             setEndTime(param.getEndTime());

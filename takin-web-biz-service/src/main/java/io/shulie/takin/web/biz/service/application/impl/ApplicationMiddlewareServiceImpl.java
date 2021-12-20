@@ -140,7 +140,7 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
             // 查询应用中间件列表
             QueryApplicationMiddlewareParam param = new QueryApplicationMiddlewareParam();
             param.setApplicationId(applicationId);
-            List<ApplicationMiddlewareListResult> results = applicationMiddlewareDAO.listByQueryParam(param);
+            List<ApplicationMiddlewareListResult> results = applicationMiddlewareDAO.listByApplicationId(param);
             if (results.isEmpty()) {
                 return;
             }

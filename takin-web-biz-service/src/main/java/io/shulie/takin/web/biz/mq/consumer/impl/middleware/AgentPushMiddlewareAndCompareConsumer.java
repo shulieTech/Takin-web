@@ -2,19 +2,20 @@ package io.shulie.takin.web.biz.mq.consumer.impl.middleware;
 
 import java.util.List;
 
-import cn.hutool.core.bean.BeanUtil;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.application.ApplicationMiddlewareService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.constant.MqConstants;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.pojo.dto.mq.MqApplicationMiddlewareCompareDTO;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationMiddlewareDAO;
-import io.shulie.takin.web.data.param.application.QueryApplicationMiddlewareParam;
 import io.shulie.takin.web.data.param.application.UpdateApplicationMiddlewareParam;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareListResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -67,13 +68,16 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
         }
 
         try {
+            TenantCommonExt tenantCommonExt = new TenantCommonExt(mqApplicationMiddlewareCompareDTO.getTenantId(),
+                null, mqApplicationMiddlewareCompareDTO.getEnvCode(),
+                null, ContextSourceEnum.JOB.getCode());
+            WebPluginUtils.setTraceTenantContext(tenantCommonExt);
+
             // 根据 applicationId 查询应用中间件
             log.info("应用中间件上报 --> 异步消息处理 --> 应用中间件查询");
-            QueryApplicationMiddlewareParam queryApplicationMiddlewareParam = BeanUtil.copyProperties(
-                mqApplicationMiddlewareCompareDTO, QueryApplicationMiddlewareParam.class);
             PageUtils.clearPageHelper();
             List<ApplicationMiddlewareListResult> applicationMiddlewareList =
-                applicationMiddlewareDAO.listByQueryParam(queryApplicationMiddlewareParam);
+                applicationMiddlewareDAO.listByApplicationId(applicationId);
             if (applicationMiddlewareList.isEmpty()) {
                 return;
             }
@@ -88,6 +92,7 @@ public class AgentPushMiddlewareAndCompareConsumer implements MessageListener {
 
         } finally {
             distributedLock.unLockSafely(lockKey);
+            WebPluginUtils.removeTraceContext();
         }
     }
 

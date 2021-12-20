@@ -34,7 +34,6 @@ import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationMiddlewareDAO;
 import io.shulie.takin.web.data.param.application.CreateApplicationMiddlewareParam;
 import io.shulie.takin.web.data.param.application.PageApplicationMiddlewareParam;
-import io.shulie.takin.web.data.param.application.QueryApplicationMiddlewareParam;
 import io.shulie.takin.web.data.param.application.UpdateApplicationMiddlewareParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareListResult;
@@ -138,9 +137,7 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
 
         try {
             // 查询应用中间件列表
-            QueryApplicationMiddlewareParam param = new QueryApplicationMiddlewareParam();
-            param.setApplicationId(applicationId);
-            List<ApplicationMiddlewareListResult> results = applicationMiddlewareDAO.listByApplicationId(param);
+            List<ApplicationMiddlewareListResult> results = applicationMiddlewareDAO.listByApplicationId(applicationId);
             if (results.isEmpty()) {
                 return;
             }

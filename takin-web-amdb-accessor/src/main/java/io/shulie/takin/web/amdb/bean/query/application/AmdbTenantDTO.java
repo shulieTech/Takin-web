@@ -1,6 +1,5 @@
 package io.shulie.takin.web.amdb.bean.query.application;
 
-import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -9,7 +8,6 @@ import lombok.Data;
  * @Description:
  */
 @Data
-@Builder
 public class AmdbTenantDTO {
     /**
      * 租户key

@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.param.perfomanceanaly;
 import java.util.List;
 
 import io.shulie.takin.web.common.vo.perfomanceanaly.MemoryEntryVO;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -10,7 +11,7 @@ import lombok.Data;
  * @date 2020/11/4 下午2:35
  */
 @Data
-public class PerformanceBaseDataParam {
+public class PerformanceBaseDataParam extends TenantCommonExt {
 
     private String agentId;
 

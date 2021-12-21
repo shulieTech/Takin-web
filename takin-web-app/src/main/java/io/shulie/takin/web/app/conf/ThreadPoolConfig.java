@@ -179,7 +179,7 @@ public class ThreadPoolConfig {
             new ThreadPoolExecutor.AbortPolicy());
     }
 
-    @Bean("asynExecuteScriptThreadPool")
+    @Bean("asyncExecuteScriptThreadPool")
     public Executor myAsync() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         //核心线程数

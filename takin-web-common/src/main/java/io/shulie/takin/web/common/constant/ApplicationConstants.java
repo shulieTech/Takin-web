@@ -9,8 +9,14 @@ package io.shulie.takin.web.common.constant;
 public interface ApplicationConstants {
 
     /**
-     * 应用异常状态
+     * 应用异常列表key
+     * 用户id, 环境, 应用名称
      */
-    int APPLICATION_ACCESS_STATUS_EXCEPTION = 3;
+    String APPLICATION_ERROR_LIST_KEY = "application:error:%d:%s:%s";
+
+    /**
+     * agent 上报错误信息时, map
+     */
+    String APPLICATION_ERROR_MAP_KEY_ERROR_CODE = "errorCode";
 
 }

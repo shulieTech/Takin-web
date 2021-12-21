@@ -38,6 +38,11 @@ public class PluginCreateBO {
     private Boolean isCustomMode;
 
     /**
+     * 是否为公共模块 false:非公共 true:公共
+     */
+    private Boolean isCommonModule;
+
+    /**
      * 下载路径
      */
     private String downloadPath;

@@ -36,6 +36,7 @@ import io.shulie.takin.web.data.param.application.UpdateApplicationMiddlewarePar
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareListResult;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareStatusAboutCountResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -277,6 +278,8 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
             String version = pushMiddlewareListRequest.getVersion();
             createParam.setVersion(version == null ? "" : version);
 
+            createParam.setEnvCode(WebPluginUtils.traceEnvCode());
+            createParam.setTenantId(WebPluginUtils.traceTenantId());
             return createParam;
         }).collect(Collectors.toList());
     }

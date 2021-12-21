@@ -142,6 +142,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -157,6 +158,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      * 文件上传到 cloud 的地址
      * 就是 takin cloud 域名
      */
+    @Value("${takin.cloud.url}")
     private String fileUploadUrl;
 
     @Autowired
@@ -200,13 +202,6 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
     @Autowired
     private SceneLinkRelateDAO sceneLinkRelateDAO;
-
-    @PostConstruct
-    public void init() {
-        fileUploadUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_URL);
-    }
-
-
 
     @Override
     public String getZipFileUrl(Long scriptDeployId) {

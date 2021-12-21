@@ -156,6 +156,13 @@ public final class BizOpConstants {
         public static final String MESSAGE_BUSINESS_ACTIVITY_CREATE = "message.business_activity.create";
         public static final String MESSAGE_BUSINESS_ACTIVITY_DELETE = "message.business_activity.delete";
         public static final String MESSAGE_BUSINESS_ACTIVITY_UPDATE = "message.business_activity.update";
+        /**
+         * 虚拟业务活动
+         */
+        public static final String MESSAGE_VIRTUAL_BUSINESS_ACTIVITY_CREATE = "message.virtual.business_activity.create";
+        public static final String MESSAGE_VIRTUAL_BUSINESS_ACTIVITY_UPDATE = "message.virtual.business_activity.update";
+
+
 
         /**
          * 业务流程
@@ -272,6 +279,11 @@ public final class BizOpConstants {
         public static final String SCRIPT_MANAGE_CREATE = "message.script_manage.create";
         public static final String SCRIPT_MANAGE_UPDATE = "message.script_manage.update";
         public static final String SCRIPT_MANAGE_DELETE = "message.script_manage.delete";
+        /**
+         * 脚本调试
+         */
+        public static final String SCRIPT_MANAGE_DEBUG = "message.script_manage.debug";
+
 
         public static final String SCRIPT_MANAGE_SCRIPTID_DELETE = "message.script_manage.scriptId.delete";
         public static final String SCRIPT_MANAGE_EXECUTE = "message.script_manage.execute";
@@ -406,6 +418,11 @@ public final class BizOpConstants {
          * 任务
          */
         public static final String TASK = "task";
+
+        /**
+         * 任务内容
+         */
+        public static final String TASKConfig = "taskConfig";
 
         /**
          * 入口规则

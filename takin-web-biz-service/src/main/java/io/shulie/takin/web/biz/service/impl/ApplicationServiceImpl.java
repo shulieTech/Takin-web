@@ -1280,10 +1280,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     String[] split = active.split("#");
                     String appName = split[0];
                     String entrance = ActivityUtil.buildEntrance(split[2], split[1], "%");
-                    List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
+                    List<Map<String, Object>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
                     if (!CollectionUtils.isEmpty(serviceList)) {
-                        serviceList.forEach(serviceName -> activityResult.put(String.valueOf(serviceName.get("linkId")),
-                            serviceName.get("linkName")));
+                        serviceList.forEach(serviceName -> activityResult.put(
+                            serviceName.get("linkId").toString(), serviceName.get("linkName").toString()));
                     }
                 }
             }
@@ -1295,10 +1295,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     String[] split = active.split("#");
                     String appName = split[0];
                     String entrance = ActivityUtil.buildEntrance(split[2], split[1], "%");
-                    List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
+                    List<Map<String, Object>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
                     if (!CollectionUtils.isEmpty(serviceList)) {
-                        serviceList.stream().forEach(serviceName -> allActivityResult.put(split[1] + "#" + split[2],
-                            serviceName.get("linkName")));
+                        serviceList.stream().forEach(serviceName -> allActivityResult.put(
+                            split[1] + "#" + split[2], serviceName.get("linkName").toString()));
                     }
                 }
             }

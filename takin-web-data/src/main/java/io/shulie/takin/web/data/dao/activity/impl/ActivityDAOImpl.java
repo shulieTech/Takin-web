@@ -470,7 +470,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     }
 
     @Override
-    public List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance) {
+    public List<Map<String,Object>> findActivityIdByServiceName(String appName, String entrance) {
         Long tenantId = WebPluginUtils.traceTenantId();
         return activityNodeStateTableMapper.findActivityIdByServiceName(tenantId,appName,entrance);
     }

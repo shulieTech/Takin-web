@@ -855,15 +855,15 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request) {
         String entrance = ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType());
-        List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(request.getApplicationName(),
+        List<Map<String, Object>> serviceList = activityDAO.findActivityIdByServiceName(request.getApplicationName(),
             entrance);
         if (CollectionUtils.isEmpty(serviceList)) {
             return null;
         }
         BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
-        Map<String, String> linkNameAndId = serviceList.get(0);
-        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkId")));
-        businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName"));
+        Map<String, Object> linkNameAndId = serviceList.get(0);
+        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkId").toString()));
+        businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName").toString());
         return businessLinkManageTableEntity;
     }
 

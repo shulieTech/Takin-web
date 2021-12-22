@@ -42,6 +42,6 @@ UPDATE `t_config_server` SET is_tenant=0 WHERE `key` = 'takin.login.dingding.pus
 UPDATE `t_config_server` SET is_tenant=0 WHERE `key` = 'takin.asset.balance.default.try';
 UPDATE `t_config_server` SET is_tenant=0 WHERE `key` = 'takin.asset.balance.default.formal';
 UPDATE `t_config_server` SET is_tenant=1 WHERE `key` = 'takin.tenant.default.password';
-UPDATE `t_config_server` SET is_tenant=1 WHERE `key` = 'per.tenant.allow.task.threads.max';
+UPDATE `t_config_server` SET is_tenant=1,value=2 WHERE `key` = 'per.tenant.allow.task.threads.max';
 COMMIT ;
 

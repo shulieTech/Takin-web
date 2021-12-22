@@ -27,12 +27,16 @@ public abstract class AbstractSceneTask {
     private RedisTemplate redisTemplate;
 
     protected List<SceneTaskDto> getTaskFromRedis() {
-        Object o = redisTemplate.opsForList().range(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,-1);
+        List o = redisTemplate.opsForList().range(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,-1);
         List<SceneTaskDto> taskDtoList = null;
         try {
-            taskDtoList = JSON.parseArray(o.toString(),SceneTaskDto.class);
+            if (CollectionUtils.isEmpty(o)){
+                return null;
+            }
+            final Object jsonData = redisTemplate.opsForValue().get(o);
+            taskDtoList = JSON.parseArray(jsonData.toString(),SceneTaskDto.class);
         }catch (Exception e){
-            log.error("格式有误，序列化失败！{}",o);
+            log.error("格式有误，序列化失败！{}",e);
         }
         if (CollectionUtils.isEmpty(taskDtoList)){
             return null;
@@ -45,8 +49,10 @@ public abstract class AbstractSceneTask {
     }
 
     protected void removeReportKey(Long reportId, TenantCommonExt commonExt) {
-        redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,JSON.toJSONString(new SceneTaskDto(
-            commonExt, reportId)));
+        final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
+        if (redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,reportKey)>0){
+            redisTemplate.opsForValue().getOperations().delete(reportKey);
+        }
     }
 
 

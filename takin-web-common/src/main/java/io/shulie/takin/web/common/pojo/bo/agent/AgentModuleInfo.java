@@ -42,6 +42,8 @@ public class AgentModuleInfo {
      */
     private String updateInfo;
 
+
+
     /**
      * 是否为公共模块
      */

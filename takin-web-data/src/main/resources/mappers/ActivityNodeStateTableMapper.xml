@@ -39,4 +39,13 @@
         AND blmt.IS_DELETED = 0
         AND blmt.persistence = 1
     </select>
+    <select id="findActivityByServiceName" resultType="map">
+        SELECT blmt.LINK_ID AS linkId,blmt.LINK_NAME AS linkName, blmt.persistence AS persistence
+        FROM t_business_link_manage_table blmt
+                 INNER JOIN t_link_manage_table lmt
+                            ON blmt.RELATED_TECH_LINK = lmt.LINK_ID
+        WHERE blmt.ENTRACE LIKE #{entrance}
+          AND lmt.APPLICATION_NAME = #{appName}
+          AND blmt.IS_DELETED = 0
+    </select>
 </mapper>

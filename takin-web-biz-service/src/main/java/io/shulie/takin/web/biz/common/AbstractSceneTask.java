@@ -2,10 +2,12 @@ package io.shulie.takin.web.biz.common;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
@@ -27,14 +29,16 @@ public abstract class AbstractSceneTask {
     private RedisTemplate redisTemplate;
 
     protected List<SceneTaskDto> getTaskFromRedis() {
-        List o = redisTemplate.opsForList().range(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,-1);
+        List<String> o = redisTemplate.opsForList().range(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,-1);
         List<SceneTaskDto> taskDtoList = null;
         try {
             if (CollectionUtils.isEmpty(o)){
                 return null;
             }
-            final Object jsonData = redisTemplate.opsForValue().get(o);
-            taskDtoList = JSON.parseArray(jsonData.toString(),SceneTaskDto.class);
+            taskDtoList = o.stream().map(t-> {
+                final Object jsonData = redisTemplate.opsForValue().get(o);
+               return JSON.parseObject(jsonData.toString(),SceneTaskDto.class);
+            }).collect(Collectors.toList());
         }catch (Exception e){
             log.error("格式有误，序列化失败！{}",e);
         }

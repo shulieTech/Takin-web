@@ -341,23 +341,6 @@ public class ApplicationController {
         return null;
     }
 
-    /**
-     * 关注应用服务接口
-     *
-     * @param request 包含应用名称及服务名称
-     */
-    @PostMapping("/application/center/app/attendService")
-    @ApiOperation("关注应用服务接口")
-    @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.CREATE
-    )
-    public void attendApplicationService(@RequestBody ApplicationVisualInfoQueryRequest request) throws Exception {
-        if (null == request.getAttend()) {
-            return;
-        }
-        applicationService.attendApplicationService(request);
-    }
 
     @PostMapping("/application/center/app/gotoActivityInfo")
     @ApiOperation("跳转业务活动详情")
@@ -407,7 +390,7 @@ public class ApplicationController {
             request.setActivityName(key);
             request.setRpcType(request.getRpcType());
             applicationService.gotoActivityInfo(request);
-            result.put(request.getLinkId(), isTempActivity);
+            result.put(activityService.getActivityByName(key).getLinkId(), isTempActivity);
         }
         return result;
     }

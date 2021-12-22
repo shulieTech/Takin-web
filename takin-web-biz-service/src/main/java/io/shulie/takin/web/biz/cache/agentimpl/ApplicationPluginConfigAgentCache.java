@@ -2,11 +2,8 @@ package io.shulie.takin.web.biz.cache.agentimpl;
 
 import java.util.List;
 
-import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.web.biz.cache.AbstractAgentConfigCache;
 import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
-import io.shulie.takin.web.biz.service.linkManage.LinkGuardService;
-import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.result.application.ApplicationPluginsConfigVO;

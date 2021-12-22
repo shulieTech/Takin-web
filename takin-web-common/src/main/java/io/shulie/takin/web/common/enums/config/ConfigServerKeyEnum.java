@@ -59,6 +59,11 @@ public enum ConfigServerKeyEnum implements AppConstants {
     TAKIN_REPORT_OPEN_TASK("open.report.task", "takin.report.open.task", YES),
 
     /**
+     * 文件上传到 cloud 的地址
+     */
+    TAKIN_FILE_UPLOAD_URL("file.upload.url", "takin.file.upload.url", NO),
+
+    /**
      * 上传文件保存路径
      */
     TAKIN_DATA_PATH("data.path", "takin.data.path", NO),

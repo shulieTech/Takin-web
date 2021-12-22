@@ -1,18 +1,14 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
-import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import com.alibaba.fastjson.JSON;
 
-import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
@@ -26,7 +22,6 @@ import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -85,17 +80,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
-    @Override
-    public List<Long> getRunningReport() {
-        List<Long> reportIds = reportService.queryListRunningReport();
-        if (CollectionUtils.isEmpty(reportIds)){
-            log.debug("暂无压测中的报告！");
-            return Lists.newArrayList();
-        }
-        log.debug("获取租户【{}】，环境【{}】的正在压测中的报告:{}",
-            WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
-        return reportIds;
-    }
 
     @Override
     public Boolean finishReport(Long reportId,TenantCommonExt commonExt) {

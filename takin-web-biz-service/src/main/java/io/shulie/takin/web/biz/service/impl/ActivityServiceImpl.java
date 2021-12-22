@@ -859,8 +859,7 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request) {
-        String entrance = ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(),
-            request.getServiceName(), request.getRpcType());
+        String entrance = ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType());
         List<Map<String, String>> serviceList = activityDAO.findActivityByServiceName(request.getApplicationName(),
             entrance);
         if (CollectionUtils.isEmpty(serviceList)) {

@@ -38,5 +38,10 @@ UPDATE t_tro_resource SET is_super=1 WHERE code='configCenter_middlewareManage';
 UPDATE `t_config_server` SET `value` = 'true' WHERE `key` = 'takin.login.dingding.push.enable';
 UPDATE `t_config_server` SET `value` = 'https://oapi.dingtalk.com/robot/send?access_token=7ff71ca59b08340b5b07a146b053527eebb4f834856380d2c33f5a1d6fcd3bb8' WHERE `key` = 'takin.login.dingding.push.url';
 UPDATE `t_config_server` SET is_tenant=0 WHERE `key` = 'takin.login.dingding.push.enable';
+UPDATE `t_config_server` SET is_tenant=0 WHERE `key` = 'takin.login.dingding.push.url';
+UPDATE `t_config_server` SET is_tenant=0 WHERE `key` = 'takin.asset.balance.default.try';
+UPDATE `t_config_server` SET is_tenant=0 WHERE `key` = 'takin.asset.balance.default.formal';
+UPDATE `t_config_server` SET is_tenant=1 WHERE `key` = 'takin.tenant.default.password';
+UPDATE `t_config_server` SET is_tenant=1 WHERE `key` = 'per.tenant.allow.task.threads.max';
 COMMIT ;
 

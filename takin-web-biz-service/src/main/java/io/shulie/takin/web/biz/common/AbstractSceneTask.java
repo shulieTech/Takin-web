@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.common;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -37,8 +38,11 @@ public abstract class AbstractSceneTask {
             }
             taskDtoList = o.stream().map(t -> {
                 final Object jsonData = redisTemplate.opsForValue().get(o);
+                if (Objects.isNull(jsonData)){
+                    return null;
+                }
                 return JSON.parseObject(jsonData.toString(), SceneTaskDto.class);
-            }).collect(Collectors.toList());
+            }).filter(Objects::nonNull).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("格式有误，序列化失败！{}", e);
         }

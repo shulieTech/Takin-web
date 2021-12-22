@@ -967,7 +967,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @return 启动后返回的数据
      */
     private SceneTryRunTaskStartResp doDebug(SceneTryRunTaskStartReq debugCloudRequest) {
-        // 启动
+        // 启动前先加上租户
+        debugCloudRequest.setTenantId(WebPluginUtils.traceTenantId());
+        debugCloudRequest.setEnvCode(WebPluginUtils.traceEnvCode());
         log.info("调试 --> 调用 cloud 启动, 入参: {}", JSONUtil.toJsonStr(debugCloudRequest));
         ResponseResult<SceneTryRunTaskStartResp> result = sceneTaskApi.startTryRunTask(debugCloudRequest);
         log.info("调试 --> 调用 cloud 启动, 出参: {}", JSONUtil.toJsonStr(result));
@@ -1098,7 +1100,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             String features = linkManageResult.getFeatures();
             ScriptDebugExceptionUtil.isDebugError(StringUtils.isBlank(features),
                 "业务活动关联的技术链路中没有 features 字段, 无法判断业务活动 mq 的类型!");
-            LinkManageTableFeaturesVO featureObject = JsonUtil.json2bean(features, LinkManageTableFeaturesVO.class);
+            LinkManageTableFeaturesVO featureObject = JsonUtil.json2Bean(features, LinkManageTableFeaturesVO.class);
 
             // 配置的支持类型, 是否包含
             List<String> supportRpcTypeList = Arrays.asList(supportRpcType.split(AppConstants.COMMA));

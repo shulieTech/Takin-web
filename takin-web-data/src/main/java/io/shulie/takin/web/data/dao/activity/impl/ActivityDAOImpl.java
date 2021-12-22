@@ -81,7 +81,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     }
 
     @Override
-    public int createActivity(ActivityCreateParam param) {
+    public Long createActivity(ActivityCreateParam param) {
         // 兼容老版本,先创建技术链路
         LinkManageTableEntity linkManageTableEntity = new LinkManageTableEntity();
         linkManageTableEntity.setLinkName(param.getActivityName());
@@ -102,14 +102,14 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         linkManageTableEntity.setPersistence(param.isPersistence());
 
         // 再创建业务链路
-        int insert1 = linkManageTableMapper.insert(linkManageTableEntity);
+        linkManageTableMapper.insert(linkManageTableEntity);
         param.setEntrance(param.getEntrance());
         param.setLinkId(linkManageTableEntity.getLinkId());
-        return insert1 & createActivityNew(param);
+        return createActivityNew(param);
     }
 
     @Override
-    public int createActivityNew(ActivityCreateParam param) {
+    public Long createActivityNew(ActivityCreateParam param) {
         BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
         businessLinkManageTableEntity.setLinkName(param.getActivityName());
         businessLinkManageTableEntity.setEntrace(param.getEntrance());
@@ -137,7 +137,8 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             businessLinkManageTableEntity.setBindBusinessId(param.getBindBusinessId());
         }
         businessLinkManageTableEntity.setPersistence(param.isPersistence());
-        return businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
+        businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
+        return businessLinkManageTableEntity.getLinkId();
     }
 
     @Override
@@ -176,7 +177,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             result.setEntranceName(entranceJoinEntity.getServiceName());
             Map<String, String> features = new HashMap<>(16);
             if (StringUtils.isNotBlank(linkManageTableEntity.getFeatures())) {
-                features = JsonUtil.json2bean(linkManageTableEntity.getFeatures(), Map.class);
+                features = JsonUtil.json2Bean(linkManageTableEntity.getFeatures(), Map.class);
             }
 
             result.setExtend(features.get(FeaturesConstants.EXTEND_KEY));
@@ -311,6 +312,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         if (param.getIsChange() != null) {
             lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsChange, param.getIsChange());
         }
+        if (Objects.nonNull(param.getLinkLevel())) {
+            lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getLinkLevel, param.getLinkLevel());
+        }
         if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
             lambdaQueryWrapper.in(BusinessLinkManageTableEntity::getUserId, param.getUserIdList());
         }
@@ -440,6 +444,11 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     public List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance) {
         Long tenantId = WebPluginUtils.traceTenantId();
         return activityNodeStateTableMapper.findActivityIdByServiceName(tenantId,appName,entrance);
+    }
+
+    @Override
+    public List<Map<String, String>> findActivityByServiceName(String appName, String entrance) {
+        return activityNodeStateTableMapper.findActivityByServiceName(appName, entrance);
     }
 
     @Override

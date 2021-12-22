@@ -69,4 +69,9 @@ public class UserExt {
      */
     @ApiModelProperty(value = "登录渠道")
     private Integer loginChannel = 0;
+
+    /**
+     * 是否有超级管理员的权限(创建租户)
+     */
+    private Integer isSuper;
 }

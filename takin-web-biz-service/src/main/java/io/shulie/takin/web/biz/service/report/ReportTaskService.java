@@ -19,8 +19,9 @@ public interface ReportTaskService {
     /**
      * 完成报告
      * @param reportId
+     * @return 报告是否正常结束 true=是 false=否
      */
-    void finishReport(Long reportId, TenantCommonExt commonExt);
+    Boolean finishReport(Long reportId, TenantCommonExt commonExt);
 
     /**
      * 同步应用基础信息

@@ -1081,7 +1081,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     return dsExportVO;
                 }
 
-                Configurations configurations = JsonUtil.json2bean(ds.getParseConfig(), Configurations.class);
+                Configurations configurations = JsonUtil.json2Bean(ds.getParseConfig(), Configurations.class);
                 if (configurations == null) {
                     return dsExportVO;
                 }
@@ -1245,7 +1245,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public void gotoActivityInfo(ActivityCreateRequest request) {
-        activityService.createActivityWithoutAMDB(request);
+        Long linkId = activityService.createActivityWithoutAMDB(request);
+        request.setLinkId(String.valueOf(linkId));
     }
 
     @Override
@@ -1855,11 +1856,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      */
     private boolean compareImportServerAndOriginServer(String importServerConfig, String originServerConfig) {
         // 解析传入的
-        ShadowServerConfigurationResponse importServerConfigResponse = JsonUtil.json2bean(importServerConfig,
+        ShadowServerConfigurationResponse importServerConfigResponse = JsonUtil.json2Bean(importServerConfig,
             ShadowServerConfigurationResponse.class);
 
         // 解析原来的
-        ShadowServerConfigurationResponse originServerConfigResponse = JsonUtil.json2bean(originServerConfig,
+        ShadowServerConfigurationResponse originServerConfigResponse = JsonUtil.json2Bean(originServerConfig,
             ShadowServerConfigurationResponse.class);
 
         // 对比
@@ -1966,7 +1967,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private String getUrlFromImport(Integer dsType, String url, String config) {
         // , url 需要解析获取
         if (DsManageUtil.isServerDsType(dsType)) {
-            ShadowServerConfigurationResponse serverConfig = JsonUtil.json2bean(config,
+            ShadowServerConfigurationResponse serverConfig = JsonUtil.json2Bean(config,
                 ShadowServerConfigurationResponse.class);
             return serverConfig.getDataSourceBusiness().getNodes();
         }

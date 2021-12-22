@@ -503,7 +503,7 @@ UPDATE t_fast_debug_machine_performance t1
     LEFT JOIN t_fast_debug_result t2 ON t1.trace_id = t2.trace_id
     SET t1.env_code = IFNULL(t2.env_code,'test');
 UPDATE t_fast_debug_machine_performance f SET f.tenant_id=IFNULL((SELECT t.tenant_id from t_fast_debug_result t WHERE  t.trace_id = f.trace_id AND t.is_deleted=0),1);
-COMMIT;
+COMMIT ;
 -- 最后加索引
 ALTER TABLE t_activity_node_service_state ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );
 ALTER TABLE t_agent_config ADD INDEX `idx_tenant_env` ( `tenant_id`,`env_code` );

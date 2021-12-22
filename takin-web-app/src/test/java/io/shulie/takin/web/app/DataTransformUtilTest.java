@@ -19,6 +19,14 @@ import org.junit.Test;
 public class DataTransformUtilTest {
 
     @Test
+    public void testSb() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("test, ");
+        sb.delete(sb.length() - 2, sb.length());
+        System.out.println(sb.toString());
+    }
+
+    @Test
     public void test() {
         List<Object> strings = Arrays.asList("1");
         System.out.println(JsonHelper.json2List(JsonHelper.bean2Json(strings), Long.class));

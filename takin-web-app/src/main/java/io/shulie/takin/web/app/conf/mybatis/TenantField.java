@@ -16,13 +16,13 @@ public enum TenantField {
     /**
      * 租户
      */
-    FIELD_TENANT_ID("tenantId","tenant_Id"),
+    FIELD_TENANT_ID("tenantId","tenant_id"),
     /**
      * 环境
      */
     FIELD_ENV_CODE("envCode","env_code"),
 
-    FIELD_USER_ID("userId","user_Id"),
+    FIELD_USER_ID("userId","user_id"),
     /**
      * key
      */

@@ -209,7 +209,7 @@ public class CommonService {
     protected TaskScheduler taskScheduler;
 
     @Autowired
-    @Qualifier("asynExecuteScriptThreadPool")
+    @Qualifier("asyncExecuteScriptThreadPool")
     protected Executor asynExecuteScriptThreadPool;
 
     @Autowired

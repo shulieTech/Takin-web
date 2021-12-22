@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
@@ -212,7 +211,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         List<String> uploadPaths = fileManageResults.stream()
             .filter(t -> StringUtil.isNotBlank(t.getFileExtend()))
             .filter(t -> {
-                JSONObject jsonObject = JsonUtil.json2bean(t.getFileExtend(), JSONObject.class);
+                JSONObject jsonObject = JsonUtil.json2Bean(t.getFileExtend(), JSONObject.class);
                 if (jsonObject != null) {
                     Integer bigFile = jsonObject.getInteger("isBigFile");
                     return bigFile == null || !bigFile.equals(1);

@@ -11,7 +11,6 @@ import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.activity.*;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
@@ -35,7 +34,7 @@ public interface ActivityService {
      */
     Long createActivity(ActivityCreateRequest request);
 
-    void createActivityWithoutAmdb(ActivityCreateRequest request);
+    Long createActivityWithoutAMDB(ActivityCreateRequest request);
 
     /**
      * 新增虚拟业务活动

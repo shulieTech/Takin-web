@@ -86,6 +86,18 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private RedisTemplate redisTemplate;
 
     @Override
+    public List<Long> getRunningReport() {
+        List<Long> reportIds = reportService.queryListRunningReport();
+        if (CollectionUtils.isEmpty(reportIds)){
+            log.debug("暂无压测中的报告！");
+            return Lists.newArrayList();
+        }
+        log.debug("获取租户【{}】，环境【{}】的正在压测中的报告:{}",
+            WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), JsonHelper.bean2Json(reportIds));
+        return reportIds;
+    }
+
+    @Override
     public Boolean finishReport(Long reportId,TenantCommonExt commonExt) {
         try {
             try {

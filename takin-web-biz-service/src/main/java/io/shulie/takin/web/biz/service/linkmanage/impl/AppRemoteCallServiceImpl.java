@@ -693,6 +693,10 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             }
         }
         appRemoteCallDAO.batchInsert(params);
+        // 清除缓存
+        List<String> appNames = params.stream().filter(t -> !AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType().equals(t.getType()))
+            .map(AppRemoteCallCreateParam::getAppName).distinct().collect(Collectors.toList());
+        appNames.forEach(appName ->  agentConfigCacheManager.evictRecallCalls(appName));
     }
 
     private PagingList<AppRemoteCallListVO> getAmdbPagingList(AppRemoteCallQueryInput input, ApplicationDetailResult detailResult,

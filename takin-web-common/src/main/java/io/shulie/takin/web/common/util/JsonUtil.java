@@ -36,7 +36,7 @@ public final class JsonUtil {
      * @param type 实例对应的类泛型
      * @return 实例
      */
-    public static <T> T json2bean(String json, TypeReference<T> type) {
+    public static <T> T json2Bean(String json, TypeReference<T> type) {
         return JSONObject.parseObject(json, type);
     }
 
@@ -48,7 +48,7 @@ public final class JsonUtil {
      * @param <T> 实例对应的类泛型
      * @return 实例
      */
-    public static <T> T json2bean(String json, Class<T> clazz) {
+    public static <T> T json2Bean(String json, Class<T> clazz) {
         return JSONObject.parseObject(json, clazz);
     }
 

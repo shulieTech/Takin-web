@@ -166,11 +166,6 @@ public enum ConfigServerKeyEnum implements AppConstants {
     TAKIN_LINK_FIX_ENABLE("link.fix.enable", "takin.link.fix.enable", NO),
 
     /**
-     * 文件上传到 cloud 的地址
-     */
-    TAKIN_FILE_UPLOAD_URL("file.upload.url", "takin.file.upload.url", NO),
-
-    /**
      * 文件上传地址
      */
     TAKIN_FILE_UPLOAD_USER_DATA_DIR("file.upload.user.data.dir", "takin.file.upload.user.data.dir", NO),
@@ -269,6 +264,11 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 正式用户的默认流量
      */
     TAKIN_ASSET_BALANCE_DEFAULT_FORMAL("", "takin.asset.balance.default.formal", NO),
+
+    /**
+     * 创建租户默认的密码
+     */
+    TAKIN_TENANT_DEFAULT_PASSWORD("", "takin.tenant.default.password", YES),
 
     ;
 

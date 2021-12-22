@@ -97,6 +97,7 @@ public class LinkManageController {
             @ApiParam(name = "middleWareType", value = "中间件类型") String middleWareType,
             @ApiParam(name = "middleWareName", value = "中间件名字") String middleWareName,
             @ApiParam(name = "middleWareVersion", value = "中间件版本") String middleWareVersion,
+            @ApiParam(name = "linkLevel", value = "业务活动级别") String linkLevel,
             Integer current,
             Integer pageSize
         ) {
@@ -109,6 +110,7 @@ public class LinkManageController {
         vo.setMiddleWareType(middleWareType);
         vo.setMiddleWareName(middleWareName);
         vo.setMiddleWareVersion(middleWareVersion);
+        vo.setLinkLevel(linkLevel);
         vo.setCurrentPage(current);
         vo.setPageSize(pageSize);
         return linkManageService.getScenes(vo);

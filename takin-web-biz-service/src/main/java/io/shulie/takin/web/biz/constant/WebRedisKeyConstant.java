@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.constant;
 
+import io.shulie.takin.web.common.common.Separator;
+
 /**
  * redis key
  *
@@ -20,4 +22,8 @@ public class WebRedisKeyConstant {
      * 压测 应用名列表
      */
     public final static String PTING_APPLICATION_KEY = "pting.application:hmset:%s";
+
+    public static String getReportKey(Long reportId) {
+        return SCENE_REPORTID_KEY + Separator.Separator2.getValue() + reportId;
+    }
 }

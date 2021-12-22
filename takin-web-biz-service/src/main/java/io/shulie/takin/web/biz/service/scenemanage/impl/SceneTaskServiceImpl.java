@@ -224,20 +224,19 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             startResult = cloudTaskApi.start(CopyUtils.copyFields(paramNew, SceneTaskStartReq.class));
         } catch (Exception e) {
             log.error("takin-cloud启动压测场景返回错误，id={}", param.getSceneId(), e);
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR,e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, e.getMessage(), e);
         }
         // 缓存 报告id
         cacheReportId(startResult, param);
         // 入队列
-        pushTaskToRedis(startResult,sceneData);
+        pushTaskToRedis(startResult, sceneData);
 
         return startResult;
     }
 
-
-    private void pushTaskToRedis(SceneActionResp startResult,SceneManageWrapperDTO sceneData){
+    private void pushTaskToRedis(SceneActionResp startResult, SceneManageWrapperDTO sceneData) {
         final Long reportId = startResult.getData();
-        if (reportId!=null){
+        if (reportId != null) {
             SceneTaskDto taskDto = new SceneTaskDto();
             taskDto.setTenantId(WebPluginUtils.traceTenantId());
             taskDto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
@@ -247,12 +246,16 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             taskDto.setReportId(reportId);
 
             //计算结束时间
-            if (sceneData.getPressureTestSecond() == null){
-                throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR,"获取压测时长失败！压测时长为"+ sceneData.getPressureTestSecond());
+            if (sceneData.getPressureTestSecond() == null) {
+                throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR,
+                    "获取压测时长失败！压测时长为" + sceneData.getPressureTestSecond());
             }
             taskDto.setEndTime(LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()));
             //任务添加到redis队列
-            redisTemplate.opsForList().leftPush(WebRedisKeyConstant.SCENE_REPORTID_KEY,JSON.toJSONString(taskDto));
+            final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
+            redisTemplate.opsForList().leftPush(WebRedisKeyConstant.SCENE_REPORTID_KEY,
+                reportKey);
+            redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(taskDto));
         }
     }
 
@@ -308,7 +311,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             throw new TakinWebException(ExceptionCode.SCENE_STOP_ERROR, response.getError());
         }
         SceneActionResp resp = response.getData();
-        String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+        String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
+            WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
             String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, resp.getReportId()));
         redisClientUtils.del(redisKey);
         // 最后删除
@@ -353,7 +357,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             List<String> applicationNames = applicationMntList.stream().map(ApplicationDetailResult::getApplicationName)
                 .collect(Collectors.toList());
             // 过期时间，根据 压测时间 + 10s
-            String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+            String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
+                WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
                 String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
             redisClientUtils.set(redisKey, applicationNames, wrapperResp.getPressureTestSecond() + 10);
         }

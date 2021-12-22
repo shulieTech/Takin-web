@@ -30,7 +30,7 @@ import io.shulie.takin.web.data.param.machine.PressureMachineLogInsertParam;
 import io.shulie.takin.web.data.param.machine.PressureMachineQueryParam;
 import io.shulie.takin.web.data.param.machine.PressureMachineUpdateParam;
 import io.shulie.takin.web.data.result.perfomanceanaly.PressureMachineResult;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -43,7 +43,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-@Log4j
+@Slf4j
 public class PressureMachineServiceImpl implements PressureMachineService {
     @Autowired
     private PressureMachineDao pressureMachineDao;

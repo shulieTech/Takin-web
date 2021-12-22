@@ -16,6 +16,8 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
@@ -52,18 +54,15 @@ import io.shulie.takin.web.data.model.mysql.MiddlewareJarEntity;
 import io.shulie.takin.web.data.model.mysql.MiddlewareSummaryEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.mapstruct.ap.internal.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Resource;
 
 import static io.shulie.takin.web.biz.utils.FunctionUtils.ifBlankDone;
 import static io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusEnum.NOT_SUPPORTED;
@@ -568,7 +567,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
     }
 
     private String joinAgv(String... agv) {
-        return Strings.join(Arrays.stream(agv).map(item -> item == null ? "" : item).collect(Collectors.toList()), '_');
+        return Strings.join(Arrays.stream(agv).map(item -> item == null ? "" : item).collect(Collectors.toList()), "_");
     }
 
     @Override

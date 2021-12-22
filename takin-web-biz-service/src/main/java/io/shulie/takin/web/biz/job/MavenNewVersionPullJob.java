@@ -28,7 +28,7 @@ import io.shulie.takin.web.common.enums.application.ApplicationMiddlewareStatusE
 import io.shulie.takin.web.data.model.mysql.MiddlewareJarEntity;
 import io.shulie.takin.web.data.model.mysql.MiddlewareSummaryEntity;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
+import org.mapstruct.ap.internal.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -149,6 +149,6 @@ public class MavenNewVersionPullJob implements SimpleJob {
     }
 
     private String joinAgv(String... agv) {
-        return Strings.join(Arrays.stream(agv).map(item -> item == null ? "" : item).collect(Collectors.toList()), '_');
+        return Strings.join(Arrays.stream(agv).map(item -> item == null ? "" : item).collect(Collectors.toList()), "_");
     }
 }

@@ -36,6 +36,32 @@ public final class JsonUtil {
      * @param type 实例对应的类泛型
      * @return 实例
      */
+    @Deprecated
+    public static <T> T json2bean(String json, TypeReference<T> type) {
+        return JSONObject.parseObject(json, type);
+    }
+
+    /**
+     * json 转 实例
+     *
+     * @param json json
+     * @param clazz 实例对应的类
+     * @param <T> 实例对应的类泛型
+     * @return 实例
+     */
+    @Deprecated
+    public static <T> T json2bean(String json, Class<T> clazz) {
+        return JSONObject.parseObject(json, clazz);
+    }
+
+
+    /**
+     * json 转 复杂实例
+     *
+     * @param json json
+     * @param type 实例对应的类泛型
+     * @return 实例
+     */
     public static <T> T json2Bean(String json, TypeReference<T> type) {
         return JSONObject.parseObject(json, type);
     }

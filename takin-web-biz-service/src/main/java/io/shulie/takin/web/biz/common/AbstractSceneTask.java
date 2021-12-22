@@ -37,7 +37,7 @@ public abstract class AbstractSceneTask {
                 return null;
             }
             taskDtoList = o.stream().map(t -> {
-                final Object jsonData = redisTemplate.opsForValue().get(o);
+                final Object jsonData = redisTemplate.opsForValue().get(t);
                 if (Objects.isNull(jsonData)){
                     return null;
                 }

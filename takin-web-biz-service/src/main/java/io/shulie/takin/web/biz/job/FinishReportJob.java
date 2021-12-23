@@ -140,10 +140,4 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
             }
         }
     }
-
-    public void removeTaskIfNecessary(SceneTaskDto tenantTask){
-        if (tenantTask.getEndTime()!=null && LocalDateTime.now().compareTo(tenantTask.getEndTime()) > 0){
-            this.removeReportKey(tenantTask.getReportId(),tenantTask);
-        }
-    }
 }

@@ -250,12 +250,16 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR,
                     "获取压测时长失败！压测时长为" + sceneData.getPressureTestSecond());
             }
-            taskDto.setEndTime(LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()));
+            //兜底时长
+            long extraSeconds = 30;
+            taskDto.setEndTime(
+                LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()).plusSeconds(extraSeconds));
             //任务添加到redis队列
             final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
             redisTemplate.opsForList().leftPush(WebRedisKeyConstant.SCENE_REPORTID_KEY,
                 reportKey);
-            redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(taskDto));
+            redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(taskDto),
+                sceneData.getPressureTestSecond() + extraSeconds, TimeUnit.SECONDS);
         }
     }
 

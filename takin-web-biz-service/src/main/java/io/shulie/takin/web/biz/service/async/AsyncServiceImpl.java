@@ -62,6 +62,8 @@ public class AsyncServiceImpl implements AsyncService {
     @Async("agentDataThreadPool")
     @Override
     public void savePerformanceBaseData(PerformanceBaseDataParam param) {
+        // 补充header
+        WebPluginUtils.setTraceTenantContext(param);
         String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
             String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, "*"));
         Set<String> keys = RedisHelper.keys(redisKey);

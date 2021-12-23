@@ -144,6 +144,7 @@ public class SceneServiceImpl implements SceneService {
         List<SceneLinkRelateResult> links = sceneLinkRelateDao.getByIdentification(node.getIdentification());
         SceneLinkRelateResult link = null;
         ActivityListResult activity = null;
+        boolean isMany = false;
 
         if (CollectionUtils.isNotEmpty(links)) {
             //sceneId不为空，更新过程
@@ -154,22 +155,30 @@ public class SceneServiceImpl implements SceneService {
                 if (CollectionUtils.isNotEmpty(collect)) {
                     Set<String> businessActivitySet = collect.stream().map(SceneLinkRelateResult::getBusinessLinkId).collect(Collectors.toSet());
                     //即便业务流程相同，也不能匹配到两个业务活动
-                    if (CollectionUtils.isNotEmpty(businessActivitySet) && businessActivitySet.size() == 1) {
-                        link = collect.get(0);
+                    if (CollectionUtils.isNotEmpty(businessActivitySet)) {
+                        if (businessActivitySet.size() == 1){
+                            link = collect.get(0);
+                        }else {
+                            isMany = true;
+                        }
                     }
                 }
             }
             //如果相同业务流程id中没有匹配到，并且没有多个匹配的情况
-            if (null == link) {
+            if (null == link && !isMany) {
                 //没有匹配到
                 Set<String> businessActivitySet = links.stream().map(SceneLinkRelateResult::getBusinessLinkId).collect(Collectors.toSet());
-                if (CollectionUtils.isNotEmpty(businessActivitySet) && businessActivitySet.size() == 1) {
-                    link = links.get(0);
+                if (CollectionUtils.isNotEmpty(businessActivitySet)) {
+                    if (businessActivitySet.size() == 1){
+                        link = links.get(0);
+                    }else {
+                        isMany = true;
+                    }
                 }
             }
         }
         //没有在关联关系中匹配到，去业务活动中匹配
-        if (link == null) {
+        if (link == null && !isMany) {
             ActivityQueryParam param = new ActivityQueryParam();
             param.setEntrance(node.getIdentification());
             List<ActivityListResult> activities = activityDao.getActivityList(param);

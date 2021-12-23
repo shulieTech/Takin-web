@@ -62,8 +62,8 @@ public interface ApplicationMiddlewareDAO {
     /**
      * 根据 applicationId 查询中间件列表
      *
-     * @param applicationId 应用id
      * @return 中间件列表
+     * @param applicationId 应用id
      */
     List<ApplicationMiddlewareListResult> listByApplicationId(Long applicationId);
 

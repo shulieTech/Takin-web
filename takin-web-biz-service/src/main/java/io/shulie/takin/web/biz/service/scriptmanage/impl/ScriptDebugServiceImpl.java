@@ -1,7 +1,13 @@
 package io.shulie.takin.web.biz.service.scriptmanage.impl;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -40,6 +46,7 @@ import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.constant.ScriptDebugConstants;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
@@ -61,7 +68,6 @@ import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
-import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
@@ -73,11 +79,12 @@ import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.biz.utils.exception.ScriptDebugExceptionUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.script.CloudPressureStatus;
 import io.shulie.takin.web.common.enums.script.ScriptDebugFailedTypeEnum;
 import io.shulie.takin.web.common.enums.script.ScriptDebugStatusEnum;
-import io.shulie.takin.web.common.enums.script.*;
+import io.shulie.takin.web.common.enums.script.ScriptMVersionEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
@@ -98,10 +105,10 @@ import io.shulie.takin.web.data.param.scriptmanage.PageScriptDebugParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -110,7 +117,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -215,7 +221,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             // 脚本发布实例是否存在
             ScriptManageDeployResult scriptDeploy = scriptManageDAO.selectScriptManageDeployById(scriptDeployId);
             ScriptDebugExceptionUtil.isDebugError(scriptDeploy == null, "脚本发布实例不存在!");
-
+            // 操作日志
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCRIPT_MANAGE_DEPLOY_NAME, scriptDeploy.getName());
             // 该脚本发布实例是否有未完成的调试
             ScriptDebugExceptionUtil.isDebugError(scriptDebugDAO.hasUnfinished(scriptDeployId),
                 "该脚本有未完成的调试, 请等待调试结束再进行调试!");
@@ -1128,7 +1135,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @return 启动后返回的数据
      */
     private SceneTryRunTaskStartResp doDebug(SceneTryRunTaskStartReq debugCloudRequest) {
-        // 启动
+        // 启动前先加上租户
+        debugCloudRequest.setTenantId(WebPluginUtils.traceTenantId());
+        debugCloudRequest.setEnvCode(WebPluginUtils.traceEnvCode());
         log.info("调试 --> 调用 cloud 启动, 入参: {}", JSONUtil.toJsonStr(debugCloudRequest));
         ResponseResult<SceneTryRunTaskStartResp> result = sceneTaskApi.startTryRunTask(debugCloudRequest);
         log.info("调试 --> 调用 cloud 启动, 出参: {}", JSONUtil.toJsonStr(result));
@@ -1239,7 +1248,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             String features = linkManageResult.getFeatures();
             ScriptDebugExceptionUtil.isDebugError(StringUtils.isBlank(features),
                 "业务活动关联的技术链路中没有 features 字段, 无法判断业务活动 mq 的类型!");
-            LinkManageTableFeaturesVO featureObject = JsonUtil.json2bean(features, LinkManageTableFeaturesVO.class);
+            LinkManageTableFeaturesVO featureObject = JsonUtil.json2Bean(features, LinkManageTableFeaturesVO.class);
 
             // 配置的支持类型, 是否包含
             List<String> supportRpcTypeList = Arrays.asList(supportRpcType.split(AppConstants.COMMA));

@@ -38,5 +38,6 @@ public class SceneDto extends AuthQueryResponseCommonExt implements Serializable
     @ApiModelProperty(name = "businessType", value = "虚拟业务活动 1")
     private Integer businessType;
 
-
+    @ApiModelProperty(name = "linkLevel", value = "业务活动级别")
+    private String linkLevel;
 }

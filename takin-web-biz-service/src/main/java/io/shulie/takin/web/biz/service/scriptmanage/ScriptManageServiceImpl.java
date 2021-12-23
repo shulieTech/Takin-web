@@ -3,7 +3,18 @@ package io.shulie.takin.web.biz.service.scriptmanage;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -96,8 +107,6 @@ import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import io.shulie.takin.web.common.util.FileUtil;
 import io.shulie.takin.web.common.util.JsonUtil;
-import io.shulie.takin.web.data.model.mysql.FileManageEntity;
-import io.shulie.takin.web.data.mapper.mysql.FileManageMapper;
 import io.shulie.takin.web.common.vo.script.ScriptDeployFinishDebugVO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
@@ -109,6 +118,8 @@ import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptTagRefDAO;
 import io.shulie.takin.web.data.dao.tagmanage.TagManageDAO;
+import io.shulie.takin.web.data.mapper.mysql.FileManageMapper;
+import io.shulie.takin.web.data.model.mysql.FileManageEntity;
 import io.shulie.takin.web.data.param.filemanage.FileManageCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.LinkManageQueryParam;
 import io.shulie.takin.web.data.param.scriptmanage.ScriptManageDeployCreateParam;
@@ -212,7 +223,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         List<String> uploadPaths = fileManageResults.stream()
             .filter(t -> StringUtil.isNotBlank(t.getFileExtend()))
             .filter(t -> {
-                JSONObject jsonObject = JsonUtil.json2bean(t.getFileExtend(), JSONObject.class);
+                JSONObject jsonObject = JsonUtil.json2Bean(t.getFileExtend(), JSONObject.class);
                 if (jsonObject != null) {
                     Integer bigFile = jsonObject.getInteger("isBigFile");
                     return bigFile == null || !bigFile.equals(1);

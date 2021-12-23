@@ -1,6 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.confcenter;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.List;
 import java.util.HashMap;
@@ -82,8 +83,8 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public PagingList<ApplicationListResponseV2> listApplicationWithAuthV2(ApplicationQueryRequestV2 request) {
-        return applicationService.listApplication(request);
+    public PagingList<ApplicationListResponseV2> pageApplicationWithAuth(ApplicationQueryRequestV2 request) {
+        return applicationService.pageApplication(request);
     }
 
     @GetMapping("/application/center/list/dictionary")
@@ -103,7 +104,8 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response<ApplicationVo> getApplicationInfoWithAuth(@ApiParam(name = "id", value = "系统id") @RequestParam String id) {
+    public Response<ApplicationVo> getApplicationInfoWithAuth(
+        @ApiParam(name = "id", value = "系统id") @RequestParam String id) {
         return applicationService.getApplicationInfo(id);
     }
 
@@ -252,7 +254,7 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
         needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
-    public Response updateAppSilenceSwitch(@RequestBody ApplicationVo vo) {
+    public Response UpdateAppSilenceSwitch(@RequestBody ApplicationVo vo) {
         if (vo == null || vo.getSilenceEnable() == null) {
             return Response.fail(FALSE_CODE, "silenceEnable 不能为空");
         }
@@ -279,7 +281,7 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response appConfigReportInfo(@ApiParam(name = "bizType", value = "业务类型") @NotNull Integer bizType,
+    public Response AppConfigReportInfo(@ApiParam(name = "bizType", value = "业务类型") @NotNull Integer bizType,
         @ApiParam(name = "appName", value = "应用名称") String appName) {
         return applicationService.getApplicationReportConfigInfo(bizType, appName);
     }
@@ -295,7 +297,8 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(@Valid ApplicationVisualInfoQueryRequest request) {
+    public Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(
+        @Valid ApplicationVisualInfoQueryRequest request) {
         return applicationService.getApplicationVisualInfo(request);
     }
 
@@ -338,6 +341,7 @@ public class ApplicationController {
         return null;
     }
 
+
     @PostMapping("/application/center/app/gotoActivityInfo")
     @ApiOperation("跳转业务活动详情")
     @AuthVerification(
@@ -350,15 +354,14 @@ public class ApplicationController {
         // todo 有可能要修改
         String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.traceTenantId() + WebPluginUtils.traceEnvCode());
         BusinessLinkManageTableEntity entity = activityService.getActivityByName(key);
-
         boolean isTempActivity = true;
-        if (null != entity) {
+        if (Objects.nonNull(entity)) {
             result.put(entity.getLinkId(), isTempActivity);
         } else {
             entity = activityService.getActivity(request);
             if (null != entity) {
                 result.put(entity.getLinkId(), false);
-            } else {
+            }else {
                 List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
                     request.getApplicationName(), "");
                 if (CollectionUtils.isNotEmpty(applicationEntrances)) {
@@ -377,16 +380,18 @@ public class ApplicationController {
                                     item.getAppName(), item.getRpcType(), item.getExtend()));
                             return applicationEntrancesResponse;
                             // 增加去重
-                        }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(Collectors.toList());
-                    if (CollectionUtils.isNotEmpty(responseList)) {request.setLinkId(responseList.get(0).getValue());}
+                        }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(
+                            Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(responseList)) {
+                        request.setLinkId(responseList.get(0).getValue());
+                    }
                 }
-                request.setActivityName(key);
-                request.setRpcType(request.getRpcType());
-                applicationService.gotoActivityInfo(request);
-                result.put(activityService.getActivityByName(key).getLinkId(), isTempActivity);
             }
+            request.setActivityName(key);
+            request.setRpcType(request.getRpcType());
+            applicationService.gotoActivityInfo(request);
+            result.put(activityService.getActivityByName(key).getLinkId(), isTempActivity);
         }
         return result;
     }
-
 }

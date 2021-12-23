@@ -1,37 +1,39 @@
 package io.shulie.takin.web.biz.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Map;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
+import cn.hutool.core.text.CharSequenceUtil;
+import com.github.pagehelper.util.StringUtil;
+
 import com.pamirs.takin.common.constant.AppConfigSheetEnum;
-import com.pamirs.takin.entity.domain.entity.simplify.TShadowJobConfig;
 import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
-import io.shulie.takin.cloud.common.constants.Constants;
+import com.pamirs.takin.entity.domain.entity.simplify.TShadowJobConfig;
+
+import org.apache.commons.collections4.CollectionUtils;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.common.enums.excel.BooleanEnum;
+import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
+import io.shulie.takin.web.common.util.application.RemoteCallUtils;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
+import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
+import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
+import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
+import io.shulie.takin.web.data.param.application.ApplicationDsCreateParam;
+import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerCreateInput;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.common.enums.excel.BooleanEnum;
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.common.util.application.RemoteCallUtils;
-import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
-import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationDAO;
-import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
-import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
-import io.shulie.takin.web.data.param.application.ApplicationDsCreateParam;
-import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
-import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -243,9 +245,9 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
             AppRemoteCallUpdateParam input = new AppRemoteCallUpdateParam();
             input.setInterfaceName(arrayList.get(0));
             input.setInterfaceType(Integer.valueOf(arrayList.get(1)));
-            input.setServerAppName(arrayList.get(2).equals(Constants.NULL_SIGN) ? "" : arrayList.get(2));
+            input.setServerAppName(arrayList.get(2).equals(CharSequenceUtil.NULL) ? "" : arrayList.get(2));
             input.setType(Integer.valueOf(arrayList.get(3)));
-            input.setMockReturnValue(arrayList.get(4).equals(Constants.NULL_SIGN) ? "" : arrayList.get(4));
+            input.setMockReturnValue(arrayList.get(4).equals(CharSequenceUtil.NULL) ? "" : arrayList.get(4));
             input.setApplicationId(applicationId);
             input.setAppName(applicationDetailResult.getApplicationName());
             input.setTenantId(applicationDetailResult.getTenantId());

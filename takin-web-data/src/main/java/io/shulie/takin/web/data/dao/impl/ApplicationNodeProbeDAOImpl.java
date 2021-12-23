@@ -45,7 +45,7 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO,
             ApplicationNodeProbeResult.class);
     }
 
-    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
+    @CacheEvict(value = CACHE_KEY_AGENT_APPLICATION_NODE, allEntries = true)
     @Override
     public boolean updateById(UpdateOperateResultParam updateOperateResultParam) {
         ApplicationNodeProbeEntity applicationNodeProbeEntity = new ApplicationNodeProbeEntity();
@@ -53,7 +53,7 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO,
         return SqlHelper.retBool(applicationNodeProbeMapper.updateById(applicationNodeProbeEntity));
     }
 
-    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
+    @CacheEvict(value = CACHE_KEY_AGENT_APPLICATION_NODE, allEntries = true)
     @Override
     public boolean create(CreateApplicationNodeProbeParam createApplicationNodeProbeParam) {
         ApplicationNodeProbeEntity applicationNodeProbeEntity = new ApplicationNodeProbeEntity();
@@ -73,7 +73,7 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO,
         return DataTransformUtil.list2list(applicationNodeProbeEntityList, ApplicationNodeProbeResult.class);
     }
 
-    @CacheEvict(value = CACHE_KEY_AGENT_CONFIG, allEntries = true)
+    @CacheEvict(value = CACHE_KEY_AGENT_APPLICATION_NODE, allEntries = true)
     @Override
     public void delByAppNamesAndOperate(Integer operate, List<String> appNames) {
         applicationNodeProbeMapper.delete(this.getLambdaQueryWrapper()

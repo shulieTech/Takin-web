@@ -15,12 +15,14 @@
 
 package io.shulie.takin.web.data.dao.application;
 
-import java.util.Map;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
@@ -43,6 +45,14 @@ import org.apache.ibatis.annotations.Param;
 public interface ApplicationDAO {
 
     List<ApplicationDetailResult> getApplications(List<String> appNames);
+
+    /**
+     * 去amdb, 根据应用名称列表查询
+     *
+     * @param appNames 应用名称列表
+     * @return amdb应用列表
+     */
+    List<ApplicationResult> listAmdbApplicationByAppNames(List<String> appNames);
 
     /**
      * 根据应用查
@@ -368,6 +378,23 @@ public interface ApplicationDAO {
      * @param param 筛选条件
      * @return 应用列表
      */
-    IPage<ApplicationListResult> listByParam(QueryApplicationParam param);
+    IPage<ApplicationListResult> pageByParam(QueryApplicationParam param);
+
+    /**
+     * 同步应用状态时, 分页查询应用列表
+     *
+     * @param pageBaseDTO 分页参数
+     * @return 应用列表
+     */
+    List<ApplicationListResult> pageFromSync(PageBaseDTO pageBaseDTO);
+
+    /**
+     * 根据应用ids, 更新应用状态
+     *
+     * @param applicationIds 应用ids
+     * @param status         状态
+     * @return 是否成功
+     */
+    boolean updateStatusByApplicationIds(Collection<Long> applicationIds, Integer status);
 
 }

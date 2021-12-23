@@ -55,7 +55,4 @@ public interface LockKeyConstants {
      */
     String LOCK_HANDLE_PUSH_APPLICATION_MIDDLEWARE = String.format(LOCK_PREFIX, "HANDLE_PUSH_APPLICATION_MIDDLEWARE:%d");
 
-
-
-
 }

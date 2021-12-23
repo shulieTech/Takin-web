@@ -367,7 +367,7 @@
         where application_name = #{applicationName}
     </select>
 
-    <select id="selectApplicationListByParam"
+    <select id="selectApplicationPageByParam"
             resultType="io.shulie.takin.web.data.result.application.ApplicationListResult">
         SELECT a.APPLICATION_ID application_id, a.APPLICATION_NAME application_name,
                a.UPDATE_TIME update_time, a.ACCESS_STATUS access_status, u.`name` user_name

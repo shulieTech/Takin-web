@@ -19,17 +19,12 @@ import io.shulie.takin.web.biz.pojo.output.application.ShadowServerConfiguration
 import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.AgentUrls;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
-import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
-import io.shulie.takin.web.data.result.application.ApplicationPluginsConfigVO;
-import io.shulie.takin.web.ext.api.user.WebUserExtApi;
-import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -124,14 +119,7 @@ public class AgentPullController {
         @ApiParam(name = "applicationName", value = "系统名字") String applicationName,
         @ApiParam(name = "configKey", value = "配置项key") String configKey
     ) {
-        ApplicationPluginsConfigParam param = new ApplicationPluginsConfigParam();
-        param.setConfigKey(configKey);
-        param.setApplicationName(applicationName);
-        List<ApplicationPluginsConfigVO> list = configService.getListByParam(param);
-        if (list != null && !list.isEmpty()) {
-            return Response.success(list.get(0).getConfigValue());
-        }
-        return Response.success();
+        return Response.success(agentConfigCacheManager.getAppPluginConfig(CommonUtil.generateRedisKey(applicationName,configKey)));
     }
 
     /**

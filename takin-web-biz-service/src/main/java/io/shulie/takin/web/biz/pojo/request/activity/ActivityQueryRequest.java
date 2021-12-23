@@ -23,4 +23,7 @@ public class ActivityQueryRequest extends PagingDevice {
     @ApiModelProperty("是否变更，0正常，1变更")
     @JsonProperty("ischange")
     private Integer isChange;
+
+    @ApiModelProperty(name = "link_level", value = "业务活动等级")
+    private String linkLevel;
 }

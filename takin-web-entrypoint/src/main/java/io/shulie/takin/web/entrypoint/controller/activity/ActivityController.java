@@ -1,5 +1,10 @@
 package io.shulie.takin.web.entrypoint.controller.activity;
 
+import java.util.List;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
@@ -7,7 +12,14 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.annotation.ActivityCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
-import io.shulie.takin.web.biz.pojo.request.activity.*;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
@@ -18,11 +30,15 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindException;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 业务活动
@@ -166,7 +182,7 @@ public class ActivityController {
     @ModuleDef(
         moduleName = BizOpConstants.Modules.LINK_CARDING,
         subModuleName = BizOpConstants.SubModules.BUSINESS_ACTIVITY,
-        logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_ACTIVITY_CREATE
+        logMsgKey = BizOpConstants.Message.MESSAGE_VIRTUAL_BUSINESS_ACTIVITY_CREATE
     )
     @AuthVerification(
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
@@ -177,7 +193,6 @@ public class ActivityController {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_ACTIVITY, request.getActivityName());
         OperationLogContextHolder.addVars(Vars.VIRTUAL_ENTRANCE, request.getVirtualEntrance());
         OperationLogContextHolder.addVars(Vars.ENTRANCE_TYPE, request.getType().getType());
-        OperationLogContextHolder.addVars(Vars.BIND_BUSINESS_ID, request.getBindBusinessId() == null ? "无绑定" : request.getBindBusinessId());
         activityService.createVirtualActivity(request);
     }
 
@@ -186,7 +201,7 @@ public class ActivityController {
     @ModuleDef(
         moduleName = BizOpConstants.Modules.LINK_CARDING,
         subModuleName = BizOpConstants.SubModules.BUSINESS_ACTIVITY,
-        logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_ACTIVITY_UPDATE
+        logMsgKey = BizOpConstants.Message.MESSAGE_VIRTUAL_BUSINESS_ACTIVITY_UPDATE
     )
     @AuthVerification(
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
@@ -197,7 +212,6 @@ public class ActivityController {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_ACTIVITY, request.getActivityName());
         OperationLogContextHolder.addVars(Vars.ENTRANCE_TYPE, request.getType().getType());
         OperationLogContextHolder.addVars(Vars.VIRTUAL_ENTRANCE, request.getVirtualEntrance());
-        OperationLogContextHolder.addVars(Vars.BIND_BUSINESS_ID, request.getBindBusinessId() == null ? "无绑定" : request.getBindBusinessId());
         activityService.updateVirtualActivity(request);
     }
 

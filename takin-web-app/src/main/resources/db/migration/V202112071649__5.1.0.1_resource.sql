@@ -35,3 +35,6 @@ create index idx_role_id
 
 create index idx_user_id
     on t_tro_role_user_relation (user_id);
+
+
+update t_tro_resource set IS_SUPER = 1 where code in('configCenter_middlewareManage','configCenter_bigDataConfig','admins_admin','flowAccount')

@@ -8,12 +8,17 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
+
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,10 +116,11 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                 reportThreadPool.execute(() -> {
                     try {
                         WebPluginUtils.setTraceTenantContext(tenantTask);
-                        boolean ifFinish = reportTaskService.finishReport(reportId, tenantTask);
-                        if (!ifFinish){
-                            removeTaskIfNecessary(tenantTask);
-                        }
+                        reportTaskService.finishReport(reportId, tenantTask);
+                        //boolean ifFinish = reportTaskService.finishReport(reportId, tenantTask);
+                        //if (!ifFinish){
+                        //    removeTaskIfNecessary(tenantTask);
+                        //}
                     } catch (Throwable e) {
                         log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
                     } finally {

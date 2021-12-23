@@ -67,9 +67,9 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                             reportThreadPool.execute(() -> {
                                 try {
                                     boolean ifFinish = reportTaskService.finishReport(reportId,taskDto);
-                                    if (!ifFinish){
-                                        removeTaskIfNecessary(taskDto);
-                                    }
+                                    //if (!ifFinish){
+                                    //    removeTaskIfNecessary(taskDto);
+                                    //}
                                 } catch (Throwable e) {
                                     log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
                                 } finally {

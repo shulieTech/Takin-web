@@ -11,7 +11,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AgentShowStatusEnum {
-    UPGRADE(0, "升级中"),
     NORMAL(1, "正常"),
     ERROR(2,"异常"),
 

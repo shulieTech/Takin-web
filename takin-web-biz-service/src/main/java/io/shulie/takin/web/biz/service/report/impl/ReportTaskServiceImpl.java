@@ -157,8 +157,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     }
 
     private void removeReportKey(Long reportId, TenantCommonExt commonExt) {
-        redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY,0,JSON.toJSONString(new SceneTaskDto(
-            commonExt, reportId)));
+        final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
+        redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY, 0, reportKey);
+        redisTemplate.opsForValue().getOperations().delete(reportKey);
     }
 
     /**

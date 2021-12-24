@@ -66,10 +66,11 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                         if (task == null) {
                             reportThreadPool.execute(() -> {
                                 try {
-                                    boolean ifFinish = reportTaskService.finishReport(reportId,taskDto);
-                                    if (!ifFinish){
-                                        removeTaskIfNecessary(taskDto);
-                                    }
+                                    reportTaskService.finishReport(reportId,taskDto);
+                                    //boolean ifFinish = reportTaskService.finishReport(reportId,taskDto);
+                                    //if (!ifFinish){
+                                    //    removeTaskIfNecessary(taskDto);
+                                    //}
                                 } catch (Throwable e) {
                                     log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
                                 } finally {
@@ -134,12 +135,6 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                     }
                 });
             }
-        }
-    }
-
-    public void removeTaskIfNecessary(SceneTaskDto tenantTask){
-        if (tenantTask.getEndTime()!=null && LocalDateTime.now().compareTo(tenantTask.getEndTime()) > 0){
-            this.removeReportKey(tenantTask.getReportId(),tenantTask);
         }
     }
 }

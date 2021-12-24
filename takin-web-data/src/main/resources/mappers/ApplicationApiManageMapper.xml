@@ -29,11 +29,13 @@
 
     <insert id="insertBatch" parameterType="java.util.List">
         insert into t_application_api_manage ( APPLICATION_NAME,
-        CREATE_TIME, UPDATE_TIME, IS_DELETED,api,method,application_id,user_id,IS_AGENT_REGISTE)
+        CREATE_TIME, UPDATE_TIME, IS_DELETED,api,method,application_id,user_id,IS_AGENT_REGISTE,TENANT_ID,ENV_CODE)
         values
         <foreach collection="list" item="item" index="index" separator=",">
             (
-            #{item.applicationName},#{item.createTime},#{item.updateTime},#{item.isDeleted},#{item.api},#{item.method},#{item.applicationId},#{item.userId},#{item.isAgentRegiste})
+            #{item.applicationName},#{item.createTime},#{item.updateTime},#{item.isDeleted},#{item.api},#{item.method},#{item.applicationId},#{item.userId},
+             #{item.isAgentRegiste}, #{item.tenantId}, #{item.envCode}
+             )
         </foreach>
 
 

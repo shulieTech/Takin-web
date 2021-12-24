@@ -406,13 +406,26 @@ public class LinkTopologyService extends CommonService {
                 // 合并 同一上游 的多条边
                 mergeSameBeforeApp(appProvider);
 
-                // 计算瓶颈t h
-                appProvider.getContainRealAppProvider().stream()
+                List<AppProvider> appProviderList = appProvider.getContainRealAppProvider().stream()
                     // 如果不是初始值，再计算瓶颈
-                    .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT))
+                    .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT)).collect(
+                        Collectors.toList());
+
+                // 批量获取边的瓶颈配置
+                List<String> services =
+                    appProviderList.stream().map(tempAppProvider -> {
+                        String service = tempAppProvider.getOwnerApps() + "#" + tempAppProvider.getServiceName() + "#"
+                            + tempAppProvider.getRpcType();
+                        return service;
+                    }).collect(Collectors.toList());
+                Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap = this.getServiceBottleneckConfig(
+                    services);
+
+                // 计算瓶颈t h
+                appProviderList
                     .forEach(appProviderFromDb -> {
                         // 瓶颈计算 and 落库
-                        computeBottleneck(startTimeUseInInFluxDB, request.getActivityId(), bottleneckConfig,
+                        computeBottleneck(startTimeUseInInFluxDB, request.getActivityId(), bottleneckConfigMap,
                             appProviderFromDb);
                     });
 
@@ -434,6 +447,12 @@ public class LinkTopologyService extends CommonService {
         }
 
         return providerService;
+    }
+
+    public Map<String, List<E2eExceptionConfigInfoExt>> getServiceBottleneckConfig(List<String> services) {
+        return E2ePluginUtils.getBatchExceptionConfig(
+            WebPluginUtils.traceTenantId(),
+            WebPluginUtils.traceEnvCode(), services);
     }
 
     private void mergeSameBeforeApp(AppProvider appProvider) {
@@ -647,7 +666,7 @@ public class LinkTopologyService extends CommonService {
 
     public void computeBottleneck(
         LocalDateTime startTimeUseInInFluxDB, Long activityId,
-        List<E2eExceptionConfigInfoExt> bottleneckConfig, AppProvider appProvider) {
+        Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap, AppProvider appProvider) {
 
         E2eStorageRequest storageRequest = new E2eStorageRequest();
         storageRequest.setRt(appProvider.getServiceAvgRt());
@@ -658,12 +677,7 @@ public class LinkTopologyService extends CommonService {
         //获取接口瓶颈配置
         String service = appProvider.getOwnerApps() + "#" + appProvider.getServiceName() + "#"
             + appProvider.getRpcType();
-        List<E2eExceptionConfigInfoExt> exceptionConfig = E2ePluginUtils.getExceptionConfig(
-            WebPluginUtils.traceTenantId(),
-            WebPluginUtils.traceEnvCode(), service);
-        if (CollectionUtils.isNotEmpty(exceptionConfig)) {
-            bottleneckConfig = exceptionConfig;
-        }
+        List<E2eExceptionConfigInfoExt> bottleneckConfig = bottleneckConfigMap.get(service);
         Map<Integer, Integer> resultMap = E2ePluginUtils.bottleneckCompute(storageRequest, bottleneckConfig);
 
         // 没有瓶颈 则返回
@@ -1027,70 +1041,70 @@ public class LinkTopologyService extends CommonService {
         AtomicLong nextNumber = new AtomicLong();
 
         return applicationEntrancesTopology.getNodes().stream().map(node -> {
-                // other
-                if (NodeTypeGroupEnum.OTHER.getType().equals(node.getNodeTypeGroup())) {
+            // other
+            if (NodeTypeGroupEnum.OTHER.getType().equals(node.getNodeTypeGroup())) {
 
-                    if (isVirtualNode(node)) {
-                        TopologyVirtualNodeResponse nodeResponse = new TopologyVirtualNodeResponse();
-                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                        setVirtualResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                            appNodeMap);
-                        return nodeResponse;
-                    } else if (isOuterService(node)) {
-                        TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
-                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                        setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                            appNodeMap);
-                        return nodeResponse;
-                    } else if (isUnknownNode(node)) {
-                        TopologyUnknownNodeResponse nodeResponse = new TopologyUnknownNodeResponse();
-                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                        setUnknownResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                            appNodeMap);
-                        return nodeResponse;
-                    } else {
-                        TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
-                        setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                        setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
-                            appNodeMap);
-                        return nodeResponse;
-                    }
-
-                    // 能区分类型的
-                } else if (NodeTypeGroupEnum.APP.getType().equals(node.getNodeTypeGroup())) {
-                    TopologyAppNodeResponse nodeResponse = new TopologyAppNodeResponse();
+                if (isVirtualNode(node)) {
+                    TopologyVirtualNodeResponse nodeResponse = new TopologyVirtualNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setAppNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                    setVirtualResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
                         appNodeMap);
                     return nodeResponse;
-                } else if (NodeTypeGroupEnum.OSS.getType().equals(node.getNodeTypeGroup())) {
-                    TopologyOssNodeResponse nodeResponse = new TopologyOssNodeResponse();
+                } else if (isOuterService(node)) {
+                    TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setOssNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                    setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                        appNodeMap);
                     return nodeResponse;
-                } else if (NodeTypeGroupEnum.CACHE.getType().equals(node.getNodeTypeGroup())) {
-                    TopologyCacheNodeResponse nodeResponse = new TopologyCacheNodeResponse();
+                } else if (isUnknownNode(node)) {
+                    TopologyUnknownNodeResponse nodeResponse = new TopologyUnknownNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setCacheNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                    setUnknownResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                        appNodeMap);
                     return nodeResponse;
-                } else if (NodeTypeGroupEnum.DB.getType().equals(node.getNodeTypeGroup())) {
-                    TopologyDbNodeResponse nodeResponse = new TopologyDbNodeResponse();
+                } else {
+                    TopologyOtherNodeResponse nodeResponse = new TopologyOtherNodeResponse();
                     setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setDbNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                    return nodeResponse;
-                } else if (NodeTypeGroupEnum.MQ.getType().equals(node.getNodeTypeGroup())) {
-                    TopologyMqNodeResponse nodeResponse = new TopologyMqNodeResponse();
-                    setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setMqNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
-                    return nodeResponse;
-                } else if (NodeTypeGroupEnum.SEARCH.getType().equals(node.getNodeTypeGroup())) {
-                    TopologySearchNodeResponse nodeResponse = new TopologySearchNodeResponse();
-                    setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
-                    setSearchNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                    setOtherResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                        appNodeMap);
                     return nodeResponse;
                 }
-                return null;
-            })
+
+                // 能区分类型的
+            } else if (NodeTypeGroupEnum.APP.getType().equals(node.getNodeTypeGroup())) {
+                TopologyAppNodeResponse nodeResponse = new TopologyAppNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setAppNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, managerMap,
+                    appNodeMap);
+                return nodeResponse;
+            } else if (NodeTypeGroupEnum.OSS.getType().equals(node.getNodeTypeGroup())) {
+                TopologyOssNodeResponse nodeResponse = new TopologyOssNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setOssNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                return nodeResponse;
+            } else if (NodeTypeGroupEnum.CACHE.getType().equals(node.getNodeTypeGroup())) {
+                TopologyCacheNodeResponse nodeResponse = new TopologyCacheNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setCacheNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                return nodeResponse;
+            } else if (NodeTypeGroupEnum.DB.getType().equals(node.getNodeTypeGroup())) {
+                TopologyDbNodeResponse nodeResponse = new TopologyDbNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setDbNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                return nodeResponse;
+            } else if (NodeTypeGroupEnum.MQ.getType().equals(node.getNodeTypeGroup())) {
+                TopologyMqNodeResponse nodeResponse = new TopologyMqNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setMqNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                return nodeResponse;
+            } else if (NodeTypeGroupEnum.SEARCH.getType().equals(node.getNodeTypeGroup())) {
+                TopologySearchNodeResponse nodeResponse = new TopologySearchNodeResponse();
+                setNodeDefaultResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, nextNumber);
+                setSearchNodeResponse(nodeResponse, node, nodeMap, providerEdgeMap, callEdgeMap, appNodeMap);
+                return nodeResponse;
+            }
+            return null;
+        })
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
@@ -1659,40 +1673,40 @@ public class LinkTopologyService extends CommonService {
         // 所以 页数的个数 是一样的
         // skip 从 0 开始, 0, 1; 2, 3; 4, 5; xxx
         return Stream.iterate(0, f -> f + 1).limit(page).parallel().flatMap(currentPage ->
-                applicationNameList.stream().skip(currentPage * size).limit(size)
-                    .map(applicationName -> {
-                        Map<Integer, Integer> statusAboutCount =
-                            applicationNameAboutStatusCountMap.get(applicationName);
-                        if (statusAboutCount == null) {
-                            return null;
-                        }
+            applicationNameList.stream().skip(currentPage * size).limit(size)
+                .map(applicationName -> {
+                    Map<Integer, Integer> statusAboutCount =
+                        applicationNameAboutStatusCountMap.get(applicationName);
+                    if (statusAboutCount == null) {
+                        return null;
+                    }
 
-                        ExceptionListResponse exception = new ExceptionListResponse();
-                        exception.setTitle(String.format("应用: %s 存在不支持的中间件", applicationName));
-                        exception.setType("应用中间件不支持");
+                    ExceptionListResponse exception = new ExceptionListResponse();
+                    exception.setTitle(String.format("应用: %s 存在不支持的中间件", applicationName));
+                    exception.setType("应用中间件不支持");
 
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("该应用存在 ");
-                        if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()) != null
-                            && statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()) > 0) {
-                            sb.append("<无状态>, ");
-                        }
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("该应用存在 ");
+                    if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()) != null
+                        && statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()) > 0) {
+                        sb.append("<无状态>, ");
+                    }
 
-                        if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.UNKNOWN.getCode()) != null
-                            && statusAboutCount.get(ApplicationMiddlewareStatusEnum.UNKNOWN.getCode()) > 0) {
-                            sb.append("<未知>, ");
-                        }
+                    if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.UNKNOWN.getCode()) != null
+                        && statusAboutCount.get(ApplicationMiddlewareStatusEnum.UNKNOWN.getCode()) > 0) {
+                        sb.append("<未知>, ");
+                    }
 
-                        if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()) != null
-                            && statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()) > 0) {
-                            sb.append("<未支持>, ");
-                        }
+                    if (statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()) != null
+                        && statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()) > 0) {
+                        sb.append("<未支持>, ");
+                    }
 
-                        sb.delete(sb.length() - 2, sb.length());
-                        sb.append("的中间件, 请前往查看");
-                        exception.setSuggest(sb.toString());
-                        return exception;
-                    }).filter(Objects::nonNull).collect(Collectors.toList()).stream())
+                    sb.delete(sb.length() - 2, sb.length());
+                    sb.append("的中间件, 请前往查看");
+                    exception.setSuggest(sb.toString());
+                    return exception;
+                }).filter(Objects::nonNull).collect(Collectors.toList()).stream())
             .collect(Collectors.toList());
     }
 

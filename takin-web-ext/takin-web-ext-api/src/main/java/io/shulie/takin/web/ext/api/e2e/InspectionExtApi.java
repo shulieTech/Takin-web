@@ -29,7 +29,7 @@ public interface InspectionExtApi extends ExtensionPoint {
      * @param service
      * @return
      */
-    Map<String,List<E2eExceptionConfigInfoExt>> getBatchExceptionConfig(Long tenantId,String envCode, String...service);
+    Map<String,List<E2eExceptionConfigInfoExt>> getBatchExceptionConfig(Long tenantId,String envCode, List<String> service);
 
     /**
      * 瓶颈计算

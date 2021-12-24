@@ -41,6 +41,7 @@ import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.ScriptDebugConstants;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
@@ -69,6 +70,7 @@ import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.biz.utils.exception.ScriptDebugExceptionUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.script.CloudPressureStatus;
 import io.shulie.takin.web.common.enums.script.ScriptDebugFailedTypeEnum;
@@ -199,7 +201,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             // 脚本发布实例是否存在
             ScriptManageDeployEntity scriptDeploy = scriptManageDAO.getDeployByDeployId(scriptDeployId);
             ScriptDebugExceptionUtil.isDebugError(scriptDeploy == null, "脚本发布实例不存在!");
-
+            // 操作日志
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCRIPT_MANAGE_DEPLOY_NAME, scriptDeploy.getName());
             // 该脚本发布实例是否有未完成的调试
             ScriptDebugExceptionUtil.isDebugError(scriptDebugDAO.hasUnfinished(scriptDeployId),
                 "该脚本有未完成的调试, 请等待调试结束再进行调试!");
@@ -964,7 +967,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @return 启动后返回的数据
      */
     private SceneTryRunTaskStartResp doDebug(SceneTryRunTaskStartReq debugCloudRequest) {
-        // 启动
+        // 启动前先加上租户
+        debugCloudRequest.setTenantId(WebPluginUtils.traceTenantId());
+        debugCloudRequest.setEnvCode(WebPluginUtils.traceEnvCode());
         log.info("调试 --> 调用 cloud 启动, 入参: {}", JSONUtil.toJsonStr(debugCloudRequest));
         ResponseResult<SceneTryRunTaskStartResp> result = sceneTaskApi.startTryRunTask(debugCloudRequest);
         log.info("调试 --> 调用 cloud 启动, 出参: {}", JSONUtil.toJsonStr(result));

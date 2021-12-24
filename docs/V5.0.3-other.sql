@@ -72,6 +72,7 @@ INSERT IGNORE INTO  `t_config_server` (`id`, `key`, `value`, `tenant_id`, `env_c
 INSERT IGNORE INTO  `t_config_server` (`id`, `key`, `value`, `tenant_id`, `env_code`, `tenant_app_key`, `is_tenant`, `is_global`, `edition`, `gmt_create`, `gmt_update`, `is_deleted`) VALUES (47, 'takin.file.upload.script.path', '/data/nfs_dir/takin/web/script/', -99, 'test', 'default', 0, 1, 6, '2021-10-12 12:01:46', '2021-11-08 19:04:07', 0);
 INSERT IGNORE INTO  `t_config_server` (`id`, `key`, `value`, `tenant_id`, `env_code`, `tenant_app_key`, `is_tenant`, `is_global`, `edition`, `gmt_create`, `gmt_update`, `is_deleted`) VALUES (48, 'takin.data.path', '/data/nfs_dir/', -99, 'test', 'default', 0, 1, 6, '2021-10-12 12:01:46', '2021-11-08 19:04:07', 0);
 INSERT IGNORE INTO  `t_config_server` (`id`, `key`, `value`, `tenant_id`, `env_code`, `tenant_app_key`, `is_tenant`, `is_global`, `edition`, `gmt_create`, `gmt_update`, `is_deleted`) VALUES (49, 'takin.basePath', '/data/nfs_dir/base', -99, 'test', 'default', 0, 1, 6, '2021-10-12 12:01:46', '2021-11-08 19:04:07', 0);
+INSERT IGNORE INTO `t_config_server` (`id`, `key`, `value`, `tenant_id`, `env_code`, `tenant_app_key`, `is_tenant`, `is_global`, `edition`, `gmt_create`, `gmt_update`, `is_deleted`) VALUES (50, 'per.tenant.allow.task.threads.max', '1', -99, 'test', 'default', 1, 1, 2, '2021-12-03 18:22:46', NULL, 0);
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

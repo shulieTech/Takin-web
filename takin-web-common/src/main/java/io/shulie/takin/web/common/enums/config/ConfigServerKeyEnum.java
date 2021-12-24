@@ -109,6 +109,11 @@ public enum ConfigServerKeyEnum implements AppConstants {
     AGENT_HTTP_UPDATE_VERSION("agent.http.update.version", "agent.http.update.version", YES),
 
     /**
+     * 每个租户在定时任务中允许执行的最大线程数
+     */
+    PER_TENANT_ALLOW_TASK_THREADS_MAX("", "per.tenant.allow.task.threads.max", YES),
+
+    /**
      * 压测引擎上传时间间隔 单位毫秒
      */
     TAKIN_PRESSURE_MACHINE_UPLOAD_INTERVAL_TIME("pressure.machine.upload.interval.time",
@@ -249,6 +254,22 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 钉钉推送 url
      */
     TAKIN_LOGIN_DING_DING_PUSH_URL("login.dingding.push.url", "takin.login.dingding.push.url", NO),
+
+    /**
+     * 试用用户的默认流量
+     */
+    TAKIN_ASSET_BALANCE_DEFAULT_TRY("", "takin.asset.balance.default.try", NO),
+
+    /**
+     * 正式用户的默认流量
+     */
+    TAKIN_ASSET_BALANCE_DEFAULT_FORMAL("", "takin.asset.balance.default.formal", NO),
+
+    /**
+     * 创建租户默认的密码
+     */
+    TAKIN_TENANT_DEFAULT_PASSWORD("", "takin.tenant.default.password", YES),
+
     ;
 
     /**

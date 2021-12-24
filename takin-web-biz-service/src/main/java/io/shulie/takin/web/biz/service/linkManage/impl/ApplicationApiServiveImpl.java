@@ -105,6 +105,8 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                             manage.setApplicationId(applicationDetailResult.getApplicationId());
                             manage.setUserId(applicationDetailResult.getUserId());
                             manage.setIsAgentRegiste(1);
+                            manage.setTenantId(WebPluginUtils.traceTenantId());
+                            manage.setEnvCode(WebPluginUtils.traceEnvCode());
                             batch.add(manage);
                         }
 
@@ -119,6 +121,8 @@ public class ApplicationApiServiveImpl implements ApplicationApiService {
                         manage.setApplicationId(applicationDetailResult.getApplicationId());
                         manage.setUserId(applicationDetailResult.getUserId());
                         manage.setIsAgentRegiste(1);
+                        manage.setTenantId(WebPluginUtils.traceTenantId());
+                        manage.setEnvCode(WebPluginUtils.traceEnvCode());
                         batch.add(manage);
                     }
 

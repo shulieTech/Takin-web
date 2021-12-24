@@ -13,7 +13,8 @@
         UPDATE cur_upgrade_batch = #{curUpgradeBatch},
             status = #{status},
             agent_error_info = #{agentErrorInfo},
-            simulator_error_info = #{simulatorErrorInfo}
+            simulator_error_info = #{simulatorErrorInfo},
+            gmt_update = now()
     </insert>
 
     <delete id="selfDelete">

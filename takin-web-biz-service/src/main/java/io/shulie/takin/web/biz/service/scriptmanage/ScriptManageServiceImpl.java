@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
@@ -88,7 +87,6 @@ import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
 import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
 import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
 import io.shulie.takin.web.biz.utils.exception.ScriptManageExceptionUtil;
-import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.common.constant.FileManageConstant;
@@ -142,6 +140,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -157,6 +156,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
      * 文件上传到 cloud 的地址
      * 就是 takin cloud 域名
      */
+    @Value("${takin.cloud.url}")
     private String fileUploadUrl;
 
     @Autowired
@@ -201,13 +201,6 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     @Autowired
     private SceneLinkRelateDAO sceneLinkRelateDAO;
 
-    @PostConstruct
-    public void init() {
-        fileUploadUrl = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_URL);
-    }
-
-
-
     @Override
     public String getZipFileUrl(Long scriptDeployId) {
         ScriptManageDeployResult scriptManageDeployResult = scriptManageDAO.selectScriptManageDeployById(
@@ -226,7 +219,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         List<String> uploadPaths = fileManageResults.stream()
             .filter(t -> StringUtil.isNotBlank(t.getFileExtend()))
             .filter(t -> {
-                JSONObject jsonObject = JsonUtil.json2bean(t.getFileExtend(), JSONObject.class);
+                JSONObject jsonObject = JsonUtil.json2Bean(t.getFileExtend(), JSONObject.class);
                 if (jsonObject != null) {
                     Integer bigFile = jsonObject.getInteger("isBigFile");
                     if (bigFile != null && bigFile.equals(1)) {

@@ -179,7 +179,7 @@ public class ThreadPoolConfig {
             new ThreadPoolExecutor.AbortPolicy());
     }
 
-    @Bean("asynExecuteScriptThreadPool")
+    @Bean("asyncExecuteScriptThreadPool")
     public Executor myAsync() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         //核心线程数
@@ -307,4 +307,19 @@ public class ThreadPoolConfig {
         return new ThreadPoolExecutor(coreSize, coreSize * 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100),
             nameThreadFactory, new ThreadPoolExecutor.DiscardPolicy());
     }
+    /**
+     * 用于spring session，防止每次创建一个线程
+     * @return
+     */
+    @Bean
+    public ThreadPoolTaskExecutor springSessionRedisTaskExecutor() {
+        ThreadPoolTaskExecutor springSessionRedisTaskExecutor = new ThreadPoolTaskExecutor();
+        springSessionRedisTaskExecutor.setCorePoolSize(8);
+        springSessionRedisTaskExecutor.setMaxPoolSize(16);
+        springSessionRedisTaskExecutor.setKeepAliveSeconds(10);
+        springSessionRedisTaskExecutor.setQueueCapacity(1000);
+        springSessionRedisTaskExecutor.setThreadNamePrefix("Spring session redis executor thread: ");
+        return springSessionRedisTaskExecutor;
+    }
+
 }

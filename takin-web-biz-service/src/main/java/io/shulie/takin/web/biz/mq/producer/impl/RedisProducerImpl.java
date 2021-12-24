@@ -21,7 +21,7 @@ public class RedisProducerImpl implements Producer {
     @Qualifier("redisTemplate")
     private RedisTemplate redis;
 
-    @Async
+    @Async("asyncExecuteScriptThreadPool")
     @Override
     public void produce(MessageDTO messageDTO) {
         // 向某个通道 参数1 推送一条消息 参数2

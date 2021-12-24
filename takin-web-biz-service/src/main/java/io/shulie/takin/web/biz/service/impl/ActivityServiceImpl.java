@@ -140,7 +140,7 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void createActivityWithoutAMDB(ActivityCreateRequest request) {
+    public Long createActivityWithoutAMDB(ActivityCreateRequest request) {
         // 检查业务活动是否能入库
         checkActivity(request);
         ActivityCreateParam createParam = new ActivityCreateParam();
@@ -161,7 +161,7 @@ public class ActivityServiceImpl implements ActivityService {
             ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
                 request.getRpcType()));
         createParam.setPersistence(request.isPersistence());
-        activityDAO.createActivity(createParam);
+        return activityDAO.createActivity(createParam);
     }
 
     /**
@@ -415,6 +415,7 @@ public class ActivityServiceImpl implements ActivityService {
         param.setActivityName(request.getActivityName());
         param.setDomain(request.getDomain());
         param.setIsChange(request.getIsChange());
+        param.setLinkLevel(request.getLinkLevel());
         param.setCurrent(request.getCurrent());
         param.setPageSize(request.getPageSize());
         WebPluginUtils.fillQueryParam(param);
@@ -753,6 +754,10 @@ public class ActivityServiceImpl implements ActivityService {
             taskFlowDebugStartReq.setUserId(user.getId());
             taskFlowDebugStartReq.setUserName(user.getName());
         }
+        //设置租户
+        taskFlowDebugStartReq.setEnvCode(WebPluginUtils.traceEnvCode());
+        taskFlowDebugStartReq.setTenantId(WebPluginUtils.traceTenantId());
+
         log.info("流量验证参数：{}", taskFlowDebugStartReq);
         Long startResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
         log.info("流量验证发起结果：{}", startResult.toString());
@@ -822,15 +827,16 @@ public class ActivityServiceImpl implements ActivityService {
     public BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request) {
         String entrance = ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(),
             request.getServiceName(), request.getRpcType());
-        List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(request.getApplicationName(),
+        List<Map<String, String>> serviceList = activityDAO.findActivityByServiceName(request.getApplicationName(),
             entrance);
         if (CollectionUtils.isEmpty(serviceList)) {
             return null;
         }
         BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
-        Map linkNameAndId = serviceList.get(0);
-        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkId").toString()));
-        businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName").toString());
+        Map activityMap = serviceList.get(0);
+        businessLinkManageTableEntity.setLinkId(Long.parseLong(activityMap.get("linkId").toString()));
+        businessLinkManageTableEntity.setLinkName(activityMap.get("linkName").toString());
+        businessLinkManageTableEntity.setPersistence(Objects.equals(activityMap.get("persistence").toString(), "1"));
         return businessLinkManageTableEntity;
     }
 

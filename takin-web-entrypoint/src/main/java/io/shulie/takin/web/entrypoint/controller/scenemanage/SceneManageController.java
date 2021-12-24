@@ -101,7 +101,7 @@ public class SceneManageController {
         ResponseResult<SceneManageWrapperResp> oldData = sceneManageService.detailScene(sceneVO.getId());
 
         // 数据转换一下...
-        SceneManageWrapperDTO oldSceneData = JsonUtil.json2bean(JsonUtil.bean2Json(oldData.getData()),
+        SceneManageWrapperDTO oldSceneData = JsonUtil.json2Bean(JsonUtil.bean2Json(oldData.getData()),
             SceneManageWrapperDTO.class);
         // 场景名称
         String sceneName = Optional.ofNullable(sceneVO.getPressureTestSceneName())

@@ -24,4 +24,9 @@ public class ApplicationListResult {
 
     private Integer accessStatus;
 
+    /**
+     * 节点数量
+     */
+    private Integer nodeNum;
+
 }

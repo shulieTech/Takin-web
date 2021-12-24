@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -80,8 +81,8 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public PagingList<ApplicationListResponseV2> listApplicationWithAuthV2(ApplicationQueryRequestV2 request) {
-        return applicationService.listApplication(request);
+    public PagingList<ApplicationListResponseV2> pageApplicationWithAuth(ApplicationQueryRequestV2 request) {
+        return applicationService.pageApplication(request);
     }
 
     @GetMapping("/application/center/list/dictionary")
@@ -101,7 +102,8 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response<ApplicationVo> getApplicationInfoWithAuth(@ApiParam(name = "id", value = "系统id") @RequestParam String id) {
+    public Response<ApplicationVo> getApplicationInfoWithAuth(
+        @ApiParam(name = "id", value = "系统id") @RequestParam String id) {
         return applicationService.getApplicationInfo(id);
     }
 
@@ -115,6 +117,7 @@ public class ApplicationController {
 
     /**
      * 新增应用接口
+     *
      * @param vo
      * @return
      */
@@ -241,30 +244,30 @@ public class ApplicationController {
     @ApiOperation("编辑静默开关接口")
     @PutMapping("/application/center/app/switch/silence")
     @ModuleDef(
-            moduleName = BizOpConstants.Modules.CONFIG_CENTER,
-            subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
-            logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
+        moduleName = BizOpConstants.Modules.CONFIG_CENTER,
+        subModuleName = BizOpConstants.SubModules.PRESSURE_CONFIG_SWITCH,
+        logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SWITCH_ACTION
     )
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
-            needAuth = ActionTypeEnum.ENABLE_DISABLE
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
+        needAuth = ActionTypeEnum.ENABLE_DISABLE
     )
     public Response UpdateAppSilenceSwitch(@RequestBody ApplicationVo vo) {
-        if (vo == null || vo.getSilenceEnable()== null) {
+        if (vo == null || vo.getSilenceEnable() == null) {
             return Response.fail(FALSE_CODE, "silenceEnable 不能为空");
         }
         OperationLogContextHolder.operationType(
-                vo.getSilenceEnable() ? BizOpConstants.OpTypes.OPEN : BizOpConstants.OpTypes.CLOSE);
+            vo.getSilenceEnable() ? BizOpConstants.OpTypes.OPEN : BizOpConstants.OpTypes.CLOSE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION,
-                vo.getSilenceEnable() ? BizOpConstants.OpTypes.OPEN : BizOpConstants.OpTypes.CLOSE);
+            vo.getSilenceEnable() ? BizOpConstants.OpTypes.OPEN : BizOpConstants.OpTypes.CLOSE);
         return applicationService.userAppSilenceSwitch(null, vo.getSilenceEnable());
     }
 
     @ApiOperation("获取静默开关状态接口")
     @GetMapping("/application/center/app/switch/silence")
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
-            needAuth = ActionTypeEnum.QUERY
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
+        needAuth = ActionTypeEnum.QUERY
     )
     public Response AppSilenceSwitch() {
         return applicationService.userAppSilenceSwitchInfo();
@@ -273,14 +276,13 @@ public class ApplicationController {
     @ApiOperation("按租户查询上报数据接口")
     @GetMapping("/application/center/app/report/config/info")
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
-            needAuth = ActionTypeEnum.QUERY
+        moduleCode = BizOpConstants.ModuleCode.CONFIG_CENTER,
+        needAuth = ActionTypeEnum.QUERY
     )
     public Response AppConfigReportInfo(@ApiParam(name = "bizType", value = "业务类型") @NotNull Integer bizType,
-                                        @ApiParam(name = "appName", value = "应用名称") String appName) {
-        return applicationService.getApplicationReportConfigInfo(bizType,appName);
+        @ApiParam(name = "appName", value = "应用名称") String appName) {
+        return applicationService.getApplicationReportConfigInfo(bizType, appName);
     }
-
 
     /**
      * 应用监控查询接口
@@ -290,18 +292,19 @@ public class ApplicationController {
     @GetMapping("/application/center/app/monitorDetailes")
     @ApiOperation("应用监控查询接口")
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-            needAuth = ActionTypeEnum.QUERY
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
     )
-    public Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(@Valid ApplicationVisualInfoQueryRequest request) {
+    public Response<List<ApplicationVisualInfoResponse>> getApplicationVisualInfo(
+        @Valid ApplicationVisualInfoQueryRequest request) {
         return applicationService.getApplicationVisualInfo(request);
     }
 
     @GetMapping("/application/center/app/activityList")
     @ApiOperation("关联业务活动")
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-            needAuth = ActionTypeEnum.QUERY
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.QUERY
     )
     public Response getApplicationActivityList(@Valid ApplicationVisualInfoQueryRequest request) {
         Response<List<ApplicationVisualInfoResponse>> response = applicationService.getApplicationVisualInfo(request);
@@ -311,7 +314,7 @@ public class ApplicationController {
             ArrayList<Map.Entry> activityList = new ArrayList<>();
             if (null != allActiveIdAndName && !allActiveIdAndName.isEmpty()) {
                 Set<Map.Entry> set = allActiveIdAndName.entrySet();
-                set.forEach(entry->activityList.add(entry));
+                set.forEach(entry -> activityList.add(entry));
             }
             return Response.success(activityList);
         }
@@ -326,8 +329,8 @@ public class ApplicationController {
     @PostMapping("/application/center/app/attendService")
     @ApiOperation("关注应用服务接口")
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-            needAuth = ActionTypeEnum.CREATE
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.CREATE
     )
     public void attendApplicationService(@RequestBody ApplicationVisualInfoQueryRequest request) throws Exception {
         if (null == request.getAttend()) {
@@ -339,53 +342,49 @@ public class ApplicationController {
     @PostMapping("/application/center/app/gotoActivityInfo")
     @ApiOperation("跳转业务活动详情")
     @AuthVerification(
-            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-            needAuth = ActionTypeEnum.CREATE
+        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+        needAuth = ActionTypeEnum.CREATE
     )
     public Map gotoActivityInfo(@Validated @RequestBody ActivityCreateRequest request) throws Exception {
         HashMap result = new HashMap();
-        //业务活动名称模糊搜索
-        // todo 有可能要修改
-        String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.traceTenantId() + WebPluginUtils.traceEnvCode());
-        BusinessLinkManageTableEntity entity = activityService.getActivityByName(key);
-
+        String key = MD5Tool.getMD5(
+            request.getApplicationName() + request.getLabel() + WebPluginUtils.traceTenantId() + WebPluginUtils
+                .traceEnvCode());
+        BusinessLinkManageTableEntity entity = activityService.getActivity(request);
         boolean isTempActivity = true;
-        if (null != entity) {
+        if (Objects.nonNull(entity)) {
+            isTempActivity = !entity.isPersistence();
             result.put(entity.getLinkId(), isTempActivity);
         } else {
-            entity = activityService.getActivity(request);
-            if (null != entity) {
-                result.put(entity.getLinkId(), false);
-            } else {
-                List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                        request.getApplicationName(), "");
-                if (CollectionUtils.isNotEmpty(applicationEntrances)) {
-                    List<ApplicationEntrancesResponse> responseList = applicationEntrances.stream()
-                            .filter(item -> !item.getServiceName().startsWith("PT_"))
-                            .map(item -> {
-                                ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
-                                applicationEntrancesResponse.setMethod(item.getMethodName());
-                                applicationEntrancesResponse.setRpcType(item.getRpcType());
-                                applicationEntrancesResponse.setExtend(item.getExtend());
-                                applicationEntrancesResponse.setServiceName(item.getServiceName());
-                                applicationEntrancesResponse.setLabel(
-                                        ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
-                                applicationEntrancesResponse.setValue(
-                                        ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
-                                                item.getAppName(), item.getRpcType(), item.getExtend()));
-                                return applicationEntrancesResponse;
-                                // 增加去重
-                            }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(Collectors.toList());
-                    if (CollectionUtils.isNotEmpty(responseList))
+            List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
+                request.getApplicationName(), "");
+            if (CollectionUtils.isNotEmpty(applicationEntrances)) {
+                List<ApplicationEntrancesResponse> responseList = applicationEntrances.stream()
+                    .filter(item -> !item.getServiceName().startsWith("PT_"))
+                    .map(item -> {
+                        ApplicationEntrancesResponse applicationEntrancesResponse = new ApplicationEntrancesResponse();
+                        applicationEntrancesResponse.setMethod(item.getMethodName());
+                        applicationEntrancesResponse.setRpcType(item.getRpcType());
+                        applicationEntrancesResponse.setExtend(item.getExtend());
+                        applicationEntrancesResponse.setServiceName(item.getServiceName());
+                        applicationEntrancesResponse.setLabel(
+                            ActivityUtil.serviceNameLabel(item.getServiceName(), item.getMethodName()));
+                        applicationEntrancesResponse.setValue(
+                            ActivityUtil.createLinkId(item.getServiceName(), item.getMethodName(),
+                                item.getAppName(), item.getRpcType(), item.getExtend()));
+                        return applicationEntrancesResponse;
+                        // 增加去重
+                    }).distinct().filter(item -> item.getLabel().equals(request.getLabel())).collect(
+                        Collectors.toList());
+                if (CollectionUtils.isNotEmpty(responseList)) {
                     request.setLinkId(responseList.get(0).getValue());
                 }
-                request.setActivityName(key);
-                request.setRpcType(request.getRpcType());
-                applicationService.gotoActivityInfo(request);
-                result.put(activityService.getActivityByName(key).getLinkId(), isTempActivity);
             }
+            request.setActivityName(key);
+            request.setRpcType(request.getRpcType());
+            applicationService.gotoActivityInfo(request);
+            result.put(request.getLinkId(), isTempActivity);
         }
         return result;
     }
-
 }

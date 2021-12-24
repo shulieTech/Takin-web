@@ -165,14 +165,6 @@ public interface ApplicationService {
     void modifyAccessStatus(String id, Integer accessStatus, String exceptionInfo);
 
     /**
-     * 修改应用状态（无需鉴权）
-     *
-     * @param applicationIds -
-     * @param accessStatus   -
-     */
-    void modifyAccessStatusWithoutAuth(List<Long> applicationIds, Integer accessStatus);
-
-    /**
      * 获取应用
      *
      * @return
@@ -301,7 +293,7 @@ public interface ApplicationService {
      * @param request 请求入参
      * @return 应用列表
      */
-    PagingList<ApplicationListResponseV2> listApplication(ApplicationQueryRequestV2 request);
+    PagingList<ApplicationListResponseV2> pageApplication(ApplicationQueryRequestV2 request);
 
     PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest request);
 

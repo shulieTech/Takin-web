@@ -399,7 +399,6 @@ public class LinkTopologyService extends CommonService {
 
         List<AppProviderInfo> providerService = node.getProviderService();
         for (AppProviderInfo appProviderInfo : providerService) {
-
             for (AppProvider appProvider : appProviderInfo.getDataSource()) {
                 // 对服务包含的每条边，填充指标数据
                 fillMetrixFromDB(request, startMilli, endMilli, realSeconds, metricsType, appProvider);
@@ -418,8 +417,10 @@ public class LinkTopologyService extends CommonService {
                     });
 
                 // 计算出每条真实边的指标后，再计算平均指标，用来对节点的某一服务赋值, 当开关打开时，在拓扑图中展示
+                // 一个API（这个API有多个上游）的平均指标
                 fillNodeServiceMetrics(appProvider);
 
+                //一个节点下所有API指标保存到集合中
                 allAppProviderServiceList.add(appProvider);
                 appProvider.setBeforeAppsMap(null);
             }
@@ -1325,6 +1326,7 @@ public class LinkTopologyService extends CommonService {
         Map<String, List<LinkEdgeDTO>> providerEdgeMap, Map<String, List<LinkEdgeDTO>> callEdgeMap,
         Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         // 本服务调用的边
+        // (应该是本节点)
         List<LinkEdgeDTO> callEdges = callEdgeMap.get(node.getNodeId());
         if (CollectionUtils.isEmpty(callEdges)) {
             return Lists.newArrayList();
@@ -1334,7 +1336,7 @@ public class LinkTopologyService extends CommonService {
         return getCallInfo(nodeMap, excludeMqNodeWithEdge, appNodeMap);
     }
 
-    private List<AppCallInfo> getCallInfo(Map<String, LinkNodeDTO> nodeMap,
+    public List<AppCallInfo> getCallInfo(Map<String, LinkNodeDTO> nodeMap,
         Map<String, List<LinkEdgeDTO>> excludeMqNodeWithEdge,
         Map<String, List<ApplicationNodeDTO>> appNodeMap) {
         return excludeMqNodeWithEdge.entrySet().stream().map(entry -> {

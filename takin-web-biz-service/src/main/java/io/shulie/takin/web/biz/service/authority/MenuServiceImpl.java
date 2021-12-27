@@ -88,7 +88,9 @@ public class MenuServiceImpl implements MenuService {
 
     private void fillMenu(List<MenuResponseExt> responseExts, Map<String, Boolean> menuAuth) {
         for(MenuResponseExt ext :responseExts) {
-            menuAuth.put(ext.getKey(),true);
+            if(StringUtils.isNotBlank(ext.getKey())) {
+                menuAuth.put(ext.getKey(),true);
+            }
             if(CollectionUtils.isNotEmpty(ext.getChildren())) {
                 fillMenu(ext.getChildren(),menuAuth);
             }

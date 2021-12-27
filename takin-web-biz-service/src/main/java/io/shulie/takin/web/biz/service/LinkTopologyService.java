@@ -1,12 +1,9 @@
 package io.shulie.takin.web.biz.service;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -235,13 +232,6 @@ public class LinkTopologyService extends CommonService {
             总Tps / 总Rt
         */
 
-        // 查询 瓶颈阈值 配置
-        List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
-        if (WebPluginUtils.checkUserPlugin() && E2ePluginUtils.checkE2ePlugin()) {
-            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId(),
-                WebPluginUtils.traceEnvCode());
-        }
-
         // 查询 该业务活动 的所有开关状态
         List<ActivityNodeState> dbActivityNodeServiceState = activityService.getActivityNodeServiceState(
             request.getActivityId());
@@ -258,15 +248,21 @@ public class LinkTopologyService extends CommonService {
         String response1 = "";
         response1 = getString(request, rootNode, response1, reduceEdges, allNodes);
 
+        // 批量查询瓶颈配置
+        Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap = this.getBatchExceptionConfig(allNodes);
+
+        // 批量查询指标数据
+        Map<String, JSONObject> metricsMap = queryBatchMetricsFromAMDB(startMilliUseInInFluxDB, endMilliUseInInFluxDB,
+            metricsType, this.getAllEagleIds(allNodes));
+
         for (AbstractTopologyNodeResponse node : allNodes) {
             // 填充 节点服务的 总调用量 / 总成功率 / 总Tps / 总Rt
             TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
             if (appnode.getProviderService() != null) {
                 List<AppProviderInfo> appProviderInfos =
                     fillAppNodeServiceSuccessRateAndRt(
-                        request, appnode, startTimeUseInInFluxDB, endTimeUseInInFluxDB, startMilliUseInInFluxDB,
-                        endMilliUseInInFluxDB, metricsType, bottleneckConfig,
-                        dbActivityNodeServiceState, response1);
+                        request, appnode, startTimeUseInInFluxDB, bottleneckConfigMap,
+                        dbActivityNodeServiceState, response1, metricsMap);
 
                 // 设置 拓扑图中节点上显示哪一个服务性能指标
                 setTopologyNodeServiceMetrics(node, appProviderInfos);
@@ -295,6 +291,68 @@ public class LinkTopologyService extends CommonService {
         }
         int loopCounter = 0;
         setMainEdge(reduceEdges, rootNode.getId(), loopCounter);
+    }
+
+    /**
+     * 获取拓扑图中所有节点-所有服务-所有真实边的瓶颈配置
+     *
+     * @param allNodes
+     * @return
+     */
+    private Map<String, List<E2eExceptionConfigInfoExt>> getBatchExceptionConfig(
+        List<AbstractTopologyNodeResponse> allNodes) {
+        List<String> allNodeService = new ArrayList<>();
+        for (AbstractTopologyNodeResponse node : allNodes) {
+            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
+            if (appnode.getProviderService() != null) {
+                List<AppProviderInfo> providerService = node.getProviderService();
+                for (AppProviderInfo appProviderInfo : providerService) {
+                    for (AppProvider appProvider : appProviderInfo.getDataSource()) {
+                        List<AppProvider> appProviderList = new ArrayList<>(appProvider.getContainRealAppProvider());
+                        // 批量获取边的瓶颈配置
+                        List<String> services =
+                            appProviderList.stream().map(tempAppProvider -> {
+                                String service = tempAppProvider.getOwnerApps() + "#" + tempAppProvider.getServiceName()
+                                    + "#"
+                                    + tempAppProvider.getRpcType();
+                                return service;
+                            }).collect(Collectors.toList());
+                        if (CollectionUtils.isNotEmpty(services)) {
+                            allNodeService.addAll(services);
+                        }
+                    }
+                }
+            }
+        }
+        return this.doGetServiceExceptionConfig(
+            allNodeService);
+    }
+
+    /**
+     * 获取拓扑图中所有边ID
+     *
+     * @param allNodes
+     * @return
+     */
+    private List<String> getAllEagleIds(List<AbstractTopologyNodeResponse> allNodes) {
+        List<String> allEagleIds = new ArrayList<>();
+        for (AbstractTopologyNodeResponse node : allNodes) {
+            TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
+            if (appnode.getProviderService() != null) {
+                List<AppProviderInfo> providerService = node.getProviderService();
+                for (AppProviderInfo appProviderInfo : providerService) {
+                    for (AppProvider appProvider : appProviderInfo.getDataSource()) {
+                        List<String> eagleIds = appProvider.getContainEdgeList().stream().map(LinkEdgeDTO::getEagleId)
+                            .collect(
+                                Collectors.toList());
+                        if (CollectionUtils.isNotEmpty(eagleIds)) {
+                            allEagleIds.addAll(eagleIds);
+                        }
+                    }
+                }
+            }
+        }
+        return allEagleIds;
     }
 
     private String getString(ActivityInfoQueryRequest request, AbstractTopologyNodeResponse rootNode, String response1,
@@ -334,8 +392,6 @@ public class LinkTopologyService extends CommonService {
                                     .startTime(startTime)
                                     .endTime(endTime)
                                     .timeGap(request.getTimeGap())
-                                    .tenantAppKey(WebPluginUtils.traceTenantAppKey())
-                                    .envCode(WebPluginUtils.traceEnvCode())
                                     .build();
 
                                 response1 = applicationEntranceClient.queryMetricsFromAMDB1(query1);
@@ -444,9 +500,8 @@ public class LinkTopologyService extends CommonService {
 
     private List<AppProviderInfo> fillAppNodeServiceSuccessRateAndRt(
         ActivityInfoQueryRequest request, TopologyAppNodeResponse node,
-        LocalDateTime startTimeUseInInFluxDB, LocalDateTime endTimeUseInInFluxDB, long startMilli, long endMilli,
-        Boolean metricsType, List<E2eExceptionConfigInfoExt> bottleneckConfig,
-        List<ActivityNodeState> dbActivityNodeServiceState, String response1) {
+        LocalDateTime startTimeUseInInFluxDB, Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap,
+        List<ActivityNodeState> dbActivityNodeServiceState, String response1, Map<String, JSONObject> metricsMap) {
 
         // 节点 所有有服务，包含 不同的中间件，不同的 serviceMethod
         List<AppProvider> allAppProviderServiceList = new ArrayList<>();
@@ -455,29 +510,15 @@ public class LinkTopologyService extends CommonService {
         for (AppProviderInfo appProviderInfo : providerService) {
             for (AppProvider appProvider : appProviderInfo.getDataSource()) {
                 // 对服务包含的每条边，填充指标数据
-                fillMetrixFromAMDB(request, startMilli, endMilli, metricsType, appProvider, response1);
+                fillMetrixFromAMDB(request, appProvider, response1, metricsMap);
 
                 // 合并 同一上游 的多条边
                 mergeSameBeforeApp(appProvider);
 
                 // 计算瓶颈
-                List<AppProvider> appProviderList = appProvider.getContainRealAppProvider().stream()
+                appProvider.getContainRealAppProvider().stream()
                     // 如果不是初始值，再计算瓶颈
-                    .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT)).collect(
-                        Collectors.toList());
-
-                // 批量获取边的瓶颈配置
-                List<String> services =
-                    appProviderList.stream().map(tempAppProvider -> {
-                        String service = tempAppProvider.getOwnerApps() + "#" + tempAppProvider.getServiceName() + "#"
-                            + tempAppProvider.getRpcType();
-                        return service;
-                    }).collect(Collectors.toList());
-                Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap = this.getServiceBottleneckConfig(
-                    services);
-
-                // 计算瓶颈t h
-                appProviderList
+                    .filter(appProviderFromDb -> !appProviderFromDb.getServiceAllTotalCount().equals(INIT))
                     .forEach(appProviderFromDb -> {
                         // 瓶颈计算 and 落库
                         computeBottleneck(startTimeUseInInFluxDB, request.getActivityId(), bottleneckConfigMap,
@@ -504,7 +545,7 @@ public class LinkTopologyService extends CommonService {
         return providerService;
     }
 
-    public Map<String, List<E2eExceptionConfigInfoExt>> getServiceBottleneckConfig(List<String> services) {
+    public Map<String, List<E2eExceptionConfigInfoExt>> doGetServiceExceptionConfig(List<String> services) {
         return E2ePluginUtils.getBatchExceptionConfig(
             WebPluginUtils.traceTenantId(),
             WebPluginUtils.traceEnvCode(), services);
@@ -528,29 +569,26 @@ public class LinkTopologyService extends CommonService {
         appProvider.setContainRealAppProvider(new ArrayList(appProviderHashMap.values()));
     }
 
-    private void fillMetrixFromAMDB(ActivityInfoQueryRequest request, long startMilli, long endMilli,
-        Boolean metricsType, AppProvider appProvider, String response1) {
+    private void fillMetrixFromAMDB(ActivityInfoQueryRequest request, AppProvider appProvider, String response1,
+        Map<String, JSONObject> metricsMap) {
         appProvider.setContainRealAppProvider(new ArrayList<>());
 
         HashMap<String, Boolean> isContainSame = new HashMap<>();
-
-        List<String> eagleIds = appProvider.getContainEdgeList().stream().map(LinkEdgeDTO::getEagleId).collect(
-            Collectors.toList());
-        Map<String, JSONObject> metricsMap = queryBatchMetricsFromAMDB(startMilli, endMilli, metricsType, eagleIds);
         for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
             String eagleId = linkEdgeDTO.getEagleId();
             String beforeApps = appProvider.getBeforeAppsMap().get(linkEdgeDTO.getSourceId());
 
             // 根据服务边，查询指标
-            AppProvider appProviderFromDb;
+            AppProvider appProviderFromDb = new AppProvider();
             if (request.isTempActivity()) {
                 // 应用管理->服务监控  查询 临时业务活动时 使用
                 appProviderFromDb = queryTempMetricsFromAMDB(response1, isContainSame, beforeApps,
                     appProvider.getOwnerApps(), appProvider.getMiddlewareName(), appProvider.getServiceName(), request);
             } else {
-                appProviderFromDb = queryMetricsFromAMDB(metricsMap.get(eagleId));
+                if (metricsMap.containsKey(eagleId)) {
+                    appProviderFromDb = queryMetricsFromAMDB(metricsMap.get(eagleId));
+                }
             }
-
             appProviderFromDb.setBeforeApps(beforeApps);
             appProviderFromDb.setOwnerApps(appProvider.getOwnerApps());
             appProviderFromDb.setEagleId(eagleId);
@@ -855,8 +893,6 @@ public class LinkTopologyService extends CommonService {
         AppProvider appProvider = getAppProvider(realSeconds, allTotalTpsAndRtCountResults);
         return appProvider;
     }
-
-
 
     private Map<String, JSONObject> queryBatchMetricsFromAMDB(Long startMilli, Long endMilli,
         Boolean metricsType, List<String> eagleIds) {

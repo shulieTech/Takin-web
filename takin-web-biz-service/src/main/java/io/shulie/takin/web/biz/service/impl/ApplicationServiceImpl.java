@@ -1306,7 +1306,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return service;
         }).collect(Collectors.toList());
         Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap = linkTopologyService
-            .getServiceBottleneckConfig(services);
+            .doGetServiceExceptionConfig(services);
 
         infoDTOList.stream().forEach(dto -> {
             ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(dto, startTime, endTime,

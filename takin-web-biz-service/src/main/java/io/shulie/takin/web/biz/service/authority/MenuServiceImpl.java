@@ -1,21 +1,23 @@
 package io.shulie.takin.web.biz.service.authority;
 
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
-import cn.hutool.core.util.StrUtil;
-import org.springframework.stereotype.Service;
-import io.shulie.takin.web.ext.entity.MenuResponseExt;
+import com.google.common.collect.Maps;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
+import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.biz.service.BaseConfigService;
 import io.shulie.takin.web.ext.api.auth.WebMenuAuthExtApi;
-import io.shulie.takin.plugin.framework.core.PluginManager;
+import io.shulie.takin.web.ext.entity.MenuResponseExt;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 /**
  * 菜单服务
@@ -41,7 +43,7 @@ public class MenuServiceImpl implements MenuService {
         // 从数据库获取菜单项配置
         TBaseConfig allMenu = baseConfigService.queryByConfigCode("ALL_MENU");
         // 数据库配置项的校验
-        if (allMenu == null || StrUtil.isBlank(allMenu.getConfigValue())) {return new ArrayList<>(0);}
+        if (allMenu == null || StringUtils.isBlank(allMenu.getConfigValue())) {return new ArrayList<>(0);}
         // 配置项进行实体转换
         else {return JSON.parseArray(allMenu.getConfigValue(), MenuResponseExt.class);}
     }
@@ -75,12 +77,22 @@ public class MenuServiceImpl implements MenuService {
         WebMenuAuthExtApi menuAuthExtApi = pluginManager.getExtension(WebMenuAuthExtApi.class);
         //      如果没有拓展插件，则默认返回数据库配置的全部菜单项
         if (menuAuthExtApi == null) {
-            return this.queryUserMenuList().stream().map(MenuResponseExt::getKey)
-                .distinct().filter(StrUtil::isNotBlank)
-                .collect(Collectors.toMap(t -> t, c -> true));
+            Map<String,Boolean> menuAuth = Maps.newHashMap();
+            List<MenuResponseExt> responseExts = this.queryUserMenuList();
+            fillMenu(responseExts,menuAuth);
+            return menuAuth;
         }
         //      通过拓展插件对数据库配置的菜单项进行筛选
         else {return menuAuthExtApi.queryUserMenuKeys();}
+    }
+
+    private void fillMenu(List<MenuResponseExt> responseExts, Map<String, Boolean> menuAuth) {
+        for(MenuResponseExt ext :responseExts) {
+            menuAuth.put(ext.getKey(),true);
+            if(CollectionUtils.isNotEmpty(ext.getChildren())) {
+                fillMenu(ext.getChildren(),menuAuth);
+            }
+        }
     }
 
     /**
@@ -93,7 +105,7 @@ public class MenuServiceImpl implements MenuService {
         // 从数据库获取按钮项配置
         TBaseConfig allMenu = baseConfigService.queryByConfigCode("ALL_BUTTON");
         // 数据库配置项的校验
-        if (allMenu == null || StrUtil.isBlank(allMenu.getConfigValue())) {return new ArrayList<>(0);}
+        if (allMenu == null || StringUtils.isBlank(allMenu.getConfigValue())) {return new ArrayList<>(0);}
         // 配置项进行实体转换
         else {return JSON.parseArray(allMenu.getConfigValue(), String.class);}
     }

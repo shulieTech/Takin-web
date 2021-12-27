@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.result.baseserver;
 
 
+import lombok.Builder;
 import lombok.Data;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
@@ -9,6 +10,7 @@ import java.time.Instant;
 
 @Data
 @Measurement(name = "trace_metrics")
+@Builder
 public class TraceMetricsResult {
     @Column(name = "time")
     private Instant time;

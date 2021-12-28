@@ -27,6 +27,24 @@
     mock_response_time, mock_return_value, TENANT_ID,ENV_CODE, USER_ID, IS_DELETED, gmt_create,
     gmt_modified,manual_tag
   </sql>
+    <update id="updateWithOutTenant">
+        update t_app_remote_call
+        <set>
+            <trim prefix="md5=case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.md5 !=null">
+                        when id=#{item.id} then #{item.md5}
+                    </if>
+                </foreach>
+                else '0'
+            </trim>
+        </set>
+        where id in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+
+    </update>
     <select id="getListWithOutTenant" resultType="io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity">
         select * from t_app_remote_call
     </select>

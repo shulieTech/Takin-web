@@ -17,4 +17,11 @@ public interface AppRemoteCallMapper extends BaseMapper<AppRemoteCallEntity> {
      */
     @InterceptorIgnore(tenantLine = "true")
     List<AppRemoteCallEntity> getListWithOutTenant();
+
+    /**
+     * 订正修改
+     * @return
+     */
+    @InterceptorIgnore(tenantLine = "true")
+    void updateWithOutTenant(List<AppRemoteCallEntity> entities);
 }

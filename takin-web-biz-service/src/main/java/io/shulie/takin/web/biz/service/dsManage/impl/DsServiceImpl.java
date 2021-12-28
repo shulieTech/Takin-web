@@ -467,7 +467,12 @@ public class DsServiceImpl implements DsService {
         response.addAll(oldResponseList.stream().map(this::v1Build).collect(Collectors.toList()));
 
         // 补充权限
-        response.forEach(WebPluginUtils::fillQueryResponse);
+        response.forEach(r -> {
+            WebPluginUtils.fillQueryResponse(r);
+            if(r.getSource() == 1) {
+                r.setCanRemove(false);
+            }
+        });
 
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());

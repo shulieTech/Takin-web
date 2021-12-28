@@ -130,6 +130,11 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     }
 
     @Override
+    public List<AppRemoteCallEntity> getListWithOutTenant() {
+       return this.getBaseMapper().getListWithOutTenant();
+    }
+
+    @Override
     public List<String> getRemoteCallMd5(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getAppRemoteCallEntityLambdaQueryWrapper(param);
         lambdaQueryWrapper.select(AppRemoteCallEntity::getMd5);

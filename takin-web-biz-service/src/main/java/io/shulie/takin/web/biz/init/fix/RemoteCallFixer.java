@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
-import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
-import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,8 +45,7 @@ public class RemoteCallFixer {
         if(!fixData) {
             log.info("无需订正远程调用数据");
         }
-        AppRemoteCallQueryParam param = new AppRemoteCallQueryParam();
-        List<AppRemoteCallResult> list = appRemoteCallDAO.getList(param);
+        List<AppRemoteCallEntity> list = appRemoteCallDAO.getListWithOutTenant();
         // 大规模数据修复
         List<AppRemoteCallEntity> entities = list.stream()
             .map(e -> {

@@ -9,6 +9,7 @@ resource:
     host: 192.168.1.151
     port: 8086
 
+fix.remote.call.data: true
 
 amdb:
   out:

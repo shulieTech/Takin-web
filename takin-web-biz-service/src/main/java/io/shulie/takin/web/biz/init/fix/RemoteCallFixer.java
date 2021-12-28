@@ -84,9 +84,7 @@ public class RemoteCallFixer {
 
         // 去除重复的
         AppRemoteCallQueryParam queryParam = new AppRemoteCallQueryParam();
-        List<AppRemoteCallResult> callResults = appRemoteCallDAO.getList(queryParam);
-        List<String> buildRemoteCallIds = callResults.stream().map(t ->
-                RemoteCallUtils.buildRemoteCallName(t.getAppName(), t.getInterfaceName(), t.getInterfaceType())).collect(Collectors.toList());
+        List<String> buildRemoteCallMd5s = appRemoteCallDAO.getRemoteCallMd5(queryParam);
 
         List<AppRemoteCallCreateParam> params = whitelistResults.stream().map(result -> {
             AppRemoteCallCreateParam createParam = new AppRemoteCallCreateParam();
@@ -101,7 +99,6 @@ public class RemoteCallFixer {
             createParam.setIsSynchronize(true);
             List<ApplicationDetailResult> detailResults = appMap.get(result.getApplicationId());
             if (CollectionUtils.isNotEmpty(detailResults)) {
-                // todo 存在多个
                 ApplicationDetailResult detailResult = detailResults.get(0);
                 createParam.setTenantId(detailResult.getTenantId());
                 createParam.setAppName(detailResult.getApplicationName());
@@ -117,7 +114,7 @@ public class RemoteCallFixer {
             return createParam;
         }).filter(t -> {
             String appNameRemoteCallId = RemoteCallUtils.buildRemoteCallName(t.getAppName(), t.getInterfaceName(), t.getInterfaceType());
-            return StringUtils.isNotBlank(t.getAppName()) && !buildRemoteCallIds.contains(appNameRemoteCallId);
+            return StringUtils.isNotBlank(t.getAppName()) && !buildRemoteCallMd5s.contains(appNameRemoteCallId);
         }).collect(Collectors.toList());
         appRemoteCallDAO.batchInsert(params);
     }

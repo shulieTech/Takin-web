@@ -85,6 +85,10 @@ public class AppRemoteCallVO extends AuthQueryResponseCommonExt {
     private String interfaceChildType;
 
     private String remark;
+    /**
+     * 应用名，接口名称，接口类型，租户id,环境code求md5
+     */
+    private String md5;
 
     public AppRemoteCallVO() {}
 

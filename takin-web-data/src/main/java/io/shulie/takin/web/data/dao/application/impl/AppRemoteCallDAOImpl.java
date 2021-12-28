@@ -130,6 +130,18 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     }
 
     @Override
+    public List<String> getRemoteCallMd5(AppRemoteCallQueryParam param) {
+        LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getAppRemoteCallEntityLambdaQueryWrapper(param);
+        lambdaQueryWrapper.select(AppRemoteCallEntity::getMd5);
+        List<AppRemoteCallEntity> entities = this.list(lambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(entities)) {
+            return Lists.newArrayList();
+        }
+        return entities.stream().map(AppRemoteCallEntity::getMd5).collect(Collectors.toList());
+
+    }
+
+    @Override
     public PagingList<AppRemoteCallResult> pagingList(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getAppRemoteCallEntityLambdaQueryWrapper(param);
         Page<AppRemoteCallEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());

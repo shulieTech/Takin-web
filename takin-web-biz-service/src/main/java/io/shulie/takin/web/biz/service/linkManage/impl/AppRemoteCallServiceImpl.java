@@ -546,11 +546,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         serverAppNameQuery.setQueryTye("0");
         PagingList<ApplicationRemoteCallDTO> serverAppNamePage = applicationClient.listApplicationRemoteCalls(serverAppNameQuery);
         List<ApplicationRemoteCallDTO> serverAppNames = serverAppNamePage.getList();
-        Map<String, List<ApplicationRemoteCallDTO>> serverAppNamesMap = serverAppNames.stream()
-            .collect(Collectors.groupingBy(call -> RemoteCallUtils.buildRemoteCallName(call.getUpAppName(),
+        return serverAppNames.stream().collect(Collectors.groupingBy(call -> RemoteCallUtils.buildRemoteCallName(call.getUpAppName(),
                 RemoteCallUtils.getInterfaceNameByRpcName(call.getMiddlewareName(), call.getServiceName(), call.getMethodName()),
                 call.getRpcType())));
-        return serverAppNamesMap;
     }
 
     /**
@@ -569,6 +567,15 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     @Override
     public void deleteByApplicationIds(List<Long> applicationIds) {
         appRemoteCallDAO.deleteByApplicationIds(applicationIds);
+    }
+
+    /**
+     * 查询md5值
+     * @param param
+     * @return
+     */
+    private List<String> queryRemoteAppMd5(AppRemoteCallQueryParam param) {
+        return appRemoteCallDAO.getRemoteCallMd5(param);
     }
 
     private List<AppRemoteCallResult> queryAsyncIfNecessary(AppRemoteCallQueryParam param) {
@@ -641,6 +648,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             }else{
                 listVO.setInterfaceChildType(call.getMiddlewareDetail());
             }
+            // 求md5
+            listVO.setMd5(RemoteCallUtils.buildRemoteCallName(listVO.getAppName(),listVO.getInterfaceName(),listVO.getInterfaceType()));
             return listVO;
         }).collect(Collectors.toList());
     }
@@ -656,11 +665,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         // 获取本地远程调用 数据
         AppRemoteCallQueryParam queryParam = new AppRemoteCallQueryParam();
         queryParam.setApplicationIds(apps.stream().map(ApplicationDetailResult::getApplicationId).collect(Collectors.toList()));
-        List<AppRemoteCallResult> callResults = this.queryAsyncIfNecessary(queryParam);
-        List<String> appNameRemoteCallIds = callResults.stream().map(result -> {
-            // 应用名
-            return RemoteCallUtils.buildRemoteCallName(result.getAppName(), result.getInterfaceName(), result.getInterfaceType());
-        }).collect(Collectors.toList());
+        List<String> appNameRemoteCallMd5s = this.queryRemoteAppMd5(queryParam);
 
         Map<String, List<ApplicationDetailResult>> appMap = apps.stream().collect(Collectors.groupingBy(ApplicationDetailResult::getApplicationName));
 
@@ -674,18 +679,17 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             BeanUtils.copyProperties(vo, param);
             List<ApplicationDetailResult> results = appMap.get(vo.getAppName());
             if (CollectionUtils.isNotEmpty(results)) {
-                // todo 存在多个
                 ApplicationDetailResult result = results.get(0);
                 param.setApplicationId(result.getApplicationId());
                 param.setTenantId(result.getTenantId());
                 param.setAppName(result.getApplicationName());
                 param.setUserId(result.getUserId());
+                param.setMd5(vo.getMd5());
                 // 补充服务应用
-                String appNameRemoteCallId = RemoteCallUtils.buildRemoteCallName(result.getApplicationName(), vo.getInterfaceName(), vo.getInterfaceType());
-                if(appNameRemoteCallIds.contains(appNameRemoteCallId)) {
+                if(appNameRemoteCallMd5s.contains(param.getMd5())) {
                     continue;
                 }
-                List<ApplicationRemoteCallDTO> callDTOS = serverAppNamesMap.get(appNameRemoteCallId);
+                List<ApplicationRemoteCallDTO> callDTOS = serverAppNamesMap.get(param.getMd5());
                 if (CollectionUtils.isNotEmpty(callDTOS)) {
                     param.setServerAppName(callDTOS.stream().map(ApplicationRemoteCallDTO::getAppName).collect(Collectors.joining(",")));
                 }
@@ -744,19 +748,15 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         // 租户传参
         WebPluginUtils.transferTenantParam(input,param);
 
-        List<AppRemoteCallResult> results = this.queryAsyncIfNecessary(param);
-        List<String> appNameRemoteCallIds = results.stream().map(result -> {
-            // 应用名
-            return RemoteCallUtils.buildRemoteCallName(result.getAppName(), result.getInterfaceName(), result.getInterfaceType());
-        }).collect(Collectors.toList());
+        List<String> appNameRemoteCallMd5s = this.queryRemoteAppMd5(param);
 
         List<AppRemoteCallListVO> outputs = calls.getList().stream()
             .filter(call -> {
-                String appNameRemoteCallId = RemoteCallUtils.buildRemoteCallName(call.getAppName(),
+                String appNameRemoteCallMd5 = RemoteCallUtils.buildRemoteCallName(call.getAppName(),
                     RemoteCallUtils.getInterfaceNameByRpcName(call.getMiddlewareName(), call.getServiceName(), call.getMethodName()),
                     getInterfaceType(call.getMiddlewareName(), voList));
                 // 从AMDB加载过来的白名单，过滤掉类型不支持的远程调用--20210303 CYF
-                return (appNameRemoteCallIds.stream().noneMatch(e -> e.equals(appNameRemoteCallId))) && (!"-1".equals(call.getRpcType()));
+                return (appNameRemoteCallMd5s.stream().noneMatch(e -> e.equals(appNameRemoteCallMd5))) && (!"-1".equals(call.getRpcType()));
             })
             .map(call -> {
                 AppRemoteCallListVO listVO = new AppRemoteCallListVO();
@@ -775,6 +775,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 }else{
                     listVO.setInterfaceChildType(call.getMiddlewareDetail());
                 }
+                listVO.setMd5(RemoteCallUtils.buildRemoteCallName(listVO.getAppName(),listVO.getInterfaceName(),listVO.getInterfaceType()));
                 // 权限问题
                 fillInPermissions(listVO, detailResult);
                 return listVO;

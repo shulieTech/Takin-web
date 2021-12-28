@@ -10,4 +10,5 @@ import lombok.Data;
 @Data
 public class BusinessLinkManageQueryParam extends AuthQueryParamCommonExt {
     private String bussinessActiveName;
+    private Boolean persistence;
 }

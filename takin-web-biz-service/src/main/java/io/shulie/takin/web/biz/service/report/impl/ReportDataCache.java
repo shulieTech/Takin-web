@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -239,7 +240,7 @@ public class ReportDataCache {
             metrices.setTime(Long.valueOf(entry.getKey().toString()));
             metrices.setAvgTps(Double.valueOf(entry.getValue().toString()));
             return metrices;
-        }).collect(Collectors.toList());
+        }).sorted(Comparator.comparing(Metrices::getTime)).collect(Collectors.toList());
     }
 
     /**

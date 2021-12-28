@@ -1,12 +1,12 @@
 package io.shulie.takin.web.biz.service.fastagentaccess;
 
-import java.io.File;
-import java.util.List;
-
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentVersionQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentVersionListResponse;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * agent版本管理(AgentVersion)service
@@ -98,4 +98,5 @@ public interface AgentVersionService {
      * @return File
      */
     File getInstallScript(String projectName, String version, String urlPrefix);
+
 }

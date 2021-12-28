@@ -59,6 +59,7 @@ import io.shulie.takin.web.data.util.ConfigServerHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -85,6 +86,7 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
     /**
      * 上传文件的路径
      */
+    @Value("${takin.data.path}")
     private String dataPath;
 
     @Resource(type = MiddlewareSummaryService.class)
@@ -110,11 +112,6 @@ public class MiddlewareJarServiceImpl extends ServiceImpl<MiddlewareJarMapper, M
 
     private static final String EXACT_MATCH = "100%精确匹配";
     private static final String PREFIX_TWO_MATCH = "前两位匹配到已支持版本";
-
-    @PostConstruct
-    public void init() {
-        dataPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH);
-    }
 
     @Override
     public void appCompare(List<CompareApplicationMiddlewareDTO> compareApplicationMiddlewareList) {

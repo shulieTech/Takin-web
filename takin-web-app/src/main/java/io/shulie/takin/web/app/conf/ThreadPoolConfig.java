@@ -1,6 +1,11 @@
 package io.shulie.takin.web.app.conf;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -160,7 +165,6 @@ public class ThreadPoolConfig {
             new ThreadPoolExecutor.AbortPolicy());
     }
 
-
     @Bean(name = "agentDataThreadPool")
     public ThreadPoolExecutor agentDataTaskExecutor() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("agentdata-thread-%d").build();
@@ -235,6 +239,7 @@ public class ThreadPoolConfig {
 
     /**
      * 数据查询分片线程池
+     *
      * @return
      */
     @Bean(name = "queryAsyncThreadPool")
@@ -264,6 +269,44 @@ public class ThreadPoolConfig {
             new ArrayBlockingQueue<>(e2eQueueSize), nameThreadFactory, new ThreadPoolExecutor.AbortPolicy());
     }
 
+
+    /**
+     * 定义单线程线程池
+     *
+     * @return
+     */
+    @Bean(name = "agentAggregationThreadPool")
+    public ThreadPoolExecutor agentAggregationThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("agent-aggregation-%d").build();
+        return new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100),
+            nameThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 中间件文件解析线程池
+     *
+     * @return
+     */
+    @Bean(name = "middlewareResolverThreadPool")
+    public ThreadPoolExecutor middlewareResolverThreadPool() {
+        final int coreSize = Runtime.getRuntime().availableProcessors();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("middleware-resolver-%d").build();
+        return new ThreadPoolExecutor(coreSize, coreSize * 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100),
+            nameThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * agent心跳命令处理线程池
+     *
+     * @return
+     */
+    @Bean(name = "agentHeartbeatThreadPool")
+    public ThreadPoolExecutor agentHeartbeatThreadPool() {
+        final int coreSize = Runtime.getRuntime().availableProcessors();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("agent-heartbeat-%d").build();
+        return new ThreadPoolExecutor(coreSize, coreSize * 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100),
+            nameThreadFactory, new ThreadPoolExecutor.DiscardPolicy());
+    }
     /**
      * 用于spring session，防止每次创建一个线程
      * @return

@@ -183,4 +183,57 @@ public class TagManageDAOImpl implements TagManageDAO {
         }
         return null;
     }
+
+    /**
+     * 新增tag
+     *
+     * @param tagManageParams
+     * @return
+     */
+    @Override
+    public List<TagManageResult> addTags(List<TagManageParam> tagManageParams) {
+        List<TagManageResult> tags = new ArrayList<>();
+        for (TagManageParam tagManageParam : tagManageParams) {
+            TagManageResult result = new TagManageResult();
+            result.setTagName(tagManageParam.getTagName());
+            List<TagManageEntity> tagManageList = getByTagNameAndTagType(tagManageParam.getTagName(),tagManageParam.getTagType());
+            if (CollectionUtils.isNotEmpty(tagManageList)) {
+                result.setId(tagManageList.get(0).getId());
+                tags.add(result);
+                continue;
+            }
+            TagManageEntity tagManageEntity = new TagManageEntity();
+            BeanUtils.copyProperties(tagManageParam, tagManageEntity);
+            tagManageMapper.insert(tagManageEntity);
+            result.setId(tagManageEntity.getId());
+
+            tags.add(result);
+        }
+        return tags;
+    }
+
+    /**
+     * 根据name和类型批量查询数据源标签
+     *
+     * @param tagNames
+     * @param type
+     * @return
+     */
+    @Override
+    public List<TagManageResult> selectDataSourceTagsByNamesAndType(List<String> tagNames, Integer type) {
+        LambdaQueryWrapper<TagManageEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(TagManageEntity::getTagName, tagNames)
+                .eq(TagManageEntity::getTagStatus, 0)
+                .eq(TagManageEntity::getTagType,type);
+        List<TagManageEntity> tagManageEntityList = tagManageMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(tagManageEntityList)) {
+            return Collections.emptyList();
+        }
+        return tagManageEntityList.stream().map(tagManageEntity -> {
+            TagManageResult tagManageResult = new TagManageResult();
+            tagManageResult.setId(tagManageEntity.getId());
+            tagManageResult.setTagName(tagManageEntity.getTagName());
+            return tagManageResult;
+        }).collect(Collectors.toList());
+    }
 }

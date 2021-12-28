@@ -1,6 +1,6 @@
 package io.shulie.takin.web.biz.design.probe;
 
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
+import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;

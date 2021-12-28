@@ -50,7 +50,7 @@ import net.sf.jsqlparser.statement.update.Update;
 @Slf4j
 public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor {
 
-    private String[] tableArrWithoutTenantId=new String[]{
+    private String[] tableArrWithoutTenantId = new String[] {
         "t_third_party",
         "t_dictionary_type",
         "t_tc_sequence",
@@ -70,10 +70,13 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_middleware_summary",
         "t_agent_plugin",
         "t_middleware_jar",
-        "t_agent_plugin_lib_support"
+        "t_agent_plugin_lib_support",
+        "t_plugin_library",
+        "t_plugin_dependent",
+        "t_plugin_tenant_ref"
     };
 
-    private String[] tableArrWithoutEnvCode=new String[]{
+    private String[] tableArrWithoutEnvCode = new String[] {
         "t_third_party",
         "t_tro_user",
         "t_tro_dept",
@@ -96,10 +99,13 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_middleware_summary",
         "t_agent_plugin",
         "t_middleware_jar",
-        "t_agent_plugin_lib_support"
+        "t_agent_plugin_lib_support",
+        "t_plugin_library",
+        "t_plugin_dependent",
+        "t_plugin_tenant_ref"
     };
 
-    private String[] tableArrWithoutUserId =new String[]{
+    private String[] tableArrWithoutUserId = new String[] {
         "t_third_party",
         "t_tro_user",
         "t_tro_dept",
@@ -122,7 +128,10 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_middleware_summary",
         "t_agent_plugin",
         "t_middleware_jar",
-        "t_agent_plugin_lib_support"
+        "t_agent_plugin_lib_support",
+        "t_plugin_library",
+        "t_plugin_dependent",
+        "t_plugin_tenant_ref"
     };
 
     /**
@@ -152,9 +161,9 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
      */
     @Override
     protected Expression builderExpression(Expression currentExpression, Table table) {
-        AndExpression tenantExpression = this.buildTenantExpression(table,currentExpression);
+        AndExpression tenantExpression = this.buildTenantExpression(table, currentExpression);
         // 没有租户的
-        if(tenantExpression == null) {
+        if (tenantExpression == null) {
             return currentExpression;
         }
         if (currentExpression == null) {
@@ -174,9 +183,9 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     @Override
     protected BinaryExpression andExpression(Table table, Expression where) {
         //获得where条件表达式
-        AndExpression tenantExpression = this.buildTenantExpression(table,where);
+        AndExpression tenantExpression = this.buildTenantExpression(table, where);
 
-        if(tenantExpression == null) {
+        if (tenantExpression == null) {
             EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
             if (null != where) {
                 if (where instanceof OrExpression) {
@@ -185,7 +194,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
                     return new AndExpression(equalsTo, where);
                 }
             }
-           return equalsTo;
+            return equalsTo;
         }
         if (null != where) {
             if (where instanceof OrExpression) {
@@ -375,7 +384,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         return new Column(column.toString());
     }
 
-    private AndExpression buildTenantExpression(Table table,Expression where) {
+    private AndExpression buildTenantExpression(Table table, Expression where) {
         // 已经存在
         String tenantIdColumn = tenantLineHandler.getTenantIdColumn();
         String envCodeColumn = tenantLineHandler.getEnvCodeColumn();
@@ -387,27 +396,25 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             tenantIdCondition.setRightExpression(tenantLineHandler.getTenantId());
         }
         EqualsTo envCodeCondition = null;
-        if(!tenantLineHandler.ignoreSearch(where, envCodeColumn) &&  !tableWithoutEnvCode.contains(table.getName())) {
+        if (!tenantLineHandler.ignoreSearch(where, envCodeColumn) && !tableWithoutEnvCode.contains(table.getName())) {
             envCodeCondition = new EqualsTo();
             envCodeCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getEnvCodeColumn()));
             envCodeCondition.setRightExpression(tenantLineHandler.getEnvCode());
         }
 
-
-
-        if(tenantIdCondition == null && envCodeCondition == null) {
+        if (tenantIdCondition == null && envCodeCondition == null) {
             return null;
         }
         // 1 = 1
-        EqualsTo equalsTo = new EqualsTo(new LongValue(1),new LongValue(1));
+        EqualsTo equalsTo = new EqualsTo(new LongValue(1), new LongValue(1));
 
         //AndExpression allAndExpression = null;
         AndExpression tenantExpression = null;
-        if(tenantIdCondition != null && envCodeCondition != null) {
+        if (tenantIdCondition != null && envCodeCondition != null) {
             tenantExpression = new AndExpression(tenantIdCondition, envCodeCondition);
-        }else if(tenantIdCondition != null) {
+        } else if (tenantIdCondition != null) {
             // t_tro_user 只有 tenant_id
-            tenantExpression =  new AndExpression(equalsTo, tenantIdCondition);
+            tenantExpression = new AndExpression(equalsTo, tenantIdCondition);
         }
 
         return tenantExpression;

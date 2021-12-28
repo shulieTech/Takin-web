@@ -1,12 +1,9 @@
 package io.shulie.takin.web.app;
 
-import java.io.IOException;
-
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.NonNullApi;
 
 /**
  * @author 张天赐

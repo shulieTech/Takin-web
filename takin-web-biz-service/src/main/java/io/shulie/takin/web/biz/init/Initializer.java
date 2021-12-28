@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.init;
 
 import io.shulie.takin.web.biz.init.fix.BlacklistDataFixer;
 import io.shulie.takin.web.biz.init.fix.LinkManageFixer;
+import io.shulie.takin.web.biz.init.fix.RemoteCallFixer;
 import io.shulie.takin.web.biz.init.fix.WhitelistDataFixer;
 import io.shulie.takin.web.biz.init.fix.WhitelistEffectAppNameDataFixer;
 import io.shulie.takin.web.biz.init.sync.ConfigSynchronizer;
@@ -42,6 +43,8 @@ public class Initializer implements InitializingBean {
 
     @Autowired
     OpsScriptManageService opsScriptManageService;
+    @Autowired
+    private RemoteCallFixer remoteCallFixer;
 
     /**
      * 所有项目启动需要做的事情都统一注册在这里
@@ -60,7 +63,7 @@ public class Initializer implements InitializingBean {
         new Thread(() -> whitelistDataFixer.fix()).start();
         //插件管理->给老版本的应用设置默认影子key过期时间
         new Thread(() -> configService.init()).start();
-        // 白名单数据迁移
-        //new Thread(() -> remoteCallFixer.fix()).start();
+        // 白名单修复
+        new Thread(() -> remoteCallFixer.fix()).start();
     }
 }

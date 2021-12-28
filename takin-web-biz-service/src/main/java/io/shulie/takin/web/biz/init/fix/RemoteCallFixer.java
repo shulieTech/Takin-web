@@ -44,7 +44,7 @@ public class RemoteCallFixer {
     @Value("${fix.remote.call.data:false}")
     private Boolean fixData;
     public void fix() {
-        if(fixData) {
+        if(!fixData) {
             log.info("无需订正远程调用数据");
         }
         AppRemoteCallQueryParam param = new AppRemoteCallQueryParam();

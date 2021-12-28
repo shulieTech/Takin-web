@@ -56,6 +56,6 @@ public class RemoteCallFixer {
                 entity.setMd5(MD5Util.getMD5(data));
                 return entity;
             }).collect(Collectors.toList());
-        appRemoteCallDAO.updateBatchById(entities);
+        appRemoteCallDAO.updateWithOutTenant(entities);
     }
 }

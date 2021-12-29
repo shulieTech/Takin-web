@@ -135,6 +135,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     @Override
     public List<AppRemoteCallResult> getList(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getAppRemoteCallEntityLambdaQueryWrapper(param);
+        lambdaQueryWrapper.eq(AppRemoteCallEntity::getIsDeleted,false);
         List<AppRemoteCallEntity> entities = this.list(lambdaQueryWrapper);
         return getAppRemoteCallResults(entities);
     }

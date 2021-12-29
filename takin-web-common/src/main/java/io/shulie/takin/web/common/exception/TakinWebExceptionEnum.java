@@ -61,6 +61,8 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP1_ERROR("0308-" + ErrorConstant.THIRD_PARTY_ERROR, "查询临时业务活动指标step1"),
     APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP2_ERROR("0309-" + ErrorConstant.THIRD_PARTY_ERROR, "查询临时业务活动指标step2"),
     APPLICATION_MANAGE_NO_EXIST_ERROR("0308-" + ErrorConstant.VALIDATE_ERROR, "应用不存在"),
+    APPLICATION_QUERY_METRICS_ERROR("0310-" + ErrorConstant.THIRD_PARTY_ERROR, "业务活动查询指标"),
+
     /**
      * agent
      */

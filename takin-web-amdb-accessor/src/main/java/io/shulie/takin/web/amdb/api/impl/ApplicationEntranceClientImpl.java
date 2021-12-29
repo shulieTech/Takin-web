@@ -48,7 +48,6 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP1 = "/amdb/db/api/metrics/entranceFromChickHouse";
     public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP2 = "/amdb/db/api/metrics/metricFromChickHouse";
     public static final String QUERY_METRICS = "/amdb/db/api/metrics/metricFromInfluxdb";
-    public static final String QUERY_BATCH_METRICS = "/amdb/db/api/traceMetric/nodeMetrics";
 
 
     @Autowired
@@ -149,7 +148,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 
     @Override
     public List<JSONObject> queryBatchMetrics(BatchNodeMetricsQueryDTO batchNodeMetricsQueryDTO) {
-        String url = properties.getUrl().getAmdb() + QUERY_BATCH_METRICS;
+        String url = properties.getUrl().getAmdb() + QUERY_METRICS;
 
         try {
             AmdbResult<List<JSONObject>> amdbResponse = AmdbHelper.builder().url(url)

@@ -465,6 +465,11 @@ public class DsServiceImpl implements DsService {
         response.addAll(caches.stream().map(this::cacheBuild).collect(Collectors.toList()));
         response.addAll(dbs.stream().map(this::dbBuild).collect(Collectors.toList()));
         response.addAll(oldResponseList.stream().map(this::v1Build).collect(Collectors.toList()));
+        response.forEach(r -> {
+            if(r.getIsManual() != null && !r.getIsManual()) {
+                r.setCanRemove(false);
+            }
+        });
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
         return Response.success(response);

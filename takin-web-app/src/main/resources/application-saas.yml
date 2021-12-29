@@ -24,7 +24,7 @@ data.path: /
 takin.config.zk.url: 192.168.1.154:2181,192.168.1.154:2181,192.168.1.154:2181
 spring:
   datasource:
-    password: shulie#Poy6Y8
+    password: shulie@2020
   config:
     whiteListPath: /Users/hezhongqi/shulie
 #  flyway:

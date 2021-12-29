@@ -48,7 +48,8 @@ public class AgentApplicationNodeController {
             dataType = "string", paramType = "query")
     })
     @GetMapping("operate")
-    @Cacheable(CacheConstants.CACHE_KEY_AGENT_APPLICATION_NODE)
+    @Cacheable(value = CacheConstants.CACHE_KEY_AGENT_APPLICATION_NODE,
+        keyGenerator = CacheConstants.CACHE_KEY_GENERATOR_BY_TENANT_INFO)
     public AgentApplicationNodeProbeOperateResponse getOperate(@RequestParam String appName,
         @RequestParam String agentId) {
         return agentService.getOperateResponse(appName, agentId);

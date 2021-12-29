@@ -305,7 +305,6 @@ public class LinkTopologyService extends CommonService {
         for (AbstractTopologyNodeResponse node : allNodes) {
             TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
             if (appnode.getProviderService() != null) {
-
                 List<AppProviderInfo> providerService = node.getProviderService();
                 for (AppProviderInfo appProviderInfo : providerService) {
                     for (AppProvider appProvider : appProviderInfo.getDataSource()) {

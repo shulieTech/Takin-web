@@ -251,8 +251,11 @@ public class LinkTopologyService extends CommonService {
         Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap = this.getBatchExceptionConfig(allNodes);
 
         // 批量查询指标数据
-        Map<String, JSONObject> metricsMap = queryBatchMetricsFromAMDB(startMilliUseInInFluxDB, endMilliUseInInFluxDB,
-            metricsType, this.getAllEagleIds(allNodes));
+        Map<String, JSONObject> metricsMap = Maps.newHashMap();
+        if (!request.isTempActivity()) {
+            metricsMap = queryBatchMetricsFromAMDB(startMilliUseInInFluxDB, endMilliUseInInFluxDB,
+                metricsType, this.getAllEagleIds(allNodes));
+        }
 
         for (AbstractTopologyNodeResponse node : allNodes) {
             // 填充 节点服务的 总调用量 / 总成功率 / 总Tps / 总Rt
@@ -308,7 +311,8 @@ public class LinkTopologyService extends CommonService {
                 for (AppProviderInfo appProviderInfo : providerService) {
                     for (AppProvider appProvider : appProviderInfo.getDataSource()) {
                         for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
-                            String service = appProvider.getOwnerApps() +"#" +appProvider.getServiceName() + "#" + linkEdgeDTO.getRpcType();
+                            String service = appProvider.getOwnerApps() + "#" + appProvider.getServiceName() + "#"
+                                + linkEdgeDTO.getRpcType();
                             allNodeService.add(service);
                         }
                     }

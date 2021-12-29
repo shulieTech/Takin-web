@@ -16,12 +16,12 @@ public class RemoteCallUtils {
     /**
      * 去重 求md5
      * @param appName
-     * @param type
+     * @param interfaceType
      * @param interfaceName
      * @return
      */
-    public static String buildRemoteCallName(String appName,String interfaceName,Object type) {
-        String data = appName + "@@"+  interfaceName + "@@" + (type == null ? "" :type) + "@@" +
+    public static String buildRemoteCallName(String appName,String interfaceName,Object interfaceType) {
+        String data = appName + "@@"+  interfaceName + "@@" + (interfaceType == null ? "" :interfaceType) + "@@" +
             WebPluginUtils.traceTenantId() + "@@" + WebPluginUtils.traceEnvCode();
         return MD5Util.getMD5(data);
     }

@@ -10,7 +10,6 @@ import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOper
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResultResponse;
 import io.shulie.takin.web.biz.service.AgentService;
 import io.shulie.takin.web.common.constant.AgentUrls;
-import io.shulie.takin.web.common.constant.CacheConstants;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -18,7 +17,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,7 +46,6 @@ public class AgentApplicationNodeController {
             dataType = "string", paramType = "query")
     })
     @GetMapping("operate")
-    @Cacheable(CacheConstants.CACHE_KEY_AGENT_APPLICATION_NODE)
     public AgentApplicationNodeProbeOperateResponse getOperate(@RequestParam String appName,
         @RequestParam String agentId) {
         return agentService.getOperateResponse(appName, agentId);

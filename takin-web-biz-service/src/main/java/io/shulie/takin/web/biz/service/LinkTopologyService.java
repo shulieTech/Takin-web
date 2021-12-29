@@ -305,20 +305,13 @@ public class LinkTopologyService extends CommonService {
         for (AbstractTopologyNodeResponse node : allNodes) {
             TopologyAppNodeResponse appnode = (TopologyAppNodeResponse)node;
             if (appnode.getProviderService() != null) {
+
                 List<AppProviderInfo> providerService = node.getProviderService();
                 for (AppProviderInfo appProviderInfo : providerService) {
                     for (AppProvider appProvider : appProviderInfo.getDataSource()) {
-                        List<AppProvider> appProviderList = new ArrayList<>(appProvider.getContainRealAppProvider());
-                        // 批量获取边的瓶颈配置
-                        List<String> services =
-                            appProviderList.stream().map(tempAppProvider -> {
-                                String service = tempAppProvider.getOwnerApps() + "#" + tempAppProvider.getServiceName()
-                                    + "#"
-                                    + tempAppProvider.getRpcType();
-                                return service;
-                            }).collect(Collectors.toList());
-                        if (CollectionUtils.isNotEmpty(services)) {
-                            allNodeService.addAll(services);
+                        for (LinkEdgeDTO linkEdgeDTO : appProvider.getContainEdgeList()) {
+                            String service = appProvider.getOwnerApps() +"#" +appProvider.getServiceName() + "#" + linkEdgeDTO.getRpcType();
+                            allNodeService.add(service);
                         }
                     }
                 }

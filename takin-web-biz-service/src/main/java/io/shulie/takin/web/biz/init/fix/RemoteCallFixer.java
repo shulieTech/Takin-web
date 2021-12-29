@@ -74,7 +74,7 @@ public class RemoteCallFixer {
                         updateEntity.setAppName(mntEntity.getApplicationName());
                     }
                 }
-                String data = updateEntity.getAppName() + "@@"+  e.getInterfaceName() + "@@" + e.getType() + "@@" +
+                String data = updateEntity.getAppName() + "@@"+  e.getInterfaceName() + "@@" + e.getInterfaceType() + "@@" +
                     e.getTenantId() + "@@" + e.getEnvCode();
                 updateEntity.setMd5(MD5Util.getMD5(data));
                 return updateEntity;

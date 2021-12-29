@@ -38,6 +38,13 @@
                 </foreach>
                 else '0'
             </trim>
+            <trim prefix="APP_NAME=case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.appName !=null">
+                        when id=#{item.id} then #{item.appName}
+                    </if>
+                </foreach>
+            </trim>
         </set>
         where id in
         <foreach collection="list" item="item" index="index" separator="," open="(" close=")">

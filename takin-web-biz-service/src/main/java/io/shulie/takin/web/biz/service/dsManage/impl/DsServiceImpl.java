@@ -466,13 +466,6 @@ public class DsServiceImpl implements DsService {
         response.addAll(dbs.stream().map(this::dbBuild).collect(Collectors.toList()));
         response.addAll(oldResponseList.stream().map(this::v1Build).collect(Collectors.toList()));
 
-        // 补充权限
-        response.forEach(r -> {
-            WebPluginUtils.fillQueryResponse(r);
-            if(r.getSource() == 1) {
-                r.setCanRemove(false);
-            }
-        });
 
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
@@ -776,7 +769,6 @@ public class DsServiceImpl implements DsService {
         v2Response.setCacheType("");
         v2Response.setIsNewData(true);
         v2Response.setIsNewPage(true);
-//        v2Response.setCanRemove(v2Response.getIsManual());
         v2Response.setStatus(dbDetail.getStatus());
         v2Response.setUserId(WebPluginUtils.traceUserId());
         WebPluginUtils.fillQueryResponse(v2Response);
@@ -798,7 +790,6 @@ public class DsServiceImpl implements DsService {
         v2Response.setCacheType(cacheDetail.getType());
         v2Response.setIsNewData(true);
         v2Response.setIsNewPage(true);
-//        v2Response.setCanRemove(v2Response.getIsManual());
         v2Response.setStatus(cacheDetail.getStatus());
         v2Response.setExtMsg(cacheDetail.getType());
         v2Response.setUserId(WebPluginUtils.traceUserId());

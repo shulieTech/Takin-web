@@ -64,20 +64,20 @@ public class RemoteCallFixer {
         // 大规模数据修复
         List<AppRemoteCallEntity> entities = list.stream()
             .map(e -> {
-                AppRemoteCallEntity entity = new AppRemoteCallEntity();
-                entity.setId(e.getId());
-                entity.setAppName(e.getAppName());
-                List<ApplicationMntEntity> entityList = allAppMap.get(entity.getApplicationId());
+                AppRemoteCallEntity updateEntity = new AppRemoteCallEntity();
+                updateEntity.setId(e.getId());
+                updateEntity.setAppName(e.getAppName());
+                List<ApplicationMntEntity> entityList = allAppMap.get(e.getApplicationId());
                 if(CollectionUtils.isNotEmpty(entityList)) {
                     ApplicationMntEntity mntEntity = entityList.get(0);
-                    if(StringUtils.isEmpty(entity.getAppName()) || !mntEntity.getApplicationName().equals(entity.getAppName())) {
-                        entity.setAppName(mntEntity.getApplicationName());
+                    if(StringUtils.isEmpty(updateEntity.getAppName()) || !mntEntity.getApplicationName().equals(updateEntity.getAppName())) {
+                        updateEntity.setAppName(mntEntity.getApplicationName());
                     }
                 }
-                String data = entity.getAppName() + "@@"+  e.getInterfaceName() + "@@" + e.getType() + "@@" +
+                String data = updateEntity.getAppName() + "@@"+  e.getInterfaceName() + "@@" + e.getType() + "@@" +
                     e.getTenantId() + "@@" + e.getEnvCode();
-                entity.setMd5(MD5Util.getMD5(data));
-                return entity;
+                updateEntity.setMd5(MD5Util.getMD5(data));
+                return updateEntity;
             }).collect(Collectors.toList());
         appRemoteCallDAO.updateWithOutTenant(entities);
     }

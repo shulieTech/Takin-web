@@ -59,6 +59,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         if(param.getIsManual()){
             entity.setManualTag(1);
         }
+        // 保底计算下
+        entity.setMd5(RemoteCallUtils.buildRemoteCallName(entity.getAppName(),entity.getInterfaceName(),entity.getInterfaceType()));
         this.save(entity);
     }
 
@@ -70,6 +72,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         List<AppRemoteCallEntity> entities = params.stream().map(param -> {
             AppRemoteCallEntity entity = new AppRemoteCallEntity();
             BeanUtils.copyProperties(param, entity);
+            // 保底计算下
+            entity.setMd5(RemoteCallUtils.buildRemoteCallName(entity.getAppName(),entity.getInterfaceName(),entity.getInterfaceType()));
             return entity;
         }).collect(Collectors.toList());
         this.saveBatch(entities);
@@ -83,6 +87,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         List<AppRemoteCallEntity> entities = params.stream().map(param -> {
             AppRemoteCallEntity entity = new AppRemoteCallEntity();
             BeanUtils.copyProperties(param, entity);
+            // 保底计算下
+            entity.setMd5(RemoteCallUtils.buildRemoteCallName(entity.getAppName(),entity.getInterfaceName(),entity.getInterfaceType()));
             return entity;
         }).collect(Collectors.toList());
         this.saveOrUpdateBatch(entities);
@@ -92,6 +98,10 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     public void update(AppRemoteCallUpdateParam param) {
         AppRemoteCallEntity entity = new AppRemoteCallEntity();
         BeanUtils.copyProperties(param, entity);
+        this.updateById(entity);
+        // 同时更新md5
+        AppRemoteCallEntity newEntity = this.getById(param.getId());
+        entity.setMd5(RemoteCallUtils.buildRemoteCallName(newEntity.getAppName(),newEntity.getInterfaceName(),newEntity.getInterfaceType()));
         this.updateById(entity);
     }
 
@@ -280,8 +290,11 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     @Override
     public void batchSave(List<AppRemoteCallResult> list) {
         List<AppRemoteCallEntity> collect = list.stream().
-                map(appRemoteCallResult -> Convert.convert(AppRemoteCallEntity.class, appRemoteCallResult))
-                .collect(Collectors.toList());
+                map(appRemoteCallResult -> {
+                    AppRemoteCallEntity newEntity = Convert.convert(AppRemoteCallEntity.class, appRemoteCallResult);
+                    newEntity.setMd5(RemoteCallUtils.buildRemoteCallName(newEntity.getAppName(),newEntity.getInterfaceName(),newEntity.getInterfaceType()));
+                    return newEntity;
+                }).collect(Collectors.toList());
         this.saveBatch(collect);
     }
 

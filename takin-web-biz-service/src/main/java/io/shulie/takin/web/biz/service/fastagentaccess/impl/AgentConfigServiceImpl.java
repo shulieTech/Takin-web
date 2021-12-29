@@ -325,7 +325,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             Collectors.toMap(AgentConfigDetailResult::getEnKey, AgentConfigDetailResult::getDefaultValue));
     }
 
-    @Cacheable(CACHE_KEY_AGENT_CONFIG)
+    @Cacheable(value = CACHE_KEY_AGENT_CONFIG, keyGenerator = CACHE_KEY_GENERATOR_BY_TENANT_INFO)
     @Override
     public Map<String, AgentConfigDetailResult> getConfigList(ConfigListQueryBO queryBO) {
         // 1、查询符合条件的全局配置

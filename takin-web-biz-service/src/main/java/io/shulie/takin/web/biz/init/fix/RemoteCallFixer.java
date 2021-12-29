@@ -66,6 +66,7 @@ public class RemoteCallFixer {
             .map(e -> {
                 AppRemoteCallEntity entity = new AppRemoteCallEntity();
                 entity.setId(e.getId());
+                entity.setAppName(e.getAppName());
                 List<ApplicationMntEntity> entityList = allAppMap.get(entity.getApplicationId());
                 if(CollectionUtils.isNotEmpty(entityList)) {
                     ApplicationMntEntity mntEntity = entityList.get(0);
@@ -73,7 +74,7 @@ public class RemoteCallFixer {
                         entity.setAppName(mntEntity.getApplicationName());
                     }
                 }
-                String data = e.getApplicationId() + "@@"+  e.getInterfaceName() + "@@" + e.getType() + "@@" +
+                String data = entity.getAppName() + "@@"+  e.getInterfaceName() + "@@" + e.getType() + "@@" +
                     e.getTenantId() + "@@" + e.getEnvCode();
                 entity.setMd5(MD5Util.getMD5(data));
                 return entity;

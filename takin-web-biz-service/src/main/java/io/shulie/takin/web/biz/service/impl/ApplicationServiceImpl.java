@@ -592,7 +592,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return Response.fail(FALSE_CORE, "应用id不能为空");
         }
         try {
-            Response<ApplicationVo> applicationVoResponse = getApplicationInfo(param.getId());
+            Response<ApplicationVo> applicationVoResponse = this.getApplicationInfo(param.getId());
             if (null == applicationVoResponse.getData().getId()) {
                 return Response.fail("该应用不存在");
             }
@@ -605,12 +605,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     OperationLogContextHolder.ignoreLog();
                 }
             }
-            // 同步更新应用下的配置的appName，目前影子库表，挡板配置，影子消费者
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.APPLICATION, applicationName);
+            confCenterService.updateApplicationInfo(voToAppEntity(param));
+            // 同步更新应用下的配置的appName，目前影子库表，挡板配置，影子消费者,远程调用
             if (StringUtil.isNotEmpty(param.getApplicationName())) {
                 updateConfigAppName(param.getId(), param.getApplicationName());
             }
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.APPLICATION, applicationName);
-            confCenterService.updateApplicationInfo(voToAppEntity(param));
         } catch (TakinModuleException e) {
             return Response.fail(FALSE_CORE, e.getErrorMessage(), e.getErrorMessage());
         }

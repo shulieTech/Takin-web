@@ -546,6 +546,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         serverAppNameQuery.setQueryTye("0");
         PagingList<ApplicationRemoteCallDTO> serverAppNamePage = applicationClient.listApplicationRemoteCalls(serverAppNameQuery);
         List<ApplicationRemoteCallDTO> serverAppNames = serverAppNamePage.getList();
+        // 查询应用
         return serverAppNames.stream().collect(Collectors.groupingBy(call -> RemoteCallUtils.buildRemoteCallName(call.getUpAppName(),
                 RemoteCallUtils.getInterfaceNameByRpcName(call.getMiddlewareName(), call.getServiceName(), call.getMethodName()),
                 call.getRpcType())));

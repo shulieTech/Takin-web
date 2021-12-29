@@ -21,17 +21,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.mapper.mysql.AppRemoteCallMapper;
 import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
@@ -40,6 +39,7 @@ import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.util.MPUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -229,10 +229,15 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
 
     @Override
     public void updateAppName(Long applicationId, String appName) {
-        LambdaUpdateWrapper<AppRemoteCallEntity> wrapper = this.getLambdaUpdateWrapper();
-        wrapper.eq(AppRemoteCallEntity::getApplicationId, applicationId);
-        wrapper.set(AppRemoteCallEntity::getAppName, appName);
-        this.update(wrapper);
+        // 先获取
+        LambdaQueryWrapper<AppRemoteCallEntity> queryWrapper  =this.getLambdaQueryWrapper();
+        queryWrapper.eq(AppRemoteCallEntity::getApplicationId, applicationId);
+        List<AppRemoteCallEntity> entities = this.list(queryWrapper);
+        entities.forEach(e -> {
+            e.setAppName(appName);
+            e.setMd5(RemoteCallUtils.buildRemoteCallName(appName,e.getInterfaceName(),e.getInterfaceType()));
+        });
+        this.updateBatchById(entities);
     }
 
     @Override

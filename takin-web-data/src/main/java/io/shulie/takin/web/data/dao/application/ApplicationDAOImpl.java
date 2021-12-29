@@ -510,6 +510,11 @@ public class ApplicationDAOImpl
     }
 
     @Override
+    public List<ApplicationMntEntity> getAllApplicationsWithoutTenant() {
+       return applicationMntMapper.getAllApplicationsWithoutTenant();
+    }
+
+    @Override
     public List<ApplicationDetailResult> getDashboardAppData() {
         LambdaQueryWrapper<ApplicationMntEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.select(ApplicationMntEntity::getApplicationId,

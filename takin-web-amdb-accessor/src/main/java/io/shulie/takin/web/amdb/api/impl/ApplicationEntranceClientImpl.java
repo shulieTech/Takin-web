@@ -12,7 +12,6 @@ import io.shulie.amdb.common.request.link.TopologyQueryParam;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeInfo;
-import io.shulie.takin.web.amdb.bean.query.application.BatchNodeMetricsQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.QueryMetricsFromAMDB;
 import io.shulie.takin.web.amdb.bean.query.application.AmdbTenantDTO;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery1;
@@ -147,13 +146,13 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     }
 
     @Override
-    public List<JSONObject> queryBatchMetrics(BatchNodeMetricsQueryDTO batchNodeMetricsQueryDTO) {
+    public List<JSONObject> queryBatchMetrics(QueryMetricsFromAMDB queryMetricsFromAMDB) {
         String url = properties.getUrl().getAmdb() + QUERY_METRICS;
 
         try {
             AmdbResult<List<JSONObject>> amdbResponse = AmdbHelper.builder().url(url)
                 .httpMethod(HttpMethod.POST)
-                .param(batchNodeMetricsQueryDTO)
+                .param(queryMetricsFromAMDB)
                 .eventName("批量查询指标")
                 .exception(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR)
                 .list(JSONObject.class);

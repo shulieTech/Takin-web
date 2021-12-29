@@ -41,7 +41,6 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.query.application.ApplicationNodeQueryDTO;
-import io.shulie.takin.web.amdb.bean.query.application.BatchNodeMetricsQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.application.QueryMetricsFromAMDB;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery1;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery2;
@@ -893,17 +892,17 @@ public class LinkTopologyService extends CommonService {
             return Maps.newHashMap();
         }
 
-        BatchNodeMetricsQueryDTO batchNodeMetricsQueryDTO = BatchNodeMetricsQueryDTO.builder()
-            .startTime(startMilli)
-            .endTime(endMilli)
+        QueryMetricsFromAMDB queryMetricsFromAMDB = QueryMetricsFromAMDB.builder()
+            .startMilli(startMilli)
+            .endMilli(endMilli)
             // 压测流量(true:1)，业务流量(false:0)，混合流量(null:-1)
-            .clusterTest(Objects.isNull(metricsType) ? -1 : (metricsType ? 1 : 0))
+            .metricsType(metricsType)
             .eagleIds(eagleIds)
             .tenantAppKey(WebPluginUtils.traceTenantAppKey())
             .envCode(WebPluginUtils.traceEnvCode())
             .build();
 
-        List<JSONObject> jsonObjects = applicationEntranceClient.queryBatchMetrics(batchNodeMetricsQueryDTO);
+        List<JSONObject> jsonObjects = applicationEntranceClient.queryBatchMetrics(queryMetricsFromAMDB);
         if (CollectionUtils.isEmpty(jsonObjects)) {
             return Maps.newHashMap();
         }

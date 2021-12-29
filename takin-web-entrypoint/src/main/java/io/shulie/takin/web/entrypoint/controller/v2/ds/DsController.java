@@ -54,7 +54,7 @@ public class DsController {
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
             needAuth = ActionTypeEnum.QUERY
     )
-    public Response<ApplicationDsV2Response> dsQuery(@RequestParam(value = "applicationId", required = true) Long applicationId) {
+    public List<ApplicationDsV2Response> dsQuery(@RequestParam(value = "applicationId", required = true) Long applicationId) {
         return dsService.dsQueryV2(applicationId);
     }
 

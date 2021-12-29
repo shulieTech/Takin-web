@@ -441,7 +441,7 @@ public class DsServiceImpl implements DsService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Response dsQueryV2(Long applicationId) {
+    public List<ApplicationDsV2Response> dsQueryV2(Long applicationId) {
         ApplicationDetailResult detailResult = applicationDAO.getApplicationById(applicationId);
         if (Objects.isNull(detailResult)) {
             return Response.fail("0", "该应用不存在");
@@ -472,7 +472,7 @@ public class DsServiceImpl implements DsService {
         });
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
-        return Response.success(response);
+        return response;
     }
 
 

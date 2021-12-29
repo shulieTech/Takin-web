@@ -164,6 +164,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     @Override
     public PagingList<AppRemoteCallResult> pagingList(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getAppRemoteCallEntityLambdaQueryWrapper(param);
+        lambdaQueryWrapper.eq(AppRemoteCallEntity::getIsDeleted,false);
         Page<AppRemoteCallEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
         IPage<AppRemoteCallEntity> entityPageInfo = this.page(page, lambdaQueryWrapper);
         if (CollectionUtils.isEmpty(entityPageInfo.getRecords())) {
@@ -207,7 +208,6 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         if (param.getIsSynchronize() != null) {
             lambdaQueryWrapper.eq(AppRemoteCallEntity::getIsSynchronize, param.getIsSynchronize());
         }
-
         lambdaQueryWrapper.orderByDesc(AppRemoteCallEntity::getGmtModified);
         return lambdaQueryWrapper;
     }

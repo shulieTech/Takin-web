@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2021-12-29 10:21:25
  */
 @RestController
-@RequestMapping(ApiUrls.TAKIN_API_URL + "sceneMonitor/")
+@RequestMapping(ApiUrls.TAKIN_API_URL + "scene/monitor/")
 @Api(tags = "接口: 场景监控")
 public class SceneMonitorController {
 

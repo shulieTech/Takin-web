@@ -58,6 +58,9 @@ public class AnnualReportContentVO {
     @ApiModelProperty("最晚的一次时间, 格式 01:00:00")
     private String lastTime;
 
+    @ApiModelProperty("优化系统提升占比, 单位 %")
+    private Integer optimizedProportion;
+
     @ApiModelProperty("优化最厉害的业务活动名称")
     private String optimizedActivity;
 

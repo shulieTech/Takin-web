@@ -66,18 +66,18 @@ public class AnnualReportContentVO {
     private String optimizedActivity;
 
     @ApiModelProperty("优化之前, 最大平均rt, 单位 毫秒")
-    private Integer beforeAvgRt;
+    private BigDecimal beforeAvgRt;
 
     @ApiModelProperty("优化之后, 最小平均rt, 单位 毫秒")
-    private Integer afterAvgRt;
+    private BigDecimal afterAvgRt;
 
     @ApiModelProperty("平均rt优化的差值, 单位 毫秒")
-    private Integer diffAvgRt;
+    private BigDecimal diffAvgRt;
 
     @ApiModelProperty("平均rt最小的业务活动名称")
     private String minAvgRtActivity;
 
     @ApiModelProperty("平均rt最小的业务活动的消耗时间, 单位 毫秒")
-    private Integer minAvgRt;
+    private BigDecimal minAvgRt;
 
 }

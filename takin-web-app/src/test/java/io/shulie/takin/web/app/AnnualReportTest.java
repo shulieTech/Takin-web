@@ -25,10 +25,7 @@ public class AnnualReportTest {
         annualReportContentVO.setMaxTimePressure("压测最长的场景");
         annualReportContentVO.setLastDateTime(LocalDateTime.now());
         annualReportContentVO.setOptimizedActivity("优化最厉害的业务活动");
-        annualReportContentVO.setBeforeAvgRt(500);
-        annualReportContentVO.setAfterAvgRt(10);
         annualReportContentVO.setMinAvgRtActivity("最小平均rt业务活动");
-        annualReportContentVO.setMinAvgRt(1);
 
         LocalDateTime now = LocalDateTime.now();
         System.out.println(LocalDateTimeUtil.format(now, "MM月dd日"));

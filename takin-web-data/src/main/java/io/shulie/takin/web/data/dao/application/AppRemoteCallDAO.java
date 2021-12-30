@@ -77,6 +77,25 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
     List<AppRemoteCallResult> getList(AppRemoteCallQueryParam param);
 
     /**
+     * 查询数据 无租户
+     *
+     * @return
+     */
+    List<AppRemoteCallEntity> getListWithOutTenant();
+
+    /**
+     * 批量更新
+     * @param entities
+     */
+    void updateWithOutTenant(List<AppRemoteCallEntity> entities);
+
+    /**
+     * 查询数据 md5
+     * @return
+     */
+    List<String> getRemoteCallMd5(AppRemoteCallQueryParam param);
+
+    /**
      * 查询数据
      *
      * @return

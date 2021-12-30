@@ -15,7 +15,6 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
-import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
@@ -81,7 +80,6 @@ import io.shulie.takin.web.data.result.activity.ActivityResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
-import io.shulie.takin.web.ext.util.E2ePluginUtils;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -465,13 +463,13 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public ActivityBottleneckResponse getBottleneckByActivityList(
         ApplicationVisualInfoResponse applicationVisualInfoResponse,
-        LocalDateTime startDateTime, LocalDateTime endTime) {
+        LocalDateTime startDateTime, LocalDateTime endTime,Map<String,List<E2eExceptionConfigInfoExt>> bottleneckConfigMap) {
         // 查询 瓶颈阈值 配置
-        List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
-        if (WebPluginUtils.checkUserPlugin() && E2ePluginUtils.checkE2ePlugin()) {
-            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId(),
-                WebPluginUtils.traceEnvCode());
-        }
+        //List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
+        //if (WebPluginUtils.checkUserPlugin() && E2ePluginUtils.checkE2ePlugin()) {
+        //    bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId(),
+        //        WebPluginUtils.traceEnvCode());
+        //}
 
         ApplicationEntranceTopologyResponse.AppProvider provider
             = new ApplicationEntranceTopologyResponse.AppProvider();
@@ -488,7 +486,7 @@ public class ActivityServiceImpl implements ActivityService {
         provider.setAllSqlTotalRtBottleneckType(rateBottleneckType);
 
         if (applicationVisualInfoResponse.getRequestCount() != 0) { // 如果不是初始值，再计算瓶颈
-            linkTopologyService.computeBottleneck(startDateTime.minusHours(8), null, bottleneckConfig, provider);
+            linkTopologyService.computeBottleneck(startDateTime.minusHours(8), null, bottleneckConfigMap, provider);
         }
 
         ActivityBottleneckResponse activityBottleneckResponse = new ActivityBottleneckResponse();

@@ -11,10 +11,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.biz.cache.agentimpl.ApplicationPluginConfigAgentCache;
 import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
 import io.shulie.takin.web.data.mapper.mysql.ApplicationPluginsConfigMapper;
@@ -47,6 +49,9 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
 
     @Autowired
     private ApplicationDAO applicationDAO;
+
+    @Autowired
+    private ApplicationPluginConfigAgentCache applicationPluginConfigAgentCache;
 
     @Override
     public ApplicationPluginsConfigVO getById(Long id) {
@@ -154,8 +159,17 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             entity.setModifierId(WebPluginUtils.traceUserId());
             entity.setTenantId(WebPluginUtils.traceTenantId());
         });
+        boolean flag = applicationPluginsConfigDAO.updateBatchById(entitys);
+        entitys.forEach(e -> this.evict(CommonUtil.generateRedisKey(e.getApplicationName(),e.getConfigKey())));
+        return flag;
+    }
 
-        return applicationPluginsConfigDAO.updateBatchById(entityList);
+    /**
+     * 清除缓存
+     * @param namespace
+     */
+    private void evict(String namespace) {
+        applicationPluginConfigAgentCache.evict(namespace);
     }
 
     @Override
@@ -169,7 +183,11 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         if (StringUtil.isEmpty(param.getConfigValue())) {
             throw new TakinWebException(ExceptionCode.POD_NUM_EMPTY, "配置值不能为空！");
         }
-
+        // 配置是否存在
+        ApplicationPluginsConfigEntity oldEntity = applicationPluginsConfigDAO.getById(param.getId());
+        if(oldEntity == null) {
+            throw new TakinWebException(ExceptionCode.POD_NUM_EMPTY, "该配置不存在！");
+        }
         ApplicationPluginsConfigEntity entity = CopyUtils.copyFields(param, ApplicationPluginsConfigEntity.class);
         Date now = new Date();
         entity.setCreateTime(now);
@@ -178,6 +196,7 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         entity.setModifierId(WebPluginUtils.traceUserId());
         entity.setTenantId(WebPluginUtils.traceTenantId());
         applicationPluginsConfigMapper.updateById(entity);
+        this.evict(CommonUtil.generateRedisKey(oldEntity.getApplicationName(),oldEntity.getConfigKey()));
         return true;
     }
 

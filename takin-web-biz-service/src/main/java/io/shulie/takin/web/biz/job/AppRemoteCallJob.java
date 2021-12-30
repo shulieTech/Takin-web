@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
+import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
@@ -21,6 +22,10 @@ import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 无涯
@@ -34,6 +39,9 @@ public class AppRemoteCallJob implements SimpleJob {
 
     @Resource
     private AppRemoteCallService appRemoteCallService;
+
+    @Value("${fix.remote.call.data:false}")
+    private Boolean fixData;
     @Resource
     @Qualifier("jobThreadPool")
     private ThreadPoolExecutor jobThreadPool;
@@ -42,6 +50,10 @@ public class AppRemoteCallJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
+
+        if(fixData) {
+            return;
+        }
 
         if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源

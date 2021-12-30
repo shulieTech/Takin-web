@@ -12,6 +12,7 @@ import io.shulie.amdb.common.request.link.TopologyQueryParam;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeInfo;
+import io.shulie.takin.web.amdb.bean.query.application.QueryMetricsFromAMDB;
 import io.shulie.takin.web.amdb.bean.query.application.AmdbTenantDTO;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery1;
 import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery2;
@@ -45,6 +46,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 
     public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP1 = "/amdb/db/api/metrics/entranceFromChickHouse";
     public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP2 = "/amdb/db/api/metrics/metricFromChickHouse";
+    public static final String QUERY_METRICS = "/amdb/db/api/metrics/metricFromInfluxdb";
+
 
     @Autowired
     private AmdbClientProperties properties;
@@ -119,6 +122,45 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP2_ERROR,
                 e.getMessage());
+        }
+    }
+
+    @Override
+    public JSONObject queryMetrics(QueryMetricsFromAMDB queryMetricsFromAMDB) {
+        String url = properties.getUrl().getAmdb() + QUERY_METRICS;
+
+        try {
+            AmdbResult<JSONObject> amdbResponse = AmdbHelper.builder().url(url)
+                    .httpMethod(HttpMethod.POST)
+                    .param(queryMetricsFromAMDB)
+                    .eventName("查询指标")
+                    .exception(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR)
+                    .one(JSONObject.class);
+
+            JSONObject data = amdbResponse.getData();
+            return data;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR, e.getMessage());
+        }
+    }
+
+    @Override
+    public List<JSONObject> queryBatchMetrics(QueryMetricsFromAMDB queryMetricsFromAMDB) {
+        String url = properties.getUrl().getAmdb() + QUERY_METRICS;
+
+        try {
+            AmdbResult<List<JSONObject>> amdbResponse = AmdbHelper.builder().url(url)
+                .httpMethod(HttpMethod.POST)
+                .param(queryMetricsFromAMDB)
+                .eventName("批量查询指标")
+                .exception(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR)
+                .list(JSONObject.class);
+
+            return amdbResponse.getData();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR, e.getMessage());
         }
     }
 

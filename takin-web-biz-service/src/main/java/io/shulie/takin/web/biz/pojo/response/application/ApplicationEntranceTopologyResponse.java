@@ -124,6 +124,7 @@ public class ApplicationEntranceTopologyResponse {
 
         // TopologyAppNodeResponse
         private String manager;
+        // 对外服务
         private List<AppProviderInfo> providerService;
         private List<AppCallInfo> callService;
 
@@ -180,8 +181,9 @@ public class ApplicationEntranceTopologyResponse {
 
     @Data
     public static class AppProviderInfo {
-        // MiddlewareName
+        // MiddlewareName 每个APP的所有对外服务 以发起端中间件进行分组
         private String label;
+        // 分组后的对外服务
         private List<AppProvider> dataSource;
     }
 
@@ -201,7 +203,9 @@ public class ApplicationEntranceTopologyResponse {
             return appProvider;
         }
 
+        // 大数据返回的真实边 集合 只有边的信息
         List<LinkEdgeDTO> containEdgeList;
+        // 根据containEdgeList 生成了真实边集合 补充了边的其他信息switchState、beforeApps。。。
         List<AppProvider> containRealAppProvider;
 
         // 所属应用
@@ -217,7 +221,8 @@ public class ApplicationEntranceTopologyResponse {
         private Boolean switchState;
 
 
-        // 边 id
+        //  边 id 节点层次 这个是真实边（containEdgeList）的其中一条边 基本不怎么用
+        //  真实边计算的时候 会使用
         private String eagleId;
         // 源节点ID
         private String source;

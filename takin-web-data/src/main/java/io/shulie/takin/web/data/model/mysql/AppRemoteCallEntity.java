@@ -107,4 +107,10 @@ public class AppRemoteCallEntity extends UserBaseEntity {
     @TableField(value = "remark")
     private String remark;
 
+    /**
+     * 应用名，接口名称，接口类型，租户id,envcode求md5
+     */
+    @TableField(value = "md5")
+    private String md5;
+
 }

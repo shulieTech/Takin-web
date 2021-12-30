@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
@@ -19,6 +20,7 @@ import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
+import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
 
 /**
  * 业务活动
@@ -79,10 +81,14 @@ public interface ActivityService {
      * @return 详情
      */
     ActivityResponse getActivityById(ActivityInfoQueryRequest activityInfoQueryRequest);
+
     ActivityResponse getActivityWithMetricsById(ActivityInfoQueryRequest request);
 
     ActivityResponse getActivityWithMetricsByIdForReport(Long activityId, LocalDateTime start, LocalDateTime end);
-    ActivityBottleneckResponse getBottleneckByActivityList(ApplicationVisualInfoResponse applicationVisualInfoResponse, LocalDateTime startTime, LocalDateTime endTime);
+
+    ActivityBottleneckResponse getBottleneckByActivityList(ApplicationVisualInfoResponse applicationVisualInfoResponse,
+        LocalDateTime startTime, LocalDateTime endTime,
+        Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap);
 
     ActivityResponse getActivityByIdWithoutTopology(Long id);
 

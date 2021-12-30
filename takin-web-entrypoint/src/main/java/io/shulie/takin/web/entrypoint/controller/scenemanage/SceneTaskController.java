@@ -1,6 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -9,6 +8,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
@@ -21,7 +21,6 @@ import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
@@ -36,6 +35,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
@@ -105,7 +105,14 @@ public class SceneTaskController {
             redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
             SceneActionResp sceneStart = new SceneActionResp();
             //sceneStart.setMsg(Arrays.asList(StringUtils.split(ex.getMessage(), Constants.SPLIT)));
-            sceneStart.setMsg(Arrays.asList(ex.getMessage()));
+            List<String> message = Lists.newArrayList();
+            if(StringUtils.isNotBlank(ex.getMessage())) {
+                message.addAll(Collections.singletonList(ex.getMessage()));
+            }
+            if(ex.getSource() != null) {
+                message.addAll(Collections.singletonList(JsonHelper.bean2Json(ex.getSource())));
+            }
+            sceneStart.setMsg(message.stream().distinct().collect(Collectors.toList()));
             return WebResponse.success(sceneStart);
         }
     }

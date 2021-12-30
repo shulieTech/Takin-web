@@ -79,6 +79,7 @@ import io.shulie.takin.web.biz.service.AppConfigEntityConvertService;
 import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.ConfCenterService;
+import io.shulie.takin.web.biz.service.LinkTopologyService;
 import io.shulie.takin.web.biz.service.ShadowConsumerService;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
@@ -159,6 +160,7 @@ import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -286,6 +288,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private ActivityDAO activityDAO;
+
+    @Autowired
+    private LinkTopologyService linkTopologyService;
 
     @PostConstruct
     public void init() {
@@ -591,7 +596,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return Response.fail(FALSE_CORE, "应用id不能为空");
         }
         try {
-            Response<ApplicationVo> applicationVoResponse = getApplicationInfo(param.getId());
+            Response<ApplicationVo> applicationVoResponse = this.getApplicationInfo(param.getId());
             if (null == applicationVoResponse.getData().getId()) {
                 return Response.fail("该应用不存在");
             }
@@ -604,12 +609,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     OperationLogContextHolder.ignoreLog();
                 }
             }
-            // 同步更新应用下的配置的appName，目前影子库表，挡板配置，影子消费者
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.APPLICATION, applicationName);
+            confCenterService.updateApplicationInfo(voToAppEntity(param));
+            // 同步更新应用下的配置的appName，目前影子库表，挡板配置，影子消费者,远程调用
             if (StringUtil.isNotEmpty(param.getApplicationName())) {
                 updateConfigAppName(param.getId(), param.getApplicationName());
             }
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.APPLICATION, applicationName);
-            confCenterService.updateApplicationInfo(voToAppEntity(param));
         } catch (TakinModuleException e) {
             return Response.fail(FALSE_CORE, e.getErrorMessage(), e.getErrorMessage());
         }
@@ -767,8 +772,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 }
 
                 // 更新应用状态
-                applicationDAO.updateStatusByApplicationIds(errorApplicationIdSet, AppAccessStatusEnum.EXCEPTION.getCode());
-                applicationDAO.updateStatusByApplicationIds(normalApplicationIdSet, AppAccessStatusEnum.NORMAL.getCode());
+                applicationDAO.updateStatusByApplicationIds(errorApplicationIdSet,
+                    AppAccessStatusEnum.EXCEPTION.getCode());
+                applicationDAO.updateStatusByApplicationIds(normalApplicationIdSet,
+                    AppAccessStatusEnum.NORMAL.getCode());
 
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
@@ -1291,8 +1298,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
         LocalDateTime startTime = request.getStartTimeDate();
         LocalDateTime endTime = request.getEndTimeDate();
+
+        List<String> services = infoDTOList.stream().map(dto -> {
+            String service = dto.getAppName() + "#" + dto.getServiceAndMethod() + "#"
+                + dto.getRpcType();
+            return service;
+        }).collect(Collectors.toList());
+        Map<String, List<E2eExceptionConfigInfoExt>> bottleneckConfigMap = linkTopologyService
+            .doGetServiceExceptionConfig(services);
+
         infoDTOList.stream().forEach(dto -> {
-            ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(dto, startTime, endTime);
+            ActivityBottleneckResponse response = activityService.getBottleneckByActivityList(dto, startTime, endTime,
+                bottleneckConfigMap);
             dto.setResponse(response);
         });
     }
@@ -1306,7 +1323,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         String url = properties.getUrl().getAmdb() + QUERY_METRIC_DATA;
         try {
             AmdbResult<List<ApplicationVisualInfoResponse>> appDataResult = AmdbHelper.builder().httpMethod(
-                    HttpMethod.POST)
+                HttpMethod.POST)
                 .url(url)
                 .param(request)
                 .exception(TakinWebExceptionEnum.APPLICATION_MANAGE_THIRD_PARTY_ERROR)
@@ -1839,7 +1856,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         // 对比
         return String.format("%s%s", importServerConfigResponse.getDataSourceBusiness().getMaster(),
-                importServerConfigResponse.getDataSourceBusiness().getNodes())
+            importServerConfigResponse.getDataSourceBusiness().getNodes())
             .equals(String.format("%s%s", originServerConfigResponse.getDataSourceBusiness().getMaster(),
                 importServerConfigResponse.getDataSourceBusiness().getNodes()));
     }

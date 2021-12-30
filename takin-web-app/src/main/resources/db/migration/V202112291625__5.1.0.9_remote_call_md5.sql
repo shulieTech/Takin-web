@@ -26,8 +26,6 @@ WHERE id NOT IN (
                     ) t
 );
 
-delete from t_app_remote_call where md5 in(select md5 from (select md5,count(1) as count from t_app_remote_call  group by md5) a where a.count > 1)
-
 ALTER TABLE t_app_remote_call
     ADD UNIQUE KEY `unique_idx_md5` (`md5`) USING BTREE;
 

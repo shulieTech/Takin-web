@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.pojo.vo;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,8 +46,8 @@ public class AnnualReportContentVO {
     @ApiModelProperty("最多压测时长的场景名称")
     private String maxTimePressure;
 
-    @ApiModelProperty("最多压测时长的场景的时间占用压测总时长的比例, 单位 %")
-    private Integer pressureProportion;
+    @ApiModelProperty("最多压测时长的场景的时间占用压测总时长的比例, 单位 %, 小数点两位")
+    private BigDecimal pressureProportion;
 
     @JsonIgnore
     @ApiModelProperty("最晚的一次日期, 格式 2021-01-01 10:10:10")
@@ -58,8 +59,8 @@ public class AnnualReportContentVO {
     @ApiModelProperty("最晚的一次时间, 格式 01:00:00")
     private String lastTime;
 
-    @ApiModelProperty("优化系统提升占比, 单位 %")
-    private Integer optimizedProportion;
+    @ApiModelProperty("优化系统提升占比, 单位 %, 小数点两位")
+    private BigDecimal optimizedProportion;
 
     @ApiModelProperty("优化最厉害的业务活动名称")
     private String optimizedActivity;

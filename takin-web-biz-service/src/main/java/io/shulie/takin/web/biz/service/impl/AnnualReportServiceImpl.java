@@ -1,5 +1,8 @@
 package io.shulie.takin.web.biz.service.impl;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.StrUtil;
 import io.shulie.takin.web.biz.pojo.vo.AnnualReportContentVO;
@@ -39,13 +42,18 @@ public class AnnualReportServiceImpl implements AnnualReportService {
         response.setTenantName(annualReport.getTenantName());
         response.setTenantLogo(annualReport.getTenantLogo());
 
-        // 压测比例
         annualReportContentVO.setStartDate("2020年08月18日");
-        annualReportContentVO.setPressureProportion((annualReportContentVO.getMaxPressureTime() * 100) /
-            (annualReportContentVO.getTotalPressureTime() * 100));
+
+        // 压测比例
+        Integer maxPressureTime = annualReportContentVO.getMaxPressureTime();
+        Integer totalPressureTime = annualReportContentVO.getTotalPressureTime();
+        annualReportContentVO.setPressureProportion(
+            BigDecimal.valueOf(maxPressureTime).divide(BigDecimal.valueOf(totalPressureTime), MathContext.DECIMAL32));
+
         // 优化时间
         annualReportContentVO.setDiffAvgRt(annualReportContentVO.getBeforeAvgRt() - annualReportContentVO.getAfterAvgRt());
 
+        // 最晚时间
         annualReportContentVO.setLastDate(LocalDateTimeUtil.format(annualReportContentVO.getLastDateTime(), "MM月dd日"));
         annualReportContentVO.setLastTime(LocalDateTimeUtil.format(annualReportContentVO.getLastDateTime(), "HH:mm"));
         response.setContent(annualReportContentVO);

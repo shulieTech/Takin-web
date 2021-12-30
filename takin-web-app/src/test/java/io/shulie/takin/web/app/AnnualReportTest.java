@@ -1,8 +1,9 @@
 package io.shulie.takin.web.app;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import io.shulie.takin.web.biz.pojo.vo.AnnualReportContentVO;
 import org.junit.Test;
 
@@ -14,22 +15,19 @@ public class AnnualReportTest {
 
     @Test
     public void test() {
-        AnnualReportContentVO annualReportContentVO = new AnnualReportContentVO();
-        annualReportContentVO.setDay(356);
-        annualReportContentVO.setCountActivity(1000);
-        annualReportContentVO.setCountOver(124);
-        annualReportContentVO.setLongestActivity("链路最长的业务活动");
-        annualReportContentVO.setCountScene(500);
-        annualReportContentVO.setTotalPressureTime(2000);
-        annualReportContentVO.setMaxPressureTime(300);
-        annualReportContentVO.setMaxTimePressure("压测最长的场景");
-        annualReportContentVO.setLastDateTime(LocalDateTime.now());
-        annualReportContentVO.setOptimizedActivity("优化最厉害的业务活动");
-        annualReportContentVO.setMinAvgRtActivity("最小平均rt业务活动");
 
-        LocalDateTime now = LocalDateTime.now();
-        System.out.println(LocalDateTimeUtil.format(now, "MM月dd日"));
-        System.out.println(LocalDateTimeUtil.format(now, "HH:mm"));
+        AnnualReportContentVO annualReportContentVO = new AnnualReportContentVO();
+        annualReportContentVO.setTotalPressureTime(5625);
+        annualReportContentVO.setMaxPressureTime(324);
+        // 压测比例
+        Integer maxPressureTime = annualReportContentVO.getMaxPressureTime();
+        Integer totalPressureTime = annualReportContentVO.getTotalPressureTime();
+        annualReportContentVO.setPressureProportion(BigDecimal.valueOf(maxPressureTime).
+                divide(BigDecimal.valueOf(totalPressureTime), MathContext.DECIMAL32)
+            .multiply(BigDecimal.valueOf(100))
+            .setScale(2, RoundingMode.HALF_UP));
+
+        System.out.println(annualReportContentVO.getPressureProportion());
 
     }
 

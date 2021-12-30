@@ -2569,9 +2569,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Response getApplicationReportConfigInfo(Integer type, String appName) {
         List<AppAgentConfigReportDetailResult> results = reportDAO.listByBizType(type, appName);
         String silenceSwitchStatus = getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId());
+        //页面是open状态 对应的agent上报为false，这里需要查不是false的
         String configValue = AppSwitchEnum.OPENED.getCode().equals(silenceSwitchStatus) ? "true" : "false";
         List<AppAgentConfigReportDetailResult> filter = results.stream().filter(
             x -> configValue.equals(x.getConfigValue())).collect(Collectors.toList());
+
+
         return Response.success(filter);
     }
 

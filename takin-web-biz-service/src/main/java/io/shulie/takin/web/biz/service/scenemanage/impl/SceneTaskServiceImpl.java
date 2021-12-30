@@ -88,6 +88,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -109,7 +110,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     @Autowired
     private SceneManageService sceneManageService;
-
 
     @Autowired
     private SceneTaskApi sceneTaskApi;
@@ -144,6 +144,12 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     @Autowired
     private BaseConfigService baseConfigService;
+
+    /**
+     * 是否是预发环境
+     */
+    @Value("${takin.inner.pre:0}")
+    private int isInnerPre;
 
     /**
      * 查询场景业务活动信息，校验业务活动
@@ -251,15 +257,13 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                     "获取压测时长失败！压测时长为" + sceneData.getPressureTestSecond());
             }
             //兜底时长
-            //long extraSeconds = 30;
-            //taskDto.setEndTime(
-            //    LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()).plusSeconds(extraSeconds));
             taskDto.setEndTime(
                 LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()));
             //任务添加到redis队列
+            final String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
+                : WebRedisKeyConstant.SCENE_REPORTID_KEY;
             final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
-            redisTemplate.opsForList().leftPush(WebRedisKeyConstant.SCENE_REPORTID_KEY,
-                reportKey);
+            redisTemplate.opsForList().leftPush(reportKeyName, reportKey);
             redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(taskDto));
         }
     }

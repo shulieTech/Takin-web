@@ -8,10 +8,12 @@ import cn.hutool.core.util.StrUtil;
 import io.shulie.takin.web.biz.pojo.vo.AnnualReportContentVO;
 import io.shulie.takin.web.biz.response.AnnualReportDetailResponse;
 import io.shulie.takin.web.biz.service.AnnualReportService;
+import io.shulie.takin.web.common.constant.CacheConstants;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.AnnualReportDAO;
 import io.shulie.takin.web.data.result.AnnualReportDetailResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -27,6 +29,7 @@ public class AnnualReportServiceImpl implements AnnualReportService {
     @Autowired
     private AnnualReportDAO annualReportDAO;
 
+    @Cacheable(CacheConstants.CACHE_KEY_ANNUAL_REPORT)
     @Override
     public AnnualReportDetailResponse getAnnualReportByTenantId(Long tenantId) {
         AnnualReportDetailResult annualReport = annualReportDAO.getByTenantId(tenantId);

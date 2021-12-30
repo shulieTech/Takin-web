@@ -3,6 +3,8 @@ package io.shulie.takin.web.biz.service.impl;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.StrUtil;
@@ -46,7 +48,9 @@ public class AnnualReportServiceImpl implements AnnualReportService {
         response.setTenantName(annualReport.getTenantName());
         response.setTenantLogo(annualReport.getTenantLogo());
 
-        annualReportContentVO.setStartDate("2020年08月18日");
+        // 走过天数
+        LocalDate end = LocalDate.now();
+        annualReportContentVO.setDay(annualReportContentVO.getStartAt().until(end, ChronoUnit.DAYS));
 
         // 压测比例
         Integer maxPressureTime = annualReportContentVO.getMaxPressureTime();

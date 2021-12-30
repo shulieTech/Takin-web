@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.pojo.vo;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,11 +20,15 @@ import lombok.Data;
 @Data
 public class AnnualReportContentVO {
 
-    @ApiModelProperty("开始日期")
+    @ApiModelProperty("开始日期, 展示用")
     private String startDate;
 
+    @JsonIgnore
+    @ApiModelProperty("开始日期")
+    private LocalDate startAt;
+
     @ApiModelProperty("走过的天数, 单位 天")
-    private Integer day;
+    private Long day;
 
     @ApiModelProperty("接入的业务活动数量(链路)")
     private Integer countActivity;

@@ -523,6 +523,7 @@ public class WebPluginUtils {
         }
         HashMap<String, String> dataMap = new LinkedHashMap<>();
         dataMap.put("租户ID", DEFAULT_TENANT_ID + "");
+        dataMap.put("租户code", DEFAULT_TENANT_CODE);
         dataMap.put("租户user-app-key", DEFAULT_TENANT_APP_KEY);
         dataMap.put("用户ID", DEFAULT_USER_ID + "");
         dataMap.put("用户user-app-key", DEFAULT_TENANT_APP_KEY);

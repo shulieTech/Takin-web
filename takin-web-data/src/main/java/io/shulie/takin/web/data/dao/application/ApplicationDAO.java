@@ -241,6 +241,12 @@ public interface ApplicationDAO {
     List<ApplicationDetailResult> getAllApplications();
 
     /**
+     * 无租户获取数据
+     * @return
+     */
+    List<ApplicationMntEntity> getAllApplicationsWithoutTenant();
+
+    /**
      * 大盘获取应用
      *
      * @return

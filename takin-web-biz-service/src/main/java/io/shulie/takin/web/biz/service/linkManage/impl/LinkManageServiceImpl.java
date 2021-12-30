@@ -807,6 +807,7 @@ public class LinkManageServiceImpl implements LinkManageService {
         BusinessLinkManageQueryParam queryParam = new BusinessLinkManageQueryParam();
         WebPluginUtils.fillQueryParam(queryParam);
         queryParam.setBussinessActiveName(businessActiveName);
+        queryParam.setPersistence(true);
         List<BusinessLinkResult> businessLinkResultList = businessLinkManageDAO.selectList(queryParam);
         if (CollectionUtils.isNotEmpty(businessLinkResultList)) {
             businessActiveIdAndNameDtoList = businessLinkResultList.stream().map(businessLinkResult -> {

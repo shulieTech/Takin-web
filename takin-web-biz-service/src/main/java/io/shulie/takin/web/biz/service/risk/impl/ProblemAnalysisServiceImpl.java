@@ -137,7 +137,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         appNameList.forEach(appName -> {
             Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(sTime, eTime, appName));
             if (CollectionUtils.isNotEmpty(baseList)) {
-                logger.info("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, sTime, eTime, baseList.size());
+                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, sTime, eTime, baseList.size());
                 List<BaseAppVo> tmpList = baseList.stream().map(base -> {
                     BaseAppVo vo = new BaseAppVo();
                     vo.setCore(formatDouble(base.getCpuCores()).intValue());

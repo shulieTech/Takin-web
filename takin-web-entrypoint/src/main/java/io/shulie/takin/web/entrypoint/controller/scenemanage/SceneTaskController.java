@@ -112,7 +112,7 @@ public class SceneTaskController {
             if(ex.getSource() != null) {
                 message.addAll(Collections.singletonList(JsonHelper.bean2Json(ex.getSource())));
             }
-            sceneStart.setMsg(message);
+            sceneStart.setMsg(message.stream().distinct().collect(Collectors.toList()));
             return WebResponse.success(sceneStart);
         }
     }

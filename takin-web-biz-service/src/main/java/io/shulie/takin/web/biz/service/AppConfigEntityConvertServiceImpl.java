@@ -257,6 +257,7 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
                 AppRemoteCallResult appRemoteCallResult = callResults.get(0);
                 input.setId(appRemoteCallResult.getId());
             }
+            input.setMd5(RemoteCallUtils.buildRemoteCallName(input.getAppName(),input.getInterfaceName(),input.getInterfaceType()));
             result.add(input);
         }
         return result;

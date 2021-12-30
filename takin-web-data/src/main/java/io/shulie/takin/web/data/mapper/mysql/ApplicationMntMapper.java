@@ -58,6 +58,13 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
     List<ApplicationMntEntity> getAllApplications();
 
     /**
+     * 修复数据使用
+     * @return
+     */
+    @InterceptorIgnore(tenantLine = "true")
+    List<ApplicationMntEntity> getAllApplicationsWithoutTenant();
+
+    /**
      * 返回id
      *
      * @param names

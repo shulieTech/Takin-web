@@ -391,6 +391,9 @@
 
         ORDER BY a.id DESC
     </select>
+    <select id="getAllApplicationsWithoutTenant" resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">
+        select APPLICATION_ID,APPLICATION_NAME from t_application_mnt
+    </select>
 
 
     <select id="getAllApplicationsByField"

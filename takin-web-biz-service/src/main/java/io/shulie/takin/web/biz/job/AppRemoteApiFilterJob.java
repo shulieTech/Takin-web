@@ -107,8 +107,8 @@ public class AppRemoteApiFilterJob implements SimpleJob {
         List<AppRemoteCallResult> delList = Lists.newArrayList();
         apiManageGroupByAppId.forEach((appId, manageVOS) -> {
             List<AppRemoteCallResult> appRemoteCallListVOS = appRemoteCallGroupByAppId.get(appId);
-            List<AppRemoteCallResult> appRemoteCallFilterList = Lists.newArrayList();
             manageVOS.forEach(apiManage -> {
+                List<AppRemoteCallResult> appRemoteCallFilterList = Lists.newArrayList();
                 if (CollectionUtils.isNotEmpty(appRemoteCallListVOS)) {
                     appRemoteCallListVOS.forEach(appRemoteCall -> {
                         boolean match = antPathMatcher.match(apiManage.getApi(), appRemoteCall.getInterfaceName());
@@ -119,7 +119,8 @@ public class AppRemoteApiFilterJob implements SimpleJob {
                     });
                 }
                 delList.addAll(appRemoteCallFilterList);
-                filterMap.put(apiManage.getApi(), appRemoteCallFilterList);
+                // 唯一
+                filterMap.put(apiManage.getApplicationId()+"##" +apiManage.getApi(), appRemoteCallFilterList);
             });
         });
 
@@ -129,16 +130,18 @@ public class AppRemoteApiFilterJob implements SimpleJob {
 
         List<AppRemoteCallResult> save = Lists.newArrayList();
         filterMap.forEach((k, v) -> {
+            String[] temp = k.split("##");
+            String interfaceName = temp[1];
             //已经合并过的剔除
             List<AppRemoteCallResult> filterList = v.stream()
-                    .filter(appRemoteCallResult -> appRemoteCallResult.getInterfaceName().equals(k))
+                    .filter(appRemoteCallResult -> appRemoteCallResult.getInterfaceName().equals(interfaceName))
                     .collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(filterList)) {
                 return;
             }
             if(CollectionUtils.isNotEmpty(v)) {
                 AppRemoteCallResult appRemoteCallResult = v.get(0);
-                appRemoteCallResult.setInterfaceName(k);
+                appRemoteCallResult.setInterfaceName(interfaceName);
                 appRemoteCallResult.setId(null);
                 save.add(appRemoteCallResult);
             }

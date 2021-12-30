@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.dsManage;
 
+import java.util.List;
+
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.entity.DsModelWithBLOBs;
 import com.pamirs.takin.entity.domain.entity.simplify.AppBusinessTableInfo;
@@ -15,9 +17,8 @@ import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInputV2;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowServerConfigurationOutput;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationDsV2Response;
 import io.shulie.takin.web.common.common.Response;
-
-import java.util.List;
 
 /**
  * @author fanxx
@@ -72,7 +73,7 @@ public interface DsService {
      */
     List<DsServerVO> getShadowDsServerConfigs(String namespace, DsTypeEnum shadowHbaseServer);
 
-    Response dsQueryV2(Long applicationId);
+    List<ApplicationDsV2Response> dsQueryV2(Long applicationId);
 
     Response dsQueryDetailV2(Long applicationId, Long id, String middlewareType,Boolean isNewData);
 

@@ -7,6 +7,7 @@ import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,7 @@ public class PradarClientUrlController {
     private String cloudUrl;
 
     @GetMapping("download")
+    @ApiOperation("客户端下载地址接口")
     public Response generateDownloadClientUrl() {
         Map<String, String> map = new HashMap<>(1);
         String clientUri = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_REMOTE_CLIENT_DOWNLOAD_URI);

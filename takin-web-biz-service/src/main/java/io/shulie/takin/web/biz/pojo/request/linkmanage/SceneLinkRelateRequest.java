@@ -1,12 +1,13 @@
 package io.shulie.takin.web.biz.pojo.request.linkmanage;
 
-import io.shulie.takin.ext.content.enums.SamplerTypeEnum;
+import java.io.Serializable;
+
+import javax.validation.constraints.NotNull;
+
+import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 
 @Data
 @ApiModel("业务流程匹配业务活动入参")

@@ -1,18 +1,16 @@
 package io.shulie.takin.web.biz.pojo.request.scene;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
-import lombok.Data;
-
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
+import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import io.shulie.takin.ext.content.enginecall.PtConfigExt;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
+import lombok.Data;
 
 /**
  * 操作压测场景入参 -新

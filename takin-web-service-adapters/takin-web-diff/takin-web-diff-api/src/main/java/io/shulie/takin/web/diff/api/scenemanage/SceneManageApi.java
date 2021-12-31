@@ -6,6 +6,8 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginDetailsWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginFetchWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.CloudUpdateSceneFileRequest;
@@ -24,8 +26,6 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperRe
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.ext.content.script.ScriptNode;
-import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import org.springframework.validation.annotation.Validated;
 
 /**

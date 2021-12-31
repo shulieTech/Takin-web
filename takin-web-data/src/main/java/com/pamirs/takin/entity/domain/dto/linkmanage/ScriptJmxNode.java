@@ -1,12 +1,12 @@
 package com.pamirs.takin.entity.domain.dto.linkmanage;
 
-import io.shulie.takin.ext.content.enums.NodeTypeEnum;
-import io.shulie.takin.ext.content.enums.SamplerTypeEnum;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-
 import java.util.List;
 import java.util.Map;
+
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 @Data
 public class ScriptJmxNode {

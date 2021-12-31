@@ -159,8 +159,8 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
             entity.setModifierId(WebPluginUtils.traceUserId());
             entity.setTenantId(WebPluginUtils.traceTenantId());
         });
-        boolean flag = applicationPluginsConfigDAO.updateBatchById(entitys);
-        entitys.forEach(e -> this.evict(CommonUtil.generateRedisKey(e.getApplicationName(),e.getConfigKey())));
+        boolean flag = applicationPluginsConfigDAO.updateBatchById(entityList);
+        entityList.forEach(e -> this.evict(CommonUtil.generateRedisKey(e.getApplicationName(),e.getConfigKey())));
         return flag;
     }
 

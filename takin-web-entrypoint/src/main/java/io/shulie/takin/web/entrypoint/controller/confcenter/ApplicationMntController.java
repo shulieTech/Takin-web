@@ -13,6 +13,7 @@ import io.shulie.takin.web.biz.service.ConfCenterService;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -48,6 +49,7 @@ public class ApplicationMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
+    @ApiOperation("添加应用接口")
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_ADD_APPLICATION_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> saveApplication(@RequestBody @Valid ApplicationCreateRequest tApplicationMnt,
@@ -78,6 +80,7 @@ public class ApplicationMntController {
      * @return 成功, 则返回应用信息列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
+    @ApiOperation("查询应用列表信息接口")
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_APPLICATIONINFO_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryApplicationInfo(@RequestBody ApplicationQueryRequest request) {
@@ -96,6 +99,7 @@ public class ApplicationMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
+    @ApiOperation("根据应用id查询应用信息详情接口")
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_MODIFY_APPLICATIONINFO_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryApplicationInfoById(@RequestParam("applicationId") long applicationId) {
@@ -116,6 +120,7 @@ public class ApplicationMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
+    @ApiOperation("批量删除应用信息接口")
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_APPLICATIONINFO_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteApplicationInfoByIds(@RequestParam("applicationIds") String applicationIds) {
@@ -139,6 +144,7 @@ public class ApplicationMntController {
      * @return 成功, 则返回应用列表下拉框数据, 失败则返回错误编码和错误信息
      * @author shulie
      */
+    @ApiOperation("查询应用下拉框数据接口")
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_APPLICATIONDATA_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryApplicationData() {
@@ -157,6 +163,7 @@ public class ApplicationMntController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      * @author shulie
      */
+    @ApiOperation("根据应用id更新应用信息")
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_APPLICATIONINFO_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateApplicationInfo(@RequestBody @Valid ApplicationCreateRequest tApplicationMnt,
@@ -184,6 +191,7 @@ public class ApplicationMntController {
      * @return 成功, 则返回应用信息列表, 失败则返回错误编码和错误信息
      * @author shulie
      */
+    @ApiOperation("查询应用信息列表,废弃")
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_APPNAMELIST_URI,
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryAppNameByPradar() {

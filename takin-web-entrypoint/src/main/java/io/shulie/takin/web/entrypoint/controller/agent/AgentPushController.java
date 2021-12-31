@@ -135,6 +135,7 @@ public class AgentPushController {
 
     @PostMapping(value = AgentUrls.UPLOAD_APP_INFO,
         produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation("上传应用信息接口")
     public ResponseEntity<Object> judgeNeedUpload(@RequestBody TUploadInterfaceVo tUploadInterfaceVo) {
         try {
             return ResponseOk.create(uploadInterfaceService.saveUploadInterfaceData(tUploadInterfaceVo));
@@ -151,6 +152,7 @@ public class AgentPushController {
      */
     @PostMapping(value = AgentUrls.UPLOAD,
         produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation("判断是否需要上传")
     public ResponseEntity<Object> judgeNeedUpload(@RequestBody TUploadNeedVo uploadNeedVo) {
         try {
             return ResponseOk.create(uploadInterfaceService.executeNeedUploadInterface(uploadNeedVo));

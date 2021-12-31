@@ -81,6 +81,7 @@ public class BlackWhiteListMntController {
      * @author shulie
      */
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_ADD_WLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation("添加白名单接口")
     public ResponseEntity<Object> saveWhiteList(@RequestBody @Valid TWListVo twlistVo, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseError.create(1010200101, bindingResult.getFieldError().getDefaultMessage());
@@ -103,6 +104,7 @@ public class BlackWhiteListMntController {
      *
      * @return -
      */
+    @ApiOperation("白名单文件上传")
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPLOAD_WLIST_URI)
     public ResponseEntity<Object> uploadWhiteList(@RequestParam(value = "file") MultipartFile[] files) {
 
@@ -124,6 +126,7 @@ public class BlackWhiteListMntController {
      * @param principalNo     负责人工号
      * @param type            白名单类型
      */
+    @ApiOperation("白名单导出接口")
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_EXCEL_DOWNLOAD_URI)
     public void whiteListDownload(HttpServletResponse response,
                                   String applicationName,
@@ -154,6 +157,7 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
+    @ApiOperation("查询白名单列表")
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_WLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryWhiteList(@RequestBody Map<String, Object> paramMap) {
         try {
@@ -182,6 +186,7 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
+    @ApiOperation("根据id查询白名单详情接口")
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_WLISTBYID_URI,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> querySingleWhiteListById(@RequestParam("wlistId") String whitelistId) {
@@ -202,6 +207,7 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
+    @ApiOperation("根据id更新白名单接口")
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_UPDATE_WLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateWhiteListById(@RequestBody @Valid TWList tWhiteList, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -222,6 +228,7 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
+    @ApiOperation("批量删除白名单接口")
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DELETE_WLIST_URI, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> deleteWhiteListByIds(@RequestParam("wlistIds") String whitelistIds) {
         try {
@@ -245,6 +252,7 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
+    @ApiOperation("查询白名单字典列表接口")
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_DIC_QUERY_WLIST_URI,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryWhitelistIdsListDic() {
@@ -283,6 +291,7 @@ public class BlackWhiteListMntController {
      * @author shulie
      * @date 2019/3/1 14:42
      */
+    @ApiOperation("根据appname查询该应用下的白名单")
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_WLISTBYAPPNAME_URI,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryWhitelistIdsListByAppName(@RequestBody Map<String, Object> paramMap) {
@@ -316,6 +325,7 @@ public class BlackWhiteListMntController {
      *
      * @author shulie
      */
+    @ApiOperation("根据应用ID查询该应用下的白名单列表")
     @GetMapping(value = ApiUrls.API_TAKIN_CONFCENTER_QUERY_WLISTBYAPPID_URI,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> queryWhitelistIdsListByAppId(@RequestParam("applicationId") String applicationId) {

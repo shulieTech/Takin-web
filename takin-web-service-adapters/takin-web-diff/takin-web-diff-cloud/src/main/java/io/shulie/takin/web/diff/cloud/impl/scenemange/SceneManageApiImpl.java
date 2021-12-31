@@ -8,6 +8,8 @@ import javax.annotation.Resource;
 
 import io.shulie.takin.cloud.entrypoint.engine.CloudEngineApi;
 import io.shulie.takin.cloud.entrypoint.process.ProcessApi;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginDetailsWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginFetchWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.CloudUpdateSceneFileRequest;
@@ -26,8 +28,6 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperRe
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.stereotype.Component;

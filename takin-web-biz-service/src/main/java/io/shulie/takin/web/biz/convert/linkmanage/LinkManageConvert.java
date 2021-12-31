@@ -1,8 +1,10 @@
 package io.shulie.takin.web.biz.convert.linkmanage;
 
+import java.util.List;
+
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
-import io.shulie.takin.ext.content.script.ScriptNode;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
@@ -19,8 +21,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
-
-import java.util.List;
 
 /**
  * @author zhaoyong

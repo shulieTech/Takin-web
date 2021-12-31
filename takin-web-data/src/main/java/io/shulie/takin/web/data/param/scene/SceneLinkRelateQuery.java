@@ -1,6 +1,6 @@
 package io.shulie.takin.web.data.param.scene;
 
-import io.shulie.takin.ext.content.AbstractEntry;
+import io.shulie.takin.cloud.ext.content.AbstractEntry;
 import lombok.Data;
 
 

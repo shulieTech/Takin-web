@@ -21,4 +21,9 @@ public interface CacheConstants {
      */
     String CACHE_KEY_AGENT_APPLICATION_NODE = "agentApplicationNode";
 
+    /**
+     * 缓存键, 年度总结
+     */
+    String CACHE_KEY_ANNUAL_REPORT = "annualReport";
+
 }

@@ -525,6 +525,11 @@ public class ActivityServiceImpl implements ActivityService {
             return activity;
         }
 
+        // 拓扑图为空（说明没有流量），直接返回
+        if(CollectionUtils.isEmpty(activity.getTopology().getNodes())){
+            return activity;
+        }
+
         // 正常业务活动时，才对 拓扑图处理
 
         // 如果 起始时间 或 结束时间 为空，默认 查询5分钟的数据

@@ -58,7 +58,7 @@ public class RedisConfig implements CacheConstants {
         return new RedisCacheManager(
             RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory),
             this.getRedisCacheConfigurationWithTtl(600),
-            CACHE_KEY_AGENT_CONFIG, CACHE_KEY_AGENT_APPLICATION_NODE
+            CACHE_KEY_AGENT_CONFIG, CACHE_KEY_AGENT_APPLICATION_NODE, CACHE_KEY_ANNUAL_REPORT
         );
     }
 

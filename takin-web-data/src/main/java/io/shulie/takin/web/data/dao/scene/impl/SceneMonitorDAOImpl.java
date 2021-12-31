@@ -1,4 +1,4 @@
-package io.shulie.takin.web.data.dao.impl;
+package io.shulie.takin.web.data.dao.scene.impl;
 
 import java.util.List;
 

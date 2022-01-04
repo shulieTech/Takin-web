@@ -31,14 +31,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>swagger-bootstrap-ui</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-command-channel</artifactId>
-            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.zookeeper</groupId>
@@ -47,18 +41,6 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>curator-client</artifactId>
-                    <groupId>com.netflix.curator</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>curator-framework</artifactId>
-                    <groupId>com.netflix.curator</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>curator-recipes</artifactId>
-                    <groupId>com.netflix.curator</groupId>
                 </exclusion>
             </exclusions>
         </dependency>

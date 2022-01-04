@@ -223,11 +223,6 @@
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
         </dependency>
-        <dependency>
-            <groupId>cn.afterturn</groupId>
-            <artifactId>easypoi-base</artifactId>
-            <version>4.3.0</version>
-        </dependency>
 
         <dependency>
             <groupId>io.swagger</groupId>

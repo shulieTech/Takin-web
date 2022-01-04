@@ -65,6 +65,7 @@ CREATE TABLE `t_application_plugin_upgrade`
    `upgrade_agent_id` varchar(40) DEFAULT NULL COMMENT '处理升级对应的agentId',
    `download_path` varchar(255) DEFAULT '' COMMENT '下载地址',
    `plugin_upgrade_status` tinyint(2) DEFAULT '0' COMMENT '升级状态 0 未升级 1升级成功 2升级失败 3已回滚',
+   `node_num` int(4) NOT NULL DEFAULT '1' COMMENT '节点数量',
    `error_info` varchar(2048) DEFAULT NULL COMMENT '升级失败信息',
    `type` tinyint(2) DEFAULT NULL COMMENT '升级单类型 0 agent上报，1 主动升级',
    `remark` varchar(500) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',

@@ -1,6 +1,8 @@
 package io.shulie.takin.web.entrypoint.controller.scriptmanage;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 import javax.validation.Valid;
 
@@ -255,9 +257,17 @@ public class ScriptManageController {
     }
 
     @GetMapping("/support/plugin/list/all")
-    @ApiOperation(value = "获取支持的插件列表")
-    public List<SupportJmeterPluginNameResponse> getAllJmeterPluginNameList() {
-        return scriptManageService.getAllJmeterPluginNameList();
+    @ApiOperation(value = "获取全部支持的插件列表")
+    public List<LinkedHashMap<String, Object>> getAllJmeterPluginNameList() {
+        List<SupportJmeterPluginNameResponse> old = scriptManageService.getAllJmeterPluginNameList();
+        List<LinkedHashMap<String, Object>> result = new ArrayList<>(old.size());
+        old.forEach(t -> t.getSinglePluginRenderResponseList().forEach(c ->
+            result.add(new LinkedHashMap<String, Object>(3) {{
+                put("id", c.getValue());
+                put("type", t.getType());
+                put("name", c.getLabel());
+            }})));
+        return result;
     }
 
     @GetMapping("/support/plugin/version")

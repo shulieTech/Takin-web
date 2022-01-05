@@ -105,6 +105,14 @@ public interface ActivityService {
     BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request);
 
     /**
+     * 根据业务活动id,查询关联应用名
+     *
+     * @param activityId
+     * @return
+     */
+    List<String> processAppNameByBusinessActiveId(Long activityId);
+
+    /**
      * 根据条件查询业务活动
      * @param request
      * @return

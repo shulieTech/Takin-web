@@ -15,7 +15,6 @@ import io.shulie.takin.web.data.result.report.ReportMachineResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -150,7 +149,6 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
         this.remove(queryWrapper);
     }
 
-    @NotNull
     private LambdaQueryWrapper<ReportMachineEntity> getReportMachineEntityLambdaQueryWrapper(ReportLocalQueryParam queryParam) {
         LambdaQueryWrapper<ReportMachineEntity> queryWrapper = this.getLambdaQueryWrapper();
         queryWrapper.eq(ReportMachineEntity::getReportId, queryParam.getReportId());

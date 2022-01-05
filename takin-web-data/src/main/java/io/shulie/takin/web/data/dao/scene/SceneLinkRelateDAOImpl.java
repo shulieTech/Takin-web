@@ -89,7 +89,6 @@ public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, S
         return this.count(wrapper);
     }
 
-    @NotNull
     private List<SceneLinkRelateResult> getSceneLinkRelateResults(LambdaQueryWrapper<SceneLinkRelateEntity> wrapper) {
         wrapper.eq(SceneLinkRelateEntity::getIsDeleted, 0);
         List<SceneLinkRelateEntity> entities = this.list(wrapper);

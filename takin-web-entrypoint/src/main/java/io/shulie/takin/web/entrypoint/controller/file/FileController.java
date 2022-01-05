@@ -26,6 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,6 +48,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Api(tags = "接口: 文件管理")
 @Slf4j
 public class FileController {
+
+    /**
+     * 上传文件的路径
+     */
+    @Value("${takin.data.path}")
+    private String uploadPath;
 
     @Resource
     private CloudFileApi cloudFileApi;
@@ -129,7 +139,7 @@ public class FileController {
         arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR));
         arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH));
         arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH));
-        arrayList.add(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_DATA_PATH));
+        arrayList.add(uploadPath);
         return arrayList;
     }
 

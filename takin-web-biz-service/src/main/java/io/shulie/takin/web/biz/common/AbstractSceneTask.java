@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.common;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,11 +67,21 @@ public abstract class AbstractSceneTask {
         return ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.PER_TENANT_ALLOW_TASK_THREADS_MAX);
     }
 
-    protected void removeReportKey(Long reportId, TenantCommonExt commonExt) {
-        final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
-        if (redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY, 0, reportKey) > 0) {
-            redisTemplate.opsForValue().getOperations().delete(reportKey);
+    protected void cleanUnAvailableTasks(List<SceneTaskDto> taskDtoList) {
+        try {
+            if(CollectionUtils.isNotEmpty(taskDtoList)){
+                taskDtoList.stream().filter(t -> t.getEndTime()!=null && Duration.between(t.getEndTime(), LocalDateTime.now()).toDays() > 2).forEach(
+                    t -> removeReportKey(t.getReportId()));
+            }
+        }catch (Exception e){
+            log.error("清理过期任务时发生错误！",e);
         }
+    }
+
+    private void removeReportKey(Long reportId) {
+        final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
+        redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY, 0, reportKey);
+        redisTemplate.opsForValue().getOperations().delete(reportKey);
     }
 
     protected abstract void runTaskInTenantIfNecessary(int allowedTenantThreadMax, SceneTaskDto tenantTask,

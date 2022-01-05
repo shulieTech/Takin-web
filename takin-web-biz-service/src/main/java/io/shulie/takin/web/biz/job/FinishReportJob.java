@@ -89,6 +89,7 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                     }
                 }
             }
+            cleanUnAvailableTasks(taskDtoList);
         }
         log.debug("finishReport 执行时间:{}", System.currentTimeMillis() - start);
     }

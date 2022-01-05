@@ -11,8 +11,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
-
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.collection.CollectionUtil;
@@ -94,6 +92,7 @@ import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

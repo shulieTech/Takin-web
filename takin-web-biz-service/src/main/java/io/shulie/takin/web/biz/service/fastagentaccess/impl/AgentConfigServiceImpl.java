@@ -1,12 +1,9 @@
 package io.shulie.takin.web.biz.service.fastagentaccess.impl;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,15 +15,11 @@ import javax.annotation.Resource;
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.util.StrUtil;
-
 import com.google.common.collect.ImmutableMap;
-
 import io.shulie.amdb.common.dto.agent.AgentConfigDTO;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
-import io.shulie.takin.web.biz.utils.TestZkConnUtils;
 import io.shulie.takin.web.amdb.api.AgentConfigClient;
-import io.shulie.amdb.common.dto.agent.AgentConfigDTO;
+import io.shulie.takin.web.amdb.bean.query.fastagentaccess.AgentConfigQueryDTO;
 import io.shulie.takin.web.biz.constant.LoginConstant;
 import io.shulie.takin.web.biz.pojo.bo.ConfigListQueryBO;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigCreateRequest;
@@ -46,35 +39,22 @@ import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigValueTypeEnum
 import io.shulie.takin.web.common.util.AppCommonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.fastagentaccess.AgentConfigDAO;
-import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
-import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
-import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentConfigQueryParam;
-import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
 import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentConfigParam;
 import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentConfigParam;
-import io.shulie.takin.web.amdb.bean.query.fastagentaccess.AgentConfigQueryDTO;
-import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigValueTypeEnum;
-import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigListResponse;
-import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigUpdateRequest;
-import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectMechanismEnum;
-import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigEffectQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentDynamicConfigQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigEffectListResponse;
-
-import org.springframework.util.Assert;
+import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * agent配置管理(AgentConfig)service

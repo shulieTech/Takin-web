@@ -1,5 +1,9 @@
 package io.shulie.takin.web.ext.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
@@ -11,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.plugin.framework.core.PluginManager;
+import io.shulie.takin.web.ext.api.agentupgradeonline.AgentHeartbeatExtApi;
 import io.shulie.takin.web.ext.api.auth.WebDataAuthExtApi;
 import io.shulie.takin.web.ext.api.auth.WebUserAuthExtApi;
 import io.shulie.takin.web.ext.api.e2e.InspectionExtApi;
@@ -54,6 +59,7 @@ public class WebPluginUtils {
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
     private static WebUserAuthExtApi userAuthExtApi;
+    private static AgentHeartbeatExtApi agentHeartbeatExtApi;
     public static InspectionExtApi inspectionExtApi;
     private static WebTenantExtApi tenantExtApi;
 
@@ -65,6 +71,7 @@ public class WebPluginUtils {
         userApi = pluginManager.getExtension(WebUserExtApi.class);
         dataAuthApi = pluginManager.getExtension(WebDataAuthExtApi.class);
         userAuthExtApi = pluginManager.getExtension(WebUserAuthExtApi.class);
+        agentHeartbeatExtApi = pluginManager.getExtension(AgentHeartbeatExtApi.class);
         inspectionExtApi = pluginManager.getExtension(InspectionExtApi.class);
         tenantExtApi = pluginManager.getExtension(WebTenantExtApi.class);
     }
@@ -80,6 +87,20 @@ public class WebPluginUtils {
         private String desc;
     }
 
+    /**
+     * 获取 IAgentCommandProcessor 实现类处理不同的心跳指令
+     *
+     * 由于 IAgentCommandProcessor 类在biz-service模块下所以在当前接口定义中只定义返回Object对象，使用时加下类型判断
+     *
+     * @return IAgentCommandProcessor子类集合
+     */
+    public static List<Object> getAgentCommandProcessor() {
+        List<Object> result = new ArrayList<>();
+        if (Objects.nonNull(agentHeartbeatExtApi)) {
+            result = agentHeartbeatExtApi.getAgentCommandProcessor();
+        }
+        return result;
+    }
     //********************************用户插件模块**********************************//
 
     /**

@@ -1,12 +1,13 @@
 package io.shulie.takin.web.biz.service.fastagentaccess.impl;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -14,48 +15,46 @@ import javax.annotation.Resource;
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.util.StrUtil;
-
 import com.google.common.collect.ImmutableMap;
-
 import io.shulie.amdb.common.dto.agent.AgentConfigDTO;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.biz.utils.AppCommonUtil;
-import io.shulie.takin.web.biz.utils.TestZkConnUtils;
 import io.shulie.takin.web.amdb.api.AgentConfigClient;
-import io.shulie.amdb.common.dto.agent.AgentConfigDTO;
+import io.shulie.takin.web.amdb.bean.query.fastagentaccess.AgentConfigQueryDTO;
 import io.shulie.takin.web.biz.constant.LoginConstant;
 import io.shulie.takin.web.biz.pojo.bo.ConfigListQueryBO;
-import io.shulie.takin.web.common.constant.CacheConstants;
-import io.shulie.takin.web.data.dao.application.ApplicationDAO;
-import io.shulie.takin.web.data.dao.fastagentaccess.AgentConfigDAO;
-import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
-import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
-import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
-import io.shulie.takin.web.data.param.fastagentaccess.AgentConfigQueryParam;
-import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
-import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentConfigParam;
-import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentConfigParam;
-import io.shulie.takin.web.amdb.bean.query.fastagentaccess.AgentConfigQueryDTO;
-import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigValueTypeEnum;
-import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigQueryRequest;
-import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigListResponse;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigUpdateRequest;
-import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectMechanismEnum;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigEffectQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.fastagentaccess.AgentDynamicConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigEffectListResponse;
-
-import org.springframework.util.Assert;
+import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigListResponse;
+import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
+import io.shulie.takin.web.biz.utils.TestZkConnUtils;
+import io.shulie.takin.web.biz.utils.fastagentaccess.AgentVersionUtil;
+import io.shulie.takin.web.common.constant.CacheConstants;
+import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigEffectMechanismEnum;
+import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigTypeEnum;
+import io.shulie.takin.web.common.enums.fastagentaccess.AgentConfigValueTypeEnum;
+import io.shulie.takin.web.common.util.AppCommonUtil;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.fastagentaccess.AgentConfigDAO;
+import io.shulie.takin.web.data.param.fastagentaccess.AgentConfigQueryParam;
+import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentConfigParam;
+import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentConfigParam;
+import io.shulie.takin.web.data.result.application.AgentConfigDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * agent配置管理(AgentConfig)service
@@ -65,13 +64,15 @@ import org.springframework.cache.annotation.CacheEvict;
  */
 @Service
 public class AgentConfigServiceImpl implements AgentConfigService, CacheConstants {
+
     @Resource
     private ApplicationDAO applicationDAO;
     @Resource
     private AgentConfigDAO agentConfigDAO;
     @Resource
     private AgentConfigClient agentConfigClient;
-    @Resource
+
+    @Autowired
     private AgentConfigService agentConfigService;
 
     /**
@@ -130,9 +131,11 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
     @Override
     public List<String> getAllApplication(String keyword) {
         List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
-        List<ApplicationDetailResult> applicationMntList = applicationDAO.getApplicationMntByUserIdsAndKeyword(userIdList,
+        List<ApplicationDetailResult> applicationMntList = applicationDAO.getApplicationMntByUserIdsAndKeyword(
+            userIdList,
             keyword);
-        return applicationMntList.stream().map(ApplicationDetailResult::getApplicationName).collect(Collectors.toList());
+        return applicationMntList.stream().map(ApplicationDetailResult::getApplicationName).collect(
+            Collectors.toList());
     }
 
     @Override
@@ -345,8 +348,20 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             Collectors.toMap(AgentConfigDetailResult::getEnKey, x -> x, (v1, v2) -> v2));
 
         // 1.2 租户下的全局配置
-        queryParam.setTenantId(WebPluginUtils.traceTenantId());
-        queryParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        if (!StringUtils.isEmpty(queryBO.getUserAppKey()) && !StringUtils.isEmpty(queryBO.getEnvCode())) {
+            TenantInfoExt tenantInfoExt = WebPluginUtils.getTenantInfo(queryBO.getUserAppKey(), queryBO.getEnvCode());
+            if (tenantInfoExt != null) {
+                queryParam.setTenantId(tenantInfoExt.getTenantId());
+            }
+        } else {
+            queryParam.setTenantId(WebPluginUtils.traceTenantId());
+        }
+
+        if (!StringUtils.isEmpty(queryBO.getEnvCode())) {
+            queryParam.setEnvCode(queryBO.getEnvCode());
+        } else {
+            queryParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        }
         queryParam.setType(AgentConfigTypeEnum.TENANT_GLOBAL.getVal());
         List<AgentConfigDetailResult> tenantGlobalConfigList = agentConfigDAO.listByTypeAndTenantIdAndEnvCode(
             queryParam);
@@ -384,6 +399,8 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
 
     @Override
     public PagingList<AgentConfigEffectListResponse> queryConfigEffectList(AgentConfigEffectQueryRequest queryRequest) {
+        boolean needEffectValue = queryRequest.getNeedEffectValue() == null || queryRequest.getNeedEffectValue();
+
         // 1、调用大数据接口查询生效列表
         AgentConfigQueryDTO queryDTO = new AgentConfigQueryDTO();
         BeanUtils.copyProperties(queryRequest, queryDTO);
@@ -396,7 +413,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             return PagingList.empty();
         }
 
-        List<AgentConfigEffectListResponse> responseList = dtoList.stream().map(item -> {
+        List<AgentConfigEffectListResponse> responseList = dtoList.parallelStream().map(item -> {
             AgentConfigEffectListResponse response = new AgentConfigEffectListResponse();
             response.setAgentId(item.getAgentId());
             response.setIsEffect(item.getStatus());
@@ -406,11 +423,14 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
                 response.setProgram("重启后生效");
             }
 
-            // 根据应用名，userAppKey 和 enKey查询应该生效的value
-            AgentConfigDetailResult configDetailResult = queryByEnKeyAndProject(queryRequest.getEnKey(),
-                item.getAppName());
-            if (configDetailResult != null) {
-                response.setEffectVal(configDetailResult.getDefaultValue());
+            // 优化性能，列表接口不需要查询生效值
+            if (needEffectValue) {
+                // 根据应用名，userAppKey 和 enKey查询应该生效的value
+                AgentConfigDetailResult configDetailResult = queryByEnKeyAndProject(queryRequest.getEnKey(),
+                    item.getAppName());
+                if (configDetailResult != null) {
+                    response.setEffectVal(configDetailResult.getDefaultValue());
+                }
             }
             return response;
         }).collect(Collectors.toList());
@@ -478,13 +498,13 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             return list;
         }
         // 最终返回结果集合
-        List<AgentConfigListResponse> responseList = new ArrayList<>(list.size());
+        List<AgentConfigListResponse> responseList = new CopyOnWriteArrayList<>();
         // 已生效配置集合
-        List<AgentConfigListResponse> effectList = new ArrayList<>(list.size());
+        List<AgentConfigListResponse> effectList = new CopyOnWriteArrayList<>();
         // 未生效配置集合
-        List<AgentConfigListResponse> notEffectList = new ArrayList<>(list.size());
+        List<AgentConfigListResponse> notEffectList = new CopyOnWriteArrayList<>();
 
-        list.forEach(item -> {
+        list.parallelStream().forEach(item -> {
             // 立即生效的配置全部都是已生效
             if (AgentConfigEffectMechanismEnum.IMMEDIATELY.getVal().equals(item.getEffectMechanism())) {
                 item.setIsEffect(true);
@@ -495,6 +515,7 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
                 queryRequest.setEnKey(item.getEnKey());
                 queryRequest.setProjectName(query.getProjectName());
                 queryRequest.setIsEffect(false);
+                queryRequest.setNeedEffectValue(false);
                 PagingList<AgentConfigEffectListResponse> effectListResponsePagingList = queryConfigEffectList(
                     queryRequest);
                 if (effectListResponsePagingList.getTotal() > 0) {
@@ -505,7 +526,6 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
                     effectList.add(item);
                 }
             }
-
         });
 
         // 如果isEffect为null则不进行筛选，两种状态都返回
@@ -519,8 +539,9 @@ public class AgentConfigServiceImpl implements AgentConfigService, CacheConstant
             // 筛选未生效配置
             responseList = notEffectList;
         }
-        responseList = responseList.stream().sorted(Comparator.comparing(AgentConfigListResponse::getEnKey)).sorted(
-            Comparator.comparing(AgentConfigListResponse::getGmtCreate).reversed()).collect(Collectors.toList());
+        responseList = responseList.parallelStream().sorted(Comparator.comparing(AgentConfigListResponse::getEnKey))
+            .sorted(Comparator.comparing(AgentConfigListResponse::getGmtCreate).reversed()).collect(
+                Collectors.toList());
         return responseList;
     }
 

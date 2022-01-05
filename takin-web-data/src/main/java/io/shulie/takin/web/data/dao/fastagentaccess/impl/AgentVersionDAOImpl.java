@@ -12,10 +12,12 @@ import io.shulie.takin.web.data.mapper.mysql.AgentVersionMapper;
 import io.shulie.takin.web.data.model.mysql.AgentVersionEntity;
 import io.shulie.takin.web.data.param.fastagentaccess.AgentVersionQueryParam;
 import io.shulie.takin.web.data.param.fastagentaccess.CreateAgentVersionParam;
+import io.shulie.takin.web.data.param.fastagentaccess.UpdateAgentVersionParam;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionDetailResult;
 import io.shulie.takin.web.data.result.fastagentaccess.AgentVersionListResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -67,6 +69,13 @@ public class AgentVersionDAOImpl implements AgentVersionDAO, MPUtil<AgentVersion
     @Override
     public Integer insert(CreateAgentVersionParam createParam) {
         return agentVersionMapper.insert(BeanUtil.copyProperties(createParam, AgentVersionEntity.class));
+    }
+
+    @Override
+    public Boolean update(UpdateAgentVersionParam updateParam) {
+        AgentVersionEntity entity = new AgentVersionEntity();
+        BeanUtils.copyProperties(updateParam, entity);
+        return agentVersionMapper.updateById(entity) > 0;
     }
 
     @Override

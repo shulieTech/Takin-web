@@ -51,7 +51,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 @EnableKnife4j
 @Import(BeanValidatorPluginsConfiguration.class)
 @Order(0)
-@Profile({"local","dev","test"})
+@Profile({"local","dev","test","web"})
 public class SwaggerConfig {
 
     @Value("${server.servlet.context-path:}")
@@ -61,10 +61,6 @@ public class SwaggerConfig {
     private Boolean swaggerEnable;
 
 
-    /**
-     * 所有接口
-     * @return 文档
-     */
     @Bean
     public Docket all() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -90,7 +86,10 @@ public class SwaggerConfig {
             .pathProvider(this.pathProvider())
             .groupName("压测平台-V4版本")
             .select().apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex("/api/(scriptDebug|scriptManage|v2/file|config|probe|v2/application/node|agent/application/node/probe|application/middleware|login).*|/agent.*")).build()
+            .paths(getRegex(
+                "/api/(scriptDebug|scriptManage|v2/file|config|probe|v2/application/node|agent/application/node/probe"
+                    + "|application/middleware|login).*|/agent.*"))
+            .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
             .apiInfo(this.apiInfo()) .enable(swaggerEnable);
@@ -419,7 +418,9 @@ public class SwaggerConfig {
             .groupName("6.4版本")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex("/api/(application/remote/call|/application/remote/call/list|activities/virtual|activities|activities/activity|link/scene/manage).*"))
+            .paths(getRegex(
+                "/api/(application/remote/call|/application/remote/call/list|activities/virtual|activities|activities"
+                    + "/activity|link/scene/manage).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
@@ -429,21 +430,47 @@ public class SwaggerConfig {
 
     /**
      * 快速接入一期测试用 nf
+     *
      * @return
      */
     @Bean
     public Docket api_webTest_nf() {
         return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("快速接入一期测试用")
-                .select()
-                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-                .paths(PathSelectors
-                        .regex("/api/(v2/application/remote/call|v2/consumers|v2/link/ds|/application/remote/call/list).*"))
-                .build()
-                .directModelSubstitute(LocalDate.class, String.class)
-                .useDefaultResponseMessages(false)
-                .apiInfo(apiInfo())
-                ;
+            .groupName("快速接入一期测试用")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(PathSelectors
+                .regex("/api/(v2/application/remote/call|v2/consumers|v2/link/ds|/application/remote/call/list).*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo())
+            ;
+    }
+
+    /**
+     * 探针在线升级 nf
+     *
+     * @return
+     */
+    @Bean
+    public Docket agent_upgrade_online() {
+        return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
+            .groupName("探针在线升级")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+//            .paths(getRegex(
+//                "/api/(agentReport|applicationPluginUpgrade|applicationPluginUpgradeRef|applicationTagRef"
+//                    + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/heartbeat).*"))
+                .paths(getRegex("/api/(fast/agent/access/list/new|fast/agent/access/list/tips|" +
+                        "fast/agent/access/errorLog/list|agent/heartbeat|plugin/path|plugin/upgrade|" +
+                        "application/tag|pluginDependent|pluginLibrary|v2/user|tenantInfo/list).*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo())
+            ;
     }
 
     /**

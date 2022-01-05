@@ -51,9 +51,11 @@ import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationListResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
 import io.shulie.takin.web.data.result.application.LibraryResult;
@@ -65,7 +67,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author shiyajian
@@ -447,7 +448,6 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void batchUpdateAppNodeNum(List<NodeNumParam> paramList, String envCode, Long tenantId) {
         paramList.forEach(param -> applicationMntMapper.updateAppNodeNum(param, envCode, tenantId));
     }
@@ -672,4 +672,19 @@ public class ApplicationDAOImpl
             .in(ApplicationMntEntity::getApplicationId, applicationIds)));
     }
 
+
+    @Override
+    public List<ApplicationDetailResult> getAllApplicationsByField() {
+        List<ApplicationMntEntity> allApplications = applicationMntMapper.getAllApplicationsByField();
+        if (CollectionUtils.isEmpty(allApplications)) {
+            return Lists.newArrayList();
+        }
+        return DataTransformUtil.list2list(allApplications, ApplicationDetailResult.class);
+    }
+
+    @Override
+    public IPage<ApplicationListResultByUpgrade> getApplicationList(QueryApplicationByUpgradeParam param) {
+
+        return applicationMntMapper.selectApplicationListByUpgrade(this.setPage(param), param);
+    }
 }

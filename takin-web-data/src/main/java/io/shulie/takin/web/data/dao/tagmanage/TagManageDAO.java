@@ -60,4 +60,19 @@ public interface TagManageDAO {
      * @return
      */
     List<TagManageResult> selectTagByType(Integer type) ;
+
+    /**
+     * 新增tag
+     *
+     * @param tagManageParams
+     * @return
+     */
+    List<TagManageResult> addTags(List<TagManageParam> tagManageParams);
+
+    /**
+     * 根据name和类型批量查询数据源标签
+     *
+     * @return
+     */
+    List<TagManageResult> selectDataSourceTagsByNamesAndType(List<String> tagNames,Integer type);
 }

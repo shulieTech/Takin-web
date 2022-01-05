@@ -29,9 +29,11 @@ import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationListResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.apache.ibatis.annotations.Param;
@@ -403,4 +405,8 @@ public interface ApplicationDAO {
      */
     boolean updateStatusByApplicationIds(Collection<Long> applicationIds, Integer status);
 
+    List<ApplicationDetailResult> getAllApplicationsByField();
+
+
+    IPage<ApplicationListResultByUpgrade> getApplicationList(QueryApplicationByUpgradeParam param);
 }

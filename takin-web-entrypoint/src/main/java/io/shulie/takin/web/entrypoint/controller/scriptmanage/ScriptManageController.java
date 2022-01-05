@@ -254,6 +254,12 @@ public class ScriptManageController {
         return scriptManageService.getSupportJmeterPluginNameList(nameRequest);
     }
 
+    @GetMapping("/support/plugin/list/all")
+    @ApiOperation(value = "获取支持的插件列表")
+    public List<SupportJmeterPluginNameResponse> getAllJmeterPluginNameList() {
+        return scriptManageService.getAllJmeterPluginNameList();
+    }
+
     @GetMapping("/support/plugin/version")
     @ApiOperation(value = "获取支持的插件版本")
     public SupportJmeterPluginVersionResponse getSupportJemterPluginVersionList(

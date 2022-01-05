@@ -122,6 +122,13 @@ public interface ScriptManageService {
     List<SupportJmeterPluginNameResponse> getSupportJmeterPluginNameList(SupportJmeterPluginNameRequest nameRequest);
 
     /**
+     * 获取所有的jmeter插件列表名称
+     *
+     * @return jmeter插件列表名称
+     */
+    List<SupportJmeterPluginNameResponse> getAllJmeterPluginNameList();
+
+    /**
      * 获取支持的jmeter插件版本列表
      *
      * @return

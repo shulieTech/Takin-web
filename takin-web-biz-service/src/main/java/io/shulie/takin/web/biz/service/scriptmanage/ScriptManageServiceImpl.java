@@ -1186,6 +1186,32 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         return nameResponseList;
     }
 
+    /**
+     * 获取所有的jmeter插件列表名称
+     *
+     * @return jmeter插件列表名称
+     */
+    @Override
+    public List<SupportJmeterPluginNameResponse> getAllJmeterPluginNameList() {
+        final List<SupportJmeterPluginNameResponse> nameResponseList = Lists.newArrayList();
+        EnginePluginFetchWrapperReq fetchWrapperReq = new EnginePluginFetchWrapperReq();
+        fetchWrapperReq.setPluginTypes(new ArrayList<>(0));
+        ResponseResult<Map<String, List<EnginePluginSimpleInfoResp>>> responseResult
+            = sceneManageApi.listEnginePlugins(fetchWrapperReq);
+        if (responseResult.getSuccess()) {
+            responseResult.getData().forEach((t, v) -> {
+                nameResponseList.add(new SupportJmeterPluginNameResponse() {{
+                    setType(t);
+                    setSinglePluginRenderResponseList(v.stream().map(c -> new SinglePluginRenderResponse() {{
+                        setLabel(c.getPluginName());
+                        setValue(c.getPluginId());
+                    }}).collect(Collectors.toList()));
+                }});
+            });
+        }
+        return nameResponseList;
+    }
+
     @Override
     public SupportJmeterPluginVersionResponse getSupportJmeterPluginVersionList(
         SupportJmeterPluginVersionRequest versionRequest) {

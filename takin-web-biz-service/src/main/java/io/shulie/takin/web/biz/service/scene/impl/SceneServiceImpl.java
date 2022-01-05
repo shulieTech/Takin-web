@@ -20,7 +20,6 @@ import io.shulie.takin.cloud.common.utils.CommonUtil;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
-import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
@@ -38,7 +37,6 @@ import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
@@ -271,10 +269,10 @@ public class SceneServiceImpl implements SceneService {
         }
 
         if (businessFlowParseRequest.getId() == null) {
-            Long businessFlowId = saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest);
+            Long businessFlowId = saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
             businessFlowParseRequest.setId(businessFlowId);
         } else {
-            updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data);
+            updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data, businessFlowParseRequest.getPluginList());
         }
 
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
@@ -283,7 +281,8 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Long saveBusinessFlow(String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest) {
+    public Long saveBusinessFlow(String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
+        List<PluginConfigCreateRequest> pluginList) {
         SceneQueryParam sceneQueryParam = new SceneQueryParam();
         sceneQueryParam.setSceneName(testName);
         List<SceneResult> sceneResultList = sceneDao.selectListByName(sceneQueryParam);
@@ -314,17 +313,8 @@ public class SceneServiceImpl implements SceneService {
         createRequest.setMVersion(ScriptMVersionEnum.SCRIPT_M_1.getCode());
         createRequest.setRefType(ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE);
         createRequest.setRefValue(sceneCreateParam.getId().toString());
-        //TODO 目前临时将kafka版本锁死,如果脚本中存在kafka取样器，使用kafka2.5版本
-        List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);
-        List<ScriptNode> kafkaScriptNodes = scriptNodeByType.stream().filter(o -> SamplerTypeEnum.KAFKA == o.getSamplerType())
-            .collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(kafkaScriptNodes)) {
-            PluginConfigCreateRequest pluginConfigCreateRequest = new PluginConfigCreateRequest();
-            pluginConfigCreateRequest.setName("2");
-            pluginConfigCreateRequest.setType("KAFKA");
-            pluginConfigCreateRequest.setVersion("v2.5");
-            createRequest.setPluginConfigCreateRequests(Collections.singletonList(pluginConfigCreateRequest));
-        }
+        // 设置插件信息
+        createRequest.setPluginConfigCreateRequests(pluginList);
         Long scriptManageId = scriptManageService.createScriptManage(createRequest);
 
         //更新业务流程
@@ -393,7 +383,7 @@ public class SceneServiceImpl implements SceneService {
 
     @Override
     public BusinessFlowDetailResponse uploadDataFile(BusinessFlowDataFileRequest businessFlowDataFileRequest) {
-        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest, null);
+        updateBusinessFlow(businessFlowDataFileRequest.getId(), null, businessFlowDataFileRequest, null, businessFlowDataFileRequest.getPluginList());
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
         result.setId(businessFlowDataFileRequest.getId());
         return result;
@@ -698,7 +688,9 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void updateBusinessFlow(Long businessFlowId, FileManageUpdateRequest scriptFile, BusinessFlowDataFileRequest businessFlowDataFileRequest, List<ScriptNode> data) {
+    public void updateBusinessFlow(Long businessFlowId, FileManageUpdateRequest scriptFile,
+        BusinessFlowDataFileRequest businessFlowDataFileRequest, List<ScriptNode> data,
+        List<PluginConfigCreateRequest> pluginList) {
         SceneResult sceneResult = sceneDao.getSceneDetail(businessFlowId);
         if (sceneResult == null) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到对应的业务流程！");
@@ -732,7 +724,7 @@ public class SceneServiceImpl implements SceneService {
                 .ofFileManageResponseList(dataFileManageResponseList));
             //脚本后续会把文件和附件放到一起，这里就不分出来了
             updateRequest.setFileManageUpdateRequests(businessFlowDataFileRequest.getFileManageUpdateRequests());
-            updateRequest.setPluginConfigUpdateRequests(businessFlowDataFileRequest.getPluginConfigUpdateRequests());
+            //updateRequest.setPluginList(businessFlowDataFileRequest.getPluginList());
 
         } else {
             List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
@@ -742,20 +734,8 @@ public class SceneServiceImpl implements SceneService {
             updateFileManageRequests.addAll(LinkManageConvert.INSTANCE.ofFileManageResponseList(dataFileManageResponseList));
             updateRequest.setFileManageUpdateRequests(updateFileManageRequests);
         }
-
-        if (CollectionUtils.isNotEmpty(data)) {
-            //TODO 目前临时将kafka版本锁死,如果脚本中存在kafka取样器，使用kafka2.5版本
-            List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);
-            List<ScriptNode> kafkaScriptNodes = scriptNodeByType.stream().filter(o -> SamplerTypeEnum.KAFKA == o.getSamplerType())
-                .collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(kafkaScriptNodes)) {
-                PluginConfigUpdateRequest pluginConfigUpdate = new PluginConfigUpdateRequest();
-                pluginConfigUpdate.setName("2");
-                pluginConfigUpdate.setType("KAFKA");
-                pluginConfigUpdate.setVersion("v2.5");
-                updateRequest.setPluginConfigUpdateRequests(Collections.singletonList(pluginConfigUpdate));
-            }
-        }
+        // 设置插件信息
+        updateRequest.setPluginList(pluginList);
         //更新脚本
         Long scriptDeployId = scriptManageService.updateScriptManage(updateRequest);
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();

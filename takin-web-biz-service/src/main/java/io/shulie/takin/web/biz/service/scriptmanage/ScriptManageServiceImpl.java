@@ -530,7 +530,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
         if (scriptCheckDTO != null && scriptCheckDTO.getIsHttp() != null && !scriptCheckDTO.getIsHttp()) {
             ScriptManageExceptionUtil.isCreateValidError(
-                CollectionUtils.isEmpty(scriptManageDeployUpdateRequest.getPluginConfigUpdateRequests()),
+                CollectionUtils.isEmpty(scriptManageDeployUpdateRequest.getPluginList()),
                 "存在不是http的业务活动，但没有传插件!");
         }
 
@@ -707,7 +707,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
 
         // 创建新的脚本实例
         Map<String, Object> features = Maps.newHashMap();
-        features.put(FeaturesConstants.PLUGIN_CONFIG, scriptManageDeployUpdateRequest.getPluginConfigUpdateRequests());
+        features.put(FeaturesConstants.PLUGIN_CONFIG, scriptManageDeployUpdateRequest.getPluginList());
         scriptManageDeployCreateParam.setFeature(JSON.toJSONString(features));
         return scriptManageDAO.createScriptManageDeploy(scriptManageDeployCreateParam);
     }

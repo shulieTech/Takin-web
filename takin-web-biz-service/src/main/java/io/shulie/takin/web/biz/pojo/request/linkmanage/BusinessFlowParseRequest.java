@@ -1,6 +1,10 @@
 package io.shulie.takin.web.biz.pojo.request.linkmanage;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -21,5 +25,8 @@ public class BusinessFlowParseRequest {
     @ApiModelProperty(name = "scriptFile", value = "脚本文件")
     private FileManageUpdateRequest scriptFile;
 
-
+    @JsonProperty("pluginConfigs")
+    @NotNull(message = "插件信息 不能为空")
+    @ApiModelProperty(name = "pluginConfigs", value = "插件信息")
+    List<PluginConfigCreateRequest> pluginList;
 }

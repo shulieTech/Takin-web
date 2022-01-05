@@ -2,7 +2,7 @@ package io.shulie.takin.web.biz.pojo.request.linkmanage;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -29,5 +29,5 @@ public class BusinessFlowDataFileRequest implements Serializable {
 
     @JsonProperty("pluginConfigs")
     @ApiModelProperty(name = "pluginConfigs", value = "引擎插件列表")
-    private List<PluginConfigUpdateRequest> pluginConfigUpdateRequests;
+    private List<PluginConfigCreateRequest> pluginList;
 }

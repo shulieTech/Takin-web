@@ -64,7 +64,7 @@ public class ScriptManageDeployUpdateRequest implements Serializable {
      * 引擎插件列表
      */
     @JsonProperty("pluginConfigs")
-    private List<PluginConfigUpdateRequest> pluginConfigUpdateRequests;
+    private List<PluginConfigCreateRequest> pluginList;
 
     /**
      * 是否覆盖大文件

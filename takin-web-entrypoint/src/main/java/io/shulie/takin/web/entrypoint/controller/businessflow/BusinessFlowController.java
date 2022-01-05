@@ -30,7 +30,7 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
-import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 
@@ -106,7 +106,7 @@ public class BusinessFlowController {
                 OperationLogContextHolder.addVars("updateFiles", updateFiles);
                 OperationLogContextHolder.addVars("deleteFiles", deleteFiles);
             }
-            List<PluginConfigUpdateRequest> plugins = businessFlowDataFileRequest.getPluginConfigUpdateRequests();
+            List<PluginConfigCreateRequest> plugins = businessFlowDataFileRequest.getPluginList();
             if (CollectionUtils.isNotEmpty(plugins)) {
                 OperationLogContextHolder.addVars("plugins", JsonUtil.toJson(plugins));
             }

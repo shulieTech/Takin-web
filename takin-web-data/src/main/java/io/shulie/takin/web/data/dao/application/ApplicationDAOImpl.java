@@ -64,7 +64,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author shiyajian
@@ -446,7 +445,6 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void batchUpdateAppNodeNum(List<NodeNumParam> paramList, String envCode, Long tenantId) {
         paramList.forEach(param -> applicationMntMapper.updateAppNodeNum(param, envCode, tenantId));
     }

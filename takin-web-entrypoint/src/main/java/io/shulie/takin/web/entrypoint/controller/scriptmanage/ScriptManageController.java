@@ -257,7 +257,7 @@ public class ScriptManageController {
     }
 
     @GetMapping("/support/plugin/list/all")
-    @ApiOperation(value = "获取全部支持的插件列表")
+    @ApiOperation(value = "获取全部支持的插件列表及版本")
     public List<LinkedHashMap<String, Object>> getAllJmeterPluginNameList() {
         List<SupportJmeterPluginNameResponse> old = scriptManageService.getAllJmeterPluginNameList();
         List<LinkedHashMap<String, Object>> result = new ArrayList<>(old.size());
@@ -266,6 +266,9 @@ public class ScriptManageController {
                 put("id", c.getValue());
                 put("type", t.getType());
                 put("name", c.getLabel());
+                put("version", getSupportJemterPluginVersionList(new SupportJmeterPluginVersionRequest() {{
+                    setPluginId(c.getValue());
+                }}).getVersionList());
             }})));
         return result;
     }

@@ -537,7 +537,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             }
 
             // 检查应用相关
-            errorMsg.append(this.checkApplicationCorrelation(applicationMntList));
+            //todo 测试老的压测场景，暂时注释，不做应用校验
+//            errorMsg.append(this.checkApplicationCorrelation(applicationMntList));
         }
 
         // 压测脚本文件检查

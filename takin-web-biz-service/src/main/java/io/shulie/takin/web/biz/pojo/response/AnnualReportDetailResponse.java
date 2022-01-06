@@ -1,4 +1,4 @@
-package io.shulie.takin.web.biz.response;
+package io.shulie.takin.web.biz.pojo.response;
 
 import io.shulie.takin.web.biz.pojo.vo.AnnualReportContentVO;
 import lombok.Data;

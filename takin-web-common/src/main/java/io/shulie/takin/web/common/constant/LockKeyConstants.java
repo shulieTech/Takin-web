@@ -55,4 +55,9 @@ public interface LockKeyConstants {
      */
     String LOCK_HANDLE_PUSH_APPLICATION_MIDDLEWARE = String.format(LOCK_PREFIX, "HANDLE_PUSH_APPLICATION_MIDDLEWARE:%d");
 
+    /**
+     * 脚本调试停止, 锁住脚本实例 id
+     */
+    String LOCK_SCRIPT_DEBUG_STOP = String.format(LOCK_PREFIX, "SCRIPT_DEBUG_STOP:%d");
+
 }

@@ -104,4 +104,8 @@ public class SceneManageWrapperVO extends WebRequest implements Serializable {
 
     public SceneManageWrapperVO() {
     }
+
+    @ApiModelProperty("排除检查的应用ids")
+    private List<Long> excludedApplicationIds;
+
 }

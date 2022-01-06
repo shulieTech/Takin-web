@@ -1,6 +1,6 @@
 package io.shulie.takin.web.biz.service;
 
-import io.shulie.takin.web.biz.response.AnnualReportDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.AnnualReportDetailResponse;
 
 /**
  * 第三方登录服务表(AnnualReport)service

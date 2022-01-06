@@ -23,9 +23,12 @@ import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateReques
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
+import io.shulie.takin.web.biz.pojo.response.activity.BusinessApplicationListResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindException;
@@ -53,6 +56,17 @@ public class ActivityController {
 
     @Autowired
     private ActivityService activityService;
+
+    @ApiOperation("|_ 业务活动下的应用列表")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "业务活动ids", value = "businessActivityIds", required = true,
+            dataType = "array", paramType = "query")
+    })
+    @GetMapping("/application/list")
+    public List<BusinessApplicationListResponse> getActivityById(@RequestParam List<Long> businessActivityIds,
+        String applicationName) {
+        return activityService.listApplicationByBusinessActivityIds(businessActivityIds, applicationName);
+    }
 
     @ApiOperation("添加业务活动")
     @PostMapping("/create")

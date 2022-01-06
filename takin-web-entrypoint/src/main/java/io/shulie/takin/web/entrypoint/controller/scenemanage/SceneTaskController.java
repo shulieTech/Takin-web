@@ -24,6 +24,7 @@ import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
+import io.shulie.takin.web.biz.pojo.request.scenemanage.TaskPreStopRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.UpdateTpsRequest;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
@@ -68,6 +69,17 @@ public class SceneTaskController {
     private SceneManageService sceneManageService;
     @Autowired
     private RedisClientUtils redisClientUtils;
+
+    @ApiOperation("|_ 启动时停止")
+    @PutMapping("/preStop")
+    @ModuleDef(
+        moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE,
+        subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
+        logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_STOP
+    )
+    public void preStop(@Validated @RequestBody TaskPreStopRequest request) {
+        sceneTaskService.preStop(request.getSceneId());
+    }
 
     /**
      * 启动场景

@@ -407,6 +407,15 @@ public interface ApplicationDAO {
 
     List<ApplicationDetailResult> getAllApplicationsByField();
 
-
     IPage<ApplicationListResultByUpgrade> getApplicationList(QueryApplicationByUpgradeParam param);
+
+    /**
+     * 根据应用名称, 用户id, 获得应用列表
+     *
+     * @param applicationNames 应用名称
+     * @param userId 用户id
+     * @return 应用列表
+     */
+    List<ApplicationListResult> listByApplicationNamesAndUserId(Collection<String> applicationNames, Long userId);
+
 }

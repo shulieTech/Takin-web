@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.StrUtil;
 import io.shulie.takin.web.biz.pojo.vo.AnnualReportContentVO;
-import io.shulie.takin.web.biz.response.AnnualReportDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.AnnualReportDetailResponse;
 import io.shulie.takin.web.biz.service.AnnualReportService;
 import io.shulie.takin.web.common.constant.CacheConstants;
 import io.shulie.takin.web.common.util.JsonUtil;

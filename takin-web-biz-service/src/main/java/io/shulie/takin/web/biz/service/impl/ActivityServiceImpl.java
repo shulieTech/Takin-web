@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
+import io.shulie.takin.web.biz.pojo.response.activity.BusinessApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
@@ -61,6 +63,7 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDeta
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.LinkTopologyService;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
@@ -75,6 +78,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.LinkManageTableMapper;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
@@ -86,6 +90,7 @@ import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityUpdateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
@@ -129,6 +134,48 @@ public class ActivityServiceImpl implements ActivityService {
     private LinkManageTableMapper linkManageTableMapper;
     @Autowired
     private ApplicationEntranceClient applicationEntranceClient;
+
+    @Autowired
+    private ApplicationBusinessActivityService applicationBusinessActivityService;
+
+    @Autowired
+    private ApplicationDAO applicationDAO;
+
+    @Override
+    public List<BusinessApplicationListResponse> listApplicationByBusinessActivityIds(List<Long> businessActivityIds,
+        String applicationName) {
+        // 根据业务活动获得应用名称
+        Set<String> applicationNames = businessActivityIds.stream().map(businessActivityId -> {
+            List<String> businessApplicationNames =
+                applicationBusinessActivityService.processAppNameByBusinessActiveId(businessActivityId);
+
+            // 搜索
+            if (CollectionUtil.isNotEmpty(businessApplicationNames) && StrUtil.isNotBlank(applicationName)) {
+                businessApplicationNames.removeIf(
+                    businessApplicationName -> !businessApplicationName.contains(applicationName));
+            }
+
+            return businessApplicationNames;
+
+        }).filter(CollectionUtil::isNotEmpty).flatMap(Collection::stream).collect(Collectors.toSet());
+        if (applicationNames.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 根据应用名称, 用户id, 获得应用列表
+        List<ApplicationListResult> applicationList = applicationDAO.listByApplicationNamesAndUserId(
+            applicationNames, WebPluginUtils.traceUserId());
+        if (applicationList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return applicationList.stream().map(application -> {
+            BusinessApplicationListResponse response = new BusinessApplicationListResponse();
+            response.setApplicationId(application.getApplicationId().toString());
+            response.setApplicationName(application.getApplicationName());
+            return response;
+        }).collect(Collectors.toList());
+    }
 
     @Override
     @Transactional(rollbackFor = Throwable.class)

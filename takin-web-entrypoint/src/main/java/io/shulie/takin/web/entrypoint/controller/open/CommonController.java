@@ -1,6 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.open;
 
-import io.shulie.takin.web.biz.response.AnnualReportDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.AnnualReportDetailResponse;
 import io.shulie.takin.web.biz.service.AnnualReportService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

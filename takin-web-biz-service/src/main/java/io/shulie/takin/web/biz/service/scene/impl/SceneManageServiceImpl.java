@@ -1,96 +1,98 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
-import java.util.Map;
-import java.util.Date;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import lombok.extern.slf4j.Slf4j;
-
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
-
-import org.springframework.beans.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-import org.apache.commons.collections4.CollectionUtils;
-
-import com.google.common.collect.Maps;
 import com.google.common.collect.Lists;
-
+import com.google.common.collect.Maps;
+import com.pamirs.takin.common.constant.SceneManageConstant;
+import com.pamirs.takin.common.constant.TimeUnitEnum;
+import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.ListHelper;
 import com.pamirs.takin.common.util.parse.UrlUtil;
-import com.pamirs.takin.common.constant.TimeUnitEnum;
-import com.pamirs.takin.common.exception.ApiException;
-import com.pamirs.takin.common.constant.SceneManageConstant;
-import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
-import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
+import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
+import com.pamirs.takin.entity.domain.entity.scenemanage.SceneBusinessActivityRef;
+import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
-import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
-import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
-import com.pamirs.takin.entity.domain.entity.scenemanage.SceneBusinessActivityRef;
-
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.web.common.util.ActivityUtil;
-import io.shulie.takin.web.common.domain.WebResponse;
+import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
+import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.takin.cloud.sdk.model.common.TimeBean;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.common.exception.ExceptionCode;
-import io.shulie.takin.web.biz.service.scene.SceneService;
-import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.common.enums.script.FileTypeEnum;
-import io.shulie.takin.web.data.result.linkmange.SceneResult;
-import io.shulie.takin.web.common.enums.script.ScriptTypeEnum;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
-import io.shulie.takin.web.data.dao.application.ApplicationDAO;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.biz.service.scenemanage.SceneTagService;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
-import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
-import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
-import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
-import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
-import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
-import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
-import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneIpNumReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
-import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
-import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneStartCheckResp;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneTagRefResponse;
-import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
-import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryByIdsReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneStartPreCheckReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptCheckAndUpdateReq;
+import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneStartCheckResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryByIdsReq;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
+import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneTagRefResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
+import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
+import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
+import io.shulie.takin.web.biz.service.scenemanage.SceneTagService;
+import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
+import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
+import io.shulie.takin.web.common.constant.AppConstants;
+import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.common.enums.script.FileTypeEnum;
+import io.shulie.takin.web.common.enums.script.ScriptTypeEnum;
+import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
+import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.web.data.param.CreateSceneExcludedApplicationParam;
+import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
+import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
+import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author qianshui
@@ -119,6 +121,31 @@ public class SceneManageServiceImpl implements SceneManageService {
     private SceneSchedulerTaskService sceneSchedulerTaskService;
     @Resource
     private ApplicationBusinessActivityService applicationBusinessActivityService;
+
+    @Autowired
+    private SceneExcludedApplicationDAO sceneExcludedApplicationDAO;
+
+    @Autowired
+    private SceneExcludedApplicationDAO excludedApplicationDAO;
+
+    @Override
+    public SceneDetailResponse getById(Long sceneId) {
+        ResponseResult<SceneManageWrapperResp> sceneResult = this.detailScene(sceneId);
+        if (sceneResult == null) {
+            return null;
+        }
+
+        SceneDetailResponse sceneDetailResponse = DataTransformUtil.copyBeanPropertiesWithNull(sceneResult.getData(),
+            SceneDetailResponse.class);
+        if (sceneDetailResponse == null) {
+            return null;
+        }
+
+        // 查询排除的应用
+        List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
+        sceneDetailResponse.setExcludedApplicationIds(DataTransformUtil.list2list(excludedApplicationIds, String.class));
+        return sceneDetailResponse;
+    }
 
     @Override
     public ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req) {
@@ -162,10 +189,17 @@ public class SceneManageServiceImpl implements SceneManageService {
                 sceneSchedulerTaskService.insert(createRequest);
             }
             webResponse.setSuccess(true);
+
+            // 忽略检测的应用
+            if (result != null && result.getSuccess()) {
+                this.createSceneExcludedApplication(result.getData(), vo.getExcludedApplicationIds());
+            }
+
         } catch (Exception e) {
             log.error("新增压测场景失败", e);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_ADD_ERROR, "新增压测场景失败！");
         }
+
         return webResponse;
     }
 
@@ -433,6 +467,11 @@ public class SceneManageServiceImpl implements SceneManageService {
         webResponse.setData(cloudResult.getData());
         webResponse.setSuccess(cloudResult.getSuccess());
         webResponse.setTotal(cloudResult.getTotalNum());
+
+        // 先删除
+        sceneExcludedApplicationDAO.removeBySceneId(dto.getId());
+        // 排除应用更新
+        this.createSceneExcludedApplication(dto.getId(), dto.getExcludedApplicationIds());
         return webResponse;
     }
 
@@ -789,4 +828,31 @@ public class SceneManageServiceImpl implements SceneManageService {
         }
         return ResponseResult.success(list);
     }
+
+    /**
+     * 创建场对应的排除应用
+     *
+     * @param excludedApplicationIds 排除的应用ids
+     * @param sceneId 场景id
+     */
+    private void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds) {
+        if (CollectionUtil.isEmpty(excludedApplicationIds)) {
+            return;
+        }
+
+        List<CreateSceneExcludedApplicationParam> createSceneExcludedApplicationParams =
+            excludedApplicationIds.stream().map(excludedApplicationId -> {
+                CreateSceneExcludedApplicationParam createSceneExcludedApplicationParam
+                    = new CreateSceneExcludedApplicationParam();
+                createSceneExcludedApplicationParam.setSceneId(sceneId);
+                createSceneExcludedApplicationParam.setApplicationId(excludedApplicationId);
+                return createSceneExcludedApplicationParam;
+            }).collect(Collectors.toList());
+
+        // 再插入
+        if (!sceneExcludedApplicationDAO.saveBatch(createSceneExcludedApplicationParams)) {
+            throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, "排除的应用保存失败!");
+        }
+    }
+
 }

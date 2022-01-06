@@ -684,7 +684,15 @@ public class ApplicationDAOImpl
 
     @Override
     public IPage<ApplicationListResultByUpgrade> getApplicationList(QueryApplicationByUpgradeParam param) {
-
         return applicationMntMapper.selectApplicationListByUpgrade(this.setPage(param), param);
     }
+
+    @Override
+    public List<ApplicationListResult> listByApplicationNamesAndUserId(Collection<String> applicationNames, Long userId) {
+        return DataTransformUtil.list2list(applicationMntMapper.selectList(this.getLambdaQueryWrapper()
+            .select(ApplicationMntEntity::getApplicationId, ApplicationMntEntity::getApplicationName)
+            .in(ApplicationMntEntity::getApplicationName, applicationNames)
+            .eq(ApplicationMntEntity::getUserId, userId)), ApplicationListResult.class);
+    }
+
 }

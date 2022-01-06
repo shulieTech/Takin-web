@@ -49,4 +49,13 @@ public interface ScriptDebugService {
      */
     PagingList<ScriptDebugRequestListResponse> pageScriptDebugRequest(PageScriptDebugRequestRequest pageScriptDebugRequestRequest);
 
+    boolean checkIsPreStopSuccess(Object resultCodeObject);
+
+    /**
+     * 脚本调试停止
+     *
+     * @param scriptDeployId 脚本实例id
+     */
+    void stop(Long scriptDeployId);
+
 }

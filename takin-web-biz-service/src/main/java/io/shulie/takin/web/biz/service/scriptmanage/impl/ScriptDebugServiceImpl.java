@@ -26,6 +26,7 @@ import com.pamirs.takin.common.constant.AppSwitchEnum;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
+import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
@@ -33,6 +34,7 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import io.shulie.amdb.common.enums.RpcType;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAssetBalanceReq;
 import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskCheckReq;
@@ -41,6 +43,7 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStart
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStatusResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
@@ -102,11 +105,13 @@ import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptDebugEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import io.shulie.takin.web.data.param.scriptmanage.PageScriptDebugParam;
+import io.shulie.takin.web.data.param.scriptmanage.SaveOrUpdateScriptDebugParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.LinkManageResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptDebugListResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
@@ -195,6 +200,66 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     private SceneService sceneService;
     @Resource
     private SceneManageService sceneManageService;
+
+    @Override
+    public void stop(Long scriptDeployId) {
+        String lockKey = String.format(LockKeyConstants.LOCK_SCRIPT_DEBUG_STOP, scriptDeployId);
+        if (!distributedLock.tryLockSecondsTimeUnit(lockKey, 0L, 10L)) {
+            throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, AppConstants.TOO_FREQUENTLY);
+        }
+
+        try {
+            // 该脚本发布实例是否有未完成的调试
+            List<ScriptDebugListResult> unfinishedScriptDebugList = scriptDebugDAO.listUnfinished(scriptDeployId);
+            if (unfinishedScriptDebugList.isEmpty()) {
+                return;
+            }
+
+            // 直接调用 cloud 停止压测接口
+            SceneManageIdReq req = new SceneManageIdReq();
+            unfinishedScriptDebugList.forEach(scriptDebug -> {
+                req.setId(scriptDebug.getCloudSceneId());
+                ResponseResult<?> responseResult = sceneTaskApi.preStopTask(req);
+                if (responseResult == null) {
+                    throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, "停止调试错误, 请重试!");
+                }
+
+                if (!responseResult.getSuccess()) {
+                    throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, JsonHelper.bean2Json(responseResult.getError()));
+                }
+
+                // 先调用启动前的停止, 成功, 则修改 scriptDebug 状态
+                boolean isPreStopSuccess;
+                try {
+                    isPreStopSuccess = this.checkIsPreStopSuccess(responseResult.getData());
+                } catch (Exception e) {
+                    log.error("脚本停止 --> 错误: {}", e.getMessage(), e);
+                    throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL,
+                        String.format("停止调试错误, 错误信息: %s!", e.getMessage()));
+                }
+
+                if (isPreStopSuccess) {
+                    SaveOrUpdateScriptDebugParam updateParam = new SaveOrUpdateScriptDebugParam();
+                    updateParam.setId(scriptDebug.getId());
+                    updateParam.setStatus(ScriptDebugStatusEnum.SUCCESS.getCode());
+                    updateParam.setRemark("手动停止调试!");
+                    if (!scriptDebugDAO.updateById(updateParam)) {
+                        throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, "更新调试状态失败!");
+                    }
+                    return;
+                }
+
+                // 失败, 则调用停止压测
+                ResponseResult<String> response = sceneTaskApi.stopTask(req);
+                if (response != null && !response.getSuccess()) {
+                    throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, JsonHelper.bean2Json(response.getError()));
+                }
+            });
+
+        } finally {
+            distributedLock.unLockSafely(lockKey);
+        }
+    }
 
     @Override
     public ScriptDebugResponse debug(ScriptDebugDoDebugRequest request) {
@@ -672,6 +737,27 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             return response;
         }).collect(Collectors.toList());
         return PagingList.of(requestList, entryTracePage.getTotal());
+    }
+
+    /**
+     * 判断是否提前停止成功
+     *
+     * @param resultCodeObject 提前停止业务码
+     * @return 是否成功
+     */
+    @Override
+    public boolean checkIsPreStopSuccess(Object resultCodeObject) {
+        // 停止返回业务码
+        // resultCode 业务码, 1 成功, 2 可以调用停止压测
+        int resultCode = Integer.parseInt(resultCodeObject.toString());
+        if (resultCode == 1) {
+            return true;
+        } else if (resultCode == 2) {
+            return false;
+        } else {
+            throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL,
+                String.format("停止调试业务码返回错误, %d!", resultCode));
+        }
     }
 
     /**

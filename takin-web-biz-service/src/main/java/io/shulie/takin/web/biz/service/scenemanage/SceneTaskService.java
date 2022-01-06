@@ -65,4 +65,20 @@ public interface SceneTaskService {
      * @return
      */
     ResponseResult<SceneJobStateResp> checkSceneJobStatus(Long sceneId);
+
+    /**
+     * 压测启动中停止
+     *
+     * @param sceneId 场景id
+     */
+    void preStop(Long sceneId);
+
+    /**
+     * 停止
+     *
+     * @param sceneId 场景id
+     * @return 是否成功
+     */
+    ResponseResult<String> stop(Long sceneId);
+
 }

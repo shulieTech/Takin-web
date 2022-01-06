@@ -77,7 +77,7 @@ public class MenuServiceImpl implements MenuService {
         if (menuAuthExtApi == null) {
             return queryUserMenuList().stream().map(MenuResponseExt::getKey)
                 .distinct().filter(StrUtil::isNotBlank)
-                .collect(Collectors.toMap(t -> t, c -> true));
+                .collect(Collectors.toMap(t -> t, c -> true, (v1, v2) -> v2));
         }
         //      通过拓展插件对数据库配置的菜单项进行筛选
         else {return menuAuthExtApi.queryUserMenuKeys();}
@@ -111,7 +111,7 @@ public class MenuServiceImpl implements MenuService {
         WebMenuAuthExtApi menuAuthExtApi = pluginManager.getExtension(WebMenuAuthExtApi.class);
         //      如果没有拓展插件，则默认返回数据库配置的全部按钮项
         if (menuAuthExtApi == null) {
-            return buttons.stream().collect(Collectors.toMap(key -> key, value -> true));
+            return buttons.stream().collect(Collectors.toMap(key -> key, value -> true, (v1, v2) -> v2));
         }
         //      通过拓展插件对数据库配置的按钮项进行筛选
         else {return menuAuthExtApi.filterButton(buttons);}

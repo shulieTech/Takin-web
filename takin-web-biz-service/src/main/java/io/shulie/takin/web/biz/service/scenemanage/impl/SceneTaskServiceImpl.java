@@ -389,6 +389,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         req.setSceneId(request.getSceneId());
         req.setReportId(request.getReportId());
         req.setTpsNum(request.getTargetTps());
+        req.setXpathMd5(request.getXpathMd5());
         try {
             cloudTaskApi.updateSceneTaskTps(req);
         } catch (Throwable e) {
@@ -398,10 +399,11 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     }
 
     @Override
-    public Long queryTaskTps(Long reportId, Long sceneId) {
+    public Long queryTaskTps(Long reportId, Long sceneId, String xPathMd5) {
         SceneTaskQueryTpsReq req = new SceneTaskQueryTpsReq();
         req.setSceneId(sceneId);
         req.setReportId(reportId);
+        req.setXpathMd5(xPathMd5);
         try {
             SceneTaskAdjustTpsResp sceneTaskAdjustTpsResp = cloudTaskApi.queryAdjustTaskTps(req);
             return sceneTaskAdjustTpsResp.getTotalTps();
@@ -538,7 +540,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
             // 检查应用相关
             //todo 测试老的压测场景，暂时注释，不做应用校验
-//            errorMsg.append(this.checkApplicationCorrelation(applicationMntList));
+            //            errorMsg.append(this.checkApplicationCorrelation(applicationMntList));
         }
 
         // 压测脚本文件检查

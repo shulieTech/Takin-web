@@ -204,8 +204,8 @@ public class SceneTaskController {
 
     @GetMapping("/queryTaskTps")
     @ApiOperation(value = "查询运行中修改之后的tps")
-    public ResponseResult<Long> queryTaskTps(@RequestParam Long reportId, @RequestParam Long sceneId) {
-        Long totalTps = sceneTaskService.queryTaskTps(reportId, sceneId);
+    public ResponseResult<Long> queryTaskTps(@RequestParam Long reportId, @RequestParam Long sceneId, @RequestParam String xpathMd5) {
+        Long totalTps = sceneTaskService.queryTaskTps(reportId, sceneId, xpathMd5);
         return ResponseResult.success(totalTps);
     }
 

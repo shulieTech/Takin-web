@@ -19,4 +19,7 @@ public class UpdateTpsRequest {
 
     @NotNull
     private Long targetTps;
+
+    @NotNull
+    private String xpathMd5;
 }

@@ -29,7 +29,7 @@ public interface SceneTaskService {
 
     void updateTaskTps(UpdateTpsRequest request);
 
-    Long queryTaskTps(Long reportId, Long sceneId);
+    Long queryTaskTps(Long reportId, Long sceneId, String xPathMd5);
 
     /**
      * 校验业务活动下的漏数配置

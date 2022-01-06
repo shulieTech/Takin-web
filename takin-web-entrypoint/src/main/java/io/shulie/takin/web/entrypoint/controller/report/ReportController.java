@@ -48,6 +48,12 @@ public class ReportController {
         return reportService.listReport(reportQuery);
     }
 
+    @GetMapping("report/listReport/un_safe")
+    @ApiOperation("接口: 报告列表, 无权限校验")
+    public WebResponse listReportNoAuth(ReportQueryParam reportQuery) {
+        return this.listReport(reportQuery);
+    }
+
     @GetMapping(value = "report/getReportByReportId")
     @ApiOperation("报告详情")
     @ApiImplicitParam(name = "reportId", value = "报告ID")

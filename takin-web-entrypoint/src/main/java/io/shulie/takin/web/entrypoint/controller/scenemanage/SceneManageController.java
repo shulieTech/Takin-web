@@ -262,6 +262,13 @@ public class SceneManageController {
         return sceneManageService.getPageList(queryVO);
     }
 
+    @GetMapping("/list/un_safe")
+    @ApiOperation("接口: 压测场景列表, 无权限验证")
+    public WebResponse getListNoAuth(SceneManageQueryVO vo) {
+        vo.setCurrentPage(vo.getCurrent());
+        return sceneManageService.getPageList(vo);
+    }
+
     @GetMapping("/ipnum")
     @ApiOperation(value = "获取机器数量范围")
     public ResponseResult<StrategyResp> getIpNum(

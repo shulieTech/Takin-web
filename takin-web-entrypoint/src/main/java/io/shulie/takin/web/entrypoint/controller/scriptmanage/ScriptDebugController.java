@@ -61,7 +61,7 @@ public class ScriptDebugController {
     }
 
 
-    @ApiOperation("|_ 停止")
+    @ApiOperation("|_ 停止调试")
     @PutMapping("stop")
     @ModuleDef(moduleName = BizOpConstants.Modules.SCRIPT_MANAGE,
         subModuleName = BizOpConstants.SubModules.SCRIPT_MANAGE,

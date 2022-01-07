@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS `t_scene_excluded_application` (
     `is_deleted` tinyint(3) unsigned DEFAULT '0' COMMENT '逻辑删除字段, 0 未删除, 1 已删除',
     PRIMARY KEY (`id`),
     KEY `idx_scnene_id` (`scene_id`)
-    ) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='探针包表';
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='探针包表';

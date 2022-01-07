@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,21 +36,26 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.BusinessActivitySumm
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.utils.linux.LinuxHelper;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.common.constant.FileManageConstant;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -58,6 +64,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -77,6 +84,10 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private ActivityDAO activityDAO;
+
+    @Value("${file.upload.url:''}")
+    private String fileUploadUrl;
+
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -328,5 +339,21 @@ public class ReportServiceImpl implements ReportService {
                 setReportId(request.getReportId());
             }});
         return ResponseResult.success(listResponseResult);
+    }
+
+    @Override
+    public ReportJtlDownloadOutput getJtlDownLoadUrl(Long reportId) {
+        String result = reportApi.getJtlDownLoadUrl(reportId);
+        String url = null;
+        try {
+            url = fileUploadUrl + FileManageConstant.CLOUD_FILE_DOWN_LOAD_API + URLEncoder.encode(result, "UTF-8");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String fileName = reportId + "_jtl.zip";
+        String fileDir = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_USER_DATA_DIR);
+        String[] cmdArray = {"curl", "-o", fileDir + "/" + fileName, "--create-dirs", "-OL", url};
+        LinuxHelper.execCurl(cmdArray);
+        return new ReportJtlDownloadOutput(fileDir + "/" + fileName, true);
     }
 }

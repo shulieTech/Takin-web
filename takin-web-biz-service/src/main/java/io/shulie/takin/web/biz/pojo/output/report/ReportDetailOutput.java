@@ -107,4 +107,7 @@ public class ReportDetailOutput extends UserCommonExt {
     @ApiModelProperty(name = "leakVerifyResult", value = "漏数验证结果")
     private LeakVerifyResult leakVerifyResult;
 
+    @ApiModelProperty("是否存在JTL文件")
+    private boolean hasJtl;
+
 }

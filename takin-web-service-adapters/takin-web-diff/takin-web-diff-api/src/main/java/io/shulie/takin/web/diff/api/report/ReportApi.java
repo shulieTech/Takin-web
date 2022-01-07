@@ -75,4 +75,13 @@ public interface ReportApi {
      */
     NodeTreeSummaryResp getSummaryList(Long reportId);
 
+
+    /**
+     * 获取下载Jml地址
+     * @param reportId
+     * @return
+     */
+    String getJtlDownLoadUrl(Long reportId);
+
+
 }

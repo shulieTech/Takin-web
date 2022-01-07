@@ -16,6 +16,7 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.common.domain.WebResponse;
 
@@ -86,5 +87,13 @@ public interface ReportService {
      * @return
      */
     ResponseResult<List<ScriptNodeTreeResp>> queryNodeTree(ReportQueryRequest request);
+
+    /**
+     * 下载jtl路径
+     *
+     * @param reportId
+     * @return
+     */
+    ReportJtlDownloadOutput getJtlDownLoadUrl(Long reportId);
 
 }

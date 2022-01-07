@@ -4,31 +4,34 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.constant.ApiUrls;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
-import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.service.report.ReportService;
+import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportTrendQueryReq;
+import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
+import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
+import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
+import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
-import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
-import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
-import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
-import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
-import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
-import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportTrendQueryReq;
-import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
-
+import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.report.ReportJtlDownloadResponse;
+import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.constant.ApiUrls;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -149,6 +152,19 @@ public class ReportController {
     )
     public ResponseResult<NodeTreeSummaryResp> getSummaryList(Long reportId) {
         return ResponseResult.success(reportService.querySummaryList(reportId));
+    }
+
+    @GetMapping("/report/getJtlDownLoadUrl")
+    @ApiOperation(value = "获取jtl文件下载路径")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        needAuth = ActionTypeEnum.DOWNLOAD
+    )
+    public ReportJtlDownloadResponse getJtlDownLoadUrl(@RequestParam Long reportId) {
+        ReportJtlDownloadOutput output = reportService.getJtlDownLoadUrl(reportId);
+        ReportJtlDownloadResponse response = new ReportJtlDownloadResponse();
+        BeanUtils.copyProperties(output,response);
+        return response;
     }
 
 }

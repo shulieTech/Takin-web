@@ -160,7 +160,7 @@ public class ReportController {
         moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
         needAuth = ActionTypeEnum.DOWNLOAD
     )
-    public ReportJtlDownloadResponse getJtlDownLoadUrl(@RequestParam Long reportId) {
+    public ReportJtlDownloadResponse getJtlDownLoadUrl(@RequestParam("reportId") Long reportId) {
         ReportJtlDownloadOutput output = reportService.getJtlDownLoadUrl(reportId);
         ReportJtlDownloadResponse response = new ReportJtlDownloadResponse();
         BeanUtils.copyProperties(output,response);

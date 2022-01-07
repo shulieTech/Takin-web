@@ -8,15 +8,19 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import com.google.common.collect.Lists;
+import com.pamirs.takin.entity.domain.entity.TBaseConfig;
 import io.shulie.takin.cloud.sdk.model.request.common.CloudCommonInfoWrapperReq;
 import io.shulie.takin.cloud.sdk.model.response.common.CommonInfosResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
+import io.shulie.takin.web.biz.service.BaseConfigService;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.constant.BaseConfigConstant;
 import io.shulie.takin.web.data.result.system.SystemInfoItemVo;
 import io.shulie.takin.web.data.result.system.SystemInfoVo;
 import io.shulie.takin.web.diff.api.common.CloudCommonApi;
@@ -59,6 +63,24 @@ public class SystemController {
 
     @Autowired
     private AmdbClientProperties properties;
+
+    @Autowired
+    private BaseConfigService baseConfigService;
+
+    /**
+     * 前端样式存储
+     * @return
+     */
+    @ApiOperation("前端样式默认配置")
+    @GetMapping("/front/config/get")
+    public JSONObject getFrontConfig() {
+        TBaseConfig tBaseConfig = baseConfigService.queryByConfigCode(BaseConfigConstant.DEFAULT_FRONT_CSS_CONFIG);
+        if(tBaseConfig == null){
+            return new JSONObject();
+        }
+        return JSON.parseObject(tBaseConfig.getConfigValue());
+    }
+
 
     @ApiOperation("系统信息")
     @GetMapping()

@@ -31,6 +31,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.web.util.UriComponentsBuilder;
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
 import springfox.documentation.PathProvider;
+import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -59,6 +60,28 @@ public class SwaggerConfig {
 
     @Value("${swagger.enable:true}")
     private Boolean swaggerEnable;
+    // 定义分隔符
+    private static final String SPLITOR = ";";
+    private static String AGENT_API_BASE_PATH = "io.shulie.takin.web.entrypoint.controller.agent";
+    private static String AGENT_API_BASE_PATH2 = "io.shulie.takin.web.entrypoint.controller.perfomanceanaly";
+
+
+
+    @Bean
+    public Docket agentApi() {
+        Predicate<RequestHandler> selectors = RequestHandlerSelectors.basePackage(AGENT_API_BASE_PATH);
+        return new Docket(DocumentationType.SWAGGER_2)
+            .groupName("压测平台-agent接口")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .apis(RequestHandlerSelectors.basePackage(AGENT_API_BASE_PATH))
+            .paths(PathSelectors.any())
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .enable(swaggerEnable)
+            .apiInfo(this.apiInfo());
+    }
 
 
     @Bean

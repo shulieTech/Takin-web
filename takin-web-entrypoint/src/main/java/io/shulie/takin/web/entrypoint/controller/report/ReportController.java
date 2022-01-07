@@ -50,6 +50,10 @@ public class ReportController {
 
     @GetMapping("report/listReport/un_safe")
     @ApiOperation("接口: 报告列表, 无权限校验")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.DASHBOARD_REPORT,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public WebResponse listReportNoAuth(ReportQueryParam reportQuery) {
         return this.listReport(reportQuery);
     }

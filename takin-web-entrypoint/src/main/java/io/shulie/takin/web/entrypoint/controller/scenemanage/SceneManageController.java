@@ -264,6 +264,10 @@ public class SceneManageController {
 
     @GetMapping("/list/un_safe")
     @ApiOperation("接口: 压测场景列表, 无权限验证")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.DASHBOARD_SCENE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public WebResponse getListNoAuth(SceneManageQueryVO vo) {
         vo.setCurrentPage(vo.getCurrent());
         return sceneManageService.getPageList(vo);

@@ -115,6 +115,7 @@ public final class BizOpConstants {
         // 大盘查询放开  dashboard 不允许用到其他地方
         public static final String DASHBOARD = "dashboard";
         public static final String DASHBOARD_PREFIX = DASHBOARD + "_";
+        public static final String DASHBOARD_APPMANAGE = DASHBOARD_PREFIX + APPLICATION_MANAGE ;
         public static final String DASHBOARD_SCENE = DASHBOARD_PREFIX + PRESSURE_TEST_SCENE;
         public static final String DASHBOARD_REPORT = DASHBOARD_PREFIX + PRESSURE_TEST_REPORT;
     }

@@ -4,16 +4,18 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import lombok.extern.slf4j.Slf4j;
-import io.swagger.annotations.Api;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import io.shulie.takin.web.biz.service.dashboard.WorkBenchService;
-import io.shulie.takin.web.biz.service.dashboard.QuickAccessService;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.response.dashboard.QuickAccessResponse;
 import io.shulie.takin.web.biz.pojo.response.dashboard.UserWorkBenchResponse;
+import io.shulie.takin.web.biz.service.dashboard.QuickAccessService;
+import io.shulie.takin.web.biz.service.dashboard.WorkBenchService;
+import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author mubai
@@ -31,6 +33,10 @@ public class WorkBenchController {
     private QuickAccessService quickAccessService;
 
     @GetMapping("user")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.DASHBOARD_APPMANAGE,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public UserWorkBenchResponse workBench() {
         try {
             return workBenchService.getWorkBench();

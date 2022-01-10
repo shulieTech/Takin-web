@@ -89,16 +89,16 @@ public class SceneLinkRelateEntity extends TenantBaseEntity {
     @TableField(value = "script_xpath_md5")
     private String scriptXpathMd5;
 
-    /**
-     * 租户id
-     */
-    @TableField(value = "tenant_id")
-    private Long tenantId;
-
-    /**
-     * 环境
-     */
-    @TableField(value = "env_code")
-    private String envCode;
+    ///**
+    // * 租户id
+    // */
+    //@TableField(value = "tenant_id")
+    //private Long tenantId;
+    //
+    ///**
+    // * 环境
+    // */
+    //@TableField(value = "env_code")
+    //private String envCode;
 
 }

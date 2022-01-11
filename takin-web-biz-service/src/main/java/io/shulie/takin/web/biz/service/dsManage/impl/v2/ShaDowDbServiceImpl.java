@@ -2,7 +2,7 @@ package io.shulie.takin.web.biz.service.dsManage.impl.v2;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.pamirs.attach.plugin.dynamic.Converter;
+import com.pamirs.attach.plugin.dynamic.one.Converter;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import io.shulie.takin.web.biz.convert.db.parser.DbTemplateParser;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;

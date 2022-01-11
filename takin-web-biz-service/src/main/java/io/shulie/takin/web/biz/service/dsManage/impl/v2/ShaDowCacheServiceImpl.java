@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.json.JSONUtil;
-import com.pamirs.attach.plugin.dynamic.Converter;
+import com.pamirs.attach.plugin.dynamic.one.Converter;
 import io.shulie.takin.web.biz.convert.db.parser.RedisTemplateParser;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInputV2;

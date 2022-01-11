@@ -3,7 +3,7 @@ package io.shulie.takin.web.biz.service.dsManage.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Lists;
-import com.pamirs.attach.plugin.dynamic.Type;
+import com.pamirs.attach.plugin.dynamic.one.Type;
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.vo.dsmanage.Configurations;

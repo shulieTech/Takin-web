@@ -44,7 +44,7 @@
         <takin.web.version>takin-web-5.2.0-SNAPSHOT</takin.web.version>
         <takin.cloud.sdk.version>takin-cloud-sdk-5.2.0-SNAPSHOT</takin.cloud.sdk.version>
         <takin.cloud.version>takin-cloud-5.2.0-SNAPSHOT</takin.cloud.version>
-        <takin.common.version>common-2.0.0-SNAPSHOT</takin.common.version>
+        <takin.common.version>common-2.0.1-SNAPSHOT</takin.common.version>
         <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.4.2</pardar.log.protocol.version>
         <instrument.core.version>1.0.0</instrument.core.version>
@@ -425,6 +425,12 @@
                 <groupId>io.shulie.surge.data</groupId>
                 <artifactId>surge-deploy-pradar-link</artifactId>
                 <version>1.0.2.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.shulie.takin</groupId>
+                        <artifactId>simulator-internal-bootstrap-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

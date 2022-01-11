@@ -121,22 +121,24 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-common-agent</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>simulator-internal-bootstrap-api</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>io.shulie.instrument.module</groupId>
             <artifactId>module-pradar-core</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
 
     <build>
         <plugins>

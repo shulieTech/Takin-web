@@ -86,6 +86,8 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-common</artifactId>
         </dependency>
+
+
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-diff-api</artifactId>

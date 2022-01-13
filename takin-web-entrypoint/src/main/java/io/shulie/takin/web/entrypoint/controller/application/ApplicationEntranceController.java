@@ -1,20 +1,25 @@
 package io.shulie.takin.web.entrypoint.controller.application;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.google.common.collect.Lists;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
-import io.shulie.takin.web.biz.service.LinkTopologyService;
-import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntrancesQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntrancesResponse;
+import io.shulie.takin.web.biz.service.LinkTopologyService;
 import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.vo.WebOptionEntity;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
@@ -53,22 +58,16 @@ public class ApplicationEntranceController {
 
     @Autowired
     private ActivityDAO activityDAO;
-    //
-    //@Autowired
-    //private ApplicationClient applicationClient;
 
     @GetMapping("/types")
     @ApiOperation("获得入口服务类型")
     public List<WebOptionEntity> getEntranceTypes() {
-        EntranceTypeEnum[] values = EntranceTypeEnum.values();
-        return Stream.of(values)
-            .filter(item -> item != EntranceTypeEnum.RABBITMQ)
-            .map(item -> {
-                WebOptionEntity webOptionEntity = new WebOptionEntity();
-                webOptionEntity.setLabel(item.name());
-                webOptionEntity.setValue(item.name());
-                return webOptionEntity;
-            }).collect(Collectors.toList());
+        return Arrays.stream(EntranceTypeEnum.values()).map(item -> {
+            WebOptionEntity webOptionEntity = new WebOptionEntity();
+            webOptionEntity.setLabel(item.name());
+            webOptionEntity.setValue(item.name());
+            return webOptionEntity;
+        }).collect(Collectors.toList());
     }
 
     @GetMapping()

@@ -151,6 +151,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         }
         businessLinkManageTableEntity.setPersistence(param.isPersistence());
         businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
+        param.setLinkId(businessLinkManageTableEntity.getLinkId());
         return businessLinkManageTableEntity.getLinkId();
     }
 
@@ -472,9 +473,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     }
 
     @Override
-    public List<Map<String,Object>> findActivityIdByServiceName(String appName, String entrance) {
+    public List<Map<String, Object>> findActivityIdByServiceName(String appName, String entrance) {
         Long tenantId = WebPluginUtils.traceTenantId();
-        return activityNodeStateTableMapper.findActivityIdByServiceName(tenantId,appName,entrance);
+        return activityNodeStateTableMapper.findActivityIdByServiceName(tenantId, appName, entrance);
     }
 
     @Override
@@ -485,12 +486,12 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     @Override
     public BusinessLinkManageTableEntity getActivityByName(String activityName) {
         LambdaQueryWrapper<BusinessLinkManageTableEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getLinkName,activityName);
+        lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getLinkName, activityName);
         return businessLinkManageTableMapper.selectOne(lambdaQueryWrapper);
     }
 
     @Override
     public List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace) {
-        return businessLinkManageTableMapper.findActivityAppName(appName,entrace);
+        return businessLinkManageTableMapper.findActivityAppName(appName, entrace);
     }
 }

@@ -3,8 +3,8 @@ package io.shulie.takin.web.biz.convert.db.parser;
 import java.util.List;
 import java.util.Map;
 
-import com.pamirs.attach.plugin.dynamic.Converter;
-import com.pamirs.attach.plugin.dynamic.template.Template;
+import com.pamirs.attach.plugin.dynamic.one.Converter;
+import com.pamirs.attach.plugin.dynamic.one.template.Template;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;

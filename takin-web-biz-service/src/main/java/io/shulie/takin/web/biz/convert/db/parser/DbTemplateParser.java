@@ -2,9 +2,9 @@ package io.shulie.takin.web.biz.convert.db.parser;
 
 import cn.hutool.core.util.BooleanUtil;
 import com.alibaba.fastjson.JSON;
-import com.pamirs.attach.plugin.dynamic.Converter;
-import com.pamirs.attach.plugin.dynamic.Type;
-import com.pamirs.attach.plugin.dynamic.template.Template;
+import com.pamirs.attach.plugin.dynamic.one.Converter;
+import com.pamirs.attach.plugin.dynamic.one.Type;
+import com.pamirs.attach.plugin.dynamic.one.template.Template;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DataSource;
 import io.shulie.takin.web.amdb.api.ApplicationClient;

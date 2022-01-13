@@ -529,9 +529,13 @@ public class LinkManageServiceImpl implements LinkManageService {
 
             transactionManager.commit(status);
             return "删除成功";
+        } catch (TakinWebException e) {
+            transactionManager.rollback(status);
+            log.error("删除场景失败", e);
+            throw e;
         } catch (Exception e) {
             transactionManager.rollback(status);
-            log.error(e.getMessage(), e);
+            log.error("删除场景失败", e);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_DELETE_ERROR, "删除场景失败");
         }
     }

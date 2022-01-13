@@ -19,11 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.shulie.takin.web.amdb.bean.result.application.ApplicationRemoteCallDTO;
-import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
-import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
-import io.shulie.takin.web.common.enums.blacklist.BlacklistEnableEnum;
-import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -55,10 +50,15 @@ public class RemoteCallFixer {
     @Value("${fix.remote.call.data:false}")
     private Boolean fixData;
     public void fix() {
-        if(!fixData) {
+        if(fixData == null || Boolean.FALSE.equals(fixData)) {
             log.info("无需订正远程调用数据");
+            return;
         }
         List<AppRemoteCallEntity> list = appRemoteCallDAO.getListWithOutTenant();
+        if(CollectionUtils.isEmpty(list)) {
+            log.info("无需订正远程调用数据");
+            return;
+        }
         // 应用名补充
         List<ApplicationMntEntity> allApps = applicationDAO.getAllApplicationsWithoutTenant();
         if(CollectionUtils.isEmpty(allApps)) {

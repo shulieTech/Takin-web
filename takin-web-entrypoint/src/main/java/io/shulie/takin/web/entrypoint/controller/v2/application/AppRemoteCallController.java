@@ -14,6 +14,7 @@ import io.shulie.takin.web.biz.constant.BizOpConstants.Message;
 import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutputV2;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallBatchUpdateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallCreateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallDelV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateV2Request;
@@ -140,5 +141,21 @@ public class AppRemoteCallController {
         OperationLogContextHolder.operationType(OpTypes.DELETE);
         appRemoteCallService.deleteById(request.getId());
         return Response.success();
+    }
+
+    @ApiOperation("批量远程调用编辑接口")
+    @PostMapping("/application/remote/call/update/batch")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
+            subModuleName = BizOpConstants.SubModules.REMOTE_CALL,
+            logMsgKey = Message.MESSAGE_REMOTE_CALL_UPDATE
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.UPDATE
+    )
+    public AppRemoteCallStringResponse batchUpdate(@ApiParam(required=true) @Valid @RequestBody AppRemoteCallBatchUpdateV2Request request) {
+        appRemoteCallService.batchUpdateV2(request);
+        return new AppRemoteCallStringResponse("操作成功");
     }
 }

@@ -24,17 +24,21 @@ public enum AppRemoteCallConfigEnum {
     /**
      * 返回值mock
      */
-    RETURN_MOCK(2, "返回值mock", "mock"),
+    RETURN_MOCK(2, "Groovy脚本mock", "mock"),
     /**
      * 转发mock
      */
-    FORWARD_MOCK(3, "转发mock", "forward");
+    FORWARD_MOCK(3, "转发mock", "forward"),
+
+    FIX_FORWARD_MOCK(4, "固定值mock", "fix_mock");
+
     private Integer type;
     private String configName;
     /**
      * mock
      * forward
      * white
+     * fix_mock
      */
     private String agentCheckType;
 

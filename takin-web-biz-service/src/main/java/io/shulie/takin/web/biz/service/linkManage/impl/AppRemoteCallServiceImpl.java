@@ -53,6 +53,7 @@ import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutputV2;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallBatchUpdateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallCreateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateV2Request;
@@ -832,8 +833,13 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             vos.add(new SelectVO(AppRemoteCallConfigEnum.FORWARD_MOCK.getConfigName(),
                     AppRemoteCallConfigEnum.FORWARD_MOCK.getType().toString()));
         }
-        vos.add(new SelectVO(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getConfigName(),
-                AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType().toString()));
+
+        if (dto.getReturnFixMockEnable() == 1) {
+            vos.add(new SelectVO(AppRemoteCallConfigEnum.FORWARD_MOCK.getConfigName(),
+                    AppRemoteCallConfigEnum.FORWARD_MOCK.getType().toString()));
+        }
+        vos.add(new SelectVO(AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getConfigName(),
+                AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getType().toString()));
         return vos;
     }
 
@@ -967,5 +973,21 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         output.setRemark(result.getRemark());
         output.setApplicationId(String.valueOf(result.getApplicationId()));
         return output;
+    }
+
+    /**
+     * 更新
+     *
+     * @param request
+     */
+    @Override
+    public void batchUpdateV2(AppRemoteCallBatchUpdateV2Request request) {
+        Integer updateType = request.getUpdateType();
+        List<AppRemoteCallUpdateV2Request> updateInfos = request.getUpdateInfos();
+        updateInfos.forEach(item ->{
+            item.setType(updateType);
+            this.updateV2(item);
+        });
+
     }
 }

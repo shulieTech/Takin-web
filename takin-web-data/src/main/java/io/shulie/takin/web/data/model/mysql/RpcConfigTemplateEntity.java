@@ -81,7 +81,15 @@ public class RpcConfigTemplateEntity extends NewBaseEntity implements Serializab
      */
     private String commit;
 
+    /**
+     * 是否支持固定返回值mock;0:不支持;1:支持
+     */
+    private Integer returnFixMockEnable;
 
+    /**
+     * 固定返回值mock文本
+     */
+    private String fixReturnMock;
 
 
 }

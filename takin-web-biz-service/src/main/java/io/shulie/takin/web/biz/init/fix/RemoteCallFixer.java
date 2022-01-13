@@ -52,8 +52,13 @@ public class RemoteCallFixer {
     public void fix() {
         if(!fixData) {
             log.info("无需订正远程调用数据");
+            return;
         }
         List<AppRemoteCallEntity> list = appRemoteCallDAO.getListWithOutTenant();
+        if(CollectionUtils.isEmpty(list)) {
+            log.info("无需订正远程调用数据");
+            return;
+        }
         // 应用名补充
         List<ApplicationMntEntity> allApps = applicationDAO.getAllApplicationsWithoutTenant();
         if(CollectionUtils.isEmpty(allApps)) {

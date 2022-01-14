@@ -41,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.util.StringUtils;
 
 /**
  * @author fanxx
@@ -257,7 +258,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
     private List<ApplicationErrorOutput> processErrorList(List<ApplicationErrorOutput> responseList) {
         // 按照时间倒序输出
         List<ApplicationErrorOutput> sortedList = responseList.parallelStream().filter(
-                response -> StrUtil.isNotBlank(response.getTime()))
+                response -> !StringUtils.isEmpty(response) && StrUtil.isNotBlank(response.getTime()))
             .sorted((a1, a2) -> a2.getTime().compareTo(a1.getTime()))
             .collect(Collectors.toList());
 

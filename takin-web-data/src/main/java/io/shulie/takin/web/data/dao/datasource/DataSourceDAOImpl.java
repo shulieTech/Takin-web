@@ -52,7 +52,7 @@ public class DataSourceDAOImpl implements DataSourceDAO {
             wrapper.eq(TakinDbresourceEntity::getType, queryParam.getType());
         }
         if (StringUtils.isNotBlank(queryParam.getName())) {
-            wrapper.like(TakinDbresourceEntity::getName, queryParam.getName());
+            wrapper.like(TakinDbresourceEntity::getName, "\\"+queryParam.getName());
         }
         if (StringUtils.isNotBlank(queryParam.getJdbcUrl())) {
             wrapper.like(TakinDbresourceEntity::getJdbcUrl, queryParam.getJdbcUrl());

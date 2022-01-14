@@ -30,7 +30,7 @@ public enum AppRemoteCallConfigEnum {
      */
     FORWARD_MOCK(3, "转发mock", "forward"),
 
-    FIX_FORWARD_MOCK(4, "固定值mock", "fix_mock");
+    FIX_FORWARD_MOCK(4, "返回值mock", "fix_mock");
 
     private Integer type;
     private String configName;

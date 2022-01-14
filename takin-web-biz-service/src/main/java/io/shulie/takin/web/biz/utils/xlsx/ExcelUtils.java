@@ -1,30 +1,36 @@
 package io.shulie.takin.web.biz.utils.xlsx;
 
+import java.util.*;
+import java.net.URLEncoder;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.io.BufferedInputStream;
+import java.nio.charset.StandardCharsets;
+
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
-import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
+
 import lombok.extern.slf4j.Slf4j;
+import cn.hutool.core.util.URLUtil;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.util.CollectionUtils;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
+
+import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
 
 /**
  * 主要针对xlsx格式文件进行读写
+ *
  * @author mubai
  * @date 2021-02-24 09:43
  */
@@ -140,8 +146,8 @@ public class ExcelUtils {
     /**
      * excel 包含多sheet 进行浏览器导出
      *
-     * @param response 响应
-     * @param fileName 文件名称
+     * @param response     响应
+     * @param fileName     文件名称
      * @param sheetDTOList 导出数据
      * @throws Exception 异常
      */
@@ -155,7 +161,7 @@ public class ExcelUtils {
             out = response.getOutputStream();
             ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
             String excelFileName = new String((fileName + "-" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()))
-                .getBytes(), "UTF-8");
+                .getBytes(), StandardCharsets.UTF_8);
 
             for (int i = 0; i < sheetDTOList.size(); i++) {
                 ExcelSheetVO excelSheetDTO = sheetDTOList.get(i);
@@ -166,7 +172,8 @@ public class ExcelUtils {
             response.setContentType("application/octec-stream");
             response.setCharacterEncoding("utf-8");
             response.setHeader("Content-Disposition",
-                "attachment;filename=" + URLEncoder.encode(excelFileName + ".xlsx", "UTF-8"));
+                String.format("attachment;filename=\"%1$s\";filename*=utf-8''%1$s",
+                    URLUtil.encode(excelFileName + ".xlsx")));
             writer.finish();
             out.flush();
 

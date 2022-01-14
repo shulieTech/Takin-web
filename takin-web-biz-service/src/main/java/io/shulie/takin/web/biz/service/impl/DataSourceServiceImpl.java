@@ -228,6 +228,7 @@ public class DataSourceServiceImpl implements DataSourceService {
             }
         }
         String name = queryRequest.getDatasourceName();
+        name = name == null?null:name.replace("%","\\%").replace("_", "\\_").replace("-", "\\-");
         String jdbcUrl = queryRequest.getJdbcUrl();
         DataSourceQueryParam queryParam = new DataSourceQueryParam();
         queryParam.setCurrent(queryRequest.getCurrent() + 1);

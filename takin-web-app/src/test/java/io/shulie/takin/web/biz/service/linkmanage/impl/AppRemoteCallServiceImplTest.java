@@ -16,9 +16,15 @@
 
 package io.shulie.takin.web.biz.service.linkmanage.impl;
 
+import com.alibaba.fastjson.JSON;
+
 import com.google.common.collect.Lists;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.app.Application;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
+import io.shulie.takin.web.biz.pojo.request.datasource.DataSourceQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.datasource.DatasourceListResponse;
+import io.shulie.takin.web.biz.service.DataSourceService;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import org.junit.Test;
@@ -57,6 +63,9 @@ public class AppRemoteCallServiceImplTest {
     //@Resource
     //private PluginLibraryDAO pluginLibraryDAO;
 
+    @Autowired
+    DataSourceService dataSourceService;
+
     @Test
     public void batchConfigTest(){
         TransactionStatus transactionStatus = dataSourceTransactionManager.getTransaction(transactionDefinition);
@@ -81,5 +90,16 @@ public class AppRemoteCallServiceImplTest {
         //String completeSimulatorPath = AgentPkgUtil.aggregation(null, simulator, middlewareList, uploadPath);
         //System.out.println(completeAgentPath);
         //System.out.println(completeSimulatorPath);
+    }
+
+    @Test
+    public void like(){
+        final DataSourceQueryRequest request = new DataSourceQueryRequest();
+        request.setCurrent(0);
+        request.setPageSize(10);
+        request.setDatasourceName("%");
+        final PagingList<DatasourceListResponse> list = dataSourceService.listDatasource(
+            request);
+        System.out.println(JSON.toJSONString(list));
     }
 }

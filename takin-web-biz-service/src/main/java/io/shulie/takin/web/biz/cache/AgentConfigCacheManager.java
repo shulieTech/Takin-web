@@ -77,6 +77,25 @@ public class AgentConfigCacheManager {
     private ApplicationPluginConfigAgentCache applicationPluginConfigAgentCache;
 
     /**
+     * 清除所有缓存
+     */
+    public void evict(String appName) {
+
+        allowListSwitchConfigCache.evict(appName);
+        shadowServerConfigCache.evict(appName);
+        shadowDbConfigCache.evict(appName);
+        shadowJobConfigCache.evict(appName);
+        guardConfigCache.evict(appName);
+        remoteCallConfigAgentCache.evict(appName);
+        pressureSwitchConfigCache.evict(appName);
+        shadowConsumerConfigAgentCache.evict(appName);
+        shadowEsServerConfigAgentCache.evict(appName);
+        shadowKafkaClusterConfigAgentCache.evict(appName);
+        shadowHbaseConfigAgentCache.evict(appName);
+        shadowHbaseConfigAgentCache.evict(appName);
+        applicationPluginConfigAgentCache.evict(appName);
+    }
+    /**
      * 获得白名单开关的缓存结果
      */
     public boolean getAllowListSwitch() {

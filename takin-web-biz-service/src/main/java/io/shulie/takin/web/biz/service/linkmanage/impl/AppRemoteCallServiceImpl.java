@@ -375,7 +375,11 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             listVO.setInterfaceChildType(StringUtils.defaultIfBlank(result.getInterfaceChildType(), anEnum.getDesc()));
             //跟大数据做兼容，convert对应大数据的rpcType
             listVO.setInterfaceType(anEnum.getConvert());
-            // 权限问题
+            // 是否手工录入
+            listVO.setIsManual(result.getIsManual());
+            // 用于权限判断
+            listVO.setUserId(detailResult.getUserId());
+            // 权限问题 无效判断，最后拦截也会判断的
             fillInPermissions(listVO, detailResult);
             return listVO;
         }).collect(Collectors.toList());
@@ -899,7 +903,15 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         if (detailResult == null) {
             throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "应用不存在");
         }
-
+        // 如果是mock
+        if(AppRemoteCallConfigEnum.RETURN_MOCK.getType().equals(request.getType()) && StringUtils.isBlank(request.getMockValue())) {
+            // 判断数据是否为空
+            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "返回值mock数据为空");
+        }
+        if(AppRemoteCallConfigEnum.FORWARD_MOCK.getType().equals(request.getType()) && StringUtils.isBlank(request.getMockValue())) {
+            // 判断数据是否为空
+            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "转发mock数据为空");
+        }
         // 补充插件内容
         WebPluginUtils.fillUserData(request);
         AppRemoteCallTypeV2Enum enumByDesc = AppRemoteCallTypeV2Enum.getEnumByDesc(request.getInterfaceType());

@@ -10,6 +10,7 @@ import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInpu
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsCreateParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 
 /**
  * @author mubai
@@ -39,5 +40,5 @@ public interface AppConfigEntityConvertService {
      *
      * @return
      */
-    List<AppRemoteCallUpdateParam> converRemoteCall(ArrayList<ArrayList<String>> sourceList, Long applicationId);
+    List<AppRemoteCallUpdateParam> converRemoteCall(ArrayList<ArrayList<String>> sourceList, ApplicationDetailResult detailResult);
 }

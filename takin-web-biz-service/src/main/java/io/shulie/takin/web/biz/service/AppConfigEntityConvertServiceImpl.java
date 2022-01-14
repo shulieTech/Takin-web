@@ -224,16 +224,12 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
     }
 
     @Override
-    public List<AppRemoteCallUpdateParam> converRemoteCall(ArrayList<ArrayList<String>> sourceList, Long applicationId) {
+    public List<AppRemoteCallUpdateParam> converRemoteCall(ArrayList<ArrayList<String>> sourceList,ApplicationDetailResult detailResult) {
         if (CollectionUtils.isEmpty(sourceList)) {
             return null;
         }
-        ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(applicationId);
-        if (applicationDetailResult == null) {
-            return null;
-        }
         AppRemoteCallQueryParam param = new AppRemoteCallQueryParam();
-        param.setApplicationId(applicationId);
+        param.setApplicationId(detailResult.getApplicationId());
         List<AppRemoteCallResult> results = appRemoteCallDAO.getList(param);
         Map<String, List<AppRemoteCallResult>> map = results.stream().collect(Collectors.groupingBy(result ->
             RemoteCallUtils.buildImportRemoteCallName(result.getInterfaceName(), result.getInterfaceType())));
@@ -248,10 +244,10 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
             input.setServerAppName(arrayList.get(2).equals(CharSequenceUtil.NULL) ? "" : arrayList.get(2));
             input.setType(Integer.valueOf(arrayList.get(3)));
             input.setMockReturnValue(arrayList.get(4).equals(CharSequenceUtil.NULL) ? "" : arrayList.get(4));
-            input.setApplicationId(applicationId);
-            input.setAppName(applicationDetailResult.getApplicationName());
-            input.setTenantId(applicationDetailResult.getTenantId());
-            input.setUserId(applicationDetailResult.getUserId());
+            input.setApplicationId(detailResult.getApplicationId());
+            input.setAppName(detailResult.getApplicationName());
+            input.setTenantId(detailResult.getTenantId());
+            input.setUserId(detailResult.getUserId());
             input.setGmtCreate(new Date());
             String buildImportRemoteCallName = RemoteCallUtils.buildImportRemoteCallName(input.getInterfaceName(), input.getInterfaceType());
             List<AppRemoteCallResult> callResults = map.get(buildImportRemoteCallName);

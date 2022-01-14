@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import io.shulie.takin.web.common.annocation.Trimmed;
 import io.shulie.takin.web.common.annocation.Trimmed.TrimmerType;
+import io.shulie.takin.web.common.util.RequestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.format.AnnotationFormatterFactory;
 import org.springframework.format.Formatter;
@@ -80,6 +81,8 @@ public class TrimmedAnnotationFormatterFactory implements AnnotationFormatterFac
                 return "";
             }
             text = text.trim();
+            // 非法字符转义
+            text = RequestUtils.escapeSqlSpecialChar(text);
             switch (type) {
                 case ALL_WHITESPACES:
                     return PATTERN_WHITESPACES.matcher(text).replaceAll(" ");

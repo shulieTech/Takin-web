@@ -29,6 +29,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -82,7 +83,7 @@ public class AppRemoteCallController {
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
             needAuth = ActionTypeEnum.CREATE
     )
-    public AppRemoteCallStringResponse insert(@ApiParam(required=true) @Valid @RequestBody AppRemoteCallCreateV2Request request) {
+    public AppRemoteCallStringResponse insert(@ApiParam(required=true) @Validated @RequestBody AppRemoteCallCreateV2Request request) {
         OperationLogContextHolder.operationType(OpTypes.CREATE);
         OperationLogContextHolder.addVars(Vars.APPLICATION_ID, String.valueOf(request.getApplicationId()));
         OperationLogContextHolder.addVars(Vars.INTERFACE, request.getInterfaceName());

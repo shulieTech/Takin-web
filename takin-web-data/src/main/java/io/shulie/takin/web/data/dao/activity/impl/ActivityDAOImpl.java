@@ -87,6 +87,8 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             .eq(StrUtil.isNotBlank(param.getApplicationName()),
                 BusinessLinkManageTableEntity::getApplicationName, param.getApplicationName())
             .eq(BusinessLinkManageTableEntity::getIsDeleted, 0)
+            // 自动建立的过滤
+            .eq(BusinessLinkManageTableEntity::isPersistence,true)
             .eq(BusinessLinkManageTableEntity::getTenantId, WebPluginUtils.traceTenantId())
             .eq(BusinessLinkManageTableEntity::getEnvCode, WebPluginUtils.traceEnvCode());
         return DataTransformUtil.list2list(businessLinkManageTableMapper.selectObjs(wrapper), Long.class);

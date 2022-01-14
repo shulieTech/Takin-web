@@ -55,6 +55,7 @@ import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
+import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
@@ -211,6 +212,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private TAppMiddlewareInfoMapper tAppMiddlewareInfoMapper;
     @Autowired
     private ActivityService activityService;
+    @Autowired
+    private AgentConfigCacheManager agentConfigCacheManager;
 
     @Autowired
     @Qualifier("redisTemplate")
@@ -1574,18 +1577,20 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         //保存插件管理配置项
         this.savePluginsListFromImport(application, configMap);
         // 导入远程调用
-        this.saveRemoteCallFromImport(applicationId, configMap);
+        this.saveRemoteCallFromImport(application, configMap);
+
+        // 清除缓存
+        agentConfigCacheManager.evict(application.getApplicationName());
     }
 
-    private void saveRemoteCallFromImport(Long applicationId, Map<String, ArrayList<ArrayList<String>>> configMap) {
+    private void saveRemoteCallFromImport(ApplicationDetailResult detailResult, Map<String, ArrayList<ArrayList<String>>> configMap) {
         // map 取出数据
         ArrayList<ArrayList<String>> importRemoteCall;
         if ((importRemoteCall = configMap.get(AppConfigSheetEnum.REMOTE_CALL.name())) == null) {
             return;
         }
         // 转换
-        List<AppRemoteCallUpdateParam> inputs = appConfigEntityConvertService.converRemoteCall(importRemoteCall,
-            applicationId);
+        List<AppRemoteCallUpdateParam> inputs = appConfigEntityConvertService.converRemoteCall(importRemoteCall, detailResult);
         if (CollectionUtils.isEmpty(inputs)) {
             return;
         }

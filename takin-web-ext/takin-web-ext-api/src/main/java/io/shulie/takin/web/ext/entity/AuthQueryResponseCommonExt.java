@@ -18,6 +18,9 @@ public class AuthQueryResponseCommonExt extends UserCommonExt {
     @ApiModelProperty(name = "canEdit", value = "是否可编辑")
     private Boolean canEdit = true;
 
+    @ApiModelProperty(name = "isManual", value = "是否手工数据")
+    private Boolean isManual = true;
+
     @ApiModelProperty(name = "canRemove", value = "是否可删除")
     private Boolean canRemove = true;
 

@@ -71,7 +71,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
     public void createShadowProgramme(ApplicationDsCreateInputV2 inputV2,Boolean isJson) {
         //去重校验
         ApplicationDsDbManageDetailResult result = dbManageDAO.selectOne(inputV2.getApplicationName(),
-                inputV2.getUrl(), inputV2.getUserName(),inputV2.getConnectionPool());
+                inputV2.getUrl(), inputV2.getUsername(),inputV2.getConnectionPool());
         if(Objects.nonNull(result)){
             throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_CREATE_ERROR,"业务数据源已存在");
         }

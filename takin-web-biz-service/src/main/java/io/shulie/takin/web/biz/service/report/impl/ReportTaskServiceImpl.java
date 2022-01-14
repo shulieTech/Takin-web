@@ -47,7 +47,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ReportTaskServiceImpl implements ReportTaskService {
 
-
     @Autowired
     private ReportDataCache reportDataCache;
 
@@ -80,9 +79,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
-
     @Override
-    public Boolean finishReport(Long reportId,TenantCommonExt commonExt) {
+    public Boolean finishReport(Long reportId, TenantCommonExt commonExt) {
         try {
             try {
                 //Ready 数据准备
@@ -117,7 +115,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 log.info("finish report，total data  Running Report :{}", reportId);
 
                 // 收集数据 单独线程收集
-                collectDataThreadPool.execute(collectData(reportId,commonExt));
+                collectDataThreadPool.execute(collectData(reportId, commonExt));
 
                 // 停止报告
                 Boolean webResponse = reportService.finishReport(reportId);
@@ -144,8 +142,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 //生成报告异常，清空本轮生成表数据
                 reportClearService.clearReportData(reportId);
                 //压测结束，生成压测报告异常，解锁报告
-                reportService.unLockReport(reportId);
-                log.error("Unlock Report Success, reportId={} ,errorMsg= {}...", reportId, e.getMessage());
+                Boolean unLockReportResult = reportService.unLockReport(reportId);
+                log.error("Unlock Report Success, reportId={} ,unLockReportResult= {}...", reportId, unLockReportResult, e);
             } finally {
                 removeReportKey(reportId, commonExt);
             }
@@ -168,7 +166,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
      * @param reportId 报告 id
      * @return 可运行
      */
-    private synchronized Runnable collectData(Long reportId,TenantCommonExt commonExt) {
+    private synchronized Runnable collectData(Long reportId, TenantCommonExt commonExt) {
         return () -> {
             WebPluginUtils.setTraceTenantContext(commonExt);
             try {

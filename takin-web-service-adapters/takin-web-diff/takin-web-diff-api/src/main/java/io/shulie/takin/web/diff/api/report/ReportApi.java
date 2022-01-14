@@ -41,7 +41,7 @@ public interface ReportApi {
      * @param req -
      * @return -
      */
-    ResponseResult<ReportDetailResp> tempReportDetail(ReportDetailBySceneIdReq req);
+    ReportDetailResp tempReportDetail(ReportDetailBySceneIdReq req);
 
     /**
      * 查询报告对应的脚本节点树
@@ -75,13 +75,12 @@ public interface ReportApi {
      */
     NodeTreeSummaryResp getSummaryList(Long reportId);
 
-
     /**
      * 获取下载Jml地址
-     * @param reportId
-     * @return
+     *
+     * @param reportId 报告主键
+     * @return 下载地址
      */
     String getJtlDownLoadUrl(Long reportId);
-
 
 }

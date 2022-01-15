@@ -143,6 +143,7 @@ public class SceneController {
         WebPluginUtils.fillCloudUserData(sceneRequest);
         Boolean updateResult = multipleSceneApi.update(sceneRequest);
         if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler())) {
+            sceneSchedulerTaskService.deleteBySceneId(request.getBasicInfo().getSceneId());
             sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
                 setSceneId(request.getBasicInfo().getSceneId());
                 setExecuteTime(request.getBasicInfo().getExecuteTime());

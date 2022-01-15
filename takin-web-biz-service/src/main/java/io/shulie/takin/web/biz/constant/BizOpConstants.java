@@ -519,6 +519,12 @@ public final class BizOpConstants {
          */
         public static final String OPS_SCRIPT_NAME = "opsScriptName";
 
+        /**
+         * 插件管理
+         */
+        public static final String APP_PLUGIN_KEY = "appPluginKey";
+        public static final String APP_PLUGIN_VALUE = "appPluginValue";
+
         public static final String ACTIVITY_DELETE_EVENT = "activity_delete_event";
 
         public static final String CONFIG_NAME = "configName";

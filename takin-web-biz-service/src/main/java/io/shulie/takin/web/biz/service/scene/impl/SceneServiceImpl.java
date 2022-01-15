@@ -261,27 +261,29 @@ public class SceneServiceImpl implements SceneService {
             analyzeRequest.setScriptFile(fileManageResult.getUploadPath());
         }
         //解析脚本
-
         List<ScriptNode> data = sceneManageApi.scriptAnalyze(analyzeRequest);
         List<ScriptNode> testPlan = JmxUtil.getScriptNodeByType(NodeTypeEnum.TEST_PLAN, data);
         if (CollectionUtils.isEmpty(testPlan)) {
             throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "脚本文件没有解析到测试计划！");
         }
-
+        String businessFlowName = null;
         if (businessFlowParseRequest.getId() == null) {
-            Long businessFlowId = saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
-            businessFlowParseRequest.setId(businessFlowId);
+            SceneCreateParam createParam = saveBusinessFlow(testPlan.get(0).getTestName(), data, fileManageCreateRequest, businessFlowParseRequest.getPluginList());
+            businessFlowParseRequest.setId(createParam.getId());
+            businessFlowName = createParam.getSceneName();
         } else {
-            updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data, businessFlowParseRequest.getPluginList());
+            SceneResult sceneResult = updateBusinessFlow(businessFlowParseRequest.getId(), businessFlowParseRequest.getScriptFile(), null, data, businessFlowParseRequest.getPluginList());
+            businessFlowName = sceneResult.getSceneName();
         }
 
         BusinessFlowDetailResponse result = new BusinessFlowDetailResponse();
         result.setId(businessFlowParseRequest.getId());
+        result.setBusinessProcessName(businessFlowName);
         return result;
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Long saveBusinessFlow(String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
+    public SceneCreateParam saveBusinessFlow(String testName, List<ScriptNode> data, FileManageUpdateRequest fileManageCreateRequest,
         List<PluginConfigCreateRequest> pluginList) {
         SceneQueryParam sceneQueryParam = new SceneQueryParam();
         sceneQueryParam.setSceneName(testName);
@@ -322,7 +324,7 @@ public class SceneServiceImpl implements SceneService {
         sceneUpdateParam.setId(sceneCreateParam.getId());
         sceneUpdateParam.setScriptDeployId(scriptManageId);
         sceneDao.update(sceneUpdateParam);
-        return sceneCreateParam.getId();
+        return sceneCreateParam;
     }
 
     @Override
@@ -688,7 +690,7 @@ public class SceneServiceImpl implements SceneService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void updateBusinessFlow(Long businessFlowId, FileManageUpdateRequest scriptFile,
+    public SceneResult updateBusinessFlow(Long businessFlowId, FileManageUpdateRequest scriptFile,
         BusinessFlowDataFileRequest businessFlowDataFileRequest, List<ScriptNode> data,
         List<PluginConfigCreateRequest> pluginList) {
         SceneResult sceneResult = sceneDao.getSceneDetail(businessFlowId);
@@ -753,6 +755,7 @@ public class SceneServiceImpl implements SceneService {
             //自动匹配
             autoMatchActivity(businessFlowId);
         }
+        return sceneResult;
     }
 
     private void toBusinessFlowDetailResponse(SceneResult sceneResult, BusinessFlowDetailResponse result) {

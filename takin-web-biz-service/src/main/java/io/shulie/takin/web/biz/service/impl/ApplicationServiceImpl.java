@@ -850,13 +850,13 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public Response<Integer> calculateUserSwitch(Long uid) {
-        if (uid == null) {
+    public Response<Integer> calculateUserSwitch(TenantCommonExt ext) {
+        if (ext == null) {
             UserExt user = WebPluginUtils.traceUser();
             if (WebPluginUtils.checkUserPlugin() && user == null) {
                 return Response.fail(FALSE_CORE, "当前用户为空");
             }
-            uid = user.getId();
+            //ext = user.getId();
         }
         // reCalculateUserSwitch(uid);
         return Response.success();
@@ -886,8 +886,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public String getUserSwitchStatusForVo() {
-        //String key = CommonUtil.generateRedisKey(PRADAR_SWITCH_STATUS_VO + uid,
-        //    WebPluginUtils.traceTenantCommonExt().toString(), WebPluginUtils.traceEnvCode());
         String envCode = WebPluginUtils.traceEnvCode();
         String tenantCode = WebPluginUtils.traceTenantCode();
         final String statusVoRedisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
@@ -2466,29 +2464,23 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     /**
      * 静默开关
      *
-     * @param uid
+     * @param ext
      * @param enable
      * @return
      */
     @Override
-    public Response userAppSilenceSwitch(Long uid, Boolean enable) {
+    public Response userAppSilenceSwitch(TenantCommonExt ext,Boolean enable) {
         //全局开关只保留 开/关
         if (enable == null) {
             return Response.fail(FALSE_CORE, "开关状态不能为空", null);
         }
-        if (WebPluginUtils.checkUserPlugin()) {
-            if (uid == null) {
-                UserExt user = WebPluginUtils.traceUser();
-                if (WebPluginUtils.checkUserPlugin() && user == null) {
-                    return Response.fail(FALSE_CORE, "当前用户为空", null);
-                }
-                uid = WebPluginUtils.traceTenantId();
-            }
-        } else {
-            uid = WebPluginUtils.traceTenantId();
+
+        UserExt user = WebPluginUtils.traceUser();
+        if (WebPluginUtils.checkUserPlugin() && user == null) {
+            return Response.fail(FALSE_CORE, "当前用户为空", null);
         }
 
-        String realStatus = getUserSilenceSwitchFromRedis(uid);
+        String realStatus = getUserSilenceSwitchFromRedis(ext);
         ApplicationVo vo = new ApplicationVo();
         String status;
         String voStatus;
@@ -2499,8 +2491,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             status = (enable ? AppSwitchEnum.OPENED : AppSwitchEnum.CLOSED).getCode();
             voStatus = (enable ? AppSwitchEnum.OPENING : AppSwitchEnum.CLOSING).getCode();
             //开关状态、开关开启、关闭的时间存放在redis
-            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + uid, status);
-            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS + uid, voStatus);
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + ext.getTenantId() + "_" + ext.getEnvCode(), status);
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS + ext.getTenantId() + "_" + ext.getEnvCode(), voStatus);
         }
         vo.setSwitchStutus(status);
         return Response.success(vo);
@@ -2508,19 +2500,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     /**
      * 从redis获取用户静默开关状态，默认开启
-     *
-     * @param uid
+     * @param ext
      * @return
      */
-    private String getUserSilenceSwitchFromRedis(Long uid) {
+    private String getUserSilenceSwitchFromRedis(TenantCommonExt ext) {
 
-        if (uid == null) {
-            throw new RuntimeException("用户id不能为空");
+        if (ext == null || ext.getTenantId() == null || StringUtil.isEmpty(ext.getEnvCode())) {
+            throw new RuntimeException("用户id不能为空 || 环境不为空");
         }
-        Object statusObj = redisTemplate.opsForValue().get(PRADAR_SILENCE_SWITCH_STATUS_VO + uid);
+        Object statusObj = redisTemplate.opsForValue().get(PRADAR_SILENCE_SWITCH_STATUS_VO + ext.getTenantId() + "_" + ext.getEnvCode());
         if (statusObj == null) {
-            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + uid, AppSwitchEnum.OPENED.getCode());
-            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS + uid, AppSwitchEnum.OPENED.getCode());
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO  + ext.getTenantId() + "_" + ext.getEnvCode(), AppSwitchEnum.OPENED.getCode());
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS + ext.getTenantId() + "_" + ext.getEnvCode(), AppSwitchEnum.OPENED.getCode());
         } else {
             return (String)statusObj;
         }
@@ -2543,7 +2534,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (user != null && user.getRole() != null && user.getRole() == 1) {
             result.setSwitchStatus(AppSwitchEnum.OPENED.getCode());
         } else {
-            result.setSwitchStatus(getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId()));
+            result.setSwitchStatus(getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantCommonExt()));
         }
         result.setUserId(WebPluginUtils.traceUserId());
         WebPluginUtils.fillQueryResponse(result);
@@ -2551,13 +2542,13 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public String getUserSilenceSwitchStatusForVo(Long uid) {
-        if (uid == null) {
+    public String getUserSilenceSwitchStatusForVo(TenantCommonExt ext) {
+        if (ext == null || ext.getTenantId() == null || StringUtil.isEmpty(ext.getEnvCode())) {
             return null;
         }
-        Object o = redisTemplate.opsForValue().get(PRADAR_SILENCE_SWITCH_STATUS_VO + uid);
+        Object o = redisTemplate.opsForValue().get(PRADAR_SILENCE_SWITCH_STATUS_VO + ext.getTenantId() + "_" + ext.getEnvCode());
         if (o == null) {
-            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + uid, AppSwitchEnum.OPENED.getCode());
+            redisTemplate.opsForValue().set(PRADAR_SILENCE_SWITCH_STATUS_VO + ext.getTenantId() + "_" +  ext.getEnvCode(), AppSwitchEnum.OPENED.getCode());
             return AppSwitchEnum.OPENED.getCode();
         } else {
             return (String)o;
@@ -2567,7 +2558,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public Response getApplicationReportConfigInfo(Integer type, String appName) {
         List<AppAgentConfigReportDetailResult> results = reportDAO.listByBizType(type, appName);
-        String silenceSwitchStatus = getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId());
+        String silenceSwitchStatus = getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantCommonExt());
         //页面是open状态 对应的agent上报为false，这里需要查不是false的
         String configValue = AppSwitchEnum.OPENED.getCode().equals(silenceSwitchStatus) ? "true" : "false";
         List<AppAgentConfigReportDetailResult> filter = results.stream().filter(
@@ -2578,8 +2569,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public Boolean silenceSwitchStatusIsTrue(Long uid, AppSwitchEnum appSwitchEnum) {
-        String status = this.getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId());
+    public Boolean silenceSwitchStatusIsTrue(TenantCommonExt ext, AppSwitchEnum appSwitchEnum) {
+        String status = this.getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantCommonExt());
         return appSwitchEnum.getCode().equals(status);
     }
 

@@ -838,6 +838,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             vos.add(new SelectVO(AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getConfigName(),
                     AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getType().toString()));
         }
+        vos.add(new SelectVO(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getConfigName(),
+                AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType().toString()));
         return vos;
     }
 

@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 
+import com.github.pagehelper.util.StringUtil;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
@@ -88,6 +89,7 @@ public class ApplicationMqConsumerController {
         needAuth = ActionTypeEnum.CREATE
     )
     public void createMqConsumers(@ApiParam(required = true) @Validated @RequestBody ShadowConsumerCreateInput request) {
+        request.setTopicGroup(StringUtil.isEmpty(request.getTopicGroup()) ?"":request.getTopicGroup().trim());
         shadowConsumerService.createMqConsumersV2(request, true);
     }
 

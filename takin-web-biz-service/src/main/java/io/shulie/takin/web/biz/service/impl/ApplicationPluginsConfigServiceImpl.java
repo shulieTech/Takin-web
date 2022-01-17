@@ -12,8 +12,11 @@ import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.cache.agentimpl.ApplicationPluginConfigAgentCache;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.CommonUtil;
@@ -197,6 +200,9 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         entity.setTenantId(WebPluginUtils.traceTenantId());
         applicationPluginsConfigMapper.updateById(entity);
         this.evict(CommonUtil.generateRedisKey(oldEntity.getApplicationName(),oldEntity.getConfigKey()));
+        OperationLogContextHolder.addVars(Vars.APPLICATION_NAME,oldEntity.getApplicationName());
+        OperationLogContextHolder.addVars(Vars.APP_PLUGIN_KEY,oldEntity.getConfigItem());
+        OperationLogContextHolder.addVars(Vars.APPLICATION_NAME,oldEntity.getConfigValue().equals("-1")?"与业务key一致":oldEntity.getConfigValue()+" h");
         return true;
     }
 

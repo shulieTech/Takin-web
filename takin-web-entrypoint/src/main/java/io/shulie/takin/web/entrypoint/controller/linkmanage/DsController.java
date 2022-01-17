@@ -12,6 +12,7 @@ import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInput;
@@ -76,7 +77,10 @@ public class DsController {
         needAuth = ActionTypeEnum.CREATE
     )
     public Response dsAdd(@RequestBody ApplicationDsCreateInput createRequest) {
-        return dsService.dsAdd(createRequest);
+        Response response = dsService.dsAdd(createRequest);
+        OperationLogContextHolder.operationType(OpTypes.CREATE);
+        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_URL,createRequest.getShadowDbUrl());
+        return response;
     }
 
     /**
@@ -97,6 +101,8 @@ public class DsController {
         needAuth = ActionTypeEnum.CREATE
     )
     public Response dsAddOld(@RequestBody ApplicationDsCreateInput createRequest) {
+        OperationLogContextHolder.operationType(OpTypes.CREATE);
+        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_URL,createRequest.getShadowDbUrl());
         createRequest.setOldVersion(true);
         return this.dsAdd(createRequest);
     }
@@ -176,7 +182,10 @@ public class DsController {
         needAuth = ActionTypeEnum.UPDATE
     )
     public Response dsUpdate(@RequestBody ApplicationDsUpdateInput updateRequest) {
-        return dsService.dsUpdate(updateRequest);
+        final Response response = dsService.dsUpdate(updateRequest);
+        OperationLogContextHolder.operationType(OpTypes.UPDATE);
+        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_URL,updateRequest.getShadowDbUrl());
+        return response;
     }
 
     /**
@@ -197,6 +206,8 @@ public class DsController {
     )
     public Response dsUpdateOld(@RequestBody ApplicationDsUpdateInput updateRequest) {
         updateRequest.setOldVersion(true);
+        OperationLogContextHolder.operationType(OpTypes.UPDATE);
+        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_URL,updateRequest.getShadowDbUrl());
         return this.dsUpdate(updateRequest);
     }
 
@@ -250,7 +261,6 @@ public class DsController {
         if (!response.getSuccess()) {
             return response;
         }
-        ApplicationDsDetailOutput data = response.getData();
         return dsService.dsDelete(deleteRequest);
     }
 

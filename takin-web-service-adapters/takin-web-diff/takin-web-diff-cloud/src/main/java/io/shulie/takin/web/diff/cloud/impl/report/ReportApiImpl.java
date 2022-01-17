@@ -49,12 +49,8 @@ public class ReportApiImpl implements ReportApi {
     }
 
     @Override
-    public ResponseResult<ReportDetailResp> tempReportDetail(ReportDetailBySceneIdReq req) {
-        try {
-            return ResponseResult.success(cloudReportApi.tempReportDetail(req));
-        } catch (Throwable e) {
-            return ResponseResult.fail(e.getMessage(), "");
-        }
+    public ReportDetailResp tempReportDetail(ReportDetailBySceneIdReq req) {
+        return cloudReportApi.tempReportDetail(req);
     }
 
     @Override

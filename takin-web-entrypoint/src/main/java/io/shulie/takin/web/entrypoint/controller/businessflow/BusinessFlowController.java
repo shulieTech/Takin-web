@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import lombok.extern.slf4j.Slf4j;
 
 import io.swagger.annotations.Api;
@@ -63,8 +64,8 @@ public class BusinessFlowController {
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         if (null != sceneDetailDto) {
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_FLOW_ID, String.valueOf(sceneDetailDto.getId()));
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_FLOW_NAME, sceneDetailDto.getBusinessProcessName());
+            OperationLogContextHolder.addVars(Vars.BUSINESS_FLOW_ID, String.valueOf(sceneDetailDto.getId()));
+            OperationLogContextHolder.addVars(Vars.BUSINESS_FLOW_NAME, sceneDetailDto.getBusinessProcessName());
         }
         return ResponseResult.success(sceneDetailDto);
     }
@@ -119,7 +120,7 @@ public class BusinessFlowController {
     @ModuleDef(
         moduleName = BizOpConstants.Modules.LINK_CARDING,
         subModuleName = BizOpConstants.SubModules.BUSINESS_PROCESS,
-        logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_PROCESS_UPDATE
+        logMsgKey = BizOpConstants.Message.MESSAGE_BUSINESS_FLOW
     )
     @AuthVerification(
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
@@ -127,6 +128,8 @@ public class BusinessFlowController {
     )
     public ResponseResult<BusinessFlowMatchResponse> autoMatchActivity(@RequestBody @Valid BusinessFlowAutoMatchRequest businessFlowAutoMatchRequest) {
         BusinessFlowMatchResponse sceneDetailDto = sceneService.autoMatchActivity(businessFlowAutoMatchRequest.getId());
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
+        OperationLogContextHolder.addVars("data", JsonUtil.toJson(businessFlowAutoMatchRequest));
         return ResponseResult.success(sceneDetailDto);
     }
 

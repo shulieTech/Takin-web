@@ -97,7 +97,8 @@ public class AppRemoteCallServiceImplTest {
         final DataSourceQueryRequest request = new DataSourceQueryRequest();
         request.setCurrent(0);
         request.setPageSize(10);
-        request.setDatasourceName("%");
+        //request.setDatasourceName("%");
+        request.setJdbcUrl("_0");
         final PagingList<DatasourceListResponse> list = dataSourceService.listDatasource(
             request);
         System.out.println(JSON.toJSONString(list));

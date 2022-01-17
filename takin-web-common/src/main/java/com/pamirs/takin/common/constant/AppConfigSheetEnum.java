@@ -17,11 +17,11 @@ public enum AppConfigSheetEnum {
     /**
      * 挡板
      */
-    GUARD("挡板", 3, 1),
+    GUARD("出口挡板", 3, 1),
     /**
      * job任务
      */
-    JOB("job任务", 5, 2),
+    JOB("Job任务", 5, 2),
     /**
      * 白名单
      */

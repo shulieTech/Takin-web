@@ -943,7 +943,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         sheets.add(this.getJobSheet(applicationId));
 
         // 白名单配置
-        sheets.add(this.getWhiteListSheet(application));
+//        sheets.add(this.getWhiteListSheet(application));
+
+        // 导出远程调用数据
+        sheets.add(this.getRemoteCallConfigSheet(applicationId));
 
         // 影子消费者配置
         sheets.add(this.getShadowConsumerSheet(applicationId));
@@ -954,8 +957,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         // 导出插件管理的配置项
         sheets.add(this.getPluginsConfigSheet(applicationId));
 
-        // 导出远程调用数据
-        sheets.add(this.getRemoteCallConfigSheet(applicationId));
 
         try {
             ExcelUtils.exportExcelManySheet(response, application.getApplicationName(), sheets);
@@ -989,7 +990,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         ExcelSheetVO<ApplicationPluginsConfigExcelVO> pluginsListSheet = new ExcelSheetVO<>();
         pluginsListSheet.setData(excelVoList);
         pluginsListSheet.setExcelModelClass(ApplicationPluginsConfigExcelVO.class);
-        pluginsListSheet.setSheetName(AppConfigSheetEnum.PLUGINS_CONFIG.name());
+        pluginsListSheet.setSheetName(AppConfigSheetEnum.PLUGINS_CONFIG.getDesc());
         pluginsListSheet.setSheetNum(AppConfigSheetEnum.values().length - 1);
         return pluginsListSheet;
     }
@@ -1018,7 +1019,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         ExcelSheetVO<ApplicationRemoteCallConfigExcelVO> remoteCallSheet = new ExcelSheetVO<>();
         remoteCallSheet.setData(excelVoList);
         remoteCallSheet.setExcelModelClass(ApplicationRemoteCallConfigExcelVO.class);
-        remoteCallSheet.setSheetName(AppConfigSheetEnum.REMOTE_CALL.name());
+        remoteCallSheet.setSheetName(AppConfigSheetEnum.REMOTE_CALL.getDesc());
         remoteCallSheet.setSheetNum(AppConfigSheetEnum.values().length - 1);
         return remoteCallSheet;
     }
@@ -1031,7 +1032,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         ExcelSheetVO<BlacklistExcelVO> blacklistSheet = new ExcelSheetVO<>();
         blacklistSheet.setData(excelModelList);
         blacklistSheet.setExcelModelClass(BlacklistExcelVO.class);
-        blacklistSheet.setSheetName(AppConfigSheetEnum.BLACK.name());
+        blacklistSheet.setSheetName(AppConfigSheetEnum.BLACK.getDesc());
         blacklistSheet.setSheetNum(4);
         return blacklistSheet;
     }
@@ -1062,7 +1063,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         ExcelSheetVO<ApplicationDsManageExportVO> sheet = new ExcelSheetVO<>();
         sheet.setExcelModelClass(ApplicationDsManageExportVO.class);
-        sheet.setSheetName(AppConfigSheetEnum.DADABASE.name());
+        sheet.setSheetName(AppConfigSheetEnum.DADABASE.getDesc());
         sheet.setSheetNum(AppConfigSheetEnum.DADABASE.getSheetNumber());
 
         // ds 数据判断
@@ -1126,7 +1127,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         ExcelSheetVO<ShadowConsumerExcelVO> shadowConsumerSheet = new ExcelSheetVO<>();
         shadowConsumerSheet.setData(excelModelList);
         shadowConsumerSheet.setExcelModelClass(ShadowConsumerExcelVO.class);
-        shadowConsumerSheet.setSheetName(AppConfigSheetEnum.CONSUMER.name());
+        shadowConsumerSheet.setSheetName(AppConfigSheetEnum.CONSUMER.getDesc());
         shadowConsumerSheet.setSheetNum(3);
         return shadowConsumerSheet;
     }
@@ -1430,7 +1431,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             ArrayList<ArrayList<String>> arrayLists = stringArrayListHashMap.get(sheetEnum.name());
             // 影子库不在这里判断
             if (CollectionUtils.isEmpty(arrayLists)
-                || AppConfigSheetEnum.DADABASE.name().equals(sheetEnum.name())) {
+                || AppConfigSheetEnum.DADABASE.getDesc().equals(sheetEnum.name())) {
                 continue;
             }
 
@@ -1446,7 +1447,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     }
                 });
             if (result.size() == 0) {
-                if (AppConfigSheetEnum.PLUGINS_CONFIG.name().equals(sheetEnum.name())) {
+                if (AppConfigSheetEnum.PLUGINS_CONFIG.getDesc().equals(sheetEnum.name())) {
                     arrayLists.forEach(t -> {
                         String inputStr = t.get(1);
                         boolean number = NumberUtil.isNumber(inputStr);
@@ -1490,11 +1491,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
 
         // 保存 影子库/表
-        this.saveDsFromImport(applicationId, configMap.get(AppConfigSheetEnum.DADABASE.name()));
+        this.saveDsFromImport(applicationId, configMap.get(AppConfigSheetEnum.DADABASE.getDesc()));
 
         // 保存挡板
-        if (configMap.containsKey(AppConfigSheetEnum.GUARD.name())) {
-            ArrayList<ArrayList<String>> guardList = configMap.get(AppConfigSheetEnum.GUARD.name());
+        if (configMap.containsKey(AppConfigSheetEnum.GUARD.getDesc())) {
+            ArrayList<ArrayList<String>> guardList = configMap.get(AppConfigSheetEnum.GUARD.getDesc());
             List<LinkGuardVo> linkGuardVos = appConfigEntityConvertService.convertGuardSheet(guardList);
             if (CollectionUtils.isNotEmpty(linkGuardVos)) {
                 linkGuardVos.forEach(guard -> {
@@ -1519,8 +1520,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
 
         // 保存 job
-        if (configMap.containsKey(AppConfigSheetEnum.JOB.name())) {
-            ArrayList<ArrayList<String>> arrayLists = configMap.get(AppConfigSheetEnum.JOB.name());
+        if (configMap.containsKey(AppConfigSheetEnum.JOB.getDesc())) {
+            ArrayList<ArrayList<String>> arrayLists = configMap.get(AppConfigSheetEnum.JOB.getDesc());
             List<TShadowJobConfig> tShadowJobConfigs = appConfigEntityConvertService.convertJobSheet(arrayLists);
             if (CollectionUtils.isNotEmpty(tShadowJobConfigs)) {
                 tShadowJobConfigs.forEach(job -> {
@@ -1541,8 +1542,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         this.saveBlacklistFromImport(applicationId, configMap);
 
         // 保存影子消费者配置
-        if (configMap.containsKey(AppConfigSheetEnum.CONSUMER.name())) {
-            ArrayList<ArrayList<String>> arrayLists = configMap.get(AppConfigSheetEnum.CONSUMER.name());
+        if (configMap.containsKey(AppConfigSheetEnum.CONSUMER.getDesc())) {
+            ArrayList<ArrayList<String>> arrayLists = configMap.get(AppConfigSheetEnum.CONSUMER.getDesc());
             List<ShadowConsumerCreateInput> shadowConsumerCreateInputs = appConfigEntityConvertService
                 .converComsumerList(arrayLists);
             if (CollectionUtils.isNotEmpty(shadowConsumerCreateInputs)) {
@@ -1586,7 +1587,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private void saveRemoteCallFromImport(ApplicationDetailResult detailResult, Map<String, ArrayList<ArrayList<String>>> configMap) {
         // map 取出数据
         ArrayList<ArrayList<String>> importRemoteCall;
-        if ((importRemoteCall = configMap.get(AppConfigSheetEnum.REMOTE_CALL.name())) == null) {
+        if ((importRemoteCall = configMap.get(AppConfigSheetEnum.REMOTE_CALL.getDesc())) == null) {
             return;
         }
         // 转换
@@ -1599,7 +1600,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     private void savePluginsListFromImport(ApplicationDetailResult application,
         Map<String, ArrayList<ArrayList<String>>> configMap) {
-        List<ArrayList<String>> lists = configMap.get(AppConfigSheetEnum.PLUGINS_CONFIG.name());
+        List<ArrayList<String>> lists = configMap.get(AppConfigSheetEnum.PLUGINS_CONFIG.getDesc());
         if (CollectionUtils.isEmpty(lists)) {
             return;
         }
@@ -1663,7 +1664,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private void saveBlacklistFromImport(Long applicationId, Map<String, ArrayList<ArrayList<String>>> configMap) {
         // map 取出数据
         ArrayList<ArrayList<String>> importBlackLists;
-        if ((importBlackLists = configMap.get(AppConfigSheetEnum.BLACK.name())) == null) {
+        if ((importBlackLists = configMap.get(AppConfigSheetEnum.BLACK.getDesc())) == null) {
             return;
         }
         // 转换
@@ -1710,7 +1711,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private void saveWhiteListFromImport(Long applicationId, Map<String, ArrayList<ArrayList<String>>> configMap) {
         // map 取出数据
         ArrayList<ArrayList<String>> importWhiteLists;
-        if ((importWhiteLists = configMap.get(AppConfigSheetEnum.WHITE.name())) == null) {
+        if ((importWhiteLists = configMap.get(AppConfigSheetEnum.WHITE.getDesc())) == null) {
             return;
         }
         // 转换
@@ -2047,7 +2048,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         ExcelSheetVO<LinkGuardExcelVO> guardExcelSheet = new ExcelSheetVO<>();
         guardExcelSheet.setData(linkGuardExcelModelList);
         guardExcelSheet.setExcelModelClass(LinkGuardExcelVO.class);
-        guardExcelSheet.setSheetName(AppConfigSheetEnum.GUARD.name());
+        guardExcelSheet.setSheetName(AppConfigSheetEnum.GUARD.getDesc());
         guardExcelSheet.setSheetNum(0);
         return guardExcelSheet;
     }
@@ -2064,7 +2065,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         ExcelSheetVO<ShadowJobExcelVO> jobSheet = new ExcelSheetVO<>();
         jobSheet.setData(jobExcelModelList);
         jobSheet.setExcelModelClass(ShadowJobExcelVO.class);
-        jobSheet.setSheetName(AppConfigSheetEnum.JOB.name());
+        jobSheet.setSheetName(AppConfigSheetEnum.JOB.getDesc());
         jobSheet.setSheetNum(1);
         return jobSheet;
     }

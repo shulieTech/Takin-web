@@ -176,6 +176,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -297,6 +298,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private LinkTopologyService linkTopologyService;
+
 
     @PostConstruct
     public void init() {
@@ -653,6 +655,17 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
      */
     @Override
     public Response<String> uploadAccessStatus(NodeUploadDataDTO param) {
+        param.setSource(ContextSourceEnum.AGENT.getCode());
+        WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(),param);
+        this.uploadAppStatus(param);
+        return Response.success("上传应用状态信息成功");
+    }
+
+    // 上报应用状态数据
+    @Async("agentDataTaskExecutor")
+    public void uploadAppStatus(NodeUploadDataDTO param) {
+        // 补充header
+        WebPluginUtils.setTraceTenantContext(param);
         if (param == null || StringUtil.isEmpty(param.getApplicationName()) || StringUtil.isEmpty(param.getNodeKey())) {
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_PUSH_APPLICATION_STATUS_VALIDATE_ERROR,
                 "节点唯一key|应用名称 不能为空");
@@ -661,14 +674,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         UserExt user = WebPluginUtils.traceUser();
         String userAppKey = WebPluginUtils.traceTenantAppKey();
         if (WebPluginUtils.checkUserPlugin() && user == null) {
-            // todo 后续需要修改
-            return Response.fail("0000-0000-0000", "未获取到" + userAppKey + "用户信息");
+            log.error("未获取到{}用户信息",userAppKey);
+            return;
         }
 
         ApplicationDetailResult applicationMnt = this.queryTApplicationMntByName(param.getApplicationName());
 
         if (applicationMnt == null) {
-            return Response.fail("0000-0000-0000", "查询不到应用【" + param.getApplicationName() + "】,请先上报应用！");
+            log.error("查询不到应用【{}】,请先上报应用！",param.getApplicationName());
+            return;
         }
 
         if (param.getSwitchErrorMap() != null && !param.getSwitchErrorMap().isEmpty()) {
@@ -697,7 +711,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             applicationDAO.updateApplicationStatus(applicationMnt.getApplicationId(),
                 AppAccessStatusEnum.NORMAL.getCode());
         }
-        return Response.success("上传应用状态信息成功");
     }
 
     @Override

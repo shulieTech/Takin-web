@@ -64,7 +64,6 @@ import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerUpdateInput;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
-import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationListByUpgradeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationNodeOperateProbeRequest;
@@ -1544,8 +1543,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         // 保存影子消费者配置
         if (configMap.containsKey(AppConfigSheetEnum.CONSUMER.getDesc())) {
             ArrayList<ArrayList<String>> arrayLists = configMap.get(AppConfigSheetEnum.CONSUMER.getDesc());
-            List<ShadowConsumerCreateInput> shadowConsumerCreateInputs = appConfigEntityConvertService
-                .converComsumerList(arrayLists);
+            List<ShadowConsumerCreateInput> shadowConsumerCreateInputs = appConfigEntityConvertService.converComsumerList(arrayLists);
             if (CollectionUtils.isNotEmpty(shadowConsumerCreateInputs)) {
                 shadowConsumerCreateInputs.forEach(request -> {
                     request.setApplicationId(applicationId);
@@ -1555,21 +1553,17 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                         queryRequest.setType(request.getType());
                         queryRequest.setTopicGroup(request.getTopicGroup());
                         queryRequest.setApplicationId(applicationId);
-                        PagingList<ShadowConsumerOutput> pagingList = shadowConsumerService
-                            .pageMqConsumers(queryRequest);
-                        if (CollectionUtils.isNotEmpty(pagingList.getList())) {
-                            ShadowConsumerOutput dbData = pagingList.getList().get(0);
+                        // 是否存在
+                        if (shadowConsumerService.exist(queryRequest)) {
                             ShadowConsumerUpdateInput updateRequest = new ShadowConsumerUpdateInput();
                             BeanUtils.copyProperties(request, updateRequest);
-                            updateRequest.setId(dbData.getId());
-                            shadowConsumerService.updateMqConsumers(updateRequest);
+                            shadowConsumerService.importUpdateMqConsumers(updateRequest);
                         } else {
                             shadowConsumerService.createMqConsumers(request);
                         }
                     } catch (Exception e) {
-                        log.error("影子消费者导入失败", e);
                         throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_CONFIG_FILE_IMPORT_ERROR,
-                            "影子消费者导入失败!");
+                            "影子消费者导入失败!失败原因:" + e.getMessage(),e);
                     }
                 });
             }

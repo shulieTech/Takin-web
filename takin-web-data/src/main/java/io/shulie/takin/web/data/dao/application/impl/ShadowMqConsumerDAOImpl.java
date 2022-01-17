@@ -32,4 +32,13 @@ public class ShadowMqConsumerDAOImpl
         this.update(wrapper);
     }
 
+    @Override
+    public void importUpdateData(ShadowMqConsumerEntity updateEntity) {
+        LambdaUpdateWrapper<ShadowMqConsumerEntity> wrapper = this.getLambdaUpdateWrapper();
+        wrapper.eq(ShadowMqConsumerEntity::getApplicationId,updateEntity.getApplicationId());
+        wrapper.eq(ShadowMqConsumerEntity::getTopicGroup,updateEntity.getTopicGroup());
+        wrapper.eq(ShadowMqConsumerEntity::getType,updateEntity.getType());
+        wrapper.set(ShadowMqConsumerEntity::getStatus,updateEntity.getStatus());
+        this.update(wrapper);
+    }
 }

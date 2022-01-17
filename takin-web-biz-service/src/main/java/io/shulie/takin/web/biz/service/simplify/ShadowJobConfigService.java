@@ -82,10 +82,14 @@ public class ShadowJobConfigService {
         if (null != tShadowJobConfig.getId()) {
             return Response.fail("ID必须为空");
         }
-
         ShadowJobCreateParam shadowJobCreateParam = new ShadowJobCreateParam();
         BeanUtils.copyProperties(tShadowJobConfig, shadowJobCreateParam);
         WebPluginUtils.fillUserData(shadowJobCreateParam);
+        // 重复判断
+        if (applicationShadowJobDAO.exist(shadowJobCreateParam)) {
+            return Response.fail(shadowJobCreateParam.getName() + ",类型为"+shadowJobCreateParam.getType() + "已存在");
+        }
+
         applicationShadowJobDAO.insert(shadowJobCreateParam);
         configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), tShadowJobConfig.getApplicationId(),
             null);

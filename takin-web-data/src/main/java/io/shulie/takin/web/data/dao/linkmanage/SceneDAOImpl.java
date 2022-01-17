@@ -144,7 +144,7 @@ public class SceneDAOImpl implements SceneDAO {
 
         LambdaQueryWrapper<SceneEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         if (!StringUtils.isEmpty(param.getSceneName())) {
-            lambdaQueryWrapper.like(SceneEntity::getSceneName, param.getSceneName());
+            lambdaQueryWrapper.like(SceneEntity::getSceneName, "\\" + param.getSceneName());
         }
         if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
             lambdaQueryWrapper.in(SceneEntity::getUserId, param.getUserIdList());
@@ -155,7 +155,8 @@ public class SceneDAOImpl implements SceneDAO {
         if (sceneEntityPage == null || CollectionUtils.isEmpty(sceneEntityPage.getRecords())) {
             return PagingList.of(Lists.newArrayList(), 0);
         }
-        List<SceneResult> sceneResultList = BusinessLinkManageConvert.INSTANCE.ofSceneEntityList(sceneEntityPage.getRecords());
+        List<SceneResult> sceneResultList = BusinessLinkManageConvert.INSTANCE.ofSceneEntityList(
+            sceneEntityPage.getRecords());
         return PagingList.of(sceneResultList, sceneEntityPage.getTotal());
     }
 }

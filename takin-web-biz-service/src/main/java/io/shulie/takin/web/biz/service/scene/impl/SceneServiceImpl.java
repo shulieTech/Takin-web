@@ -600,7 +600,8 @@ public class SceneServiceImpl implements SceneService {
     @Override
     public PagingList<BusinessFlowListResponse> getBusinessFlowList(BusinessFlowPageQueryRequest queryRequest) {
         ScenePageQueryParam queryParam = new ScenePageQueryParam();
-        queryParam.setSceneName(queryRequest.getBusinessFlowName());
+        final String flowName = queryRequest.getBusinessFlowName();
+        queryParam.setSceneName(flowName == null?null:flowName.replace("%","\\%").replace("-","\\-").replace("_","\\_"));
         queryParam.setCurrent(queryRequest.getCurrent());
         queryParam.setPageSize(queryRequest.getPageSize());
         WebPluginUtils.fillQueryParam(queryParam);

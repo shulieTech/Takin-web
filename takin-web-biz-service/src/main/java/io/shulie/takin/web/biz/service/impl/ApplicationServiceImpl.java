@@ -176,7 +176,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -662,7 +661,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     // 上报应用状态数据
-    @Async("agentDataTaskExecutor")
     public void uploadAppStatus(NodeUploadDataDTO param) {
         // 补充header
         WebPluginUtils.setTraceTenantContext(param);

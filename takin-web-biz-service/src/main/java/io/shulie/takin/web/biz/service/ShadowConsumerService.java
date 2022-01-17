@@ -23,11 +23,24 @@ public interface ShadowConsumerService {
 
     ShadowConsumerOutput getMqConsumerById(Long id);
 
+    /**
+     * 是否已存在
+     * @param request
+     * @return
+     */
+    Boolean exist(ShadowConsumerQueryInput request);
+
     PagingList<ShadowConsumerOutput> pageMqConsumers(ShadowConsumerQueryInput request);
 
     void createMqConsumers(ShadowConsumerCreateInput request);
 
     void updateMqConsumers(ShadowConsumerUpdateInput request);
+
+    /**
+     * 导入更新mq
+     * @param request
+     */
+    void importUpdateMqConsumers(ShadowConsumerUpdateInput request);
 
     void deleteMqConsumers(List<Long> id);
 

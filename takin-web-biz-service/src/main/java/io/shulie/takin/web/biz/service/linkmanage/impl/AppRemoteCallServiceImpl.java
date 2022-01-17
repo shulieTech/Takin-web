@@ -276,9 +276,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         if (dbPagingList.getList().size() < input.getPageSize()) {
             // 重置 amdb查询页码 是第一页
             int current = input.getCurrent() - (int)(dbPagingList.getTotal() / input.getPageSize()) - 1;
-            if (current < 0) {
+            if (current <= 0) {
                 // 存在数据库数据少于 页码数
-                current = 0;
+                current = 1;
             }
             input.setCurrent(current);
         }

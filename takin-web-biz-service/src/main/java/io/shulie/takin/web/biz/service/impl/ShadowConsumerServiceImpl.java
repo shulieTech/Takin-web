@@ -55,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,6 +102,16 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             response.setFeature(entry.getFeature());
             return response;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Boolean exist(ShadowConsumerQueryInput request) {
+        LambdaQueryWrapper<ShadowMqConsumerEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ShadowMqConsumerEntity::getApplicationId, request.getApplicationId());
+        query.eq(ShadowMqConsumerEntity::getTopicGroup, request.getTopicGroup());
+        query.eq(ShadowMqConsumerEntity::getType, request.getType());
+        query.eq(ShadowMqConsumerEntity::getDeleted, ShadowConsumerConstants.LIVED);
+        return shadowMqConsumerMapper.selectCount(query) > 0;
     }
 
     @Override
@@ -353,8 +364,28 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         updateEntity.setType(request.getType().name());
         updateEntity.setStatus(request.getStatus());
         shadowMqConsumerMapper.updateById(updateEntity);
-        //todo agent改造点
         agentConfigCacheManager.evictShadowConsumer(application.getApplicationName());
+    }
+
+    @Override
+    public void importUpdateMqConsumers(ShadowConsumerUpdateInput request) {
+        if (!request.getTopicGroup().contains("#")) {
+           return;
+        }
+        String[] split = request.getTopicGroup().split("#");
+        if (split.length != 2) {
+            return;
+        }
+        ApplicationDetailResult application = applicationDAO.getApplicationById(request.getApplicationId());
+        if (application == null) {
+            return;
+        }
+        ShadowMqConsumerEntity updateEntity = new ShadowMqConsumerEntity();
+        BeanUtils.copyProperties(request,updateEntity);
+        updateEntity.setTopicGroup(request.getTopicGroup());
+        updateEntity.setType(request.getType().name());
+        updateEntity.setStatus(request.getStatus());
+        shadowMqConsumerDAO.importUpdateData(updateEntity);
     }
 
     @Override
@@ -573,6 +604,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             agentConfigCacheManager.evictShadowConsumer(application.getApplicationName());
         }
     }
+
 
     @Override
     @Transactional(rollbackFor = Throwable.class)

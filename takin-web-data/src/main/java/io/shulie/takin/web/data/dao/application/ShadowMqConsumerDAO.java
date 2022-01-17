@@ -28,4 +28,9 @@ public interface ShadowMqConsumerDAO extends IService<ShadowMqConsumerEntity> {
      */
     void updateAppName(Long applicationId,String appName);
 
+    /**
+     * 插入更新
+     * @param updateEntity
+     */
+    void importUpdateData(ShadowMqConsumerEntity updateEntity);
 }

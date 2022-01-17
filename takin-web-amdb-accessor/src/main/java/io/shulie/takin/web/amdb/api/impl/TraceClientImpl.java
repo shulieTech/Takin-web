@@ -3,6 +3,7 @@ package io.shulie.takin.web.amdb.api.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.collect.Sets;
 import com.pamirs.pradar.log.parser.ProtocolParserFactory;
@@ -113,7 +114,7 @@ public class TraceClientImpl implements TraceClient {
                     .eventName("查询链路列表")
                     .list(EntryTraceInfoDTO.class);
             List<EntryTraceInfoDTO> list = response.getData();
-            if (CollectionUtil.isNotEmpty(list)) {
+            if (CollUtil.isNotEmpty(list)) {
                 list.forEach(entry -> {
                     entry.setEntry(entry.getServiceName());
                     entry.setMethod(entry.getMethodName());

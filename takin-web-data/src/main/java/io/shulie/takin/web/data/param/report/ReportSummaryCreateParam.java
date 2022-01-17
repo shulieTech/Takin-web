@@ -10,6 +10,7 @@ import lombok.Data;
  */
 @Data
 public class ReportSummaryCreateParam {
+    private Long id;
     private Long reportId;
 
     /**

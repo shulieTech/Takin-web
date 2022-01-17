@@ -887,9 +887,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public String getUserSwitchStatusForVo() {
         String envCode = WebPluginUtils.traceEnvCode();
-        String tenantCode = WebPluginUtils.traceTenantCode();
+        String tenantAppKey = WebPluginUtils.traceTenantAppKey();
         final String statusVoRedisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-            PRADAR_SWITCH_STATUS_VO + tenantCode, envCode);
+            PRADAR_SWITCH_STATUS_VO + tenantAppKey, envCode);
         Object o = redisTemplate.opsForValue().get(statusVoRedisKey);
         if (o == null) {
             redisTemplate.opsForValue().set(statusVoRedisKey, AppSwitchEnum.OPENED.getCode());

@@ -149,7 +149,7 @@ public class AgentConfigCacheManager {
 
     /**
      * 获取开关信息 压测开关 + 静默开关
-     * @return
+     * @return redisTemplate.opsForValue().get("PRADAR_SWITCH_STATUS_hsh_test")
      */
     public ApplicationSwitchStatusDTO getPressureSwitch() {
         // 压测开关

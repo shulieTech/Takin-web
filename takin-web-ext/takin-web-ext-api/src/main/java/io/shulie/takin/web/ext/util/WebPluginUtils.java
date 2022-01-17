@@ -5,10 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
 import java.util.Objects;
-import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -551,9 +548,8 @@ public class WebPluginUtils {
         }
         HashMap<String, String> dataMap = new LinkedHashMap<>();
         dataMap.put("租户ID", DEFAULT_TENANT_ID + "");
-        dataMap.put("租户user-app-key", DEFAULT_TENANT_APP_KEY);
+        dataMap.put("租户tenant-app-key", DEFAULT_TENANT_APP_KEY);
         dataMap.put("用户ID", DEFAULT_USER_ID + "");
-        dataMap.put("用户user-app-key", DEFAULT_TENANT_APP_KEY);
         return dataMap;
     }
 

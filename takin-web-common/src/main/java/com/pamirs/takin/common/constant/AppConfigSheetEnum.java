@@ -13,7 +13,7 @@ public enum AppConfigSheetEnum {
     /**
      * 影子库/表
      */
-    DADABASE("影子库/表", 10, 0),
+    DADABASE("影子库表", 10, 0),
     /**
      * 挡板
      */

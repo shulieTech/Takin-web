@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSON;
+
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
@@ -108,7 +110,8 @@ public class BlacklistServiceImpl implements BlacklistService {
         // 刷新agent数据
         ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(applicationId);
         whiteListFileService.writeWhiteListFile();
-        TenantCommonExt commonExt = WebPluginUtils.fillTenantCommonExt(tApplicationMnt.getTenantId(), tApplicationMnt.getEnvCode());
+        TenantCommonExt commonExt = WebPluginUtils.fillTenantCommonExt(tApplicationMnt.getTenantId(),
+            tApplicationMnt.getEnvCode());
         configSyncService.syncAllowList(commonExt, applicationId, tApplicationMnt.getApplicationName());
         agentConfigCacheManager.evictRecallCalls(tApplicationMnt.getApplicationName());
     }
@@ -121,6 +124,7 @@ public class BlacklistServiceImpl implements BlacklistService {
         }
         OperationLogContextHolder.addVars(Vars.BLACKLIST_VALUE, results.stream()
             .map(BlacklistResult::getRedisKey).collect(Collectors.joining(",")));
+        OperationLogContextHolder.addVars(Vars.ACTION, "参数：" + JSON.toJSONString(ids));
         ids.forEach(id -> {
             BlacklistUpdateParam param = new BlacklistUpdateParam();
             param.setBlistId(id);
@@ -160,7 +164,7 @@ public class BlacklistServiceImpl implements BlacklistService {
         BeanUtils.copyProperties(input, param);
         PagingList<BlacklistVO> pagingList = blackListDAO.pageList(param);
         if (pagingList.isEmpty()) {
-            return PagingList.of(Lists.newArrayList(),pagingList.getTotal());
+            return PagingList.of(Lists.newArrayList(), pagingList.getTotal());
         }
         for (BlacklistVO vo : pagingList.getList()) {
             WebPluginUtils.fillQueryResponse(vo);

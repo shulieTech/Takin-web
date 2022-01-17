@@ -4,6 +4,7 @@ import javax.validation.Valid;
 
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.service.blacklist.BlacklistService;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
@@ -32,6 +33,7 @@ import io.shulie.takin.web.common.vo.blacklist.BlacklistVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.mortbay.util.ajax.JSON;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -177,6 +179,7 @@ public class BlacklistConfigController {
         BlacklistUpdateInput input = new BlacklistUpdateInput();
         BeanUtils.copyProperties(request, input);
         blacklistService.enable(input);
+        OperationLogContextHolder.addVars(Vars.ACTION,"参数："+ JSON.toString(request));
         return new BlacklistStringResponse(operationType + "成功");
     }
 

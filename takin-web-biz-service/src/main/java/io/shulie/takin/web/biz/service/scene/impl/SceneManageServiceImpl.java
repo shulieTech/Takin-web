@@ -1,6 +1,9 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,9 +17,11 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
-import com.google.common.collect.Maps;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.SceneManageConstant;
 import com.pamirs.takin.common.constant.TimeUnitEnum;
 import com.pamirs.takin.common.exception.ApiException;
@@ -24,8 +29,6 @@ import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.ListHelper;
 import com.pamirs.takin.common.util.parse.UrlUtil;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationMntDao;
-import com.pamirs.takin.entity.dao.linkmanage.TBusinessLinkManageTableMapper;
-import com.pamirs.takin.entity.dao.linkmanage.TLinkManageTableMapper;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
@@ -51,8 +54,13 @@ import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageListResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.ScriptCheckResp;
 import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
+import io.shulie.takin.web.biz.pojo.request.scene.ListSceneForSelectRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.ListSceneReportRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
@@ -78,8 +86,8 @@ import io.shulie.takin.web.common.http.HttpAssert;
 import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
+import io.shulie.takin.web.data.common.InfluxDatabaseManager;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
-import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
@@ -91,7 +99,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
@@ -125,6 +132,9 @@ public class SceneManageServiceImpl implements SceneManageService {
     private SceneTaskApi sceneTaskApi;
     @Resource
     private SceneService sceneService;
+
+    @Autowired
+    private InfluxDatabaseManager influxDatabaseManager;
 
     @Override
     public ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req) {
@@ -795,4 +805,75 @@ public class SceneManageServiceImpl implements SceneManageService {
         }
         return ResponseResult.success(list);
     }
+
+    @Override
+    public List<SceneListForSelectOutput> listForSelect(ListSceneForSelectRequest request) {
+        // 查询cloud, 场景列表, 状态是压测中
+
+        // TODO 删除测试数据, 数据转换一下
+        SceneListForSelectOutput sceneListForSelectOutput = new SceneListForSelectOutput();
+        sceneListForSelectOutput.setId(1L);
+        sceneListForSelectOutput.setName("测试1");
+
+        SceneListForSelectOutput sceneListForSelectOutput2 = new SceneListForSelectOutput();
+        sceneListForSelectOutput2.setId(2L);
+        sceneListForSelectOutput2.setName("测试2");
+        return Arrays.asList(sceneListForSelectOutput, sceneListForSelectOutput2);
+    }
+
+    @Override
+    public PagingList<SceneReportListOutput> listReportBySceneIds(ListSceneReportRequest request) {
+        // 查询cloud, 获得查询tps所需要的条件
+
+        // 如果为空, 报错
+
+        Long customerId = WebPluginUtils.getCustomerId();
+
+
+        // 通过条件, 查询influxdb, 获取到tps, sql语句
+        // 根据orderType, 使用不通的排序方式
+        String influxDbSql = "select tps, from app_base_data where ";
+        Integer orderType = request.getOrderType();
+        if (orderType == 1) {
+            influxDbSql += "";
+        }
+
+        Collection<SceneReportListOutput> reportList = influxDatabaseManager.query(SceneReportListOutput.class, influxDbSql);
+        if (CollectionUtil.isEmpty(reportList)) {
+            return PagingList.empty();
+        }
+
+        // 当前时间
+        String currentTime = LocalDateTimeUtil.format(LocalDateTime.now(), "HH:mm:ss");
+        // 条件里面有sceneName, groupBy sceneId一下
+        for (SceneReportListOutput sceneReportListOutput : reportList) {
+            // TODO 名称要通过map获取
+            sceneReportListOutput.setSceneName("");
+            sceneReportListOutput.setTime(currentTime);
+        }
+
+        SceneReportListOutput sceneReportListOutput = new SceneReportListOutput();
+        sceneReportListOutput.setSceneId(1L);
+        sceneReportListOutput.setSceneName("测试1");
+        sceneReportListOutput.setTps(this.getThreeRandomString());
+        sceneReportListOutput.setTps(currentTime);
+
+        SceneReportListOutput sceneReportListOutput2 = new SceneReportListOutput();
+        sceneReportListOutput2.setSceneId(2L);
+        sceneReportListOutput2.setSceneName("测试2");
+        sceneReportListOutput2.setTps(this.getThreeRandomString());
+        sceneReportListOutput2.setTps(currentTime);
+
+        return PagingList.of(Arrays.asList(sceneReportListOutput, sceneReportListOutput2), 2);
+    }
+
+    /**
+     * 3位随机数字符串
+     *
+     * @return 3位随机数字符串
+     */
+    public String getThreeRandomString() {
+        return String.valueOf((int)((Math.random() * 9 + 1) * 100));
+    }
+
 }

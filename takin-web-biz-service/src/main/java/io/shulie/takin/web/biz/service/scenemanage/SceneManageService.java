@@ -12,7 +12,12 @@ import io.shulie.takin.cloud.open.req.scenemanage.SceneManageQueryByIdsReq;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneManageWrapperReq;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
+import io.shulie.takin.web.biz.pojo.request.scene.ListSceneForSelectRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.ListSceneReportRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.common.domain.WebResponse;
 
@@ -57,4 +62,21 @@ public interface SceneManageService {
     WebResponse<List<SceneScriptRefOpen>> buildSceneForFlowVerify(SceneManageWrapperVO vo, SceneManageWrapperReq req, Long userId);
 
     ResponseResult<List<ScenePositionPointResponse>> getPositionPoint(Long sceneId);
+
+    /**
+     * 下拉框的压测场景列表, 暂时只查询压测中状态的
+     *
+     * @param request 请求入参
+     * @return 压测场景列表
+     */
+    List<SceneListForSelectOutput> listForSelect(ListSceneForSelectRequest request);
+
+    /**
+     * 通过场景id, 查询对应的正在运行的报告
+     *
+     * @param request 请求入参
+     * @return 报告列表
+     */
+    PagingList<SceneReportListOutput> listReportBySceneIds(ListSceneReportRequest request);
+
 }

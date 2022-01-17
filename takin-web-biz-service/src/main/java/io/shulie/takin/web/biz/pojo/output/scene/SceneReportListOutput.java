@@ -1,5 +1,9 @@
 package io.shulie.takin.web.biz.pojo.output.scene;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -22,6 +26,9 @@ public class SceneReportListOutput {
     private String time;
 
     @ApiModelProperty("纵坐标, 报告tps")
-    private String tps;
+    private BigDecimal tps;
+
+    @JsonIgnore
+    private LocalDateTime datetime;
 
 }

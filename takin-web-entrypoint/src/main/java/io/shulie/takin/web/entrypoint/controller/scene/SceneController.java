@@ -2,7 +2,6 @@ package io.shulie.takin.web.entrypoint.controller.scene;
 
 import java.util.List;
 
-import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.scene.ListSceneForSelectRequest;
@@ -39,13 +38,14 @@ public class SceneController {
 
     @ApiOperation("|_ 报告列表")
     @GetMapping("report/list")
-    public PagingList<SceneReportListOutput> reportList(@Validated ListSceneReportRequest request) {
-        if (request.getPageSize() > 200) {
-            request.setPageSize(200);
-        }
-
+    public List<SceneReportListOutput> reportList(@Validated ListSceneReportRequest request) {
         return sceneManageService.listReportBySceneIds(request);
     }
 
+    @ApiOperation("|_ 报告排名")
+    @GetMapping("report/rank")
+    public List<SceneReportListOutput> reportRank(@Validated ListSceneReportRequest request) {
+        return sceneManageService.rankReport(request);
+    }
 
 }

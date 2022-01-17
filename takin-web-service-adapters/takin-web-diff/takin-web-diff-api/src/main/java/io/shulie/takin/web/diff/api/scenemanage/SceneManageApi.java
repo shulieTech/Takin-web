@@ -8,7 +8,15 @@ import javax.validation.Valid;
 
 import io.shulie.takin.cloud.open.req.engine.EnginePluginDetailsWrapperReq;
 import io.shulie.takin.cloud.open.req.engine.EnginePluginFetchWrapperReq;
-import io.shulie.takin.cloud.open.req.scenemanage.*;
+import io.shulie.takin.cloud.open.req.scenemanage.CloudUpdateSceneFileRequest;
+import io.shulie.takin.cloud.open.req.scenemanage.SceneIpNumReq;
+import io.shulie.takin.cloud.open.req.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
+import io.shulie.takin.cloud.open.req.scenemanage.SceneManageQueryByIdsReq;
+import io.shulie.takin.cloud.open.req.scenemanage.SceneManageQueryReq;
+import io.shulie.takin.cloud.open.req.scenemanage.SceneManageWrapperReq;
+import io.shulie.takin.cloud.open.req.scenemanage.ScriptAnalyzeRequest;
+import io.shulie.takin.cloud.open.req.scenemanage.ScriptCheckAndUpdateReq;
 import io.shulie.takin.cloud.open.resp.engine.EnginePluginDetailResp;
 import io.shulie.takin.cloud.open.resp.engine.EnginePluginSimpleInfoResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageListResp;
@@ -26,6 +34,14 @@ import org.springframework.validation.annotation.Validated;
  */
 @Valid
 public interface SceneManageApi {
+
+    /**
+     * 通过场景状态查询场景列表
+     *
+     * @param sceneManageQueryReq 入参
+     * @return 场景列表
+     */
+    ResponseResult<List<SceneManageListResp>> querySceneByStatus(SceneManageQueryReq sceneManageQueryReq);
 
     /**
      * 根据脚本发布id, 更新所有的场景对应该脚本的文件

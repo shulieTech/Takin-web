@@ -1,10 +1,9 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +16,7 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.google.common.collect.Lists;
@@ -40,6 +40,7 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.takin.cloud.common.bean.TimeBean;
+import io.shulie.takin.cloud.open.req.report.ReportDetailByIdsReq;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneIpNumReq;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneManageQueryByIdsReq;
@@ -49,11 +50,11 @@ import io.shulie.takin.cloud.open.req.scenemanage.SceneScriptRefOpen;
 import io.shulie.takin.cloud.open.req.scenemanage.SceneStartPreCheckReq;
 import io.shulie.takin.cloud.open.req.scenemanage.ScriptCheckAndUpdateReq;
 import io.shulie.takin.cloud.open.req.scenetask.SceneStartCheckResp;
+import io.shulie.takin.cloud.open.resp.report.ReportActivityResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageListResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.open.resp.scenemanage.ScriptCheckResp;
 import io.shulie.takin.cloud.open.resp.strategy.StrategyResp;
-import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
@@ -85,7 +86,7 @@ import io.shulie.takin.web.common.http.HttpAssert;
 import io.shulie.takin.web.common.http.HttpWebClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
-import io.shulie.takin.web.data.common.InfluxDatabaseManager;
+import io.shulie.takin.web.data.common.InfluxDatabaseWriter;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
@@ -133,7 +134,7 @@ public class SceneManageServiceImpl implements SceneManageService {
     private SceneService sceneService;
 
     @Autowired
-    private InfluxDatabaseManager influxDatabaseManager;
+    private InfluxDatabaseWriter influxDatabaseManager;
 
     @Override
     public ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req) {
@@ -808,73 +809,103 @@ public class SceneManageServiceImpl implements SceneManageService {
     @Override
     public List<SceneListForSelectOutput> listForSelect(ListSceneForSelectRequest request) {
         // 查询cloud, 场景列表, 状态是压测中
+        SceneManageQueryReq sceneManageQueryReq = new SceneManageQueryReq();
+        sceneManageQueryReq.setStatus(request.getStatus());
+        ResponseResult<List<SceneManageListResp>> cloudResult = sceneManageApi.querySceneByStatus(sceneManageQueryReq);
+        if (cloudResult == null || !cloudResult.getSuccess()) {
+            return Collections.emptyList();
+        }
 
-        // TODO 删除测试数据, 数据转换一下
-        SceneListForSelectOutput sceneListForSelectOutput = new SceneListForSelectOutput();
-        sceneListForSelectOutput.setId(1L);
-        sceneListForSelectOutput.setName("测试1");
-
-        SceneListForSelectOutput sceneListForSelectOutput2 = new SceneListForSelectOutput();
-        sceneListForSelectOutput2.setId(2L);
-        sceneListForSelectOutput2.setName("测试2");
-        return Arrays.asList(sceneListForSelectOutput, sceneListForSelectOutput2);
+        return cloudResult.getData().stream().map(result -> {
+            SceneListForSelectOutput sceneListForSelectOutput = new SceneListForSelectOutput();
+            sceneListForSelectOutput.setId(result.getId());
+            sceneListForSelectOutput.setName(result.getSceneName());
+            return sceneListForSelectOutput;
+        }).collect(Collectors.toList());
     }
 
     @Override
-    public PagingList<SceneReportListOutput> listReportBySceneIds(ListSceneReportRequest request) {
+    public List<SceneReportListOutput> listReportBySceneIds(ListSceneReportRequest request) {
         // 查询cloud, 获得查询tps所需要的条件
-
-        // 如果为空, 报错
-
-        Long customerId = WebPluginUtils.getCustomerId();
-
-
-        // 通过条件, 查询influxdb, 获取到tps, sql语句
-        // 根据orderType, 使用不通的排序方式
-        //String influxDbSql = "select tps, from app_base_data where ";
-        //Integer orderType = request.getOrderType();
-        //if (orderType == 1) {
-        //    influxDbSql += "";
-        //}
-        //
-        //Collection<SceneReportListOutput> reportList = influxDatabaseManager.query(SceneReportListOutput.class, influxDbSql);
-        //if (CollectionUtil.isEmpty(reportList)) {
-        //    return PagingList.empty();
-        //}
-
-        // 当前时间
-        String currentTime = LocalDateTimeUtil.format(LocalDateTime.now(), "HH:mm:ss");
-        // 条件里面有sceneName, groupBy sceneId一下
-        SceneReportListOutput sceneReportListOutput = new SceneReportListOutput();
-        sceneReportListOutput.setSceneId(1L);
-        sceneReportListOutput.setSceneName("测试1");
-        sceneReportListOutput.setTps(this.getThreeRandomString());
-
-        SceneReportListOutput sceneReportListOutput2 = new SceneReportListOutput();
-        sceneReportListOutput2.setSceneId(2L);
-        sceneReportListOutput2.setSceneName("测试2");
-        sceneReportListOutput2.setTps(this.getThreeRandomString());
-
-        Collection<SceneReportListOutput> reportList = Arrays.asList(sceneReportListOutput, sceneReportListOutput2);
-
-        for (SceneReportListOutput out : reportList) {
-            // TODO 名称要通过map获取
-            //out.setSceneName("");
-            out.setTime(currentTime);
+        List<ReportActivityResp> queryTpsParamList = this.listQueryTpsParam(request.getSceneIds());
+        if (queryTpsParamList.isEmpty()) {
+            return Collections.emptyList();
         }
 
+        return queryTpsParamList.stream().map(queryTpsParam -> {
+            List<SceneReportListOutput> reportList = this.listReportFromInfluxDb(queryTpsParam);
 
+            // 时间戳处理
+            for (SceneReportListOutput report : reportList) {
+                report.setSceneId(queryTpsParam.getSceneId());
+                report.setSceneName(queryTpsParam.getSceneName());
+                report.setTime(LocalDateTimeUtil.format(report.getDatetime(), "HH:mm:ss"));
+            }
 
-        return PagingList.of(Arrays.asList(sceneReportListOutput, sceneReportListOutput2), 2);
+            return reportList;
+        }).flatMap(Collection::stream).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SceneReportListOutput> rankReport(ListSceneReportRequest request) {
+        // 查询cloud, 获得查询tps所需要的条件
+        List<ReportActivityResp> queryTpsParamList = this.listQueryTpsParam(request.getSceneIds());
+        if (queryTpsParamList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return queryTpsParamList.stream().map(queryTpsParam -> {
+            List<SceneReportListOutput> reportList = this.listReportFromInfluxDb(queryTpsParam);
+            SceneReportListOutput sceneReportListOutput = reportList.stream()
+                .max(Comparator.comparing(SceneReportListOutput::getTps)).orElse(null);
+            if (sceneReportListOutput == null) {
+                return null;
+            }
+
+            sceneReportListOutput.setSceneId(queryTpsParam.getSceneId());
+            sceneReportListOutput.setSceneName(queryTpsParam.getSceneName());
+            return sceneReportListOutput;
+        }).filter(Objects::nonNull).sorted(Comparator.comparing(SceneReportListOutput::getTps).reversed())
+            .limit(10).collect(Collectors.toList());
     }
 
     /**
-     * 3位随机数字符串
+     * 根据场景ids获取查询tps的参数
      *
-     * @return 3位随机数字符串
+     * @param sceneIds 场景ids
+     * @return 查询参数
      */
-    public String getThreeRandomString() {
-        return String.valueOf((int)((Math.random() * 9 + 1) * 100));
+    private List<ReportActivityResp> listQueryTpsParam(List<Long> sceneIds) {
+        ReportDetailByIdsReq reportDetailByIdsReq = new ReportDetailByIdsReq();
+        reportDetailByIdsReq.setSceneIds(sceneIds);
+        ResponseResult<List<ReportActivityResp>> cloudResult = sceneTaskApi.listQueryTpsParam(reportDetailByIdsReq);
+        if (cloudResult == null || !cloudResult.getSuccess()) {
+            return Collections.emptyList();
+        }
+
+        return cloudResult.getData();
+    }
+
+    /**
+     * influxdb查询报告tps
+     *
+     * @param queryTpsParam 请求参数
+     * @return 报告列表
+     */
+    private List<SceneReportListOutput> listReportFromInfluxDb(ReportActivityResp queryTpsParam) {
+        // 表名
+        String tableName = String.format("pressure_%d_%d_%d", queryTpsParam.getSceneId(), queryTpsParam.getReportId(),
+            WebPluginUtils.getCustomerId());
+
+        // 通过条件, 查询influxdb, 获取到tps, sql语句
+        String influxDbSql = String.format("select time as datetime, avg_tps as tps from %s where transaction = '%s' "
+            + "order by time desc", tableName, queryTpsParam.getBusinessActivityList().get(0).getBindRef());
+        List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
+        if (CollectionUtil.isEmpty(reportList)) {
+            return Collections.emptyList();
+        }
+
+        return reportList;
     }
 
 }

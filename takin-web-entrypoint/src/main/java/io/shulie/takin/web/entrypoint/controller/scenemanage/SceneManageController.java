@@ -52,7 +52,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author qianshui
  * @date 2020/4/17 下午2:31
  */
-@RestController
+@RestController("v1.scenemanage")
 @RequestMapping("/api/scenemanage")
 @Api(tags = "压测场景管理")
 public class SceneManageController {

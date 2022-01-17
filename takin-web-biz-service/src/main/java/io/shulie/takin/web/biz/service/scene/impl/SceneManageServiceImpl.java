@@ -17,7 +17,6 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.google.common.collect.Lists;
@@ -832,37 +831,39 @@ public class SceneManageServiceImpl implements SceneManageService {
 
         // 通过条件, 查询influxdb, 获取到tps, sql语句
         // 根据orderType, 使用不通的排序方式
-        String influxDbSql = "select tps, from app_base_data where ";
-        Integer orderType = request.getOrderType();
-        if (orderType == 1) {
-            influxDbSql += "";
-        }
-
-        Collection<SceneReportListOutput> reportList = influxDatabaseManager.query(SceneReportListOutput.class, influxDbSql);
-        if (CollectionUtil.isEmpty(reportList)) {
-            return PagingList.empty();
-        }
+        //String influxDbSql = "select tps, from app_base_data where ";
+        //Integer orderType = request.getOrderType();
+        //if (orderType == 1) {
+        //    influxDbSql += "";
+        //}
+        //
+        //Collection<SceneReportListOutput> reportList = influxDatabaseManager.query(SceneReportListOutput.class, influxDbSql);
+        //if (CollectionUtil.isEmpty(reportList)) {
+        //    return PagingList.empty();
+        //}
 
         // 当前时间
         String currentTime = LocalDateTimeUtil.format(LocalDateTime.now(), "HH:mm:ss");
         // 条件里面有sceneName, groupBy sceneId一下
-        for (SceneReportListOutput sceneReportListOutput : reportList) {
-            // TODO 名称要通过map获取
-            sceneReportListOutput.setSceneName("");
-            sceneReportListOutput.setTime(currentTime);
-        }
-
         SceneReportListOutput sceneReportListOutput = new SceneReportListOutput();
         sceneReportListOutput.setSceneId(1L);
         sceneReportListOutput.setSceneName("测试1");
         sceneReportListOutput.setTps(this.getThreeRandomString());
-        sceneReportListOutput.setTps(currentTime);
 
         SceneReportListOutput sceneReportListOutput2 = new SceneReportListOutput();
         sceneReportListOutput2.setSceneId(2L);
         sceneReportListOutput2.setSceneName("测试2");
         sceneReportListOutput2.setTps(this.getThreeRandomString());
-        sceneReportListOutput2.setTps(currentTime);
+
+        Collection<SceneReportListOutput> reportList = Arrays.asList(sceneReportListOutput, sceneReportListOutput2);
+
+        for (SceneReportListOutput out : reportList) {
+            // TODO 名称要通过map获取
+            //out.setSceneName("");
+            out.setTime(currentTime);
+        }
+
+
 
         return PagingList.of(Arrays.asList(sceneReportListOutput, sceneReportListOutput2), 2);
     }

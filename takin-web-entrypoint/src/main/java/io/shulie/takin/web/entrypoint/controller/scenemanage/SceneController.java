@@ -66,7 +66,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author 张天赐
  */
-@RestController
+@RestController("v2.scene")
 @RequestMapping("/api/v2/scene")
 @Api(tags = "压测场景-新", value = "压测场景-新")
 public class SceneController {

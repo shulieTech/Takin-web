@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author liuchuan
  * @since 2021-06-03 13:40:57
  */
-@RestController
+@RestController("v1.scene")
 @RequestMapping(APIUrls.TAKIN_API_URL + "scene/")
 @Api(tags = "接口: 场景")
 public class SceneController {

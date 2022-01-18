@@ -154,7 +154,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     baseAppVoList.addAll(tmpList);
                 }
             } else {
-                logger.error("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, sTime, eTime);
+                //logger.error("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, sTime, eTime);
             }
         });
 

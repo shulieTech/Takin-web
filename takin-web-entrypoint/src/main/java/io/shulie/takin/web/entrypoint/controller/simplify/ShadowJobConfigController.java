@@ -136,8 +136,8 @@ public class ShadowJobConfigController {
         try {
             Estimate.notBlank(query.getId(), "ID不能为空");
             // 备注字段上限
-            if (StringUtils.isNotBlank(query.getRemark()) && query.getRemark().length() > 200) {
-                throw new TakinWebException(ExceptionCode.JOB_PARAM_ERROR, "备注长度不得超过200字符");
+            if (StringUtils.isNotBlank(query.getRemark()) && query.getRemark().length() > 256) {
+                throw new TakinWebException(ExceptionCode.JOB_PARAM_ERROR, "备注长度不得超过256字符");
             }
             OperationLogContextHolder.operationType(OpTypes.UPDATE);
             Map<String, String> xmlMap = XmlUtil.readStringXml(query.getConfigCode());

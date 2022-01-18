@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.pradar.impl;
 
+import java.util.Date;
+
 import cn.hutool.core.bean.BeanUtil;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
@@ -56,6 +58,7 @@ public class PradarConfigServiceImpl implements PradarConfigService {
         PradarConfigCreateParam updateParam = BeanUtil.copyProperties(updateRequest, PradarConfigCreateParam.class);
         PradarZkConfigResult config = pradarZkConfigDAO.getById(updateRequest.getId());
         Assert.notNull(config, "配置不存在！");
+        updateParam.setModifyTime(new Date());
         if (pradarZkConfigDAO.update(updateParam)) {
             this.processZk(config.getZkPath(), updateRequest.getValue());
 

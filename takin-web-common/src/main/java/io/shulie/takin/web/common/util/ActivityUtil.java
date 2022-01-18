@@ -88,19 +88,14 @@ public class ActivityUtil {
      */
     public static EntranceJoinEntity covertEntrance(String dbEntrance) {
         String[] split = StringUtils.split(dbEntrance, "\\|");
-        if (split.length == 2) {
-            EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
-            entranceJoinEntity.setServiceName(split[0]);
-            entranceJoinEntity.setRpcType(split[1]);
-            return entranceJoinEntity;
-        }
-        if (split.length != 3) {
+        if (split.length != 4) {
             return new EntranceJoinEntity();
         }
         EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
-        entranceJoinEntity.setMethodName(split[0]);
-        entranceJoinEntity.setServiceName(split[1]);
-        entranceJoinEntity.setRpcType(split[2]);
+        entranceJoinEntity.setApplicationName(split[0]);
+        entranceJoinEntity.setMethodName(split[1]);
+        entranceJoinEntity.setServiceName(split[2]);
+        entranceJoinEntity.setRpcType(split[3]);
         return entranceJoinEntity;
     }
 

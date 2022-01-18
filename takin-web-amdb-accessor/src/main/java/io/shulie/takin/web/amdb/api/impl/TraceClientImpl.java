@@ -219,22 +219,21 @@ public class TraceClientImpl implements TraceClient {
      * @return 转换后的 入口列表 字符串形式
      */
     private String getEntryListString(List<EntranceRuleDTO> entranceList) {
-        if (CollectionUtil.isEmpty(entranceList)) {
-            return "";
-        }
+        return CollectionUtil.isEmpty(entranceList) ? ""
+            : entranceList.stream().map(entrance -> {
+                Integer businessType = entrance.getBusinessType();
+                EntranceJoinEntity entranceJoinEntity = ActivityUtil
+                    .getEntranceJoinEntityByEntranceAndType(entrance.getEntrance(), businessType);
+                if (ActivityUtil.isNormalBusiness(businessType)) {
+                    return String.format("%s#%s#%s#%s", entranceJoinEntity.getApplicationName(),
+                        entranceJoinEntity.getServiceName(), entranceJoinEntity.getMethodName(),
+                        entranceJoinEntity.getRpcType());
+                } else {
+                    return String.format("%s#%s#%s#%s", "", entranceJoinEntity.getServiceName(), "",
+                        entranceJoinEntity.getRpcType());
+                }
 
-        return entranceList.stream().map(entrance -> {
-            if (ActivityUtil.isNormalBusiness(entrance.getBusinessType())) {
-                EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(entrance.getEntrance());
-                return String.format("%s#%s#%s",
-                        entranceJoinEntity.getServiceName(),
-                        entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
-            } else {
-                EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertVirtualEntrance(entrance.getEntrance());
-                return String.format("%s#%s#%s#%s", "", "", entranceJoinEntity.getVirtualEntrance(), entranceJoinEntity.getRpcType());
-            }
-
-        }).collect(Collectors.joining(AppConstants.COMMA));
+            }).collect(Collectors.joining(AppConstants.COMMA));
     }
 
 

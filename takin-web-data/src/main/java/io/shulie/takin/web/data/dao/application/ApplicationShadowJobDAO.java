@@ -12,4 +12,11 @@ public interface ApplicationShadowJobDAO {
 
     int allocationUser(ShadowJobUpdateUserParam param);
 
+    /**
+     * 是否重名
+     * @param shadowJobCreateParam
+     * @return
+     */
+    Boolean exist( ShadowJobCreateParam shadowJobCreateParam);
+
 }

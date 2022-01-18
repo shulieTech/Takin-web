@@ -105,8 +105,8 @@ public class ShadowJobConfigController {
             Estimate.notBlank(config.getApplicationId(), "应用ID不能为空");
             Estimate.notBlank(config.getConfigCode(), "相关配置不能为空");
             // 备注字段上限
-            if (StringUtils.isNotBlank(config.getRemark()) && config.getRemark().length() > 200) {
-                throw new TakinWebException(ExceptionCode.JOB_PARAM_ERROR, "备注长度不得超过200字符");
+            if (StringUtils.isNotBlank(config.getRemark()) && config.getRemark().length() > 256) {
+                throw new TakinWebException(ExceptionCode.JOB_PARAM_ERROR, "备注长度不得超过256字符");
             }
             Map<String, String> xmlMap = XmlUtil.readStringXml(config.getConfigCode());
             String className = xmlMap.get("className");

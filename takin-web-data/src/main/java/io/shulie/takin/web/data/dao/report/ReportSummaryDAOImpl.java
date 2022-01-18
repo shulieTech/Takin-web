@@ -33,10 +33,10 @@ public class ReportSummaryDAOImpl extends ServiceImpl<ReportSummaryMapper, Repor
      * @param param
      */
     @Override
-    public void insert(ReportSummaryCreateParam param) {
+    public void insertOrUpdate(ReportSummaryCreateParam param) {
         ReportSummaryEntity entity = new ReportSummaryEntity();
         BeanUtils.copyProperties(param,entity);
-        this.save(entity);
+        this.saveOrUpdate(entity);
     }
 
     @Override

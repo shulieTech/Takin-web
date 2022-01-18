@@ -133,14 +133,11 @@ public class SummaryService {
         reportSummary.setWarnCount(warnCount);
 
         ReportSummaryResult summary = reportSummaryDAO.selectOneByReportId(reportId);
-
-        if (summary == null) {
-            try {
-                reportSummaryDAO.insert(reportSummary);
-            }catch (Exception e){
-                log.error("Build ReportSummary error, reportId={},tenantId={},envCode={}", reportId,WebPluginUtils.traceTenantId(),WebPluginUtils.traceEnvCode());
-            }
+        // 查询
+        if(summary != null) {
+            reportSummary.setId(summary.getId());
         }
+        reportSummaryDAO.insertOrUpdate(reportSummary);
         log.debug("Build ReportSummary Success, reportId={}", reportId);
     }
 

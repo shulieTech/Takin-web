@@ -18,6 +18,7 @@ import com.github.pagehelper.util.StringUtil;
 
 import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.util.ActivityUtil;
@@ -185,7 +186,11 @@ public class ApplicationController {
     @ApiOperation("压测开关状态重新计算接口")
     @GetMapping("/application/center/app/switch/calculate")
     public Response appSwitchForce(@RequestParam(value = "uid", required = false) Long uid) {
-        return applicationService.calculateUserSwitch(uid);
+        TenantCommonExt tenantCommonExt = WebPluginUtils.traceTenantCommonExt();
+        if(uid != null && !uid.equals(tenantCommonExt.getTenantId())) {
+            return Response.fail("租户不匹配");
+        }
+        return applicationService.calculateUserSwitch(tenantCommonExt);
     }
 
     @ApiOperation("获取下载导出配置地址")

@@ -24,6 +24,7 @@ import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityNameResponse;
 import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.common.common.Response;
@@ -77,7 +78,7 @@ public class LinkManageController {
         if (null == dto) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, "该业务流程不存在");
         }
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_PROCESS, dto.getBusinessProcessName());
+        OperationLogContextHolder.addVars(Vars.BUSINESS_FLOW_ID, dto.getId());
         return Response.success(linkManageService.deleteScene(req.getId().toString()));
     }
 

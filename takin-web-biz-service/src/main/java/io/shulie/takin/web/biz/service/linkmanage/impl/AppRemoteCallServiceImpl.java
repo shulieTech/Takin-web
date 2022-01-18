@@ -925,15 +925,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         if (detailResult == null) {
             throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "应用不存在");
         }
-        // 如果是mock
-        if(AppRemoteCallConfigEnum.RETURN_MOCK.getType().equals(request.getType()) && StringUtils.isBlank(request.getMockValue())) {
-            // 判断数据是否为空
-            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "返回值mock数据为空");
-        }
-        if(AppRemoteCallConfigEnum.FORWARD_MOCK.getType().equals(request.getType()) && StringUtils.isBlank(request.getMockValue())) {
-            // 判断数据是否为空
-            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "转发mock数据为空");
-        }
+        this.checkRequest(request);
         // 补充插件内容
         WebPluginUtils.fillUserData(request);
         AppRemoteCallTypeV2Enum enumByDesc = AppRemoteCallTypeV2Enum.getEnumByDesc(request.getInterfaceType());
@@ -957,12 +949,25 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
     }
 
+    private void checkRequest(AppRemoteCallCreateV2Request request) {
+        // 如果是mock
+        if(AppRemoteCallConfigEnum.RETURN_MOCK.getType().equals(request.getType()) && StringUtils.isBlank(request.getMockValue())) {
+            // 判断数据是否为空
+            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "返回值mock数据为空");
+        }
+        if(AppRemoteCallConfigEnum.FORWARD_MOCK.getType().equals(request.getType()) && StringUtils.isBlank(request.getMockValue())) {
+            // 判断数据是否为空
+            throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "转发mock数据为空");
+        }
+    }
+
     @Override
     public void updateV2(AppRemoteCallUpdateV2Request request) {
         ApplicationDetailResult detailResult = applicationDAO.getApplicationById(request.getApplicationId());
         if (detailResult == null) {
             throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "应用不存在");
         }
+        this.checkRequest(request);
         agentConfigCacheManager.evictRecallCalls(detailResult.getApplicationName());
         if (Objects.isNull(request.getId())) {
             this.create(request);

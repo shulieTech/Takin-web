@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.BooleanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -570,6 +571,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
     @Override
     @Transactional(rollbackFor = Throwable.class)
     public void updateMqConsumersV2(ShadowConsumerUpdateInput request) {
+        request.setTopicGroup(StringUtil.isEmpty(request.getTopicGroup()) ?"":request.getTopicGroup().trim());
         if (Objects.isNull(request.getId())) {
             this.createMqConsumersV2(request, false);
         } else {

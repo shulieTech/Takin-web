@@ -139,6 +139,7 @@ public class ShadowJobConfigService {
                 // 重复判断
                 ShadowJobCreateParam shadowJobCreateParam = new ShadowJobCreateParam();
                 shadowJobCreateParam.setName(className);
+                shadowJobCreateParam.setApplicationId(shadowJobConfig.getApplicationId());
                 shadowJobCreateParam.setType(jobText.ordinal());
                 shadowJobCreateParam.setId(shadowJobConfig.getId());
                 if (applicationShadowJobDAO.exist(shadowJobCreateParam)) {

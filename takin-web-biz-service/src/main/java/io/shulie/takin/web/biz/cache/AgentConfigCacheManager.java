@@ -25,6 +25,7 @@ import io.shulie.takin.web.biz.cache.agentimpl.ShadowServerConfigAgentCache;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowServerConfigurationOutput;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -155,7 +156,7 @@ public class AgentConfigCacheManager {
         // 压测开关
         ApplicationSwitchStatusDTO applicationSwitchStatusDTO = pressureSwitchConfigCache.get(null);
         // 静默开关
-        String silenceSwitch = applicationService.getUserSilenceSwitchStatusForVo(null);
+        String silenceSwitch = applicationService.getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantCommonExt());
         String silenceSwitchOn = AppSwitchEnum.OPENED.getCode().equals(silenceSwitch) ?
             AppSwitchEnum.CLOSED.getCode() : AppSwitchEnum.OPENED.getCode();
         applicationSwitchStatusDTO.setSilenceSwitchOn(silenceSwitchOn);

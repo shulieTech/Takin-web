@@ -87,7 +87,8 @@ public class ShadowJobConfigService {
         WebPluginUtils.fillUserData(shadowJobCreateParam);
         // 重复判断
         if (applicationShadowJobDAO.exist(shadowJobCreateParam)) {
-            return Response.fail(shadowJobCreateParam.getName() + ",类型为"+shadowJobCreateParam.getType() + "已存在");
+            return Response.fail(shadowJobCreateParam.getName() + ",类型为"+
+                JobEnum.getJobByIndex(shadowJobCreateParam.getType()).getText() + "已存在");
         }
 
         applicationShadowJobDAO.insert(shadowJobCreateParam);

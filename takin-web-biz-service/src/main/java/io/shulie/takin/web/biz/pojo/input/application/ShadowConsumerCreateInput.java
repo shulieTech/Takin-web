@@ -15,8 +15,8 @@ import lombok.Data;
 @Data
 public class ShadowConsumerCreateInput {
 
-    @Trimmed(value = TrimmerType.SIMPLE)
     @NotBlank
+    @Trimmed(value = TrimmerType.SIMPLE)
     private String topicGroup;
 
     @NotNull

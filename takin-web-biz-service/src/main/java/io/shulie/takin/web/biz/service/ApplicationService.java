@@ -124,10 +124,10 @@ public interface ApplicationService {
     /**
      * 重新计算
      *
-     * @param uid -
+     * @param ext -
      * @return -
      */
-    Response calculateUserSwitch(Long uid);
+    Response calculateUserSwitch(TenantCommonExt ext);
 
     ApplicationSwitchStatusDTO agentGetUserSwitchInfo();
 
@@ -246,10 +246,11 @@ public interface ApplicationService {
 
     /**
      * 编辑静默开关
-     *
+     * @param ext
+     * @param enable
      * @return
      */
-    Response userAppSilenceSwitch(Long uid, Boolean enable);
+    Response userAppSilenceSwitch(TenantCommonExt ext, Boolean enable);
 
 
     /**
@@ -258,11 +259,11 @@ public interface ApplicationService {
      */
     Response userAppSilenceSwitchInfo();
 
-    String getUserSilenceSwitchStatusForVo(Long uid);
+    String getUserSilenceSwitchStatusForVo(TenantCommonExt ext);
 
     Response getApplicationReportConfigInfo(Integer bizType,String appName);
 
-    Boolean silenceSwitchStatusIsTrue(Long uid, AppSwitchEnum appSwitchEnum);
+    Boolean silenceSwitchStatusIsTrue(TenantCommonExt ext, AppSwitchEnum appSwitchEnum);
 
     /**
      * 应用监控查询接口

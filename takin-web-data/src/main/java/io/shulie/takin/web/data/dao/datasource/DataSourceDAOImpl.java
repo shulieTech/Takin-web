@@ -146,6 +146,7 @@ public class DataSourceDAOImpl implements DataSourceDAO {
             queryWrapper.in(TakinDbresourceEntity::getId, queryParam.getDataSourceIdList());
             queryWrapper.eq(TakinDbresourceEntity::getIsDeleted, 0);
         }
+        queryWrapper.orderByDesc(TakinDbresourceEntity::getUpdateTime);
         List<TakinDbresourceEntity> datasourceEntityList = datasourceMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(datasourceEntityList)) {
             return datasourceEntityList.stream().map(entity -> {

@@ -304,7 +304,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         }
         String[] split = request.getTopicGroup().split("#");
         if (split.length != 2) {
-            throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个#");
+            throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个# 或者 #两边无数据");
         }
         ApplicationDetailResult application = applicationDAO.getApplicationById(request.getApplicationId());
         if (application == null) {
@@ -341,7 +341,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         }
         String[] split = request.getTopicGroup().split("#");
         if (split.length != 2) {
-            throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个#");
+            throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个#  或者 #两边无数据");
         }
         ApplicationDetailResult application = applicationDAO.getApplicationById(request.getApplicationId());
         if (application == null) {
@@ -578,7 +578,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             }
             String[] split = request.getTopicGroup().split("#");
             if (split.length != 2) {
-                throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个#");
+                throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个#  或者 #两边无数据");
             }
             ApplicationDetailResult application = applicationDAO.getApplicationById(request.getApplicationId());
             if (application == null) {
@@ -614,7 +614,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         }
         String[] split = request.getTopicGroup().split("#");
         if (split.length != 2) {
-            throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个#");
+            throw new RuntimeException("请求参数不正确，Group和Topic中间包含超过1个# 或者 #两边无数据");
         }
         ApplicationDetailResult application = applicationDAO.getApplicationById(request.getApplicationId());
         if (application == null) {

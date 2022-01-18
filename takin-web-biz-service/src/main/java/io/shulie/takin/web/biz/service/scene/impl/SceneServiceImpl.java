@@ -66,6 +66,7 @@ import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
 import io.shulie.takin.web.data.mapper.mysql.SceneMapper;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneCreateParam;
 import io.shulie.takin.web.data.param.linkmanage.SceneQueryParam;
@@ -545,6 +546,7 @@ public class SceneServiceImpl implements SceneService {
         } else if (BusinessTypeEnum.VIRTUAL_BUSINESS.getType().equals(sceneLinkRelateRequest.getBusinessType())) {
             sceneLinkRelateRequest.setEntrance(sceneLinkRelateRequest.getIdentification());
             sceneLinkRelateRequest.setActivityName(sceneLinkRelateRequest.getTestName());
+            //查询url是否能匹配
             ActivityQueryParam queryParam = new ActivityQueryParam();
             queryParam.setBusinessType(sceneLinkRelateRequest.getBusinessType());
             queryParam.setEntrance(sceneLinkRelateRequest.getEntrance());
@@ -554,6 +556,14 @@ public class SceneServiceImpl implements SceneService {
                 sceneLinkRelateRequest.setBusinessActivityId(activityListResult.getActivityId());
             } else {
                 VirtualActivityCreateRequest createRequest = LinkManageConvert.INSTANCE.ofVirtualActivityCreateRequest(sceneLinkRelateRequest);
+                //是否存在名称重复
+                ActivityExistsQueryParam queryNameParam = new ActivityExistsQueryParam();
+                queryNameParam.setActivityName(createRequest.getActivityName());
+                List<Long> exists = activityDao.exists(queryNameParam);
+                if (CollectionUtils.isNotEmpty(exists)){
+                    //如果业务活动名称重复，修改名称
+                    createRequest.setActivityName(createRequest.getActivityName() + "_" + System.currentTimeMillis());
+                }
                 createRequest.setType(EntranceTypeEnum.getEnumByType(sceneLinkRelateRequest.getSamplerType().getType()));
                 ActivityUtil.EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertVirtualEntrance(sceneLinkRelateRequest.getEntrance());
                 createRequest.setVirtualEntrance(entranceJoinEntity.getVirtualEntrance());

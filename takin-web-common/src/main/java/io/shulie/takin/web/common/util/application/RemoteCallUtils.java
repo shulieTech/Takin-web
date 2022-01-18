@@ -100,4 +100,6 @@ public class RemoteCallUtils {
     public static boolean checkWhite(Integer type) {
         return AppRemoteCallConfigEnum.OPEN_WHITELIST.getType().equals(type);
     }
+
+
 }

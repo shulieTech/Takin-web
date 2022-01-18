@@ -422,7 +422,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         // 服务端也需要查询下
         Map<String, List<ApplicationRemoteCallDTO>> serverAppNamesMap = this.getServerAppListMap(detailResult.getApplicationName());
         return String.valueOf(results.stream().filter(result -> RemoteCallUtils.checkWhite(result.getType())
-                && this.checkServerAppName(serverAppNamesMap,result)).count());
+                && this.checkServerAppName(detailResult,serverAppNamesMap,result)).count());
     }
 
     /**
@@ -431,8 +431,11 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
      * @param result
      * @return
      */
-    private boolean checkServerAppName( Map<String, List<ApplicationRemoteCallDTO>> serverAppNamesMap, AppRemoteCallResult result) {
-        List<ApplicationRemoteCallDTO> callDtoList = serverAppNamesMap.get(result.getMd5());
+    private boolean checkServerAppName(ApplicationDetailResult detailResult,Map<String, List<ApplicationRemoteCallDTO>> serverAppNamesMap, AppRemoteCallResult result) {
+        // 转化下 amdb
+        AppRemoteCallTypeEnum anEnum = AppRemoteCallTypeEnum.getEnum(result.getInterfaceType());
+        String appNameRemoteCallId = RemoteCallUtils.buildRemoteCallName(detailResult.getApplicationName(), result.getInterfaceName(), anEnum.getConvert());
+        List<ApplicationRemoteCallDTO> callDtoList = serverAppNamesMap.get(appNameRemoteCallId);
         if(CollectionUtils.isNotEmpty(callDtoList)) {
             return true;
         }

@@ -392,6 +392,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             tenantIdCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getTenantIdColumn()));
             tenantIdCondition.setRightExpression(tenantLineHandler.getTenantId());
         }
+
         EqualsTo envCodeCondition = null;
         if (!tenantLineHandler.ignoreSearch(where, envCodeColumn) && !tableWithoutEnvCode.contains(table.getName())) {
             envCodeCondition = new EqualsTo();

@@ -200,7 +200,7 @@ public class ActivityServiceImpl implements ActivityService {
             request.setServiceName(JmxUtil.pathGuiYi(request.getServiceName()));
         }
         createParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
+            ActivityUtil.buildEntrance(request.getApplicationName(),request.getMethod(), request.getServiceName(), request.getRpcType()));
         activityDAO.createActivity(createParam);
         notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
             request.getMethod(), request.getRpcType(), request.getExtend());
@@ -227,7 +227,7 @@ public class ActivityServiceImpl implements ActivityService {
         createParam.setExtend(request.getExtend());
         createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
         createParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
+            ActivityUtil.buildEntrance(request.getApplicationName(),request.getMethod(), request.getServiceName(), request.getRpcType()));
         createParam.setPersistence(request.isPersistence());
         return activityDAO.createActivity(createParam);
     }
@@ -410,8 +410,7 @@ public class ActivityServiceImpl implements ActivityService {
         if (RpcTypeEnum.HTTP.getValue().equals(request.getRpcType())) {
             request.setServiceName(JmxUtil.pathGuiYi(request.getServiceName()));
         }
-        updateParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
+        updateParam.setEntrance(ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(), request.getRpcType()));
         // 技术链路id
         updateParam.setLinkId(oldActivity.getLinkId());
         activityDAO.updateActivity(updateParam);
@@ -925,7 +924,7 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     public BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request) {
-        String entrance = ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType());
+        String entrance = ActivityUtil.buildEntrance(request.getApplicationName(),request.getMethod(), request.getServiceName(), request.getRpcType());
         List<Map<String, String>> serviceList = activityDAO.findActivityByServiceName(request.getApplicationName(),
             entrance);
         if (CollectionUtils.isEmpty(serviceList)) {

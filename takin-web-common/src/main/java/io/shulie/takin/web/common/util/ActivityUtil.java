@@ -57,6 +57,19 @@ public class ActivityUtil {
         return StringUtils.join(Lists.newArrayList(methodName, serviceName, rpcType), "|");
     }
 
+    public static String buildEntrance(String applicationName, String methodName, String serviceName, String rpcType) {
+        if (RpcTypeEnum.MQ.getValue().equals(rpcType)) {
+            // todo 无法确定
+            return StringUtils.join(Lists.newArrayList(serviceName, rpcType), "|");
+        }
+        if(StringUtils.isBlank(applicationName)) {
+            // 老数据
+            return StringUtils.join(Lists.newArrayList(methodName, serviceName, rpcType), "|");
+        }
+        // 新数据
+        return StringUtils.join(Lists.newArrayList(applicationName, methodName, serviceName, rpcType), "|");
+    }
+
     /**
      * 获取s
      *

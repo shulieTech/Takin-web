@@ -179,7 +179,8 @@ public class BlacklistConfigController {
         BlacklistUpdateInput input = new BlacklistUpdateInput();
         BeanUtils.copyProperties(request, input);
         blacklistService.enable(input);
-        OperationLogContextHolder.addVars(Vars.ACTION,"参数："+ JSON.toString(request));
+        OperationLogContextHolder.addVars(Vars.ACTION, "参数：" + JSON.toString(request));
+        OperationLogContextHolder.addVars(Vars.BLACKLIST_VALUE, "id = " + request.getBlistId());
         return new BlacklistStringResponse(operationType + "成功");
     }
 

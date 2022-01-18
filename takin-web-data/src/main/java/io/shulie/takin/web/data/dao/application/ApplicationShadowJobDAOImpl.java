@@ -53,6 +53,9 @@ public class ApplicationShadowJobDAOImpl implements ApplicationShadowJobDAO {
         queryWrapper.eq(ShadowJobConfigEntity::getApplicationId, param.getApplicationId());
         queryWrapper.eq(ShadowJobConfigEntity::getType, param.getType());
         queryWrapper.eq(ShadowJobConfigEntity::getName, param.getName());
+        if(param.getId() != null ) {
+            queryWrapper.ne(ShadowJobConfigEntity::getId, param.getId());
+        }
         queryWrapper.eq(ShadowJobConfigEntity::getIsDeleted, false);
         return shadowJobConfigMapper.selectCount(queryWrapper) > 0;
     }

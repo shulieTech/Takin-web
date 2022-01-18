@@ -13,6 +13,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.cache.agentimpl.ApplicationPluginConfigAgentCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
 import io.shulie.takin.web.biz.utils.CopyUtils;
@@ -200,9 +201,10 @@ public class ApplicationPluginsConfigServiceImpl implements ApplicationPluginsCo
         entity.setTenantId(WebPluginUtils.traceTenantId());
         applicationPluginsConfigMapper.updateById(entity);
         this.evict(CommonUtil.generateRedisKey(oldEntity.getApplicationName(),oldEntity.getConfigKey()));
-        OperationLogContextHolder.addVars(Vars.APPLICATION_NAME,oldEntity.getApplicationName());
+        OperationLogContextHolder.operationType(OpTypes.UPDATE);
+        OperationLogContextHolder.addVars(Vars.APPLICATION_ID,oldEntity.getApplicationId().toString());
         OperationLogContextHolder.addVars(Vars.APP_PLUGIN_KEY,oldEntity.getConfigItem());
-        OperationLogContextHolder.addVars(Vars.APPLICATION_NAME,oldEntity.getConfigValue().equals("-1")?"与业务key一致":oldEntity.getConfigValue()+" h");
+        OperationLogContextHolder.addVars(Vars.APP_PLUGIN_VALUE,oldEntity.getConfigValue().equals("-1")?"与业务key一致":oldEntity.getConfigValue()+" h");
         return true;
     }
 

@@ -420,6 +420,11 @@ public final class BizOpConstants {
         public static final String SHADOW_DATABASE_TABLE_URL = "shadowDatabaseTableURL";
 
         /**
+         * 影子库表url
+         */
+        public static final String SHADOW_DATABASE_TABLE_JSON = "shadowDatabaseTableJSON";
+
+        /**
          * 类名#方法名
          */
         public static final String CLASS_METHOD_NAME = "classMethodName";

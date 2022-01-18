@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import com.pamirs.takin.common.util.DateUtils;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -14,7 +15,7 @@ import lombok.Data;
  */
 
 @Data
-public class NodeUploadDataDTO implements Serializable {
+public class NodeUploadDataDTO extends TenantCommonExt implements Serializable {
 
     private static final long serialVersionUID = 2907229827465846525L;
 

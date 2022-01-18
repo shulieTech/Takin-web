@@ -87,7 +87,8 @@ public class ShadowJobConfigService {
         WebPluginUtils.fillUserData(shadowJobCreateParam);
         // 重复判断
         if (applicationShadowJobDAO.exist(shadowJobCreateParam)) {
-            return Response.fail(shadowJobCreateParam.getName() + ",类型为"+shadowJobCreateParam.getType() + "已存在");
+            return Response.fail(shadowJobCreateParam.getName() + ",类型为"+
+                JobEnum.getJobByIndex(shadowJobCreateParam.getType()).getText() + "已存在");
         }
 
         applicationShadowJobDAO.insert(shadowJobCreateParam);
@@ -133,6 +134,17 @@ public class ShadowJobConfigService {
                 String className = xmlMap.get("className");
                 String jobType = xmlMap.get("jobType");
                 JobEnum jobText = JobEnum.getJobByText(jobType);
+
+                //是否有重复
+                // 重复判断
+                ShadowJobCreateParam shadowJobCreateParam = new ShadowJobCreateParam();
+                shadowJobCreateParam.setName(className);
+                shadowJobCreateParam.setType(jobText.ordinal());
+                shadowJobCreateParam.setId(shadowJobConfig.getId());
+                if (applicationShadowJobDAO.exist(shadowJobCreateParam)) {
+                    return Response.fail(shadowJobCreateParam.getName() + ",类型为"+
+                        JobEnum.getJobByIndex(shadowJobCreateParam.getType()).getText() + "已存在");
+                }
 
                 if (StringUtils.isNotBlank(className) && !className.equals(shadowJobConfig.getName())) {
                     updateShadowJobConfig.setName(className);

@@ -421,8 +421,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         List<AppRemoteCallResult> results = appRemoteCallDAO.getList(param);
         // 服务端也需要查询下
         Map<String, List<ApplicationRemoteCallDTO>> serverAppNamesMap = this.getServerAppListMap(detailResult.getApplicationName());
-        return String.valueOf(results.stream()
-            .filter(result -> RemoteCallUtils.checkWhite(result.getType())
+        return String.valueOf(results.stream().filter(result -> RemoteCallUtils.checkWhite(result.getType())
                 && this.checkServerAppName(serverAppNamesMap,result)).count());
     }
 

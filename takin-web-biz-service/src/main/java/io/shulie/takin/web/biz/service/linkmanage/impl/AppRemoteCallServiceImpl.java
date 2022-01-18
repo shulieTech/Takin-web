@@ -308,7 +308,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             }
             // 白名单需要校验服务端应用
             result.setIsException(false);
-            if (RemoteCallUtils.checkWhite(result.getInterfaceType(), result.getType()) && CollectionUtils.isEmpty(result.getServerAppNames())) {
+            if (RemoteCallUtils.checkWhite(result.getType()) && CollectionUtils.isEmpty(result.getServerAppNames())) {
                 result.setIsException(true);
                 result.setSort(0);
             }
@@ -416,7 +416,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         param.setApplicationId(applicationId);
         List<AppRemoteCallResult> results = appRemoteCallDAO.getList(param);
         return String.valueOf(results.stream()
-            .filter(result -> RemoteCallUtils.checkWhite(result.getInterfaceType(), result.getType())
+            .filter(result -> RemoteCallUtils.checkWhite(result.getType())
                 && StringUtils.isEmpty(result.getServerAppName())).count());
     }
 

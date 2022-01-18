@@ -94,17 +94,10 @@ public class RemoteCallUtils {
 
     /**
      * 是否校验白名单异常
-     * @param interfaceType
      * @param type
      * @return
      */
-    public static boolean checkWhite(Integer interfaceType, Integer type) {
-        if(type == null) {
-            return !interfaceType.equals(AppRemoteCallTypeEnum.FEIGN.getType());
-        }else {
-            return !interfaceType.equals(AppRemoteCallTypeEnum.FEIGN.getType()) && type != null
-                && type.equals(AppRemoteCallConfigEnum.OPEN_WHITELIST.getType());
-        }
-
+    public static boolean checkWhite(Integer type) {
+        return AppRemoteCallConfigEnum.OPEN_WHITELIST.getType().equals(type);
     }
 }

@@ -561,6 +561,10 @@ public class SceneServiceImpl implements SceneService {
                 queryNameParam.setActivityName(createRequest.getActivityName());
                 List<Long> exists = activityDao.exists(queryNameParam);
                 if (CollectionUtils.isNotEmpty(exists)){
+                    //如果名称长度过长，截取长度以匹配表字段长度
+                    if (187 < createRequest.getActivityName().length()){
+                        createRequest.setActivityName(createRequest.getActivityName().substring(0,187));
+                    }
                     //如果业务活动名称重复，修改名称
                     createRequest.setActivityName(createRequest.getActivityName() + "_" + System.currentTimeMillis());
                 }

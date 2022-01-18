@@ -13,9 +13,12 @@ import io.shulie.takin.web.biz.pojo.response.ApplicationEntryResponse;
 import io.shulie.takin.web.biz.service.PressureService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.common.constant.AppConstants;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +46,11 @@ public class PressureServiceImpl implements PressureService, AppConstants {
         }
         // 获得场景关联的脚本实例id
         // 根据脚本实例id获得业务活动
-
+        TenantCommonExt ext = new TenantCommonExt();
+        ext.setTenantId(sceneDetail.getTenantId());
+        ext.setEnvCode(sceneDetail.getEnvCode());
+        ext.setSource(ContextSourceEnum.AGENT.getCode());
+        WebPluginUtils.setTraceTenantContext(ext);
         List<BusinessLinkResult> businessLinkResults = scriptManageService.listBusinessActivityByScriptDeployId(sceneDetail.getScriptId());
         if (businessLinkResults.isEmpty()) {
             return Collections.emptyList();

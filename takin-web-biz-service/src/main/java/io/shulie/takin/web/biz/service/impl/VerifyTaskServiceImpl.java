@@ -1,11 +1,12 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
-import java.util.Objects;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -13,56 +14,58 @@ import javax.annotation.Resource;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import lombok.extern.slf4j.Slf4j;
-
 import cn.hutool.core.bean.BeanUtil;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Lists;
-import org.springframework.stereotype.Component;
-import com.dangdang.ddframe.job.lite.api.JobScheduler;
-import org.apache.commons.collections4.CollectionUtils;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
-import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
-import org.springframework.transaction.support.TransactionTemplate;
 import com.dangdang.ddframe.job.config.simple.SimpleJobConfiguration;
-
-import com.pamirs.takin.common.constant.VerifyTypeEnum;
+import com.dangdang.ddframe.job.lite.api.JobScheduler;
+import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
-import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
+import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
-
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.cloud.sdk.model.common.SlaBean;
-import io.shulie.takin.web.biz.service.LeakSqlService;
-import io.shulie.takin.common.beans.component.SelectVO;
-import io.shulie.takin.web.biz.service.VerifyTaskService;
-import io.shulie.takin.web.common.exception.ExceptionCode;
-import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
-import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.biz.service.elasticjoblite.VerifyJob;
-import io.shulie.takin.web.data.dao.leakverify.LeakVerifyDetailDAO;
-import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
-import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
-import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
-import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
-import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.cloud.sdk.model.common.SlaBean;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.web.data.param.leakverify.LeakVerifyDetailCreateParam;
-import io.shulie.takin.web.data.param.leakverify.LeakVerifyResultCreateParam;
-import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
-import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyDetailResponse;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
-import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskJobParameter;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyDsResultResponse;
-import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
-import io.shulie.takin.web.biz.service.elasticjoblite.CoordinatorRegistryCenterService;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.common.beans.component.SelectVO;
+import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
+import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskJobParameter;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunAssembleRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunWithSaveRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunWithoutSaveRequest;
+import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
+import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
+import io.shulie.takin.web.biz.pojo.request.leakverify.VerifyTaskConfig;
+import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyDsResultResponse;
+import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
+import io.shulie.takin.web.biz.service.LeakSqlService;
+import io.shulie.takin.web.biz.service.VerifyTaskService;
+import io.shulie.takin.web.biz.service.elasticjoblite.CoordinatorRegistryCenterService;
+import io.shulie.takin.web.biz.service.elasticjoblite.VerifyJob;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
+import io.shulie.takin.web.common.exception.ExceptionCode;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.util.verify.VerifyTaskUtils;
+import io.shulie.takin.web.data.dao.leakverify.LeakVerifyDetailDAO;
+import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
+import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.web.data.param.leakverify.LeakVerifyDetailCreateParam;
+import io.shulie.takin.web.data.param.leakverify.LeakVerifyResultCreateParam;
+import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * @author fanxx
@@ -93,44 +96,54 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
     @Resource
     private CoordinatorRegistryCenterService registryCenterService;
 
+    @Autowired
+    @Qualifier("showdownVerifyThreadPool")
+    private ThreadPoolExecutor showdownVerifyThreadPool;
+
     @Override
     public void showdownVerifyTask() {
         Map<Object, Object> serviceMap = redis.hmget(jobSchedulerRedisKey);
         if (!serviceMap.isEmpty()) {
             Set<Object> keySet = serviceMap.keySet();
             keySet.forEach(mapKey -> {
-                String tmpRefId = ((String)mapKey).split("\\$")[1];
-                Long sceneId = Long.parseLong(tmpRefId);
-                SceneManageIdReq req = new SceneManageIdReq();
-                req.setId(sceneId);
-                WebPluginUtils.fillCloudUserData(req);
-                ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(req);
-                if (!Objects.isNull(response.getData())) {
-                    SceneActionResp resp = JSONObject.parseObject(JSON.toJSONString(response.getData()),
-                        SceneActionResp.class);
-                    Long status = resp.getData();
-                    //停止状态
-                    if (0L == status) {
-                        log.info("压测场景已停止，关闭验证任务，场景ID[{}]", sceneId);
-                        JobScheduler jobScheduler = (JobScheduler)serviceMap.get(mapKey);
-                        jobScheduler.getSchedulerFacade().shutdownInstance();
-                        serviceMap.remove(mapKey);
-                        //漏数验证兜底检测
-                        log.info("漏数验证兜底检测，场景ID[{}]", sceneId);
-                        LeakVerifyTaskRunWithSaveRequest runRequest = new LeakVerifyTaskRunWithSaveRequest();
-                        runRequest.setRefType(VerifyTypeEnum.SCENE.getCode());
-                        runRequest.setRefId(sceneId);
-                        runRequest.setReportId(resp.getReportId());
-                        this.runWithResultSave(runRequest);
+                showdownVerifyThreadPool.execute(() -> {
+                    TenantCommonExt tenantInfo = VerifyTaskUtils.getTenantInfo((String)mapKey);
+                    tenantInfo.setSource(ContextSourceEnum.JOB.getCode());
+                    WebPluginUtils.setTraceTenantContext(tenantInfo);
+                    Long sceneId =VerifyTaskUtils.getRefId((String)mapKey);
+                    SceneManageIdReq req = new SceneManageIdReq();
+                    req.setId(sceneId);
+                    WebPluginUtils.fillCloudUserData(req);
+                    ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(req);
+                    if (!Objects.isNull(response.getData())) {
+                        SceneActionResp resp = JSONObject.parseObject(JSON.toJSONString(response.getData()),
+                            SceneActionResp.class);
+                        Long status = resp.getData();
+                        //停止状态
+                        if (0L == status) {
+                            log.info("压测场景已停止，关闭验证任务，场景ID[{}]", sceneId);
+                            JobScheduler jobScheduler = (JobScheduler)serviceMap.get(mapKey);
+                            jobScheduler.getSchedulerFacade().shutdownInstance();
+                            serviceMap.remove(mapKey);
+                            //漏数验证兜底检测
+                            log.info("漏数验证兜底检测，场景ID[{}]", sceneId);
+                            LeakVerifyTaskRunWithSaveRequest runRequest = new LeakVerifyTaskRunWithSaveRequest();
+                            runRequest.setRefType(VerifyTypeEnum.SCENE.getCode());
+                            runRequest.setRefId(sceneId);
+                            runRequest.setReportId(resp.getReportId());
+                            this.runWithResultSave(runRequest);
+                        } else {
+                            log.debug("压测场景仍在运行，无法关闭验证任务，状态:[{}]", status);
+                        }
                     } else {
-                        log.debug("压测场景仍在运行，无法关闭验证任务，状态:[{}]", status);
+                        log.error("cloud返回的数据为空，无法判断压测场景状态");
                     }
-                } else {
-                    log.error("cloud返回的数据为空，无法判断压测场景状态");
-                }
+                });
             });
         }
     }
+
+
 
     @Override
     public void start(LeakVerifyTaskStartRequest startRequest) {
@@ -154,8 +167,8 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         String jobParameter = JSON.toJSONString(jobParameterObject);
         JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(), createJobConfiguration(jobParameter));
         jobScheduler.init();
-        String mapKey = startRequest.getRefType() + "$" + startRequest.getRefId();
-        redis.hmset(jobSchedulerRedisKey, mapKey, jobScheduler);
+        redis.hmset(jobSchedulerRedisKey,
+            VerifyTaskUtils.getVerifyTaskRedisMapKey(startRequest.getRefType(),startRequest.getRefId()), jobScheduler);
     }
 
     private LiteJobConfiguration createJobConfiguration(String jobParameter) {
@@ -178,7 +191,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         //关闭验证任务线程池
         Integer refType = stopRequest.getRefType();
         Long refId = stopRequest.getRefId();
-        String mapKey = refType + "$" + refId;
+        String mapKey = VerifyTaskUtils.getVerifyTaskRedisMapKey(refType,refId);
         Map<Object, Object> map = redis.hmget(jobSchedulerRedisKey);
         if (map.containsKey(mapKey)) {
             JobScheduler scheduler = (JobScheduler)map.get(mapKey);

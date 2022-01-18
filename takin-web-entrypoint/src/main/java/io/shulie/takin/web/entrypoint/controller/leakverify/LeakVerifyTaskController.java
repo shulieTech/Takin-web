@@ -7,7 +7,6 @@ import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartReques
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -35,36 +34,24 @@ public class LeakVerifyTaskController {
     @PostMapping("/start")
     @ApiOperation(value = "开始周期性验证任务")
     public void start(@RequestBody LeakVerifyTaskStartRequest startRequest) {
-        if (WebPluginUtils.checkUserPlugin()) {
-            verifyTaskService.start(startRequest);
-        }
-
+        verifyTaskService.start(startRequest);
     }
 
     @PostMapping("/stop")
     @ApiOperation(value = "停止周期性验证任务")
     public void stop(@RequestBody LeakVerifyTaskStopRequest stopRequest) {
-        if (WebPluginUtils.checkUserPlugin()) {
-            verifyTaskService.stop(stopRequest);
-        }
-
+        verifyTaskService.stop(stopRequest);
     }
 
     @PostMapping("/run")
     @ApiOperation(value = "运行单次验证任务")
     public LeakVerifyTaskResultResponse run(@RequestBody LeakVerifyTaskRunWithoutSaveRequest runRequest) {
-        if (WebPluginUtils.checkUserPlugin()) {
-            return verifyTaskService.runWithoutResultSave(runRequest);
-        }
-        return null;
+        return verifyTaskService.runWithoutResultSave(runRequest);
     }
 
     @GetMapping("/query")
     @ApiOperation(value = "查看所有验证任务")
     public Set<String> queryVerifyTask() {
-        if (WebPluginUtils.checkUserPlugin()) {
-            return verifyTaskService.queryVerifyTask();
-        }
-        return null;
+        return verifyTaskService.queryVerifyTask();
     }
 }

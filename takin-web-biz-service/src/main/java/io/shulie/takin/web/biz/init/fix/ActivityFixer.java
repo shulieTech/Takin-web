@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.init.fix;
 
+import javax.annotation.Resource;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.web.common.util.ActivityUtil;
@@ -9,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
 
 /**
  * @author zhaoyong
@@ -44,7 +44,7 @@ public class ActivityFixer {
                         return;
                     }
                     businessLinkManageTableEntity.setApplicationName(split[0]);
-                    businessLinkManageTableEntity.setEntrace(ActivityUtil.buildEntrance(split[1],split[2],split[3]));
+                    businessLinkManageTableEntity.setEntrace(ActivityUtil.buildEntrance(split[0],split[1],split[2],split[3]));
                     businessLinkManageTableMapper.updateById(businessLinkManageTableEntity);
                 });
             }

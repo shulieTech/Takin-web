@@ -116,6 +116,7 @@ public class ApplicationEntranceController {
                     applicationEntrancesResponse.setExtend(item.getExtend());
                     applicationEntrancesResponse.setServiceName(item.getServiceName());
                     applicationEntrancesResponse.setLabel(item.getMethodName() + "|" + item.getServiceName());
+                    // 只有这个地方用到
                     applicationEntrancesResponse.setValue(
                             ActivityUtil.buildEntrance(item.getMethodName(),item.getServiceName(),item.getRpcType()));
                     return applicationEntrancesResponse;

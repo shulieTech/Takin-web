@@ -2,6 +2,8 @@ package io.shulie.takin.web.entrypoint.controller.linkmanage;
 
 import javax.validation.Valid;
 
+import com.alibaba.fastjson.JSON;
+
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
@@ -33,7 +35,6 @@ import io.shulie.takin.web.common.vo.blacklist.BlacklistVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
-import org.mortbay.util.ajax.JSON;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -179,7 +180,7 @@ public class BlacklistConfigController {
         BlacklistUpdateInput input = new BlacklistUpdateInput();
         BeanUtils.copyProperties(request, input);
         blacklistService.enable(input);
-        OperationLogContextHolder.addVars(Vars.ACTION, "参数：" + JSON.toString(request));
+        OperationLogContextHolder.addVars(Vars.ACTION, "参数：" + JSON.toJSONString(request));
         OperationLogContextHolder.addVars(Vars.BLACKLIST_VALUE, "id = " + request.getBlistId());
         return new BlacklistStringResponse(operationType + "成功");
     }
@@ -204,6 +205,8 @@ public class BlacklistConfigController {
         String operationType = BlacklistEnableEnum.ENABLE.getStatus().equals(request.getUseYn())
             ? BizOpConstants.OpTypes.ENABLE : BizOpConstants.OpTypes.DISABLE;
         blacklistService.batchEnable(request.getIds(), request.getUseYn());
+        OperationLogContextHolder.operationType("批量"+operationType);
+        OperationLogContextHolder.addVars(Vars.BLACKLIST_VALUE, JSON.toJSONString(request));
         return new BlacklistStringResponse("批量" + operationType + "成功");
     }
 
@@ -227,8 +230,9 @@ public class BlacklistConfigController {
         if (request.getIds() == null || request.getIds().size() == 0) {
             throw new TakinWebException(ExceptionCode.BLACKLIST_DELETE_ERROR, "id列表不能为空");
         }
-        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
         blacklistService.batchDelete(request.getIds());
+        OperationLogContextHolder.operationType("批量"+BizOpConstants.OpTypes.DELETE);
+        OperationLogContextHolder.addVars(Vars.BLACKLIST_VALUE, JSON.toJSONString(request));
         return new BlacklistStringResponse("批量删除成功");
 
     }
@@ -252,6 +256,7 @@ public class BlacklistConfigController {
     public BlacklistStringResponse delete(@RequestBody @Valid BlacklistDeleteRequest request) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
         blacklistService.delete(request.getId());
+        OperationLogContextHolder.addVars(Vars.BLACKLIST_VALUE, JSON.toJSONString(request));
         return new BlacklistStringResponse("删除成功");
     }
 

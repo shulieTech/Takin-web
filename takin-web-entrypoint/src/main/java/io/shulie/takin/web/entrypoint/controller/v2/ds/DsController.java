@@ -11,6 +11,7 @@ import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInputV2;
@@ -99,7 +100,7 @@ public class DsController {
     )
     public Response dsUpdateConfig(@RequestBody @Validated ApplicationDsUpdateInputV2 updateRequestV2) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.SHADOW_DATABASE_TABLE_URL,updateRequestV2.getUrl());
+        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_JSON, JSON.toJSONString(updateRequestV2));
         return dsService.dsUpdateConfig(updateRequestV2);
     }
 

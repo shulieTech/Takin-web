@@ -3,6 +3,8 @@ package io.shulie.takin.web.entrypoint.controller.linkmanage;
 import java.util.Map;
 import java.util.Set;
 
+import com.alibaba.fastjson.JSON;
+
 import com.pamirs.takin.common.enums.ds.DbTypeEnum;
 import com.pamirs.takin.entity.domain.entity.simplify.AppBusinessTableInfo;
 import com.pamirs.takin.entity.domain.query.agent.AppBusinessTableQuery;
@@ -102,7 +104,7 @@ public class DsController {
     )
     public Response dsAddOld(@RequestBody ApplicationDsCreateInput createRequest) {
         OperationLogContextHolder.operationType(OpTypes.CREATE);
-        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_URL,createRequest.getShadowDbUrl());
+        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_JSON, JSON.toJSONString(createRequest));
         createRequest.setOldVersion(true);
         return this.dsAdd(createRequest);
     }
@@ -184,7 +186,7 @@ public class DsController {
     public Response dsUpdate(@RequestBody ApplicationDsUpdateInput updateRequest) {
         final Response response = dsService.dsUpdate(updateRequest);
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
-        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_URL,updateRequest.getShadowDbUrl());
+        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_JSON, JSON.toJSONString(updateRequest));
         return response;
     }
 
@@ -207,7 +209,7 @@ public class DsController {
     public Response dsUpdateOld(@RequestBody ApplicationDsUpdateInput updateRequest) {
         updateRequest.setOldVersion(true);
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
-        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_URL,updateRequest.getShadowDbUrl());
+        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_JSON, JSON.toJSONString(updateRequest));
         return this.dsUpdate(updateRequest);
     }
 
@@ -235,7 +237,7 @@ public class DsController {
         if (null == response) {
             return Response.fail("影子库表不存在");
         }
-        ApplicationDsDetailOutput data = response.getData();
+        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_JSON,JSON.toJSONString(enableRequest));
         return dsService.enableConfig(enableRequest);
     }
 
@@ -261,6 +263,8 @@ public class DsController {
         if (!response.getSuccess()) {
             return response;
         }
+        OperationLogContextHolder.operationType(OpTypes.DELETE);
+        OperationLogContextHolder.addVars(Vars.SHADOW_DATABASE_TABLE_JSON,JSON.toJSONString(deleteRequest));
         return dsService.dsDelete(deleteRequest);
     }
 

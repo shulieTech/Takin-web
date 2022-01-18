@@ -267,7 +267,7 @@ public class ApplicationController {
             vo.getSilenceEnable() ? BizOpConstants.OpTypes.OPEN : BizOpConstants.OpTypes.CLOSE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.ACTION,
             vo.getSilenceEnable() ? BizOpConstants.OpTypes.OPEN : BizOpConstants.OpTypes.CLOSE);
-        return applicationService.userAppSilenceSwitch(null, vo.getSilenceEnable());
+        return applicationService.userAppSilenceSwitch(WebPluginUtils.traceTenantCommonExt(), vo.getSilenceEnable());
     }
 
     @ApiOperation("获取静默开关状态接口")

@@ -392,6 +392,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             tenantIdCondition.setLeftExpression(this.getAliasColumn(table, tenantLineHandler.getTenantIdColumn()));
             tenantIdCondition.setRightExpression(tenantLineHandler.getTenantId());
         }
+
         EqualsTo envCodeCondition = null;
         if (!tenantLineHandler.ignoreSearch(where, envCodeColumn) && !tableWithoutEnvCode.contains(table.getName())) {
             envCodeCondition = new EqualsTo();
@@ -412,6 +413,8 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         } else if (tenantIdCondition != null) {
             // t_tro_user 只有 tenant_id
             tenantExpression = new AndExpression(equalsTo, tenantIdCondition);
+        }else {
+            tenantExpression = new AndExpression(equalsTo, envCodeCondition);
         }
 
         return tenantExpression;

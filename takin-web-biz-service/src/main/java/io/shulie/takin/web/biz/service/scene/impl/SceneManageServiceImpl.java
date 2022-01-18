@@ -812,7 +812,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         SceneManageQueryReq sceneManageQueryReq = new SceneManageQueryReq();
         sceneManageQueryReq.setStatus(request.getStatus());
         ResponseResult<List<SceneManageListResp>> cloudResult = sceneManageApi.querySceneByStatus(sceneManageQueryReq);
-        if (cloudResult == null || !cloudResult.getSuccess()) {
+        if (cloudResult == null || !cloudResult.getSuccess() || CollectionUtil.isEmpty(cloudResult.getData())) {
             return Collections.emptyList();
         }
 
@@ -879,7 +879,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         ReportDetailByIdsReq reportDetailByIdsReq = new ReportDetailByIdsReq();
         reportDetailByIdsReq.setSceneIds(sceneIds);
         ResponseResult<List<ReportActivityResp>> cloudResult = sceneTaskApi.listQueryTpsParam(reportDetailByIdsReq);
-        if (cloudResult == null || !cloudResult.getSuccess()) {
+        if (cloudResult == null || !cloudResult.getSuccess() || CollectionUtil.isEmpty(cloudResult.getData())) {
             return Collections.emptyList();
         }
 
@@ -899,7 +899,7 @@ public class SceneManageServiceImpl implements SceneManageService {
 
         // 通过条件, 查询influxdb, 获取到tps, sql语句
         String influxDbSql = String.format("select time as datetime, avg_tps as tps from %s where transaction = '%s' "
-            + "order by time desc", tableName, queryTpsParam.getBusinessActivityList().get(0).getBindRef());
+            + "order by time", tableName, queryTpsParam.getBusinessActivityList().get(0).getBindRef());
         List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
         if (CollectionUtil.isEmpty(reportList)) {
             return Collections.emptyList();

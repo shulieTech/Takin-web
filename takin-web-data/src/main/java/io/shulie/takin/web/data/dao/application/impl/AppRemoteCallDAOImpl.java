@@ -16,22 +16,16 @@
 
 package io.shulie.takin.web.data.dao.application.impl;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.mapper.mysql.AppRemoteCallMapper;
 import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
@@ -40,10 +34,16 @@ import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.util.MPUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author 无涯
@@ -59,6 +59,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         if(param.getIsManual()){
             entity.setManualTag(1);
         }
+        // 保底计算下
+        entity.setMd5(RemoteCallUtils.buildRemoteCallName(entity.getAppName(),entity.getInterfaceName(),entity.getInterfaceType()));
         this.save(entity);
     }
 
@@ -70,6 +72,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         List<AppRemoteCallEntity> entities = params.stream().map(param -> {
             AppRemoteCallEntity entity = new AppRemoteCallEntity();
             BeanUtils.copyProperties(param, entity);
+            // 保底计算下
+            entity.setMd5(RemoteCallUtils.buildRemoteCallName(entity.getAppName(),entity.getInterfaceName(),entity.getInterfaceType()));
             return entity;
         }).collect(Collectors.toList());
         this.saveBatch(entities);
@@ -83,6 +87,8 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         List<AppRemoteCallEntity> entities = params.stream().map(param -> {
             AppRemoteCallEntity entity = new AppRemoteCallEntity();
             BeanUtils.copyProperties(param, entity);
+            // 保底计算下
+            entity.setMd5(RemoteCallUtils.buildRemoteCallName(entity.getAppName(),entity.getInterfaceName(),entity.getInterfaceType()));
             return entity;
         }).collect(Collectors.toList());
         this.saveOrUpdateBatch(entities);
@@ -92,6 +98,10 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     public void update(AppRemoteCallUpdateParam param) {
         AppRemoteCallEntity entity = new AppRemoteCallEntity();
         BeanUtils.copyProperties(param, entity);
+        this.updateById(entity);
+        // 同时更新md5
+        AppRemoteCallEntity newEntity = this.getById(param.getId());
+        entity.setMd5(RemoteCallUtils.buildRemoteCallName(newEntity.getAppName(),newEntity.getInterfaceName(),newEntity.getInterfaceType()));
         this.updateById(entity);
     }
 
@@ -175,7 +185,6 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         if (param.getIsSynchronize() != null) {
             lambdaQueryWrapper.eq(AppRemoteCallEntity::getIsSynchronize, param.getIsSynchronize());
         }
-
         lambdaQueryWrapper.orderByDesc(AppRemoteCallEntity::getGmtModified);
         return lambdaQueryWrapper;
     }
@@ -207,10 +216,15 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
 
     @Override
     public void updateAppName(Long applicationId, String appName) {
-        LambdaUpdateWrapper<AppRemoteCallEntity> wrapper = this.getLambdaUpdateWrapper();
-        wrapper.eq(AppRemoteCallEntity::getApplicationId, applicationId);
-        wrapper.set(AppRemoteCallEntity::getAppName, appName);
-        this.update(wrapper);
+        // 先获取
+        LambdaQueryWrapper<AppRemoteCallEntity> queryWrapper  =this.getLambdaQueryWrapper();
+        queryWrapper.eq(AppRemoteCallEntity::getApplicationId, applicationId);
+        List<AppRemoteCallEntity> entities = this.list(queryWrapper);
+        entities.forEach(e -> {
+            e.setAppName(appName);
+            e.setMd5(RemoteCallUtils.buildRemoteCallName(appName,e.getInterfaceName(),e.getInterfaceType()));
+        });
+        this.updateBatchById(entities);
     }
 
     @Override
@@ -253,8 +267,11 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     @Override
     public void batchSave(List<AppRemoteCallResult> list) {
         List<AppRemoteCallEntity> collect = list.stream().
-                map(appRemoteCallResult -> Convert.convert(AppRemoteCallEntity.class, appRemoteCallResult))
-                .collect(Collectors.toList());
+                map(appRemoteCallResult -> {
+                    AppRemoteCallEntity newEntity = Convert.convert(AppRemoteCallEntity.class, appRemoteCallResult);
+                    newEntity.setMd5(RemoteCallUtils.buildRemoteCallName(newEntity.getAppName(),newEntity.getInterfaceName(),newEntity.getInterfaceType()));
+                    return newEntity;
+                }).collect(Collectors.toList());
         this.saveBatch(collect);
     }
 
@@ -311,5 +328,17 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
             return null;
         }
         return Convert.convert(AppRemoteCallResult.class,entity);
+    }
+
+    @Override
+    public List<String> getRemoteCallMd5(AppRemoteCallQueryParam param) {
+        LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getAppRemoteCallEntityLambdaQueryWrapper(param);
+        lambdaQueryWrapper.select(AppRemoteCallEntity::getMd5);
+        List<AppRemoteCallEntity> entities = this.list(lambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(entities)) {
+            return Lists.newArrayList();
+        }
+        return entities.stream().map(AppRemoteCallEntity::getMd5).collect(Collectors.toList());
+
     }
 }

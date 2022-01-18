@@ -132,6 +132,9 @@ public class AppRemoteApiFilterJob implements SimpleJob {
         List<AppRemoteCallResult> save = Lists.newArrayList();
         filterMap.forEach((k, v) -> {
             String[] temp = k.split("##");
+            if(temp.length != 2) {
+                return;
+            }
             String interfaceName = temp[1];
             //已经合并过的剔除
             List<AppRemoteCallResult> filterList = v.stream()

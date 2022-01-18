@@ -1313,7 +1313,7 @@ public class LinkTopologyService extends CommonService {
             AppProviderInfo appProviderInfo = new AppProviderInfo();
             appProviderInfo.setLabel(edgeByMiddlewareName.getKey()); // MiddlewareName
 
-            List<AppProvider> datasource = getDatasource(node, nodeMap, edgeByMiddlewareName, Lists.newArrayList());
+            List<AppProvider> datasource = this.getDatasource(node, nodeMap, edgeByMiddlewareName, Lists.newArrayList());
             appProviderInfo.setDataSource(datasource);
             return appProviderInfo;
         }).collect(Collectors.toList());
@@ -1373,7 +1373,7 @@ public class LinkTopologyService extends CommonService {
             }
 
             return appProvider;
-        }).collect(Collectors.toList());
+        }).distinct().collect(Collectors.toList());
 
         return datasource;
     }
@@ -1445,7 +1445,7 @@ public class LinkTopologyService extends CommonService {
                 = new AppCallDatasourceInfo();
             info3.setLabel("服务");
             info3.setDataSource(
-                edges.stream().map(this::getServiceMethod).collect(Collectors.toList()));
+                edges.stream().map(this::getServiceMethod).distinct().collect(Collectors.toList()));
             infos.add(info3);
 
             return infos;

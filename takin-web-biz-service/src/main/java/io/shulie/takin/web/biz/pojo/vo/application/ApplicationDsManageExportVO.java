@@ -67,6 +67,9 @@ public class ApplicationDsManageExportVO {
     private String configJson;
 
     @ExcelProperty(value ="source",index = 18)
-    private String source;
+    private Integer source;
+
+    @ExcelProperty(value ="type",index = 19)
+    private String type;
 
 }

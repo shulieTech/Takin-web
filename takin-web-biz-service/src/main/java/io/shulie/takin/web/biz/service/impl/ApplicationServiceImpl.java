@@ -1144,6 +1144,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 BeanUtils.copyProperties(cache, dsExportVO);
                 dsExportVO.setConnPoolName(cache.getCacheName());
                 dsExportVO.setDbType(DbTypeEnum.CACHE.getCode());
+                dsExportVO.setUrl(cache.getColony());
+                dsExportVO.setType(cache.getType());
+                dsExportVO.setFileExtend(cache.getFileExtedn());
+                dsExportVO.setShaDowFileExtend(cache.getShaDowFileExtedn());
+                dsExportVO.setConfigJson(cache.getConfigJson());
+                dsExportVO.setSource(cache.getSource());
                 return dsExportVO;
             }).collect(Collectors.toList()));
         }
@@ -1152,7 +1158,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             exportList.addAll(dbs.stream().map(db -> {
                 ApplicationDsManageExportVO dsExportVO = new ApplicationDsManageExportVO();
                 BeanUtils.copyProperties(db, dsExportVO);
-                dsExportVO.setDbType(DbTypeEnum.CACHE.getCode());
+                dsExportVO.setDbType(DbTypeEnum.DB.getCode());
+                dsExportVO.setConfigJson(db.getConfigJson());
+                dsExportVO.setSource(db.getSource());
+                dsExportVO.setFileExtend(db.getFileExtedn());
+                dsExportVO.setShaDowFileExtend(db.getShaDowFileExtedn());
                 return dsExportVO;
             }).collect(Collectors.toList()));
         }

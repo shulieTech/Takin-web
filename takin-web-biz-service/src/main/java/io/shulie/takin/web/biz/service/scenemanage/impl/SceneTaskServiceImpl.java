@@ -154,6 +154,12 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     @Autowired
     private SceneExcludedApplicationDAO sceneExcludedApplicationDAO;
 
+    /**
+     * 是否是预发环境
+     */
+    @Value("${takin.inner.pre:0}")
+    private int isInnerPre;
+
     @Override
     public void preStop(Long sceneId) {
         SceneManageIdReq request = new SceneManageIdReq();
@@ -240,7 +246,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
         preCheckStart(sceneData);
 
-        if (sceneData.getScriptId() != null) {
+        if (sceneData != null && sceneData.getScriptId() != null) {
             ScriptManageDeployDetailResponse scriptManageDeployDetail = scriptManageService.getScriptManageDeployDetail(
                 sceneData.getScriptId());
             List<PluginConfigDetailResponse> pluginConfigDetailResponseList = scriptManageDeployDetail
@@ -306,15 +312,13 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                     "获取压测时长失败！压测时长为" + sceneData.getPressureTestSecond());
             }
             //兜底时长
-            //long extraSeconds = 30;
-            //taskDto.setEndTime(
-            //    LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()).plusSeconds(extraSeconds));
             taskDto.setEndTime(
                 LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()));
             //任务添加到redis队列
+            final String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
+                : WebRedisKeyConstant.SCENE_REPORTID_KEY;
             final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
-            redisTemplate.opsForList().leftPush(WebRedisKeyConstant.SCENE_REPORTID_KEY,
-                reportKey);
+            redisTemplate.opsForList().leftPush(reportKeyName, reportKey);
             redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(taskDto));
         }
     }
@@ -346,9 +350,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         } catch (Exception e) {
             log.error("未知异常", e);
         }
-        //finally {
-        //            redisTemplate.delete("hasUnread_" + param.getSceneId());
-        //}
         return paramNew;
     }
 

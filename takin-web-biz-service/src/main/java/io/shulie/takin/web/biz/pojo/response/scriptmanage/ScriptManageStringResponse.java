@@ -13,6 +13,8 @@ public class ScriptManageStringResponse implements Serializable {
 
     private String content;
 
+    private Long scriptDeployId;
+
     public ScriptManageStringResponse(String content) {
         this.content = content;
     }

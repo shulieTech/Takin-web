@@ -9,6 +9,7 @@ import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.annotation.ActivityCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
@@ -202,12 +203,13 @@ public class ActivityController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_ACTIVITY,
         needAuth = ActionTypeEnum.CREATE
     )
-    public void createVirtualActivity(@Valid @RequestBody VirtualActivityCreateRequest request) {
+    public ResponseResult createVirtualActivity(@Valid @RequestBody VirtualActivityCreateRequest request) {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_ACTIVITY, request.getActivityName());
         OperationLogContextHolder.addVars(Vars.VIRTUAL_ENTRANCE, request.getVirtualEntrance());
         OperationLogContextHolder.addVars(Vars.ENTRANCE_TYPE, request.getType().getType());
-        activityService.createVirtualActivity(request);
+        final Long linkId = activityService.createVirtualActivity(request);
+        return ResponseResult.success(linkId);
     }
 
     @PutMapping("/virtual")

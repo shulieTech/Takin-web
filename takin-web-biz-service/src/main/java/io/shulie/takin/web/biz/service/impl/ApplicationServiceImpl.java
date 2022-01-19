@@ -566,7 +566,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public Response<Integer> addApplication(ApplicationVo param) {
+    public Response addApplication(ApplicationVo param) {
         if (param == null) {
             return Response.fail(FALSE_CORE, "应用不能为空");
         }
@@ -577,13 +577,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             if (param.getNodeNum() == null) {
                 param.setNodeNum(1);
             }
-            confCenterService.saveApplication(voToAppEntity(param));
+            long applicationId = confCenterService.saveApplication(voToAppEntity(param));
+            final Map<String, Object> map = Maps.newHashMap();
+            map.put("applicationId",applicationId);
+            return Response.success(map);
         } catch (TakinModuleException e) {
             OperationLogContextHolder.ignoreLog();
             return Response.fail(FALSE_CORE, e.getErrorMessage(), e.getErrorMessage());
         }
 
-        return Response.success();
     }
 
     @Override

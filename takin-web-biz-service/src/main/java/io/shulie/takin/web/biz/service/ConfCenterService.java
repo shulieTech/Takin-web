@@ -156,7 +156,7 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveApplication(ApplicationCreateParam tApplicationMnt) throws TakinModuleException {
+    public long saveApplication(ApplicationCreateParam tApplicationMnt) throws TakinModuleException {
         int applicationExist = applicationDAO.applicationExistByTenantIdAndAppName(
             WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),tApplicationMnt.getApplicationName());
         if (applicationExist > 0) {
@@ -166,6 +166,7 @@ public class ConfCenterService extends CommonService {
         addApplicationToDataBuild(tApplicationMnt);
         addApplicationToLinkDetection(tApplicationMnt);
         addPluginsConfig(tApplicationMnt);//插件管理-添加影子key默认过期时间
+        return tApplicationMnt.getApplicationId();
     }
 
     private void addPluginsConfig(ApplicationCreateParam applicationMnt) {

@@ -139,7 +139,10 @@ public class ScriptManageController {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCRIPT_MANAGE_DEPLOY_ID, String.valueOf(scriptManageId));
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCRIPT_MANAGE_DEPLOY_NAME,
             scriptManageDeployCreateRequest.getName());
-        return new ScriptManageStringResponse("创建脚本成功");
+
+        final ScriptManageStringResponse resp = new ScriptManageStringResponse("创建脚本成功");
+        resp.setScriptDeployId(scriptManageId);
+        return resp;
     }
 
     @DeleteMapping

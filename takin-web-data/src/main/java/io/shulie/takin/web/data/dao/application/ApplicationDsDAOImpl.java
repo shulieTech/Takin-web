@@ -59,32 +59,34 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
 
     /**
      * 数据加密通用处理
+     *
      * @param entity 实体
      */
     private void aes(ApplicationDsManageEntity entity) {
-        if (StringUtil.isNotBlank(entity.getConfig())){
+        if (StringUtil.isNotBlank(entity.getConfig())) {
             entity.setConfig(SecureUtil.encryption(entity.getConfig()));
         }
-        if (StringUtil.isNotBlank(entity.getParseConfig())){
+        if (StringUtil.isNotBlank(entity.getParseConfig())) {
             entity.setParseConfig(SecureUtil.encryption(entity.getParseConfig()));
         }
     }
 
     /**
      * 数据解密密通用处理
+     *
      * @param entity 实体
      */
     private void des(ApplicationDsManageEntity entity) {
         String config = entity.getConfig();
         String parseConfig = entity.getParseConfig();
-        try{
-            if (StringUtil.isNotBlank(config)){
+        try {
+            if (StringUtil.isNotBlank(config)) {
                 entity.setConfig(SecureUtil.decrypt(config));
             }
-            if (StringUtil.isNotBlank(parseConfig)){
+            if (StringUtil.isNotBlank(parseConfig)) {
                 entity.setParseConfig(SecureUtil.decrypt(parseConfig));
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             //logger.warn("解密数据源配置失败，返回原始配置； 数据源ID：{}",entity.getId());
             entity.setConfig(config);
             entity.setParseConfig(parseConfig);
@@ -211,7 +213,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
     public List<DsModelWithBLOBs> selectByAppIdForAgent(Long applicationId) {
         LambdaQueryWrapper<ApplicationDsManageEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ApplicationDsManageEntity::getApplicationId, applicationId);
-        queryWrapper.eq(ApplicationDsManageEntity::getStatus,0);
+        queryWrapper.eq(ApplicationDsManageEntity::getStatus, 0);
         List<ApplicationDsManageEntity> dsManageEntityList = applicationDsManageMapper.selectList(queryWrapper);
 
         List<DsModelWithBLOBs> applicationDsResultList = Lists.newArrayList();
@@ -219,7 +221,7 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
             for (ApplicationDsManageEntity entity : dsManageEntityList) {
                 des(entity);
                 DsModelWithBLOBs dsResult = new DsModelWithBLOBs();
-                BeanUtils.copyProperties(entity,dsResult);
+                BeanUtils.copyProperties(entity, dsResult);
                 dsResult.setDsType(entity.getDsType().byteValue());
                 dsResult.setDbType(entity.getDbType().byteValue());
                 dsResult.setStatus(entity.getStatus().byteValue());
@@ -233,7 +235,6 @@ public class ApplicationDsDAOImpl implements ApplicationDsDAO {
     public List<DsModelWithBLOBs> getAllEnabledDbConfig(Long applicationId) {
         return selectByAppIdForAgent(applicationId);
     }
-
 
     @Override
     @Transactional

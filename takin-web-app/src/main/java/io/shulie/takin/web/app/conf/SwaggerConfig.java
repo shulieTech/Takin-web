@@ -31,6 +31,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.web.util.UriComponentsBuilder;
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
 import springfox.documentation.PathProvider;
+import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -51,7 +52,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 @EnableKnife4j
 @Import(BeanValidatorPluginsConfiguration.class)
 @Order(0)
-@Profile({"local","dev","test"})
+@Profile({"local","dev","test","web"})
 public class SwaggerConfig {
 
     @Value("${server.servlet.context-path:}")
@@ -59,12 +60,30 @@ public class SwaggerConfig {
 
     @Value("${swagger.enable:true}")
     private Boolean swaggerEnable;
+    // 定义分隔符
+    private static final String SPLITOR = ";";
+    private static String AGENT_API_BASE_PATH = "io.shulie.takin.web.entrypoint.controller.agent";
+    private static String AGENT_API_BASE_PATH2 = "io.shulie.takin.web.entrypoint.controller.perfomanceanaly";
 
 
-    /**
-     * 所有接口
-     * @return 文档
-     */
+
+    @Bean
+    public Docket agentApi() {
+        Predicate<RequestHandler> selectors = RequestHandlerSelectors.basePackage(AGENT_API_BASE_PATH);
+        return new Docket(DocumentationType.SWAGGER_2)
+            .groupName("压测平台-agent接口")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .apis(RequestHandlerSelectors.basePackage(AGENT_API_BASE_PATH))
+            .paths(PathSelectors.any())
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .enable(swaggerEnable)
+            .apiInfo(this.apiInfo());
+    }
+
+
     @Bean
     public Docket all() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -90,7 +109,10 @@ public class SwaggerConfig {
             .pathProvider(this.pathProvider())
             .groupName("压测平台-V4版本")
             .select().apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex("/api/(scriptDebug|scriptManage|v2/file|config|probe|v2/application/node|agent/application/node/probe|application/middleware|login).*|/agent.*")).build()
+            .paths(getRegex(
+                "/api/(scriptDebug|scriptManage|v2/file|config|probe|v2/application/node|agent/application/node/probe"
+                    + "|application/middleware|login).*|/agent.*"))
+            .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
             .apiInfo(this.apiInfo()) .enable(swaggerEnable);
@@ -376,6 +398,37 @@ public class SwaggerConfig {
             ;
     }
 
+    @Bean
+    public Docket api_businessFlow() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .pathProvider(this.pathProvider())
+                .groupName("业务流程jmeter上传改造")
+                .select()
+                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+                .paths(getRegex("/api(/businessFlow|/application/entrances/bySamplerType|/activities/queryNormalActivities|/v2/scene).*"))
+                .build()
+                .directModelSubstitute(LocalDate.class, String.class)
+                .useDefaultResponseMessages(false)
+                .apiInfo(apiInfo())
+                ;
+    }
+
+    @Bean
+    public Docket api_reportQuery(){
+        return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
+            .groupName("混合压测场景-压测报告")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+//            .paths(getRegex("/api(/report/queryReportTrend|/report/tempReportDetail|/report/queryTempReportTrend|/report/queryNodeTree|/report/getReportByReportId|/report/businessActivity/summary/list|report/listReport).*"))
+            .paths(getRegex("/api/report/.*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo())
+            ;
+    }
+
     /**
      * 两周迭代放在这里
      *
@@ -388,7 +441,9 @@ public class SwaggerConfig {
             .groupName("6.4版本")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex("/api/(application/remote/call|/application/remote/call/list|activities/virtual|activities|activities/activity|link/scene/manage).*"))
+            .paths(getRegex(
+                "/api/(application/remote/call|/application/remote/call/list|activities/virtual|activities|activities"
+                    + "/activity|link/scene/manage).*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)
@@ -398,21 +453,47 @@ public class SwaggerConfig {
 
     /**
      * 快速接入一期测试用 nf
+     *
      * @return
      */
     @Bean
     public Docket api_webTest_nf() {
         return new Docket(DocumentationType.SWAGGER_2)
-                .groupName("快速接入一期测试用")
-                .select()
-                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-                .paths(PathSelectors
-                        .regex("/api/(v2/application/remote/call|v2/consumers|v2/link/ds|/application/remote/call/list).*"))
-                .build()
-                .directModelSubstitute(LocalDate.class, String.class)
-                .useDefaultResponseMessages(false)
-                .apiInfo(apiInfo())
-                ;
+            .groupName("快速接入一期测试用")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(PathSelectors
+                .regex("/api/(v2/application/remote/call|v2/consumers|v2/link/ds|/application/remote/call/list).*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo())
+            ;
+    }
+
+    /**
+     * 探针在线升级 nf
+     *
+     * @return
+     */
+    @Bean
+    public Docket agent_upgrade_online() {
+        return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
+            .groupName("探针在线升级")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+//            .paths(getRegex(
+//                "/api/(agentReport|applicationPluginUpgrade|applicationPluginUpgradeRef|applicationTagRef"
+//                    + "|pluginDependent|pluginLibrary|pluginTenantRef|agent/heartbeat).*"))
+                .paths(getRegex("/api/(fast/agent/access/list/new|fast/agent/access/list/tips|" +
+                        "fast/agent/access/errorLog/list|agent/heartbeat|plugin/path|plugin/upgrade|" +
+                        "application/tag|pluginDependent|pluginLibrary|v2/user|tenantInfo/list).*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo())
+            ;
     }
 
     /**

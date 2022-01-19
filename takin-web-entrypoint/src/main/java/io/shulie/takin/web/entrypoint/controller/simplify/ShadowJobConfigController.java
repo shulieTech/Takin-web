@@ -7,6 +7,7 @@ import com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery;
 import com.pamirs.takin.entity.domain.vo.ShadowJobConfigVo;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.OpTypes;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
 import io.shulie.takin.web.biz.utils.Estimate;
 import io.shulie.takin.web.biz.utils.XmlUtil;
@@ -104,8 +105,8 @@ public class ShadowJobConfigController {
             Estimate.notBlank(config.getApplicationId(), "应用ID不能为空");
             Estimate.notBlank(config.getConfigCode(), "相关配置不能为空");
             // 备注字段上限
-            if (StringUtils.isNotBlank(config.getRemark()) && config.getRemark().length() > 200) {
-                throw new TakinWebException(ExceptionCode.JOB_PARAM_ERROR, "备注长度不得超过200字符");
+            if (StringUtils.isNotBlank(config.getRemark()) && config.getRemark().length() > 256) {
+                throw new TakinWebException(ExceptionCode.JOB_PARAM_ERROR, "备注长度不得超过256字符");
             }
             Map<String, String> xmlMap = XmlUtil.readStringXml(config.getConfigCode());
             String className = xmlMap.get("className");
@@ -135,10 +136,14 @@ public class ShadowJobConfigController {
         try {
             Estimate.notBlank(query.getId(), "ID不能为空");
             // 备注字段上限
-            if (StringUtils.isNotBlank(query.getRemark()) && query.getRemark().length() > 200) {
-                throw new TakinWebException(ExceptionCode.JOB_PARAM_ERROR, "备注长度不得超过200字符");
+            if (StringUtils.isNotBlank(query.getRemark()) && query.getRemark().length() > 256) {
+                throw new TakinWebException(ExceptionCode.JOB_PARAM_ERROR, "备注长度不得超过256字符");
             }
-
+            OperationLogContextHolder.operationType(OpTypes.UPDATE);
+            Map<String, String> xmlMap = XmlUtil.readStringXml(query.getConfigCode());
+            String className = xmlMap.get("className");
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.TASK, className);
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.TASKConfig, query.getConfigCode());
             shadowJobConfigService.update(query);
             return Response.success();
         } catch (Exception e) {

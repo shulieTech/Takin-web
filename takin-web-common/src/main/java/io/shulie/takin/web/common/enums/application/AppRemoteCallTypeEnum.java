@@ -16,22 +16,21 @@ public enum AppRemoteCallTypeEnum {
     /**
      * HTTP
      */
-    HTTP(0, "HTTP",0),
+    HTTP(0, "HTTP", 0),
     /**
      * DUBBO
      */
-    DUBBO(1, "DUBBO",1),
+    DUBBO(1, "DUBBO", 1),
     /**
      * FEIGN
      */
-    FEIGN(2, "FEIGN",1),
+    FEIGN(2, "FEIGN", 1),
 
-    GRPC(3, "GRPC",1);
+    GRPC(3, "GRPC", 1);
 
     private Integer type;
     private String desc;
     private Integer convert;
-
 
     private static final Map<Integer, AppRemoteCallTypeEnum> INSTANCES = Maps.newHashMap();
     private static final Map<String, AppRemoteCallTypeEnum> DESC_INSTANCES = Maps.newHashMap();
@@ -52,6 +51,5 @@ public enum AppRemoteCallTypeEnum {
     public static AppRemoteCallTypeEnum getEnumByDesc(String desc) {
         return DESC_INSTANCES.get(desc);
     }
-
 
 }

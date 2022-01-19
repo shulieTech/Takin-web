@@ -3,8 +3,9 @@ package com.pamirs.takin.entity.domain.vo.dsmanage;
 import lombok.Data;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.List;
+
 import java.util.Map;
+import java.util.List;
 
 /**
  * 数据库配置
@@ -25,6 +26,5 @@ public class Configurations {
      * 数据源
      */
     private List<DataSource> dataSources;
-
 
 }

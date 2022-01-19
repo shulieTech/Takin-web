@@ -15,6 +15,7 @@ import io.shulie.takin.web.data.param.application.UpdateApplicationMiddlewarePar
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareListResult;
 import io.shulie.takin.web.data.result.application.ApplicationMiddlewareStatusAboutCountResult;
 import io.shulie.takin.web.data.util.MPUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

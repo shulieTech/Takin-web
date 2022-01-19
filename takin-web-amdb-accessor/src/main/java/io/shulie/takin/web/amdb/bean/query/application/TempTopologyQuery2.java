@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class TempTopologyQuery2 {
+public class TempTopologyQuery2 extends AmdbTenantDTO{
     private String fromAppName;
     private String appName;
     private String middlewareName;
@@ -16,14 +16,5 @@ public class TempTopologyQuery2 {
     private int clusterTest;
     private String startTime;
     private String endTime;
-
-    /**
-     * 租户ID
-     */
-    private String traceTenantAppKey;
-    /**
-     * 环境编码
-     */
-    private String envCode;
     private int timeGap;
 }

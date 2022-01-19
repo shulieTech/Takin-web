@@ -114,4 +114,14 @@ public class SceneTaskApiImpl implements SceneTaskApi {
             return ResponseResult.fail(e.getMessage(), "");
         }
     }
+
+    @Override
+    public ResponseResult<?> preStopTask(SceneManageIdReq req) {
+        try {
+            return ResponseResult.success(cloudTaskApi.boltStopTask(req));
+        } catch (Throwable e) {
+            return ResponseResult.fail(e.getMessage(), "");
+        }
+    }
+
 }

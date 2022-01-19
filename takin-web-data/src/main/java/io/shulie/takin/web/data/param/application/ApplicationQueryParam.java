@@ -2,14 +2,17 @@ package io.shulie.takin.web.data.param.application;
 
 import java.util.List;
 
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author shiyajian
- * create: 2020-09-20
+ * @date 2020-09-20
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class ApplicationQueryParam extends TenantCommonExt {
     private Long userId;
     private List<Long> userIds;

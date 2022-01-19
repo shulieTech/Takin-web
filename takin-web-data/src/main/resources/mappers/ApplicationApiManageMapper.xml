@@ -29,11 +29,13 @@
 
     <insert id="insertBatch" parameterType="java.util.List">
         insert into t_application_api_manage ( APPLICATION_NAME,
-        CREATE_TIME, UPDATE_TIME, IS_DELETED,api,method,application_id,user_id,IS_AGENT_REGISTE)
+        CREATE_TIME, UPDATE_TIME, IS_DELETED,api,method,application_id,user_id,IS_AGENT_REGISTE,TENANT_ID,ENV_CODE)
         values
         <foreach collection="list" item="item" index="index" separator=",">
             (
-            #{item.applicationName},#{item.createTime},#{item.updateTime},#{item.isDeleted},#{item.api},#{item.method},#{item.applicationId},#{item.userId},#{item.isAgentRegiste})
+            #{item.applicationName},#{item.createTime},#{item.updateTime},#{item.isDeleted},#{item.api},#{item.method},#{item.applicationId},#{item.userId},
+             #{item.isAgentRegiste}, #{item.tenantId}, #{item.envCode}
+             )
         </foreach>
 
 
@@ -172,30 +174,30 @@
 
     <select id="selectBySelective" parameterType="io.shulie.takin.web.data.model.mysql.ApplicationApiManageEntity"
             resultMap="BaseResultMap">
-<!--        select-->
-<!--        <include refid="Base_Column_List"/>-->
-<!--        from t_application_api_manage-->
-<!--        where IS_DELETED=0-->
-<!--            and tenant_id = #{record.tenantId}-->
-<!--            and env_code=#{record.envCode}-->
+        <!--        select-->
+        <!--        <include refid="Base_Column_List"/>-->
+        <!--        from t_application_api_manage-->
+        <!--        where IS_DELETED=0-->
+        <!--            and tenant_id = #{record.tenantId}-->
+        <!--            and env_code=#{record.envCode}-->
 
-            SELECT
-            <include refid="Base_Column_List"/>
-            FROM t_application_api_manage
-            where IS_DELETED=0
-            <if test="record != null and record.api != null">
-                and api = #{record.api}
-            </if>
-            <if test="record != null and record.applicationName != null">
-                and APPLICATION_NAME = #{record.applicationName}
-            </if>
-            <if test="userIds != null and userIds.size > 0">
-                AND user_id IN
-                <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
-                    #{userId}
-                </foreach>
-            </if>
-            ORDER BY CREATE_TIME DESC
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM t_application_api_manage
+        where IS_DELETED=0
+        <if test="record != null and record.api != null">
+            and api LIKE concat('%',#{record.api},'%')
+        </if>
+        <if test="record != null and record.applicationName != null">
+            and APPLICATION_NAME LIKE concat('%',#{record.applicationName},'%')
+        </if>
+        <if test="userIds != null and userIds.size > 0">
+            AND user_id IN
+            <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+                #{userId}
+            </foreach>
+        </if>
+        ORDER BY CREATE_TIME DESC
     </select>
 
     <select id="deleteByAppName" parameterType="java.lang.String">

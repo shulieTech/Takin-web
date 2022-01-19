@@ -2,14 +2,14 @@ package io.shulie.takin.web.biz.job;
 
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
-import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
-import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
+import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
@@ -18,8 +18,8 @@ import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,18 +32,23 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AppRemoteCallJob implements SimpleJob {
 
-    @Autowired
+    @Resource
     private AppRemoteCallService appRemoteCallService;
 
-    @Autowired
+    @Value("${fix.remote.call.data:false}")
+    private Boolean fixData;
+    @Resource
     @Qualifier("jobThreadPool")
     private ThreadPoolExecutor jobThreadPool;
-
-    @Autowired
+    @Resource
     private DistributedLock distributedLock;
 
     @Override
     public void execute(ShardingContext shardingContext) {
+
+        if(fixData) {
+            return;
+        }
 
         if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源

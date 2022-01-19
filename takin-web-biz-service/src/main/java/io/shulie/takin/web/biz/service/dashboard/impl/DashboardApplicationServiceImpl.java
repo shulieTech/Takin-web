@@ -57,11 +57,11 @@ public class DashboardApplicationServiceImpl implements DashboardApplicationServ
             throw new TakinWebException(DashboardExceptionCode.DEFAULT, "开关状态不能为空");
         }
         final String envCode = WebPluginUtils.traceEnvCode();
-        final String tenantCode = WebPluginUtils.traceTenantCode();
+        final String tenantAppKey = WebPluginUtils.traceTenantAppKey();
         final String statusVoRedisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-            PRADAR_SWITCH_STATUS_VO + tenantCode, envCode);
+            PRADAR_SWITCH_STATUS_VO + tenantAppKey, envCode);
         final String statusRedisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-            PRADAR_SWITCH_STATUS + tenantCode, envCode);
+            PRADAR_SWITCH_STATUS + tenantAppKey, envCode);
         String realStatus = getUserPressureSwitchFromRedis(statusVoRedisKey, statusRedisKey);
         AppPressureSwitchSetResponse result = new AppPressureSwitchSetResponse();
         if (realStatus.equals(AppSwitchEnum.CLOSING.getCode()) || realStatus.equals(AppSwitchEnum.OPENING.getCode())) {
@@ -73,8 +73,7 @@ public class DashboardApplicationServiceImpl implements DashboardApplicationServ
             redisTemplate.opsForValue().set(statusRedisKey, status);
             redisTemplate.opsForValue().set(statusVoRedisKey, voStatus);
             redisTemplate.opsForHash().put(NEED_VERIFY_USER_MAP,
-                String.valueOf(tenantCode + Separator.Separator3.getValue() + envCode), System.currentTimeMillis());
-
+                tenantAppKey + Separator.Separator3.getValue() + envCode, System.currentTimeMillis());
             result.setSwitchStutus(voStatus);
         }
         agentConfigCacheManager.evictPressureSwitch();

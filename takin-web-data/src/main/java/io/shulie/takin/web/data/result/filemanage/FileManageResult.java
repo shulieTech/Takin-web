@@ -2,14 +2,16 @@ package io.shulie.takin.web.data.result.filemanage;
 
 import java.util.Date;
 
-import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 
 /**
  * @author zhaoyong
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class FileManageResult extends UserCommonExt {
 
     private Long id;
@@ -43,7 +45,6 @@ public class FileManageResult extends UserCommonExt {
      * }
      */
     private String fileExtend;
-    ;
 
     /**
      * 上传时间

@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -30,10 +31,16 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
     private String linkName;
 
     /**
-     * 链路入口
+     * 链路入口，将之前拼接进去的应用名拆成一个字段
      */
     @TableField(value = "ENTRACE")
     private String entrace;
+
+    /**
+     * 入口应用名称
+     */
+    @TableField(value = "application_name")
+    private String applicationName;
 
     /**
      * 业务链路绑定的技术链路
@@ -44,7 +51,7 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
     /**
      * 业务链路级别: p0/p1/p2/p3
      */
-    @TableField(value = "LINK_LEVEL")
+    @TableField(value = "LINK_LEVEL", updateStrategy = FieldStrategy.IGNORED)
     private String linkLevel;
 
     /**
@@ -60,9 +67,9 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
     private Integer isChange;
 
     /**
-     * 业务链路是否否核心链路 0:不是;1:是
+     * 业务链路是否否核心链路 0:不是;1:是,null表示未知，更新时可能被设置为null
      */
-    @TableField(value = "IS_CORE")
+    @TableField(value = "IS_CORE", updateStrategy = FieldStrategy.IGNORED)
     private Integer isCore;
 
     /**
@@ -86,7 +93,7 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
     /**
      * 业务域: 0:订单域", "1:运单域", "2:结算域
      */
-    @TableField(value = "BUSINESS_DOMAIN")
+    @TableField(value = "BUSINESS_DOMAIN", updateStrategy = FieldStrategy.IGNORED)
     private String businessDomain;
 
     /**

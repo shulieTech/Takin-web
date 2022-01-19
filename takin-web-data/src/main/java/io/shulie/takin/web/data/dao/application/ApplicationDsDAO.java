@@ -23,7 +23,7 @@ public interface ApplicationDsDAO {
     /**
      * 启动状态
      *
-     * @return
+     * @return 启动结果
      */
     int enable(ApplicationDsEnableParam enableParam);
 

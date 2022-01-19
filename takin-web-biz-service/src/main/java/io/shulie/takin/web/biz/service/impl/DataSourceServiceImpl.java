@@ -81,7 +81,6 @@ public class DataSourceServiceImpl implements DataSourceService {
     @Autowired
     private BusinessLinkManageDAO businessLinkManageDAO;
 
-
     @Override
     @Transactional(rollbackFor = Throwable.class)
     public void createDatasource(DataSourceCreateRequest createRequest) {
@@ -228,7 +227,9 @@ public class DataSourceServiceImpl implements DataSourceService {
             }
         }
         String name = queryRequest.getDatasourceName();
+        name = name == null ? null : name.replace("%", "\\%").replace("_", "\\_").replace("-", "\\-");
         String jdbcUrl = queryRequest.getJdbcUrl();
+        jdbcUrl = jdbcUrl == null ? null : jdbcUrl.replace("%", "\\%").replace("_", "\\_").replace("-", "\\-");
         DataSourceQueryParam queryParam = new DataSourceQueryParam();
         queryParam.setCurrent(queryRequest.getCurrent() + 1);
         queryParam.setPageSize(queryRequest.getPageSize());
@@ -243,7 +244,7 @@ public class DataSourceServiceImpl implements DataSourceService {
         }
         PagingList<DataSourceResult> pagingList = dataSourceDAO.selectPage(queryParam);
         if (pagingList.isEmpty()) {
-            return PagingList.of(Lists.newArrayList(),pagingList.getTotal());
+            return PagingList.of(Lists.newArrayList(), pagingList.getTotal());
         }
         List<Long> dataSourceIdList =
             pagingList.getList().stream().map(DataSourceResult::getId).collect(Collectors.toList());

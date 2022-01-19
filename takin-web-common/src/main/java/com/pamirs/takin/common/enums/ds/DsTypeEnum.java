@@ -1,10 +1,9 @@
 package com.pamirs.takin.common.enums.ds;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.util.Arrays;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
  * @author fanxx
@@ -39,15 +38,14 @@ public enum DsTypeEnum {
     SHADOW_HBASE_SERVER(4, "影子集群"),
 
     /**
-     *kafka 影子kafka集群
+     * kafka 影子kafka集群
      */
     SHADOW_KAFKA_CLUSTER(5, "影子kafka集群"),
 
-
     SHADOW_REDIS_KEY(6, "影子key"),
 
-    SHADOW_REDIS_CLUSTER(7, "影子集群");
-
+    SHADOW_REDIS_CLUSTER(7, "影子集群"),
+    ;
 
     @Getter
     private final Integer code;
@@ -57,36 +55,39 @@ public enum DsTypeEnum {
 
     /**
      * 根据 desc 获得枚举
+     *
      * @param desc desc
      * @return 枚举
      */
     public static DsTypeEnum getEnumByDesc(String desc) {
         return Arrays.stream(values())
-                .filter(dsTypeEnum -> dsTypeEnum.getDesc().equals(desc))
-                .findFirst().orElse(null);
+            .filter(dsTypeEnum -> dsTypeEnum.getDesc().equals(desc))
+            .findFirst().orElse(null);
     }
 
     /**
      * 根据 code 获得枚举
+     *
      * @param code code
      * @return 枚举
      */
     public static DsTypeEnum getEnumByCode(Integer code) {
         return Arrays.stream(values())
-                .filter(dsTypeEnum -> dsTypeEnum.getCode().equals(code))
-                .findFirst().orElse(null);
+            .filter(dsTypeEnum -> dsTypeEnum.getCode().equals(code))
+            .findFirst().orElse(null);
     }
 
     /**
      * 根据 code, 获得描述
+     *
      * @param code code
      * @return 描述
      */
     public static String getDescByCode(Integer code) {
         return Arrays.stream(values())
-                .filter(dsTypeEnum -> dsTypeEnum.getCode().equals(code))
-                .findFirst()
-                .map(DsTypeEnum::getDesc).orElse("");
+            .filter(dsTypeEnum -> dsTypeEnum.getCode().equals(code))
+            .findFirst()
+            .map(DsTypeEnum::getDesc).orElse("");
     }
 
 }

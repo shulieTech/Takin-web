@@ -15,21 +15,25 @@
 
 package io.shulie.takin.web.data.dao.application;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationUpdateParam;
+import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
 import io.shulie.takin.web.data.param.application.QueryApplicationParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationListResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import org.apache.ibatis.annotations.Param;
@@ -43,6 +47,14 @@ import org.apache.ibatis.annotations.Param;
 public interface ApplicationDAO {
 
     List<ApplicationDetailResult> getApplications(List<String> appNames);
+
+    /**
+     * 去amdb, 根据应用名称列表查询
+     *
+     * @param appNames 应用名称列表
+     * @return amdb应用列表
+     */
+    List<ApplicationResult> listAmdbApplicationByAppNames(List<String> appNames);
 
     /**
      * 根据应用查
@@ -172,10 +184,10 @@ public interface ApplicationDAO {
     /**
      * 根据租户获取相关应用
      *
-     * @param commonExts
+     * @param commonExtList
      * @return
      */
-    List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts);
+    List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExtList);
 
     /**
      * 根据应用名称， 获得该租户下的应用ids
@@ -201,7 +213,7 @@ public interface ApplicationDAO {
      * @param agentVersion
      * @param pradarVersion
      */
-    void updateApplicaionAgentVersion(Long applicationId, String agentVersion, String pradarVersion);
+    void updateApplicationAgentVersion(Long applicationId, String agentVersion, String pradarVersion);
 
     /**
      * 根据applicationName查询 id
@@ -227,6 +239,12 @@ public interface ApplicationDAO {
      * @return
      */
     List<ApplicationDetailResult> getAllApplications();
+
+    /**
+     * 无租户获取数据
+     * @return
+     */
+    List<ApplicationMntEntity> getAllApplicationsWithoutTenant();
 
     /**
      * 大盘获取应用
@@ -283,7 +301,7 @@ public interface ApplicationDAO {
      *
      * @param tApplicationMnt
      */
-    void updateApplicationinfo(ApplicationCreateParam tApplicationMnt);
+    void updateApplicationInfo(ApplicationCreateParam tApplicationMnt);
 
     /**
      * 说明: 根据应用id查询关联的基础链路是否存在
@@ -368,6 +386,36 @@ public interface ApplicationDAO {
      * @param param 筛选条件
      * @return 应用列表
      */
-    IPage<ApplicationListResult> listByParam(QueryApplicationParam param);
+    IPage<ApplicationListResult> pageByParam(QueryApplicationParam param);
+
+    /**
+     * 同步应用状态时, 分页查询应用列表
+     *
+     * @param pageBaseDTO 分页参数
+     * @return 应用列表
+     */
+    List<ApplicationListResult> pageFromSync(PageBaseDTO pageBaseDTO);
+
+    /**
+     * 根据应用ids, 更新应用状态
+     *
+     * @param applicationIds 应用ids
+     * @param status         状态
+     * @return 是否成功
+     */
+    boolean updateStatusByApplicationIds(Collection<Long> applicationIds, Integer status);
+
+    List<ApplicationDetailResult> getAllApplicationsByField();
+
+    IPage<ApplicationListResultByUpgrade> getApplicationList(QueryApplicationByUpgradeParam param);
+
+    /**
+     * 根据应用名称, 用户id, 获得应用列表
+     *
+     * @param applicationNames 应用名称
+     * @param userId 用户id
+     * @return 应用列表
+     */
+    List<ApplicationListResult> listByApplicationNamesAndUserId(Collection<String> applicationNames, Long userId);
 
 }

@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.dsManage;
 
+import java.util.List;
+
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.entity.DsModelWithBLOBs;
 import com.pamirs.takin.entity.domain.entity.simplify.AppBusinessTableInfo;
@@ -8,16 +10,15 @@ import com.pamirs.takin.entity.domain.vo.dsmanage.DsAgentVO;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DsServerVO;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
-import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
+import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInputV2;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowServerConfigurationOutput;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationDsV2Response;
 import io.shulie.takin.web.common.common.Response;
-
-import java.util.List;
 
 /**
  * @author fanxx
@@ -72,36 +73,38 @@ public interface DsService {
      */
     List<DsServerVO> getShadowDsServerConfigs(String namespace, DsTypeEnum shadowHbaseServer);
 
-    Response dsQueryV2(Long applicationId);
+    List<ApplicationDsV2Response> dsQueryV2(Long applicationId);
 
-    Response dsQueryDetailV2(Long applicationId, Long id, String middlewareType,Boolean isNewData);
+    Response dsQueryDetailV2(Long applicationId, Long id, String middlewareType, Boolean isNewData);
 
     /**
-     *  查询中间件支持的隔离方案
+     * 查询中间件支持的隔离方案
+     *
      * @param middlewareType 中间件类型
-     * @param engName 中间件英文名
+     * @param engName        中间件英文名
      * @return
      */
     List<SelectVO> queryDsType(String middlewareType, String engName);
 
     Response dsUpdateConfig(ApplicationDsUpdateInputV2 updateRequestV2);
 
-    Response dsQueryConfigTemplate(String agentSourceType,Integer dsType,Boolean isNewData,String cacheType,String connectionPool);
+    Response dsQueryConfigTemplate(String agentSourceType, Integer dsType, Boolean isNewData, String cacheType, String connectionPool);
 
     /**
      * 删除
+     *
      * @param id
      * @param middlewareType
      * @param isNewData
      * @return
      */
-    Response dsDeleteV2(Long id,String middlewareType,Boolean isNewData,Long applicationId);
-
+    Response dsDeleteV2(Long id, String middlewareType, Boolean isNewData, Long applicationId);
 
     Response dsCreateConfig(ApplicationDsCreateInputV2 createRequestV2);
 
     /**
      * 获取中间件支持的版本
+     *
      * @param middlewareType
      * @return
      */
@@ -109,9 +112,10 @@ public interface DsService {
 
     /**
      * 获取缓存支持的模式
+     *
      * @return
      */
     List<SelectVO> queryCacheType();
 
-    Response enableConfigV2(Long id,String middlewareType,Boolean isNewData,Long applicationId,Integer status);
+    Response enableConfigV2(Long id, String middlewareType, Boolean isNewData, Long applicationId, Integer status);
 }

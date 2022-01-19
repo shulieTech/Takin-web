@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author shulie
  * @version v1.0
- * @create 2018/6/20 14:50
+ * @date 2018/6/20 14:50
  */
 @Api(tags = "二级链路管理接口")
 @RestController
@@ -57,10 +57,10 @@ public class SecondLinkMntController {
             secondLinkService.saveSecondLink(secondLinkMnt);
             return ResponseOk.create("succeed");
         } catch (TakinModuleException e) {
-            LOGGER.error("SecondLinkMntController.saveSecondLink 添加二级链路信息异常{}", e);
+            LOGGER.error("SecondLinkMntController.saveSecondLink 添加二级链路信息异常", e);
             return ResponseError.create(e.getErrorCode(), e.getErrorMessage());
         } catch (Exception e) {
-            LOGGER.error("SecondLinkMntController.saveSecondLink 添加二级链路信息异常{}", e);
+            LOGGER.error("SecondLinkMntController.saveSecondLink 添加二级链路信息异常", e);
             return ResponseError.create(TakinErrorEnum.CONFCENTER_ADD_SECOND_LINK_EXCEPTION.getErrorCode(),
                 TakinErrorEnum.CONFCENTER_ADD_SECOND_LINK_EXCEPTION.getErrorMessage());
         }
@@ -84,10 +84,10 @@ public class SecondLinkMntController {
         try {
             return ResponseOk.create(secondLinkService.queryLinkList(linkName, baseLinkName, pageNum, pageSize));
         } catch (TakinModuleException e) {
-            LOGGER.error("SecondLinkMntController.queryLinkList 查询二级链路列表异常{}", e);
+            LOGGER.error("SecondLinkMntController.queryLinkList 查询二级链路列表异常", e);
             return ResponseError.create(e.getErrorCode(), e.getErrorMessage());
         } catch (Exception e) {
-            LOGGER.error("SecondLinkMntController.queryLinkList 查询二级链路列表异常{}", e);
+            LOGGER.error("SecondLinkMntController.queryLinkList 查询二级链路列表异常", e);
             return ResponseError.create(TakinErrorEnum.CONFCENTER_QUERY_SECOND_LINKLIST_EXCEPTION.getErrorCode(),
                 TakinErrorEnum.CONFCENTER_QUERY_SECOND_LINKLIST_EXCEPTION.getErrorMessage());
         }
@@ -105,10 +105,10 @@ public class SecondLinkMntController {
         try {
             return ResponseOk.create(secondLinkService.queryLinkMapByLinkId(linkId));
         } catch (TakinModuleException e) {
-            LOGGER.error("SecondLinkMntController.queryLinkByLinkId 查询二级链路详情异常{}", e);
+            LOGGER.error("SecondLinkMntController.queryLinkByLinkId 查询二级链路详情异常", e);
             return ResponseError.create(e.getErrorCode(), e.getErrorMessage());
         } catch (Exception e) {
-            LOGGER.error("SecondLinkMntController.queryLinkByLinkId 查询二级链路详情异常{}", e);
+            LOGGER.error("SecondLinkMntController.queryLinkByLinkId 查询二级链路详情异常", e);
             return ResponseError.create(TakinErrorEnum.CONFCENTER_QUERY_SECOND_LINKDETAIL_EXCEPTION.getErrorCode(),
                 TakinErrorEnum.CONFCENTER_QUERY_SECOND_LINKDETAIL_EXCEPTION.getErrorMessage());
         }
@@ -127,10 +127,10 @@ public class SecondLinkMntController {
             secondLinkService.deleteLinkByLinkIds(linkIds);
             return ResponseOk.create("succeed");
         } catch (TakinModuleException e) {
-            LOGGER.error("SecondLinkMntController.deleteLinkByLinkIds 删除链路信息异常{}", e);
+            LOGGER.error("SecondLinkMntController.deleteLinkByLinkIds 删除链路信息异常", e);
             return ResponseError.create(e.getErrorCode(), e.getErrorMessage());
         } catch (Exception e) {
-            LOGGER.error("SecondLinkMntController.deleteLinkByLinkIds 删除链路信息异常{}", e);
+            LOGGER.error("SecondLinkMntController.deleteLinkByLinkIds 删除链路信息异常", e);
             return ResponseError.create(TakinErrorEnum.CONFCENTER_DELETE_SECOND_LINK_EXCEPTION.getErrorCode(),
                 TakinErrorEnum.CONFCENTER_DELETE_SECOND_LINK_EXCEPTION.getErrorMessage());
         }
@@ -154,10 +154,10 @@ public class SecondLinkMntController {
             secondLinkService.updateLinkinfo(secondLinkMnt);
             return ResponseOk.create("succeed");
         } catch (TakinModuleException e) {
-            LOGGER.error("SecondLinkMntController.updateLinkinfo 添加链路的服务缺失{}", e);
+            LOGGER.error("SecondLinkMntController.updateLinkinfo 添加链路的服务缺失", e);
             return ResponseError.create(e.getErrorCode(), e.getErrorMessage());
         } catch (Exception e) {
-            LOGGER.error("SecondLinkMntController.updateLinkinfo 查询链路等级列表异常{}", e);
+            LOGGER.error("SecondLinkMntController.updateLinkinfo 查询链路等级列表异常", e);
             return ResponseError.create(TakinErrorEnum.CONFCENTER_UPDATE_SECOND_LINKINFO_EXCEPTION.getErrorCode(),
                 TakinErrorEnum.CONFCENTER_UPDATE_SECOND_LINKINFO_EXCEPTION.getErrorMessage());
         }

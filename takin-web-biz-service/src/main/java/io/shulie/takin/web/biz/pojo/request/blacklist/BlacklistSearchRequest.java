@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.pojo.request.blacklist;
 
 import io.shulie.takin.common.beans.page.PagingDevice;
+import io.shulie.takin.web.common.annocation.Trimmed;
+import io.shulie.takin.web.common.annocation.Trimmed.TrimmerType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -20,6 +22,7 @@ public class BlacklistSearchRequest extends PagingDevice {
      * redisKey
      */
     @ApiModelProperty(name = "redisKey", value = "redisKey")
+    @Trimmed(value = TrimmerType.SIMPLE)
     private String redisKey ;
 
 

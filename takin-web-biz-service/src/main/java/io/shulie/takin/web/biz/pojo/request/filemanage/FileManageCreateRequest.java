@@ -36,6 +36,11 @@ public class FileManageCreateRequest implements Serializable {
     private Integer fileType;
 
     /**
+     * 文件MD5值
+     */
+    private String md5;
+
+    /**
      * 脚本内容，前端编辑之后的脚本，需要转化为文件存储到指定目录
      */
     private String scriptContent;

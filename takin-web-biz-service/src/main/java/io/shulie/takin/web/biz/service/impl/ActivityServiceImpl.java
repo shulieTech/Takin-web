@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -13,28 +14,38 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
+import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
+import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
+import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
+import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.scenetask.TaskFlowDebugStartReq;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
 import io.shulie.takin.web.amdb.api.NotifyClient;
 import io.shulie.takin.web.amdb.util.EntranceTypeUtils;
 import io.shulie.takin.web.biz.aspect.ActivityCacheAspect;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
+import io.shulie.takin.web.biz.convert.activity.ActivityServiceConvert;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityInfoQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
@@ -44,6 +55,7 @@ import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
+import io.shulie.takin.web.biz.pojo.response.activity.BusinessApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationEntranceTopologyResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
@@ -51,9 +63,11 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDeta
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.LinkTopologyService;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
+import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.domain.ErrorInfo;
 import io.shulie.takin.web.common.domain.WebResponse;
@@ -64,18 +78,22 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
+import io.shulie.takin.web.data.mapper.mysql.LinkManageTableMapper;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
+import io.shulie.takin.web.data.model.mysql.LinkManageTableEntity;
 import io.shulie.takin.web.data.param.activity.ActivityCreateParam;
 import io.shulie.takin.web.data.param.activity.ActivityExistsQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
 import io.shulie.takin.web.data.param.activity.ActivityUpdateParam;
 import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.data.result.activity.ActivityResult;
+import io.shulie.takin.web.data.result.application.ApplicationListResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
-import io.shulie.takin.web.ext.util.E2ePluginUtils;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -110,37 +128,88 @@ public class ActivityServiceImpl implements ActivityService {
     private ScriptManageService scriptManageService;
     @Autowired
     private SceneManageService sceneManageService;
+    @Autowired
+    private BusinessLinkManageTableMapper businessLinkManageTableMapper;
+    @Autowired
+    private LinkManageTableMapper linkManageTableMapper;
+    @Autowired
+    private ApplicationEntranceClient applicationEntranceClient;
+
+    @Autowired
+    private ApplicationBusinessActivityService applicationBusinessActivityService;
+
+    @Autowired
+    private ApplicationDAO applicationDAO;
 
     @Override
-    @Transactional(rollbackFor = Throwable.class)
-    public void createActivity(ActivityCreateRequest request) {
-        // 检查业务活动是否能入库
-        checkActivity(request);
-        ActivityCreateParam createParam = new ActivityCreateParam();
-        createParam.setActivityName(request.getActivityName());
-        createParam.setEntranceName(request.getServiceName());
-        createParam.setIsChange(false);
-        createParam.setApplicationName(request.getApplicationName());
-        createParam.setType(request.getType());
-        createParam.setActivityLevel(request.getActivityLevel());
-        createParam.setIsCore(request.getIsCore());
-        createParam.setBusinessDomain(request.getBusinessDomain());
-        createParam.setRpcType(request.getRpcType());
-        createParam.setMethod(request.getMethod());
-        createParam.setServiceName(request.getServiceName());
-        createParam.setExtend(request.getExtend());
-        createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
-        createParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
-                request.getRpcType()));
-        activityDAO.createActivity(createParam);
-        notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
-            request.getMethod(), request.getRpcType(), request.getExtend());
+    public List<BusinessApplicationListResponse> listApplicationByBusinessActivityIds(List<Long> businessActivityIds,
+        String applicationName) {
+        // 根据业务活动获得应用名称
+        Set<String> applicationNames = businessActivityIds.stream().map(businessActivityId -> {
+            List<String> businessApplicationNames =
+                applicationBusinessActivityService.processAppNameByBusinessActiveId(businessActivityId);
+
+            // 搜索
+            if (CollectionUtil.isNotEmpty(businessApplicationNames) && StrUtil.isNotBlank(applicationName)) {
+                businessApplicationNames.removeIf(
+                    businessApplicationName -> !businessApplicationName.contains(applicationName));
+            }
+
+            return businessApplicationNames;
+
+        }).filter(CollectionUtil::isNotEmpty).flatMap(Collection::stream).collect(Collectors.toSet());
+        if (applicationNames.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 根据应用名称, 用户id, 获得应用列表
+        List<ApplicationListResult> applicationList = applicationDAO.listByApplicationNamesAndUserId(
+            applicationNames, WebPluginUtils.traceUserId());
+        if (applicationList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return applicationList.stream().map(application -> {
+            BusinessApplicationListResponse response = new BusinessApplicationListResponse();
+            response.setApplicationId(application.getApplicationId().toString());
+            response.setApplicationName(application.getApplicationName());
+            return response;
+        }).collect(Collectors.toList());
     }
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void createActivityWithoutAMDB(ActivityCreateRequest request) {
+    public Long createActivity(ActivityCreateRequest request) {
+        // 检查业务活动是否能入库
+        checkActivity(request);
+        ActivityCreateParam createParam = new ActivityCreateParam();
+        createParam.setActivityName(request.getActivityName());
+        createParam.setEntranceName(request.getServiceName());
+        createParam.setIsChange(false);
+        createParam.setApplicationName(request.getApplicationName());
+        createParam.setType(request.getType());
+        createParam.setActivityLevel(request.getActivityLevel());
+        createParam.setIsCore(request.getIsCore());
+        createParam.setBusinessDomain(request.getBusinessDomain());
+        createParam.setRpcType(request.getRpcType());
+        createParam.setMethod(request.getMethod());
+        createParam.setServiceName(request.getServiceName());
+        createParam.setExtend(request.getExtend());
+        createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+        if (RpcTypeEnum.HTTP.getValue().equals(request.getRpcType())) {
+            request.setServiceName(JmxUtil.pathGuiYi(request.getServiceName()));
+        }
+        createParam.setEntrance(
+            ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
+        activityDAO.createActivity(createParam);
+        notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
+            request.getMethod(), request.getRpcType(), request.getExtend());
+        return createParam.getLinkId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
+    public Long createActivityWithoutAMDB(ActivityCreateRequest request) {
         // 检查业务活动是否能入库
         checkActivity(request);
         ActivityCreateParam createParam = new ActivityCreateParam();
@@ -158,10 +227,9 @@ public class ActivityServiceImpl implements ActivityService {
         createParam.setExtend(request.getExtend());
         createParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
         createParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
-                request.getRpcType()));
+            ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
         createParam.setPersistence(request.isPersistence());
-        activityDAO.createActivity(createParam);
+        return activityDAO.createActivity(createParam);
     }
 
     /**
@@ -171,7 +239,6 @@ public class ActivityServiceImpl implements ActivityService {
      */
     private void checkActivity(ActivityCreateRequest request) {
         ActivityExistsQueryParam param = new ActivityExistsQueryParam();
-        param.setType(request.getType());
         param.setActivityName(request.getActivityName());
         List<Long> exists = activityDAO.exists(param);
         if (CollectionUtils.isNotEmpty(exists)) {
@@ -181,6 +248,8 @@ public class ActivityServiceImpl implements ActivityService {
 
         param.setActivityName(null);
         param.setApplicationName(request.getApplicationName());
+        param.setActivityType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+        param.setType(request.getType());
         param.setEntranceName(request.getServiceName());
         param.setExtend(request.getExtend());
         param.setMethod(request.getMethod());
@@ -195,7 +264,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public void createVirtualActivity(VirtualActivityCreateRequest request) {
+    public Long createVirtualActivity(VirtualActivityCreateRequest request) {
         // 检查虚拟业务活动是否能入库
         checkVirtualActivity(request);
         ActivityCreateParam createParam = new ActivityCreateParam();
@@ -208,11 +277,12 @@ public class ActivityServiceImpl implements ActivityService {
         // rpcType 修改
         createParam.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
         createParam.setEntrance(
-            ActivityUtil.buildVirtualEntrance(request.getVirtualEntrance(),
+            ActivityUtil.buildVirtualEntrance(request.getMethodName(), request.getVirtualEntrance(),
                 EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType()));
         //单独字段存中间软件类型
         createParam.setServerMiddlewareType(request.getType());
         activityDAO.createActivityNew(createParam);
+        return createParam.getLinkId();
     }
 
     private void checkVirtualActivity(VirtualActivityCreateRequest request) {
@@ -224,7 +294,9 @@ public class ActivityServiceImpl implements ActivityService {
                 String.format("保存失败，[名称:%s] 已被使用", request.getActivityName()));
         }
         param = new ActivityExistsQueryParam();
+        param.setActivityType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
         param.setVirtualEntrance(request.getVirtualEntrance());
+        param.setMethod(request.getMethodName());
         // rpc转化
         param.setRpcType(EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType());
         exists = activityDAO.exists(param);
@@ -251,7 +323,7 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setServerMiddlewareType(request.getType());
         // rpcType
         updateParam.setEntrance(
-            ActivityUtil.buildVirtualEntrance(request.getVirtualEntrance(),
+            ActivityUtil.buildVirtualEntrance(request.getMethodName(), request.getVirtualEntrance(),
                 EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType()));
         activityDAO.updateActivityNew(updateParam);
     }
@@ -264,9 +336,11 @@ public class ActivityServiceImpl implements ActivityService {
     private ActivityResult checkVirtualActivityUpdate(VirtualActivityUpdateRequest request) {
         ActivityResult oldActivity = getActivityResult(request.getActivityId(), request.getActivityName());
         ActivityExistsQueryParam param = new ActivityExistsQueryParam();
+        param.setMethod(request.getMethodName());
         param.setVirtualEntrance(request.getVirtualEntrance());
         // rpc转化
         param.setRpcType(EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType());
+        param.setActivityType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
         List<Long> exists = activityDAO.exists(param);
         if (CollectionUtils.isNotEmpty(exists)) {
             Optional<Long> any = exists.stream().filter(item -> !item.equals(request.getActivityId())).findAny();
@@ -333,9 +407,10 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setMethod(request.getMethod());
         updateParam.setServiceName(request.getServiceName());
         updateParam.setExtend(request.getExtend());
-        updateParam.setEntrance(
-            ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(), request.getServiceName(),
-                request.getRpcType()));
+        if (RpcTypeEnum.HTTP.getValue().equals(request.getRpcType())) {
+            request.setServiceName(JmxUtil.pathGuiYi(request.getServiceName()));
+        }
+        updateParam.setEntrance(ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
         // 技术链路id
         updateParam.setLinkId(oldActivity.getLinkId());
         activityDAO.updateActivity(updateParam);
@@ -367,6 +442,7 @@ public class ActivityServiceImpl implements ActivityService {
             param.setMethod(request.getMethod());
             param.setRpcType(request.getRpcType());
             param.setServiceName(request.getServiceName());
+            param.setActivityType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
             List<Long> exists = activityDAO.exists(param);
             if (CollectionUtils.isNotEmpty(exists)) {
                 Optional<Long> any = exists.stream()
@@ -394,8 +470,7 @@ public class ActivityServiceImpl implements ActivityService {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_ACTIVITY, oldActivity.getActivityName());
         OperationLogContextHolder.addVars(Vars.ENTRANCE_TYPE, oldActivity.getType().name());
-        OperationLogContextHolder.addVars(Vars.APPLICATION_NAME, oldActivity.getApplicationName());
-        OperationLogContextHolder.addVars(Vars.SERVICE_NAME, oldActivity.getServiceName());
+        OperationLogContextHolder.addVars(Vars.ENTRANCE, oldActivity.getEntranceName());
         activityDAO.deleteActivity(activityId);
         //记录业务活动删除事件
         redisClientUtils.hmset(Vars.ACTIVITY_DELETE_EVENT,
@@ -415,6 +490,7 @@ public class ActivityServiceImpl implements ActivityService {
         param.setActivityName(request.getActivityName());
         param.setDomain(request.getDomain());
         param.setIsChange(request.getIsChange());
+        param.setLinkLevel(request.getLinkLevel());
         param.setCurrent(request.getCurrent());
         param.setPageSize(request.getPageSize());
         WebPluginUtils.fillQueryParam(param);
@@ -448,13 +524,13 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public ActivityBottleneckResponse getBottleneckByActivityList(
         ApplicationVisualInfoResponse applicationVisualInfoResponse,
-        LocalDateTime startDateTime, LocalDateTime endTime) {
+        LocalDateTime startDateTime, LocalDateTime endTime,Map<String,List<E2eExceptionConfigInfoExt>> bottleneckConfigMap) {
         // 查询 瓶颈阈值 配置
-        List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
-        if (WebPluginUtils.checkUserPlugin() && E2ePluginUtils.checkE2ePlugin()) {
-            bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId(),
-                WebPluginUtils.traceEnvCode());
-        }
+        //List<E2eExceptionConfigInfoExt> bottleneckConfig = Lists.newArrayList();
+        //if (WebPluginUtils.checkUserPlugin() && E2ePluginUtils.checkE2ePlugin()) {
+        //    bottleneckConfig = E2ePluginUtils.getExceptionConfig(WebPluginUtils.traceTenantId(),
+        //        WebPluginUtils.traceEnvCode());
+        //}
 
         ApplicationEntranceTopologyResponse.AppProvider provider
             = new ApplicationEntranceTopologyResponse.AppProvider();
@@ -471,7 +547,7 @@ public class ActivityServiceImpl implements ActivityService {
         provider.setAllSqlTotalRtBottleneckType(rateBottleneckType);
 
         if (applicationVisualInfoResponse.getRequestCount() != 0) { // 如果不是初始值，再计算瓶颈
-            linkTopologyService.computeBottleneck(startDateTime.minusHours(8), null, bottleneckConfig, provider);
+            linkTopologyService.computeBottleneck(startDateTime.minusHours(8), null, bottleneckConfigMap, provider);
         }
 
         ActivityBottleneckResponse activityBottleneckResponse = new ActivityBottleneckResponse();
@@ -507,6 +583,11 @@ public class ActivityServiceImpl implements ActivityService {
         // 非正常业务活动时，直接返回
         if (!activity.getBusinessType().equals(
             BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
+            return activity;
+        }
+
+        // 拓扑图为空（说明没有流量），直接返回
+        if(CollectionUtils.isEmpty(activity.getTopology().getNodes())){
             return activity;
         }
 
@@ -617,7 +698,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setUserName(WebPluginUtils.getUserName(result.getUserId(), userExtMap));
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setActivityLevel(result.getActivityLevel());
-        activityResponse.setIsCore(String.valueOf(result.getIsCore()));
+        activityResponse.setIsCore(result.getIsCore() == null ? "" : result.getIsCore().toString());
         activityResponse.setBusinessDomain(result.getBusinessDomain());
 
         // 拓扑图查询
@@ -669,7 +750,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setRpcType(result.getRpcType());
         activityResponse.setServiceName(result.getServiceName());
         activityResponse.setActivityLevel(result.getActivityLevel());
-        activityResponse.setIsCore(String.valueOf(result.getIsCore()));
+        activityResponse.setIsCore(result.getIsCore() == null ? "" : result.getIsCore().toString());
         activityResponse.setBusinessDomain(result.getBusinessDomain());
         activityResponse.setLinkId(ActivityUtil.createLinkId(result.getServiceName(), result.getMethod(),
             result.getApplicationName(), result.getRpcType(), result.getExtend()));
@@ -753,6 +834,10 @@ public class ActivityServiceImpl implements ActivityService {
             taskFlowDebugStartReq.setUserId(user.getId());
             taskFlowDebugStartReq.setUserName(user.getName());
         }
+        //设置租户
+        taskFlowDebugStartReq.setEnvCode(WebPluginUtils.traceEnvCode());
+        taskFlowDebugStartReq.setTenantId(WebPluginUtils.traceTenantId());
+
         log.info("流量验证参数：{}", taskFlowDebugStartReq);
         Long startResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);
         log.info("流量验证发起结果：{}", startResult.toString());
@@ -777,8 +862,8 @@ public class ActivityServiceImpl implements ActivityService {
         String reportId = redisClientUtils.getString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId);
         //2.根据taskId获取报告状态即任务状态
         if (!StringUtil.isBlank(reportId)) {
-            ReportDetailOutput reportDetailOutput = reportService.getReportByReportId(Long.valueOf(reportId));
-            Integer verifyStatus = reportDetailOutput.getTaskStatus();
+            ReportDetailOutput responseResult = reportService.getReportByReportId(Long.valueOf(reportId));
+            Integer verifyStatus = responseResult.getTaskStatus();
             response.setVerifyStatus(verifyStatus);
             response.setVerifiedFlag(
                 verifyStatus.equals(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFIED));
@@ -814,27 +899,101 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    public List<ActivityListResponse> queryNormalActivities(ActivityResultQueryRequest request) {
+        if (request == null) {
+            return null;
+        }
+        ActivityQueryParam queryParam = new ActivityQueryParam();
+        queryParam.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+        if (StringUtil.isNotEmpty(request.getEntrancePath())) {
+            queryParam.setEntrance(request.getEntrancePath());
+        }
+        if (StringUtil.isNotEmpty(request.getApplicationName())) {
+            queryParam.setApplicationName(request.getApplicationName());
+        }
+
+        List<ActivityListResult> activityList = activityDAO.getActivityList(queryParam);
+        return ActivityServiceConvert.INSTANCE.ofActivityList(activityList);
+    }
+
+    @Override
     public BusinessLinkManageTableEntity getActivityByName(String activityName) {
         return activityDAO.getActivityByName(activityName);
     }
 
     @Override
     public BusinessLinkManageTableEntity getActivity(ActivityCreateRequest request) {
-        String entrance = ActivityUtil.buildEntrance(request.getApplicationName(), request.getMethod(),
-            request.getServiceName(), request.getRpcType());
-        List<Map<String, String>> serviceList = activityDAO.findActivityIdByServiceName(request.getApplicationName(),
+        String entrance = ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType());
+        List<Map<String, String>> serviceList = activityDAO.findActivityByServiceName(request.getApplicationName(),
             entrance);
         if (CollectionUtils.isEmpty(serviceList)) {
             return null;
         }
         BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
-        Map linkNameAndId = serviceList.get(0);
-        businessLinkManageTableEntity.setLinkId(Long.parseLong(linkNameAndId.get("linkId").toString()));
-        businessLinkManageTableEntity.setLinkName(linkNameAndId.get("linkName").toString());
+        Map activityMap = serviceList.get(0);
+        businessLinkManageTableEntity.setLinkId(Long.parseLong(activityMap.get("linkId").toString()));
+        businessLinkManageTableEntity.setLinkName(activityMap.get("linkName").toString());
+        businessLinkManageTableEntity.setPersistence(Objects.equals(activityMap.get("persistence").toString(), "1"));
         return businessLinkManageTableEntity;
     }
 
-    // TODO 变更逻辑后续看如何设计
+    /**
+     * 根据业务活动id,查询关联应用名
+     *
+     * @param activityId
+     * @return
+     */
+    @Override
+    public List<String> processAppNameByBusinessActiveId(Long activityId) {
+        BusinessLinkManageTableEntity businessLinkManageTableEntity =
+                businessLinkManageTableMapper.selectById(activityId);
+        if (businessLinkManageTableEntity == null) {
+            return Lists.newArrayList();
+        }
+        // 虚拟入口 返回数据
+        if (!ActivityUtil.isNormalBusiness(businessLinkManageTableEntity.getType())) {
+            return Lists.newArrayList();
+        }
+
+        LinkManageTableEntity linkManageTableEntity =
+                linkManageTableMapper.selectById(businessLinkManageTableEntity.getRelatedTechLink());
+        if (linkManageTableEntity == null) {
+            return Lists.newArrayList();
+        }
+
+        String features = linkManageTableEntity.getFeatures();
+        if (StrUtil.isBlank(features)) {
+            return new ArrayList<>(0);
+        }
+
+        Map<String, String> map = JSON.parseObject(features, Map.class);
+        if (CollectionUtil.isEmpty(map)) {
+            return new ArrayList<>(0);
+        }
+
+        String serviceName = map.get(FeaturesConstants.SERVICE_NAME_KEY);
+        String methodName = map.get(FeaturesConstants.METHOD_KEY);
+        String rpcType = map.get(FeaturesConstants.RPC_TYPE_KEY);
+        String extend = map.get(FeaturesConstants.EXTEND_KEY);
+        LinkTopologyDTO applicationEntrancesTopology = applicationEntranceClient.getApplicationEntrancesTopology(
+                false, linkManageTableEntity.getApplicationName(), null, serviceName, methodName,
+                rpcType, extend);
+        if (applicationEntrancesTopology == null || CollectionUtils.isEmpty(applicationEntrancesTopology.getNodes())) {
+            return new ArrayList<>(Collections.singleton(linkManageTableEntity.getApplicationName()));
+        }
+        return applicationEntrancesTopology.getNodes().stream()
+                .filter(node -> node.getNodeType().equals(NodeTypeEnum.APP.getType()))
+                .map(LinkNodeDTO::getNodeName)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * TODO 变更逻辑后续看如何设计
+     *
+     * @param oldActivity 旧业务活动
+     * @param newActivity 新业务活动
+     * @return 是否变更
+     */
     private boolean isChange(ActivityResult oldActivity, ActivityUpdateRequest newActivity) {
         return false;
     }

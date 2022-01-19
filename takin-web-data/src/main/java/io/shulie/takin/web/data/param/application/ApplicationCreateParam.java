@@ -3,10 +3,13 @@ package io.shulie.takin.web.data.param.application;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.pamirs.takin.common.util.LongToStringFormatSerialize;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import com.pamirs.takin.common.util.LongToStringFormatSerialize;
+
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 
 /**
  * @author fanxx
@@ -68,13 +71,11 @@ public class ApplicationCreateParam extends UserCommonExt {
     private String alarmPerson;
     private String pradarVersion;
 
-
     /**
      * 2018年5月17日
      *
      * @return 实体字符串
      * @author shulie
-     * @version 1.0
      */
     @Override
     public String toString() {
@@ -100,7 +101,6 @@ public class ApplicationCreateParam extends UserCommonExt {
      *
      * @return hashCode
      * @author shulie
-     * @version 1.0
      */
     @Override
     public int hashCode() {
@@ -119,7 +119,6 @@ public class ApplicationCreateParam extends UserCommonExt {
      *
      * @return true相等 false不相等
      * @author shulie
-     * @version 1.0
      */
     @Override
     public boolean equals(Object obj) {
@@ -145,6 +144,5 @@ public class ApplicationCreateParam extends UserCommonExt {
         }
         return true;
     }
-
 
 }

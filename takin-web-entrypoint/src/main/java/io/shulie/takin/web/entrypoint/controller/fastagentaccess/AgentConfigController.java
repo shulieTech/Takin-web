@@ -18,6 +18,7 @@ import io.shulie.takin.web.biz.pojo.response.fastagentaccess.AgentConfigStatusCo
 import io.shulie.takin.web.biz.pojo.response.fastagentaccess.PluginLoadListResponse;
 import io.shulie.takin.web.biz.service.fastagentaccess.AgentConfigService;
 import io.shulie.takin.web.biz.service.fastagentaccess.AmdbManageService;
+import io.shulie.takin.web.common.annocation.Trimmed;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.swagger.annotations.Api;
@@ -67,7 +68,7 @@ public class AgentConfigController {
         moduleCode = ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public List<String> allApplication(@RequestParam(required = false) String keyword) {
+    public List<String> allApplication(@RequestParam(required = false) @Trimmed(value = Trimmed.TrimmerType.SIMPLE) String keyword) {
         return agentConfigService.getAllApplication(keyword);
     }
 

@@ -5,10 +5,11 @@ import java.util.Date;
 import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
-import io.shulie.takin.cloud.common.bean.scenemanage.StopReasonBean;
 import io.shulie.takin.cloud.common.bean.scenemanage.WarnBean;
-import io.shulie.takin.cloud.common.bean.sla.SlaBean;
-import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.sdk.model.ScriptNodeSummaryBean;
+import io.shulie.takin.cloud.sdk.model.common.SlaBean;
+import io.shulie.takin.cloud.sdk.model.common.StopReasonBean;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.BusinessActivitySummaryBean;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -100,11 +101,13 @@ public class ReportDetailOutput extends UserCommonExt {
     @ApiModelProperty(value = "业务活动链路概览")
     private List<BusinessActivitySummaryBean> businessActivity;
 
-
+    @ApiModelProperty(value = "节点链路详情")
+    private List<ScriptNodeSummaryBean> nodeDetail;
 
     @ApiModelProperty(name = "leakVerifyResult", value = "漏数验证结果")
     private LeakVerifyResult leakVerifyResult;
 
-
+    @ApiModelProperty("是否存在JTL文件")
+    private boolean hasJtl;
 
 }

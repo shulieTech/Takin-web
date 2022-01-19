@@ -23,7 +23,7 @@ public class PressureSwitchConfigAgentCache extends AbstractAgentConfigCache<App
     }
 
     /**
-     * 白名单开关，如果缓存中不存在，去数据库查
+     * 压测开关，如果缓存中不存在，去数据库查
      */
     @Override
     protected ApplicationSwitchStatusDTO queryValue(String namespace) {

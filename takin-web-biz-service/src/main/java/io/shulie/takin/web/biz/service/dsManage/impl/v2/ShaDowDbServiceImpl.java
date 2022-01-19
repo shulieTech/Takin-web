@@ -2,7 +2,7 @@ package io.shulie.takin.web.biz.service.dsManage.impl.v2;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.pamirs.attach.plugin.dynamic.Converter;
+import com.pamirs.attach.plugin.dynamic.one.Converter;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import io.shulie.takin.web.biz.convert.db.parser.DbTemplateParser;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInputV2;
@@ -71,7 +71,7 @@ public class ShaDowDbServiceImpl extends AbstractShaDowManageService {
     public void createShadowProgramme(ApplicationDsCreateInputV2 inputV2,Boolean isJson) {
         //去重校验
         ApplicationDsDbManageDetailResult result = dbManageDAO.selectOne(inputV2.getApplicationName(),
-                inputV2.getUrl(), inputV2.getUserName(),inputV2.getConnectionPool());
+                inputV2.getUrl(), inputV2.getUsername(),inputV2.getConnectionPool());
         if(Objects.nonNull(result)){
             throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_CREATE_ERROR,"业务数据源已存在");
         }

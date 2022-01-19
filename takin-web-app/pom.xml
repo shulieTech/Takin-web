@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.1.0.5</version>
+        <version>takin-web-5.2.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-app</artifactId>
@@ -155,8 +155,8 @@
                     <groupId>com.netflix.curator</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>log4j-api</artifactId>
                     <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -182,20 +182,20 @@
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
                     <artifactId>log4j-api</artifactId>
-                    <groupId>org.apache.logging.log4j</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
                     <artifactId>log4j-to-slf4j</artifactId>
-                    <groupId>org.apache.logging.log4j</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>jul-to-slf4j</artifactId>
                     <groupId>org.slf4j</groupId>
+                    <artifactId>jul-to-slf4j</artifactId>
                 </exclusion>
                 <exclusion>
                     <artifactId>spring-boot-starter-logging</artifactId>
@@ -260,12 +260,6 @@
             <artifactId>knife4j-spring-boot-starter</artifactId>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>swagger-bootstrap-ui</artifactId>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>com.dangdang</groupId>
             <artifactId>elastic-job-lite-core</artifactId>
@@ -293,7 +287,6 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
@@ -318,7 +311,7 @@
         </dependency>
 
         <dependency>
-           <groupId>io.shulie</groupId>
+            <groupId>io.shulie</groupId>
             <artifactId>tesla-sequence</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -340,6 +333,10 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>

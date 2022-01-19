@@ -69,8 +69,8 @@ import com.pamirs.takin.entity.domain.vo.TUploadInterfaceDataVo;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
 import io.shulie.takin.web.biz.common.CommonService;
-import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
-import io.shulie.takin.web.biz.service.linkManage.impl.WhiteListFileService;
+import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
+import io.shulie.takin.web.biz.service.linkmanage.impl.WhiteListFileService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
@@ -321,7 +321,7 @@ public class ConfCenterService extends CommonService {
      * @return 应用对象
      * @author shulie
      */
-    public ApplicationDetailResult queryApplicationinfoById(long applicationId) {
+    public ApplicationDetailResult queryApplicationInfoById(long applicationId) {
         return applicationDAO.getApplicationById(applicationId);
     }
 
@@ -332,7 +332,7 @@ public class ConfCenterService extends CommonService {
      * @return 应用对象
      * @author JasonYan
      */
-    public ApplicationDetailResult queryApplicationinfoByIdAndRole(long applicationId) {
+    public ApplicationDetailResult queryApplicationInfoByIdAndRole(long applicationId) {
         ApplicationDetailResult tApplicationMnt = applicationDAO.getApplicationById(applicationId);
         return tApplicationMnt;
     }
@@ -344,7 +344,7 @@ public class ConfCenterService extends CommonService {
      * @author shulie
      */
     @Transactional(rollbackFor = Exception.class)
-    public String deleteApplicationinfoByIds(String applicationIds) {
+    public String deleteApplicationInfoByIds(String applicationIds) {
         GetDeleteIds deleteIds = new GetDeleteIds(applicationIds, "applicationName").invoke(applicationDAO);
         List<Long> ableDeleteApplicationList = deleteIds.getAbleDeleteList();
         if (!ableDeleteApplicationList.isEmpty()) {
@@ -425,7 +425,7 @@ public class ConfCenterService extends CommonService {
             TakinFileUtil.recursiveDeleteFile(new File(getBasePath() + originApplicationName));
             TakinFileUtil.createFile(getBasePath() + tApplicationMnt.getApplicationName());
         }
-        applicationDAO.updateApplicationinfo(tApplicationMnt);
+        applicationDAO.updateApplicationInfo(tApplicationMnt);
         //之所以这里要多维护一次是因为 agent也要使用这个表的applicationName
         updatePlugins(tApplicationMnt);
 
@@ -1786,7 +1786,7 @@ public class ConfCenterService extends CommonService {
             log.warn("应用查询异常，未查到, updateAppAgentVersion fail!");
             return;
         }
-        applicationDAO.updateApplicaionAgentVersion(applicationMnt.getApplicationId(), agentVersion, pradarVersion);
+        applicationDAO.updateApplicationAgentVersion(applicationMnt.getApplicationId(), agentVersion, pradarVersion);
     }
 
     /**

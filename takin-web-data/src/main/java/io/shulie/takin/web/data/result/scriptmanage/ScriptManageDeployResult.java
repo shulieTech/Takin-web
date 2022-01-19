@@ -82,4 +82,9 @@ public class ScriptManageDeployResult {
      * 用户id
      */
     private Long userId;
+
+    /**
+     * 脚本版本
+     */
+    private Integer mVersion;
 }

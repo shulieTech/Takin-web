@@ -8,12 +8,11 @@ import com.pamirs.takin.common.util.LongToStringFormatSerialize;
 import lombok.Data;
 
 /**
-* @Package io.shulie.takin.web.biz.pojo.request.application
-* @ClassName: ApplicationCreateRequest
-* @author hezhongqi
-* @description:
-* @date 2021/12/1 16:46
-*/
+ * TODO
+ *
+ * @author hezhongqi
+ * @date 2021/12/1 16:46
+ */
 @Data
 public class ApplicationCreateRequest {
 
@@ -82,7 +81,6 @@ public class ApplicationCreateRequest {
      *
      * @return 实体字符串
      * @author shulie
-     * @version 1.0
      */
     @Override
     public String toString() {
@@ -108,7 +106,6 @@ public class ApplicationCreateRequest {
      *
      * @return hashCode
      * @author shulie
-     * @version 1.0
      */
     @Override
     public int hashCode() {
@@ -127,7 +124,6 @@ public class ApplicationCreateRequest {
      *
      * @return true相等 false不相等
      * @author shulie
-     * @version 1.0
      */
     @Override
     public boolean equals(Object obj) {

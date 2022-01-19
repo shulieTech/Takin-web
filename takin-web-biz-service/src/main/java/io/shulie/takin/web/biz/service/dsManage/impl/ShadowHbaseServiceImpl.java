@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
@@ -16,6 +18,8 @@ import io.shulie.takin.web.biz.pojo.output.application.ApplicationDsDetailOutput
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.dsManage.AbstractDsService;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDAO;
@@ -25,32 +29,27 @@ import io.shulie.takin.web.data.param.application.ApplicationDsEnableParam;
 import io.shulie.takin.web.data.param.application.ApplicationDsUpdateParam;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationDsResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
+ * Hbase数据源存储服务
+ *
  * @author HengYu
- * @className ShadowHbaseServiceImpl
  * @date 2021/4/12 9:25 下午
- * @description Hbase数据源存储服务
  */
+@Slf4j
 @Component
 public class ShadowHbaseServiceImpl extends AbstractDsService {
 
-    private Logger logger = LoggerFactory.getLogger(ShadowDbServiceImpl.class);
-
-    @Autowired
-    private ApplicationService applicationService;
-
-    @Autowired
-    private ApplicationDsDAO applicationDsDAO;
-
-    @Autowired
+    @Resource
     private ApplicationDAO applicationDAO;
-
-    @Autowired
+    @Resource
+    private ApplicationDsDAO applicationDsDAO;
+    @Resource
+    private ApplicationService applicationService;
+    @Resource
     private AgentConfigCacheManager agentConfigCacheManager;
 
     @Override
@@ -59,7 +58,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
         ApplicationDetailResult applicationDetailResult = applicationDAO.getApplicationById(
             createRequest.getApplicationId());
 
-        logger.warn("应用不存在! id:{}", createRequest.getApplicationId());
+        log.warn("应用不存在! id:{}", createRequest.getApplicationId());
         if (applicationDetailResult == null) {
             return Response.fail("应用不存在!");
         }
@@ -106,20 +105,24 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
     }
 
     private Map<String, Object> parseConfig(String config) {
-        return JSON.parseObject(config, Map.class);
+        try {
+            return JSON.parseObject(config, Map.class);
+        } catch (Throwable e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_CONFIG_FILE_VALIDATE_ERROR, "JSON 格式解析出错！请检查格式是否正确！");
+        }
     }
 
     private Response validator(Map<String, Object> map) {
         if (map == null) {
             String msg = "数据源格式配置不正确!";
-            logger.warn(msg);
+            log.warn(msg);
             return Response.fail(msg);
         }
         Object dataSourceBusiness = map.get("dataSourceBusiness");
         Object dataSourcePerformanceTest = map.get("dataSourcePerformanceTest");
         if (dataSourceBusiness == null || dataSourcePerformanceTest == null) {
             String msg = "数据源格式配置不正确!";
-            logger.warn(msg);
+            log.warn(msg);
             return Response.fail(msg);
         }
         return null;
@@ -154,8 +157,7 @@ public class ShadowHbaseServiceImpl extends AbstractDsService {
 
     private String formatUrl(Map<String, Object> map) {
         Map<String, String> dataSourceBusinessObj = (Map<String, String>)map.get("dataSourceBusiness");
-        String quorum = dataSourceBusinessObj.get("quorum");
-        return quorum;
+        return dataSourceBusinessObj.get("quorum");
     }
 
     @Override

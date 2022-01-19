@@ -76,4 +76,29 @@ public class SceneLinkRelateEntity extends TenantBaseEntity {
      */
     @TableField(value = "FRONT_UUID_KEY")
     private String frontUuidKey;
+
+    /**
+     * 脚本请求路径标识
+     */
+    @TableField(value = "script_identification")
+    private String scriptIdentification;
+
+    /**
+     * 脚本路径的MD5
+     */
+    @TableField(value = "script_xpath_md5")
+    private String scriptXpathMd5;
+
+    ///**
+    // * 租户id
+    // */
+    //@TableField(value = "tenant_id")
+    //private Long tenantId;
+    //
+    ///**
+    // * 环境
+    // */
+    //@TableField(value = "env_code")
+    //private String envCode;
+
 }

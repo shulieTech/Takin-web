@@ -46,4 +46,17 @@ public class ApplicationShadowJobDAOImpl implements ApplicationShadowJobDAO {
         }
         return 0;
     }
+
+    @Override
+    public Boolean exist(ShadowJobCreateParam param) {
+        LambdaQueryWrapper<ShadowJobConfigEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ShadowJobConfigEntity::getApplicationId, param.getApplicationId());
+        queryWrapper.eq(ShadowJobConfigEntity::getType, param.getType());
+        queryWrapper.eq(ShadowJobConfigEntity::getName, param.getName());
+        if(param.getId() != null ) {
+            queryWrapper.ne(ShadowJobConfigEntity::getId, param.getId());
+        }
+        queryWrapper.eq(ShadowJobConfigEntity::getIsDeleted, false);
+        return shadowJobConfigMapper.selectCount(queryWrapper) > 0;
+    }
 }

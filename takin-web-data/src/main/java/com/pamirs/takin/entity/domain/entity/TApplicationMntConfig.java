@@ -109,7 +109,7 @@ public class TApplicationMntConfig extends BaseEntity {
      * This method sets the value of the database column t_application_mnt_config.CHEAT_CHECK
      *
      * @param cheatCheck the value for t_application_mnt_config.CHEAT_CHECK
-     * @mbggenerated
+     * @mbg generated
      */
     public void setCheatCheck(Integer cheatCheck) {
         this.cheatCheck = cheatCheck;
@@ -120,7 +120,7 @@ public class TApplicationMntConfig extends BaseEntity {
      * This method returns the value of the database column t_application_mnt_config.CREATE_TIME
      *
      * @return the value of t_application_mnt_config.CREATE_TIME
-     * @mbggenerated
+     * @mbg generated
      */
     public Date getCreateTime() {
         return createTime;
@@ -131,7 +131,7 @@ public class TApplicationMntConfig extends BaseEntity {
      * This method sets the value of the database column t_application_mnt_config.CREATE_TIME
      *
      * @param createTime the value for t_application_mnt_config.CREATE_TIME
-     * @mbggenerated
+     * @mbg generated
      */
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
@@ -142,7 +142,7 @@ public class TApplicationMntConfig extends BaseEntity {
      * This method returns the value of the database column t_application_mnt_config.UPDATE_TIME
      *
      * @return the value of t_application_mnt_config.UPDATE_TIME
-     * @mbggenerated
+     * @mbg generated
      */
     @Override
     public Date getUpdateTime() {
@@ -154,7 +154,7 @@ public class TApplicationMntConfig extends BaseEntity {
      * This method sets the value of the database column t_application_mnt_config.UPDATE_TIME
      *
      * @param updateTime the value for t_application_mnt_config.UPDATE_TIME
-     * @mbggenerated
+     * @mbg generated
      */
     @Override
     public void setUpdateTime(Date updateTime) {

@@ -60,4 +60,13 @@ public interface SceneTaskApi {
     ResponseResult<SceneStartCheckResp> sceneStartPreCheck(SceneStartPreCheckReq checkReq);
 
     ResponseResult<Boolean> callBackToWriteBalance(ScriptAssetBalanceReq req);
+
+    /**
+     * 启动中关闭调试
+     *
+     * @param req 入参
+     * @return 结果
+     */
+    ResponseResult<?> preStopTask(SceneManageIdReq req);
+
 }

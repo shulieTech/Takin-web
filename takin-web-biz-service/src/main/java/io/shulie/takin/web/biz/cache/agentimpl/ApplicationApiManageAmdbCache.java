@@ -1,13 +1,16 @@
 package io.shulie.takin.web.biz.cache.agentimpl;
 
-import java.util.List;
 import java.util.Map;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Component;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import io.shulie.takin.web.biz.cache.AbstractAgentConfigCache;
-import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
+import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
 
 /**
  * @author shiyajian
@@ -18,7 +21,7 @@ public class ApplicationApiManageAmdbCache extends AbstractAgentConfigCache<Map<
 
     public static final String CACHE_NAME = "t:a:c:app:api";
 
-    @Autowired
+    @Resource
     private ApplicationApiService applicationApiService;
 
     public ApplicationApiManageAmdbCache(@Autowired RedisTemplate redisTemplate) {

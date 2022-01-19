@@ -77,6 +77,25 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
     List<AppRemoteCallResult> getList(AppRemoteCallQueryParam param);
 
     /**
+     * 查询数据 无租户
+     *
+     * @return
+     */
+    List<AppRemoteCallEntity> getListWithOutTenant();
+
+    /**
+     * 批量更新
+     * @param entities
+     */
+    void updateWithOutTenant(List<AppRemoteCallEntity> entities);
+
+    /**
+     * 查询数据 md5
+     * @return
+     */
+    List<String> getRemoteCallMd5(AppRemoteCallQueryParam param);
+
+    /**
      * 查询数据
      *
      * @return
@@ -97,6 +116,7 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
 
     /**
      * 查询总记录数
+     *
      * @param param
      * @return
      */
@@ -104,12 +124,13 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
 
     /**
      * 数据查询分片
+     *
      * @param param
      * @param start
      * @param size
      * @return
      */
-    List<AppRemoteCallResult> getPartRecord(AppRemoteCallQueryParam param,long start,int size);
+    List<AppRemoteCallResult> getPartRecord(AppRemoteCallQueryParam param, long start, int size);
 
     /**
      * 批量配置
@@ -120,24 +141,26 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
      */
     List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList);
 
-
     /**
      * 根据id 批量逻辑删除
+     *
      * @param ids
      */
     void batchLogicDelByIds(List<Long> ids);
 
     /**
      * 批量保存
+     *
      * @param list
      */
     void batchSave(List<AppRemoteCallResult> list);
 
     /**
      * 查询全部有效的记录
+     *
      * @return
      */
     List<AppRemoteCallResult> getAllRecord();
 
-    AppRemoteCallResult queryOne(String appName,Integer interfaceType,String interfaceName);
+    AppRemoteCallResult queryOne(String appName, Integer interfaceType, String interfaceName);
 }

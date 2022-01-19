@@ -1,17 +1,19 @@
 package io.shulie.takin.web.app.conf;
 
 import com.dangdang.ddframe.job.event.JobEventConfiguration;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+
+import io.shulie.takin.job.parser.JobConfParser;
 import io.shulie.takin.job.ElasticJobProperties;
 import io.shulie.takin.job.ElasticRegCenterConfig;
 import io.shulie.takin.job.config.ElasticJobConfig;
 import io.shulie.takin.job.config.zk.ZkClientConfig;
 import io.shulie.takin.job.factory.SpringJobSchedulerFactory;
-import io.shulie.takin.job.parser.JobConfParser;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * @author 无涯
@@ -40,7 +42,7 @@ public class ElasticJobAutoConfig {
     }
 
     @Bean
-    public JobConfParser jobConfParser(SpringJobSchedulerFactory springJobSchedulerFactory){
+    public JobConfParser jobConfParser(SpringJobSchedulerFactory springJobSchedulerFactory) {
         return new JobConfParser(springJobSchedulerFactory);
     }
 }

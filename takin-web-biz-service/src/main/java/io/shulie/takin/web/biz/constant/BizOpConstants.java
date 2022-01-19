@@ -156,13 +156,23 @@ public final class BizOpConstants {
         public static final String MESSAGE_BUSINESS_ACTIVITY_CREATE = "message.business_activity.create";
         public static final String MESSAGE_BUSINESS_ACTIVITY_DELETE = "message.business_activity.delete";
         public static final String MESSAGE_BUSINESS_ACTIVITY_UPDATE = "message.business_activity.update";
+        /**
+         * 虚拟业务活动
+         */
+        public static final String MESSAGE_VIRTUAL_BUSINESS_ACTIVITY_CREATE = "message.virtual.business_activity.create";
+        public static final String MESSAGE_VIRTUAL_BUSINESS_ACTIVITY_UPDATE = "message.virtual.business_activity.update";
+
+
 
         /**
          * 业务流程
          */
         public static final String MESSAGE_BUSINESS_PROCESS_CREATE = "message.business_process.create";
+        public static final String MESSAGE_BUSINESS_PROCESS_CREATE2 = "message.business_process.create2";
         public static final String MESSAGE_BUSINESS_PROCESS_DELETE = "message.business_process.delete";
         public static final String MESSAGE_BUSINESS_PROCESS_UPDATE = "message.business_process.update";
+        public static final String MESSAGE_BUSINESS_FLOW = "message.business_flow.update";
+        public static final String MESSAGE_BUSINESS_PROCESS_UPDATEFile = "message.business_process.updatefile";
 
         /**
          * 基础信息
@@ -272,6 +282,11 @@ public final class BizOpConstants {
         public static final String SCRIPT_MANAGE_CREATE = "message.script_manage.create";
         public static final String SCRIPT_MANAGE_UPDATE = "message.script_manage.update";
         public static final String SCRIPT_MANAGE_DELETE = "message.script_manage.delete";
+        /**
+         * 脚本调试
+         */
+        public static final String SCRIPT_MANAGE_DEBUG = "message.script_manage.debug";
+
 
         public static final String SCRIPT_MANAGE_SCRIPTID_DELETE = "message.script_manage.scriptId.delete";
         public static final String SCRIPT_MANAGE_EXECUTE = "message.script_manage.execute";
@@ -361,6 +376,13 @@ public final class BizOpConstants {
         public static final String VIRTUAL_ENTRANCE = "virtualEntrance";
 
         /**
+         * 正常入口
+         */
+        public static final String ENTRANCE = "entrance";
+
+
+
+        /**
          * 绑定业务活动id
          */
         public static final String BIND_BUSINESS_ID = "bindBusinessId";
@@ -381,7 +403,14 @@ public final class BizOpConstants {
          * 业务活动
          */
         public static final String BUSINESS_ACTIVITY = "businessActivity";
-
+        /**
+         * 业务流程id
+         */
+        public static final String BUSINESS_FLOW_ID = "businessFlowId";
+        /**
+         * 业务流程名称
+         */
+        public static final String BUSINESS_FLOW_NAME = "businessFlowName";
         /**
          * 业务流程
          */
@@ -398,6 +427,11 @@ public final class BizOpConstants {
         public static final String SHADOW_DATABASE_TABLE_URL = "shadowDatabaseTableURL";
 
         /**
+         * 影子库表url
+         */
+        public static final String SHADOW_DATABASE_TABLE_JSON = "shadowDatabaseTableJSON";
+
+        /**
          * 类名#方法名
          */
         public static final String CLASS_METHOD_NAME = "classMethodName";
@@ -408,6 +442,11 @@ public final class BizOpConstants {
         public static final String TASK = "task";
 
         /**
+         * 任务内容
+         */
+        public static final String TASKConfig = "taskConfig";
+
+        /**
          * 入口规则
          */
         public static final String ENTRY_API = "entryApi";
@@ -416,6 +455,7 @@ public final class BizOpConstants {
          * 场景ID
          */
         public static final String SCENE_ID = "sceneId";
+
 
         /**
          * 场景名称
@@ -490,6 +530,12 @@ public final class BizOpConstants {
          * 运维脚本名称
          */
         public static final String OPS_SCRIPT_NAME = "opsScriptName";
+
+        /**
+         * 插件管理
+         */
+        public static final String APP_PLUGIN_KEY = "appPluginKey";
+        public static final String APP_PLUGIN_VALUE = "appPluginValue";
 
         public static final String ACTIVITY_DELETE_EVENT = "activity_delete_event";
 

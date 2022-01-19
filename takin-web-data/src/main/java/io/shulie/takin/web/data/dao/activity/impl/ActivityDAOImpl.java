@@ -69,19 +69,25 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             .select(BusinessLinkManageTableEntity::getLinkId)
             .eq(StrUtil.isNotBlank(param.getActivityName()),
                 BusinessLinkManageTableEntity::getLinkName, param.getActivityName())
+            .eq(param.getActivityType() != null,
+                BusinessLinkManageTableEntity::getType, param.getType())
             .eq(StrUtil.isNotBlank(param.getServiceName()),
-                BusinessLinkManageTableEntity::getEntrace, ActivityUtil.buildEntrance(param.getApplicationName(),
-                    param.getMethod(), param.getServiceName(), param.getRpcType()))
+                BusinessLinkManageTableEntity::getEntrace, ActivityUtil.buildEntrance(param.getMethod(), param.getServiceName(),
+                    param.getRpcType()))
             .eq(StrUtil.isNotBlank(param.getVirtualEntrance()), BusinessLinkManageTableEntity::getEntrace,
-                ActivityUtil.buildVirtualEntrance(param.getVirtualEntrance(), param.getRpcType()))
+                ActivityUtil.buildVirtualEntrance(param.getMethod(), param.getVirtualEntrance(), param.getRpcType()))
+            .eq(StrUtil.isNotBlank(param.getApplicationName()),
+                BusinessLinkManageTableEntity::getApplicationName, param.getApplicationName())
             .eq(BusinessLinkManageTableEntity::getIsDeleted, 0)
+            // 自动建立的过滤
+            .eq(BusinessLinkManageTableEntity::isPersistence,true)
             .eq(BusinessLinkManageTableEntity::getTenantId, WebPluginUtils.traceTenantId())
             .eq(BusinessLinkManageTableEntity::getEnvCode, WebPluginUtils.traceEnvCode());
         return DataTransformUtil.list2list(businessLinkManageTableMapper.selectObjs(wrapper), Long.class);
     }
 
     @Override
-    public int createActivity(ActivityCreateParam param) {
+    public Long createActivity(ActivityCreateParam param) {
         // 兼容老版本,先创建技术链路
         LinkManageTableEntity linkManageTableEntity = new LinkManageTableEntity();
         linkManageTableEntity.setLinkName(param.getActivityName());
@@ -102,14 +108,14 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         linkManageTableEntity.setPersistence(param.isPersistence());
 
         // 再创建业务链路
-        int insert1 = linkManageTableMapper.insert(linkManageTableEntity);
+        linkManageTableMapper.insert(linkManageTableEntity);
         param.setEntrance(param.getEntrance());
         param.setLinkId(linkManageTableEntity.getLinkId());
-        return insert1 & createActivityNew(param);
+        return createActivityNew(param);
     }
 
     @Override
-    public int createActivityNew(ActivityCreateParam param) {
+    public Long createActivityNew(ActivityCreateParam param) {
         BusinessLinkManageTableEntity businessLinkManageTableEntity = new BusinessLinkManageTableEntity();
         businessLinkManageTableEntity.setLinkName(param.getActivityName());
         businessLinkManageTableEntity.setEntrace(param.getEntrance());
@@ -127,6 +133,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         businessLinkManageTableEntity.setIsDeleted(0);
         businessLinkManageTableEntity.setUserId(param.getUserId());
         businessLinkManageTableEntity.setCanDelete(0);
+        businessLinkManageTableEntity.setApplicationName(param.getApplicationName());
         if (null != param.getServerMiddlewareType()) {
             businessLinkManageTableEntity.setServerMiddlewareType(param.getServerMiddlewareType().getType());
         }
@@ -137,7 +144,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             businessLinkManageTableEntity.setBindBusinessId(param.getBindBusinessId());
         }
         businessLinkManageTableEntity.setPersistence(param.isPersistence());
-        return businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
+        businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
+        param.setLinkId(businessLinkManageTableEntity.getLinkId());
+        return businessLinkManageTableEntity.getLinkId();
     }
 
     @Override
@@ -171,12 +180,11 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             result.setLinkId(Long.parseLong(relatedTechLink));
             EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(
                 businessLinkManageTableEntity.getEntrace());
-            result.setApplicationName(entranceJoinEntity.getApplicationName());
             // entranceName
             result.setEntranceName(entranceJoinEntity.getServiceName());
             Map<String, String> features = new HashMap<>(16);
             if (StringUtils.isNotBlank(linkManageTableEntity.getFeatures())) {
-                features = JsonUtil.json2bean(linkManageTableEntity.getFeatures(), Map.class);
+                features = JsonUtil.json2Bean(linkManageTableEntity.getFeatures(), Map.class);
             }
 
             result.setExtend(features.get(FeaturesConstants.EXTEND_KEY));
@@ -209,6 +217,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         result.setActivityLevel(businessLinkManageTableEntity.getLinkLevel());
         result.setIsCore(businessLinkManageTableEntity.getIsCore());
         result.setBusinessDomain(businessLinkManageTableEntity.getBusinessDomain());
+        result.setApplicationName(businessLinkManageTableEntity.getApplicationName());
         return result;
     }
 
@@ -252,15 +261,10 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     public int updateActivityNew(ActivityUpdateParam updateParam) {
         BusinessLinkManageTableEntity businessLinkManageTableEntity = businessLinkManageTableMapper.selectById(
             updateParam.getActivityId());
-        if (StringUtils.isNotBlank(updateParam.getActivityLevel())) {
-            businessLinkManageTableEntity.setLinkLevel(updateParam.getActivityLevel());
-        }
-        if (StringUtils.isNotBlank(updateParam.getBusinessDomain())) {
-            businessLinkManageTableEntity.setBusinessDomain(updateParam.getBusinessDomain());
-        }
-        if (updateParam.getIsCore() != null) {
-            businessLinkManageTableEntity.setIsCore(updateParam.getIsCore());
-        }
+        //可以被修改为空
+        businessLinkManageTableEntity.setLinkLevel(updateParam.getActivityLevel());
+        businessLinkManageTableEntity.setBusinessDomain(updateParam.getBusinessDomain());
+        businessLinkManageTableEntity.setIsCore(updateParam.getIsCore());
         if (updateParam.getEntrance() != null) {
             businessLinkManageTableEntity.setEntrace(updateParam.getEntrance());
         }
@@ -311,6 +315,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         if (param.getIsChange() != null) {
             lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsChange, param.getIsChange());
         }
+        if (Objects.nonNull(param.getLinkLevel())) {
+            lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getLinkLevel, param.getLinkLevel());
+        }
         if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
             lambdaQueryWrapper.in(BusinessLinkManageTableEntity::getUserId, param.getUserIdList());
         }
@@ -321,7 +328,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             .selectPage(page, lambdaQueryWrapper);
 
         if (CollectionUtils.isEmpty(tableEntityPage.getRecords())) {
-            return PagingList.of(Lists.newArrayList(),tableEntityPage.getTotal());
+            return PagingList.of(Lists.newArrayList(), tableEntityPage.getTotal());
         }
 
         List<String> techLinkIds = tableEntityPage.getRecords().stream().map(
@@ -332,7 +339,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         }
 
         List<Long> userIds = tableEntityPage.getRecords().stream().filter(f -> Objects.nonNull(f.getUserId())).map(
-            BusinessLinkManageTableEntity::getUserId)
+                BusinessLinkManageTableEntity::getUserId)
             .collect(Collectors.toList());
         List<LinkManageTableEntity> linkManageTableEntities = linkManageTableMapper.selectBatchIds(techLinkIds);
         Map<Long, LinkManageTableEntity> linkMap = linkManageTableEntities.stream()
@@ -378,33 +385,19 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         if (CollectionUtils.isNotEmpty(param.getActivityIds())) {
             lambdaQueryWrapper.in(BusinessLinkManageTableEntity::getLinkId, param.getActivityIds());
         }
+        if (StringUtils.isNotBlank(param.getEntrance())) {
+            lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getEntrace, param.getEntrance());
+        }
+        if (StringUtils.isNotBlank(param.getApplicationName())) {
+            lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getApplicationName, param.getApplicationName());
+        }
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
         List<BusinessLinkManageTableEntity> tableEntities = businessLinkManageTableMapper.selectList(
             lambdaQueryWrapper);
         if (CollectionUtils.isEmpty(tableEntities)) {
             return Lists.newArrayList();
         }
-        List<ActivityListResult> results = tableEntities.stream().map(entity -> {
-            ActivityListResult result = new ActivityListResult();
-            result.setActivityId(entity.getLinkId());
-            result.setActivityName(entity.getLinkName());
-            result.setIsChange(entity.getIsChange());
-            result.setIsCore(entity.getIsCore());
-            result.setIsDeleted(entity.getIsDeleted());
-            result.setUserId(entity.getUserId());
-            result.setCreateTime(entity.getCreateTime());
-            result.setUpdateTime(entity.getUpdateTime());
-            result.setBusinessDomain(entity.getBusinessDomain());
-            result.setCanDelete(entity.getCanDelete());
-            result.setActivityLevel(entity.getLinkLevel());
-            result.setIsCore(entity.getIsCore());
-            result.setBusinessDomain(entity.getBusinessDomain());
-            result.setBindBusinessId(entity.getBindBusinessId());
-            result.setBusinessType(
-                entity.getType() != null ? entity.getType() : BusinessTypeEnum.NORMAL_BUSINESS.getType());
-            return result;
-        }).collect(Collectors.toList());
-        return results;
+        return toListResult(tableEntities);
     }
 
     @Override
@@ -425,7 +418,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         activityNodeState.setEnvCode(WebPluginUtils.traceEnvCode());
 
         //SY:如果限制节点下只允许一个服务为打开状态则先清空再新增
-//        activityNodeStateTableMapper.removeActivityNodeByActivityIdAndOwnerApp(activityNodeState);
+        //        activityNodeStateTableMapper.removeActivityNodeByActivityIdAndOwnerApp(activityNodeState);
 
         //SY:保存节点状态-如果存在则更新状态字段
         activityNodeStateTableMapper.setActivityNodeState(activityNodeState);
@@ -436,21 +429,63 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         return activityNodeStateTableMapper.getActivityNodes(activityId);
     }
 
+    private List<ActivityListResult> toListResult(List<BusinessLinkManageTableEntity> entities) {
+        if (CollectionUtils.isEmpty(entities)) {
+            return null;
+        }
+        return entities.stream().filter(Objects::nonNull)
+            .map(this::toListResult)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+    }
+
+    private ActivityListResult toListResult(BusinessLinkManageTableEntity entity) {
+        if (null == entity) {
+            return null;
+        }
+        ActivityListResult r = new ActivityListResult();
+        r.setActivityId(entity.getLinkId());
+        r.setActivityName(entity.getLinkName());
+        r.setIsChange(entity.getIsChange());
+        r.setIsCore(entity.getIsCore());
+        r.setIsDeleted(entity.getIsDeleted());
+        r.setEntrace(entity.getEntrace());
+        r.setUserId(entity.getUserId());
+        r.setCreateTime(entity.getCreateTime());
+        r.setUpdateTime(entity.getUpdateTime());
+        r.setBusinessDomain(entity.getBusinessDomain());
+        r.setCanDelete(entity.getCanDelete());
+        r.setActivityLevel(entity.getLinkLevel());
+        r.setIsCore(entity.getIsCore());
+        r.setBusinessDomain(entity.getBusinessDomain());
+        r.setBindBusinessId(entity.getBindBusinessId());
+        r.setBusinessType(entity.getType() != null ? entity.getType() : BusinessTypeEnum.NORMAL_BUSINESS.getType());
+        r.setTechLinkId(entity.getRelatedTechLink());
+        r.setParentTechLinkId(entity.getParentBusinessId());
+        r.setApplicationName(entity.getApplicationName());
+        return r;
+    }
+
     @Override
-    public List<Map<String,String>> findActivityIdByServiceName(String appName, String entrance) {
+    public List<Map<String, Object>> findActivityIdByServiceName(String appName, String entrance) {
         Long tenantId = WebPluginUtils.traceTenantId();
-        return activityNodeStateTableMapper.findActivityIdByServiceName(tenantId,appName,entrance);
+        return activityNodeStateTableMapper.findActivityIdByServiceName(tenantId, appName, entrance);
+    }
+
+    @Override
+    public List<Map<String, String>> findActivityByServiceName(String appName, String entrance) {
+        return activityNodeStateTableMapper.findActivityByServiceName(appName, entrance);
     }
 
     @Override
     public BusinessLinkManageTableEntity getActivityByName(String activityName) {
         LambdaQueryWrapper<BusinessLinkManageTableEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getLinkName,activityName);
+        lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getLinkName, activityName);
         return businessLinkManageTableMapper.selectOne(lambdaQueryWrapper);
     }
 
     @Override
     public List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace) {
-        return businessLinkManageTableMapper.findActivityAppName(appName,entrace);
+        return businessLinkManageTableMapper.findActivityAppName(appName, entrace);
     }
 }

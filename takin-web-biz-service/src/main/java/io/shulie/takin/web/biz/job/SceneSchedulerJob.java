@@ -4,15 +4,25 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.stereotype.Component;
+
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +38,10 @@ import org.springframework.stereotype.Component;
 @ElasticSchedulerJob(jobName = "sceneSchedulerJob", cron = "0 */1 * * * ?", description = "压测场景定时执行，一分钟检查一次，待压测场景执行")
 @Slf4j
 public class SceneSchedulerJob implements SimpleJob {
-    @Autowired
+    @Resource
     private SceneSchedulerTaskService sceneSchedulerTaskService;
 
-    @Autowired
+    @Resource
     @Qualifier("jobThreadPool")
     private ThreadPoolExecutor jobThreadPool;
 
@@ -52,13 +62,13 @@ public class SceneSchedulerJob implements SimpleJob {
                     // 根据环境 分线程
                     for (TenantEnv e : ext.getEnvs()) {
                         // 分布式锁
-                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(),e.getEnvCode(),shardingContext.getJobName());
+                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
                         if (distributedLock.checkLock(lockKey)) {
                             continue;
                         }
                         jobThreadPool.execute(() -> {
                             boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
-                            if(!tryLock) {
+                            if (!tryLock) {
                                 return;
                             }
                             try {

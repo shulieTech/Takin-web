@@ -12,8 +12,8 @@ import com.alibaba.fastjson.JSONObject;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Lists;
-import com.pamirs.attach.plugin.dynamic.Type;
-import com.pamirs.attach.plugin.dynamic.template.RedisTemplate;
+import com.pamirs.attach.plugin.dynamic.one.Type;
+import com.pamirs.attach.plugin.dynamic.one.template.RedisTemplate;
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
 import com.pamirs.takin.common.enums.ds.DsTypeEnum;
 import com.pamirs.takin.entity.domain.entity.DsModelWithBLOBs;
@@ -260,7 +260,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         // 到这里, 说明有脱敏的密码
         // 需要替换原有的密码, 再进行更新
         // 解析
-        ShadowServerConfigurationResponse response = JsonUtil.json2bean(originJson,
+        ShadowServerConfigurationResponse response = JsonUtil.json2Bean(originJson,
                 ShadowServerConfigurationResponse.class);
         String password = response.getDataSourceBusinessPerformanceTest().getPassword();
         String originPasswordField = DsManageUtil.getOriginPasswordFieldAboutJson(password);
@@ -320,7 +320,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
         }
 
         // 替换
-        ShadowServerConfigurationResponse response = JsonUtil.json2bean(json, ShadowServerConfigurationResponse.class);
+        ShadowServerConfigurationResponse response = JsonUtil.json2Bean(json, ShadowServerConfigurationResponse.class);
 
         // 转 json
         SingleServerConfiguration dataSourceBusinessPerformanceTest = response.getDataSourceBusinessPerformanceTest();
@@ -351,7 +351,7 @@ public class ShadowRedisServerServiceImpl extends AbstractDsService {
             return null;
         }
         // 替换
-        ShadowServerConfigurationResponse response = JsonUtil.json2bean(dsResult.getConfig(), ShadowServerConfigurationResponse.class);
+        ShadowServerConfigurationResponse response = JsonUtil.json2Bean(dsResult.getConfig(), ShadowServerConfigurationResponse.class);
         // 转 json
         SingleServerConfiguration bus = response.getDataSourceBusiness();
         SingleServerConfiguration test = response.getDataSourceBusinessPerformanceTest();

@@ -40,4 +40,9 @@ public class BusinessLinkResult extends UserCommonExt {
      * kafka,rabbitmq,http.....
      */
     private String serverMiddlewareType;
+
+    /**
+     * 应用名
+     */
+    private String applicationName;
 }

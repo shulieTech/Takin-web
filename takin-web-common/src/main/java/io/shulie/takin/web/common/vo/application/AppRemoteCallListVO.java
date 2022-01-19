@@ -5,13 +5,15 @@ import java.util.List;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author 无涯
  * @date 2021/5/29 12:35 上午
  */
 @Data
-public class  AppRemoteCallListVO extends AppRemoteCallVO {
+@EqualsAndHashCode(callSuper = true)
+public class AppRemoteCallListVO extends AppRemoteCallVO {
     @ApiModelProperty(name = "id", value = "数据库id")
     private Long id;
     /**
@@ -49,13 +51,11 @@ public class  AppRemoteCallListVO extends AppRemoteCallVO {
      */
     private Integer sort;
 
-
     /**
      * 默认是白名单时显示原因
      */
     @ApiModelProperty(name = "defaultWhiteInfo", value = "默认白名单信息")
     private String defaultWhiteInfo;
-
 
     @ApiModelProperty(name = "mockValue", value = "mock内容")
     private String mockValue;

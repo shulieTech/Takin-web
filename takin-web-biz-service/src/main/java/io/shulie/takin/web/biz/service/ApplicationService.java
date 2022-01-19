@@ -16,8 +16,10 @@ import com.pamirs.takin.entity.domain.vo.application.NodeNumParam;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.application.ApplicationListByUpgradeRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationQueryRequestV2;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationVisualInfoQueryRequest;
+import io.shulie.takin.web.biz.pojo.response.application.ApplicationListByUpgradeResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationListResponseV2;
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.common.common.Response;
@@ -122,10 +124,10 @@ public interface ApplicationService {
     /**
      * 重新计算
      *
-     * @param uid -
+     * @param ext -
      * @return -
      */
-    Response calculateUserSwitch(Long uid);
+    Response calculateUserSwitch(TenantCommonExt ext);
 
     ApplicationSwitchStatusDTO agentGetUserSwitchInfo();
 
@@ -161,14 +163,6 @@ public interface ApplicationService {
      * @param exceptionInfo -
      */
     void modifyAccessStatus(String id, Integer accessStatus, String exceptionInfo);
-
-    /**
-     * 修改应用状态（无需鉴权）
-     *
-     * @param applicationIds -
-     * @param accessStatus   -
-     */
-    void modifyAccessStatusWithoutAuth(List<Long> applicationIds, Integer accessStatus);
 
     /**
      * 获取应用
@@ -252,10 +246,11 @@ public interface ApplicationService {
 
     /**
      * 编辑静默开关
-     *
+     * @param ext
+     * @param enable
      * @return
      */
-    Response userAppSilenceSwitch(Long uid, Boolean enable);
+    Response userAppSilenceSwitch(TenantCommonExt ext, Boolean enable);
 
 
     /**
@@ -264,11 +259,11 @@ public interface ApplicationService {
      */
     Response userAppSilenceSwitchInfo();
 
-    String getUserSilenceSwitchStatusForVo(Long uid);
+    String getUserSilenceSwitchStatusForVo(TenantCommonExt ext);
 
     Response getApplicationReportConfigInfo(Integer bizType,String appName);
 
-    Boolean silenceSwitchStatusIsTrue(Long uid, AppSwitchEnum appSwitchEnum);
+    Boolean silenceSwitchStatusIsTrue(TenantCommonExt ext, AppSwitchEnum appSwitchEnum);
 
     /**
      * 应用监控查询接口
@@ -288,10 +283,10 @@ public interface ApplicationService {
 
     /**
      * 获取租户应用，用于amdb
-     * @param commonExts
+     * @param commonExtList
      * @return
      */
-    List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExts);
+    List<ApplicationDetailResult> getAllTenantApp(List<TenantCommonExt> commonExtList);
 
     /**
      * 应用列表
@@ -299,6 +294,8 @@ public interface ApplicationService {
      * @param request 请求入参
      * @return 应用列表
      */
-    PagingList<ApplicationListResponseV2> listApplication(ApplicationQueryRequestV2 request);
+    PagingList<ApplicationListResponseV2> pageApplication(ApplicationQueryRequestV2 request);
+
+    PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest request);
 
 }

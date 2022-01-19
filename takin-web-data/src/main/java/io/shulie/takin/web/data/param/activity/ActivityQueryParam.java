@@ -18,6 +18,8 @@ public class ActivityQueryParam extends AuthQueryParamCommonExt {
 
     private Integer isChange;
 
+    private String linkLevel;
+
     //private List<Long> userIdList;
 
     /**
@@ -29,5 +31,15 @@ public class ActivityQueryParam extends AuthQueryParamCommonExt {
      * 业务活动 ids
      */
     private List<Long> activityIds;
+
+    /**
+     * 链路入口
+     */
+    private String entrance;
+
+    /**
+     * 应用名
+     */
+    private String applicationName;
 
 }

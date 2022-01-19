@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -18,8 +17,6 @@ import com.pamirs.takin.entity.domain.dto.report.ReportPradarLinkDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
-import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
-import io.shulie.takin.cloud.sdk.model.common.BusinessActivitySummaryBean;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
@@ -27,6 +24,7 @@ import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.data.param.report.ReportLocalQueryParam;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
@@ -90,11 +88,11 @@ public class ReportLocalController {
         return Response.success(reportLocalService.listRiskMachine(queryParam));
     }
 
-    @GetMapping("/report/businessActivity/summary/list")
-    @ApiOperation("压测明细")
-    public List<BusinessActivitySummaryBean> getBusinessActivitySummaryList(Long reportId) {
-        return reportService.querySummaryList(reportId);
-    }
+    //@GetMapping("/report/businessActivity/summary/list")
+    //@ApiOperation("压测明细")
+    //public ResponseResult<NodeTreeSummaryResp> getBusinessActivitySummaryList(Long reportId) {
+    //    return ResponseResult.success(reportService.querySummaryList(reportId));
+    //}
 
     @GetMapping("/report/machine/detail")
     @ApiOperation("性能详情")

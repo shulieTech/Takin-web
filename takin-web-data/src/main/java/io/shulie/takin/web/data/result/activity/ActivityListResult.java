@@ -83,4 +83,22 @@ public class ActivityListResult {
      *绑定业务活动
      */
     private Long bindBusinessId;
+
+    /**
+     * 技术链路ID
+     */
+    private String techLinkId;
+    /**
+     * 业务链路的上级业务链路id
+     */
+    private String parentTechLinkId;
+    /**
+     * 链路入口
+     */
+    private String entrace;
+
+    /**
+     * 应用名
+     */
+    private String applicationName;
 }

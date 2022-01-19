@@ -2,15 +2,18 @@ package io.shulie.takin.web.data.param.linkmanage;
 
 import java.util.Date;
 
-import io.shulie.takin.web.ext.entity.UserCommonExt;
+import com.baomidou.mybatisplus.annotation.TableField;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author fanxx
  * @date 2020/11/4 2:56 下午
  */
 @Data
-public class SceneCreateParam extends UserCommonExt {
+@EqualsAndHashCode(callSuper = true)
+public class SceneCreateParam extends ContextExt {
     /**
      * 主键id
      */
@@ -47,5 +50,30 @@ public class SceneCreateParam extends UserCommonExt {
      * 变更时间
      */
     private Date updateTime;
+
+    /**
+     * 场景类型，标识1为jmeter上传，默认0
+     */
+    private Integer type;
+
+    /**
+     * 存储树状结构
+     */
+    private String scriptJmxNode;
+
+    /**
+     * 脚本实例id
+     */
+    private Long scriptDeployId;
+
+    /**
+     * 关联节点数
+     */
+    private Integer linkRelateNum;
+
+    /**
+     * 脚本总节点数
+     */
+    private Integer totalNodeNum;
 
 }

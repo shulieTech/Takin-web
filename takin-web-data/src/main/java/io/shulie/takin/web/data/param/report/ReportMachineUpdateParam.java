@@ -5,11 +5,10 @@ import java.math.BigDecimal;
 import lombok.Data;
 
 /**
- * @author by: hezhongqi
- * @Package io.shulie.takin.web.data.param.report
- * @ClassName: ReportMachineUpdateParam
- * @Description: TODO
- * @Date: 2021/11/23 10:19
+ * TODO
+ *
+ * @author hezhongqi
+ * @date 2021/11/23 10:19
  */
 @Data
 public class ReportMachineUpdateParam {

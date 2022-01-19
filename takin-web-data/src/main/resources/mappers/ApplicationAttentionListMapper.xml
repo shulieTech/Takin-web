@@ -5,7 +5,6 @@
         <!--@mbg.generated-->
         <!--@Table t_application_api_manage-->
         <id column="ID" jdbcType="BIGINT" property="id"/>
-        <result column="activity_id" jdbcType="BIGINT" property="activityId"/>
         <result column="app_name" jdbcType="VARCHAR" property="applicationName"/>
         <result column="interface_name" jdbcType="VARCHAR" property="interfaceName"/>
         <result column="focus" jdbcType="TINYINT" property="focus"/>
@@ -15,11 +14,11 @@
     </sql>
     <select id="getAttentionList" parameterType="io.shulie.takin.web.data.param.application.ApplicationAttentionParam" resultType="io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity">
         SELECT
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         FROM t_application_focus
         <where>
             <if test="tenantId!=null and tenantId!=''">
-                 tenant_id=#{tenantId}
+                tenant_id=#{tenantId}
             </if>
             <if test="envCode!=null and envCode!=''">
                 AND env_code = #{envCode}
@@ -34,10 +33,10 @@
     </select>
 
     <insert id="attendApplicationService" parameterType="java.util.Map">
-        INSERT INTO t_application_focus (id, app_name, interface_name, focus,tenant_id,env_code)
-        VALUES (#{id}, #{appName}, #{interfaceName}, #{isAttend},#{tenantId},#{traceEnvCode})
+        INSERT INTO t_application_focus (id, app_name, interface_name, focus, tenant_id, env_code)
+        VALUES (#{id}, #{appName}, #{interfaceName}, #{isAttend}, #{tenantId}, #{traceEnvCode})
         ON DUPLICATE KEY
-        UPDATE focus = #{isAttend}
+            UPDATE focus = #{isAttend}
     </insert>
 
 </mapper>

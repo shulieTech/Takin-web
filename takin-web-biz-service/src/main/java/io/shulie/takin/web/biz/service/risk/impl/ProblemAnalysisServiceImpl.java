@@ -28,7 +28,7 @@ import com.pamirs.takin.entity.domain.risk.LinkCount;
 import com.pamirs.takin.entity.domain.risk.Metrices;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessLinkResponse;
-import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.biz.service.report.impl.ReportDataCache;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
@@ -137,7 +137,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         appNameList.forEach(appName -> {
             Collection<BaseServerResult> baseList = baseServerDao.queryBaseServer(new BaseServerParam(sTime, eTime, appName));
             if (CollectionUtils.isNotEmpty(baseList)) {
-                logger.info("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, sTime, eTime, baseList.size());
+                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为:{}", dto.getId(), appName, sTime, eTime, baseList.size());
                 List<BaseAppVo> tmpList = baseList.stream().map(base -> {
                     BaseAppVo vo = new BaseAppVo();
                     vo.setCore(formatDouble(base.getCpuCores()).intValue());
@@ -154,7 +154,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     baseAppVoList.addAll(tmpList);
                 }
             } else {
-                logger.error("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, sTime, eTime);
+                logger.debug("报告{}对应的应用{},查询时间段为：{}-{},在influx中对应的数据长度为空", dto.getId(), appName, sTime, eTime);
             }
         });
 
@@ -520,6 +520,9 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
      * @return
      */
     private List<LinkDataResult> processLinkDataById(Long businessActivityId, long sTime, long eTime) {
+        if (businessActivityId == null || businessActivityId <= 0){
+            return null;
+        }
         List<LinkDataResult> linkDataResultList = Lists.newArrayList();
         BusinessLinkResponse businessLinkResponse = linkManageService.getBussisnessLinkDetail(
                 String.valueOf(businessActivityId));

@@ -17,7 +17,7 @@ public interface ReportSummaryDAO {
      * @param param
      * @return
      */
-    void insert(ReportSummaryCreateParam param);
+    void insertOrUpdate(ReportSummaryCreateParam param);
 
     /**
      * 根据报告id查询

@@ -115,7 +115,7 @@ import org.springframework.web.client.RestTemplate;
  * @author shulie
  * @version V1.0
  * @date 2018年3月15日 下午2:06:52
- * @see CommonServiceTest
+ * @see shulie.takin.web.biz.common.CommonServiceTest
  */
 @Service
 @SuppressWarnings("all")
@@ -209,7 +209,7 @@ public class CommonService {
     protected TaskScheduler taskScheduler;
 
     @Autowired
-    @Qualifier("asynExecuteScriptThreadPool")
+    @Qualifier("asyncExecuteScriptThreadPool")
     protected Executor asynExecuteScriptThreadPool;
 
     @Autowired

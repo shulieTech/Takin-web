@@ -1,4 +1,4 @@
-package shulie.takin.web.app.common;
+package shulie.takin.web.biz.common;
 
 import com.alibaba.druid.filter.config.ConfigTools;
 

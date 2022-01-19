@@ -12,8 +12,14 @@ public interface ReportDetailService {
     ReportTimeResponse getReportTime(Long reportId);
 
     /**
-     * agent上报配置信息
+     * 保存agent心跳配置
      * @param inputParam
      */
     void uploadConfigInfo(ConfigReportInputParam inputParam);
+
+    /**
+     * 清理过期的angent配置心跳数据
+     */
+    void clearExpiredData();
+
 }

@@ -185,4 +185,12 @@ public class ReportDetailServiceImpl implements ReportDetailService {
         agentConfigReportDAO.batchSave(saveList);
         agentConfigReportDAO.batchUpdate(updateList);
     }
+
+    /**
+     * 清理过期的agent配置心跳数据
+     */
+    @Override
+    public void clearExpiredData() {
+        agentConfigReportDAO.clearExpiredData();
+    }
 }

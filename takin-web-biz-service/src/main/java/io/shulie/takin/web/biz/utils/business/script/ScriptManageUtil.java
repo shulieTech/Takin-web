@@ -12,6 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.google.common.base.Joiner;
 import com.pamirs.takin.common.constant.SceneManageConstant;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
@@ -24,7 +25,10 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDeta
 import io.shulie.takin.web.common.constant.FeaturesConstants;
 import io.shulie.takin.web.common.constant.ScriptManageConstants;
 import io.shulie.takin.web.common.util.JsonUtil;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
+import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 /**
  * 脚本相关业务工具类

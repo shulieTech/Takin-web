@@ -44,6 +44,11 @@ public class ScriptManageDeployUpdateRequest implements Serializable {
     private Integer type;
 
     /**
+     * 脚本版本
+     */
+    private Integer mVersion;
+
+    /**
      * 关联文件列表
      */
     @JsonProperty("uploadFiles")
@@ -59,7 +64,7 @@ public class ScriptManageDeployUpdateRequest implements Serializable {
      * 引擎插件列表
      */
     @JsonProperty("pluginConfigs")
-    private List<PluginConfigUpdateRequest> pluginConfigUpdateRequests;
+    private List<PluginConfigCreateRequest> pluginList;
 
     /**
      * 是否覆盖大文件

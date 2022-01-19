@@ -1,19 +1,21 @@
 package com.pamirs.takin.entity.domain.dto;
 
-import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
+import java.util.List;
+import java.io.Serializable;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
-import lombok.Data;
 
 /**
  * @author mubai<chengjiacai @ shulie.io>
  * @date 2020-04-07 13:47
  */
-
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class ApplicationSwitchStatusDTO extends AuthQueryResponseCommonExt implements Serializable {
     private static final long serialVersionUID = -8743442521630586570L;
 

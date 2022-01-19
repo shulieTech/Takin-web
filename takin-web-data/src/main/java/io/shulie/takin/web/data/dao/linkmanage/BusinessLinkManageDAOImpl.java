@@ -118,7 +118,7 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<
         List<BusinessLinkManageTableEntity> entityList = businessLinkManageTableMapper.selectList(this.getLambdaQueryWrapper()
             .select(BusinessLinkManageTableEntity::getLinkId, BusinessLinkManageTableEntity::getLinkName,
                 BusinessLinkManageTableEntity::getEntrace, BusinessLinkManageTableEntity::getServerMiddlewareType,
-                BusinessLinkManageTableEntity::getType)
+                BusinessLinkManageTableEntity::getType, BusinessLinkManageTableEntity::getApplicationName)
             .in(BusinessLinkManageTableEntity::getLinkId, ids)
             .eq(BusinessLinkManageTableEntity::getIsDeleted, 0));
         if (CollectionUtil.isEmpty(entityList)) {
@@ -132,6 +132,7 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<
             businessLinkResult.setEntrace(businessLinkManageTableEntity.getEntrace());
             businessLinkResult.setType(businessLinkManageTableEntity.getType());
             businessLinkResult.setServerMiddlewareType(businessLinkManageTableEntity.getServerMiddlewareType());
+            businessLinkResult.setApplicationName(businessLinkManageTableEntity.getApplicationName());
             return businessLinkResult;
         }).collect(Collectors.toList());
     }
@@ -149,6 +150,9 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<
         }
         if (!StringUtils.isEmpty(queryParam.getBussinessActiveName())) {
             businessLinkManageWrapper.like(BusinessLinkManageTableEntity::getLinkName, queryParam.getBussinessActiveName());
+        }
+        if(queryParam.getPersistence() != null) {
+            businessLinkManageWrapper.eq(BusinessLinkManageTableEntity::isPersistence,queryParam.getPersistence());
         }
         businessLinkManageWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
         List<BusinessLinkManageTableEntity> entityList = businessLinkManageTableMapper.selectList(businessLinkManageWrapper);

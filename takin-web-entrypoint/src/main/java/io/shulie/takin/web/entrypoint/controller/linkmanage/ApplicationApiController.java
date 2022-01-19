@@ -2,6 +2,8 @@ package io.shulie.takin.web.entrypoint.controller.linkmanage;
 
 import java.util.Objects;
 
+import javax.annotation.Resource;
+
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiDeleteVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
@@ -11,7 +13,7 @@ import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.biz.service.linkManage.ApplicationApiService;
+import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
@@ -38,28 +40,16 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "applicationApi", value = "应用api")
 public class ApplicationApiController {
 
-    @Autowired
+    @Resource
     private ApplicationApiService apiService;
-
-    @Autowired
+    @Resource
     private ApplicationApiManageAmdbCache applicationApiManageAmdbCache;
-
-    //@ApiOperation("agent注册api")
-    //@PostMapping(value = "/agent/api/register")
-    //public Response registerApi(@RequestBody Map<String, List<String>> register) {
-    //
-    //    try {
-    //        return apiService.registerApi(register);
-    //
-    //    } catch (Exception e) {
-    //        return Response.fail(e.getMessage());
-    //    }
-    //}
 
     /**
      * 老版
-     * @param appName
-     * @return
+     *
+     * @param appName 应用名称
+     * @return 响应体
      */
     @ApiOperation("storm拉取api")
     @GetMapping(value = "/api/pull")
@@ -74,8 +64,9 @@ public class ApplicationApiController {
 
     /**
      * 新版
-     * @param appName
-     * @return
+     *
+     * @param appName 应用名称
+     * @return 响应体
      */
     @ApiOperation("storm拉取api")
     @GetMapping(value = "/v1/api/pull")

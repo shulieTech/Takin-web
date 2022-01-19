@@ -29,7 +29,7 @@ public interface SceneTaskService {
 
     void updateTaskTps(UpdateTpsRequest request);
 
-    Long queryTaskTps(Long reportId, Long sceneId);
+    Long queryTaskTps(Long reportId, Long sceneId, String xPathMd5);
 
     /**
      * 校验业务活动下的漏数配置
@@ -65,4 +65,20 @@ public interface SceneTaskService {
      * @return
      */
     ResponseResult<SceneJobStateResp> checkSceneJobStatus(Long sceneId);
+
+    /**
+     * 压测启动中停止
+     *
+     * @param sceneId 场景id
+     */
+    void preStop(Long sceneId);
+
+    /**
+     * 停止
+     *
+     * @param sceneId 场景id
+     * @return 是否成功
+     */
+    ResponseResult<String> stop(Long sceneId);
+
 }

@@ -3,6 +3,8 @@ package io.shulie.takin.web.biz.pojo.input.application;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import io.shulie.takin.web.common.annocation.Trimmed;
+import io.shulie.takin.web.common.annocation.Trimmed.TrimmerType;
 import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import lombok.Data;
 
@@ -14,6 +16,7 @@ import lombok.Data;
 public class ShadowConsumerCreateInput {
 
     @NotBlank
+    @Trimmed(value = TrimmerType.SIMPLE)
     private String topicGroup;
 
     @NotNull

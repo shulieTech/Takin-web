@@ -93,13 +93,19 @@ public class SceneManageWrapperVO extends WebRequest implements Serializable {
     @ApiModelProperty(name = "executeTime", value = "定时执行时间")
     @JsonFormat(pattern = "yyyy-MM-dd hh:mm", timezone = "GMT+8")
     private Date executeTime;
-
     /**
      * 单位是小时
      */
     @ApiModelProperty(name = "scheduleInterval", value = "漏数时间间隔")
     private Integer scheduleInterval;
 
+    @ApiModelProperty("脚本节点信息")
+    private String scriptAnalysisResult;
+
     public SceneManageWrapperVO() {
     }
+
+    @ApiModelProperty("排除检查的应用ids")
+    private List<Long> excludedApplicationIds;
+
 }

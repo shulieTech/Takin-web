@@ -3,6 +3,7 @@ package io.shulie.takin.web.amdb.api.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.collect.Sets;
 import com.pamirs.pradar.log.parser.ProtocolParserFactory;
@@ -113,7 +114,7 @@ public class TraceClientImpl implements TraceClient {
                     .eventName("查询链路列表")
                     .list(EntryTraceInfoDTO.class);
             List<EntryTraceInfoDTO> list = response.getData();
-            if (CollectionUtil.isNotEmpty(list)) {
+            if (CollUtil.isNotEmpty(list)) {
                 list.forEach(entry -> {
                     entry.setEntry(entry.getServiceName());
                     entry.setMethod(entry.getMethodName());
@@ -225,9 +226,9 @@ public class TraceClientImpl implements TraceClient {
         return entranceList.stream().map(entrance -> {
             if (ActivityUtil.isNormalBusiness(entrance.getBusinessType())) {
                 EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(entrance.getEntrance());
-                return String.format("%s#%s#%s#%s", entranceJoinEntity.getApplicationName(),
-                        entranceJoinEntity.getServiceName(),
-                        entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
+                return String.format("%s#%s#%s#%s",entrance.getAppName(),
+                    entranceJoinEntity.getServiceName(),
+                    entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
             } else {
                 EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertVirtualEntrance(entrance.getEntrance());
                 return String.format("%s#%s#%s#%s", "", "", entranceJoinEntity.getVirtualEntrance(), entranceJoinEntity.getRpcType());

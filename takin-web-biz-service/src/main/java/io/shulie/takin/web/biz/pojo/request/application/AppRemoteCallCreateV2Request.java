@@ -1,12 +1,14 @@
 package io.shulie.takin.web.biz.pojo.request.application;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+import io.shulie.takin.web.common.annocation.Trimmed;
+import io.shulie.takin.web.common.annocation.Trimmed.TrimmerType;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 /**
  * @author 无涯
@@ -27,6 +29,7 @@ public class AppRemoteCallCreateV2Request extends UserCommonExt {
      * 接口名称
      */
     @ApiModelProperty(name = "interfaceName", value = "接口名称")
+    @Trimmed(value = TrimmerType.SIMPLE)
     @NotEmpty(message = "接口名称不能为空")
     private String interfaceName;
 

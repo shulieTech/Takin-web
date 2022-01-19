@@ -82,6 +82,7 @@ public class BaseConfigController {
 
     @PostMapping(value = ApiUrls.API_TAKIN_CONFCENTER_GLOBAL_CONFIG_UPDATE,
         produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "更新配置")
     public ResponseEntity<Object> updateBaseConfig(@RequestBody TBaseConfig tBaseConfig) {
 
         try {

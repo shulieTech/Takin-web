@@ -24,8 +24,9 @@ import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityNameResponse;
-import io.shulie.takin.web.biz.service.linkManage.LinkManageService;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
@@ -77,7 +78,7 @@ public class LinkManageController {
         if (null == dto) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, "该业务流程不存在");
         }
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_PROCESS, dto.getBusinessProcessName());
+        OperationLogContextHolder.addVars(Vars.BUSINESS_FLOW_ID, dto.getId());
         return Response.success(linkManageService.deleteScene(req.getId().toString()));
     }
 
@@ -97,6 +98,7 @@ public class LinkManageController {
             @ApiParam(name = "middleWareType", value = "中间件类型") String middleWareType,
             @ApiParam(name = "middleWareName", value = "中间件名字") String middleWareName,
             @ApiParam(name = "middleWareVersion", value = "中间件版本") String middleWareVersion,
+            @ApiParam(name = "linkLevel", value = "业务活动级别") String linkLevel,
             Integer current,
             Integer pageSize
         ) {
@@ -109,6 +111,7 @@ public class LinkManageController {
         vo.setMiddleWareType(middleWareType);
         vo.setMiddleWareName(middleWareName);
         vo.setMiddleWareVersion(middleWareVersion);
+        vo.setLinkLevel(linkLevel);
         vo.setCurrentPage(current);
         vo.setPageSize(pageSize);
         return linkManageService.getScenes(vo);
@@ -297,6 +300,7 @@ public class LinkManageController {
         moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
         needAuth = ActionTypeEnum.QUERY
     )
+    @Deprecated
     public Response<?> getBusinessFlowDetail(@NotNull Long id) {
         try {
             BusinessFlowDto dto = linkManageService.getBusinessFlowDetail(id);

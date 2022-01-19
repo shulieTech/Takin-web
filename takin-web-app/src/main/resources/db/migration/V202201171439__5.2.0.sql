@@ -1,0 +1,1 @@
+alter table t_shadow_job_config  modify column name varchar(256);

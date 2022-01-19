@@ -4,9 +4,10 @@ import io.shulie.takin.common.beans.page.PagingDevice;
 import io.shulie.takin.web.common.enums.activity.info.FlowTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @ApiModel("业务活动详情查询对象")
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class ActivityInfoQueryRequest extends PagingDevice {
 
     @ApiModelProperty("业务活动ID")

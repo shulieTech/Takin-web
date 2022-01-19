@@ -2,14 +2,17 @@ package io.shulie.takin.web.data.result.blacklist;
 
 import java.util.Date;
 
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author 无涯
  * @date 2021/4/6 2:25 下午
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class BlacklistResult extends TenantCommonExt {
     /**
      * 主键id
@@ -19,22 +22,22 @@ public class BlacklistResult extends TenantCommonExt {
     /**
      * 黑名单类型
      */
-    private Integer type ;
+    private Integer type;
 
     /**
      * redisKey
      */
-    private String redisKey ;
+    private String redisKey;
 
     /**
      * appName
      */
-    private String appName ;
+    private String appName;
 
     /**
      * 应用id
      */
-    private Long applicationId ;
+    private Long applicationId;
 
     /**
      * 插入时间

@@ -37,7 +37,7 @@ public class SceneLinkRelateResult extends TenantCommonExt {
     private LocalDateTime updateTime;
 
     /**
-     * 业务链路ID
+     * 业务链路ID，业务活动ID
      */
     private String businessLinkId;
 
@@ -60,4 +60,24 @@ public class SceneLinkRelateResult extends TenantCommonExt {
      * 前端数结构对象key
      */
     private String frontUuidKey;
+
+    /**
+     * 脚本请求路径标识
+     */
+    private String scriptIdentification;
+
+    /**
+     * 脚本路径的MD5
+     */
+    private String scriptXpathMd5;
+
+    /**
+     * 租户id
+     */
+    private Long tenantId;
+
+    /**
+     * 环境
+     */
+    private String envCode;
 }

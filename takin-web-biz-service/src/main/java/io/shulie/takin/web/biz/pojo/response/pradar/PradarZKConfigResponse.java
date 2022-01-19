@@ -1,5 +1,8 @@
 package io.shulie.takin.web.biz.pojo.response.pradar;
 
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -20,9 +23,11 @@ public class PradarZKConfigResponse {
     @ApiModelProperty("说明")
     String remark;
     @ApiModelProperty("创建时间")
-    String createTime;
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    Date createTime;
     @ApiModelProperty("更新时间")
-    String modifyTime;
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    Date modifyTime;
     @ApiModelProperty("是否可编辑")
     private Boolean canEdit = true;
 

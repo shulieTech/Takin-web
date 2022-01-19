@@ -39,8 +39,8 @@ import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateReque
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallConfigResponse;
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallResponse;
 import io.shulie.takin.web.biz.pojo.response.application.AppRemoteCallStringResponse;
-import io.shulie.takin.web.biz.service.linkManage.AppRemoteCallService;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;

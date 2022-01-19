@@ -65,7 +65,7 @@ public class ApplicationInfoUploadController {
         try {
             return ResponseOk.create(applicationInfoUploadService.queryApplicationPage(paramMap));
         } catch (Exception e) {
-            LOGGER.error("ApplicationInfoUploadController.applicationInfoUploadQueryPage 查询分页信息失败 {}", e);
+            LOGGER.error("ApplicationInfoUploadController.applicationInfoUploadQueryPage 查询分页信息失败", e);
             return ResponseError.create("查询分页信息失败");
         }
     }
@@ -82,7 +82,7 @@ public class ApplicationInfoUploadController {
         try {
             return ResponseOk.create(confCenterService.queryDicList(TakinDictTypeEnum.UPLOAD_INFO_TYPE));
         } catch (Exception e) {
-            LOGGER.error("ApplicationInfoUploadController.queryInfoType 查询上传信息类型{}", e);
+            LOGGER.error("ApplicationInfoUploadController.queryInfoType 查询上传信息类型", e);
             return ResponseError.create(TakinErrorEnum.CONFCENTER_QUERY_LINKTYPE_EXCEPTION.getErrorCode(),
                 TakinErrorEnum.CONFCENTER_QUERY_LINKTYPE_EXCEPTION.getErrorMessage());
         }

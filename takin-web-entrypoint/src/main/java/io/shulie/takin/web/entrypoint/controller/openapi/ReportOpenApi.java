@@ -5,9 +5,11 @@ import java.util.List;
 import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportTrendQueryReq;
 import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
 import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
 import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
 import io.shulie.takin.cloud.sdk.model.response.report.TrendResponse;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -64,9 +66,9 @@ public class ReportOpenApi {
 
     @GetMapping("report/queryReportTrend")
     @ApiOperation("报告链路趋势")
-    public Response<TrendResponse> queryReportTrend(TrendRequest request) {
-        TrendResponse webResponse = reportService.queryReportTrend(request);
-        return Response.success(webResponse);
+    public ResponseResult<ReportTrendResp> queryReportTrend(ReportTrendQueryReq request) {
+        ReportTrendResp webResponse = reportService.queryReportTrend(request);
+        return ResponseResult.success(webResponse);
     }
 
     @GetMapping("/report/listWarn")

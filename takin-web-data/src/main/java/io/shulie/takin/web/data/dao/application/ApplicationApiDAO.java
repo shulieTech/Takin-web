@@ -17,68 +17,105 @@ public interface ApplicationApiDAO {
 
     /**
      * 新增
-     * @param param
-     * @return
+     *
+     * @param param 数据项
+     * @return 影响行数
      */
     int insert(ApplicationApiCreateParam param);
 
     /**
      * 分配
-     * @param param
-     * @return
+     *
+     * @param param 数据项
+     * @return 影响行数
      */
     int allocationUser(ApplicationApiUpdateUserParam param);
 
     /**
      * 根据id删除
-     * @param id
-     * @return
+     *
+     * @param id 主键
+     * @return 影响行数
      */
     int deleteByPrimaryKey(Long id);
 
     /**
-     * 插入
-     * @param record
-     * @return
+     * 插入 - 选择性
+     *
+     * @param record 数据项
+     * @return 插入行数
      */
     int insertSelective(ApplicationApiCreateParam record);
 
     /**
-     * 获取
-     * @param id
-     * @return
+     * 根据主键获取
+     *
+     * @param id 主键
+     * @return 数据项
      */
     ApplicationApiManageResult selectByPrimaryKey(Long id);
 
+    /**
+     * 通过主键更新-选择性
+     *
+     * @param record 更新内容
+     * @return 影响行数
+     */
     int updateByPrimaryKeySelective(ApplicationApiCreateParam record);
 
+    /**
+     * 通过主键更新-全量
+     *
+     * @param record 更新内容
+     * @return 影响行数
+     */
     int updateByPrimaryKey(ApplicationApiCreateParam record);
 
+    /**
+     * 查询
+     *
+     * @return 数据项
+     */
     List<ApplicationApiManageResult> query();
 
+    /**
+     * 检查查询
+     *
+     * @param apiParam 入参
+     * @return 数据项
+     */
     List<ApplicationApiManageResult> querySimple(ApplicationApiParam apiParam);
 
     /**
      * 根据租户查询
-     * @param apiParam
-     * @return
+     *
+     * @param apiParam 入参
+     * @return 数据项
      */
     List<ApplicationApiManageResult> querySimpleWithTenant(ApplicationApiParam apiParam);
 
-    List<ApplicationApiManageResult> selectBySelective(@Param("record") ApplicationApiQueryParam record,@Param("userIds") List<Long> userIds);
+    /**
+     * 查询
+     *
+     * @param record  入参
+     * @param userIds 用户主键
+     * @return 数据项
+     */
+    List<ApplicationApiManageResult> selectBySelective(@Param("record") ApplicationApiQueryParam record, @Param("userIds") List<Long> userIds);
 
     /**
      * 批量新增
-     * @param list
-     * @return
+     *
+     * @param list 数据项
+     * @return 影响行数
      */
     int insertBatch(List<ApplicationApiCreateParam> list);
 
     /**
      * 根据应用删除 只删除上报的
-     * @param appName
+     *
+     * @param appName 应用名称
      */
     void deleteByAppName(String appName);
-
 
 }

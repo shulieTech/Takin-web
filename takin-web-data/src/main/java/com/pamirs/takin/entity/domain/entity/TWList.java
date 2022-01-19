@@ -3,6 +3,7 @@ package com.pamirs.takin.entity.domain.entity;
 import java.util.Date;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 说明：白名单实体类
@@ -12,6 +13,7 @@ import lombok.Data;
  * @date 2018年3月1日 下午12:49:55
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class TWList extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -94,7 +96,6 @@ public class TWList extends BaseEntity {
      */
     private Boolean isGlobal;
 
-
     /**
      * 手工添加
      */
@@ -104,14 +105,12 @@ public class TWList extends BaseEntity {
 
     private Date gmtModified;
 
-
-
     public TWList() {
         super();
     }
 
     public static TWList build(String applicationId, String interfaceType, String interfaceName, String useYn,
-                               String dictType) {
+        String dictType) {
         TWList tWhiteList = new TWList();
         tWhiteList.setApplicationId(applicationId);
         tWhiteList.setType(interfaceType);
@@ -126,7 +125,6 @@ public class TWList extends BaseEntity {
      *
      * @return 实体类字符串
      * @author shulie
-     * @version 1.0
      */
     @Override
     public String toString() {

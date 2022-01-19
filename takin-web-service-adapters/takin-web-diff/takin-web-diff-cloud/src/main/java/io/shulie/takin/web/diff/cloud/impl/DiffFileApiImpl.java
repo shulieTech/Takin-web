@@ -71,15 +71,11 @@ public class DiffFileApiImpl implements DiffFileApi {
     }
 
     @Override
-    public Boolean createFileByPathAndString(FileCreateByStringParamReq req) {
+    public String createFileByPathAndString(FileCreateByStringParamReq req) {
         if (StringUtil.isBlank(req.getFileContent()) || StringUtil.isBlank(req.getFilePath())) {
-            return false;
+            return "";
         }
-        try {
-            return cloudFileApi.createFileByPathAndString(req);
-        } catch (Exception e) {
-            return false;
-        }
+        return cloudFileApi.createFileByPathAndString(req);
     }
 
 }

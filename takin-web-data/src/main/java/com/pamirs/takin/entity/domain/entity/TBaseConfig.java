@@ -109,7 +109,7 @@ public class TBaseConfig extends BaseEntity {
      * This method returns the value of the database column t_base_config.CONFIG_CODE
      *
      * @return the value of t_base_config.CONFIG_CODE
-     * @mbggenerated
+     * @mbg generated
      */
     public String getConfigCode() {
         return configCode;
@@ -120,7 +120,7 @@ public class TBaseConfig extends BaseEntity {
      * This method sets the value of the database column t_base_config.CONFIG_CODE
      *
      * @param configCode the value for t_base_config.CONFIG_CODE
-     * @mbggenerated
+     * @mbg generated
      */
     public void setConfigCode(String configCode) {
         this.configCode = configCode == null ? null : configCode.trim();
@@ -131,7 +131,7 @@ public class TBaseConfig extends BaseEntity {
      * This method returns the value of the database column t_base_config.CONFIG_VALUE
      *
      * @return the value of t_base_config.CONFIG_VALUE
-     * @mbggenerated
+     * @mbg generated
      */
     public String getConfigValue() {
         return configValue;
@@ -142,7 +142,7 @@ public class TBaseConfig extends BaseEntity {
      * This method sets the value of the database column t_base_config.CONFIG_VALUE
      *
      * @param configValue the value for t_base_config.CONFIG_VALUE
-     * @mbggenerated
+     * @mbg generated
      */
     public void setConfigValue(String configValue) {
         this.configValue = configValue == null ? null : configValue.trim();
@@ -153,7 +153,7 @@ public class TBaseConfig extends BaseEntity {
      * This method returns the value of the database column t_base_config.CONFIG_DESC
      *
      * @return the value of t_base_config.CONFIG_DESC
-     * @mbggenerated
+     * @mbg generated
      */
     public String getConfigDesc() {
         return configDesc;
@@ -164,7 +164,7 @@ public class TBaseConfig extends BaseEntity {
      * This method sets the value of the database column t_base_config.CONFIG_DESC
      *
      * @param configDesc the value for t_base_config.CONFIG_DESC
-     * @mbggenerated
+     * @mbg generated
      */
     public void setConfigDesc(String configDesc) {
         this.configDesc = configDesc == null ? null : configDesc.trim();
@@ -175,7 +175,7 @@ public class TBaseConfig extends BaseEntity {
      * This method returns the value of the database column t_base_config.USE_YN
      *
      * @return the value of t_base_config.USE_YN
-     * @mbggenerated
+     * @mbg generated
      */
     public Integer getUseYn() {
         return useYn;
@@ -186,7 +186,7 @@ public class TBaseConfig extends BaseEntity {
      * This method sets the value of the database column t_base_config.USE_YN
      *
      * @param useYn the value for t_base_config.USE_YN
-     * @mbggenerated
+     * @mbg generated
      */
     public void setUseYn(Integer useYn) {
         this.useYn = useYn;
@@ -197,7 +197,7 @@ public class TBaseConfig extends BaseEntity {
      * This method returns the value of the database column t_base_config.CREATE_TIME
      *
      * @return the value of t_base_config.CREATE_TIME
-     * @mbggenerated
+     * @mbg generated
      */
     public Date getCreateTime() {
         return createTime;
@@ -208,7 +208,7 @@ public class TBaseConfig extends BaseEntity {
      * This method sets the value of the database column t_base_config.CREATE_TIME
      *
      * @param createTime the value for t_base_config.CREATE_TIME
-     * @mbggenerated
+     * @mbg generated
      */
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
@@ -219,7 +219,7 @@ public class TBaseConfig extends BaseEntity {
      * This method returns the value of the database column t_base_config.UPDATE_TIME
      *
      * @return the value of t_base_config.UPDATE_TIME
-     * @mbggenerated
+     * @mbg generated
      */
     @Override
     public Date getUpdateTime() {
@@ -231,7 +231,7 @@ public class TBaseConfig extends BaseEntity {
      * This method sets the value of the database column t_base_config.UPDATE_TIME
      *
      * @param updateTime the value for t_base_config.UPDATE_TIME
-     * @mbggenerated
+     * @mbg generated
      */
     @Override
     public void setUpdateTime(Date updateTime) {

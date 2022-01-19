@@ -2,19 +2,19 @@ package io.shulie.takin.web.data.result.application;
 
 import java.util.Date;
 
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 
 /**
  * @author fanxx
  * @date 2020/11/11 7:43 下午
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class ApplicationDetailResult extends TenantCommonExt {
     private Long id;
-
     private Long applicationId;
     private String applicationName;
     private String applicationDesc;
@@ -35,4 +35,5 @@ public class ApplicationDetailResult extends TenantCommonExt {
     private String alarmPerson;
     private String pradarVersion;
     private Long userId;
+    private String md5;
 }

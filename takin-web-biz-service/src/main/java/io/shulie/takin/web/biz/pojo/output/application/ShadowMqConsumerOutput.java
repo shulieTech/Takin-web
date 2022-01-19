@@ -5,15 +5,14 @@ import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
 /**
- * @author by: hezhongqi
- * @Package io.shulie.takin.web.biz.pojo.output.application
- * @ClassName: ShadowMqConsumerOutput
- * @Description: TODO
- * @Date: 2021/8/10 16:50
+ * TODO
+ *
+ * @author hezhongqi
+ * @date 2021/8/10 16:50
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

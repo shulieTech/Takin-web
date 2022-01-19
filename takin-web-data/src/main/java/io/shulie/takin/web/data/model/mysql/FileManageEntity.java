@@ -11,7 +11,7 @@ import lombok.Data;
 
 @Data
 @TableName(value = "t_file_manage")
-public class FileManageEntity  extends TenantBaseEntity {
+public class FileManageEntity extends TenantBaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -34,6 +34,12 @@ public class FileManageEntity  extends TenantBaseEntity {
     private String fileExt;
 
     /**
+     * 文件MD5
+     */
+    @TableField(value = "md5")
+    private String md5;
+
+    /**
      * 文件类型：0-脚本文件 1-数据文件 2-脚本jar文件 3-jmeter ext jar
      */
     @TableField(value = "file_type")
@@ -49,8 +55,6 @@ public class FileManageEntity  extends TenantBaseEntity {
      */
     @TableField(value = "file_extend")
     private String fileExtend;
-
-
 
     /**
      * 上传时间

@@ -1,36 +1,36 @@
 package io.shulie.takin.web.biz.agent;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Optional;
+import java.io.IOException;
 import java.util.function.Consumer;
+import java.nio.charset.StandardCharsets;
 
+import javax.annotation.Resource;
 
 import com.google.common.collect.Sets;
 import io.shulie.takin.channel.ServerChannel;
+import io.shulie.takin.channel.bean.CommandSend;
 import io.shulie.takin.channel.bean.CommandPacket;
+import io.shulie.takin.channel.bean.CommandStatus;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.channel.bean.CommandRespType;
 import io.shulie.takin.channel.bean.CommandResponse;
-import io.shulie.takin.channel.bean.CommandSend;
-import io.shulie.takin.channel.bean.CommandStatus;
+import io.shulie.takin.web.common.future.ResponseFuture;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.future.ResponseFuture;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ScanOptions;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.connection.RedisConnection;
 
 /**
  * @author 无涯
@@ -43,10 +43,10 @@ public class AgentCommandFactory {
     @Value("${takin.web.url}")
     private String takinWebUrl;
 
-    @Autowired
+    @Resource
     private ServerChannel serverChannel;
 
-    @Autowired
+    @Resource
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
@@ -60,7 +60,7 @@ public class AgentCommandFactory {
         TakinWebCommandPacket takinPacket = getSendPacket(commandEnum, agentId, params);
         checkPacket(takinPacket);
         String key = String.format(agentKey, takinPacket.getAgentId(), takinPacket.getSend().getCommand(),
-            takinPacket.getSend().getModuleId(), WebPluginUtils.traceTenantId(),WebPluginUtils.traceEnvCode() , takinPacket.getId());
+            takinPacket.getSend().getModuleId(), WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), takinPacket.getId());
 
         ResponseFuture<CommandPacket> future = new ResponseFuture<>(
             takinPacket.getTimeoutMillis() == null ? 3000 : takinPacket.getTimeoutMillis());
@@ -121,7 +121,7 @@ public class AgentCommandFactory {
     /**
      * 发送命令体
      *
-     * @return
+     * @return 命令包
      */
     private TakinWebCommandPacket getSendPacket(AgentCommandEnum commandEnum, String agentId,
         Map<String, Object> params) {
@@ -154,7 +154,7 @@ public class AgentCommandFactory {
             // 不允许多次执行，检测命令执行状态
             Set<String> keys = this.keys(String.format(agentKey, takinWebPacket.getAgentId(),
                 //redisKey改造
-                takinWebPacket.getSend().getCommand(), takinWebPacket.getSend().getModuleId(),"*","*", "*"));
+                takinWebPacket.getSend().getCommand(), takinWebPacket.getSend().getModuleId(), "*", "*", "*"));
             if (keys.size() > 0) {
                 for (String agentKey : keys) {
                     CommandStatus commandStatus = null;

@@ -6,12 +6,14 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author 无涯
  * @date 2021/5/29 12:35 上午
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class AppRemoteCallVO extends AuthQueryResponseCommonExt {
     /**
      * 接口名称
@@ -85,6 +87,10 @@ public class AppRemoteCallVO extends AuthQueryResponseCommonExt {
     private String interfaceChildType;
 
     private String remark;
+    /**
+     * 应用名，接口名称，接口类型，租户id,环境code求md5
+     */
+    private String md5;
 
     public AppRemoteCallVO() {}
 

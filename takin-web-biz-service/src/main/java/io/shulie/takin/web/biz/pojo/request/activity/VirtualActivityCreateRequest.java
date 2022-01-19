@@ -22,12 +22,10 @@ public class VirtualActivityCreateRequest {
     private String activityName;
 
     @ApiModelProperty(name = "link_level", value = "业务活动等级")
-    @NotEmpty(message = "业务活动等级不能为空")
     @JsonProperty("link_level")
     private String activityLevel;
 
     @ApiModelProperty(name = "isCore", value = "业务活动链路是否核心链路 0:不是;1:是")
-    @NotNull(message = "核心链路不能为空")
     private Integer isCore;
 
     @NotNull
@@ -35,7 +33,6 @@ public class VirtualActivityCreateRequest {
     private EntranceTypeEnum type;
 
     @ApiModelProperty(name = "businessDomain", value = "业务域")
-    @NotEmpty(message = "业务域不能为空")
     private String businessDomain;
 
     @ApiModelProperty(name = "virtualEntrance", value = "虚拟入口")
@@ -44,4 +41,7 @@ public class VirtualActivityCreateRequest {
 
     @ApiModelProperty(name = "bindBusinessId", value = "绑定业务活动id")
     private String bindBusinessId;
+
+    @ApiModelProperty(name = "methodName", value = "请求方式：GET,PSOT")
+    private String methodName;
 }

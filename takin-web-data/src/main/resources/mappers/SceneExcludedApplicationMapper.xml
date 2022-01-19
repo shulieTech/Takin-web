@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.SceneExcludedApplicationMapper">
+
+    <insert id="insertBatch">
+        INSERT INTO t_scene_excluded_application(scene_id, application_id) VALUES
+        <foreach collection ="createParams" item="createParam" separator =",">
+            (#{createParam.sceneId}, #{createParam.applicationId})
+        </foreach >
+    </insert>
+
+</mapper>

@@ -1,18 +1,23 @@
 package io.shulie.takin.web.app.conf.redis;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Map;
 
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.support.spring.FastJsonRedisSerializer;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.shulie.takin.web.common.constant.CacheConstants;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -37,6 +42,15 @@ public class RedisConfig implements CacheConstants {
     @Autowired(required = false)
     private Map<String, MessageListener> messageListenerMap;
 
+    @Bean(CACHE_KEY_GENERATOR_BY_TENANT_INFO)
+    public KeyGenerator cacheKeyGeneratorByTenantInfo() {
+        return (target, method, params) -> target.getClass().getName()
+            + method.getName()
+            + ":"
+            + Arrays.toString(DigestUtil.md5(
+            JSONUtil.toJsonStr(params) + WebPluginUtils.traceEnvCode() + WebPluginUtils.traceTenantId()));
+    }
+
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         // 自定义 redisCache 管理，指定key，带有过期时间，10分钟
@@ -44,7 +58,7 @@ public class RedisConfig implements CacheConstants {
         return new RedisCacheManager(
             RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory),
             this.getRedisCacheConfigurationWithTtl(600),
-            CACHE_KEY_AGENT_CONFIG, CACHE_KEY_AGENT_APPLICATION_NODE
+            CACHE_KEY_AGENT_CONFIG, CACHE_KEY_AGENT_APPLICATION_NODE, CACHE_KEY_ANNUAL_REPORT
         );
     }
 
@@ -133,7 +147,8 @@ public class RedisConfig implements CacheConstants {
     }
 
     private Jackson2JsonRedisSerializer<Object> getJackson2JsonRedisSerializer() {
-        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(
+            Object.class);
         ObjectMapper om = new ObjectMapper();
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);

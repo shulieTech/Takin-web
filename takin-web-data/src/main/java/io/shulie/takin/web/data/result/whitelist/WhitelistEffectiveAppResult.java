@@ -2,15 +2,18 @@ package io.shulie.takin.web.data.result.whitelist;
 
 import java.util.Date;
 
-import io.shulie.takin.web.ext.entity.UserCommonExt;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 
 /**
  * @author 无涯
  * @date 2021/4/14 10:16 上午
  */
 @Data
-public class WhitelistEffectiveAppResult  extends UserCommonExt {
+@EqualsAndHashCode(callSuper = true)
+public class WhitelistEffectiveAppResult extends UserCommonExt {
     private Long id;
 
     /**
@@ -31,8 +34,6 @@ public class WhitelistEffectiveAppResult  extends UserCommonExt {
      * 生效应用
      */
     private String effectiveAppName;
-
-
 
     /**
      * 创建时间

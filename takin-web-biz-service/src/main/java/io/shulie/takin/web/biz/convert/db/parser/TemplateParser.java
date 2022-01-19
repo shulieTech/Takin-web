@@ -1,6 +1,6 @@
 package io.shulie.takin.web.biz.convert.db.parser;
 
-import com.pamirs.attach.plugin.dynamic.Converter;
+import com.pamirs.attach.plugin.dynamic.one.Converter;
 import io.shulie.takin.common.beans.component.SelectVO;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;

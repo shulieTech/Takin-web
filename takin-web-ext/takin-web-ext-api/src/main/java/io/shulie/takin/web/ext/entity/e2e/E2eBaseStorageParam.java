@@ -6,9 +6,10 @@ import lombok.Data;
 import lombok.NonNull;
 
 /**
- * @Author: fanxx
- * @Date: 2021/9/16 1:41 下午
- * @Description:
+ * TODO
+ *
+ * @author fanxx
+ * @date 2021/9/16 1:41 下午
  */
 @Data
 public class E2eBaseStorageParam {

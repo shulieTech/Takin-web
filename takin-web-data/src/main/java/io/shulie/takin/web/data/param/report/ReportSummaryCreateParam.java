@@ -3,14 +3,14 @@ package io.shulie.takin.web.data.param.report;
 import lombok.Data;
 
 /**
- * @author by: hezhongqi
- * @Package io.shulie.takin.web.data.param.report
- * @ClassName: ReportSummaryCreateParam
- * @Description: TODO
- * @Date: 2021/11/23 09:57
+ * TODO
+ *
+ * @author hezhongqi
+ * @date 2021/11/23 09:57
  */
 @Data
 public class ReportSummaryCreateParam {
+    private Long id;
     private Long reportId;
 
     /**

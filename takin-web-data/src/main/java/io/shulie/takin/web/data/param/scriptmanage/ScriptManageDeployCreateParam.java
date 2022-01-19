@@ -60,5 +60,9 @@ public class ScriptManageDeployCreateParam extends TenantCommonExt {
      */
     private String description;
 
+    /**
+     * 脚本版本
+     */
+    private Integer mVersion;
 
 }

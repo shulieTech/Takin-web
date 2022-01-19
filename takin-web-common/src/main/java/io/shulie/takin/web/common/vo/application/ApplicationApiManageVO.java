@@ -1,13 +1,14 @@
 package io.shulie.takin.web.common.vo.application;
 
-import java.io.Serializable;
 import java.util.Date;
+import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 /**
- * @author  vernon
+ * @author vernon
  * @date 2020/7/7 10:40
  */
 @Data
@@ -32,12 +33,12 @@ public class ApplicationApiManageVO implements Serializable {
     /**
      * 创建时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
     private Date createTime;
     /**
      * 更新时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
     private Date updateTime;
     /**
      * 是否有效 0:有效;1:无效

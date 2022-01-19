@@ -3,7 +3,7 @@ package io.shulie.takin.web.data.dao.application.impl;
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pamirs.attach.plugin.dynamic.Type;
+import com.pamirs.attach.plugin.dynamic.one.Type;
 import io.shulie.takin.web.data.dao.application.ConnectpoolConfigTemplateDAO;
 import io.shulie.takin.web.data.mapper.mysql.ConnectpoolConfigTemplateMapper;
 import io.shulie.takin.web.data.model.mysql.ConnectpoolConfigTemplateEntity;

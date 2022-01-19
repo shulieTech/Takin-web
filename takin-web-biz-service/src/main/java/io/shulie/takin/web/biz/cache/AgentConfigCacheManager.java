@@ -11,6 +11,7 @@ import com.pamirs.takin.entity.domain.vo.dsmanage.DsServerVO;
 import com.pamirs.takin.entity.domain.vo.guardmanage.LinkGuardVo;
 import io.shulie.takin.web.biz.agent.vo.ShadowConsumerVO;
 import io.shulie.takin.web.biz.cache.agentimpl.AllowListSwitchConfigAgentCache;
+import io.shulie.takin.web.biz.cache.agentimpl.ApplicationPluginConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.GuardConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.PressureSwitchConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.RemoteCallConfigAgentCache;
@@ -72,6 +73,28 @@ public class AgentConfigCacheManager {
     @Autowired
     private ApplicationService applicationService;
 
+    @Autowired
+    private ApplicationPluginConfigAgentCache applicationPluginConfigAgentCache;
+
+    /**
+     * 清除所有缓存
+     */
+    public void evict(String appName) {
+
+        allowListSwitchConfigCache.evict(appName);
+        shadowServerConfigCache.evict(appName);
+        shadowDbConfigCache.evict(appName);
+        shadowJobConfigCache.evict(appName);
+        guardConfigCache.evict(appName);
+        remoteCallConfigAgentCache.evict(appName);
+        pressureSwitchConfigCache.evict(appName);
+        shadowConsumerConfigAgentCache.evict(appName);
+        shadowEsServerConfigAgentCache.evict(appName);
+        shadowKafkaClusterConfigAgentCache.evict(appName);
+        shadowHbaseConfigAgentCache.evict(appName);
+        shadowHbaseConfigAgentCache.evict(appName);
+        applicationPluginConfigAgentCache.evict(appName);
+    }
     /**
      * 获得白名单开关的缓存结果
      */
@@ -107,7 +130,6 @@ public class AgentConfigCacheManager {
     }
 
     public void evictShadowDb(String appName) {
-
         shadowDbConfigCache.evict(appName);
     }
 
@@ -126,11 +148,17 @@ public class AgentConfigCacheManager {
         remoteCallConfigAgentCache.evict(appName);
     }
 
+    /**
+     * 获取开关信息 压测开关 + 静默开关
+     * @return redisTemplate.opsForValue().get("PRADAR_SWITCH_STATUS_hsh_test")
+     */
     public ApplicationSwitchStatusDTO getPressureSwitch() {
+        // 压测开关
         ApplicationSwitchStatusDTO applicationSwitchStatusDTO = pressureSwitchConfigCache.get(null);
-        String silenceSwitch = applicationService.getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantId());
+        // 静默开关
+        String silenceSwitch = applicationService.getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantCommonExt());
         String silenceSwitchOn = AppSwitchEnum.OPENED.getCode().equals(silenceSwitch) ?
-                AppSwitchEnum.CLOSED.getCode() : AppSwitchEnum.OPENED.getCode();
+            AppSwitchEnum.CLOSED.getCode() : AppSwitchEnum.OPENED.getCode();
         applicationSwitchStatusDTO.setSilenceSwitchOn(silenceSwitchOn);
         return applicationSwitchStatusDTO;
     }
@@ -213,6 +241,16 @@ public class AgentConfigCacheManager {
      */
     public AgentRemoteCallVO getRemoteCallConfig(String appName) {
         return remoteCallConfigAgentCache.get(appName);
+    }
+
+    /**
+     * 获取影子消费者配置业务逻辑
+     *
+     * @param redisKey 应用名称:configKey
+     * @return
+     */
+    public String getAppPluginConfig(String redisKey) {
+        return applicationPluginConfigAgentCache.get(redisKey);
     }
 }
 

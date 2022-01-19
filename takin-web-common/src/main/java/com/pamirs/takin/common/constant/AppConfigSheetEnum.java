@@ -13,15 +13,15 @@ public enum AppConfigSheetEnum {
     /**
      * 影子库/表
      */
-    DADABASE("影子库/表", 10, 0),
+    DADABASE("影子库表", 10, 0),
     /**
      * 挡板
      */
-    GUARD("挡板", 3, 1),
+    GUARD("出口挡板", 3, 1),
     /**
      * job任务
      */
-    JOB("job任务", 5, 2),
+    JOB("Job任务", 5, 2),
     /**
      * 白名单
      */

@@ -30,4 +30,7 @@ public class AgentConfigEffectQueryRequest extends PageBaseDTO {
     @ApiModelProperty(value = "是否生效，true为生效，false不生效")
     private Boolean isEffect;
 
+    @ApiModelProperty(value = "是否需要查询生效的值", hidden = true)
+    private Boolean needEffectValue = true;
+
 }

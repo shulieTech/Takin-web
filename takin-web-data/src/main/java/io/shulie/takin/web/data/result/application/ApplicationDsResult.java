@@ -77,8 +77,7 @@ public class ApplicationDsResult {
      */
     private Integer isDeleted;
 
-
-    public String getFilterStr(){
-        return this.getUrl()+"@@"+""+"@@"+"";
+    public String getFilterStr() {
+        return this.getUrl() + "@@" + "" + "@@" + "";
     }
 }

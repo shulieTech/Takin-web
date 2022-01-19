@@ -160,6 +160,10 @@ public class Response<T> {
         return this;
     }
 
+    public String getTotal() {
+        return getHeaders(PAGE_TOTAL_HEADER);
+    }
+
     public ErrorInfo getError() {
         return error;
     }
@@ -202,5 +206,23 @@ public class Response<T> {
             log.debug("设置响应头失败,servletRequestAttributes.getResponse()=null");
         }
         log.debug("设置响应头失败,(ServletRequestAttributes)requestAttributes=null");
+    }
+
+    /**
+     * 设置响应头<br/>最后统一暴露自定义响应头
+     *
+     */
+    public static String getHeaders(String key) {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes)requestAttributes;
+        if (servletRequestAttributes != null) {
+            HttpServletResponse response = servletRequestAttributes.getResponse();
+            if (response != null) {
+               return response.getHeader(key);
+            }
+            log.debug("设置响应头失败,servletRequestAttributes.getResponse()=null");
+        }
+        log.debug("设置响应头失败,(ServletRequestAttributes)requestAttributes=null");
+        return null;
     }
 }

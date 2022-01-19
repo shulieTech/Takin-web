@@ -1,6 +1,6 @@
 package io.shulie.takin.web.biz.pojo.response.application;
 
-import com.pamirs.attach.plugin.dynamic.template.Info;
+import com.pamirs.attach.plugin.dynamic.one.template.Info;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

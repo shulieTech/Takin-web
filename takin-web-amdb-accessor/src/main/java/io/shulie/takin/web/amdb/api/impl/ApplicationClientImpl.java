@@ -15,10 +15,10 @@
 
 package io.shulie.takin.web.amdb.api.impl;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
@@ -419,9 +419,6 @@ public class ApplicationClientImpl implements ApplicationClient {
         }
     }
 
-
-
-
     /**
      * 影子库表查询
      *
@@ -430,9 +427,8 @@ public class ApplicationClientImpl implements ApplicationClient {
      */
     @Override
     public List<AppShadowDatabaseDTO> getApplicationShadowDataBaseInfo(String appName) {
-        return this.getApplicationShadowDataBaseInfo(appName,"");
+        return this.getApplicationShadowDataBaseInfo(appName, "");
     }
-
 
     /**
      * 影子库表查询
@@ -468,7 +464,7 @@ public class ApplicationClientImpl implements ApplicationClient {
      */
     @Override
     public List<ApplicationBizTableDTO> getApplicationTable(String appName, String dataSource, String userName) {
-        if(StringUtils.isBlank(userName)){
+        if (StringUtils.isBlank(userName)) {
             return Collections.emptyList();
         }
         String url = properties.getUrl().getAmdb() + APPLICATION_BUS_DATABASE_PATH;

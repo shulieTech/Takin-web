@@ -59,6 +59,11 @@ public enum ConfigServerKeyEnum implements AppConstants {
     TAKIN_REPORT_OPEN_TASK("open.report.task", "takin.report.open.task", YES),
 
     /**
+     * 文件上传到 cloud 的地址
+     */
+    TAKIN_FILE_UPLOAD_URL("file.upload.url", "takin.file.upload.url", NO),
+
+    /**
      * 上传文件保存路径
      */
     TAKIN_DATA_PATH("data.path", "takin.data.path", NO),
@@ -107,6 +112,11 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 是否更新版本
      */
     AGENT_HTTP_UPDATE_VERSION("agent.http.update.version", "agent.http.update.version", YES),
+
+    /**
+     * 每个租户在定时任务中允许执行的最大线程数
+     */
+    PER_TENANT_ALLOW_TASK_THREADS_MAX("", "per.tenant.allow.task.threads.max", YES),
 
     /**
      * 压测引擎上传时间间隔 单位毫秒
@@ -159,11 +169,6 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 修复旧的业务数据
      */
     TAKIN_LINK_FIX_ENABLE("link.fix.enable", "takin.link.fix.enable", NO),
-
-    /**
-     * 文件上传到 cloud 的地址
-     */
-    TAKIN_FILE_UPLOAD_URL("file.upload.url", "takin.file.upload.url", NO),
 
     /**
      * 文件上传地址
@@ -254,6 +259,22 @@ public enum ConfigServerKeyEnum implements AppConstants {
      * 钉钉推送 url
      */
     TAKIN_LOGIN_DING_DING_PUSH_URL("login.dingding.push.url", "takin.login.dingding.push.url", NO),
+
+    /**
+     * 试用用户的默认流量
+     */
+    TAKIN_ASSET_BALANCE_DEFAULT_TRY("", "takin.asset.balance.default.try", NO),
+
+    /**
+     * 正式用户的默认流量
+     */
+    TAKIN_ASSET_BALANCE_DEFAULT_FORMAL("", "takin.asset.balance.default.formal", NO),
+
+    /**
+     * 创建租户默认的密码
+     */
+    TAKIN_TENANT_DEFAULT_PASSWORD("", "takin.tenant.default.password", YES),
+
     ;
 
     /**

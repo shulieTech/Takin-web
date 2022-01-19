@@ -40,6 +40,11 @@ public class TenantInfoExt {
      */
     private List<TenantEnv> envs;
 
+    /**
+     * 创建者
+     */
+    private Long createBy;
+
     @Data
     @NoArgsConstructor
     public static class TenantEnv {

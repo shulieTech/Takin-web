@@ -2,8 +2,10 @@ package com.pamirs.takin.entity.domain.entity;
 
 import java.util.Date;
 
-import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 
 /**
  * @author 慕白
@@ -11,6 +13,7 @@ import lombok.Data;
  */
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class LinkGuardEntity extends UserBaseEntity {
 
     private Long id;

@@ -1,8 +1,10 @@
 package io.shulie.takin.web.common.util.application;
 
+import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.amdb.common.enums.RpcType;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 
 /**
  * @author 无涯
@@ -12,15 +14,18 @@ public class RemoteCallUtils {
 
 
     /**
-     * 去重
+     * 去重 求md5
      * @param appName
-     * @param type
+     * @param interfaceType
      * @param interfaceName
      * @return
      */
-    public static String buildRemoteCallName(String appName,String interfaceName,Object type) {
-        return  appName + "@@"+  interfaceName + "@@" + (type == null ? "" :type);
+    public static String buildRemoteCallName(String appName,String interfaceName,Object interfaceType) {
+        String data = appName + "@@"+  interfaceName + "@@" + (interfaceType == null ? "" :interfaceType) + "@@" +
+            WebPluginUtils.traceTenantId() + "@@" + WebPluginUtils.traceEnvCode();
+        return MD5Util.getMD5(data);
     }
+
 
     /**
      * 导入导出用
@@ -89,17 +94,12 @@ public class RemoteCallUtils {
 
     /**
      * 是否校验白名单异常
-     * @param interfaceType
      * @param type
      * @return
      */
-    public static boolean checkWhite(Integer interfaceType, Integer type) {
-        if(type == null) {
-            return !interfaceType.equals(AppRemoteCallTypeEnum.FEIGN.getType());
-        }else {
-            return !interfaceType.equals(AppRemoteCallTypeEnum.FEIGN.getType()) && type != null
-                && type.equals(AppRemoteCallConfigEnum.OPEN_WHITELIST.getType());
-        }
-
+    public static boolean checkWhite(Integer type) {
+        return AppRemoteCallConfigEnum.OPEN_WHITELIST.getType().equals(type);
     }
+
+
 }

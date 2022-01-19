@@ -1,7 +1,6 @@
 -- 修改字段开始
 DROP PROCEDURE IF EXISTS change_field;
-DELIMITER
-$$
+DELIMITER $$
 CREATE PROCEDURE change_field()
 BEGIN
 

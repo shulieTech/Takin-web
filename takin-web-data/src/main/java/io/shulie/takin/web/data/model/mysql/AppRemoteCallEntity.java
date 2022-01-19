@@ -10,12 +10,13 @@ import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
 /**
-* @author 何仲奇
-* @date 2021/5/29 上午12:12
-*/
+ * @author 何仲奇
+ * @date 2021/5/29 上午12:12
+ */
+
 /**
-    * 远程调用表
-    */
+ * 远程调用表
+ */
 @Data
 @TableName(value = "t_app_remote_call")
 public class AppRemoteCallEntity extends UserBaseEntity {
@@ -30,7 +31,6 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      */
     @TableField(value = "interface_name")
     private String interfaceName;
-
 
     /**
      * 接口类型
@@ -106,5 +106,11 @@ public class AppRemoteCallEntity extends UserBaseEntity {
 
     @TableField(value = "remark")
     private String remark;
+
+    /**
+     * 应用名，接口名称，接口类型，租户id,envcode求md5
+     */
+    @TableField(value = "md5")
+    private String md5;
 
 }

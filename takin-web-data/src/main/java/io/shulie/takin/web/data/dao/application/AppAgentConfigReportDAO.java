@@ -23,5 +23,7 @@ public interface AppAgentConfigReportDAO {
 
     List<AppAgentConfigReportDetailResult> listByBizType(Integer BizType,String appName);
 
+     void clearExpiredData();
+
 }
 

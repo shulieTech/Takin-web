@@ -18,6 +18,8 @@ package com.pamirs.takin.common.util.parse;
 import io.shulie.amdb.common.enums.RpcType;
 import org.apache.commons.lang3.StringUtils;
 import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 
 /**
@@ -26,36 +28,34 @@ import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
  */
 public class UrlUtil {
     public static String convertUrl(ActivityUtil.EntranceJoinEntity entranceJoinEntity) {
-        String result = null;
         // 虚拟入口
         if (StringUtils.isNotEmpty(entranceJoinEntity.getVirtualEntrance())) {
             return entranceJoinEntity.getVirtualEntrance();
         }
         //如果为http请求
-        if (entranceJoinEntity.getRpcType().equals(RpcType.TYPE_WEB_SERVER + "")) {
+        if (String.valueOf(RpcType.TYPE_WEB_SERVER).equals(entranceJoinEntity.getRpcType())) {
             String url = entranceJoinEntity.getServiceName();
             String[] urls = StringUtils.split(url, "|");
             if (urls == null || urls.length == 0) {
                 return null;
             }
             url = urls[urls.length - 1].replace("//", "/");
-
-            result = deleteFront(url);
+            return deleteFront(url);
         }
         //如果为rpc请求
-        if (entranceJoinEntity.getRpcType().equals(RpcType.TYPE_RPC + "")) {
+        if (String.valueOf(RpcType.TYPE_RPC).equals(entranceJoinEntity.getRpcType())) {
             String methodName = entranceJoinEntity.getMethodName();
             String substring = methodName.substring(0, methodName.indexOf("("));
             if (substring.endsWith("~")) {
                 substring = substring.substring(0, substring.length() - 1);
             }
-            result = entranceJoinEntity.getServiceName().split(":")[0] + "#" + substring;
+            return entranceJoinEntity.getServiceName().split(":")[0] + "#" + substring;
         }
         //如果为mq
-        if (entranceJoinEntity.getRpcType().equals(RpcType.TYPE_MQ + "")) {
-            result = entranceJoinEntity.getServiceName();
+        if (String.valueOf(RpcType.TYPE_MQ).equals(entranceJoinEntity.getRpcType())) {
+            return entranceJoinEntity.getServiceName();
         }
-        return result;
+        throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "入口URL匹配失败");
     }
 
     public static Boolean checkEqual(String pradarPath, String jmeterPath) {

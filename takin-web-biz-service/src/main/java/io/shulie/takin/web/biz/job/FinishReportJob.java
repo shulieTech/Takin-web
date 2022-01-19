@@ -4,22 +4,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import com.alibaba.fastjson.JSON;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
-import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -42,8 +39,8 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
     @Qualifier("reportFinishThreadPool")
     private ThreadPoolExecutor reportThreadPool;
 
-    private static Map<Long, Object> runningTasks = new ConcurrentHashMap<>();
-    private static Object EMPTY = new Object();
+    private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
+    private static AtomicInteger EMPTY = new AtomicInteger();
 
     @Override
     public void execute(ShardingContext shardingContext) {
@@ -53,9 +50,9 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
         while (true){
             List<SceneTaskDto> taskDtoList = getTaskFromRedis();
             if (taskDtoList == null) { break; }
-            for (SceneTaskDto taskDto : taskDtoList) {
-                Long reportId = taskDto.getReportId();
-                if(openVersion) {
+            if(openVersion) {
+                for (SceneTaskDto taskDto : taskDtoList) {
+                    Long reportId = taskDto.getReportId();
                     // 私有化 + 开源 根据 报告id进行分片
                     // 开始数据层分片
                     if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
@@ -65,34 +62,75 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
                                 try {
                                     reportTaskService.finishReport(reportId,taskDto);
                                 } catch (Throwable e) {
-                                    log.error("execute CalcTpsTargetJob occured error. reportId={}", reportId, e);
+                                    log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
                                 } finally {
                                     runningTasks.remove(reportId);
                                 }
                             });
                         }
                     }
-                }else {
+                }
+            }else {
+                //每个租户可以使用的最大线程数
+                int allowedTenantThreadMax = this.getAllowedTenantThreadMax();
+                //筛选出租户的任务
+                final Map<Long, List<SceneTaskDto>> listMap = taskDtoList.stream().collect(
+                    Collectors.groupingBy(SceneTaskDto::getTenantId));
+                for (SceneTaskDto taskDto : taskDtoList) {
+                    Long reportId = taskDto.getReportId();
+                    final Long tenantId = taskDto.getTenantId();
                     // saas 根据租户进行分片
-                    // 开始数据层分片
-                    if (taskDto.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        Object task = runningTasks.putIfAbsent(taskDto.getTenantId(), EMPTY);
-                        if (task == null) {
-                            reportThreadPool.execute(() -> {
-                                try {
-                                    WebPluginUtils.setTraceTenantContext(taskDto);
-                                    reportTaskService.finishReport(taskDto.getReportId(),taskDto);
-                                } catch (Throwable e) {
-                                    log.error("execute CalcTpsTargetJob occured error. reportId={},tenantId={}", reportId,taskDto.getTenantId(), e);
-                                } finally {
-                                    runningTasks.remove(taskDto.getTenantId());
-                                }
-                            });
+                    if (tenantId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                        final List<SceneTaskDto> tenantTasks = listMap.get(tenantId);
+                        /**
+                         * 取最值。当前租户的任务数和允许的最大线程数
+                         */
+                        AtomicInteger allowRunningThreads = new AtomicInteger(
+                            Math.min(allowedTenantThreadMax, tenantTasks.size()));
+
+                        /**
+                         * 已经运行的任务数
+                         */
+                        AtomicInteger oldRunningThreads = runningTasks.putIfAbsent(tenantId, allowRunningThreads);
+                        if (oldRunningThreads != null) {
+                            /**
+                             * 剩下允许执行的任务数
+                             * allow running threads calculated by capacity
+                             */
+                            int permitsThreads = Math.min(allowedTenantThreadMax - oldRunningThreads.get(),
+                                allowRunningThreads.get());
+                            // add new threads to capacity
+                            oldRunningThreads.addAndGet(permitsThreads);
+                            // adjust allow current running threads
+                            allowRunningThreads.set(permitsThreads);
+                        }
+
+                        for (int i = 0; i < allowRunningThreads.get(); i++) {
+                            runTaskInTenantIfNecessary(tenantTasks.get(i), reportId);
                         }
                     }
                 }
             }
+            cleanUnAvailableTasks(taskDtoList);
         }
         log.debug("finishReport 执行时间:{}", System.currentTimeMillis() - start);
+    }
+
+    @Override
+    protected void runTaskInTenantIfNecessary( SceneTaskDto tenantTask, Long reportId) {
+        //将任务放入线程池
+        reportThreadPool.execute(() -> {
+            try {
+                WebPluginUtils.setTraceTenantContext(tenantTask);
+                reportTaskService.finishReport(reportId, tenantTask);
+            } catch (Throwable e) {
+                log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
+            } finally {
+                AtomicInteger currentRunningThreads = runningTasks.get(tenantTask.getTenantId());
+                if (currentRunningThreads != null) {
+                    currentRunningThreads.decrementAndGet();
+                }
+            }
+        });
     }
 }

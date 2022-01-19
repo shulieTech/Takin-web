@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -15,6 +14,8 @@ import javax.annotation.Resource;
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.SceneManageConstant;
@@ -33,7 +34,6 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
-import io.shulie.takin.cloud.entrypoint.scenemanage.CloudSceneApi;
 import io.shulie.takin.cloud.sdk.model.common.TimeBean;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneIpNumReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
@@ -50,21 +50,23 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperRe
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.common.beans.response.ResponseResult.ErrorInfo;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneTagRefResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
+import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTagService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
 import io.shulie.takin.web.biz.utils.business.script.ScriptManageUtil;
+import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.script.FileTypeEnum;
@@ -74,9 +76,13 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
+import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.web.data.param.CreateSceneExcludedApplicationParam;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
@@ -96,30 +102,50 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SceneManageServiceImpl implements SceneManageService {
     @Resource
+    private SceneTaskApi sceneTaskApi;
+    @Resource
+    private SceneService sceneService;
+    @Resource
     private ApplicationDAO applicationDAO;
     @Resource
-    private CloudSceneApi cloudSceneApi;
-
-    @Autowired
+    private io.shulie.takin.cloud.entrypoint.scene.manage.SceneManageApi cloudSceneManageApi;
+    @Resource
+    private SceneManageApi sceneManageApi;
+    @Resource
+    private SceneTagService sceneTagService;
+    @Resource
+    private ScriptManageService scriptManageService;
+    @Resource
+    private BusinessLinkManageDAO businessLinkManageDAO;
+    @Resource
+    private SceneSchedulerTaskService sceneSchedulerTaskService;
+    @Resource
     private ApplicationBusinessActivityService applicationBusinessActivityService;
 
     @Autowired
-    private ScriptManageService scriptManageService;
+    private SceneExcludedApplicationDAO sceneExcludedApplicationDAO;
 
     @Autowired
-    private SceneManageApi sceneManageApi;
+    private SceneExcludedApplicationDAO excludedApplicationDAO;
 
-    @Autowired
-    private SceneSchedulerTaskService sceneSchedulerTaskService;
+    @Override
+    public SceneDetailResponse getById(Long sceneId) {
+        ResponseResult<SceneManageWrapperResp> sceneResult = this.detailScene(sceneId);
+        if (sceneResult == null) {
+            return null;
+        }
 
-    @Autowired
-    private SceneTagService sceneTagService;
+        SceneDetailResponse sceneDetailResponse = DataTransformUtil.copyBeanPropertiesWithNull(sceneResult.getData(),
+            SceneDetailResponse.class);
+        if (sceneDetailResponse == null) {
+            return null;
+        }
 
-    @Autowired
-    private BusinessLinkManageDAO businessLinkManageDAO;
-
-    @Autowired
-    private SceneTaskApi sceneTaskApi;
+        // 查询排除的应用
+        List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
+        sceneDetailResponse.setExcludedApplicationIds(DataTransformUtil.list2list(excludedApplicationIds, String.class));
+        return sceneDetailResponse;
+    }
 
     @Override
     public ResponseResult<List<SceneManageWrapperResp>> getByIds(SceneManageQueryByIdsReq req) {
@@ -163,10 +189,17 @@ public class SceneManageServiceImpl implements SceneManageService {
                 sceneSchedulerTaskService.insert(createRequest);
             }
             webResponse.setSuccess(true);
+
+            // 忽略检测的应用
+            if (result != null && result.getSuccess()) {
+                this.createSceneExcludedApplication(result.getData(), vo.getExcludedApplicationIds());
+            }
+
         } catch (Exception e) {
             log.error("新增压测场景失败", e);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_ADD_ERROR, "新增压测场景失败！");
         }
+
         return webResponse;
     }
 
@@ -194,19 +227,24 @@ public class SceneManageServiceImpl implements SceneManageService {
         }
         //补充递增时间
         if (dto.getIncreasingTime() != null) {
-            TimeBean incresTime = new TimeBean();
-            incresTime.setTime(dto.getIncreasingTime().getTime());
-            incresTime.setUnit(dto.getIncreasingTime().getUnit());
-            req.setIncreasingTime(incresTime);
-            req.setIncreasingTime(incresTime);
+            TimeBean increasingTime = new TimeBean();
+            increasingTime.setTime(dto.getIncreasingTime().getTime());
+            increasingTime.setUnit(dto.getIncreasingTime().getUnit());
+            req.setIncreasingTime(increasingTime);
+            req.setIncreasingTime(increasingTime);
         }
         assembleFeatures(dto, req);
         return webResponse;
     }
 
-    //将特殊字段放在features
+    /**
+     * 将特殊字段放在features
+     *
+     * @param vo  -
+     * @param req -
+     */
     public void assembleFeatures(SceneManageWrapperVO vo, SceneManageWrapperReq req) {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>(5);
         map.put(SceneManageConstant.FEATURES_BUSINESS_FLOW_ID, vo.getBusinessFlowId());
         Integer configType = vo.getConfigType();
         map.put(SceneManageConstant.FEATURES_CONFIG_TYPE, configType);
@@ -237,35 +275,34 @@ public class SceneManageServiceImpl implements SceneManageService {
             }
         }
         ResponseResult<List<SceneManageListResp>> sceneList = sceneManageApi.getSceneList(req);
-        if (!Objects.isNull(sceneList)) {
-            if (!Boolean.TRUE.equals(sceneList.getSuccess())) {
-                ErrorInfo error = sceneList.getError();
-                String errorMsg = Objects.isNull(error) ? "" : error.getMsg();
-                log.error("cloud查询场景列表返回异常,入参={},错误信息={}", JSON.toJSONString(req), JSON.toJSONString(error));
-                throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR, "cloud查询场景列表返回异常！原因为" + errorMsg);
-            }
-        } else {
-            log.error("cloud查询场景列表返回为空,入参={}", JSON.toJSONString(req));
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_THIRD_PARTY_ERROR, "cloud查询场景列表返回为空！");
-        }
         List<SceneManageListOutput> listData = convertData(sceneList.getData());
+        List<Long> sceneIds = listData.stream().map(SceneManageListOutput::getId).collect(Collectors.toList());
+        //计算场景的定时执行时间
+        List<SceneSchedulerTaskResponse> responseList = sceneSchedulerTaskService.selectBySceneIds(sceneIds);
+        Map<Long, Date> sceneExecuteTimeMap = new HashMap<>(responseList.size());
+        responseList.forEach(response -> sceneExecuteTimeMap.put(response.getSceneId(), response.getExecuteTime()));
+        listData.forEach(t -> {
+            Date date = sceneExecuteTimeMap.get(t.getId());
+            if (date != null) {
+                t.setIsScheduler(true);
+                t.setScheduleExecuteTime(DateUtil.formatDateTime(date));
+            }
+        });
         return ResponseResult.success(listData, sceneList.getTotalNum());
     }
 
     /**
      * 转换bean
      *
-     * @return
+     * @return -
      */
     private List<SceneManageListOutput> convertData(List<SceneManageListResp> data) {
         if (CollectionUtils.isNotEmpty(data)) {
             //获取场景标签数组
             List<TagManageResponse> allSceneTags = sceneTagService.getAllSceneTags();
-            Map<Long, TagManageResponse> tagMap = new HashMap<>();
+            Map<Long, TagManageResponse> tagMap = new HashMap<>(allSceneTags.size());
             if (CollectionUtils.isNotEmpty(allSceneTags)) {
-                allSceneTags.forEach(tagManageResponse -> {
-                    tagMap.put(tagManageResponse.getId(), tagManageResponse);
-                });
+                allSceneTags.forEach(tagManageResponse -> tagMap.put(tagManageResponse.getId(), tagManageResponse));
             }
             List<Long> sceneIds = data.stream().map(SceneManageListResp::getId).collect(Collectors.toList());
             List<SceneTagRefResponse> sceneTagRefList = sceneTagService.getSceneTagRefBySceneIds(sceneIds);
@@ -295,21 +332,6 @@ public class SceneManageServiceImpl implements SceneManageService {
         }
         return Lists.newArrayList();
     }
-
-    //List<SceneListResponse> adjustSchedulerScene(List<SceneManageListResp> sceneRespList) {
-    //
-    //    if (CollectionUtils.isEmpty(sceneRespList)) {
-    //        return Lists.newArrayList();
-    //    }
-    //    List<Long> sceneIds = sceneRespList.stream().map(SceneManageListResp::getId).collect(
-    //            Collectors.toList());
-    //    List<SceneSchedulerTaskResponse> responseList = sceneSchedulerTaskService.selectBySceneIds(sceneIds);
-    //    Map<Long, Date> schedulerMap = new HashMap<>();
-    //    responseList.stream().forEach(response -> {
-    //        schedulerMap.put(response.getSceneId(), response.getExecuteTime());
-    //    });
-    //    return voList;
-    //}
 
     @Override
     public ResponseResult<StrategyResp> getIpNum(Integer concurrenceNum, Integer tpsNum) {
@@ -350,6 +372,15 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (scriptManageDeployDetail == null) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "脚本实例不存在!");
         }
+        // 关联业务流程, 查出关联的业务流程
+        if (ScriptManageUtil.deployRefBusinessFlowType(scriptManageDeployDetail.getRefType())) {
+            // 业务流程id
+            Long businessFlowId = Long.valueOf(scriptManageDeployDetail.getRefValue());
+            SceneResult scene = sceneService.getScene(businessFlowId);
+            if (null != scene) {
+                dto.setScriptAnalysisResult(scene.getScriptJmxNode());
+            }
+        }
 
         // 设置脚本类型
         dto.setScriptType(scriptManageDeployDetail.getType());
@@ -369,7 +400,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             ScriptCheckDTO checkDTO = this.checkScriptAndActivity(dto.getScriptType(), true, businessActivityList,
                 execList);
             if (StringUtils.isNoneBlank(checkDTO.getErrmsg())) {
-                throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON,checkDTO.getErrmsg());
+                throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, checkDTO.getErrmsg());
             }
         }
 
@@ -436,6 +467,11 @@ public class SceneManageServiceImpl implements SceneManageService {
         webResponse.setData(cloudResult.getData());
         webResponse.setSuccess(cloudResult.getSuccess());
         webResponse.setTotal(cloudResult.getTotalNum());
+
+        // 先删除
+        sceneExcludedApplicationDAO.removeBySceneId(dto.getId());
+        // 排除应用更新
+        this.createSceneExcludedApplication(dto.getId(), dto.getExcludedApplicationIds());
         return webResponse;
     }
 
@@ -455,7 +491,7 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     @Override
     public String deleteScene(SceneManageDeleteReq vo) {
-        return cloudSceneApi.deleteScene(vo);
+        return cloudSceneManageApi.deleteScene(vo);
     }
 
     @Override
@@ -477,7 +513,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         SceneManageWrapperResp data = sceneDetail.getData();
         //组装场景定时时间
         SceneSchedulerTaskResponse sceneScheduler = sceneSchedulerTaskService.selectBySceneId(id);
-        if (sceneScheduler != null && sceneScheduler.getIsDeleted() == false) {
+        if (sceneScheduler != null && !sceneScheduler.getIsDeleted()) {
             Date executeTime = sceneScheduler.getExecuteTime();
             if (executeTime != null) {
                 data.setIsScheduler(true);
@@ -537,6 +573,17 @@ public class SceneManageServiceImpl implements SceneManageService {
     }
 
     /**
+     * 通过业务活动id关联出应用id列表
+     *
+     * @param businessActivityId 业务活动id
+     * @return 应用id列表
+     */
+    @Override
+    public List<String> getAppIdsByBusinessActivityId(Long businessActivityId) {
+        return getAppIdsByNameAndUser(getAppsById(businessActivityId));
+    }
+
+    /**
      * 业务活动列表 转换
      *
      * @param voList 业务活动
@@ -548,7 +595,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             SceneBusinessActivityRef ref = new SceneBusinessActivityRef();
             ref.setBusinessActivityId(data.getBusinessActivityId());
             ref.setBusinessActivityName(data.getBusinessActivityName());
-            List<String> ids = getAppIdsByNameAndUser(getAppsbyId(data.getBusinessActivityId()));
+            List<String> ids = getAppIdsByNameAndUser(getAppsById(data.getBusinessActivityId()));
             ref.setApplicationIds(convertListToString(ids));
             ref.setGoalValue(buildGoalValue(data));
             businessActivityList.add(ref);
@@ -609,7 +656,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 return;
             }
             BusinessLinkResult businessLinkResult = businessLinkResults.get(0);
-            EntranceJoinEntity entranceJoinEntity = null;
+            EntranceJoinEntity entranceJoinEntity;
             if (ActivityUtil.isNormalBusiness(businessLinkResult.getType())) {
                 entranceJoinEntity = ActivityUtil.covertEntrance(businessLinkResult.getEntrace());
             } else {
@@ -622,8 +669,9 @@ public class SceneManageServiceImpl implements SceneManageService {
         });
 
         ResponseResult<ScriptCheckResp> scriptCheckResp = sceneManageApi.checkAndUpdateScript(scriptCheckAndUpdateReq);
-        if (scriptCheckResp == null) {
-            dto.setErrmsg("调用cloud检查脚本无响应内容！");
+        if (scriptCheckResp == null || !scriptCheckResp.getSuccess()) {
+            log.error("cloud检查并更新脚本出错：{}", sceneScriptRef.getUploadPath());
+            dto.setErrmsg(String.format("|cloud检查并更新【%s】脚本异常,异常内容【%s】", sceneScriptRef.getUploadPath(), scriptCheckResp.getError().getMsg()));
             return dto;
         }
 
@@ -645,7 +693,7 @@ public class SceneManageServiceImpl implements SceneManageService {
     /**
      * 校验脚本
      *
-     * @return
+     * @return -
      */
     private WebResponse<List<SceneScriptRefOpen>> checkScript(Integer scriptType, List<SceneScriptRefOpen> scriptList) {
         if (CollectionUtils.isEmpty(scriptList)) {
@@ -671,12 +719,12 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     private List<String> getAppIdsByNameAndUser(List<String> nameList) {
         if (CollectionUtils.isEmpty(nameList)) {
-            return Collections.EMPTY_LIST;
+            return new ArrayList<>(0);
         }
         return applicationDAO.queryIdsByNameAndTenant(nameList, WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode());
     }
 
-    private List<String> getAppsbyId(Long id) {
+    private List<String> getAppsById(Long id) {
         return applicationBusinessActivityService.processAppNameByBusinessActiveId(id);
     }
 
@@ -684,7 +732,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (CollectionUtils.isEmpty(dataList)) {
             return null;
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (String data : dataList) {
             sb.append(data);
             sb.append(",");
@@ -754,7 +802,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         ResponseResult<SceneStartCheckResp> result = sceneTaskApi.sceneStartPreCheck(checkReq);
         if (result != null) {
             if (!result.getSuccess()) {
-                ResponseResult.ErrorInfo error = Optional.ofNullable(result.getError()).orElse(null);
+                ResponseResult.ErrorInfo error = result.getError();
                 if (error != null) {
                     throw new TakinWebException(ExceptionCode.SCENE_CHECK_ERROR, "cloud查询位点返回错误！" + error.getMsg());
                 }
@@ -764,20 +812,47 @@ public class SceneManageServiceImpl implements SceneManageService {
                 if (resultData != null) {
                     ScenePositionPointResponse response = new ScenePositionPointResponse();
                     //false = 没有csv文件或位点均为0
-                    //                    Boolean hasUnread = resultData.getHasUnread();
+                    //  Boolean hasUnread = resultData.getHasUnread();
                     List<SceneStartCheckResp.FileReadInfo> infos = resultData.getFileReadInfos();
                     if (Objects.nonNull(infos)) {
-                        infos.stream().forEach(t -> {
+                        infos.forEach(t -> {
                             response.setScriptName(t.getFileName());
                             response.setScriptSize(t.getFileSize());
                             response.setPressedSize(t.getReadSize());
                             list.add(response);
                         });
                     }
-                    //                    redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
+                    // redisTemplate.opsForValue().set("hasUnread_"+sceneId,hasUnread);
                 }
             }
         }
         return ResponseResult.success(list);
     }
+
+    /**
+     * 创建场对应的排除应用
+     *
+     * @param excludedApplicationIds 排除的应用ids
+     * @param sceneId 场景id
+     */
+    private void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds) {
+        if (CollectionUtil.isEmpty(excludedApplicationIds)) {
+            return;
+        }
+
+        List<CreateSceneExcludedApplicationParam> createSceneExcludedApplicationParams =
+            excludedApplicationIds.stream().map(excludedApplicationId -> {
+                CreateSceneExcludedApplicationParam createSceneExcludedApplicationParam
+                    = new CreateSceneExcludedApplicationParam();
+                createSceneExcludedApplicationParam.setSceneId(sceneId);
+                createSceneExcludedApplicationParam.setApplicationId(excludedApplicationId);
+                return createSceneExcludedApplicationParam;
+            }).collect(Collectors.toList());
+
+        // 再插入
+        if (!sceneExcludedApplicationDAO.saveBatch(createSceneExcludedApplicationParams)) {
+            throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, "排除的应用保存失败!");
+        }
+    }
+
 }

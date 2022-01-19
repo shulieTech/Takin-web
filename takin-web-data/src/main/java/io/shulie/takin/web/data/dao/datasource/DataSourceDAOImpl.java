@@ -52,16 +52,16 @@ public class DataSourceDAOImpl implements DataSourceDAO {
             wrapper.eq(TakinDbresourceEntity::getType, queryParam.getType());
         }
         if (StringUtils.isNotBlank(queryParam.getName())) {
-            wrapper.like(TakinDbresourceEntity::getName, queryParam.getName());
+            wrapper.like(TakinDbresourceEntity::getName, "\\"+queryParam.getName());
         }
         if (StringUtils.isNotBlank(queryParam.getJdbcUrl())) {
-            wrapper.like(TakinDbresourceEntity::getJdbcUrl, queryParam.getJdbcUrl());
+            wrapper.like(TakinDbresourceEntity::getJdbcUrl, "\\"+queryParam.getJdbcUrl());
         }
         if (CollectionUtils.isNotEmpty(queryParam.getDataSourceIdList())) {
             wrapper.in(TakinDbresourceEntity::getId, queryParam.getDataSourceIdList());
         }
         // 数据权限
-        if(CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
+        if (CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
             wrapper.in(TakinDbresourceEntity::getUserId, WebPluginUtils.getQueryAllowUserIdList());
         }
         Page<TakinDbresourceEntity> page = new Page<>(queryParam.getCurrent(), queryParam.getPageSize());
@@ -69,7 +69,7 @@ public class DataSourceDAOImpl implements DataSourceDAO {
 
         IPage<TakinDbresourceEntity> takinResourceEntityPage = datasourceMapper.selectPage(page, wrapper);
         if (CollectionUtils.isEmpty(takinResourceEntityPage.getRecords())) {
-            return PagingList.of(Lists.newArrayList(),takinResourceEntityPage.getTotal());
+            return PagingList.of(Lists.newArrayList(), takinResourceEntityPage.getTotal());
         }
         List<DataSourceResult> dataSourceResultList = takinResourceEntityPage.getRecords().stream().map(entity -> {
             DataSourceResult dataSourceResult = new DataSourceResult();
@@ -146,6 +146,7 @@ public class DataSourceDAOImpl implements DataSourceDAO {
             queryWrapper.in(TakinDbresourceEntity::getId, queryParam.getDataSourceIdList());
             queryWrapper.eq(TakinDbresourceEntity::getIsDeleted, 0);
         }
+        queryWrapper.orderByDesc(TakinDbresourceEntity::getUpdateTime);
         List<TakinDbresourceEntity> datasourceEntityList = datasourceMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(datasourceEntityList)) {
             return datasourceEntityList.stream().map(entity -> {

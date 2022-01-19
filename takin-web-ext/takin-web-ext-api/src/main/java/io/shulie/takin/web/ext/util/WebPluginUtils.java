@@ -1,15 +1,18 @@
 package io.shulie.takin.web.ext.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.plugin.framework.core.PluginManager;
+import io.shulie.takin.web.ext.api.agentupgradeonline.AgentHeartbeatExtApi;
 import io.shulie.takin.web.ext.api.auth.WebDataAuthExtApi;
 import io.shulie.takin.web.ext.api.auth.WebUserAuthExtApi;
 import io.shulie.takin.web.ext.api.e2e.InspectionExtApi;
@@ -53,6 +56,7 @@ public class WebPluginUtils {
     private static WebUserExtApi userApi;
     private static WebDataAuthExtApi dataAuthApi;
     private static WebUserAuthExtApi userAuthExtApi;
+    private static AgentHeartbeatExtApi agentHeartbeatExtApi;
     public static InspectionExtApi inspectionExtApi;
     private static WebTenantExtApi tenantExtApi;
 
@@ -64,6 +68,7 @@ public class WebPluginUtils {
         userApi = pluginManager.getExtension(WebUserExtApi.class);
         dataAuthApi = pluginManager.getExtension(WebDataAuthExtApi.class);
         userAuthExtApi = pluginManager.getExtension(WebUserAuthExtApi.class);
+        agentHeartbeatExtApi = pluginManager.getExtension(AgentHeartbeatExtApi.class);
         inspectionExtApi = pluginManager.getExtension(InspectionExtApi.class);
         tenantExtApi = pluginManager.getExtension(WebTenantExtApi.class);
     }
@@ -79,6 +84,20 @@ public class WebPluginUtils {
         private String desc;
     }
 
+    /**
+     * 获取 IAgentCommandProcessor 实现类处理不同的心跳指令
+     *
+     * 由于 IAgentCommandProcessor 类在biz-service模块下所以在当前接口定义中只定义返回Object对象，使用时加下类型判断
+     *
+     * @return IAgentCommandProcessor子类集合
+     */
+    public static List<Object> getAgentCommandProcessor() {
+        List<Object> result = new ArrayList<>();
+        if (Objects.nonNull(agentHeartbeatExtApi)) {
+            result = agentHeartbeatExtApi.getAgentCommandProcessor();
+        }
+        return result;
+    }
     //********************************用户插件模块**********************************//
 
     /**
@@ -137,7 +156,13 @@ public class WebPluginUtils {
      */
     public static Map<Long, UserExt> getUserMapByIds(List<Long> userIds) {
         if (CollectionUtils.isNotEmpty(userIds) && Objects.nonNull(userApi)) {
-            return userApi.getUserMapByIds(userIds);
+            userIds = userIds.stream().filter(Objects::nonNull)
+                    .distinct()
+                    .collect(Collectors.toList());
+            Map<Long, UserExt> userMap = userApi.getUserMapByIds(userIds);
+            if (null != userMap) {
+                return userMap;
+            }
         }
         return Maps.newHashMap();
     }
@@ -523,9 +548,9 @@ public class WebPluginUtils {
         }
         HashMap<String, String> dataMap = new LinkedHashMap<>();
         dataMap.put("租户ID", DEFAULT_TENANT_ID + "");
-        dataMap.put("租户user-app-key", DEFAULT_TENANT_APP_KEY);
+        dataMap.put("租户tenant-app-key", DEFAULT_TENANT_APP_KEY);
+        dataMap.put("租户code", DEFAULT_TENANT_CODE);
         dataMap.put("用户ID", DEFAULT_USER_ID + "");
-        dataMap.put("用户user-app-key", DEFAULT_TENANT_APP_KEY);
         return dataMap;
     }
 

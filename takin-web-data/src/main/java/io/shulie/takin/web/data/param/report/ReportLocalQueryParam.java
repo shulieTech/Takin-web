@@ -2,14 +2,17 @@ package io.shulie.takin.web.data.param.report;
 
 import java.io.Serializable;
 
-import io.shulie.takin.common.beans.page.PagingDevice;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import io.shulie.takin.common.beans.page.PagingDevice;
 
 /**
-* @author qianshui
+ * @author qianshui
  * @date 2020/7/27 下午8:35
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class ReportLocalQueryParam extends PagingDevice implements Serializable {
 
     /**

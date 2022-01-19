@@ -78,6 +78,8 @@ public class LeakCheckSqlController {
         return leakSqlService.getLeakCheckConfigDetail(detailRequest);
     }
 
+
+
     @PostMapping("/batch")
     @ApiOperation("批量查询")
     public List<LeakSqlBatchRefsResponse> getBatchLeakSqlRef(@Validated @RequestBody LeakSqlBatchRefsRequest refsRequest) {

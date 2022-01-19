@@ -84,8 +84,6 @@ public abstract class AbstractSceneTask {
         redisTemplate.opsForValue().getOperations().delete(reportKey);
     }
 
-    protected abstract void runTaskInTenantIfNecessary(int allowedTenantThreadMax, SceneTaskDto tenantTask,
-        Long reportId,
-        AtomicInteger runningThreads);
+    protected abstract void runTaskInTenantIfNecessary(SceneTaskDto tenantTask, Long reportId);
 
 }

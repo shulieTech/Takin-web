@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -31,8 +32,16 @@ public abstract class AbstractSceneTask {
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
+    /**
+     * 是否是预发环境
+     */
+    @Value("${takin.inner.pre:0}")
+    private int isInnerPre;
+
     protected List<SceneTaskDto> getTaskFromRedis() {
-        List<String> o = redisTemplate.opsForList().range(WebRedisKeyConstant.SCENE_REPORTID_KEY, 0, -1);
+        String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
+            : WebRedisKeyConstant.SCENE_REPORTID_KEY;
+        List<String> o = redisTemplate.opsForList().range(reportKeyName, 0, -1);
         List<SceneTaskDto> taskDtoList = null;
         try {
             if (CollectionUtils.isEmpty(o)) {
@@ -40,7 +49,7 @@ public abstract class AbstractSceneTask {
             }
             taskDtoList = o.stream().map(t -> {
                 final Object jsonData = redisTemplate.opsForValue().get(t);
-                if (Objects.isNull(jsonData)){
+                if (Objects.isNull(jsonData)) {
                     return null;
                 }
                 return JSON.parseObject(jsonData.toString(), SceneTaskDto.class);
@@ -75,8 +84,6 @@ public abstract class AbstractSceneTask {
         redisTemplate.opsForValue().getOperations().delete(reportKey);
     }
 
-    protected abstract void runTaskInTenantIfNecessary(int allowedTenantThreadMax, SceneTaskDto tenantTask,
-        Long reportId,
-        AtomicInteger runningThreads);
+    protected abstract void runTaskInTenantIfNecessary(SceneTaskDto tenantTask, Long reportId);
 
 }

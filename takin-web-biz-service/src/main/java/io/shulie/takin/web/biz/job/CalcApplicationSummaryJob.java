@@ -57,7 +57,7 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
         while (true) {
             List<SceneTaskDto> taskDtoList = getTaskFromRedis();
             if (taskDtoList == null) { break; }
-            if (openVersion){
+            if (openVersion) {
                 for (SceneTaskDto taskDto : taskDtoList) {
                     Long reportId = taskDto.getReportId();
                     // 开始数据层分片
@@ -68,7 +68,9 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
                                 try {
                                     reportTaskService.calcApplicationSummary(reportId);
                                 } catch (Throwable e) {
-                                    log.error("execute CalcApplicationSummaryJob occured error. reportId= {},errorMsg={}", reportId, e.getMessage(),e);
+                                    log.error(
+                                        "execute CalcApplicationSummaryJob occured error. reportId= {},errorMsg={}",
+                                        reportId, e.getMessage(), e);
                                 } finally {
                                     runningTasks.remove(reportId);
                                 }
@@ -76,7 +78,7 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
                         }
                     }
                 }
-            }else {
+            } else {
                 //每个租户可以使用的最大线程数
                 final int allowedTenantThreadMax = this.getAllowedTenantThreadMax();
                 //筛选出租户的任务
@@ -86,10 +88,32 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
                     Long reportId = taskDto.getReportId();
                     final Long tenantId = taskDto.getTenantId();
                     if (tenantId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        AtomicInteger runningThreads = new AtomicInteger(0);
                         final List<SceneTaskDto> tenantTasks = listMap.get(tenantId);
-                        for (SceneTaskDto tenantTask : tenantTasks) {
-                            runTaskInTenantIfNecessary(allowedTenantThreadMax, tenantTask, reportId, runningThreads);
+                        /**
+                         * 取最值。当前租户的任务数和允许的最大线程数
+                         */
+                        AtomicInteger allowRunningThreads = new AtomicInteger(
+                            Math.min(allowedTenantThreadMax, tenantTasks.size()));
+
+                        /**
+                         * 已经运行的任务数
+                         */
+                        AtomicInteger oldRunningThreads = runningTasks.putIfAbsent(tenantId, allowRunningThreads);
+                        if (oldRunningThreads != null) {
+                            /**
+                             * 剩下允许执行的任务数
+                             * allow running threads calculated by capacity
+                             */
+                            int permitsThreads = Math.min(allowedTenantThreadMax - oldRunningThreads.get(),
+                                allowRunningThreads.get());
+                            // add new threads to capacity
+                            oldRunningThreads.addAndGet(permitsThreads);
+                            // adjust allow current running threads
+                            allowRunningThreads.set(permitsThreads);
+                        }
+
+                        for (int i = 0; i < allowRunningThreads.get(); i++) {
+                            runTaskInTenantIfNecessary(tenantTasks.get(i), reportId);
                         }
                     }
                 }
@@ -100,34 +124,22 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
     }
 
     @Override
-    protected void runTaskInTenantIfNecessary(int allowedTenantThreadMax, SceneTaskDto tenantTask, Long reportId,
-        AtomicInteger runningThreads) {
-        AtomicInteger oldRunningThreads = runningTasks.putIfAbsent(tenantTask.getTenantId(), runningThreads);
-        if (oldRunningThreads != null) {
-            runningThreads = oldRunningThreads;
-        }
-        final int currentThreads = runningThreads.get();
-        if (currentThreads + 1 <= allowedTenantThreadMax) {
-            if (runningThreads.compareAndSet(currentThreads, currentThreads + 1)) {
-                //将任务放入线程池
-                reportThreadPool.execute(() -> {
-                    try {
-                        WebPluginUtils.setTraceTenantContext(tenantTask);
-                        reportTaskService.calcApplicationSummary(tenantTask.getReportId());
-                    } catch (Throwable e) {
-                        log.error("execute CalcApplicationSummaryJob occured error. reportId={}", reportId, e);
-                    } finally {
-                        AtomicInteger currentRunningThreads = runningTasks.get(tenantTask.getTenantId());
-                        if (currentRunningThreads.get() - 1 <= 0) {
-                            // 移除对应的租户
-                            runningTasks.remove(tenantTask.getTenantId());
-                        } else {
-                            currentRunningThreads.decrementAndGet();
-                        }
-                    }
-                });
+    protected void runTaskInTenantIfNecessary(SceneTaskDto tenantTask, Long reportId) {
+        //将任务放入线程池
+        reportThreadPool.execute(() -> {
+            try {
+                WebPluginUtils.setTraceTenantContext(tenantTask);
+                reportTaskService.calcApplicationSummary(tenantTask.getReportId());
+            } catch (Throwable e) {
+                log.error("execute CalcApplicationSummaryJob occured error. reportId={}", reportId, e);
+            } finally {
+                AtomicInteger currentRunningThreads = runningTasks.get(tenantTask.getTenantId());
+                if (currentRunningThreads != null) {
+                    currentRunningThreads.decrementAndGet();
+                }
+
             }
-        }
+        });
     }
 
 }

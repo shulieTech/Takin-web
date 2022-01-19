@@ -35,11 +35,14 @@ import com.pamirs.takin.entity.domain.vo.report.SceneActionParamNew;
 import com.pamirs.takin.entity.domain.vo.report.ScenePluginParam;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneTaskStartReq;
 import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTaskQueryTpsReq;
 import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTaskUpdateTpsReq;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportDetailResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneBusinessActivityRefResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneSlaRefResp;
@@ -154,6 +157,15 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     @Autowired
     private SceneExcludedApplicationDAO sceneExcludedApplicationDAO;
 
+    @Resource
+    private CloudReportApi cloudReportApi;
+
+    /**
+     * 是否是预发环境
+     */
+    @Value("${takin.inner.pre:0}")
+    private int isInnerPre;
+
     @Override
     public void preStop(Long sceneId) {
         SceneManageIdReq request = new SceneManageIdReq();
@@ -219,15 +231,16 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         String jsonString = JsonHelper.bean2Json(resp.getData());
         SceneManageWrapperDTO sceneData = JsonHelper.json2Bean(jsonString, SceneManageWrapperDTO.class);
         if (null == sceneData) {
-            log.error("takin-cloud查询场景信息返回错误，id={},错误信息：{}", param.getSceneId(), "sceneData is null! jsonString="+jsonString);
+            log.error("takin-cloud查询场景信息返回错误，id={},错误信息：{}", param.getSceneId(),
+                "sceneData is null! jsonString=" + jsonString);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR,
-                    "场景，id=" + param.getSceneId() + " 信息为空");
+                "场景，id=" + param.getSceneId() + " 信息为空");
         }
         sceneData.setIsAbsoluteScriptPath(FileUtils.isAbsoluteUploadPath(sceneData.getUploadFile(), scriptFilePath));
 
         // 校验该场景是否正在压测中
         if (!SceneManageStatusEnum.ifFinished(sceneData.getStatus())) {
-//        if (redisClientUtils.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))) {
+            //        if (redisClientUtils.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))) {
             // 正在压测中
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_STATUS_ERROR,
                 "场景，id=" + param.getSceneId() + "已启动压测，请刷新页面！");
@@ -240,7 +253,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
         preCheckStart(sceneData);
 
-        if (sceneData.getScriptId() != null) {
+        if (sceneData != null && sceneData.getScriptId() != null) {
             ScriptManageDeployDetailResponse scriptManageDeployDetail = scriptManageService.getScriptManageDeployDetail(
                 sceneData.getScriptId());
             List<PluginConfigDetailResponse> pluginConfigDetailResponseList = scriptManageDeployDetail
@@ -306,15 +319,13 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                     "获取压测时长失败！压测时长为" + sceneData.getPressureTestSecond());
             }
             //兜底时长
-            //long extraSeconds = 30;
-            //taskDto.setEndTime(
-            //    LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()).plusSeconds(extraSeconds));
             taskDto.setEndTime(
                 LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()));
             //任务添加到redis队列
+            final String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
+                : WebRedisKeyConstant.SCENE_REPORTID_KEY;
             final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
-            redisTemplate.opsForList().leftPush(WebRedisKeyConstant.SCENE_REPORTID_KEY,
-                reportKey);
+            redisTemplate.opsForList().leftPush(reportKeyName, reportKey);
             redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(taskDto));
         }
     }
@@ -346,9 +357,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         } catch (Exception e) {
             log.error("未知异常", e);
         }
-        //finally {
-        //            redisTemplate.delete("hasUnread_" + param.getSceneId());
-        //}
         return paramNew;
     }
 
@@ -401,6 +409,19 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             return response;
         }
         Long reportId = resp.getReportId();
+
+        /**
+         * 只有普通报告需要获取cpu内存等数据和做监控！
+         * !report.getPressureType().equals(0) 表示不需要 获取cpu内存等数据和监控等操作
+         */
+        final ReportDetailByIdReq idReq = new ReportDetailByIdReq();
+        idReq.setReportId(reportId);
+        WebPluginUtils.fillCloudUserData(idReq);
+        final ReportDetailResp report = cloudReportApi.getReportByReportId(idReq);
+        if (null != report && !report.getPressureType().equals(0)) {
+            return response;
+        }
+
         //获取场景SLA 内存 | cpu
         ResponseResult<SceneManageWrapperResp> detailResp = sceneManageApi.getSceneDetail(req);
         if (!detailResp.getSuccess()) {
@@ -426,6 +447,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                 String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
             redisClientUtils.set(redisKey, applicationNames, wrapperResp.getPressureTestSecond() + 10);
         }
+
         Map<String, List<SceneSlaRefResp>> slaMap = getSceneSla(wrapperResp);
         if (MapUtils.isNotEmpty(slaMap)) {
             //获取应用列表
@@ -709,7 +731,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     /**
      * 获得场景
-     * @param sceneId 场景id
+     *
+     * @param sceneId                      场景id
      * @param sceneBusinessActivityRefList 场景关联业务活动列表
      * @return 应用ids
      */

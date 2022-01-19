@@ -57,18 +57,6 @@ public class ActivityUtil {
         return StringUtils.join(Lists.newArrayList(methodName, serviceName, rpcType), "|");
     }
 
-    public static String buildEntrance(String applicationName, String methodName, String serviceName, String rpcType) {
-        if (RpcTypeEnum.MQ.getValue().equals(rpcType)) {
-            // todo 无法确定
-            return StringUtils.join(Lists.newArrayList(serviceName, rpcType), "|");
-        }
-        if(StringUtils.isBlank(applicationName)) {
-            // 老数据
-            return StringUtils.join(Lists.newArrayList(methodName, serviceName, rpcType), "|");
-        }
-        // 新数据
-        return StringUtils.join(Lists.newArrayList(applicationName, methodName, serviceName, rpcType), "|");
-    }
 
     /**
      * 获取s
@@ -101,14 +89,19 @@ public class ActivityUtil {
      */
     public static EntranceJoinEntity covertEntrance(String dbEntrance) {
         String[] split = StringUtils.split(dbEntrance, "\\|");
-        if (split.length != 4) {
+        if (split.length == 2) {
+            EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
+            entranceJoinEntity.setServiceName(split[0]);
+            entranceJoinEntity.setRpcType(split[1]);
+            return entranceJoinEntity;
+        }
+        if (split.length != 3) {
             return new EntranceJoinEntity();
         }
         EntranceJoinEntity entranceJoinEntity = new EntranceJoinEntity();
-        entranceJoinEntity.setApplicationName(split[0]);
-        entranceJoinEntity.setMethodName(split[1]);
-        entranceJoinEntity.setServiceName(split[2]);
-        entranceJoinEntity.setRpcType(split[3]);
+        entranceJoinEntity.setMethodName(split[0]);
+        entranceJoinEntity.setServiceName(split[1]);
+        entranceJoinEntity.setRpcType(split[2]);
         return entranceJoinEntity;
     }
 

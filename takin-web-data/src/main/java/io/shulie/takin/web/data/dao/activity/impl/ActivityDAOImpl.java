@@ -72,7 +72,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             .eq(param.getActivityType() != null,
                 BusinessLinkManageTableEntity::getType, param.getType())
             .eq(StrUtil.isNotBlank(param.getServiceName()),
-                BusinessLinkManageTableEntity::getEntrace, ActivityUtil.buildEntrance(param.getApplicationName(),param.getMethod(), param.getServiceName(),
+                BusinessLinkManageTableEntity::getEntrace, ActivityUtil.buildEntrance(param.getMethod(), param.getServiceName(),
                     param.getRpcType()))
             .eq(StrUtil.isNotBlank(param.getVirtualEntrance()), BusinessLinkManageTableEntity::getEntrace,
                 ActivityUtil.buildVirtualEntrance(param.getMethod(), param.getVirtualEntrance(), param.getRpcType()))

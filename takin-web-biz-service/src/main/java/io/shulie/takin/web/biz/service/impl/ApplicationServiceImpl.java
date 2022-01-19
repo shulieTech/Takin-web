@@ -1444,7 +1444,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     String[] split = active.split("#");
                     String appName = split[0];
                     // 新增应用
-                    String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
+                    String entrance = ActivityUtil.buildEntrance(split[2], split[1], "%");
                     List<Map<String, Object>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
                     if (!CollectionUtils.isEmpty(serviceList)) {
                         serviceList.forEach(serviceName -> activityResult.put(
@@ -1459,7 +1459,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 for (String active : allActiveList) {
                     String[] split = active.split("#");
                     String appName = split[0];
-                    String entrance = ActivityUtil.buildEntrance(appName, split[2], split[1], "%");
+                    String entrance = ActivityUtil.buildEntrance(split[2], split[1], "%");
                     List<Map<String, Object>> serviceList = activityDAO.findActivityIdByServiceName(appName, entrance);
                     if (!CollectionUtils.isEmpty(serviceList)) {
                         serviceList.stream().forEach(serviceName -> allActivityResult.put(

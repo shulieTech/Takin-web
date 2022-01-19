@@ -787,6 +787,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             EntranceRuleDTO entranceRuleDTO = new EntranceRuleDTO();
             entranceRuleDTO.setBusinessType(businessLinkResult.getType());
             entranceRuleDTO.setEntrance(businessLinkResult.getEntrace());
+            entranceRuleDTO.setAppName(businessLinkResult.getApplicationName());
             return entranceRuleDTO;
         }).collect(Collectors.toList());
     }

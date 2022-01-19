@@ -45,4 +45,28 @@ public class ApplicationDsManageExportVO {
     @ExcelProperty(value ="shadowDbMaxActive",index = 10)
     private String shadowDbMaxActive ;
 
+    @ExcelProperty(value ="connPoolName",index = 11)
+    private String connPoolName;
+
+    @ExcelProperty(value ="agentSourceType",index = 12)
+    private String agentSourceType;
+
+    @ExcelProperty(value ="dbName",index = 13)
+    private String dbName;
+
+    @ExcelProperty(value ="pwd",index = 14)
+    private String pwd;
+
+    @ExcelProperty(value ="fileExtend",index = 15)
+    private String fileExtend;
+
+    @ExcelProperty(value ="shaDowFileExtend",index = 16)
+    private String shaDowFileExtend;
+
+    @ExcelProperty(value ="configJson",index = 17)
+    private String configJson;
+
+    @ExcelProperty(value ="source",index = 18)
+    private String source;
+
 }

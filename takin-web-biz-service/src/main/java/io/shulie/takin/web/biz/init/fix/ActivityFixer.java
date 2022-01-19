@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.init.fix;
 import javax.annotation.Resource;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
@@ -28,14 +29,11 @@ public class ActivityFixer {
     public void fix() {
         int current = 1;
         while (true){
-            Page<BusinessLinkManageTableEntity> page = new Page<>();
+            IPage<BusinessLinkManageTableEntity> page = new Page<>();
             page.setCurrent(current);
             page.setSize(500);
-            LambdaQueryWrapper<BusinessLinkManageTableEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getType,0);
-            lambdaQueryWrapper.isNull(BusinessLinkManageTableEntity::getApplicationName);
             //查询所有普通类型,并且应用名为空的业务活动
-            Page<BusinessLinkManageTableEntity> businessLinkManageTableEntityPage = businessLinkManageTableMapper.selectPage(page, lambdaQueryWrapper);
+            IPage<BusinessLinkManageTableEntity> businessLinkManageTableEntityPage = businessLinkManageTableMapper.selectEntrancePageIgnoreInterceptorByType(page, 0);
             if (businessLinkManageTableEntityPage != null && CollectionUtils.isNotEmpty(businessLinkManageTableEntityPage.getRecords())) {
                 businessLinkManageTableEntityPage.getRecords().forEach(businessLinkManageTableEntity -> {
                     String entrace = businessLinkManageTableEntity.getEntrace();

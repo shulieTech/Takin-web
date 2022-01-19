@@ -376,6 +376,13 @@ public final class BizOpConstants {
         public static final String VIRTUAL_ENTRANCE = "virtualEntrance";
 
         /**
+         * 正常入口
+         */
+        public static final String ENTRANCE = "entrance";
+
+
+
+        /**
          * 绑定业务活动id
          */
         public static final String BIND_BUSINESS_ID = "bindBusinessId";

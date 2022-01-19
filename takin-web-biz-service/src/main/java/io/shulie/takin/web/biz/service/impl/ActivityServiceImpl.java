@@ -470,8 +470,7 @@ public class ActivityServiceImpl implements ActivityService {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_ACTIVITY, oldActivity.getActivityName());
         OperationLogContextHolder.addVars(Vars.ENTRANCE_TYPE, oldActivity.getType().name());
-        OperationLogContextHolder.addVars(Vars.APPLICATION_NAME, oldActivity.getApplicationName());
-        OperationLogContextHolder.addVars(Vars.SERVICE_NAME, oldActivity.getServiceName());
+        OperationLogContextHolder.addVars(Vars.ENTRANCE, oldActivity.getEntranceName());
         activityDAO.deleteActivity(activityId);
         //记录业务活动删除事件
         redisClientUtils.hmset(Vars.ACTIVITY_DELETE_EVENT,

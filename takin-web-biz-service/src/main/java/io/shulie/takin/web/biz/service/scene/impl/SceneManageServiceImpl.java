@@ -898,8 +898,9 @@ public class SceneManageServiceImpl implements SceneManageService {
             WebPluginUtils.getCustomerId());
 
         // 通过条件, 查询influxdb, 获取到tps, sql语句
-        String influxDbSql = String.format("select time as datetime, avg_tps as tps from %s where transaction = '%s' "
-            + "order by time", tableName, queryTpsParam.getBusinessActivityList().get(0).getBindRef());
+        String influxDbSql = String.format("select time as datetime, avg_tps as tps, success_rate as successRate "
+            + "from %s where transaction = '%s' order by time",
+            tableName, queryTpsParam.getBusinessActivityList().get(0).getBindRef());
         List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
         if (CollectionUtil.isEmpty(reportList)) {
             return Collections.emptyList();

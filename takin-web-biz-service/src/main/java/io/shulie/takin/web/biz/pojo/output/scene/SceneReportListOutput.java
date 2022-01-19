@@ -28,6 +28,9 @@ public class SceneReportListOutput {
     @ApiModelProperty("纵坐标, 报告tps")
     private BigDecimal tps;
 
+    @ApiModelProperty("成功率")
+    private BigDecimal successRate;
+
     @JsonIgnore
     private LocalDateTime datetime;
 

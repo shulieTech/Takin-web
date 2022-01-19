@@ -43,7 +43,7 @@ public class ActivityFixer {
                     }
                     businessLinkManageTableEntity.setApplicationName(split[0]);
                     businessLinkManageTableEntity.setEntrace(ActivityUtil.buildEntrance(split[1],split[2],split[3]));
-                    businessLinkManageTableMapper.updateById(businessLinkManageTableEntity);
+                    businessLinkManageTableMapper.updateIgnoreInterceptorById(businessLinkManageTableEntity);
                 });
             }
 

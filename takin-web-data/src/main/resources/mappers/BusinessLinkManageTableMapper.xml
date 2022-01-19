@@ -37,8 +37,14 @@
 
     <select id="selectEntrancePageIgnoreInterceptorByType"
             resultType="io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity">
-        SELECT ENTRACE
+        SELECT LINK_ID,ENTRACE
         FROM t_business_link_manage_table
         WHERE APPLICATION_NAME is null AND ENV_CODE = #{type}
     </select>
+    <update id="updateIgnoreInterceptorById">
+        UPDATE t_business_link_manage_table
+        SET APPLICATION_NAME = #{param.applicationName},
+            ENTRACE = #{param.entrace}
+        WHERE LINK_ID = #{param.linkId}
+    </update>
 </mapper>

@@ -18,4 +18,7 @@ public interface BusinessLinkManageTableMapper extends BaseMapper<BusinessLinkMa
     @InterceptorIgnore(tenantLine = "true")
     IPage<BusinessLinkManageTableEntity> selectEntrancePageIgnoreInterceptorByType(
             @Param("page") IPage<BusinessLinkManageTableEntity> page, @Param("type") Integer type);
+
+    @InterceptorIgnore(tenantLine = "true")
+    int updateIgnoreInterceptorById(@Param("param") BusinessLinkManageTableEntity param);
 }

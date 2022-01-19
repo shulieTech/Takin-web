@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
@@ -30,11 +32,14 @@ import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParamNew;
 import com.pamirs.takin.entity.domain.vo.report.ScenePluginParam;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
+import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneTaskStartReq;
 import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTaskQueryTpsReq;
 import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTaskUpdateTpsReq;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportDetailResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneBusinessActivityRefResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneSlaRefResp;
@@ -144,6 +149,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     @Autowired
     private BaseConfigService baseConfigService;
+
+    @Resource
+    private CloudReportApi cloudReportApi;
 
     /**
      * 查询场景业务活动信息，校验业务活动
@@ -342,6 +350,19 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             return response;
         }
         Long reportId = resp.getReportId();
+
+        /**
+         * 只有普通报告需要获取cpu内存等数据和做监控！
+         * !report.getPressureType().equals(0) 表示不需要 获取cpu内存等数据和监控等操作
+         */
+        final ReportDetailByIdReq idReq = new ReportDetailByIdReq();
+        idReq.setReportId(reportId);
+        WebPluginUtils.fillCloudUserData(idReq);
+        final ReportDetailResp report = cloudReportApi.getReportByReportId(idReq);
+        if (null != report && !report.getPressureType().equals(0)) {
+            return response;
+        }
+
         //获取场景SLA 内存 | cpu
         ResponseResult<SceneManageWrapperResp> detailResp = sceneManageApi.getSceneDetail(req);
         if (!detailResp.getSuccess()) {

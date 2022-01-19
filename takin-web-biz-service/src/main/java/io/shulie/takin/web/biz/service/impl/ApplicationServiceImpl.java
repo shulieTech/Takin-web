@@ -34,6 +34,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.AppConfigSheetEnum;
 import com.pamirs.takin.common.constant.AppSwitchEnum;
+import com.pamirs.takin.common.enums.ds.DbTypeEnum;
 import com.pamirs.takin.common.exception.TakinModuleException;
 import com.pamirs.takin.entity.dao.simplify.TAppMiddlewareInfoMapper;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
@@ -124,6 +125,8 @@ import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.AppAgentConfigReportDAO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDsCacheManageDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsManageDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
@@ -143,6 +146,7 @@ import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
 import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
 import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
+import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
 import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
 import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
@@ -154,6 +158,8 @@ import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
 import io.shulie.takin.web.data.result.application.AppAgentConfigReportDetailResult;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
+import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationListResult;
 import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
 import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
@@ -297,6 +303,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Autowired
     private LinkTopologyService linkTopologyService;
+
+    @Autowired
+    private ApplicationDsCacheManageDAO dsCacheManageDAO;
+
+    @Autowired
+    private ApplicationDsDbManageDAO dsDbManageDAO;
 
 
     @PostConstruct
@@ -1067,8 +1079,14 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         // 根据应用id, 查询 ds 列表
         List<ApplicationDsManageEntity> applicationDsManages = applicationDsManageDao.listByApplicationId(
             applicationId);
-        // 导出对象创建
+        // 查找新版本影子库表数据
+        ApplicationDsQueryParam queryParam = new ApplicationDsQueryParam();
+        queryParam.setApplicationId(applicationId);
+        queryParam.setIsDeleted(0);
+        List<ApplicationDsCacheManageDetailResult> caches = dsCacheManageDAO.selectList(queryParam);
+        List<ApplicationDsDbManageDetailResult> dbs = dsDbManageDAO.selectList(queryParam);
 
+        // 导出对象创建
         ExcelSheetVO<ApplicationDsManageExportVO> sheet = new ExcelSheetVO<>();
         sheet.setExcelModelClass(ApplicationDsManageExportVO.class);
         sheet.setSheetName(AppConfigSheetEnum.DADABASE.getDesc());
@@ -1080,6 +1098,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             sheet.setData(Collections.emptyList());
             return sheet;
         }
+
+
 
         // 不为空, 处理, 返回 sheet
         List<ApplicationDsManageExportVO> exportList = applicationDsManages.stream()
@@ -1119,6 +1139,25 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 return dsExportVO;
             })
             .collect(Collectors.toList());
+
+        if(!caches.isEmpty()){
+            exportList.addAll(caches.stream().map(cache ->{
+                ApplicationDsManageExportVO dsExportVO = new ApplicationDsManageExportVO();
+                BeanUtils.copyProperties(cache, dsExportVO);
+                dsExportVO.setConnPoolName(cache.getCacheName());
+                dsExportVO.setDbType(DbTypeEnum.CACHE.getCode());
+                return dsExportVO;
+            }).collect(Collectors.toList()));
+        }
+
+        if(!dbs.isEmpty()){
+            exportList.addAll(dbs.stream().map(db ->{
+                ApplicationDsManageExportVO dsExportVO = new ApplicationDsManageExportVO();
+                BeanUtils.copyProperties(db, dsExportVO);
+                dsExportVO.setDbType(DbTypeEnum.CACHE.getCode());
+                return dsExportVO;
+            }).collect(Collectors.toList()));
+        }
         sheet.setData(exportList);
         return sheet;
     }

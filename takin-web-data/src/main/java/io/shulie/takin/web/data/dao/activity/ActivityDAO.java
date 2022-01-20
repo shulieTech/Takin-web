@@ -25,7 +25,7 @@ public interface ActivityDAO {
      * @param param
      * @return
      */
-    List<Long> exists(ActivityExistsQueryParam param);
+    List<String> exists(ActivityExistsQueryParam param);
 
     /**
      * 创建正常业务活动，因为涉及老版兼容问题，这里独立 新版本业务活动createActivityNew

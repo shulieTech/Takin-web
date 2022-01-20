@@ -64,9 +64,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     private ActivityNodeStateTableMapper activityNodeStateTableMapper;
 
     @Override
-    public List<Long> exists(ActivityExistsQueryParam param) {
+    public List<String> exists(ActivityExistsQueryParam param) {
         LambdaQueryWrapper<BusinessLinkManageTableEntity> wrapper = this.getLambdaQueryWrapper()
-            .select(BusinessLinkManageTableEntity::getLinkId)
+            .select(BusinessLinkManageTableEntity::getLinkName)
             .eq(StrUtil.isNotBlank(param.getActivityName()),
                 BusinessLinkManageTableEntity::getLinkName, param.getActivityName())
             .eq(param.getActivityType() != null,
@@ -83,7 +83,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             .eq(BusinessLinkManageTableEntity::isPersistence,true)
             .eq(BusinessLinkManageTableEntity::getTenantId, WebPluginUtils.traceTenantId())
             .eq(BusinessLinkManageTableEntity::getEnvCode, WebPluginUtils.traceEnvCode());
-        return DataTransformUtil.list2list(businessLinkManageTableMapper.selectObjs(wrapper), Long.class);
+        return DataTransformUtil.list2list(businessLinkManageTableMapper.selectObjs(wrapper), String.class);
     }
 
     @Override

@@ -97,6 +97,7 @@ import io.shulie.takin.web.ext.entity.e2e.E2eExceptionConfigInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -240,7 +241,7 @@ public class ActivityServiceImpl implements ActivityService {
     private void checkActivity(ActivityCreateRequest request) {
         ActivityExistsQueryParam param = new ActivityExistsQueryParam();
         param.setActivityName(request.getActivityName());
-        List<Long> exists = activityDAO.exists(param);
+        List<String> exists = activityDAO.exists(param);
         if (CollectionUtils.isNotEmpty(exists)) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
                 String.format("保存失败，[名称:%s] 已被使用", request.getActivityName()));
@@ -258,8 +259,8 @@ public class ActivityServiceImpl implements ActivityService {
         exists = activityDAO.exists(param);
         if (CollectionUtils.isNotEmpty(exists)) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
-                String.format("保存失败，[应用名:%s,类型:%s,入口:%s]已存在",
-                    request.getApplicationName(), request.getType().getType(), request.getServiceName()));
+                String.format("保存失败，[应用名:%s,类型:%s,入口:%s]与业务活动【%s】一致",
+                    request.getApplicationName(), request.getType().getType(), request.getServiceName(),exists.get(0)));
         }
     }
 
@@ -288,7 +289,7 @@ public class ActivityServiceImpl implements ActivityService {
     private void checkVirtualActivity(VirtualActivityCreateRequest request) {
         ActivityExistsQueryParam param = new ActivityExistsQueryParam();
         param.setActivityName(request.getActivityName());
-        List<Long> exists = activityDAO.exists(param);
+        List<String> exists = activityDAO.exists(param);
         if (CollectionUtils.isNotEmpty(exists)) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
                 String.format("保存失败，[名称:%s] 已被使用", request.getActivityName()));
@@ -302,7 +303,7 @@ public class ActivityServiceImpl implements ActivityService {
         exists = activityDAO.exists(param);
         if (CollectionUtils.isNotEmpty(exists)) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
-                String.format("保存失败，[虚拟入口:%s]已存在", request.getVirtualEntrance()));
+                String.format("保存失败，[虚拟入口:%s]与虚拟业务【%s】", request.getVirtualEntrance(),exists.get(0)));
         }
     }
 
@@ -341,12 +342,12 @@ public class ActivityServiceImpl implements ActivityService {
         // rpc转化
         param.setRpcType(EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType());
         param.setActivityType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
-        List<Long> exists = activityDAO.exists(param);
+        List<String> exists = activityDAO.exists(param);
         if (CollectionUtils.isNotEmpty(exists)) {
-            Optional<Long> any = exists.stream().filter(item -> !item.equals(request.getActivityId())).findAny();
+            Optional<String> any = exists.stream().filter(item -> !item.equals(request.getActivityName())).findAny();
             if (any.isPresent()) {
                 throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
-                    String.format("保存失败，虚拟入口已[业务活动：%s：入口：%s]已被使用，对应的ID为：%s", request.getActivityName(),
+                    String.format("保存失败，虚拟入口已[业务活动：%s：入口：%s]已被使用，对应的虚拟业务活动名为：%s", request.getActivityName(),
                         request.getVirtualEntrance(), any.get()));
             }
         }
@@ -370,12 +371,12 @@ public class ActivityServiceImpl implements ActivityService {
         ActivityExistsQueryParam param = new ActivityExistsQueryParam();
         if (activityName != null) {
             param.setActivityName(activityName);
-            List<Long> exists = activityDAO.exists(param);
+            List<String> exists = activityDAO.exists(param);
             if (CollectionUtils.isNotEmpty(exists)) {
-                Optional<Long> any = exists.stream().filter(item -> !item.equals(activityId)).findAny();
+                Optional<String> any = exists.stream().filter(item -> !item.equals(activityName)).findAny();
                 if (any.isPresent()) {
                     throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR,
-                        String.format("保存失败，业务活动[%s]已被使用，对应的ID为：%s", activityName, any.get()));
+                        String.format("保存失败，业务活动[%s]已被使用，对应的虚拟业务活动为：%s", activityName, any.get()));
                 }
 
             }
@@ -443,14 +444,14 @@ public class ActivityServiceImpl implements ActivityService {
             param.setRpcType(request.getRpcType());
             param.setServiceName(request.getServiceName());
             param.setActivityType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
-            List<Long> exists = activityDAO.exists(param);
+            List<String> exists = activityDAO.exists(param);
             if (CollectionUtils.isNotEmpty(exists)) {
-                Optional<Long> any = exists.stream()
-                    .filter(item -> !item.equals(request.getActivityId()))
+                Optional<String> any = exists.stream()
+                    .filter(item -> !item.equals(request.getActivityName()))
                     .findAny();
                 if (any.isPresent()) {
                     throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, String
-                        .format("保存失败，入口已[应用名称：%s，类型：%s，入口：%s]已被使用，对应的ID为：%s", request.getActivityName(),
+                        .format("保存失败，入口已[应用名称：%s，类型：%s，入口：%s]已被使用，对应的虚拟业务活动为：%s", request.getActivityName(),
                             request.getType().getType(), request.getServiceName(), any.get()));
                 }
             }
@@ -470,7 +471,8 @@ public class ActivityServiceImpl implements ActivityService {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_ACTIVITY, oldActivity.getActivityName());
         OperationLogContextHolder.addVars(Vars.ENTRANCE_TYPE, oldActivity.getType().name());
-        OperationLogContextHolder.addVars(Vars.ENTRANCE, oldActivity.getEntranceName());
+        OperationLogContextHolder.addVars(Vars.ENTRANCE,
+            StringUtils.isNotBlank(oldActivity.getEntranceName())?oldActivity.getEntranceName():oldActivity.getVirtualEntrance());
         activityDAO.deleteActivity(activityId);
         //记录业务活动删除事件
         redisClientUtils.hmset(Vars.ACTIVITY_DELETE_EVENT,

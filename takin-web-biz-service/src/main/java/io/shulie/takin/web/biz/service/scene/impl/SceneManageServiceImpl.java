@@ -846,7 +846,8 @@ public class SceneManageServiceImpl implements SceneManageService {
             }
 
             // 时间正序, 时间去重
-            return reportList.stream().sorted()
+            return reportList.stream()
+                .sorted(Comparator.comparing(SceneReportListOutput::getTime))
                 .collect(Collectors.collectingAndThen(Collectors.toCollection(() ->
                     new TreeSet<>(Comparator.comparing(SceneReportListOutput::getTime))), ArrayList::new));
         }).flatMap(Collection::stream).collect(Collectors.toList());

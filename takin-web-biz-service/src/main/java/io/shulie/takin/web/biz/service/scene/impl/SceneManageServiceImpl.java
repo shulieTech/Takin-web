@@ -868,12 +868,11 @@ public class SceneManageServiceImpl implements SceneManageService {
 
         return queryTpsParamList.stream().map(queryTpsParam -> {
             List<SceneReportListOutput> reportList = this.listReportFromInfluxDb(queryTpsParam);
-            SceneReportListOutput sceneReportListOutput = reportList.stream()
-                .max(Comparator.comparing(SceneReportListOutput::getTps)).orElse(null);
-            if (sceneReportListOutput == null) {
+            if (CollectionUtil.isEmpty(reportList) || reportList.get(0) == null) {
                 return null;
             }
 
+            SceneReportListOutput sceneReportListOutput = reportList.get(0);
             sceneReportListOutput.setSceneId(queryTpsParam.getSceneId());
             sceneReportListOutput.setSceneName(queryTpsParam.getSceneName());
             return sceneReportListOutput;
@@ -918,8 +917,8 @@ public class SceneManageServiceImpl implements SceneManageService {
      */
     private List<SceneReportListOutput> listReportFromInfluxDb(ReportActivityResp queryTpsParam) {
         // 通过条件, 查询influxdb, 获取到tps, sql语句
-        String influxDbSql = String.format("SELECT time as datetime, ((count - fail_count) / 5) AS tps "
-                + "FROM %s WHERE transaction = '%s' ORDER BY time",
+        String influxDbSql = String.format("SELECT time AS datetime, max(tps) AS tps FROM "
+                + "(SELECT ((count - fail_count) / 5) AS tps FROM %s WHERE transaction = '%s' ORDER BY time)",
             this.getTableName(queryTpsParam), queryTpsParam.getBusinessActivityList().get(0).getBindRef());
         List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
         if (CollectionUtil.isEmpty(reportList)) {

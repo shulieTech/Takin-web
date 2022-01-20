@@ -22,16 +22,23 @@ public class SceneReportListOutput {
     @ApiModelProperty("场景名称")
     private String sceneName;
 
-    @ApiModelProperty("横坐标, 当前查询时间, 15:15:24")
+    @ApiModelProperty("横坐标, 当前查询时间, 举例: 15:15:24")
     private String time;
 
     @ApiModelProperty("纵坐标, 报告tps")
     private BigDecimal tps;
 
-    @ApiModelProperty("成功率")
-    private BigDecimal successRate;
-
     @JsonIgnore
     private LocalDateTime datetime;
+
+    /**
+     * 每5s统计的总的事务处理数
+     */
+    private Integer count;
+
+    /**
+     * 每5s统计的失败的事务处理数
+     */
+    private Integer failCount;
 
 }

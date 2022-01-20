@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -842,7 +845,11 @@ public class SceneManageServiceImpl implements SceneManageService {
                 report.setTime(LocalDateTimeUtil.format(report.getDatetime(), "HH:mm:ss"));
             }
 
-            return reportList;
+            // 时间正序, 时间去重
+            return reportList.stream()
+                .sorted(Comparator.comparing(SceneReportListOutput::getTime))
+                .collect(Collectors.collectingAndThen(Collectors.toCollection(() ->
+                    new TreeSet<>(Comparator.comparing(SceneReportListOutput::getTime))), ArrayList::new));
         }).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
@@ -898,12 +905,19 @@ public class SceneManageServiceImpl implements SceneManageService {
             WebPluginUtils.getCustomerId());
 
         // 通过条件, 查询influxdb, 获取到tps, sql语句
-        String influxDbSql = String.format("select time as datetime, avg_tps as tps, success_rate as successRate "
+        String influxDbSql = String.format("select time as datetime, count, fail_count as failCount "
             + "from %s where transaction = '%s' order by time",
             tableName, queryTpsParam.getBusinessActivityList().get(0).getBindRef());
         List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
         if (CollectionUtil.isEmpty(reportList)) {
             return Collections.emptyList();
+        }
+
+        // 只求出成功的tps, (成功 - 失败) / 5s
+        for (SceneReportListOutput sceneReportListOutput : reportList) {
+            sceneReportListOutput.setTps(
+                BigDecimal.valueOf(sceneReportListOutput.getCount() - sceneReportListOutput.getFailCount())
+                    .divide(BigDecimal.valueOf(5), MathContext.DECIMAL32));
         }
 
         return reportList;

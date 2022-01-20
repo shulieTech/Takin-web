@@ -120,7 +120,8 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                         //停止状态
                         if (0L == status) {
                             log.info("压测场景已停止，关闭验证任务，场景ID[{}]", sceneId);
-                            JobScheduler jobScheduler = (JobScheduler)serviceMap.get(mapKey);
+                            String jobParameter = (String)serviceMap.get(mapKey);
+                            JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(), createJobConfiguration(jobParameter));
                             jobScheduler.getSchedulerFacade().shutdownInstance();
                             serviceMap.remove(mapKey);
                             //漏数验证兜底检测

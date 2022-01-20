@@ -54,6 +54,8 @@ public class VerifyJob implements SimpleJob {
         logger.info("验证任务已完成，验证结果入库:[refType:{},refId:{}]", typeEnum.name(), refId);
         VerifyTaskService verifyTaskService = (VerifyTaskService)SpringUtil.getBean("verifyTaskServiceImpl");
         verifyTaskService.saveVerifyResult(jobParameter, resultMap);
+
+
     }
 
     public Map<Integer, Integer> run(LeakVerifyTaskJobParameter jobParameter) {

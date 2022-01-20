@@ -26,6 +26,9 @@ import io.shulie.takin.web.biz.pojo.response.activity.ActivityVerifyResponse;
 import io.shulie.takin.web.biz.pojo.response.activity.BusinessApplicationListResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.util.MD5Tool;
+import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -80,12 +83,23 @@ public class ActivityController {
         needAuth = ActionTypeEnum.CREATE
     )
     public void createActivity(@Validated @RequestBody ActivityCreateRequest request) {
+        tryClearTemporaryActivity(request);
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.BUSINESS_ACTIVITY, request.getActivityName());
         OperationLogContextHolder.addVars(Vars.ENTRANCE_TYPE, request.getType().name());
         OperationLogContextHolder.addVars(Vars.APPLICATION_NAME, request.getApplicationName());
         OperationLogContextHolder.addVars(Vars.SERVICE_NAME, request.getServiceName());
         activityService.createActivity(request);
+    }
+
+    private void tryClearTemporaryActivity(ActivityCreateRequest request) {
+        try {
+            String temporaryKey = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.traceTenantId() + WebPluginUtils.traceEnvCode());
+            BusinessLinkManageTableEntity activity = activityService.getActivityByName(temporaryKey);
+            if (null != activity) activityService.deleteActivity(activity.getLinkId());
+        } catch (Exception e){
+            //Ignore
+        }
     }
 
     @PutMapping("/update")

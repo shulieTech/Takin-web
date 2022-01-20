@@ -355,15 +355,12 @@ public class ApplicationController {
     )
     public Map<Long, Boolean> gotoActivityInfo(@Validated @RequestBody ActivityCreateRequest request) throws Exception {
         HashMap<Long, Boolean> result = new HashMap<>(1);
-        //业务活动名称模糊搜索
-        // todo 有可能要修改
-        String key = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.traceTenantId() + WebPluginUtils.traceEnvCode());
-        BusinessLinkManageTableEntity entity = activityService.getActivityByName(key);
-        boolean isTempActivity = true;
+        BusinessLinkManageTableEntity entity = activityService.getActivity(request);
         if (Objects.nonNull(entity)) {
-            result.put(entity.getLinkId(), isTempActivity);
+            result.put(entity.getLinkId(), true);
         } else {
-            entity = activityService.getActivity(request);
+            String temporaryKey = MD5Tool.getMD5(request.getApplicationName() + request.getLabel() + WebPluginUtils.traceTenantId() + WebPluginUtils.traceEnvCode());
+            entity = activityService.getActivityByName(temporaryKey);
             if (null != entity) {
                 result.put(entity.getLinkId(), false);
             }else {
@@ -392,10 +389,10 @@ public class ApplicationController {
                     }
                 }
             }
-            request.setActivityName(key);
+            request.setActivityName(temporaryKey);
             request.setRpcType(request.getRpcType());
             applicationService.gotoActivityInfo(request);
-            result.put(activityService.getActivityByName(key).getLinkId(), isTempActivity);
+            result.put(activityService.getActivityByName(temporaryKey).getLinkId(), false);
         }
         return result;
     }

@@ -129,7 +129,7 @@ public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
         reportThreadPool.execute(() -> {
             try {
                 WebPluginUtils.setTraceTenantContext(tenantTask);
-                reportTaskService.calcApplicationSummary(tenantTask.getReportId());
+                reportTaskService.calcTpsTarget(tenantTask.getReportId());
             } catch (Throwable e) {
                 log.error("execute CalcApplicationSummaryJob occured error. reportId={}", reportId, e);
             } finally {

@@ -8,6 +8,7 @@ import io.shulie.takin.web.common.constant.AppConstants;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
 
 /**
  * @author liuchuan
@@ -29,5 +30,11 @@ public class ListSceneReportRequest {
 
         this.sceneIds = sceneIds;
     }
+
+    /**
+     * 时间间隔, 默认3, 可以传2
+     */
+    @Range(min = 2, max = 5, message = "时间间隔从2到5")
+    private Integer interval = 3;
 
 }

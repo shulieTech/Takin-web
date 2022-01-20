@@ -31,14 +31,4 @@ public class SceneReportListOutput {
     @JsonIgnore
     private LocalDateTime datetime;
 
-    /**
-     * 每5s统计的总的事务处理数
-     */
-    private Integer count;
-
-    /**
-     * 每5s统计的失败的事务处理数
-     */
-    private Integer failCount;
-
 }

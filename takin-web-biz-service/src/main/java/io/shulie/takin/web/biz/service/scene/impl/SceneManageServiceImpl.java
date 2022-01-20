@@ -1,7 +1,5 @@
 package io.shulie.takin.web.biz.service.scene.impl;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -836,7 +833,17 @@ public class SceneManageServiceImpl implements SceneManageService {
         }
 
         return queryTpsParamList.stream().map(queryTpsParam -> {
-            List<SceneReportListOutput> reportList = this.listReportFromInfluxDb(queryTpsParam);
+            // 通过条件, 查询influxdb, 获取到tps, sql语句
+            String influxDbSql = String.format("SELECT time as datetime, ((count - fail_count) / 5) AS tps "
+                    + "FROM %s WHERE time <= NOW() AND time >= (NOW() - %dm) AND transaction = '%s' ORDER BY time",
+                this.getTableName(queryTpsParam), request.getInterval(),
+                queryTpsParam.getBusinessActivityList().get(0).getBindRef());
+
+            List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
+
+            if (CollectionUtil.isEmpty(reportList)) {
+                return null;
+            }
 
             // 时间戳处理
             for (SceneReportListOutput report : reportList) {
@@ -845,12 +852,10 @@ public class SceneManageServiceImpl implements SceneManageService {
                 report.setTime(LocalDateTimeUtil.format(report.getDatetime(), "HH:mm:ss"));
             }
 
-            // 时间正序, 时间去重
-            return reportList.stream()
-                .sorted(Comparator.comparing(SceneReportListOutput::getTime))
-                .collect(Collectors.collectingAndThen(Collectors.toCollection(() ->
-                    new TreeSet<>(Comparator.comparing(SceneReportListOutput::getTime))), ArrayList::new));
-        }).flatMap(Collection::stream).collect(Collectors.toList());
+            return reportList;
+        }).filter(Objects::nonNull).flatMap(Collection::stream)
+            .sorted(Comparator.comparing(SceneReportListOutput::getTime))
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -872,7 +877,8 @@ public class SceneManageServiceImpl implements SceneManageService {
             sceneReportListOutput.setSceneId(queryTpsParam.getSceneId());
             sceneReportListOutput.setSceneName(queryTpsParam.getSceneName());
             return sceneReportListOutput;
-        }).filter(Objects::nonNull).sorted(Comparator.comparing(SceneReportListOutput::getTps).reversed())
+        }).filter(Objects::nonNull)
+            .sorted(Comparator.comparing(SceneReportListOutput::getTps).reversed())
             .limit(10).collect(Collectors.toList());
     }
 
@@ -894,30 +900,30 @@ public class SceneManageServiceImpl implements SceneManageService {
     }
 
     /**
+     * 压测报告的influxdb tableName
+     *
+     * @param queryTpsParam 参数
+     * @return 表名
+     */
+    private String getTableName(ReportActivityResp queryTpsParam) {
+        return String.format("pressure_%d_%d_%d", queryTpsParam.getSceneId(), queryTpsParam.getReportId(),
+            WebPluginUtils.getCustomerId());
+    }
+
+    /**
      * influxdb查询报告tps
      *
      * @param queryTpsParam 请求参数
      * @return 报告列表
      */
     private List<SceneReportListOutput> listReportFromInfluxDb(ReportActivityResp queryTpsParam) {
-        // 表名
-        String tableName = String.format("pressure_%d_%d_%d", queryTpsParam.getSceneId(), queryTpsParam.getReportId(),
-            WebPluginUtils.getCustomerId());
-
         // 通过条件, 查询influxdb, 获取到tps, sql语句
-        String influxDbSql = String.format("select time as datetime, count, fail_count as failCount "
-            + "from %s where transaction = '%s' order by time",
-            tableName, queryTpsParam.getBusinessActivityList().get(0).getBindRef());
+        String influxDbSql = String.format("SELECT time as datetime, ((count - fail_count) / 5) AS tps "
+                + "FROM %s WHERE transaction = '%s' ORDER BY time",
+            this.getTableName(queryTpsParam), queryTpsParam.getBusinessActivityList().get(0).getBindRef());
         List<SceneReportListOutput> reportList = influxDatabaseManager.query(influxDbSql, SceneReportListOutput.class, "jmeter");
         if (CollectionUtil.isEmpty(reportList)) {
             return Collections.emptyList();
-        }
-
-        // 只求出成功的tps, (成功 - 失败) / 5s
-        for (SceneReportListOutput sceneReportListOutput : reportList) {
-            sceneReportListOutput.setTps(
-                BigDecimal.valueOf(sceneReportListOutput.getCount() - sceneReportListOutput.getFailCount())
-                    .divide(BigDecimal.valueOf(5), MathContext.DECIMAL32));
         }
 
         return reportList;

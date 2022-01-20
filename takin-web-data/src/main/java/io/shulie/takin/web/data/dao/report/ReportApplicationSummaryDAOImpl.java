@@ -53,7 +53,8 @@ public class ReportApplicationSummaryDAOImpl extends ServiceImpl<ReportApplicati
         LambdaQueryWrapper<ReportApplicationSummaryEntity> queryWrapper = this.getLambdaQueryWrapper();
         queryWrapper.eq(ReportApplicationSummaryEntity::getReportId,param.getReportId());
         if(StringUtils.isNotBlank(param.getApplicationName())) {
-            queryWrapper.eq(ReportApplicationSummaryEntity::getApplicationName,param.getApplicationName());
+            // 模糊查询
+            queryWrapper.like(ReportApplicationSummaryEntity::getApplicationName,param.getApplicationName());
         }
         queryWrapper.orderByDesc(ReportApplicationSummaryEntity::getMachineRiskCount);
         queryWrapper.orderByDesc(ReportApplicationSummaryEntity::getMachineTotalCount);

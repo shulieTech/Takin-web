@@ -32,4 +32,7 @@ public class CoordinatorRegistryCenterService {
         return registryCenter;
     }
 
+    public void deleteJob() {
+
+    }
 }

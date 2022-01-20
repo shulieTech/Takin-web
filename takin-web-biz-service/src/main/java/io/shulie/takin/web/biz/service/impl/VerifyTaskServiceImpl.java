@@ -163,10 +163,10 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         }
         jobParameterObject.setVerifyTaskConfigList(verifyTaskConfigList);
         String jobParameter = JSON.toJSONString(jobParameterObject);
-        JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(), createJobConfiguration(jobParameter));
+        JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(),this.createJobConfiguration(jobParameter));
         jobScheduler.init();
         RedisHelper.hashPut(jobSchedulerRedisKey,
-            VerifyTaskUtils.getVerifyTaskRedisMapKey(startRequest.getRefType(),startRequest.getRefId()), jobScheduler);
+            VerifyTaskUtils.getVerifyTaskRedisMapKey(startRequest.getRefType(),startRequest.getRefId()), jobParameter);
     }
 
     private LiteJobConfiguration createJobConfiguration(String jobParameter) {
@@ -192,11 +192,12 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         String mapKey = VerifyTaskUtils.getVerifyTaskRedisMapKey(refType,refId);
         Map<Object, Object> map = RedisHelper.hashGetAll(jobSchedulerRedisKey);
         if (map.containsKey(mapKey)) {
-            JobScheduler scheduler = (JobScheduler)map.get(mapKey);
+            String jobParameter = (String)map.get(mapKey);
+            JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(), createJobConfiguration(jobParameter));
             log.info("开始关闭验证任务:[{},{}]",
                 Objects.requireNonNull(VerifyTypeEnum.getTypeByCode(stopRequest.getRefType())).name(),
                 stopRequest.getRefId());
-            scheduler.getSchedulerFacade().shutdownInstance();
+            jobScheduler.getSchedulerFacade().shutdownInstance();
             RedisHelper.hashDelete(jobSchedulerRedisKey, mapKey);
             try {
                 Thread.sleep(1000);

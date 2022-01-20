@@ -25,7 +25,6 @@ import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.common.SlaBean;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
@@ -51,6 +50,7 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.common.util.verify.VerifyTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyDetailDAO;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
@@ -80,8 +80,6 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
     @Resource
     LeakSqlService leakSqlService;
     @Resource
-    private RedisClientUtils redis;
-    @Resource
     private SceneTaskApi sceneTaskApi;
     @Resource
     LeakVerifyResultDAO verifyResultDAO;
@@ -102,7 +100,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
 
     @Override
     public void showdownVerifyTask() {
-        Map<Object, Object> serviceMap = redis.hmget(jobSchedulerRedisKey);
+        Map<Object, Object> serviceMap = RedisHelper.hashGetAll(jobSchedulerRedisKey);
         if (!serviceMap.isEmpty()) {
             Set<Object> keySet = serviceMap.keySet();
             keySet.forEach(mapKey -> {
@@ -167,7 +165,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         String jobParameter = JSON.toJSONString(jobParameterObject);
         JobScheduler jobScheduler = new JobScheduler(registryCenterService.getRegistryCenter(), createJobConfiguration(jobParameter));
         jobScheduler.init();
-        redis.hmset(jobSchedulerRedisKey,
+        RedisHelper.hashPut(jobSchedulerRedisKey,
             VerifyTaskUtils.getVerifyTaskRedisMapKey(startRequest.getRefType(),startRequest.getRefId()), jobScheduler);
     }
 
@@ -192,14 +190,14 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
         Integer refType = stopRequest.getRefType();
         Long refId = stopRequest.getRefId();
         String mapKey = VerifyTaskUtils.getVerifyTaskRedisMapKey(refType,refId);
-        Map<Object, Object> map = redis.hmget(jobSchedulerRedisKey);
+        Map<Object, Object> map = RedisHelper.hashGetAll(jobSchedulerRedisKey);
         if (map.containsKey(mapKey)) {
             JobScheduler scheduler = (JobScheduler)map.get(mapKey);
             log.info("开始关闭验证任务:[{},{}]",
                 Objects.requireNonNull(VerifyTypeEnum.getTypeByCode(stopRequest.getRefType())).name(),
                 stopRequest.getRefId());
             scheduler.getSchedulerFacade().shutdownInstance();
-            redis.hmdelete(jobSchedulerRedisKey, mapKey);
+            RedisHelper.hashDelete(jobSchedulerRedisKey, mapKey);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -436,7 +434,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
     @Override
     public Set<String> queryVerifyTask() {
         Set<String> stringSet = Sets.newHashSet();
-        Map<Object, Object> map = redis.hmget(jobSchedulerRedisKey);
+        Map<Object, Object> map = RedisHelper.hashGetAll(jobSchedulerRedisKey);
         if (!map.isEmpty()) {
             stringSet = map.keySet().stream().map(t -> (String)t).collect(Collectors.toSet());
         }

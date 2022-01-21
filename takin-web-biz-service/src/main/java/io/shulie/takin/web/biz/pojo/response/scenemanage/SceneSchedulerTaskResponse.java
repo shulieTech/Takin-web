@@ -33,4 +33,12 @@ public class SceneSchedulerTaskResponse {
     private Date gmtCreate ;
 
     private Date gmtUpdate ;
+    /**
+     * 租户id
+     */
+    private Long tenantId;
+    /**
+     * 用户id
+     */
+    private String envCode;
 }

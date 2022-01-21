@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.scriptmanage.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,6 +15,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+
+import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
@@ -52,6 +55,7 @@ import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.constant.BusinessActivityRedisKeyConstant;
 import io.shulie.takin.web.biz.constant.ScriptDebugConstants;
+import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.request.leakcheck.LeakSqlBatchRefsRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskRunWithSaveRequest;
@@ -83,6 +87,7 @@ import io.shulie.takin.web.biz.utils.exception.ScriptDebugExceptionUtil;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.script.CloudPressureStatus;
 import io.shulie.takin.web.common.enums.script.ScriptDebugFailedTypeEnum;
@@ -90,6 +95,7 @@ import io.shulie.takin.web.common.enums.script.ScriptDebugStatusEnum;
 import io.shulie.takin.web.common.enums.script.ScriptMVersionEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import io.shulie.takin.web.common.util.JsonUtil;
@@ -124,6 +130,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -188,6 +195,16 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
 
     @Resource
     private LinkManageDAO linkManageDAO;
+
+    @Resource
+    @Qualifier("redisTemplate")
+    private RedisTemplate redisTemplate;
+
+    /**
+     * 是否是预发环境
+     */
+    @Value("${takin.inner.pre:0}")
+    private int isInnerPre;
 
     @PostConstruct
     public void init() {
@@ -321,6 +338,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             // 启动调试
             SceneTryRunTaskStartResp cloudResponse = this.doDebug(debugCloudRequest);
 
+            //推送到任务队列
+
+
             // 创建调试记录
             log.info("调试 --> 创建调试记录!");
             response = new ScriptDebugResponse();
@@ -342,6 +362,23 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             return response;
         } finally {
             distributedLock.unLockSafely(lockKey);
+        }
+    }
+
+    private void pushTaskToRedis(Long reportId) {
+        if (reportId != null) {
+            //兜底，默认调试1小时
+            Long hours = 1L;
+            //兜底时长
+            final LocalDateTime dateTime = LocalDateTime.now().plusHours(hours);
+            //组装
+            SceneTaskDto taskDto = new SceneTaskDto(reportId, ContextSourceEnum.JOB_SCRIPT_DEBUG,dateTime);
+            //任务添加到redis队列
+            final String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
+                : WebRedisKeyConstant.SCENE_REPORTID_KEY;
+            final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
+            redisTemplate.opsForList().leftPush(reportKeyName, reportKey);
+            redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(taskDto));
         }
     }
 

@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -97,6 +99,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             if (endTime == null) {
                 return false;
             }
+            //更新任务的结束时间
+            if (!this.updateTaskEndTime(reportId, commonExt, endTime)) { return false; }
+
             // 解除 场景锁
             redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
             try {
@@ -104,7 +109,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 //删除redis数据
                 redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
                 // 删除key
-                String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+                String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
+                    WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
                     String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
                 redisClientUtils.del(redisKey);
                 long startTime = System.currentTimeMillis();
@@ -143,13 +149,35 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 reportClearService.clearReportData(reportId);
                 //压测结束，生成压测报告异常，解锁报告
                 Boolean unLockReportResult = reportService.unLockReport(reportId);
-                log.error("Unlock Report Success, reportId={} ,unLockReportResult= {}...", reportId, unLockReportResult, e);
+                log.error("Unlock Report Success, reportId={} ,unLockReportResult= {}...", reportId, unLockReportResult,
+                    e);
             } finally {
                 removeReportKey(reportId, commonExt);
             }
 
         } catch (Exception e) {
             log.error("QueryRunningReport Error :{}", e.getMessage());
+        }
+        return true;
+    }
+
+    private boolean updateTaskEndTime(Long reportId, TenantCommonExt commonExt, Date endTime) {
+        LocalDateTime endTimeLocal = null;
+        try {
+            endTimeLocal = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        } catch (Exception e) {
+            log.error("endTime日期转化有误，endTime={}", JSON.toJSONString(endTime), e);
+            return false;
+        }
+        SceneTaskDto task = new SceneTaskDto(commonExt, reportId);
+        task.setEndTime(endTimeLocal);
+        String reportKey = null;
+        try {
+            reportKey = WebRedisKeyConstant.getReportKey(reportId);
+            redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(task));
+        } catch (Exception e) {
+            log.error("更新redis任务有误，key={}", reportKey, e);
+            return false;
         }
         return true;
     }
@@ -197,7 +225,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         //first 同步应用基础信息
         long startTime = System.currentTimeMillis();
         problemAnalysisService.syncMachineData(reportId);
-        log.debug("reportId={} syncMachineData success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
+        log.debug("reportId={} syncMachineData success，cost time={}s", reportId,
+            (System.currentTimeMillis() - startTime) / 1000);
     }
 
     @Override
@@ -207,7 +236,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         reportDataCache.readyCloudReportData(reportId);
         //then tps指标图
         summaryService.calcTpsTarget(reportId);
-        log.debug("reportId={} calcTpsTarget success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
+        log.debug("reportId={} calcTpsTarget success，cost time={}s", reportId,
+            (System.currentTimeMillis() - startTime) / 1000);
     }
 
     @Override
@@ -217,6 +247,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         reportDataCache.readyCloudReportData(reportId);
         //汇总应用 机器数 风险机器数
         summaryService.calcApplicationSummary(reportId);
-        log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId, (System.currentTimeMillis() - startTime) / 1000);
+        log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId,
+            (System.currentTimeMillis() - startTime) / 1000);
     }
 }

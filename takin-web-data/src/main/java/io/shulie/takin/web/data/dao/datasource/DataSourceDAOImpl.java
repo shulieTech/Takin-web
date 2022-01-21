@@ -52,7 +52,7 @@ public class DataSourceDAOImpl implements DataSourceDAO {
             wrapper.eq(TakinDbresourceEntity::getType, queryParam.getType());
         }
         if (StringUtils.isNotBlank(queryParam.getName())) {
-            wrapper.like(TakinDbresourceEntity::getName, queryParam.getName());
+            wrapper.like(TakinDbresourceEntity::getName, "\\" + queryParam.getName());
         }
         if (StringUtils.isNotBlank(queryParam.getJdbcUrl())) {
             wrapper.like(TakinDbresourceEntity::getJdbcUrl, queryParam.getJdbcUrl());
@@ -61,7 +61,7 @@ public class DataSourceDAOImpl implements DataSourceDAO {
             wrapper.in(TakinDbresourceEntity::getId, queryParam.getDataSourceIdList());
         }
         // 数据权限
-        if(CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
+        if (CollectionUtils.isNotEmpty(WebPluginUtils.getQueryAllowUserIdList())) {
             wrapper.in(TakinDbresourceEntity::getUserId, WebPluginUtils.getQueryAllowUserIdList());
         }
         Page<TakinDbresourceEntity> page = new Page<>(queryParam.getCurrent(), queryParam.getPageSize());
@@ -69,7 +69,7 @@ public class DataSourceDAOImpl implements DataSourceDAO {
 
         IPage<TakinDbresourceEntity> takinResourceEntityPage = datasourceMapper.selectPage(page, wrapper);
         if (CollectionUtils.isEmpty(takinResourceEntityPage.getRecords())) {
-            return PagingList.of(Lists.newArrayList(),takinResourceEntityPage.getTotal());
+            return PagingList.of(Lists.newArrayList(), takinResourceEntityPage.getTotal());
         }
         List<DataSourceResult> dataSourceResultList = takinResourceEntityPage.getRecords().stream().map(entity -> {
             DataSourceResult dataSourceResult = new DataSourceResult();

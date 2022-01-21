@@ -495,6 +495,7 @@ public class ActivityServiceImpl implements ActivityService {
         param.setLinkLevel(request.getLinkLevel());
         param.setCurrent(request.getCurrent());
         param.setPageSize(request.getPageSize());
+        param.setType(request.getType());
         WebPluginUtils.fillQueryParam(param);
 
         PagingList<ActivityListResult> activityListResultPagingList = activityDAO.pageActivities(param);

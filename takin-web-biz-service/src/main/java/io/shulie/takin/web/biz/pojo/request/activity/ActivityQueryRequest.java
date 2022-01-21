@@ -29,4 +29,7 @@ public class ActivityQueryRequest extends PagingDevice {
 
     @ApiModelProperty(name = "link_level", value = "业务活动等级")
     private String linkLevel;
+
+    @ApiModelProperty(name= "type",value = "正常、虚拟:0:正常：1虚拟")
+    private Integer type;
 }

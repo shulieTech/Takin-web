@@ -305,22 +305,15 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private void pushTaskToRedis(SceneActionResp startResult, SceneManageWrapperDTO sceneData) {
         final Long reportId = startResult.getData();
         if (reportId != null) {
-            SceneTaskDto taskDto = new SceneTaskDto();
-            taskDto.setTenantId(WebPluginUtils.traceTenantId());
-            taskDto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
-            taskDto.setEnvCode(WebPluginUtils.traceEnvCode());
-            taskDto.setTenantCode(WebPluginUtils.traceTenantCode());
-            taskDto.setSource(ContextSourceEnum.JOB.getCode());
-            taskDto.setReportId(reportId);
-
             //计算结束时间
             if (sceneData.getPressureTestSecond() == null) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR,
                     "获取压测时长失败！压测时长为" + sceneData.getPressureTestSecond());
             }
-            //兜底时长
-            taskDto.setEndTime(
-                LocalDateTime.now().plusSeconds(sceneData.getPressureTestSecond()));
+            //兜底时长 2小时
+            final LocalDateTime dateTime = LocalDateTime.now().plusHours(2);
+            //组装
+            SceneTaskDto taskDto = new SceneTaskDto(reportId,ContextSourceEnum.JOB_SCENE,dateTime);
             //任务添加到redis队列
             final String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
                 : WebRedisKeyConstant.SCENE_REPORTID_KEY;

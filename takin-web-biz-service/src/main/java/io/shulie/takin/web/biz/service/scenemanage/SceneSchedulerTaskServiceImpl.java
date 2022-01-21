@@ -17,6 +17,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 
+import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -132,7 +133,14 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                 //执行
                 SceneActionParam startParam = new SceneActionParam();
                 startParam.setSceneId(scheduler.getSceneId());
-                WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(), startParam);
+                startParam.setEnvCode(scheduler.getEnvCode());
+                startParam.setTenantId(scheduler.getTenantId());
+                // 补充定时任务的执行用户
+                UserExt userInfo = WebPluginUtils.getUserExtByUserId(scheduler.getUserId());
+                if (userInfo != null) {
+                    startParam.setUserId(userInfo.getId());
+                    startParam.setUserName(userInfo.getName());
+                }
                 new Thread(() -> {
                     try {
                         sceneTaskService.startTask(startParam);

@@ -113,8 +113,8 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
                             allowRunningThreads.set(permitsThreads);
                         }
 
-                        for (SceneTaskDto tenantTask : tenantTasks) {
-                            runTaskInTenantIfNecessary(tenantTask,reportId);
+                        for (int i = 0; i < allowRunningThreads.get(); i++) {
+                            runTaskInTenantIfNecessary(tenantTasks.get(i),reportId);
                         }
                     }
                 }

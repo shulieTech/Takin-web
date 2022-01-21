@@ -35,11 +35,31 @@ public class ReportMachineDAOImpl  extends ServiceImpl<ReportMachineMapper, Repo
         this.save(entity);
     }
 
+    /**
+     *   on duplicate key update machine_base_config=#{machineBaseConfig,jdbcType=VARCHAR},
+     *                                  agent_id=#{agentId,jdbcType=VARCHAR},
+     *                                  risk_value=#{riskValue,jdbcType=DECIMAL},
+     *                                  tenant_id=#{tenantId,jdbcType=BIGINT},
+     *                                  env_code=#{envCode,jdbcType=VARCHAR}
+     * @param param
+     */
     @Override
     public void insertOrUpdate(ReportMachineUpdateParam param) {
-        ReportMachineEntity entity = new ReportMachineEntity();
-        BeanUtils.copyProperties(param,entity);
-        this.baseMapper.insertOrUpdate(entity);
+        // 先查询
+        LambdaQueryWrapper<ReportMachineEntity> queryWrapper = this.getLambdaQueryWrapper();
+        queryWrapper.eq(ReportMachineEntity::getReportId,param.getReportId());
+        queryWrapper.eq(ReportMachineEntity::getMachineIp,param.getMachineIp());
+        queryWrapper.eq(ReportMachineEntity::getApplicationName,param.getApplicationName());
+        ReportMachineEntity one = this.getOne(queryWrapper);
+        if(one != null) {
+            one.setMachineBaseConfig(param.getMachineBaseConfig());
+            one.setAgentId(param.getAgentId());
+            one.setRiskValue(param.getRiskValue());
+            this.updateById(one);
+        }else {
+            this.insert(param);
+        }
+
     }
 
     /**

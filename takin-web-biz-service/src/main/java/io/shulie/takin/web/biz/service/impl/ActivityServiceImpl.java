@@ -148,12 +148,6 @@ public class ActivityServiceImpl implements ActivityService {
     @Autowired
     private ApplicationDAO applicationDAO;
 
-    /**
-     * 是否是预发环境
-     */
-    @Value("${takin.inner.pre:0}")
-    private int isInnerPre;
-
     @Override
     public List<BusinessApplicationListResponse> listApplicationByBusinessActivityIds(List<Long> businessActivityIds,
         String applicationName) {
@@ -878,8 +872,7 @@ public class ActivityServiceImpl implements ActivityService {
             //组装
             SceneTaskDto taskDto = new SceneTaskDto(reportId, ContextSourceEnum.JOB_FLOW_VERIFY,dateTime);
             //任务添加到redis队列
-            final String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
-                : WebRedisKeyConstant.SCENE_REPORTID_KEY;
+            final String reportKeyName = WebRedisKeyConstant.getTaskList();
             final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
             redisTemplate.opsForList().leftPush(reportKeyName, reportKey);
             redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(taskDto));

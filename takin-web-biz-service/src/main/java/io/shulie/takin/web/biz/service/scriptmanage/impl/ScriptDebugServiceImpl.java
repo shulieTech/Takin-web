@@ -200,12 +200,6 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
-    /**
-     * 是否是预发环境
-     */
-    @Value("${takin.inner.pre:0}")
-    private int isInnerPre;
-
     @PostConstruct
     public void init() {
         supportRpcType = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_DEBUG_RPC_TYPE);
@@ -374,8 +368,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             //组装
             SceneTaskDto taskDto = new SceneTaskDto(reportId, ContextSourceEnum.JOB_SCRIPT_DEBUG,dateTime);
             //任务添加到redis队列
-            final String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
-                : WebRedisKeyConstant.SCENE_REPORTID_KEY;
+            final String reportKeyName = WebRedisKeyConstant.getTaskList();
             final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
             redisTemplate.opsForList().leftPush(reportKeyName, reportKey);
             redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(taskDto));

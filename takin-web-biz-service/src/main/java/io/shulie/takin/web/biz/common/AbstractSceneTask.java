@@ -32,15 +32,8 @@ public abstract class AbstractSceneTask {
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
-    /**
-     * 是否是预发环境
-     */
-    @Value("${takin.inner.pre:0}")
-    private int isInnerPre;
-
     protected List<SceneTaskDto> getTaskFromRedis() {
-        String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
-            : WebRedisKeyConstant.SCENE_REPORTID_KEY;
+        String reportKeyName = WebRedisKeyConstant.getTaskList();
         List<String> o = redisTemplate.opsForList().range(reportKeyName, 0, -1);
         List<SceneTaskDto> taskDtoList = null;
         try {
@@ -80,7 +73,7 @@ public abstract class AbstractSceneTask {
 
     private void removeReportKey(Long reportId) {
         final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
-        redisTemplate.opsForList().remove(WebRedisKeyConstant.SCENE_REPORTID_KEY, 0, reportKey);
+        redisTemplate.opsForList().remove(WebRedisKeyConstant.getTaskList(), 0, reportKey);
         redisTemplate.opsForValue().getOperations().delete(reportKey);
     }
 

@@ -91,7 +91,9 @@ public class SceneSchedulerTaskDaoImpl implements SceneSchedulerTaskDao {
             SceneSchedulerTaskEntity::getExecuteTime,
             SceneSchedulerTaskEntity::getSceneId,
             SceneSchedulerTaskEntity::getIsExecuted,
-            SceneSchedulerTaskEntity::getUserId
+            SceneSchedulerTaskEntity::getUserId,
+            SceneSchedulerTaskEntity::getEnvCode,
+            SceneSchedulerTaskEntity::getTenantId
         );
         wrapper.lt(SceneSchedulerTaskEntity::getExecuteTime, queryParam.getEndTime());
         wrapper.eq(SceneSchedulerTaskEntity::getIsExecuted, 0);
@@ -107,7 +109,7 @@ public class SceneSchedulerTaskDaoImpl implements SceneSchedulerTaskDao {
         return entrys2ResultList(sceneSchedulerTaskEntities);
     }
 
-    SceneSchedulerTaskResult enty2Result(SceneSchedulerTaskEntity entity) {
+    SceneSchedulerTaskResult entity2Result(SceneSchedulerTaskEntity entity) {
         SceneSchedulerTaskResult result = new SceneSchedulerTaskResult();
         BeanUtils.copyProperties(entity, result);
         return result;
@@ -119,7 +121,7 @@ public class SceneSchedulerTaskDaoImpl implements SceneSchedulerTaskDao {
         }
         List<SceneSchedulerTaskResult> resultList = new ArrayList<>();
         sceneSchedulerTaskEntities.forEach(entity -> {
-            resultList.add(enty2Result(entity));
+            resultList.add(entity2Result(entity));
         });
         return resultList;
     }

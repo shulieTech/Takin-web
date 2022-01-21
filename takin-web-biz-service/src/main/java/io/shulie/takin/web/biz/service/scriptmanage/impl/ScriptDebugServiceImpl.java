@@ -333,7 +333,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             SceneTryRunTaskStartResp cloudResponse = this.doDebug(debugCloudRequest);
 
             //推送到任务队列
-
+            pushTaskToRedis(cloudResponse.getReportId());
 
             // 创建调试记录
             log.info("调试 --> 创建调试记录!");

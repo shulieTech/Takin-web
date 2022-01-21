@@ -437,9 +437,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         String appNameRemoteCallId = RemoteCallUtils.buildRemoteCallName(detailResult.getApplicationName(), result.getInterfaceName(), anEnum.getConvert());
         List<ApplicationRemoteCallDTO> callDtoList = serverAppNamesMap.get(appNameRemoteCallId);
         if(CollectionUtils.isNotEmpty(callDtoList)) {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     @Override

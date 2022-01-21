@@ -59,7 +59,6 @@ public class LeakCheckConfigDetailDAOImpl implements LeakCheckConfigDetailDAO {
             queryWrapper.in(LeakcheckConfigDetailEntity::getDatasourceId, queryParam.getDatasourceIds());
         }
         queryWrapper.orderByDesc(LeakcheckConfigDetailEntity::getId);
-        queryWrapper.orderByDesc(LeakcheckConfigDetailEntity::getUpdateTime);
         List<LeakcheckConfigDetailEntity> detailEntityList = detailMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(detailEntityList)) {
             detailResultList = detailEntityList.stream().map(detailEntity -> {

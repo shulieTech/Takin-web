@@ -262,7 +262,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 
         final long sTime = formatTimestamp(startTime);
         final long eTime = formatTimestamp(endTime);
-        dto.getBusinessActivity().stream().forEach(ba -> {
+        dto.getBusinessActivity().forEach(ba -> {
             Long businessActivityId = ba.getBusinessActivityId();
             BigDecimal maxTps = ba.getMaxTps() != null ? ba.getMaxTps() : new BigDecimal("0");
             // 目标TPS
@@ -668,7 +668,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             String ipSql = "select distinct(app_ip) as app_ip from app_base_data where app_name = '" + appName
                     + "' and time > " + firstTime + " and time <= " + lastTime +
                 // 增加租户
-                " and tenant_app_Key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
+                " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                 " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
             Collection<BaseServerResult> ipList = influxDatabaseManager.query(BaseServerResult.class, ipSql);
             if (CollectionUtils.isNotEmpty(ipList)) {

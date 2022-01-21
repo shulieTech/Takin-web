@@ -559,7 +559,7 @@ public class SceneServiceImpl implements SceneService {
                 //是否存在名称重复
                 ActivityExistsQueryParam queryNameParam = new ActivityExistsQueryParam();
                 queryNameParam.setActivityName(createRequest.getActivityName());
-                List<Long> exists = activityDao.exists(queryNameParam);
+                List<String> exists = activityDao.exists(queryNameParam);
                 if (CollectionUtils.isNotEmpty(exists)){
                     //如果名称长度过长，截取长度以匹配表字段长度
                     if (187 < createRequest.getActivityName().length()){

@@ -42,4 +42,8 @@ public class ActivityQueryParam extends AuthQueryParamCommonExt {
      */
     private String applicationName;
 
+    /**
+     * 类型
+     */
+    private Integer type;
 }

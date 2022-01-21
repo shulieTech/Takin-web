@@ -58,9 +58,17 @@
 
     <update id="updateRiskContent" >
         update t_report_machine
-        set risk_flag    = #{riskFlag,jdbcType=TINYINT},
-            risk_value   = #{riskValue,jdbcType=DECIMAL},
-            risk_content = #{riskContent,jdbcType=VARCHAR}
+        <set>
+            <if test="riskFlag != null">
+                risk_flag = #{riskFlag,jdbcType=TINYINT},
+            </if>
+            <if test="riskValue != null">
+                risk_value  = #{riskValue,jdbcType=DECIMAL},
+            </if>
+            <if test="riskContent != null">
+                risk_content = #{riskContent,jdbcType=VARCHAR}
+            </if>
+        </set>
         where report_id = #{reportId,jdbcType=BIGINT}
           and application_name = #{applicationName,jdbcType=VARCHAR}
           and machine_ip = #{machineIp,jdbcType=VARCHAR}

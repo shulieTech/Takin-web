@@ -223,7 +223,9 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             reportMachine.setApplicationName(vo.getAppName());
             reportMachine.setMachineIp(vo.getAppIp());
             reportMachine.setRiskFlag(1);
-            reportMachine.setRiskContent(vo.getContent());
+            if(StringUtils.isNotBlank(vo.getContent())) {
+                reportMachine.setRiskContent(vo.getContent());
+            }
             reportMachineDAO.updateRiskContent(reportMachine);
         });
     }

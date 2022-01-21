@@ -14,7 +14,6 @@ import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
 import io.shulie.takin.web.common.common.Separator;
-import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.leakverify.LeakVerifyResultDAO;
@@ -92,6 +91,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             if (reportDetailDTO == null) {
                 return false;
             }
+            // 收集数据 单独线程收集 --->风险机器等等
+            collectDataThreadPool.execute(collectData(reportId, commonExt));
             // 压测结束才锁报告
             Date endTime = reportDetailDTO.getEndTime();
             if (endTime == null) {
@@ -113,9 +114,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                     log.error("锁定运行报告数据失败, reportId={}", reportId);
                 }
                 log.info("finish report，total data  Running Report :{}", reportId);
-
-                // 收集数据 单独线程收集
-                collectDataThreadPool.execute(collectData(reportId, commonExt));
 
                 // 停止报告
                 Boolean webResponse = reportService.finishReport(reportId);

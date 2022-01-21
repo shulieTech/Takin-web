@@ -262,7 +262,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
 
         final long sTime = formatTimestamp(startTime);
         final long eTime = formatTimestamp(endTime);
-        dto.getBusinessActivity().stream().forEach(ba -> {
+        dto.getBusinessActivity().forEach(ba -> {
             Long businessActivityId = ba.getBusinessActivityId();
             BigDecimal maxTps = ba.getMaxTps() != null ? ba.getMaxTps() : new BigDecimal("0");
             // 目标TPS

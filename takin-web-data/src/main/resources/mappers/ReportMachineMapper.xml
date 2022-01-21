@@ -33,7 +33,6 @@
             on duplicate key update machine_base_config=#{machineBaseConfig,jdbcType=VARCHAR},
                                  agent_id=#{agentId,jdbcType=VARCHAR},
                                  risk_value=#{riskValue,jdbcType=DECIMAL},
-                                 risk_content=#{riskContent,jdbcType=VARCHAR},
                                  tenant_id=#{tenantId,jdbcType=BIGINT},
                                  env_code=#{envCode,jdbcType=VARCHAR}
     </insert>

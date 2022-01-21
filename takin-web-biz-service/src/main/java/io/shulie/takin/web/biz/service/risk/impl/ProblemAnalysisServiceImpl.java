@@ -195,6 +195,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
                     baseAppVo.setReportId(null);
                     baseAppVo.setAgentIp(null);
                     tmp.setMachineBaseConfig(JSON.toJSONString(baseAppVo));
+                    // 增加租户
+                    WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(),tmp);
                     insertList.add(tmp);
                 }
             });
@@ -223,6 +225,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             reportMachine.setApplicationName(vo.getAppName());
             reportMachine.setMachineIp(vo.getAppIp());
             reportMachine.setRiskFlag(1);
+            //reportMachine.setRiskValue();
             if(StringUtils.isNotBlank(vo.getContent())) {
                 reportMachine.setRiskContent(vo.getContent());
             }

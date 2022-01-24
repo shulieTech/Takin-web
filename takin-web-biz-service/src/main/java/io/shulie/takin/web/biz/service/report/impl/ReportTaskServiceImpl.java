@@ -105,6 +105,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 return false;
             }
             ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
+            if (reportDetailDTO == null) {
+                log.error("未查到报告明细！reportId={}",reportId);
+                return false;
+            }
             Date endTime = reportDetailDTO.getEndTime();
             //更新任务的结束时间
             if (!this.updateTaskEndTime(reportId, commonExt, endTime)) { return false; }

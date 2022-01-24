@@ -7,11 +7,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
@@ -90,7 +92,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             } catch (Exception e) {
                 log.error("finish report data preparation：{},errorMsg= {}", reportId, e.getMessage());
             }
-            ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
+            //ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
+            final ReportDetailOutput reportDetailDTO = reportService.getReportById(reportId);
             if (reportDetailDTO == null) {
                 return false;
             }

@@ -156,4 +156,13 @@ public interface ReportService {
      */
     ReportJtlDownloadOutput getJtlDownLoadUrl(Long reportId);
 
+
+    /**
+     * 用于finishjob判断报告的状态
+     * 根据报告主键查询报告详情
+     * @param id 报告主键
+     * @return 报告详情
+     */
+    ReportDetailOutput getReportById(Long id);
+
 }

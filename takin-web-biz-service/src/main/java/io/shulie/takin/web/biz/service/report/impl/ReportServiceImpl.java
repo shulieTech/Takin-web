@@ -127,10 +127,7 @@ public class ReportServiceImpl implements ReportService {
     public ReportDetailOutput getReportByReportId(Long reportId) {
         ReportDetailByIdReq req = new ReportDetailByIdReq();
         req.setReportId(reportId);
-        final ReportDetailByIdReq idReq = new ReportDetailByIdReq() {{
-            setReportId(reportId);
-        }};
-        ReportDetailResp detailResponse = cloudReportApi.detail(idReq);
+        ReportDetailResp detailResponse = cloudReportApi.detail(req);
         // sa超过100 显示100
         if (detailResponse.getSa() != null
             && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
@@ -295,4 +292,15 @@ public class ReportServiceImpl implements ReportService {
         LinuxHelper.execCurl(cmdArray);
         return new ReportJtlDownloadOutput(fileDir + "/" + fileName, true);
     }
+
+    @Override
+    public ReportDetailOutput getReportById(Long id) {
+        ReportDetailByIdReq req = new ReportDetailByIdReq();
+        req.setReportId(id);
+        Integer status = cloudReportApi.getReportStatusById(req);
+        final ReportDetailOutput output = new ReportDetailOutput();
+        output.setTaskStatus(status);
+        return output;
+    }
+
 }

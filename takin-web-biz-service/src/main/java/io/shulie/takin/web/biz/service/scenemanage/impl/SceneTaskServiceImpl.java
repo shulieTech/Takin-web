@@ -205,6 +205,9 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         return responseResult;
     }
 
+    @Resource
+    private CloudReportApi cloudReportApi;
+
     /**
      * 查询场景业务活动信息，校验业务活动
      *

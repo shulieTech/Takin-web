@@ -48,4 +48,6 @@ public class AppRemoteCallTemplateMappingEntity extends NewBaseEntity implements
 
 
 
+
+
 }

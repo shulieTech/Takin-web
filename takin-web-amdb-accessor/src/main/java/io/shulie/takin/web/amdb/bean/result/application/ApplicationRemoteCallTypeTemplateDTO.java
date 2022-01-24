@@ -29,12 +29,12 @@ public class ApplicationRemoteCallTypeTemplateDTO {
     private Integer whitelistEnable;
 
     /**
-     * 是否支持返回值mock;0:不支持;1:支持
+     * 是否支持groovy返回值mock;0:不支持;1:支持
      */
     private Integer returnMockEnable;
 
     /**
-     * 返回值mock文本
+     * groovy返回值mock文本
      */
     private String returnMock;
 
@@ -47,4 +47,14 @@ public class ApplicationRemoteCallTypeTemplateDTO {
      * 转发mock文本
      */
     private String forwardMock;
+
+    /**
+     * 是否支持固定返回值mock;0:不支持;1:支持
+     */
+    private Integer returnFixMockEnable;
+
+    /**
+     * 固定返回值mock文本
+     */
+    private String fixReturnMock;
 }

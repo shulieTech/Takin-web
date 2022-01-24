@@ -2,6 +2,7 @@ package io.shulie.takin.web.common.util;
 
 import java.util.UUID;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
@@ -51,12 +52,14 @@ public class ActivityUtil {
     }
 
     public static String buildEntrance(String methodName, String serviceName, String rpcType) {
+        if (StrUtil.isBlank(methodName)) {methodName = "METHOD_NAME";}
+        /*
         if (RpcTypeEnum.MQ.getValue().equals(rpcType)) {
             return StringUtils.join(Lists.newArrayList(serviceName, rpcType), "|");
         }
+        */
         return StringUtils.join(Lists.newArrayList(methodName, serviceName, rpcType), "|");
     }
-
 
     /**
      * 获取s

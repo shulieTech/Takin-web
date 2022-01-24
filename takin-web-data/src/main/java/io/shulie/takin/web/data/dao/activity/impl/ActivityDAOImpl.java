@@ -275,6 +275,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         if (middlewareType != null) {
             businessLinkManageTableEntity.setServerMiddlewareType(middlewareType.getType());
         }
+        if(StringUtils.isNotBlank(updateParam.getActivityName())) {
+            businessLinkManageTableEntity.setApplicationName(updateParam.getApplicationName());
+        }
         return businessLinkManageTableMapper.updateById(businessLinkManageTableEntity);
     }
 

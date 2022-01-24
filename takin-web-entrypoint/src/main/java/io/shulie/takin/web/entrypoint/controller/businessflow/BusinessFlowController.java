@@ -108,8 +108,12 @@ public class BusinessFlowController {
                 OperationLogContextHolder.addVars("deleteFiles", deleteFiles);
             }
             List<PluginConfigCreateRequest> plugins = businessFlowDataFileRequest.getPluginList();
+            // 补充操作日志的参数
+            // * 但是这个业务流程应该没有插件参数
             if (CollectionUtils.isNotEmpty(plugins)) {
                 OperationLogContextHolder.addVars("plugins", JsonUtil.toJson(plugins));
+            } else {
+                OperationLogContextHolder.addVars("plugins", "");
             }
         }
         return ResponseResult.success(sceneDetailDto);

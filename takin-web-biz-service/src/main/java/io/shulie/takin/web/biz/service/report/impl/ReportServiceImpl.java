@@ -297,19 +297,9 @@ public class ReportServiceImpl implements ReportService {
     public ReportDetailOutput getReportById(Long id) {
         ReportDetailByIdReq req = new ReportDetailByIdReq();
         req.setReportId(id);
-        final ReportDetailResp detailResponse = cloudReportApi.getReportById(req);
-        // sa超过100 显示100
-        if (detailResponse.getSa() != null
-            && detailResponse.getSa().compareTo(BigDecimal.valueOf(100)) > 0) {
-            detailResponse.setSa(BigDecimal.valueOf(100));
-        }
-        ReportDetailOutput output = new ReportDetailOutput();
-        BeanUtils.copyProperties(detailResponse, output);
-        assembleVerifyResult(output);
-        // 虚拟业务活动处理
-        //dealVirtualBusiness(output);
-        //补充报告执行人
-        fillExecuteMan(output);
+        Integer status = cloudReportApi.getReportStatusById(req);
+        final ReportDetailOutput output = new ReportDetailOutput();
+        output.setTaskStatus(status);
         return output;
     }
 

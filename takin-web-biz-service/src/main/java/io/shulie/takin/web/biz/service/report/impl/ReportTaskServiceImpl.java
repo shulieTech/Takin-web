@@ -92,18 +92,19 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             } catch (Exception e) {
                 log.error("finish report data preparation：{},errorMsg= {}", reportId, e.getMessage());
             }
-            //ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
-            final ReportDetailOutput reportDetailDTO = reportService.getReportById(reportId);
-            if (reportDetailDTO == null) {
+            // 查询报告状态
+            final ReportDetailOutput report = reportService.getReportById(reportId);
+            if (report == null) {
                 return false;
             }
             // 收集数据 单独线程收集 --->风险机器等等
             collectDataThreadPool.execute(collectData(reportId, commonExt));
             // 压测结束才锁报告
-            Integer status = reportDetailDTO.getTaskStatus();
+            Integer status = report.getTaskStatus();
             if (status == null || status != 1) {
                 return false;
             }
+            ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
             Date endTime = reportDetailDTO.getEndTime();
             //更新任务的结束时间
             if (!this.updateTaskEndTime(reportId, commonExt, endTime)) { return false; }

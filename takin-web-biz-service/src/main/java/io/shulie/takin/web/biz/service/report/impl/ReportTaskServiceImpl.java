@@ -97,10 +97,11 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             // 收集数据 单独线程收集 --->风险机器等等
             collectDataThreadPool.execute(collectData(reportId, commonExt));
             // 压测结束才锁报告
-            Date endTime = reportDetailDTO.getEndTime();
-            if (endTime == null) {
+            Integer status = reportDetailDTO.getTaskStatus();
+            if (status == null || status != 1) {
                 return false;
             }
+            Date endTime = reportDetailDTO.getEndTime();
             //更新任务的结束时间
             if (!this.updateTaskEndTime(reportId, commonExt, endTime)) { return false; }
 

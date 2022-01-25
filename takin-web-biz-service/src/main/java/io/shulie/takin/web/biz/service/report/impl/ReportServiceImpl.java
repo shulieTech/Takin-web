@@ -300,7 +300,10 @@ public class ReportServiceImpl implements ReportService {
     public ReportDetailOutput getReportById(Long id) {
         ReportDetailByIdReq req = new ReportDetailByIdReq();
         req.setReportId(id);
-        Integer status = cloudReportApi.getReportStatusById(req);
+        final ReportDetailByIdReq idReq = new ReportDetailByIdReq() {{
+            setReportId(id);
+        }};
+        Integer status = cloudReportApi.getReportStatusById(idReq);
         final ReportDetailOutput output = new ReportDetailOutput();
         output.setTaskStatus(status);
         return output;

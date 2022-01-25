@@ -97,8 +97,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             if (report == null) {
                 return false;
             }
-            // 收集数据 单独线程收集 --->风险机器等等
-            collectDataThreadPool.execute(collectData(reportId, commonExt));
             // 压测结束才锁报告
             Integer status = report.getTaskStatus();
             if (status == null || status != 1) {
@@ -130,6 +128,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                     log.error("锁定运行报告数据失败, reportId={}", reportId);
                 }
                 log.info("finish report，total data  Running Report :{}", reportId);
+
+                // 收集数据 单独线程收集
+                collectDataThreadPool.execute(collectData(reportId,commonExt));
 
                 // 停止报告
                 Boolean webResponse = reportService.finishReport(reportId);

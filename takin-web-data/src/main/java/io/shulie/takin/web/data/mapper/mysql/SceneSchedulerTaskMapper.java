@@ -16,5 +16,6 @@ public interface SceneSchedulerTaskMapper  extends BaseMapper<SceneSchedulerTask
     SceneSchedulerTaskEntity selectBySceneId(@Param("sceneId")Long sceneId) ;
 
     @Delete(" delete from t_scene_scheduler_task where scene_id =#{sceneId} ")
-    void deleteBySceneId(@Param("sceneId") Long sceneId ) ;
+    void deleteBySceneId(@Param("sceneId") Long sceneId );
+
 }

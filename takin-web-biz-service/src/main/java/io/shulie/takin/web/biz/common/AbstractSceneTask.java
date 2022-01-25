@@ -63,7 +63,8 @@ public abstract class AbstractSceneTask {
     protected void cleanUnAvailableTasks(List<SceneTaskDto> taskDtoList) {
         try {
             if(CollectionUtils.isNotEmpty(taskDtoList)){
-                taskDtoList.stream().filter(t -> t.getEndTime()!=null && Duration.between(t.getEndTime(), LocalDateTime.now()).toHours() > 2).forEach(
+                final LocalDateTime now = LocalDateTime.now();
+                taskDtoList.stream().filter(t -> t.getEndTime()!=null && now.compareTo(t.getEndTime())>0).forEach(
                     t -> removeReportKey(t.getReportId()));
             }
         }catch (Exception e){

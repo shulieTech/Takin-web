@@ -10,6 +10,10 @@ package io.shulie.takin.web.biz.utils.job;
 public class JobRedisUtils {
 
     private static String REDIS_JOB = "redis:job:%s:%s:%s";
+    /**
+     * 定时压测
+     */
+    private static String REDIS_SCHEDULER_JOB = "redis:scheduler:job:%s:%s:%s";
 
     /**
      * 获取job分布式锁
@@ -20,5 +24,16 @@ public class JobRedisUtils {
      */
     public static String getJobRedis(Long tenantId,String envCode,String jobName) {
         return String.format(REDIS_JOB,tenantId,envCode,jobName);
+    }
+
+    /**
+     * 获取job分布式锁
+     * @param tenantId
+     * @param envCode
+     * @param id
+     * @return
+     */
+    public static String getSchedulerRedis(Long tenantId,String envCode,Long id) {
+        return String.format(REDIS_SCHEDULER_JOB,tenantId,envCode,id);
     }
 }

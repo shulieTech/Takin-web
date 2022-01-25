@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.scenemanage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -13,6 +14,8 @@ import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreate
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
+import io.shulie.takin.web.biz.service.DistributedLock;
+import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -27,6 +30,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,6 +44,9 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
     private SceneTaskService sceneTaskService;
     @Resource
     private SceneSchedulerTaskDao sceneSchedulerTaskDao;
+
+    @Autowired
+    private DistributedLock distributedLock;
 
     @Override
     public Long insert(SceneSchedulerTaskCreateRequest request) {
@@ -127,6 +134,15 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
             Date dbDate = scheduler.getExecuteTime();
             Date now = new Date();
             if (dbDate.before(now)) {
+                // 分布式锁
+                String lockKey = JobRedisUtils.getSchedulerRedis(scheduler.getTenantId(),scheduler.getEnvCode(),scheduler.getId());
+                if (distributedLock.checkLock(lockKey)) {
+                    continue;
+                }
+                boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+                if(!tryLock) {
+                    continue;
+                }
                 new Thread(() -> {
                     // 补充租户信息
                     TenantCommonExt ext = new TenantCommonExt();
@@ -156,6 +172,8 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                         updateRequest.setIsDeleted(true);
                         updateRequest.setIsDeleted(true);
                         this.update(updateRequest, false);
+                        // 解锁
+                        distributedLock.unLockSafely(lockKey);
                     }
                 }).start();
             }

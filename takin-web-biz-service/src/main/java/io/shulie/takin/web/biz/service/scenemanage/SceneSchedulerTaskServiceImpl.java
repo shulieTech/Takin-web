@@ -26,6 +26,7 @@ import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskUpdateParam;
 import io.shulie.takin.web.data.result.scenemanage.SceneSchedulerTaskResult;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -144,24 +145,30 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                     continue;
                 }
                 new Thread(() -> {
-                    // 补充租户信息
-                    TenantCommonExt ext = new TenantCommonExt();
-                    ext.setSource(ContextSourceEnum.JOB.getCode());
-                    ext.setTenantId(scheduler.getTenantId());
-                    ext.setEnvCode(scheduler.getEnvCode());
-                    WebPluginUtils.setTraceTenantContext(ext);
-                    //执行
-                    SceneActionParam startParam = new SceneActionParam();
-                    startParam.setSceneId(scheduler.getSceneId());
-                    startParam.setEnvCode(scheduler.getEnvCode());
-                    startParam.setTenantId(scheduler.getTenantId());
-                    // 补充定时任务的执行用户
-                    UserExt userInfo = WebPluginUtils.getUserExtByUserId(scheduler.getUserId());
-                    if (userInfo != null) {
-                        startParam.setUserId(userInfo.getId());
-                        startParam.setUserName(userInfo.getName());
-                    }
                     try {
+                        // 补充租户信息
+                        TenantCommonExt ext = new TenantCommonExt();
+                        ext.setSource(ContextSourceEnum.JOB.getCode());
+                        ext.setTenantId(scheduler.getTenantId());
+                        ext.setEnvCode(scheduler.getEnvCode());
+                        TenantInfoExt infoExt = WebPluginUtils.getTenantInfo(scheduler.getTenantId());
+                        if(infoExt == null) {
+                            log.error("租户信息未找到【{}】",scheduler.getTenantId());
+                            return;
+                        }
+                        ext.setTenantAppKey(infoExt.getTenantAppKey());
+                        WebPluginUtils.setTraceTenantContext(ext);
+                        //执行
+                        SceneActionParam startParam = new SceneActionParam();
+                        startParam.setSceneId(scheduler.getSceneId());
+                        startParam.setEnvCode(scheduler.getEnvCode());
+                        startParam.setTenantId(scheduler.getTenantId());
+                        // 补充定时任务的执行用户
+                        UserExt userInfo = WebPluginUtils.getUserExtByUserId(scheduler.getUserId());
+                        if (userInfo != null) {
+                            startParam.setUserId(userInfo.getId());
+                            startParam.setUserName(userInfo.getName());
+                        }
                         sceneTaskService.startTask(startParam);
                     } catch (Exception e) {
                         log.error("执行定时压测任务失败...", e);

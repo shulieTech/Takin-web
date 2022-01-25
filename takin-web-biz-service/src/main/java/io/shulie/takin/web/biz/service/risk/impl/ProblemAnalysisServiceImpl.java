@@ -214,7 +214,6 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
     public void checkRisk(Long reportId) {
         List<BaseRiskResult> riskVoList = this.processRisk(reportId);
         if (CollectionUtils.isEmpty(riskVoList)) {
-            logger.error("无风险机器{}", reportId);
             return;
         }
 

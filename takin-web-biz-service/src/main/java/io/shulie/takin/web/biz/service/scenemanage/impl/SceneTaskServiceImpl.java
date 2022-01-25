@@ -270,7 +270,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
                     }}).collect(Collectors.toList()));
             }
         }
-        param.setUserId(WebPluginUtils.traceUserId());
         //填充操作人信息
         UserExt user = WebPluginUtils.traceUser();
         if (user != null) {

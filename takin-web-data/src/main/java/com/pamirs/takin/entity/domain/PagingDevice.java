@@ -3,13 +3,13 @@ package com.pamirs.takin.entity.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.shulie.takin.web.common.domain.WebRequest;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 
 /**
  * @author vernon
  * @date 2019/12/2 10:42
  */
-public class PagingDevice extends WebRequest implements Cloneable {
+public class PagingDevice extends ContextExt implements Cloneable {
     private int count;
     private int pageSize = 20;
     private int current = 0;

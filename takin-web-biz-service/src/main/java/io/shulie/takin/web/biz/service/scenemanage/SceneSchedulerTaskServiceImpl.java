@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.service.scenemanage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -14,11 +13,11 @@ import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreate
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
-import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.scenemanage.SceneSchedulerTaskDao;
 import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskInsertParam;
 import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskQueryParam;
@@ -47,7 +46,7 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
     private SceneSchedulerTaskDao sceneSchedulerTaskDao;
 
     @Autowired
-    private DistributedLock distributedLock;
+    private RedisHelper redisHelper;
 
     @Override
     public Long insert(SceneSchedulerTaskCreateRequest request) {
@@ -137,13 +136,10 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
             if (dbDate.before(now)) {
                 // 分布式锁
                 String lockKey = JobRedisUtils.getSchedulerRedis(scheduler.getTenantId(),scheduler.getEnvCode(),scheduler.getId());
-                if (distributedLock.checkLock(lockKey)) {
+                if (RedisHelper.hasKey(lockKey)) {
                     continue;
                 }
-                boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
-                if(!tryLock) {
-                    continue;
-                }
+                RedisHelper.setValue(lockKey,true);
                 new Thread(() -> {
                     try {
                         // 补充租户信息
@@ -180,7 +176,7 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                         updateRequest.setIsDeleted(true);
                         this.update(updateRequest, false);
                         // 解锁
-                        distributedLock.unLockSafely(lockKey);
+                        RedisHelper.delete(lockKey);
                     }
                 }).start();
             }

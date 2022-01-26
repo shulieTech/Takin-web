@@ -1,12 +1,11 @@
 package com.pamirs.takin.entity.domain.vo.report;
 
-import java.io.Serializable;
 import java.util.List;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import io.shulie.takin.web.common.domain.WebRequest;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 
 /**
  * @author 莫问
@@ -14,9 +13,7 @@ import io.shulie.takin.web.common.domain.WebRequest;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SceneActionParam extends WebRequest implements Serializable {
-
-    private static final long serialVersionUID = 1513341649685896654L;
+public class SceneActionParam extends ContextExt {
 
     private Long sceneId;
 

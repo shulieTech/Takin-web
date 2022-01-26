@@ -2,7 +2,6 @@ package com.pamirs.takin.entity.domain.vo.report;
 
 import java.io.Serializable;
 
-import io.shulie.takin.web.common.domain.WebRequest;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

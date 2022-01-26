@@ -1,31 +1,32 @@
 package io.shulie.takin.web.ext.api.user;
 
-import java.util.List;
 import java.util.Map;
+import java.util.List;
 
+import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.plugin.framework.core.extension.ExtensionPoint;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
-import io.shulie.takin.web.ext.entity.UserCommonExt;
-import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
-import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.plugin.framework.core.extension.ExtensionPoint;
 
 /**
  * @author hezhongqi
  * @date 2021/7/29 20:30
  */
+@SuppressWarnings("unused")
 public interface WebUserExtApi extends ExtensionPoint {
     //********************************用户插件模块**********************************//
 
     /**
      * 根据userId 获取用户信息
-     * @param userId
-     * @return
+     *
+     * @param userId 用户主键
+     * @return 用户信息
      */
     UserExt getUserExtByUserId(Long userId);
-
 
     /**
      * 填充用户数据 简单补充用户数据
@@ -45,7 +46,6 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @param queryParamCommonExt -
      */
     void fillQueryParam(AuthQueryParamCommonExt queryParamCommonExt);
-
 
     /**
      * 填充返回参数
@@ -77,10 +77,10 @@ public interface WebUserExtApi extends ExtensionPoint {
 
     //********************************用户插件模块**********************************//
 
-
     /**
      * 根据userid 查询 key信息
      *
+     * @param userId 用户主键
      * @return -
      */
     String getUserAppKey(Long userId);
@@ -91,6 +91,13 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @param traceContextExt 溯源数据对象
      */
     void fillCloudUserData(ContextExt traceContextExt);
+
+    /**
+     * cloud 模块 溯源数据 设置
+     *
+     * @param traceContextExt 溯源数据对象
+     */
+    void setCloudUserData(ContextExt traceContextExt);
 
     /**
      * 获取系统个人信息
@@ -107,20 +114,19 @@ public interface WebUserExtApi extends ExtensionPoint {
      */
     List<UserExt> selectByName(String userName);
 
-
     //********************************http线程上下文模块**********************************//
 
     /**
      * 设置租户信息
-     * @param commonExt
+     *
+     * @param commonExt 溯源信息
      */
     void setTraceTenantContext(TenantCommonExt commonExt);
 
     /**
      * 移除租户信息
      */
-     void removeTraceContext();
-
+    void removeTraceContext();
 
     /**
      * 获取登录用户
@@ -128,18 +134,21 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @return -
      */
     UserExt traceUser();
+
     /**
      * 获取登录用户的租户key
      *
      * @return -
      */
     String traceTenantAppKey();
+
     /**
      * 获取登录用户的租户id
      *
      * @return -
      */
     Long traceTenantId();
+
     /**
      * 获取登录用户的环境
      *
@@ -150,29 +159,31 @@ public interface WebUserExtApi extends ExtensionPoint {
     /**
      * 获取租户code
      *
-     * @return
+     * @return 租户code
      */
     String traceTenantCode();
 
     /**
      * 来源
      *
-     * @return
+     * @return 来源
      */
     Integer traceSource();
 
     //********************************http线程上下文模块**********************************//
 
     /**
-     * 根据userappkey获取用户信息
-     * @param userAppKey
-     * @return
+     * 根据userAppKey获取用户信息
+     *
+     * @param userAppKey 用户AppKey
+     * @return 用户信息
      */
     UserExt queryUserFromCache(String userAppKey);
 
     /**
      * 获取默认租户列表
-     * @return
+     *
+     * @return 默认租户列表
      */
     List<TenantInfoExt> getTenantInfoList();
 }

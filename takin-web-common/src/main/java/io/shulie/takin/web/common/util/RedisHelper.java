@@ -39,6 +39,15 @@ public class RedisHelper {
     }
 
     /**
+     * 赋值
+     * @param redisKey
+     * @param value
+     */
+    public static void setValue(String redisKey,Object value) {
+        redisTemplate.opsForValue().set(redisKey,value);
+    }
+
+    /**
      * 对 redis key 设置过期时间
      * 单位： 天
      *

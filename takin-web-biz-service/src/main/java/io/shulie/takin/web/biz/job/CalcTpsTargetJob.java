@@ -2,29 +2,24 @@ package io.shulie.takin.web.biz.job;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSON;
-
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
-import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @author 无涯
@@ -78,45 +73,51 @@ public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
                     }
                 }
             } else {
-                //筛选出租户的任务
-                final Map<Long, List<SceneTaskDto>> listMap = taskDtoList.stream().collect(
-                    Collectors.groupingBy(SceneTaskDto::getTenantId));
                 //每个租户可以使用的最大线程数
                 final int allowedTenantThreadMax = this.getAllowedTenantThreadMax();
-                for (SceneTaskDto taskDto : taskDtoList) {
-                    Long reportId = taskDto.getReportId();
-                    final Long tenantId = taskDto.getTenantId();
-                    if (tenantId % shardingContext.getShardingTotalCount() == shardingContext
-                        .getShardingItem()) {
-                        final List<SceneTaskDto> tenantTasks = listMap.get(tenantId);
-                        /**
-                         * 取最值。当前租户的任务数和允许的最大线程数
-                         */
-                        AtomicInteger allowRunningThreads = new AtomicInteger(
-                            Math.min(allowedTenantThreadMax, tenantTasks.size()));
+                //筛选出租户的任务
+                final Map<Long, List<SceneTaskDto>> listMap = taskDtoList.stream().filter(t -> {
+                    //分片：web1= 0^0、1^1  和 web2= 0^1、1^0
+                    long x = t.getTenantId() % shardingContext.getShardingTotalCount();
+                    long y = t.getReportId() % shardingContext.getShardingTotalCount();
+                    return (x ^ y) == shardingContext.getShardingItem();
+                }).collect(Collectors.groupingBy(SceneTaskDto::getTenantId));
+                if (CollectionUtils.isEmpty(listMap)) {
+                    return;
+                }
+                for (Entry<Long, List<SceneTaskDto>> listEntry : listMap.entrySet()) {
+                    final List<SceneTaskDto> tenantTasks = listEntry.getValue();
+                    if (CollectionUtils.isEmpty(tenantTasks)) {
+                        continue;
+                    }
+                    long tenantId = listEntry.getKey();
+                    /**
+                     * 取最值。当前租户的任务数和允许的最大线程数
+                     */
+                    AtomicInteger allowRunningThreads = new AtomicInteger(
+                        Math.min(allowedTenantThreadMax, tenantTasks.size()));
 
+                    /**
+                     * 已经运行的任务数
+                     */
+                    AtomicInteger oldRunningThreads = runningTasks.putIfAbsent(tenantId, allowRunningThreads);
+                    if (oldRunningThreads != null) {
                         /**
-                         * 已经运行的任务数
+                         * 剩下允许执行的任务数
+                         * allow running threads calculated by capacity
                          */
-                        AtomicInteger oldRunningThreads = runningTasks.putIfAbsent(tenantId, allowRunningThreads);
-                        if (oldRunningThreads != null) {
-                            /**
-                             * 剩下允许执行的任务数
-                             * allow running threads calculated by capacity
-                             */
-                            int permitsThreads = Math.min(allowedTenantThreadMax - oldRunningThreads.get(),
-                                allowRunningThreads.get());
-                            // add new threads to capacity
-                            oldRunningThreads.addAndGet(permitsThreads);
-                            // adjust allow current running threads
-                            allowRunningThreads.set(permitsThreads);
-                        }
-
-                        for (int i = 0; i < allowRunningThreads.get(); i++) {
-                            runTaskInTenantIfNecessary(tenantTasks.get(i), reportId);
-                        }
+                        int permitsThreads = Math.min(allowedTenantThreadMax - oldRunningThreads.get(),
+                            allowRunningThreads.get());
+                        // add new threads to capacity
+                        oldRunningThreads.addAndGet(permitsThreads);
+                        // adjust allow current running threads
+                        allowRunningThreads.set(permitsThreads);
                     }
 
+                    for (int i = 0; i < allowRunningThreads.get(); i++) {
+                        final SceneTaskDto task = tenantTasks.get(i);
+                        runTaskInTenantIfNecessary(task, task.getReportId());
+                    }
                 }
             }
         }

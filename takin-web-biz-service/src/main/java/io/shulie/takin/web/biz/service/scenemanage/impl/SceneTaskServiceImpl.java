@@ -17,6 +17,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.bean.BeanUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.AppAccessTypeEnum;
@@ -71,7 +72,6 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptManageService;
-import io.shulie.takin.web.biz.utils.CopyUtils;
 import io.shulie.takin.web.biz.utils.FileUtils;
 import io.shulie.takin.web.biz.utils.TenantKeyUtils;
 import io.shulie.takin.web.common.common.Separator;
@@ -205,7 +205,6 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         return responseResult;
     }
 
-
     /**
      * 查询场景业务活动信息，校验业务活动
      *
@@ -289,7 +288,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
         SceneActionResp startResult;
         try {
-            startResult = cloudTaskApi.start(CopyUtils.copyFields(paramNew, SceneTaskStartReq.class));
+            SceneTaskStartReq sceneTaskStartReq = BeanUtil.copyProperties(paramNew, SceneTaskStartReq.class);
+            startResult = cloudTaskApi.start(sceneTaskStartReq);
         } catch (Exception e) {
             log.error("takin-cloud启动压测场景返回错误，id={}", param.getSceneId(), e);
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_THIRD_PARTY_ERROR, e.getMessage(), e);
@@ -313,7 +313,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             //兜底时长 2小时
             final LocalDateTime dateTime = LocalDateTime.now().plusHours(2);
             //组装
-            SceneTaskDto taskDto = new SceneTaskDto(reportId,ContextSourceEnum.JOB_SCENE,dateTime);
+            SceneTaskDto taskDto = new SceneTaskDto(reportId, ContextSourceEnum.JOB_SCENE, dateTime);
             //任务添加到redis队列
             final String reportKeyName = isInnerPre == 1 ? WebRedisKeyConstant.SCENE_REPORTID_KEY_FOR_INNER_PRE
                 : WebRedisKeyConstant.SCENE_REPORTID_KEY;
@@ -344,7 +344,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     }
 
     private SceneActionParamNew getNewParam(SceneActionParam param) {
-        SceneActionParamNew paramNew = CopyUtils.copyFields(param, SceneActionParamNew.class);
+        SceneActionParamNew paramNew = BeanUtil.copyProperties(param, SceneActionParamNew.class);
         try {
             paramNew.setContinueRead("1".equals(param.getContinueRead()));
         } catch (Exception e) {

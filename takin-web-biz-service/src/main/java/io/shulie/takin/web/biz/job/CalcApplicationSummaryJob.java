@@ -74,53 +74,7 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
                     }
                 }
             } else {
-                //每个租户可以使用的最大线程数
-                int allowedTenantThreadMax = this.getAllowedTenantThreadMax();
-                //筛选出租户的任务
-                final Map<Long, List<SceneTaskDto>> listMap = taskDtoList.stream().filter(t -> {
-                    //分片：web1= 0^0、1^1  和 web2= 0^1、1^0
-                    long x = t.getTenantId() % shardingContext.getShardingTotalCount();
-                    long y = t.getReportId() % shardingContext.getShardingTotalCount();
-                    return (x ^ y) == shardingContext.getShardingItem();
-                }).collect(Collectors.groupingBy(SceneTaskDto::getTenantId));
-                if (CollectionUtils.isEmpty(listMap)) {
-                    return;
-                }
-                for (Entry<Long, List<SceneTaskDto>> listEntry : listMap.entrySet()) {
-                    final List<SceneTaskDto> tenantTasks = listEntry.getValue();
-                    if (CollectionUtils.isEmpty(tenantTasks)) {
-                        continue;
-                    }
-                    long tenantId = listEntry.getKey();
-                    /**
-                     * 取最值。当前租户的任务数和允许的最大线程数
-                     */
-                    AtomicInteger allowRunningThreads = new AtomicInteger(
-                        Math.min(allowedTenantThreadMax, tenantTasks.size()));
-
-                    /**
-                     * 已经运行的任务数
-                     */
-                    AtomicInteger oldRunningThreads = runningTasks.putIfAbsent(tenantId, allowRunningThreads);
-                    if (oldRunningThreads != null) {
-                        /**
-                         * 剩下允许执行的任务数
-                         * allow running threads calculated by capacity
-                         */
-                        int permitsThreads = Math.min(allowedTenantThreadMax - oldRunningThreads.get(),
-                            allowRunningThreads.get());
-                        // add new threads to capacity
-                        oldRunningThreads.addAndGet(permitsThreads);
-                        // adjust allow current running threads
-                        allowRunningThreads.set(permitsThreads);
-                    }
-
-                    for (int i = 0; i < allowRunningThreads.get(); i++) {
-                        final SceneTaskDto task = tenantTasks.get(i);
-                        runTaskInTenantIfNecessary(task, task.getReportId());
-                    }
-
-                }
+               this.runTask(taskDtoList,shardingContext);
             }
         }
 
@@ -144,6 +98,11 @@ public class CalcApplicationSummaryJob extends AbstractSceneTask implements Simp
 
             }
         });
+    }
+
+    @Override
+    protected Map<Long, AtomicInteger> getRunningTasks() {
+        return runningTasks;
     }
 
 }

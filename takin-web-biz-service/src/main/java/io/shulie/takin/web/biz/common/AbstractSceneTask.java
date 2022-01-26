@@ -1,25 +1,25 @@
 package io.shulie.takin.web.biz.common;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 
+import com.dangdang.ddframe.job.api.ShardingContext;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
-import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
-import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -62,13 +62,13 @@ public abstract class AbstractSceneTask {
 
     protected void cleanUnAvailableTasks(List<SceneTaskDto> taskDtoList) {
         try {
-            if(CollectionUtils.isNotEmpty(taskDtoList)){
+            if (CollectionUtils.isNotEmpty(taskDtoList)) {
                 final LocalDateTime now = LocalDateTime.now();
-                taskDtoList.stream().filter(t -> t.getEndTime()!=null && now.compareTo(t.getEndTime())>0).forEach(
+                taskDtoList.stream().filter(t -> t.getEndTime() != null && now.compareTo(t.getEndTime()) > 0).forEach(
                     t -> removeReportKey(t.getReportId()));
             }
-        }catch (Exception e){
-            log.error("清理过期任务时发生错误！",e);
+        } catch (Exception e) {
+            log.error("清理过期任务时发生错误！", e);
         }
     }
 
@@ -79,5 +79,65 @@ public abstract class AbstractSceneTask {
     }
 
     protected abstract void runTaskInTenantIfNecessary(SceneTaskDto tenantTask, Long reportId);
+
+    protected abstract Map<Long, AtomicInteger> getRunningTasks();
+
+    protected List<SceneTaskDto> runTask(List<SceneTaskDto> taskDtoList, ShardingContext shardingContext) {
+        //已经运行完的任务
+        List<SceneTaskDto> taskAlreadyRun = new ArrayList<>();
+        //每个租户可以使用的最大线程数
+        int allowedTenantThreadMax = this.getAllowedTenantThreadMax();
+        //筛选出租户的任务
+        final Map<Long, List<SceneTaskDto>> listMap = taskDtoList.stream().filter(t -> {
+            //分片：web1= 0^0、1^1  和 web2= 0^1、1^0
+            long x = t.getTenantId() % shardingContext.getShardingTotalCount();
+            long y = t.getReportId() % shardingContext.getShardingTotalCount();
+            return (x ^ y) == shardingContext.getShardingItem();
+        }).collect(Collectors.groupingBy(SceneTaskDto::getTenantId));
+        if (org.springframework.util.CollectionUtils.isEmpty(listMap)) {
+            return taskAlreadyRun;
+        }
+        for (Entry<Long, List<SceneTaskDto>> listEntry : listMap.entrySet()) {
+            final List<SceneTaskDto> tenantTasks = listEntry.getValue();
+            if (org.springframework.util.CollectionUtils.isEmpty(tenantTasks)) {
+                continue;
+            }
+            long tenantId = listEntry.getKey();
+            /**
+             * 取最值。当前租户的任务数和允许的最大线程数
+             */
+            AtomicInteger allowRunningThreads = new AtomicInteger(
+                Math.min(allowedTenantThreadMax, tenantTasks.size()));
+
+            /**
+             * 已经运行的任务数
+             */
+            final Map<Long, AtomicInteger> runningTasks = this.getRunningTasks();
+            if (org.springframework.util.CollectionUtils.isEmpty(runningTasks)){
+                log.error("runningTasks cannot be null!");
+                return taskAlreadyRun;
+            }
+            AtomicInteger oldRunningThreads = runningTasks.putIfAbsent(tenantId, allowRunningThreads);
+            if (oldRunningThreads != null) {
+                /**
+                 * 剩下允许执行的任务数
+                 * allow running threads calculated by capacity
+                 */
+                int permitsThreads = Math.min(allowedTenantThreadMax - oldRunningThreads.get(),
+                    allowRunningThreads.get());
+                // add new threads to capacity
+                oldRunningThreads.addAndGet(permitsThreads);
+                // adjust allow current running threads
+                allowRunningThreads.set(permitsThreads);
+            }
+
+            for (int i = 0; i < allowRunningThreads.get(); i++) {
+                final SceneTaskDto task = tenantTasks.get(i);
+                this.runTaskInTenantIfNecessary(task, task.getReportId());
+                taskAlreadyRun.add(task);
+            }
+        }
+        return taskAlreadyRun;
+    }
 
 }

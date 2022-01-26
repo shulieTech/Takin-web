@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
@@ -162,8 +163,10 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                         // 补充定时任务的执行用户
                         UserExt userInfo = WebPluginUtils.getUserExtByUserId(scheduler.getUserId());
                         if (userInfo != null) {
-                            startParam.setUserId(userInfo.getId());
-                            startParam.setUserName(userInfo.getName());
+                            WebPluginUtils.setCloudUserData(new ContextExt() {{
+                                setUserId(userInfo.getId());
+                                setUserName(userInfo.getName());
+                            }});
                         }
                         sceneTaskService.startTask(startParam);
                     } catch (Exception e) {

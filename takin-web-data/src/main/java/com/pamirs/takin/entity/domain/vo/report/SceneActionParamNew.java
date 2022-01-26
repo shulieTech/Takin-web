@@ -4,9 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.List;
-import java.io.Serializable;
 
-import io.shulie.takin.web.common.domain.WebRequest;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 
 /**
  * @author 莫问
@@ -14,9 +13,7 @@ import io.shulie.takin.web.common.domain.WebRequest;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SceneActionParamNew extends WebRequest implements Serializable {
-
-    private static final long serialVersionUID = 1513341649685896654L;
+public class SceneActionParamNew extends ContextExt {
 
     private Long sceneId;
 

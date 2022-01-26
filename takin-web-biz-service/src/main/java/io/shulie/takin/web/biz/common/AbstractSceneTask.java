@@ -32,6 +32,8 @@ public abstract class AbstractSceneTask {
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
+    private Integer allowedTenantThreadMax;
+
     protected List<SceneTaskDto> getTaskFromRedis() {
         String reportKeyName = WebRedisKeyConstant.getTaskList();
         List<String> o = redisTemplate.opsForList().range(reportKeyName, 0, -1);
@@ -57,7 +59,12 @@ public abstract class AbstractSceneTask {
     }
 
     protected int getAllowedTenantThreadMax() {
-        return ConfigServerHelper.getIntegerValueByKey(ConfigServerKeyEnum.PER_TENANT_ALLOW_TASK_THREADS_MAX);
+        if (allowedTenantThreadMax != null) {
+            return allowedTenantThreadMax;
+        }
+        allowedTenantThreadMax = ConfigServerHelper.getIntegerValueByKey(
+            ConfigServerKeyEnum.PER_TENANT_ALLOW_TASK_THREADS_MAX);
+        return allowedTenantThreadMax;
     }
 
     protected void cleanUnAvailableTasks(List<SceneTaskDto> taskDtoList) {
@@ -86,7 +93,7 @@ public abstract class AbstractSceneTask {
         //已经运行完的任务
         List<SceneTaskDto> taskAlreadyRun = new ArrayList<>();
         //每个租户可以使用的最大线程数
-        int allowedTenantThreadMax = this.getAllowedTenantThreadMax();
+        int allowedThreadMax = this.getAllowedTenantThreadMax();
         //筛选出租户的任务
         final Map<Long, List<SceneTaskDto>> listMap = taskDtoList.stream().filter(t -> {
             //分片：web1= 0^0、1^1  和 web2= 0^1、1^0
@@ -107,13 +114,13 @@ public abstract class AbstractSceneTask {
              * 取最值。当前租户的任务数和允许的最大线程数
              */
             AtomicInteger allowRunningThreads = new AtomicInteger(
-                Math.min(allowedTenantThreadMax, tenantTasks.size()));
+                Math.min(allowedThreadMax, tenantTasks.size()));
 
             /**
              * 已经运行的任务数
              */
             final Map<Long, AtomicInteger> runningTasks = this.getRunningTasks();
-            if (org.springframework.util.CollectionUtils.isEmpty(runningTasks)){
+            if (org.springframework.util.CollectionUtils.isEmpty(runningTasks)) {
                 log.error("runningTasks cannot be null!");
                 return taskAlreadyRun;
             }
@@ -123,7 +130,7 @@ public abstract class AbstractSceneTask {
                  * 剩下允许执行的任务数
                  * allow running threads calculated by capacity
                  */
-                int permitsThreads = Math.min(allowedTenantThreadMax - oldRunningThreads.get(),
+                int permitsThreads = Math.min(allowedThreadMax - oldRunningThreads.get(),
                     allowRunningThreads.get());
                 // add new threads to capacity
                 oldRunningThreads.addAndGet(permitsThreads);

@@ -82,7 +82,7 @@ public abstract class AbstractSceneTask {
 
     protected abstract Map<Long, AtomicInteger> getRunningTasks();
 
-    protected List<SceneTaskDto> runTask(List<SceneTaskDto> taskDtoList, ShardingContext shardingContext) {
+    protected synchronized List<SceneTaskDto> runTask(List<SceneTaskDto> taskDtoList, ShardingContext shardingContext) {
         //已经运行完的任务
         List<SceneTaskDto> taskAlreadyRun = new ArrayList<>();
         //每个租户可以使用的最大线程数

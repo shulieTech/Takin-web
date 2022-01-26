@@ -120,7 +120,7 @@ public abstract class AbstractSceneTask {
              * 已经运行的任务数
              */
             final Map<Long, AtomicInteger> runningTasks = this.getRunningTasks();
-            if (org.springframework.util.CollectionUtils.isEmpty(runningTasks)) {
+            if (runningTasks == null) {
                 log.error("runningTasks cannot be null!");
                 return taskAlreadyRun;
             }

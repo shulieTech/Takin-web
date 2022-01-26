@@ -3,6 +3,11 @@ package io.shulie.takin.web.biz.service.scenemanage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 
 import javax.annotation.Resource;
 
@@ -45,9 +50,13 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
     private SceneTaskService sceneTaskService;
     @Resource
     private SceneSchedulerTaskDao sceneSchedulerTaskDao;
-
-    @Autowired
-    private RedisHelper redisHelper;
+    /**
+     * 定时任务线程池
+     * ps:只是为了消除黄色提醒
+     */
+    private final ExecutorService threadPool = new ThreadPoolExecutor(10, 10,
+        0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
+        r -> new Thread(r, "定时压测"), new CallerRunsPolicy());
 
     @Override
     public Long insert(SceneSchedulerTaskCreateRequest request) {
@@ -141,7 +150,7 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                     continue;
                 }
                 RedisHelper.setValue(lockKey,true);
-                new Thread(() -> {
+                threadPool.submit(() -> {
                     try {
                         // 补充租户信息
                         TenantCommonExt ext = new TenantCommonExt();
@@ -181,7 +190,7 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                         // 解锁
                         RedisHelper.delete(lockKey);
                     }
-                }).start();
+                });
             }
         }
     }

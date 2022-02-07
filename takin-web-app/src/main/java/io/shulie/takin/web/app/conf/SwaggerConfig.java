@@ -561,8 +561,7 @@ public class SwaggerConfig {
             .groupName("压测平台-OpenApi")
             .select()
             .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex(
-                "/open-api/v02.*"))
+            .paths(getRegex("/open-api/v02.*"))
             .build()
             .directModelSubstitute(LocalDate.class, String.class)
             .useDefaultResponseMessages(false)

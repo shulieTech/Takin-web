@@ -45,7 +45,7 @@ public class SceneOpenApiV2 {
      * @return
      */
     @PostMapping("startTask")
-    public ResponseResult start(SceneStartOpenApiReq req) {
+    public ResponseResult startTask(SceneStartOpenApiReq req) {
         if (req == null || req.getSceneId() == null) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "场景ID不能为空！");
         }

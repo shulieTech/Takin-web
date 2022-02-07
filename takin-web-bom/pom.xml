@@ -115,9 +115,9 @@
 
     <distributionManagement>
         <repository>
-            <id>rdc-releases</id>
-            <name>rdc Releases Repository</name>
-            <url>https://packages.aliyun.com/maven/repository/2101190-release-xxuvBf/</url>
+            <id>${releases.id}</id>
+            <name>${releases.name}</name>
+            <url>${releases.url}</url>
         </repository>
         <snapshotRepository>
             <id>${snapshots.id}</id>

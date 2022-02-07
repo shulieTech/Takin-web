@@ -550,7 +550,25 @@ public class SwaggerConfig {
     }
 
 
-
+    /**
+     * openApi对外接口
+     * @return -
+     */
+    @Bean
+    public Docket api_openApiV2() {
+        return new Docket(DocumentationType.SWAGGER_2)
+            .pathProvider(this.pathProvider())
+            .groupName("压测平台-OpenApi")
+            .select()
+            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+            .paths(getRegex(
+                "/open-api/v02.*"))
+            .build()
+            .directModelSubstitute(LocalDate.class, String.class)
+            .useDefaultResponseMessages(false)
+            .apiInfo(apiInfo()).enable(swaggerEnable)
+            ;
+    }
 
     private Predicate<String> getRegex(String regex) {
         return PathSelectors.regex(servletContextPath + regex);

@@ -21,6 +21,8 @@ public class ApiUrls {
 
     public static final String TAKIN_OPEN_API_URL = "/open-api/v01/";
 
+    public static final String TAKIN_OPEN_API_V02_URL = "/open-api/v02/";
+
     /**
      * 配置中心模块
      */

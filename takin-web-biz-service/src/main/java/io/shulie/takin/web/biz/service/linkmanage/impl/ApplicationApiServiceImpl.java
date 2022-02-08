@@ -1,51 +1,47 @@
 package io.shulie.takin.web.biz.service.linkmanage.impl;
 
-import java.util.Map;
-import java.util.Date;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.collection.CollStreamUtil;
-
+import cn.hutool.core.convert.Convert;
 import com.google.common.collect.Lists;
-
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
 import com.pamirs.takin.entity.domain.query.ApplicationApiParam;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiCreateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.ApiUpdateVo;
 import com.pamirs.takin.entity.domain.vo.entracemanage.EntranceApiVo;
-import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
-
+import io.shulie.takin.web.biz.cache.DictionaryCache;
+import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
-import io.shulie.takin.web.biz.cache.DictionaryCache;
-import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.data.dao.application.ApplicationDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationApiDAO;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
-import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
-import io.shulie.takin.web.data.param.application.ApplicationApiQueryParam;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.data.dao.application.ApplicationApiDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.param.application.ApplicationApiCreateParam;
-import io.shulie.takin.web.biz.cache.agentimpl.ApplicationApiManageAmdbCache;
+import io.shulie.takin.web.data.param.application.ApplicationApiQueryParam;
 import io.shulie.takin.web.data.result.application.ApplicationApiManageResult;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * @author vernon
@@ -166,19 +162,20 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
 
     @Override
     public Response pullApi(String appName) {
-        ApplicationApiParam apiParam = new ApplicationApiParam();
-        apiParam.setAppName(appName);
-        List<ApplicationApiManageResult> all = applicationApiDAO.querySimple(apiParam);
-        if (org.apache.commons.collections4.CollectionUtils.isEmpty(all)) {
-            return Response.success(new HashMap<>());
-        }
-        Map<String, List<String>> res = new HashMap<>();
-        for (ApplicationApiManageResult applicationApiManage : all) {
-            res.computeIfAbsent(applicationApiManage.getApplicationName(), k -> new ArrayList<>()).add(
-                applicationApiManage.getApi()
-                    + "#" + applicationApiManage.getMethod());
-        }
-        return Response.success(res);
+        return Response.success(this.pullApiV1(appName));
+        // ApplicationApiParam apiParam = new ApplicationApiParam();
+        // apiParam.setAppName(appName);
+        // List<ApplicationApiManageResult> all = applicationApiDAO.querySimple(apiParam);
+        // if (org.apache.commons.collections4.CollectionUtils.isEmpty(all)) {
+        //     return Response.success(new HashMap<>());
+        // }
+        // Map<String, List<String>> res = new HashMap<>();
+        // for (ApplicationApiManageResult applicationApiManage : all) {
+        //     res.computeIfAbsent(applicationApiManage.getApplicationName(), k -> new ArrayList<>()).add(
+        //         applicationApiManage.getApi()
+        //             + "#" + applicationApiManage.getMethod());
+        // }
+        // return Response.success(res);
     }
 
     @Override

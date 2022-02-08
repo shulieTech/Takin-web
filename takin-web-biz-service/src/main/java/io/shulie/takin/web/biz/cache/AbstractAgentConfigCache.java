@@ -38,6 +38,8 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
         if (result == null) {
             result = queryValue(namespace);
             if(result instanceof AgentRemoteCallVO) {
+                // 清除缓存
+                redisTemplate.delete(getCacheKey(namespace) + ":"+ WHITE_SIGN);
                 // 如果是远程调用模块，则另处理
                 AgentRemoteCallVO vo = (AgentRemoteCallVO)queryValue(namespace);
                 // 数据分开存储

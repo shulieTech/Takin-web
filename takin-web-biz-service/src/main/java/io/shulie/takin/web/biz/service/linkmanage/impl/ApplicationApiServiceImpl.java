@@ -162,20 +162,19 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
 
     @Override
     public Response pullApi(String appName) {
-        return Response.success(this.pullApiV1(appName));
-        // ApplicationApiParam apiParam = new ApplicationApiParam();
-        // apiParam.setAppName(appName);
-        // List<ApplicationApiManageResult> all = applicationApiDAO.querySimple(apiParam);
-        // if (org.apache.commons.collections4.CollectionUtils.isEmpty(all)) {
-        //     return Response.success(new HashMap<>());
-        // }
-        // Map<String, List<String>> res = new HashMap<>();
-        // for (ApplicationApiManageResult applicationApiManage : all) {
-        //     res.computeIfAbsent(applicationApiManage.getApplicationName(), k -> new ArrayList<>()).add(
-        //         applicationApiManage.getApi()
-        //             + "#" + applicationApiManage.getMethod());
-        // }
-        // return Response.success(res);
+        ApplicationApiParam apiParam = new ApplicationApiParam();
+        apiParam.setAppName(appName);
+        List<ApplicationApiManageResult> all = applicationApiDAO.querySimple(apiParam);
+        if (org.apache.commons.collections4.CollectionUtils.isEmpty(all)) {
+            return Response.success(new HashMap<>());
+        }
+        Map<String, List<String>> res = new HashMap<>();
+        for (ApplicationApiManageResult applicationApiManage : all) {
+            res.computeIfAbsent(applicationApiManage.getApplicationName(), k -> new ArrayList<>()).add(
+                applicationApiManage.getApi()
+                    + "#" + applicationApiManage.getMethod());
+        }
+        return Response.success(res);
     }
 
     @Override

@@ -1,19 +1,13 @@
 package io.shulie.takin.web.biz.cache;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
 import io.shulie.takin.web.common.util.CommonUtil;
-import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
-import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO.RemoteCall;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.compress.utils.Lists;
-import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -35,45 +29,12 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
 
     @Override
     public T get(String namespace) {
-        T result = null;
-        if(redisTemplate.hasKey(getCacheKey(namespace)) && DataType.HASH.equals(redisTemplate.type(getCacheKey(namespace)))) {
-            result = (T)redisTemplate.opsForHash().entries(getCacheKey(namespace));
-        }else {
-            result = (T)redisTemplate.opsForValue().get(getCacheKey(namespace));
-        }
-
+        T result = (T)redisTemplate.opsForValue().get(getCacheKey(namespace));
         if (result == null) {
             result = queryValue(namespace);
-            if(result instanceof AgentRemoteCallVO) {
-                // 清除缓存
-                redisTemplate.delete(getCacheKey(namespace) + ":"+ WHITE_SIGN);
-                // 如果是远程调用模块，则另处理
-                AgentRemoteCallVO vo = (AgentRemoteCallVO)queryValue(namespace);
-                // 数据分开存储
-                if (vo != null) {
-                    List<RemoteCall> remoteCalls = vo.getWLists();
-                    redisTemplate.opsForList().leftPushAll(getCacheKey(namespace) + ":"+ WHITE_SIGN, remoteCalls);
-                    vo.setWLists(Lists.newArrayList());
-                    redisTemplate.opsForValue().set(getCacheKey(namespace),vo);
-                }
-            }else if(result instanceof Map){
-                // map类型 使用map存储
-                redisTemplate.opsForHash().putAll(getCacheKey(namespace),(Map)result);
-            }else {
-                redisTemplate.opsForValue().set(getCacheKey(namespace), result);
-            }
-            return result;
-        }
-        if(result instanceof AgentRemoteCallVO) {
-            AgentRemoteCallVO callVO  = (AgentRemoteCallVO)result;
-            List<RemoteCall> fromRemoteCache = redisTemplate.opsForList().range(getCacheKey(namespace) + ":" + WHITE_SIGN, 0, -1);
-            callVO.setWLists(fromRemoteCache);
-            return (T)callVO;
+            redisTemplate.opsForValue().set(getCacheKey(namespace), result);
         }
         return result;
-
-
-
     }
 
     /**

@@ -13,6 +13,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
+import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -34,7 +35,13 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
 
     @Override
     public T get(String namespace) {
-        T result = (T)redisTemplate.opsForValue().get(getCacheKey(namespace));
+        T result = null;
+        if(redisTemplate.hasKey(getCacheKey(namespace)) && DataType.HASH.equals(redisTemplate.type(getCacheKey(namespace)))) {
+            result = (T)redisTemplate.opsForHash().entries(getCacheKey(namespace));
+        }else {
+            result = (T)redisTemplate.opsForValue().get(getCacheKey(namespace));
+        }
+
         if (result == null) {
             result = queryValue(namespace);
             if(result instanceof AgentRemoteCallVO) {
@@ -62,9 +69,6 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
             List<RemoteCall> fromRemoteCache = redisTemplate.opsForList().range(getCacheKey(namespace) + ":" + WHITE_SIGN, 0, -1);
             callVO.setWLists(fromRemoteCache);
             return (T)callVO;
-        }else if(result instanceof Map) {
-            Map entries = redisTemplate.opsForHash().entries(getCacheKey(namespace));
-            return (T)entries;
         }
         return result;
 

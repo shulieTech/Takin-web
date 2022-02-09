@@ -89,6 +89,7 @@
         <module>takin-web-ext</module>
         <module>takin-web-entrypoint</module>
         <module>takin-web-biz-service</module>
+        <module>takin-web-sdk</module>
     </modules>
     <dependencyManagement>
         <dependencies>

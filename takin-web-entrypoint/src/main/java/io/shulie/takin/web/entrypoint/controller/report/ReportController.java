@@ -157,7 +157,7 @@ public class ReportController {
     @GetMapping("/report/getJtlDownLoadUrl")
     @ApiOperation(value = "获取jtl文件下载路径")
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.SCRIPT_MANAGE,
+        moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
         needAuth = ActionTypeEnum.DOWNLOAD
     )
     public ReportJtlDownloadResponse getJtlDownLoadUrl(@RequestParam("reportId") Long reportId) {

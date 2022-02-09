@@ -19,7 +19,7 @@ import io.shulie.takin.web.biz.service.linkmanage.ApplicationApiService;
 @Component
 public class ApplicationApiManageAmdbCache extends AbstractAgentConfigCache<Map<String, List<String>>> {
 
-    public static final String CACHE_NAME = "t:a:c:app:api:new";
+    public static final String CACHE_NAME = "t:a:c:app:api";
 
     @Resource
     private ApplicationApiService applicationApiService;

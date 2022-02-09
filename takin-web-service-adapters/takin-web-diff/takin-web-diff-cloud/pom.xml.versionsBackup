@@ -18,28 +18,50 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>takin-web-config</artifactId>
+        <artifactId>takin-web-diff</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.2.0.1</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>takin-web-5.2.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>takin-web-config-sync-api</artifactId>
-
+    <artifactId>takin-web-diff-cloud</artifactId>
     <dependencies>
         <dependency>
             <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-web-config-common</artifactId>
+            <artifactId>takin-web-diff-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mybatis</groupId>
+                    <artifactId>mybatis</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mybatis</groupId>
+                    <artifactId>mybatis-spring</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-cloud-sdk</artifactId>
         </dependency>
     </dependencies>
-
 </project>

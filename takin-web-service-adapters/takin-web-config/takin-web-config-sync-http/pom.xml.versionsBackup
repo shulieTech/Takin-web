@@ -18,13 +18,19 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>takin-web-config-sync-http</artifactId>
+        <artifactId>takin-web-service-adapters</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.2.0.1</version>
+        <version>takin-web-5.2.0.0</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>takin-web-config-sync-http-impl</module>
+        <module>takin-web-config-sync-http-common</module>
+    </modules>
 
-    <artifactId>takin-web-config-sync-http-common</artifactId>
+    <artifactId>takin-web-config-sync-http</artifactId>
 
 
 </project>

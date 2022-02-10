@@ -30,7 +30,7 @@ public class TakinReportApiImpl implements TakinReportApi {
     public ResponseResult<SceneStatusModel> queryStatus(AbstractTakinWebClient webClient, Long reportId) {
         final Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("reportId", reportId);
-        final String withBody = webClient.executeWithBody(
+        final String withBody = webClient.execute(
             new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.QUERY_REPORT_STATUS, dataMap, Method.GET));
         log.debug("queryStatus response:{}", withBody);
         final ResponseResult result = JSON.parseObject(withBody, ResponseResult.class);
@@ -45,7 +45,7 @@ public class TakinReportApiImpl implements TakinReportApi {
     public ResponseResult<List<ScriptNodeSummaryModel>> queryReportSummary(AbstractTakinWebClient webClient, Long reportId) {
         final Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("reportId", reportId);
-        final String withBody = webClient.executeWithBody(
+        final String withBody = webClient.execute(
             new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.QUERY_REPORT_RESULT, dataMap, Method.GET));
         log.debug("queryReportSummary response:{}", withBody);
         final ResponseResult result = JSON.parseObject(withBody, ResponseResult.class);

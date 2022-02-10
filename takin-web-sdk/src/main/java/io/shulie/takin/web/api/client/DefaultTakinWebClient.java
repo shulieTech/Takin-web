@@ -24,7 +24,7 @@ public class DefaultTakinWebClient extends AbstractTakinWebClient{
     }
 
     @Override
-    public String executeWithBody(TakinWebRequest webRequest){
+    public String execute(TakinWebRequest webRequest){
         if (this.webUrl == null || this.appId == null || this.appSecret == null){
             throw new RuntimeException("缺少必要参数！webUrl、appId、appSecret");
         }

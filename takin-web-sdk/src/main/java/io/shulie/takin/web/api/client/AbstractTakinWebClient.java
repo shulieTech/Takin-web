@@ -42,7 +42,7 @@ public abstract class AbstractTakinWebClient {
      * @param webRequest
      * @return
      */
-    public abstract String executeWithBody(TakinWebRequest webRequest);
+    public abstract String execute(TakinWebRequest webRequest);
 
     protected Map getHeadherMap() {
         final CallerInfo callerInfo = callRecords.get(appId);

@@ -37,7 +37,7 @@ public class TakinSceneApiImpl implements TakinSceneApi {
         dataMap.put("pageSize", request.getPageSize());
         dataMap.put("sceneName", request.getSceneName());
         dataMap.put("sceneId", request.getSceneId());
-        final String withBody = webClient.executeWithBody(
+        final String withBody = webClient.execute(
             new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.SCENE_LIST, dataMap, Method.GET));
         log.debug("getSceneListPage response:{}", withBody);
         final ResponseResult result = JSON.parseObject(withBody, ResponseResult.class);
@@ -48,7 +48,7 @@ public class TakinSceneApiImpl implements TakinSceneApi {
     public ResponseResult<SceneDetailResponse> getSceneDetail(AbstractTakinWebClient webClient, Long sceneId) {
         final Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("sceneId", sceneId);
-        final String withBody = webClient.executeWithBody(
+        final String withBody = webClient.execute(
             new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.SCENE_DETAIL, dataMap, Method.GET));
         log.debug("getSceneDetail response:{}", withBody);
         final ResponseResult result = JSON.parseObject(withBody, ResponseResult.class);
@@ -83,7 +83,7 @@ public class TakinSceneApiImpl implements TakinSceneApi {
     public ResponseResult startTask(AbstractTakinWebClient webClient, Long sceneId) {
         final Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("sceneId", sceneId);
-        final String withBody = webClient.executeWithBody(
+        final String withBody = webClient.execute(
             new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.START_TASK, dataMap, Method.POST));
         log.debug("startTask response:{}", withBody);
         final ResponseResult result = JSON.parseObject(withBody, ResponseResult.class);

@@ -20,6 +20,7 @@ import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt.TenantEnv;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -61,6 +62,9 @@ public class AppRemoteCallJob implements SimpleJob {
         } else {
             List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             for (TenantInfoExt ext : tenantInfoExts) {
+                if(CollectionUtils.isEmpty(ext.getEnvs())) {
+                    continue;
+                }
                 // 开始数据层分片
                 for (TenantEnv e : ext.getEnvs()) {
                     // 分布式锁

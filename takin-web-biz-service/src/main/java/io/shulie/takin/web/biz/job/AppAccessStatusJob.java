@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
@@ -52,6 +53,9 @@ public class AppAccessStatusJob implements SimpleJob {
 
         List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
         for (TenantInfoExt ext : tenantInfoExts) {
+            if(CollectionUtils.isEmpty(ext.getEnvs())) {
+                continue;
+            }
             // 根据环境 分线程
             for (TenantEnv e : ext.getEnvs()) {
                 // 开始数据层分片

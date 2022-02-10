@@ -1,5 +1,7 @@
 package io.shulie.takin.web.api.sdk;
 
+import java.util.List;
+
 import io.shulie.takin.web.api.client.AbstractTakinWebClient;
 import io.shulie.takin.web.api.model.SceneStatusModel;
 import io.shulie.takin.web.api.model.ScriptNodeSummaryModel;
@@ -23,5 +25,5 @@ public interface TakinReportApi {
      * @param reportId
      * @return
      */
-    ResponseResult<ScriptNodeSummaryModel> queryReportSummary(AbstractTakinWebClient webClient,Long reportId);
+    ResponseResult<List<ScriptNodeSummaryModel>>  queryReportSummary(AbstractTakinWebClient webClient,Long reportId);
 }

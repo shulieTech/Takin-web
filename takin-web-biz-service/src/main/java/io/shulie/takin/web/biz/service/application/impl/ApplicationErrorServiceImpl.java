@@ -262,7 +262,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
             .collect(Collectors.toList());
 
         List<ApplicationErrorOutput> noTimeList = responseList.parallelStream()
-            .filter(response -> StrUtil.isNotBlank(response.getTime()))
+            .filter(response -> response != null && StrUtil.isNotBlank(response.getTime()))
             .collect(Collectors.toList());
 
         if (sortedList.isEmpty()) {

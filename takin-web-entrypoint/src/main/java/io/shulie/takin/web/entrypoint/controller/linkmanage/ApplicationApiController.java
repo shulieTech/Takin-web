@@ -21,7 +21,6 @@ import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,7 +45,7 @@ public class ApplicationApiController {
     private ApplicationApiManageAmdbCache applicationApiManageAmdbCache;
 
     /**
-     * 老版
+     * agent拉取数据
      *
      * @param appName 应用名称
      * @return 响应体
@@ -55,15 +54,15 @@ public class ApplicationApiController {
     @GetMapping(value = "/api/pull")
     public Response pull(@RequestParam(value = "appName", required = false) String appName) {
         try {
-            return apiService.pullApi(appName);
-
+            // 拉取也改成一致（amdb 不用了）
+            return Response.success(applicationApiManageAmdbCache.get(appName));
         } catch (Exception e) {
             return Response.fail(e.getMessage());
         }
     }
 
     /**
-     * 新版
+     * amdb拉取数据
      *
      * @param appName 应用名称
      * @return 响应体

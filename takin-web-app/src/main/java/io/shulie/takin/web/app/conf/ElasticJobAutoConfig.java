@@ -23,7 +23,7 @@ import io.shulie.takin.job.factory.SpringJobSchedulerFactory;
 @EnableConfigurationProperties(ElasticJobProperties.class)
 public class ElasticJobAutoConfig {
 
-    @Value("${env: prod}")
+    @Value("${env:prod}")
     private String env;
 
     @Value("${takin.config.zk.addr}")

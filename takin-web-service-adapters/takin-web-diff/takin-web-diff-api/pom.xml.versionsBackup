@@ -18,30 +18,38 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>takin-web-config</artifactId>
+        <artifactId>takin-web-diff</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.2.0.1</version>
+        <version>takin-web-5.2.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>takin-web-config-sync-zk</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>takin-web-config-sync-zk-impl</module>
-        <module>takin-web-config-sync-zk-common</module>
-    </modules>
 
+    <artifactId>takin-web-diff-api</artifactId>
     <dependencies>
-        <!--内部module 业务依赖-->
         <dependency>
             <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-web-biz-service</artifactId>
+            <artifactId>takin-common-beans</artifactId>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-web-config-sync-api</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-cloud-sdk</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-cloud-ext</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

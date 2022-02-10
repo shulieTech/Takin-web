@@ -10,7 +10,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.http.Method;
-import io.shulie.takin.web.api.SceneStatusEnum;
 import io.shulie.takin.web.api.client.AbstractTakinWebClient;
 import io.shulie.takin.web.api.constant.RemoteUrls;
 import io.shulie.takin.web.api.model.SceneGoalModel;
@@ -86,31 +85,6 @@ public class TakinSceneApiImpl implements TakinSceneApi {
             new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.START_TASK, dataMap, Method.POST));
         log.debug("startTask response:{}", withBody);
         final ResponseResult result = JSON.parseObject(withBody, ResponseResult.class);
-        return result;
-    }
-
-    @Override
-    public ResponseResult queryStatus(AbstractTakinWebClient webClient, Long sceneId, Long reportId) {
-        final Map<String, Object> dataMap = new HashMap<>();
-        dataMap.put("sceneId", sceneId);
-        dataMap.put("reportId", reportId);
-        final String withBody = webClient.executeWithBody(
-            new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.QUERY_TASK_STATUS, dataMap, Method.GET));
-        log.debug("queryStatus response:{}", withBody);
-        final ResponseResult result = JSON.parseObject(withBody, ResponseResult.class);
-
-        final SceneStatusModel statusModel = JSON.parseObject(JSON.toJSONString(result.getData()),
-            SceneStatusModel.class);
-        Integer status;
-        if (statusModel.getData().equals(0)) {
-            status = SceneStatusEnum.PEDDING.getStatus();
-            if (!CollectionUtils.isEmpty(statusModel.getMsg())) {
-                status = SceneStatusEnum.FAIL.getStatus();
-            }
-        } else {
-            status = SceneStatusEnum.PRESSURE_TESTING.getStatus();
-        }
-        result.setData(status);
         return result;
     }
 }

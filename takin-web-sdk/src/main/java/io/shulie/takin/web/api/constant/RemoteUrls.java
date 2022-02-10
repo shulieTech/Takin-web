@@ -31,9 +31,9 @@ public class RemoteUrls {
     public static final String SCENE_DETAIL = "api/v2/scene/detail";
 
     /**
-     * 查询任务状态
+     * 查询报告状态
      */
-    public static final String QUERY_TASK_STATUS = "api/scene/task/checkStartStatus";
+    public static final String QUERY_REPORT_STATUS = "api/report/getReportByReportId";
 
     /**
      * 查询报告结果

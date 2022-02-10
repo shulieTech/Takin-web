@@ -32,12 +32,4 @@ public interface TakinSceneApi {
      */
     ResponseResult startTask(AbstractTakinWebClient webClient,Long sceneId);
 
-    /**
-     * 查询场景状态
-     * @param sceneId
-     * @param reportId
-     * @return
-     */
-    ResponseResult queryStatus(AbstractTakinWebClient webClient,Long sceneId,Long reportId);
-
 }

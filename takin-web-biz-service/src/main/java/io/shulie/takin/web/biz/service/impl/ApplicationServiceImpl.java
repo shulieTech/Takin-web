@@ -693,10 +693,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
 
         String tenantAppKey = WebPluginUtils.traceTenantAppKey();
-        if (WebPluginUtils.checkUserPlugin()) {
-            log.error("未获取到{}用户信息", tenantAppKey);
-            return;
-        }
 
         ApplicationDetailResult applicationMnt = this.queryTApplicationMntByName(param.getApplicationName());
 

@@ -35,6 +35,8 @@ public class TakinSceneApiImpl implements TakinSceneApi {
         final Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("current", request.getPageNo());
         dataMap.put("pageSize", request.getPageSize());
+        dataMap.put("sceneName", request.getSceneName());
+        dataMap.put("sceneId", request.getSceneId());
         final String withBody = webClient.executeWithBody(
             new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.SCENE_LIST, dataMap, Method.GET));
         log.debug("getSceneListPage response:{}", withBody);
@@ -43,7 +45,7 @@ public class TakinSceneApiImpl implements TakinSceneApi {
     }
 
     @Override
-    public ResponseResult getSceneDetail(AbstractTakinWebClient webClient, Long sceneId) {
+    public ResponseResult<SceneDetailResponse> getSceneDetail(AbstractTakinWebClient webClient, Long sceneId) {
         final Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("sceneId", sceneId);
         final String withBody = webClient.executeWithBody(

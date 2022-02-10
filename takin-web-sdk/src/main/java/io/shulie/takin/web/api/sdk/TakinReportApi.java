@@ -1,6 +1,8 @@
 package io.shulie.takin.web.api.sdk;
 
 import io.shulie.takin.web.api.client.AbstractTakinWebClient;
+import io.shulie.takin.web.api.model.SceneStatusModel;
+import io.shulie.takin.web.api.model.ScriptNodeSummaryModel;
 import io.shulie.takin.web.api.response.ResponseResult;
 
 /**
@@ -13,7 +15,7 @@ public interface TakinReportApi {
      * @param reportId
      * @return
      */
-    ResponseResult queryStatus(AbstractTakinWebClient webClient,Long reportId);
+    ResponseResult<SceneStatusModel> queryStatus(AbstractTakinWebClient webClient,Long reportId);
 
     /**
      * 获取报告的详细结果
@@ -21,5 +23,5 @@ public interface TakinReportApi {
      * @param reportId
      * @return
      */
-    ResponseResult queryReportSummary(AbstractTakinWebClient webClient,Long reportId);
+    ResponseResult<ScriptNodeSummaryModel> queryReportSummary(AbstractTakinWebClient webClient,Long reportId);
 }

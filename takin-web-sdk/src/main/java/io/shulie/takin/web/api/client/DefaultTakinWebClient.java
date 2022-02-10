@@ -28,7 +28,7 @@ public class DefaultTakinWebClient extends AbstractTakinWebClient{
         if (this.webUrl == null || this.appId == null || this.appSecret == null){
             throw new RuntimeException("缺少必要参数！webUrl、appId、appSecret");
         }
-        final Map headerMap = getHeadherMap();
+        final Map headerMap = getCallerHeader();
         final Method method = webRequest.getMethod();
         String responseJson = null;
         if (method.equals(Method.GET)){

@@ -44,7 +44,7 @@ public abstract class AbstractTakinWebClient {
      */
     public abstract String execute(TakinWebRequest webRequest);
 
-    protected Map getHeadherMap() {
+    protected Map getCallerHeader() {
         final CallerInfo callerInfo = callRecords.get(appId);
         if (Objects.isNull(callerInfo)|| isExpire(callerInfo)) {
             Map<String, String> requestMap = new HashMap<>();

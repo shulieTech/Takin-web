@@ -11,7 +11,7 @@ public class ResponseResult<T> implements Serializable {
     /**
      * 错误信息
      */
-    private String errorMsg;
+    private ErrorInfo error;
 
     /**
      * 状态码
@@ -39,28 +39,6 @@ public class ResponseResult<T> implements Serializable {
     public ResponseResult() {
     }
 
-    public ResponseResult(String errorMsg, String code, T data) {
-        this.errorMsg = errorMsg;
-        this.code = code;
-        this.data = data;
-    }
-
-    public ResponseResult(String errorMsg) {
-        this(errorMsg,"500",null);
-    }
-
-    public ResponseResult(T data) {
-        this(null,"200",data);
-    }
-
-    public String getErrorMsg() {
-        return errorMsg;
-    }
-
-    public void setErrorMsg(String errorMsg) {
-        this.errorMsg = errorMsg;
-    }
-
     public String getCode() {
         return code;
     }
@@ -77,17 +55,11 @@ public class ResponseResult<T> implements Serializable {
         this.data = data;
     }
 
-    public static ResponseResult success(){
-        ResponseResult result = new ResponseResult();
-        result.setCode("200");
-        return result;
+    public ErrorInfo getError() {
+        return error;
     }
 
-    public static <T> ResponseResult<T> success(T data){
-        return new ResponseResult<>(data);
-    }
-
-    public static ResponseResult fail(String errorMsg){
-        return new ResponseResult<>(errorMsg);
+    public void setError(ErrorInfo error) {
+        this.error = error;
     }
 }

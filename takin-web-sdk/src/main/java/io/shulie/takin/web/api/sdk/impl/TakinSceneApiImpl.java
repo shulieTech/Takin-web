@@ -13,15 +13,16 @@ import cn.hutool.http.Method;
 import io.shulie.takin.web.api.client.AbstractTakinWebClient;
 import io.shulie.takin.web.api.constant.RemoteUrls;
 import io.shulie.takin.web.api.model.SceneGoalModel;
-import io.shulie.takin.web.api.model.SceneStatusModel;
 import io.shulie.takin.web.api.request.TakinWebRequest;
 import io.shulie.takin.web.api.request.TakinWebSceneRequest;
+import io.shulie.takin.web.api.response.PageResponseResult;
 import io.shulie.takin.web.api.response.ResponseResult;
 import io.shulie.takin.web.api.response.SceneDetailResponse;
+import io.shulie.takin.web.api.response.SceneListResponse;
+import io.shulie.takin.web.api.response.SceneStartResponse;
 import io.shulie.takin.web.api.sdk.TakinSceneApi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 /**
  * @author caijianying
@@ -31,8 +32,8 @@ import org.springframework.util.CollectionUtils;
 public class TakinSceneApiImpl implements TakinSceneApi {
 
     @Override
-    public ResponseResult getSceneListPage(AbstractTakinWebClient webClient, TakinWebSceneRequest request) {
-        final Map<String, Object> dataMap = new HashMap<>();
+    public PageResponseResult<List<SceneListResponse>> getSceneListPage(AbstractTakinWebClient webClient, TakinWebSceneRequest request) {
+        final Map<String, Object> dataMap = new HashMap<>(4);
         dataMap.put("current", request.getPageNo());
         dataMap.put("pageSize", request.getPageSize());
         dataMap.put("sceneName", request.getSceneName());
@@ -40,13 +41,18 @@ public class TakinSceneApiImpl implements TakinSceneApi {
         final String withBody = webClient.execute(
             new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.SCENE_LIST, dataMap, Method.GET));
         log.debug("getSceneListPage response:{}", withBody);
-        final ResponseResult result = JSON.parseObject(withBody, ResponseResult.class);
+        final PageResponseResult<List<SceneListResponse>> result = JSON.parseObject(withBody, PageResponseResult.class);
+        if (result.getSuccess()){
+            final List<SceneListResponse> parseObject = JSON.parseArray(JSON.toJSONString(result.getData()),
+                SceneListResponse.class);
+            result.setData(parseObject);
+        }
         return result;
     }
 
     @Override
     public ResponseResult<SceneDetailResponse> getSceneDetail(AbstractTakinWebClient webClient, Long sceneId) {
-        final Map<String, Object> dataMap = new HashMap<>();
+        final Map<String, Object> dataMap = new HashMap<>(1);
         dataMap.put("sceneId", sceneId);
         final String withBody = webClient.execute(
             new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.SCENE_DETAIL, dataMap, Method.GET));
@@ -80,13 +86,18 @@ public class TakinSceneApiImpl implements TakinSceneApi {
     }
 
     @Override
-    public ResponseResult startTask(AbstractTakinWebClient webClient, Long sceneId) {
-        final Map<String, Object> dataMap = new HashMap<>();
+    public ResponseResult<SceneStartResponse> startTask(AbstractTakinWebClient webClient, Long sceneId) {
+        final Map<String, Object> dataMap = new HashMap<>(1);
         dataMap.put("sceneId", sceneId);
         final String withBody = webClient.execute(
             new TakinWebRequest(webClient.webUrl + "/" + RemoteUrls.START_TASK, dataMap, Method.POST));
         log.debug("startTask response:{}", withBody);
-        final ResponseResult result = JSON.parseObject(withBody, ResponseResult.class);
+        final ResponseResult<SceneStartResponse> result = JSON.parseObject(withBody, ResponseResult.class);
+        if (result.getSuccess()){
+            final SceneStartResponse parseObject = JSON.parseObject(JSON.toJSONString(result.getData()),
+                SceneStartResponse.class);
+            result.setData(parseObject);
+        }
         return result;
     }
 }

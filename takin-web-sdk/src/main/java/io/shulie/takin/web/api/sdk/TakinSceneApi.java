@@ -1,9 +1,14 @@
 package io.shulie.takin.web.api.sdk;
 
+import java.util.List;
+
 import io.shulie.takin.web.api.client.AbstractTakinWebClient;
 import io.shulie.takin.web.api.request.TakinWebSceneRequest;
+import io.shulie.takin.web.api.response.PageResponseResult;
 import io.shulie.takin.web.api.response.ResponseResult;
 import io.shulie.takin.web.api.response.SceneDetailResponse;
+import io.shulie.takin.web.api.response.SceneListResponse;
+import io.shulie.takin.web.api.response.SceneStartResponse;
 
 /**
  * @author caijianying
@@ -17,7 +22,7 @@ public interface TakinSceneApi {
      * @param request   搜索条件
      * @return
      */
-    ResponseResult getSceneListPage(AbstractTakinWebClient webClient, TakinWebSceneRequest request);
+    PageResponseResult<List<SceneListResponse>> getSceneListPage(AbstractTakinWebClient webClient, TakinWebSceneRequest request);
 
     /**
      * 场景详情
@@ -35,6 +40,6 @@ public interface TakinSceneApi {
      * @param sceneId
      * @return
      */
-    ResponseResult startTask(AbstractTakinWebClient webClient, Long sceneId);
+    ResponseResult<SceneStartResponse> startTask(AbstractTakinWebClient webClient, Long sceneId);
 
 }

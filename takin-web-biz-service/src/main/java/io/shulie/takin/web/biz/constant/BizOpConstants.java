@@ -111,6 +111,9 @@ public final class BizOpConstants {
         public static final String AGENT_VERSION= "admins_admin";
         public static final String NEW_PROJECT_ACCESS= "appManage_appAccess";
 
+        //探针管理
+        public static final String AGENT_LIST = "appManage_agentManage";
+
 
 
         // 大盘查询放开  dashboard 不允许用到其他地方

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
@@ -64,7 +64,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
     private WebApplicationPluginUpgradeService applicationPluginUpgradeService;
 
     @Resource
-    private ThreadPoolExecutor agentHeartbeatThreadPool;
+    private ExecutorService agentHeartbeatThreadPool;
 
     /**
      * 非企业版处理器集合

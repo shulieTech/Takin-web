@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service;
 
+import java.util.Map;
+
 import io.shulie.takin.web.biz.pojo.request.file.FileUploadRequest;
 import io.shulie.takin.web.biz.pojo.response.common.FileUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.common.IsNewAgentResponse;
@@ -29,5 +31,12 @@ public interface ApiService {
      * @return 响应参数
      */
     IsNewAgentResponse isNewAgentByApplication(Long applicationId);
+
+    /**
+     * 全局服务配置
+     *
+     * @return 全局服务配置
+     */
+    Map<String, Object> getServerConfig();
 
 }

@@ -58,4 +58,10 @@ public class ApiController {
         return apiService.isNewAgentByApplication(applicationId);
     }
 
+    @ApiOperation("|_ 服务全局配置")
+    @GetMapping("serverConfig")
+    public Map<String, Object> serverConfig() {
+        return apiService.getServerConfig();
+    }
+
 }

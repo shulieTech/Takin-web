@@ -9,6 +9,7 @@ import java.nio.channels.FileChannel;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import io.shulie.takin.common.beans.page.PagingList;
@@ -42,6 +43,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @Service
 public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants {
+
+    @Value("#{${takin-web.server.config: {}}}")
+    private Map<String, Object> serverConfigMap;
 
     /**
      * 上传文件的路径
@@ -117,6 +121,11 @@ public class ApiServiceImpl implements ApiService, ProbeConstants, AppConstants 
 
         // 返回响应数据
         return this.getIsNewAgentResponse(agentVersions);
+    }
+
+    @Override
+    public Map<String, Object> getServerConfig() {
+        return serverConfigMap == null ? Collections.emptyMap() : serverConfigMap;
     }
 
     /**

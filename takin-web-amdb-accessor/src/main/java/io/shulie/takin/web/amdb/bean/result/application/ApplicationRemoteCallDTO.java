@@ -29,5 +29,10 @@ public class ApplicationRemoteCallDTO {
     private String upAppName;
     @JsonProperty("defaultWhiteInfo")
     private String defaultWhiteInfo;
+    /**
+     * 服务端应用
+     */
+    @JsonProperty("downAppName")
+    private String downAppName;
 
 }

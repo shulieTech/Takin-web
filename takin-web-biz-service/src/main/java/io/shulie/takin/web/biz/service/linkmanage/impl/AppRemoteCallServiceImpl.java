@@ -283,10 +283,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             }
             input.setCurrent(current);
         }
-
-        // 前置获取
-        PagingList<AppRemoteCallListVO> amdbPagingList = this.getAmdbPagingList(input, detailResult, voList,dbPagingList);
-
+        PagingList<AppRemoteCallListVO> amdbPagingList = this.getAmdbPagingList(input, detailResult, voList);
         List<AppRemoteCallListVO> results = Lists.newArrayList();
         if ((long)(input.getPageSize() * (input.getCurrent() + 1)) >= dbPagingList.getTotal()
             || dbPagingList.getList().size() < input.getPageSize()) {
@@ -296,20 +293,19 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         } else {
             results.addAll(dbPagingList.getList());
         }
-        // 两种方式获取服务端应用：1.前置获取（查询远程调用数据时候，downAppName） 2.后置获取（调取接口获取）
-        // 后置获取
+        // 所有服务端应用
         Map<String, List<ApplicationRemoteCallDTO>> serverAppNamesMap = this.getServerAppListMap(detailResult.getApplicationName());
 
         results.forEach(result -> {
             String appNameRemoteCallId = RemoteCallUtils.buildRemoteCallName(detailResult.getApplicationName(), result.getInterfaceName(),
                 result.getInterfaceType());
-            // md5值需要匹配
-            result.setMd5(appNameRemoteCallId);
-            result.setServerAppName(this.getServerAppName(serverAppNamesMap,result));
-            if(StringUtils.isNotBlank(result.getServerAppName())) {
-                List<String> serverAppNames = Lists.newArrayList(result.getServerAppName().split(","));
-                result.setServerAppNames(serverAppNames);
-                result.setCount(serverAppNames.size());
+            List<ApplicationRemoteCallDTO> callDtoList = serverAppNamesMap.get(appNameRemoteCallId);
+            if (CollectionUtils.isNotEmpty(callDtoList)) {
+                result.setServerAppNames(callDtoList.stream().map(ApplicationRemoteCallDTO::getAppName).collect(Collectors.toList()));
+                result.setCount(result.getServerAppNames().size());
+                result.setServerAppName(String.join(",", result.getServerAppNames()));
+            } else {
+                result.setServerAppName("");
             }
             // 白名单需要校验服务端应用
             result.setIsException(false);
@@ -421,11 +417,13 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         if (detailResult == null) {
             throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_GET_ERROR, "未找到应用");
         }
-
+        AppRemoteCallQueryParam param = new AppRemoteCallQueryParam();
+        param.setApplicationId(applicationId);
+        List<AppRemoteCallResult> results = appRemoteCallDAO.getList(param);
+        // 服务端也需要查询下
         Map<String, List<ApplicationRemoteCallDTO>> serverAppNamesMap = this.getServerAppListMap(detailResult.getApplicationName());
-        return null;
-        // return String.valueOf(results.stream().filter(result -> RemoteCallUtils.checkWhite(result.getType())
-        //         && this.checkServerAppName(detailResult,serverAppNamesMap,result)).count());
+        return String.valueOf(results.stream().filter(result -> RemoteCallUtils.checkWhite(result.getType())
+            && this.checkServerAppName(detailResult,serverAppNamesMap,result)).count());
     }
 
     /**
@@ -576,8 +574,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         List<ApplicationRemoteCallDTO> serverAppNames = serverAppNamePage.getList();
         // 查询应用
         return serverAppNames.stream().collect(Collectors.groupingBy(call -> RemoteCallUtils.buildRemoteCallName(call.getUpAppName(),
-                RemoteCallUtils.getInterfaceNameByRpcName(call.getMiddlewareName(), call.getServiceName(), call.getMethodName()),
-                call.getRpcType())));
+            RemoteCallUtils.getInterfaceNameByRpcName(call.getMiddlewareName(), call.getServiceName(), call.getMethodName()),
+            call.getRpcType())));
     }
 
     /**
@@ -664,8 +662,6 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         }
         return calls.getList().stream().map(call -> {
             AppRemoteCallListVO listVO = new AppRemoteCallListVO();
-            // 服务端应用
-            listVO.setServerAppName(call.getDownAppName());
             listVO.setInterfaceName(RemoteCallUtils.getInterfaceNameByRpcName(call.getMiddlewareName(), call.getServiceName(), call.getMethodName()));
             // 接口类型
             listVO.setInterfaceType(getInterfaceType(call.getMiddlewareName(), voList));
@@ -720,8 +716,10 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 if(appNameRemoteCallMd5s.contains(param.getMd5())) {
                     continue;
                 }
-                // 获取服务端应用
-                param.setServerAppName(this.getServerAppName(serverAppNamesMap,vo));
+                List<ApplicationRemoteCallDTO> callDTOS = serverAppNamesMap.get(param.getMd5());
+                if (CollectionUtils.isNotEmpty(callDTOS)) {
+                    param.setServerAppName(callDTOS.stream().map(ApplicationRemoteCallDTO::getAppName).collect(Collectors.joining(",")));
+                }
                 autoJoinWhite(param);
                 params.add(param);
             }
@@ -733,30 +731,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         appNames.forEach(appName ->  agentConfigCacheManager.evictRecallCalls(appName));
     }
 
-    /**
-     * 获取服务端名
-     * @param serverAppNamesMap
-     * @param vo
-     * @return
-     */
-    private String getServerAppName(Map<String, List<ApplicationRemoteCallDTO>> serverAppNamesMap, AppRemoteCallListVO vo) {
-        List<String> serviceNames = Lists.newArrayList();
-
-        List<ApplicationRemoteCallDTO> callDTOS = serverAppNamesMap.get(vo.getMd5());
-        if (CollectionUtils.isNotEmpty(callDTOS)) {
-            serviceNames.addAll(callDTOS.stream().map(ApplicationRemoteCallDTO::getAppName).collect(Collectors.toList()));
-        }
-        if (StringUtils.isNotBlank(vo.getServerAppName())) {
-            serviceNames.add(vo.getServerAppName());
-        }
-        if(CollectionUtils.isNotEmpty(serviceNames)) {
-            return serviceNames.stream().distinct().collect(Collectors.joining(","));
-        }
-        return "";
-    }
-
     private PagingList<AppRemoteCallListVO> getAmdbPagingList(AppRemoteCallQueryInput input, ApplicationDetailResult detailResult,
-        List<TDictionaryVo> voList,PagingList<AppRemoteCallListVO> dbPagingList) {
+        List<TDictionaryVo> voList) {
         if (input.getType() != null && !input.getType().equals(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType())) {
             return PagingList.empty();
         }
@@ -800,20 +776,11 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
         List<String> appNameRemoteCallMd5s = this.queryRemoteAppMd5(param);
 
-        // 查询所有服务端
-
-
         List<AppRemoteCallListVO> outputs = calls.getList().stream()
             .filter(call -> {
                 String appNameRemoteCallMd5 = RemoteCallUtils.buildRemoteCallName(call.getAppName(),
                     RemoteCallUtils.getInterfaceNameByRpcName(call.getMiddlewareName(), call.getServiceName(), call.getMethodName()),
                     getInterfaceType(call.getMiddlewareName(), voList));
-                // 补充数据服务端数据
-                dbPagingList.getList().forEach(db -> {
-                    if(appNameRemoteCallMd5.equals(db.getMd5())) {
-                        db.setServerAppName(call.getDownAppName());
-                    }
-                });
                 // 从AMDB加载过来的白名单，过滤掉类型不支持的远程调用--20210303 CYF
                 return (appNameRemoteCallMd5s.stream().noneMatch(e -> e.equals(appNameRemoteCallMd5))) && (!"-1".equals(call.getRpcType()));
             })
@@ -825,7 +792,6 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 listVO.setInterfaceType(getInterfaceType(call.getMiddlewareName(), voList));
                 listVO.setType(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType());
                 listVO.setSort(2);
-                listVO.setServerAppName(call.getDownAppName());
                 listVO.setAppName(call.getAppName());
                 listVO.setIsManual(false);
                 listVO.setDefaultWhiteInfo(StringUtils.defaultIfBlank(call.getDefaultWhiteInfo(), ""));
@@ -893,7 +859,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
         if (dto.getReturnFixMockEnable() == 1 && "feign".equals(dto.getEngName())) {
             vos.add(new SelectVO(AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getConfigName(),
-                    AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getType().toString()));
+                AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getType().toString()));
         }
         vos.add(new SelectVO(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getConfigName(),
             AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType().toString()));

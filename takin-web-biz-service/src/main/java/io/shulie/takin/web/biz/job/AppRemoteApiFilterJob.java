@@ -64,31 +64,31 @@ public class AppRemoteApiFilterJob implements SimpleJob {
         } else {
             List<TenantInfoExt> tenantInfoExtList = WebPluginUtils.getTenantInfoList();
             for (TenantInfoExt ext : tenantInfoExtList) {
-                // 开始数据层分片
-                if (ext.getTenantId() % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                    // 根据环境 分线程
-                    for (TenantEnv e : ext.getEnvs()) {
-                        // 分布式锁
-                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
-                        if (distributedLock.checkLock(lockKey)) {
-                            continue;
-                        }
-                        jobThreadPool.execute(() -> {
-                            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
-                            if (!tryLock) {
-                                return;
-                            }
-                            try {
-                                WebPluginUtils.setTraceTenantContext(
-                                    new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                        ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
-                                this.appRemoteApiFilter();
-                                WebPluginUtils.removeTraceContext();
-                            } finally {
-                                distributedLock.unLockSafely(lockKey);
-                            }
-                        });
+                if(CollectionUtils.isEmpty(ext.getEnvs())) {
+                    continue;
+                }
+                // 根据环境 分线程
+                for (TenantEnv e : ext.getEnvs()) {
+                    // 分布式锁
+                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
+                    if (distributedLock.checkLock(lockKey)) {
+                        continue;
                     }
+                    jobThreadPool.execute(() -> {
+                        boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+                        if (!tryLock) {
+                            return;
+                        }
+                        try {
+                            WebPluginUtils.setTraceTenantContext(
+                                new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                    ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                            this.appRemoteApiFilter();
+                            WebPluginUtils.removeTraceContext();
+                        } finally {
+                            distributedLock.unLockSafely(lockKey);
+                        }
+                    });
                 }
             }
         }

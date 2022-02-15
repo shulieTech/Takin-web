@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.dao.config;
 
+import io.shulie.takin.web.data.param.config.UpdateConfigServerParam;
 import io.shulie.takin.web.data.result.config.ConfigServerDetailResult;
 
 /**
@@ -45,6 +46,14 @@ public interface ConfigServerDAO {
      * @return 配置实例
      */
     ConfigServerDetailResult getTenantEnvConfigByKey(String key);
+
+    /**
+     * 更新
+     *
+     * @param updateConfigServerParam 入参
+     * @return
+     */
+    boolean updateGlobalValueByKey(UpdateConfigServerParam updateConfigServerParam);
 
 }
 

@@ -5,10 +5,12 @@ import java.util.Map;
 
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
 import io.shulie.takin.web.biz.cache.DictionaryCache;
-import io.shulie.takin.web.biz.service.ApiService;
+import io.shulie.takin.web.biz.pojo.request.config.UpdateConfigServerRequest;
 import io.shulie.takin.web.biz.pojo.request.file.FileUploadRequest;
 import io.shulie.takin.web.biz.pojo.response.common.FileUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.common.IsNewAgentResponse;
+import io.shulie.takin.web.biz.service.ApiService;
+import io.shulie.takin.web.biz.service.config.ConfigServerService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -17,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,6 +39,9 @@ public class ApiController {
 
     @Autowired
     private DictionaryCache dictionaryCache;
+
+    @Autowired
+    private ConfigServerService configServerService;
 
     @ApiOperation("|_ 数据字典")
     @GetMapping("link/dictionary")
@@ -56,6 +63,12 @@ public class ApiController {
     @GetMapping("config/application/newAgent")
     public IsNewAgentResponse isNewAgent(@RequestParam Long applicationId) {
         return apiService.isNewAgentByApplication(applicationId);
+    }
+
+    @ApiOperation("|_ 修改服务配置")
+    @PutMapping("configServer")
+    public void updateConfigServer(@Validated @RequestBody UpdateConfigServerRequest updateConfigServerRequest) {
+        configServerService.update(updateConfigServerRequest);
     }
 
 }

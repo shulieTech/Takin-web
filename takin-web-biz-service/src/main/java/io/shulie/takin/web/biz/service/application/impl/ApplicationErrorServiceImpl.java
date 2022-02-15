@@ -13,34 +13,32 @@ import javax.annotation.Resource;
 import com.alibaba.excel.util.CollectionUtils;
 import com.alibaba.fastjson.JSONObject;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.google.common.collect.Lists;
-
 import com.pamirs.takin.common.util.DateUtils;
-import com.pamirs.takin.entity.domain.entity.ExceptionInfo;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
-
-import io.shulie.takin.web.common.common.Response;
-import io.shulie.takin.web.common.util.CommonUtil;
-import io.shulie.takin.web.common.common.Separator;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import com.pamirs.takin.entity.domain.entity.ExceptionInfo;
+import io.shulie.takin.web.biz.pojo.input.application.ApplicationErrorQueryInput;
+import io.shulie.takin.web.biz.pojo.output.application.ApplicationErrorOutput;
+import io.shulie.takin.web.biz.pojo.output.application.ApplicationExceptionOutput;
 import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.data.dao.application.ApplicationDAO;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.biz.service.application.ApplicationErrorService;
 import io.shulie.takin.web.biz.service.impl.ApplicationServiceImpl;
+import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.common.Separator;
+import io.shulie.takin.web.common.enums.application.AppExceptionCodeEnum;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.ApplicationResult;
 import io.shulie.takin.web.data.result.application.InstanceInfoResult;
-import io.shulie.takin.web.common.enums.application.AppExceptionCodeEnum;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.biz.service.application.ApplicationErrorService;
-import io.shulie.takin.web.biz.pojo.output.application.ApplicationErrorOutput;
-import io.shulie.takin.web.biz.pojo.input.application.ApplicationErrorQueryInput;
-import io.shulie.takin.web.biz.pojo.output.application.ApplicationExceptionOutput;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 
 /**
  * @author fanxx
@@ -257,12 +255,13 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
     private List<ApplicationErrorOutput> processErrorList(List<ApplicationErrorOutput> responseList) {
         // 按照时间倒序输出
         List<ApplicationErrorOutput> sortedList = responseList.parallelStream()
-            .filter(t -> t != null && StrUtil.isNotBlank(t.getTime()))
+            .filter(t -> t != null && CharSequenceUtil.isNotBlank(t.getTime()))
             .sorted((a1, a2) -> a2.getTime().compareTo(a1.getTime()))
             .collect(Collectors.toList());
 
         List<ApplicationErrorOutput> noTimeList = responseList.parallelStream()
-            .filter(response -> response != null && StrUtil.isNotBlank(response.getTime()))
+            // 无时间的
+            .filter(response -> response != null && CharSequenceUtil.isBlank(response.getTime()))
             .collect(Collectors.toList());
 
         if (sortedList.isEmpty()) {

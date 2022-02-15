@@ -13,7 +13,6 @@ public class PluginConfigCreateRequest {
     @ApiModelProperty(name = "type", value = "插件类型")
     private String type;
 
-    @JsonProperty("id")
     @ApiModelProperty(name = "name", value = "插件名称-实际上是用id")
     private String name;
 

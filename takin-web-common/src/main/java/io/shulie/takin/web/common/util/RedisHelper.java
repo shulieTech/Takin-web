@@ -153,8 +153,40 @@ public class RedisHelper {
      * @param redisKey
      * @return
      */
+    @Deprecated
     public static Object getValueByKey(String redisKey) {
         return redisTemplate.opsForValue().get(redisKey);
+    }
+
+    /**
+     * string 数据格式, get
+     *
+     * @param redisKey redisKey
+     * @return
+     */
+    public static Object stringGet(String redisKey) {
+        return redisTemplate.opsForValue().get(redisKey);
+    }
+
+    /**
+     * string 数据格式, set
+     *
+     * @param redisKey redisKey
+     * @param value value
+     */
+    public static void stringSet(String redisKey, Object value) {
+        redisTemplate.opsForValue().set(redisKey, value);
+    }
+
+    /**
+     * string 数据格式, set
+     * 有过期时间
+     *
+     * @param redisKey redisKey
+     * @param value value
+     */
+    public static void stringExpireSet(String redisKey, Object value, Long timeout, TimeUnit timeUnit) {
+        redisTemplate.opsForValue().set(redisKey, value, timeout, timeUnit);
     }
 
     /**

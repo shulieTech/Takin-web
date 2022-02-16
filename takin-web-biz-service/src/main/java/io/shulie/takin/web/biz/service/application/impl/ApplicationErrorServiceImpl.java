@@ -129,7 +129,7 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
 
     private void convertNodeUploadDataList(List<ApplicationErrorOutput> responseList,
         List<String> nodeUploadDataDTOList) {
-        nodeUploadDataDTOList.forEach(n -> {
+        nodeUploadDataDTOList.parallelStream().forEach(n -> {
             NodeUploadDataDTO nodeUploadDataDTO = JSONObject.parseObject(n, NodeUploadDataDTO.class);
             Map<String, Object> exceptionMap = nodeUploadDataDTO.getSwitchErrorMap();
             if (exceptionMap != null && exceptionMap.size() > 0) {

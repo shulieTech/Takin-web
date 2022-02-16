@@ -423,7 +423,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         // 服务端也需要查询下
         Map<String, List<ApplicationRemoteCallDTO>> serverAppNamesMap = this.getServerAppListMap(detailResult.getApplicationName());
         return String.valueOf(results.stream().filter(result -> RemoteCallUtils.checkWhite(result.getType())
-                && this.checkServerAppName(detailResult,serverAppNamesMap,result)).count());
+            && this.checkServerAppName(detailResult,serverAppNamesMap,result)).count());
     }
 
     /**
@@ -574,8 +574,8 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         List<ApplicationRemoteCallDTO> serverAppNames = serverAppNamePage.getList();
         // 查询应用
         return serverAppNames.stream().collect(Collectors.groupingBy(call -> RemoteCallUtils.buildRemoteCallName(call.getUpAppName(),
-                RemoteCallUtils.getInterfaceNameByRpcName(call.getMiddlewareName(), call.getServiceName(), call.getMethodName()),
-                call.getRpcType())));
+            RemoteCallUtils.getInterfaceNameByRpcName(call.getMiddlewareName(), call.getServiceName(), call.getMethodName()),
+            call.getRpcType())));
     }
 
     /**
@@ -859,7 +859,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
         if (dto.getReturnFixMockEnable() == 1 && "feign".equals(dto.getEngName())) {
             vos.add(new SelectVO(AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getConfigName(),
-                    AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getType().toString()));
+                AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getType().toString()));
         }
         vos.add(new SelectVO(AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getConfigName(),
             AppRemoteCallConfigEnum.CLOSE_CONFIGURATION.getType().toString()));

@@ -5,10 +5,11 @@ import java.util.Map;
 
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
 import io.shulie.takin.web.biz.cache.DictionaryCache;
-import io.shulie.takin.web.biz.service.ApiService;
 import io.shulie.takin.web.biz.pojo.request.file.FileUploadRequest;
 import io.shulie.takin.web.biz.pojo.response.common.FileUploadResponse;
 import io.shulie.takin.web.biz.pojo.response.common.IsNewAgentResponse;
+import io.shulie.takin.web.biz.service.ApiService;
+import io.shulie.takin.web.biz.service.config.ConfigServerService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;

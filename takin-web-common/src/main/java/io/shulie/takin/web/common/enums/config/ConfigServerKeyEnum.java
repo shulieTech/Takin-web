@@ -125,7 +125,10 @@ public enum ConfigServerKeyEnum implements AppConstants {
         "takin.pressure.machine.upload.interval.time", NO),
 
     /**
-     * 脚本调试时, 允许的 rpc 类型
+     * 脚本调试支持的 rpcType mq 下的
+     * 以 逗号隔开
+     * 默认 kafka, 可以扩展 rocket mq 等..
+     * 暂时这么设计
      */
     TAKIN_SCRIPT_DEBUG_RPC_TYPE("takin-web.script-debug.rpcType", "takin.script-debug.rpcType", NO),
 

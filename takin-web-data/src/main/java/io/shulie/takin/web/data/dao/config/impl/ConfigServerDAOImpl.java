@@ -2,10 +2,12 @@ package io.shulie.takin.web.data.dao.config.impl;
 
 import java.util.List;
 
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.data.dao.config.ConfigServerDAO;
 import io.shulie.takin.web.data.mapper.mysql.ConfigServerMapper;
 import io.shulie.takin.web.data.model.mysql.ConfigServerEntity;
+import io.shulie.takin.web.data.param.config.UpdateConfigServerParam;
 import io.shulie.takin.web.data.result.config.ConfigServerDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -50,6 +52,15 @@ public class ConfigServerDAOImpl implements ConfigServerDAO, MPUtil<ConfigServer
         List<ConfigServerDetailResult> valueList = configServerMapper.selectTenantEnvListByKey(key,
             WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode());
         return valueList.isEmpty() ? null : valueList.get(0);
+    }
+
+    @Override
+    public boolean updateGlobalValueByKey(UpdateConfigServerParam updateConfigServerParam) {
+        return SqlHelper.retBool(configServerMapper.update(null, this.getLambdaUpdateWrapper()
+            .eq(ConfigServerEntity::getKey, updateConfigServerParam.getKey())
+            .eq(ConfigServerEntity::getIsTenant, AppConstants.NO)
+            .set(ConfigServerEntity::getValue, updateConfigServerParam.getValue())));
+
     }
 
 }

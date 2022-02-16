@@ -102,7 +102,6 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-common</artifactId>
-            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-collections</artifactId>
@@ -134,13 +133,11 @@
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-entrypoint</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-web-biz-service</artifactId>
-            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>jsqlparser</artifactId>

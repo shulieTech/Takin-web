@@ -7,11 +7,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
@@ -90,17 +92,22 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             } catch (Exception e) {
                 log.error("finish report data preparation：{},errorMsg= {}", reportId, e.getMessage());
             }
+            // 查询报告状态
+            final ReportDetailOutput report = reportService.getReportById(reportId);
+            if (report == null) {
+                return false;
+            }
+            // 压测结束才锁报告
+            Integer status = report.getTaskStatus();
+            if (status == null || status != 1) {
+                return false;
+            }
             ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
             if (reportDetailDTO == null) {
+                log.error("未查到报告明细！reportId={}",reportId);
                 return false;
             }
-            // 收集数据 单独线程收集 --->风险机器等等
-            collectDataThreadPool.execute(collectData(reportId, commonExt));
-            // 压测结束才锁报告
             Date endTime = reportDetailDTO.getEndTime();
-            if (endTime == null) {
-                return false;
-            }
             //更新任务的结束时间
             if (!this.updateTaskEndTime(reportId, commonExt, endTime)) { return false; }
 
@@ -121,6 +128,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                     log.error("锁定运行报告数据失败, reportId={}", reportId);
                 }
                 log.info("finish report，total data  Running Report :{}", reportId);
+
+                // 收集数据 单独线程收集
+                collectDataThreadPool.execute(collectData(reportId,commonExt));
 
                 // 停止报告
                 Boolean webResponse = reportService.finishReport(reportId);

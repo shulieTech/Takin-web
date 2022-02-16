@@ -20,6 +20,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
     private final String cacheName;
     private final RedisTemplate redisTemplate;
 
+
     public AbstractAgentConfigCache(String cacheName, RedisTemplate redisTemplate) {
         this.cacheName = cacheName;
         this.redisTemplate = redisTemplate;

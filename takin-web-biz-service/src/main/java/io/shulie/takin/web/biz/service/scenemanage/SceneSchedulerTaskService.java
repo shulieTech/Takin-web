@@ -28,7 +28,7 @@ public interface SceneSchedulerTaskService {
     List<SceneSchedulerTaskResponse> selectByExample(SceneSchedulerTaskQueryRequest request);
 
     /**
-     * 场景定时任务执行 按照租户隔离
+     * 场景定时任务执行
      */
     void executeSchedulerPressureTask();
 

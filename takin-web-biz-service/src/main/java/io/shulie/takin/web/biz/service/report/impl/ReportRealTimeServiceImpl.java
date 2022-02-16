@@ -37,7 +37,6 @@ import com.pamirs.takin.entity.domain.entity.linkmanage.figure.RpcType;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.common.domain.PradarWebRequest;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
@@ -109,10 +108,6 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
 
     @Override
     public ReportLinkDetailResponse getLinkDetail(String traceId, Integer amdbReportTraceId) {
-        // 请求amdb, 获得调用链
-        PradarWebRequest pradarRequest = new PradarWebRequest();
-        pradarRequest.setHttpMethod(HttpMethod.GET);
-        pradarRequest.setTraceId(traceId);
         // 时间解析 查询前后30分钟
         Long time = TraceIdUtil.getTraceIdTime(traceId);
         RpcStack rpcStack = traceClient.getTraceDetailById(traceId,

@@ -1,35 +1,43 @@
 package io.shulie.takin.web.biz.service.scenemanage;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 
 import javax.annotation.Resource;
 
-import lombok.extern.slf4j.Slf4j;
-
 import com.google.common.collect.Lists;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-import org.apache.commons.collections4.CollectionUtils;
-
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
-
-import io.shulie.takin.web.ext.entity.UserExt;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
+import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
+import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
+import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.scenemanage.SceneSchedulerTaskDao;
-import io.shulie.takin.web.data.result.scenemanage.SceneSchedulerTaskResult;
-import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskQueryParam;
 import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskInsertParam;
+import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskQueryParam;
 import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskUpdateParam;
-import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
-import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
-import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
+import io.shulie.takin.web.data.result.scenemanage.SceneSchedulerTaskResult;
+import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author mubai
@@ -42,6 +50,13 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
     private SceneTaskService sceneTaskService;
     @Resource
     private SceneSchedulerTaskDao sceneSchedulerTaskDao;
+    /**
+     * 定时任务线程池
+     * ps:只是为了消除黄色提醒
+     */
+    private final ExecutorService threadPool = new ThreadPoolExecutor(10, 10,
+        0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
+        r -> new Thread(r, "定时压测"), new CallerRunsPolicy());
 
     @Override
     public Long insert(SceneSchedulerTaskCreateRequest request) {
@@ -119,7 +134,6 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
         Date previousSeconds = DateUtils.getPreviousNSecond(-67);
         String time = DateUtils.dateToString(previousSeconds, DateUtils.FORMATE_YMDHM);
         request.setEndTime(time);
-        WebPluginUtils.transferTenantParam(WebPluginUtils.traceTenantCommonExt(), request);
         List<SceneSchedulerTaskResponse> responseList = this.selectByExample(request);
         if (CollectionUtils.isEmpty(responseList)) {return;}
         for (SceneSchedulerTaskResponse scheduler : responseList) {
@@ -130,19 +144,39 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
             Date dbDate = scheduler.getExecuteTime();
             Date now = new Date();
             if (dbDate.before(now)) {
-                //执行
-                SceneActionParam startParam = new SceneActionParam();
-                startParam.setSceneId(scheduler.getSceneId());
-                startParam.setEnvCode(scheduler.getEnvCode());
-                startParam.setTenantId(scheduler.getTenantId());
-                // 补充定时任务的执行用户
-                UserExt userInfo = WebPluginUtils.getUserExtByUserId(scheduler.getUserId());
-                if (userInfo != null) {
-                    startParam.setUserId(userInfo.getId());
-                    startParam.setUserName(userInfo.getName());
+                // 分布式锁
+                String lockKey = JobRedisUtils.getSchedulerRedis(scheduler.getTenantId(),scheduler.getEnvCode(),scheduler.getId());
+                if (RedisHelper.hasKey(lockKey)) {
+                    continue;
                 }
-                new Thread(() -> {
+                RedisHelper.setValue(lockKey,true);
+                threadPool.submit(() -> {
                     try {
+                        // 补充租户信息
+                        TenantCommonExt ext = new TenantCommonExt();
+                        ext.setSource(ContextSourceEnum.JOB.getCode());
+                        ext.setTenantId(scheduler.getTenantId());
+                        ext.setEnvCode(scheduler.getEnvCode());
+                        TenantInfoExt infoExt = WebPluginUtils.getTenantInfo(scheduler.getTenantId());
+                        if(infoExt == null) {
+                            log.error("租户信息未找到【{}】",scheduler.getTenantId());
+                            return;
+                        }
+                        ext.setTenantAppKey(infoExt.getTenantAppKey());
+                        WebPluginUtils.setTraceTenantContext(ext);
+                        //执行
+                        SceneActionParam startParam = new SceneActionParam();
+                        startParam.setSceneId(scheduler.getSceneId());
+                        startParam.setEnvCode(scheduler.getEnvCode());
+                        startParam.setTenantId(scheduler.getTenantId());
+                        // 补充定时任务的执行用户
+                        UserExt userInfo = WebPluginUtils.getUserExtByUserId(scheduler.getUserId());
+                        if (userInfo != null) {
+                            WebPluginUtils.setCloudUserData(new ContextExt() {{
+                                setUserId(userInfo.getId());
+                                setUserName(userInfo.getName());
+                            }});
+                        }
                         sceneTaskService.startTask(startParam);
                     } catch (Exception e) {
                         log.error("执行定时压测任务失败...", e);
@@ -153,8 +187,10 @@ public class SceneSchedulerTaskServiceImpl implements SceneSchedulerTaskService 
                         updateRequest.setIsDeleted(true);
                         updateRequest.setIsDeleted(true);
                         this.update(updateRequest, false);
+                        // 解锁
+                        RedisHelper.delete(lockKey);
                     }
-                }).start();
+                });
             }
         }
     }

@@ -9,7 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.shulie.takin.web.common.domain.WebRequest;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -20,7 +20,7 @@ import lombok.Data;
  */
 @Data
 @ApiModel(description = "场景保存入参")
-public class SceneManageWrapperVO extends WebRequest implements Serializable {
+public class SceneManageWrapperVO extends ContextExt implements Serializable {
 
     private static final long serialVersionUID = -7653146473491831687L;
 

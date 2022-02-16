@@ -26,6 +26,7 @@ import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallQueryInput;
 import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutputV2;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallBatchUpdateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallCreateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
@@ -153,4 +154,9 @@ public interface AppRemoteCallService {
      * @return
      */
     AppRemoteCallOutputV2 getByIdV2(Long id);
+
+    /**
+     * 更新
+     */
+    void batchUpdateV2(AppRemoteCallBatchUpdateV2Request request);
 }

@@ -30,6 +30,8 @@ public enum AppRemoteCallTypeV2Enum {
 
     HTTP(0,"HTTP",AppRemoteCallTypeEnum.HTTP),
 
+    OK_HTTP(0, "ok-http",AppRemoteCallTypeEnum.HTTP),
+
     /**
      * DUBBO
      */

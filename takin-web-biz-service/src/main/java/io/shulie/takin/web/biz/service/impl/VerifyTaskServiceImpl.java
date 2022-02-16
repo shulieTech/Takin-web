@@ -113,7 +113,7 @@ public class VerifyTaskServiceImpl implements VerifyTaskService {
                     req.setId(sceneId);
                     WebPluginUtils.fillCloudUserData(req);
                     ResponseResult<SceneActionResp> response = sceneTaskApi.checkTask(req);
-                    if (!Objects.isNull(response.getData())) {
+                    if (!Objects.isNull(response.getData().getData())) {
                         SceneActionResp resp = JSONObject.parseObject(JSON.toJSONString(response.getData()),
                             SceneActionResp.class);
                         Long status = resp.getData();

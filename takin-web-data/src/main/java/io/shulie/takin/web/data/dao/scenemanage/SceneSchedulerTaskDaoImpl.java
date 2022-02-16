@@ -14,7 +14,6 @@ import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskQueryParam;
 import io.shulie.takin.web.data.param.sceneManage.SceneSchedulerTaskUpdateParam;
 import io.shulie.takin.web.data.result.scenemanage.SceneSchedulerTaskResult;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Repository;
 
@@ -85,6 +84,7 @@ public class SceneSchedulerTaskDaoImpl implements SceneSchedulerTaskDao {
 
     @Override
     public List<SceneSchedulerTaskResult> selectByExample(SceneSchedulerTaskQueryParam queryParam) {
+
         LambdaQueryWrapper<SceneSchedulerTaskEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.select(
             SceneSchedulerTaskEntity::getId,
@@ -98,12 +98,9 @@ public class SceneSchedulerTaskDaoImpl implements SceneSchedulerTaskDao {
         wrapper.lt(SceneSchedulerTaskEntity::getExecuteTime, queryParam.getEndTime());
         wrapper.eq(SceneSchedulerTaskEntity::getIsExecuted, 0);
         wrapper.eq(SceneSchedulerTaskEntity::getIsDeleted,false);
-        if(queryParam.getTenantId() != null) {
-            wrapper.eq(SceneSchedulerTaskEntity::getTenantId,queryParam.getTenantId());
-        }
-        if(StringUtils.isNotBlank(queryParam.getEnvCode())) {
-            wrapper.eq(SceneSchedulerTaskEntity::getEnvCode,queryParam.getEnvCode());
-        }
+        // 查所有
+        wrapper.like(SceneSchedulerTaskEntity::getTenantId,"");
+        wrapper.like(SceneSchedulerTaskEntity::getEnvCode,"");
 
         List<SceneSchedulerTaskEntity> sceneSchedulerTaskEntities = sceneSchedulerTaskMapper.selectList(wrapper);
         return entrys2ResultList(sceneSchedulerTaskEntities);

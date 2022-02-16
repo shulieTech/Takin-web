@@ -36,6 +36,8 @@ public class RemoteCallConfigEnumMapping {
                 case FORWARD_MOCK:
                     result.label(callConfigEnum.getConfigName()).value(String.valueOf(callConfigEnum.getType())).num(3);
                     break;
+                case  FIX_FORWARD_MOCK:
+                    result.label(callConfigEnum.getConfigName()).value(String.valueOf(callConfigEnum.getType())).num(4);
                 default:
                     break;
             }

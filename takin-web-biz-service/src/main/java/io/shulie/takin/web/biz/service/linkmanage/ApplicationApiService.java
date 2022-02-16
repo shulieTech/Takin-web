@@ -24,6 +24,7 @@ public interface ApplicationApiService {
      * @param appName
      * @return
      */
+    @Deprecated
     Response pullApi(String appName);
 
     /**

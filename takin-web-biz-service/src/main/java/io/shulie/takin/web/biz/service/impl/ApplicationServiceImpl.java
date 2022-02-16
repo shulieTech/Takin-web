@@ -257,6 +257,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Value("${application.ds.config.is.new.version: false}")
     private Boolean isNewVersion;
 
+    @Value("${application.error.num: 20}")
+    private Integer appErrorNum;
+
     @Autowired
     private ApplicationService applicationService;
 
@@ -701,7 +704,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             String key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, userAppKey, envCode,
                     applicationMnt.getApplicationId() + PRADAR_SEPERATE_FLAG + param.getAgentId());
             List<String> nodeUploadDataDTOList = redisTemplate.opsForList().range(key, 0, -1);
-            if (CollectionUtils.isEmpty(nodeUploadDataDTOList)) {
+            if (CollectionUtils.isEmpty(nodeUploadDataDTOList) || nodeUploadDataDTOList.size() <= appErrorNum) {
                 //节点key信息
                 String nodeSetKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, userAppKey, envCode,
                         applicationMnt.getApplicationId() + PRADARNODE_KEYSET);
@@ -711,7 +714,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 redisTemplate.opsForList().leftPush(key, JSONObject.toJSONString(param));
                 redisTemplate.expire(key, 1, TimeUnit.DAYS);
             } else {
+                // 大于 appErrorNum 个数 进行截取
                 redisTemplate.opsForList().leftPush(key, JSONObject.toJSONString(param));
+                redisTemplate.opsForList().trim(key,0,19);
             }
             //3：应用异常
             applicationDAO.updateApplicationStatus(applicationMnt.getApplicationId(),

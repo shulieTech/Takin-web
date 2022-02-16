@@ -451,13 +451,16 @@ public class SwaggerConfig {
             ;
     }
 
+
+
     /**
      * 快速接入一期测试用 nf
      *
+     * 业务域管理
      * @return
      */
     @Bean
-    public Docket api_webTest_nf() {
+    public Docket api_business_domain() {
         return new Docket(DocumentationType.SWAGGER_2)
             .groupName("快速接入一期测试用")
             .select()
@@ -495,23 +498,22 @@ public class SwaggerConfig {
             .apiInfo(apiInfo())
             ;
     }
-
     /**
-     * 业务域管理
+     * 快速接入
      * @return
      */
     @Bean
-    public Docket api_business_domain() {
+    public Docket api_fast_start() {
         return new Docket(DocumentationType.SWAGGER_2)
-            .groupName("业务域管理")
-            .select()
-            .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-            .paths(getRegex("/api/domain.*"))
-            .build()
-            .directModelSubstitute(LocalDate.class, String.class)
-            .useDefaultResponseMessages(false)
-            .apiInfo(apiInfo())
-            ;
+                .groupName("快速接入")
+                .select()
+                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+                .paths(getRegex("/api/v2/application/remote/call.*"))
+                .build()
+                .directModelSubstitute(LocalDate.class, String.class)
+                .useDefaultResponseMessages(false)
+                .apiInfo(apiInfo())
+                ;
     }
 
     /**
@@ -546,6 +548,9 @@ public class SwaggerConfig {
             }
         };
     }
+
+
+
 
     private Predicate<String> getRegex(String regex) {
         return PathSelectors.regex(servletContextPath + regex);

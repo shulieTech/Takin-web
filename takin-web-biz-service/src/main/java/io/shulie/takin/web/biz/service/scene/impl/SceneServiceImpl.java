@@ -317,7 +317,10 @@ public class SceneServiceImpl implements SceneService {
         createRequest.setRefType(ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE);
         createRequest.setRefValue(sceneCreateParam.getId().toString());
         // 设置插件信息
-        createRequest.setPluginConfigCreateRequests(pluginList);
+        if (CollectionUtils.isNotEmpty(pluginList)){
+            pluginList = pluginList.stream().filter(Objects::nonNull).collect(Collectors.toList());
+            createRequest.setPluginConfigCreateRequests(pluginList);
+        }
         Long scriptManageId = scriptManageService.createScriptManage(createRequest);
 
         //更新业务流程
@@ -752,7 +755,10 @@ public class SceneServiceImpl implements SceneService {
             updateRequest.setFileManageUpdateRequests(updateFileManageRequests);
         }
         // 设置插件信息
-        updateRequest.setPluginList(pluginList);
+        if (CollectionUtils.isNotEmpty(pluginList)){
+            pluginList = pluginList.stream().filter(Objects::nonNull).collect(Collectors.toList());
+            updateRequest.setPluginList(pluginList);
+        }
         //更新脚本
         Long scriptDeployId = scriptManageService.updateScriptManage(updateRequest);
         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();

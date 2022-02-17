@@ -721,9 +721,8 @@ public class SceneServiceImpl implements SceneService {
         if (scriptManageDeployResult == null) {
             throw new TakinWebException(TakinWebExceptionEnum.LINK_QUERY_ERROR, "没有找到业务流程对应的脚本！");
         }
-        ScriptManageDeployDetailResponse result = new ScriptManageDeployDetailResponse();
-        result.setId(oldScriptDeployId);
-        scriptManageService.setFileList(result);
+
+        ScriptManageDeployDetailResponse result = scriptManageService.getScriptManageDeployDetail(oldScriptDeployId);
         List<FileManageResponse> fileManageResponseList = result.getFileManageResponseList();
         ScriptManageDeployUpdateRequest updateRequest = new ScriptManageDeployUpdateRequest();
         updateRequest.setId(oldScriptDeployId);
@@ -744,8 +743,18 @@ public class SceneServiceImpl implements SceneService {
                 .ofFileManageResponseList(dataFileManageResponseList));
             //脚本后续会把文件和附件放到一起，这里就不分出来了
             updateRequest.setFileManageUpdateRequests(businessFlowDataFileRequest.getFileManageUpdateRequests());
-            //updateRequest.setPluginList(businessFlowDataFileRequest.getPluginList());
-
+            if (CollectionUtils.isNotEmpty(result.getPluginConfigDetailResponseList())){
+                List<PluginConfigCreateRequest> pluginConfigCreateRequests = result.getPluginConfigDetailResponseList()
+                        .stream().map(pluginConfigDetailResponse -> {
+                    PluginConfigCreateRequest pluginConfigCreateRequest = new PluginConfigCreateRequest();
+                    pluginConfigCreateRequest.setId(pluginConfigDetailResponse.getId());
+                    pluginConfigCreateRequest.setName(pluginConfigDetailResponse.getName());
+                    pluginConfigCreateRequest.setVersion(pluginConfigDetailResponse.getVersion());
+                    pluginConfigCreateRequest.setType(pluginConfigDetailResponse.getType());
+                    return pluginConfigCreateRequest;
+                }).collect(Collectors.toList());
+                updateRequest.setPluginList(pluginConfigCreateRequests);
+            }
         } else {
             List<FileManageResponse> dataFileManageResponseList = fileManageResponseList.stream().filter(o ->
                 !FileTypeEnum.SCRIPT.getCode().equals(o.getFileType())).collect(Collectors.toList());

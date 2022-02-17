@@ -17,7 +17,6 @@ import com.alibaba.fastjson.JSON;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
@@ -32,7 +31,6 @@ import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.scenetask.TaskFlowDebugStartReq;
-import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
@@ -51,6 +49,7 @@ import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ListApplicationRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.ApplicationEntranceTopologyQueryRequest;
@@ -104,7 +103,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -182,6 +180,20 @@ public class ActivityServiceImpl implements ActivityService {
             response.setApplicationName(application.getApplicationName());
             return response;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public PagingList<BusinessApplicationListResponse> listApplicationByBusinessFlowIds(
+        ListApplicationRequest listApplicationRequest) {
+        // 根据业务流程ids获取业务活动ids
+
+        // 根据业务活动ids获取应用名称
+
+        // 列表
+
+
+        // 转换
+        return null;
     }
 
     @Override

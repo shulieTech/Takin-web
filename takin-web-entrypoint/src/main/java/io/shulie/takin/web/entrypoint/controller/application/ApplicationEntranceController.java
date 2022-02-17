@@ -63,6 +63,7 @@ public class ApplicationEntranceController {
     public List<WebOptionEntity> getEntranceTypes() {
         EntranceTypeEnum[] values = EntranceTypeEnum.values();
         return Stream.of(values)
+            .filter(item -> item != EntranceTypeEnum.RABBITMQ)
             .map(item -> {
                 WebOptionEntity webOptionEntity = new WebOptionEntity();
                 webOptionEntity.setLabel(item.name());

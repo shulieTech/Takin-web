@@ -1,5 +1,7 @@
 package io.shulie.takin.web.data.util;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.PostConstruct;
 
 import cn.hutool.core.util.StrUtil;
@@ -119,9 +121,9 @@ public class ConfigServerHelper {
             throw new IllegalArgumentException(String.format("%s 配置不存在", key));
         }
 
-        // 放入redis，过期时间1天
+        // 放入redis，过期时间10分钟
         RedisHelper.hashPut(redisKey, key, value);
-        RedisHelper.expireDay(redisKey, 1L);
+        RedisHelper.expire(redisKey, 10L, TimeUnit.MINUTES);
         return value;
     }
 

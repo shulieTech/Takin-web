@@ -52,8 +52,6 @@ import com.pamirs.takin.common.redis.RedisManager;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.common.util.PageInfo;
 import com.pamirs.takin.common.util.Snowflake;
-import com.pamirs.takin.entity.dao.assist.loaddata.TLoadDataDao;
-import com.pamirs.takin.entity.dao.assist.loaddata.TReturnDataDao;
 import com.pamirs.takin.entity.dao.common.CommonDao;
 import com.pamirs.takin.entity.dao.confcenter.TApplicationIpDao;
 import com.pamirs.takin.entity.dao.confcenter.TBListMntDao;
@@ -230,10 +228,6 @@ public class CommonService {
     protected TShadowTableConfigDao tShadowTableConfigDao;
     @Autowired
     protected TShadowTableDataSourceDao tShadowTableDataSourceDao;
-    @Autowired
-    protected TLoadDataDao TLoadDataDao;
-    @Autowired
-    protected TReturnDataDao returnDataDao;
     @Autowired
     protected TApplicationMntConfigDao tApplicationMntConfigDao;
     @Autowired

@@ -121,6 +121,7 @@ import io.shulie.takin.web.data.result.scriptmanage.ScriptManageDeployResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -278,8 +279,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         try {
 
             //探针总开关关闭状态禁止启动压测
+            TenantCommonExt tenantCommonExt = WebPluginUtils.traceTenantCommonExt();
             ScriptDebugExceptionUtil.isDebugError(
-                applicationService.silenceSwitchStatusIsTrue(WebPluginUtils.traceTenantCommonExt(), AppSwitchEnum.CLOSED),
+                applicationService.silenceSwitchStatusIsTrue(tenantCommonExt, AppSwitchEnum.CLOSED),
                 "脚本调试失败，探针总开关已关闭");
             // 脚本发布实例是否存在
             ScriptManageDeployResult scriptDeploy = scriptManageDAO.selectScriptManageDeployById(scriptDeployId);

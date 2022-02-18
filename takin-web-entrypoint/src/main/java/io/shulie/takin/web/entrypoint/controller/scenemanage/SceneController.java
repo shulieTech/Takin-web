@@ -161,6 +161,9 @@ public class SceneController {
             }});
         }
 
+        // 先删除
+        sceneExcludedApplicationDAO.removeBySceneId(dto.getId());
+
         // 忽略检测的应用
         sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation()
             .getExcludedApplicationIds());

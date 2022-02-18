@@ -51,6 +51,8 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
+import io.shulie.takin.web.biz.pojo.request.scene.ListSceneForSelectRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
@@ -854,6 +856,24 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (!sceneExcludedApplicationDAO.saveBatch(createSceneExcludedApplicationParams)) {
             throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, "排除的应用保存失败!");
         }
+    }
+
+    @Override
+    public List<SceneListForSelectOutput> listForSelect(ListSceneForSelectRequest request) {
+        // 查询cloud, 场景列表, 状态是压测中
+        SceneManageQueryReq sceneManageQueryReq = new SceneManageQueryReq();
+        sceneManageQueryReq.setStatus(request.getStatus());
+        ResponseResult<List<SceneManageListResp>> cloudResult = sceneManageApi.querySceneByStatus(sceneManageQueryReq);
+        if (cloudResult == null || !cloudResult.getSuccess() || CollectionUtil.isEmpty(cloudResult.getData())) {
+            return Collections.emptyList();
+        }
+
+        return cloudResult.getData().stream().map(result -> {
+            SceneListForSelectOutput sceneListForSelectOutput = new SceneListForSelectOutput();
+            sceneListForSelectOutput.setId(result.getId());
+            sceneListForSelectOutput.setName(result.getSceneName());
+            return sceneListForSelectOutput;
+        }).collect(Collectors.toList());
     }
 
 }

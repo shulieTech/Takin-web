@@ -847,6 +847,8 @@ public class SceneManageServiceImpl implements SceneManageService {
                     = new CreateSceneExcludedApplicationParam();
                 createSceneExcludedApplicationParam.setSceneId(sceneId);
                 createSceneExcludedApplicationParam.setApplicationId(excludedApplicationId);
+                createSceneExcludedApplicationParam.setTenantId(WebPluginUtils.traceTenantId());
+                createSceneExcludedApplicationParam.setEnvCode(WebPluginUtils.traceEnvCode());
                 return createSceneExcludedApplicationParam;
             }).collect(Collectors.toList());
 

@@ -857,7 +857,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 AppRemoteCallConfigEnum.FORWARD_MOCK.getType().toString()));
         }
 
-        if (dto.getReturnFixMockEnable() == 1 && "feign".equals(dto.getEngName())) {
+        if (dto.getReturnFixMockEnable() == 1) {
             vos.add(new SelectVO(AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getConfigName(),
                 AppRemoteCallConfigEnum.FIX_FORWARD_MOCK.getType().toString()));
         }

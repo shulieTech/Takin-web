@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.pojo.request.activity;
 import java.util.List;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import io.shulie.takin.web.common.constant.AppConstants;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
@@ -10,7 +11,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.validator.constraints.Range;
 
 /**
  * @author liuchuan
@@ -23,7 +23,7 @@ public class ListApplicationRequest extends PageBaseDTO {
 
     @ApiModelProperty(value = "业务流程ids", required = true)
     @NotEmpty(message = "业务流程ids" + AppConstants.MUST_BE_NOT_NULL)
-    @Range(min = 1, max = 3, message = "操作类型错误!")
+    @Size(min = 1, max = 100, message = "业务活动值的数量超出范围")
     private List<Long> businessFlowIds;
 
     @ApiModelProperty(value = "应用名称")

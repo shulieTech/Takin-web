@@ -4,19 +4,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowTree;
 import io.shulie.takin.web.common.util.DataTransformUtil;
-import com.pamirs.takin.common.util.NumberUtil;
-import com.pamirs.takin.entity.dao.linkmanage.TBusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.convert.linkmanage.BusinessLinkManageConvert;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.SceneLinkRelateMapper;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.SceneLinkRelateEntity;
-import io.shulie.takin.web.data.param.scene.SceneLinkRelateCreateParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateSaveParam;
@@ -25,13 +24,9 @@ import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
 
 /**
  * @author 无涯
@@ -41,16 +36,10 @@ import javax.annotation.Resource;
 public class SceneLinkRelateDAOImpl extends ServiceImpl<SceneLinkRelateMapper, SceneLinkRelateEntity>
     implements SceneLinkRelateDAO, MPUtil<SceneLinkRelateEntity> {
 
-    /**
-     * 根据业务流程id, 获得关联业务活动ids
-     *
-     * @param businessFlowId 业务流程ids
-     * @return 业务活动ids
-     */
     @Override
-    public List<Long> listBusinessLinkIdsByBusinessFlowId(Long businessFlowId) {
+    public List<Long> listBusinessLinkIdsByBusinessFlowIds(List<Long> businessFlowIds) {
         List<Object> businessLinkObjectIds = this.listObjs(this.getLambdaQueryWrapper()
-            .select(SceneLinkRelateEntity::getBusinessLinkId).eq(SceneLinkRelateEntity::getSceneId, businessFlowId));
+            .select(SceneLinkRelateEntity::getBusinessLinkId).in(SceneLinkRelateEntity::getSceneId, businessFlowIds));
         return DataTransformUtil.list2list(businessLinkObjectIds, Long.class);
     }
 

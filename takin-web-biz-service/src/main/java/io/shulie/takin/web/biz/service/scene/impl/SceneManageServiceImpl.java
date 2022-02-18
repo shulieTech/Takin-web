@@ -835,7 +835,8 @@ public class SceneManageServiceImpl implements SceneManageService {
      * @param excludedApplicationIds 排除的应用ids
      * @param sceneId 场景id
      */
-    private void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds) {
+    @Override
+    public void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds) {
         if (CollectionUtil.isEmpty(excludedApplicationIds)) {
             return;
         }

@@ -1,7 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.v2;
 
-import java.util.List;
-
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.activity.ListApplicationRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.BusinessApplicationListResponse;
@@ -14,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -22,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2022/2/17 5:08 下午
  */
 @RequestMapping("/api/v2/activities")
-@RestController
+@RestController("api.v2.activity")
 @Api(tags = "接口: 业务活动")
 public class ActivityController {
 

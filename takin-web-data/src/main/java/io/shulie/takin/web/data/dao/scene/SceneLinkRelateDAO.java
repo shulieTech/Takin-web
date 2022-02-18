@@ -5,7 +5,6 @@ import java.util.List;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowTree;
 import io.shulie.takin.web.data.model.mysql.SceneLinkRelateEntity;
-import io.shulie.takin.web.data.param.scene.SceneLinkRelateCreateParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateQuery;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateSaveParam;
@@ -72,12 +71,12 @@ public interface SceneLinkRelateDAO extends IService<SceneLinkRelateEntity> {
     List<SceneLinkRelateResult> getList(SceneLinkRelateParam param);
 
     /**
-     * 根据业务流程id, 获得关联业务活动ids
+     * 根据业务流程ids, 获得关联业务活动ids
      *
-     * @param businessFlowId 业务流程ids
+     * @param businessFlowIds 业务流程ids
      * @return 业务活动ids
      */
-    List<Long> listBusinessLinkIdsByBusinessFlowId(Long businessFlowId);
+    List<Long> listBusinessLinkIdsByBusinessFlowIds(List<Long> businessFlowIds);
 
     /**
      * 业务id, frontUuidKey, flowId

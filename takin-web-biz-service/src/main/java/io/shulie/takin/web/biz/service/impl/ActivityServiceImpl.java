@@ -83,6 +83,7 @@ import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.LinkManageTableMapper;
 import io.shulie.takin.web.data.model.mysql.ActivityNodeState;
@@ -114,6 +115,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 public class ActivityServiceImpl implements ActivityService {
+
+    @Autowired
+    private SceneLinkRelateDAO sceneLinkRelateDAO;
 
     @Autowired
     RedisClientUtils redisClientUtils;
@@ -149,20 +153,7 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public List<BusinessApplicationListResponse> listApplicationByBusinessActivityIds(List<Long> businessActivityIds,
         String applicationName) {
-        // 根据业务活动获得应用名称
-        Set<String> applicationNames = businessActivityIds.stream().map(businessActivityId -> {
-            List<String> businessApplicationNames =
-                applicationBusinessActivityService.processAppNameByBusinessActiveId(businessActivityId);
-
-            // 搜索
-            if (CollectionUtil.isNotEmpty(businessApplicationNames) && StrUtil.isNotBlank(applicationName)) {
-                businessApplicationNames.removeIf(
-                    businessApplicationName -> !businessApplicationName.contains(applicationName));
-            }
-
-            return businessApplicationNames;
-
-        }).filter(CollectionUtil::isNotEmpty).flatMap(Collection::stream).collect(Collectors.toSet());
+        Set<String> applicationNames = this.listApplicationNameByActivityIds(businessActivityIds, applicationName);
         if (applicationNames.isEmpty()) {
             return Collections.emptyList();
         }
@@ -186,14 +177,30 @@ public class ActivityServiceImpl implements ActivityService {
     public PagingList<BusinessApplicationListResponse> listApplicationByBusinessFlowIds(
         ListApplicationRequest listApplicationRequest) {
         // 根据业务流程ids获取业务活动ids
+        List<Long> activityIds = sceneLinkRelateDAO.listBusinessLinkIdsByBusinessFlowIds(
+            listApplicationRequest.getBusinessFlowIds());
 
         // 根据业务活动ids获取应用名称
+        Set<String> applicationNames = this.listApplicationNameByActivityIds(activityIds, listApplicationRequest.getApplicationName());
+        if (applicationNames.isEmpty()) {
+            return PagingList.empty();
+        }
 
         // 列表
-
+        // 根据应用名称, 用户id, 获得应用列表
+        PagingList<ApplicationListResult> applicationPage = applicationDAO.pageByApplicationNamesAndUserId(
+            applicationNames, WebPluginUtils.traceUserId(), listApplicationRequest);
+        if (applicationPage.getTotal() == 0) {
+            return PagingList.empty();
+        }
 
         // 转换
-        return null;
+        return PagingList.of(applicationPage.getList().stream().map(application -> {
+            BusinessApplicationListResponse response = new BusinessApplicationListResponse();
+            response.setApplicationId(application.getApplicationId().toString());
+            response.setApplicationName(application.getApplicationName());
+            return response;
+        }).collect(Collectors.toList()), applicationPage.getTotal());
     }
 
     @Override
@@ -1028,6 +1035,30 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     /**
+     * 根据业务活动ids, 获得应用名称列表
+     *
+     * @param businessActivityIds 业务活动ids
+     * @param applicationName 应用名称
+     * @return 应用名称列表
+     */
+    private Set<String> listApplicationNameByActivityIds(List<Long> businessActivityIds, String applicationName) {
+        // 根据业务活动获得应用名称
+        return businessActivityIds.stream().map(businessActivityId -> {
+            List<String> businessApplicationNames =
+                applicationBusinessActivityService.processAppNameByBusinessActiveId(businessActivityId);
+
+            // 搜索
+            if (CollectionUtil.isNotEmpty(businessApplicationNames) && StrUtil.isNotBlank(applicationName)) {
+                businessApplicationNames.removeIf(
+                    businessApplicationName -> !businessApplicationName.contains(applicationName));
+            }
+
+            return businessApplicationNames;
+
+        }).filter(CollectionUtil::isNotEmpty).flatMap(Collection::stream).collect(Collectors.toSet());
+    }
+
+    /**
      * TODO 变更逻辑后续看如何设计
      *
      * @param oldActivity 旧业务活动
@@ -1037,4 +1068,6 @@ public class ActivityServiceImpl implements ActivityService {
     private boolean isChange(ActivityResult oldActivity, ActivityUpdateRequest newActivity) {
         return false;
     }
+
 }
+

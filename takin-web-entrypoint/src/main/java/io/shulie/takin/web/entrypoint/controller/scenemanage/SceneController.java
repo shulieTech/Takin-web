@@ -44,6 +44,8 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
@@ -54,6 +56,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -88,6 +91,9 @@ public class SceneController {
     @Resource
     SceneSchedulerTaskService sceneSchedulerTaskService;
 
+    @Autowired
+    private SceneExcludedApplicationDAO excludedApplicationDAO;
+
     /**
      * 创建压测场景 - 新
      *
@@ -112,6 +118,11 @@ public class SceneController {
                 setExecuteTime(request.getBasicInfo().getExecuteTime());
             }});
         }
+
+        // 忽略检测的应用
+        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation()
+            .getExcludedApplicationIds());
+
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneId));
@@ -149,6 +160,11 @@ public class SceneController {
                 setExecuteTime(request.getBasicInfo().getExecuteTime());
             }});
         }
+
+        // 忽略检测的应用
+        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation()
+            .getExcludedApplicationIds());
+
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
         if (null != request.getBasicInfo()) {
@@ -270,6 +286,10 @@ public class SceneController {
             copyDetailResult.getBasicInfo().setIsScheduler(true);
             copyDetailResult.getBasicInfo().setExecuteTime(DateUtil.formatDateTime(sceneSchedulerResponse.getExecuteTime()));
         }
+
+        // 添加排除的应用
+        List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
+        copyDetailResult.getDataValidation().setExcludedApplicationIds(DataTransformUtil.list2list(excludedApplicationIds, String.class));
         return ResponseResult.success(copyDetailResult);
     }
 

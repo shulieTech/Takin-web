@@ -15,6 +15,7 @@ import io.shulie.takin.web.biz.cache.agentimpl.ApplicationPluginConfigAgentCache
 import io.shulie.takin.web.biz.cache.agentimpl.GuardConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.PressureSwitchConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.RemoteCallConfigAgentCache;
+import io.shulie.takin.web.biz.cache.agentimpl.RemoteCallConfigOldAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.ShadowConsumerConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.ShadowDbConfigAgentCache;
 import io.shulie.takin.web.biz.cache.agentimpl.ShadowEsServerConfigAgentCache;
@@ -56,6 +57,9 @@ public class AgentConfigCacheManager {
     private RemoteCallConfigAgentCache remoteCallConfigAgentCache;
 
     @Autowired
+    private RemoteCallConfigOldAgentCache remoteCallConfigOldAgentCache;
+
+    @Autowired
     private PressureSwitchConfigAgentCache pressureSwitchConfigCache;
 
     @Autowired
@@ -87,6 +91,7 @@ public class AgentConfigCacheManager {
         shadowJobConfigCache.evict(appName);
         guardConfigCache.evict(appName);
         remoteCallConfigAgentCache.evict(appName);
+        remoteCallConfigOldAgentCache.evict(appName);
         pressureSwitchConfigCache.evict(appName);
         shadowConsumerConfigAgentCache.evict(appName);
         shadowEsServerConfigAgentCache.evict(appName);
@@ -94,6 +99,7 @@ public class AgentConfigCacheManager {
         shadowHbaseConfigAgentCache.evict(appName);
         shadowHbaseConfigAgentCache.evict(appName);
         applicationPluginConfigAgentCache.evict(appName);
+
     }
     /**
      * 获得白名单开关的缓存结果
@@ -146,6 +152,7 @@ public class AgentConfigCacheManager {
      */
     public void evictRecallCalls(String appName) {
         remoteCallConfigAgentCache.evict(appName);
+        remoteCallConfigOldAgentCache.evict(appName);
     }
 
     /**
@@ -244,6 +251,15 @@ public class AgentConfigCacheManager {
     }
 
     /**
+     * 老版白名单  老版agent 白名单接口 适配新版远程调用接口
+     * @param appName
+     * @return
+     */
+    public AgentRemoteCallVO getOldWhiteQuery(String appName) {
+        return remoteCallConfigOldAgentCache.get(appName);
+    }
+
+    /**
      * 获取影子消费者配置业务逻辑
      *
      * @param redisKey 应用名称:configKey
@@ -252,5 +268,7 @@ public class AgentConfigCacheManager {
     public String getAppPluginConfig(String redisKey) {
         return applicationPluginConfigAgentCache.get(redisKey);
     }
+
+
 }
 

@@ -104,10 +104,18 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
 
     /**
      * 根据应用名和租户查询
-     *
+     * @param appName
      * @return
      */
     List<AppRemoteCallResult> selectByAppNameUnderCurrentUser(String appName);
+
+    /**
+     * 根据应用名和租户查询
+     * @param appName
+     * @param type
+     * @return
+     */
+    List<AppRemoteCallResult> selectByAppNameAndType(String appName,Integer type);
 
     /**
      * 更新应用名

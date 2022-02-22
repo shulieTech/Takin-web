@@ -59,6 +59,11 @@ public class AgentUrls {
     public static final String TAKIN_REMOTE_CALL_URL = "/remote/call/configs/pull";
 
     /**
+     * 拉取老版白名单
+     */
+    public static final String TAKIN_WBMNT_QUERY_URL = "/confcenter/wbmnt/query/{tenantAppKey}";
+
+    /**
      * 上报应用的接口
      */
     public static final String APP_INSERT_URL = "/application/center/app/info";

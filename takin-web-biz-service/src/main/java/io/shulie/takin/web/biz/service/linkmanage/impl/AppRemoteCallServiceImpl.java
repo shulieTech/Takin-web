@@ -501,6 +501,27 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         return callVO;
     }
 
+    @Override
+    public AgentRemoteCallVO oldAgentSelect(String appName) {
+        AgentRemoteCallVO callVO = new AgentRemoteCallVO();
+        List<AppRemoteCallResult> results = appRemoteCallDAO.selectByAppNameAndType(appName,AppRemoteCallConfigEnum.OPEN_WHITELIST.getType());
+        List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
+
+        callVO.setWLists(results.stream().map(result -> {
+            RemoteCall remoteCall = new RemoteCall();
+            remoteCall.setINTERFACE_NAME(result.getInterfaceName());
+            remoteCall.setTYPE(getSelectVO(result.getInterfaceType(), voList).getLabel().toLowerCase());
+            remoteCall.setIsGlobal(true);
+            remoteCall.setAppNames(Lists.newArrayList());
+            return remoteCall;
+        }).collect(Collectors.toList()));
+        // 老版黑名单
+        callVO.setBLists(getBlackList());
+        // 新版黑名单
+        callVO.setNewBlists(getNewBlackList(appName));
+        return callVO;
+    }
+
     private List<Blacklist> getBlackList() {
         TenantCommonExt commonExt = WebPluginUtils.traceTenantCommonExt();
         List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList(commonExt.getTenantId(), commonExt.getEnvCode());

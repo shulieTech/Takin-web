@@ -25,7 +25,6 @@ import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.query.whitelist.AgentWhiteList;
 import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -237,9 +236,9 @@ public class WhiteListFileService {
             }
         }
         // 新版黑名单
-        List<AgentBlacklistVO> newBlacklist = getNewBlackList(ext);
+        List<AgentBlacklistVO> newBlacklist = this.getNewBlackList(ext);
         // 老版黑名单
-        List<Map<String, Object>> blackList = getBlackList(ext);
+        List<Map<String, Object>> blackList = this.getBlackList(ext);
 
         resultMap.put("wLists", wListsResult);
         resultMap.put("bLists", blackList);

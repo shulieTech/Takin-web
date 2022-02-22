@@ -80,10 +80,17 @@ public interface AppRemoteCallService {
 
     /**
      * agent获取数据
-     *
+     * @param appName
      * @return
      */
     AgentRemoteCallVO agentSelect(String appName);
+
+    /**
+     * 老版agent 白名单接口 适配新版远程调用接口
+     * @param appName
+     * @return
+     */
+    AgentRemoteCallVO oldAgentSelect(String appName);
 
     /**
      * 同步amdb数据

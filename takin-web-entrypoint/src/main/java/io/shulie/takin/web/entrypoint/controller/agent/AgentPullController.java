@@ -2,8 +2,6 @@ package io.shulie.takin.web.entrypoint.controller.agent;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.config.WhiteListSwitchDTO;
@@ -28,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -133,4 +132,17 @@ public class AgentPullController {
         @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName) {
         return ResponseResult.success(agentConfigCacheManager.getRemoteCallConfig(appName));
     }
+
+    /**
+     * 老版白名单  老版agent 白名单接口 适配新版远程调用接口
+     * @return
+     */
+    @ApiOperation(value = "老版白名单接口-适配新版远程调用接口")
+    @RequestMapping(value = AgentUrls.TAKIN_WBMNT_QUERY_URL, method = RequestMethod.GET)
+    public ResponseResult<AgentRemoteCallVO> getOldWhiteQuery(
+        @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName, @PathVariable String tenantAppKey) {
+        return ResponseResult.success(agentConfigCacheManager.getOldWhiteQuery(appName));
+    }
+
+
 }

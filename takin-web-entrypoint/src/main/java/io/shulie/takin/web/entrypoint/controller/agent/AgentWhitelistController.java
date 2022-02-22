@@ -35,7 +35,7 @@ public class AgentWhitelistController {
     })
     @GetMapping("isUpdate")
     public Integer getOperate(@RequestParam String tenantAppKey, @RequestParam String sign) {
-        return agentService.whitelistIsUpdate(tenantAppKey, sign);
+        return 0;
     }
 
 }

@@ -25,7 +25,6 @@ import com.pamirs.takin.entity.domain.entity.TBList;
 import com.pamirs.takin.entity.domain.query.whitelist.AgentWhiteList;
 import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
 import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
@@ -47,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -58,12 +58,14 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class WhiteListFileService {
 
+    @Value("${spring.config.whiteListPath}")
+    private String whiteListPath;
+
     @Autowired
     private TBListMntDao tbListMntDao;
 
     @Resource
     private WhiteListDAO whiteListDAO;
-
 
     @Autowired
     private BlackListDAO blackListDAO;
@@ -101,13 +103,23 @@ public class WhiteListFileService {
         });
     }
 
+    /**
+     * 白名单文件名称
+     *
+     * @param tenantAppKey 租户key
+     * @return 白名单文件名称
+     */
+    public String getWhitelistFilename(String tenantAppKey) {
+        return String.format("%s%s", whiteListPath, tenantAppKey);
+    }
+
     public void writeWhiteListFile() {
         writeWhiteListFile(null);
     }
 
     public void writeWhiteListFile(TenantCommonExt ext) {
         try {
-            if (ext == null){
+            if (ext == null) {
                 ext = WebPluginUtils.traceTenantCommonExt();
             }
             String whiteListPath = ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_WHITE_LIST_CONFIG_PATH);
@@ -248,7 +260,8 @@ public class WhiteListFileService {
     }
 
     private List<Map<String, Object>> getBlackList(TenantCommonExt tenantCommonExt) {
-        List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList(tenantCommonExt.getTenantId(), tenantCommonExt.getEnvCode());
+        List<TBList> tbLists = tbListMntDao.getAllEnabledBlockList(tenantCommonExt.getTenantId(),
+            tenantCommonExt.getEnvCode());
         if (CollectionUtils.isEmpty(tbLists)) {
             return Lists.newArrayList();
         }

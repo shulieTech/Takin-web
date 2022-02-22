@@ -721,13 +721,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 redisTemplate.opsForList().leftPush(key, JSONObject.toJSONString(param));
                 redisTemplate.opsForList().trim(key,0,19);
             }
-            //3：应用异常
-            // applicationDAO.updateApplicationStatus(applicationMnt.getApplicationId(),
-            //         AppAccessStatusEnum.EXCEPTION.getCode());
-        } else {
-            // 应用正常
-            // applicationDAO.updateApplicationStatus(applicationMnt.getApplicationId(),
-            //         AppAccessStatusEnum.NORMAL.getCode());
         }
     }
 

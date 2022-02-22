@@ -996,8 +996,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         // 获得业务活动列表
         // 1 1的话, 直接查业务活动表, 2的话, 查web的scene表, 然后
         if (ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE.equals(refType)) {
-            return sceneLinkRelateDAO.listBusinessLinkIdsByBusinessFlowId(
-                Long.valueOf(scriptDeploy.getRefValue()));
+            return sceneLinkRelateDAO.listBusinessLinkIdsByBusinessFlowIds(
+                Arrays.asList(Long.valueOf(scriptDeploy.getRefValue())));
         }
 
         return Collections.singletonList(Long.valueOf(scriptDeploy.getRefValue()));

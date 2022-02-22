@@ -689,10 +689,34 @@ public class ApplicationDAOImpl
 
     @Override
     public List<ApplicationListResult> listByApplicationNamesAndUserId(Collection<String> applicationNames, Long userId) {
-        return DataTransformUtil.list2list(applicationMntMapper.selectList(this.getLambdaQueryWrapper()
+        return DataTransformUtil.list2list(applicationMntMapper.selectList(this.getWrapperByApplicationNamesAndUserId(applicationNames, userId)), ApplicationListResult.class);
+    }
+
+    /**
+     * 根据应用名称, 用户id, 获得sql条件
+     *
+     * @param applicationNames 应用名称
+     * @param userId 用户id
+     * @return 应用列表
+     */
+    private LambdaQueryWrapper<ApplicationMntEntity> getWrapperByApplicationNamesAndUserId(Collection<String> applicationNames, Long userId) {
+        return this.getLambdaQueryWrapper()
             .select(ApplicationMntEntity::getApplicationId, ApplicationMntEntity::getApplicationName)
             .in(ApplicationMntEntity::getApplicationName, applicationNames)
-            .eq(ApplicationMntEntity::getUserId, userId)), ApplicationListResult.class);
+            .eq(ApplicationMntEntity::getUserId, userId);
+    }
+
+    @Override
+    public PagingList<ApplicationListResult> pageByApplicationNamesAndUserId(Collection<String> applicationNames,
+        Long userId, PageBaseDTO pageBaseDTO) {
+        Page<ApplicationMntEntity> page = applicationMntMapper.selectPage(this.setPage(pageBaseDTO),
+            this.getWrapperByApplicationNamesAndUserId(applicationNames, userId));
+        if (page.getTotal() == 0) {
+            return PagingList.empty();
+        }
+
+        return PagingList.of(DataTransformUtil.list2list(page.getRecords(), ApplicationListResult.class),
+            page.getTotal());
     }
 
 }

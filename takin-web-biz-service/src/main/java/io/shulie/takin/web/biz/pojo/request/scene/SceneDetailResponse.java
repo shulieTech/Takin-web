@@ -1,9 +1,13 @@
 package io.shulie.takin.web.biz.pojo.request.scene;
 
+import java.util.List;
+
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 场景详情响应
@@ -18,6 +22,11 @@ public class SceneDetailResponse extends io.shulie.takin.cloud.sdk.model.respons
      */
     private BasicInfo basicInfo;
 
+    /**
+     * 验证信息
+     */
+    private DataValidation dataValidation;
+
     @Data
     @EqualsAndHashCode(callSuper = true)
     public static class BasicInfo extends io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest.BasicInfo {
@@ -26,4 +35,12 @@ public class SceneDetailResponse extends io.shulie.takin.cloud.sdk.model.respons
         @ApiModelProperty(name = "executeTime", value = "定时执行时间")
         private String executeTime;
     }
+
+    @Getter
+    @Setter
+    public static class DataValidation extends SceneRequest.DataValidation {
+        @ApiModelProperty("排除的应用id列表")
+        private List<String> excludedApplicationIds;
+    }
+
 }

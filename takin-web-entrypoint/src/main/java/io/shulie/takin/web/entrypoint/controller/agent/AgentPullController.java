@@ -2,6 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.agent;
 
 import java.util.List;
 
+import com.pamirs.takin.common.ResponseOk;
 import com.pamirs.takin.common.constant.ConfigConstants;
 import com.pamirs.takin.entity.domain.dto.ApplicationSwitchStatusDTO;
 import com.pamirs.takin.entity.domain.dto.config.WhiteListSwitchDTO;
@@ -139,9 +140,9 @@ public class AgentPullController {
      */
     @ApiOperation(value = "老版白名单接口-适配新版远程调用接口")
     @RequestMapping(value = AgentUrls.TAKIN_WBMNT_QUERY_URL, method = RequestMethod.GET)
-    public ResponseResult<AgentRemoteCallVO> getOldWhiteQuery(
+    public ResponseOk.ResponseResult  getOldWhiteQuery(
         @ApiParam(name = "appName", value = "应用名") @RequestParam("appName") String appName, @PathVariable String tenantAppKey) {
-        return ResponseResult.success(agentConfigCacheManager.getOldWhiteQuery(appName));
+        return ResponseOk.result(agentConfigCacheManager.getOldWhiteQuery(appName));
     }
 
 

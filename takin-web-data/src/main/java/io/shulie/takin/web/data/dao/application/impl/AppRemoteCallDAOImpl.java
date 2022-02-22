@@ -231,7 +231,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         lambdaQueryWrapper.eq(AppRemoteCallEntity::getTenantId, WebPluginUtils.traceTenantId());
         lambdaQueryWrapper.eq(AppRemoteCallEntity::getEnvCode, WebPluginUtils.traceEnvCode());
         lambdaQueryWrapper.eq(AppRemoteCallEntity::getAppName, appName);
-        lambdaQueryWrapper.ne(AppRemoteCallEntity::getType, type);
+        lambdaQueryWrapper.eq(AppRemoteCallEntity::getType, type);
         lambdaQueryWrapper.eq(AppRemoteCallEntity::getIsDeleted,false);
         List<AppRemoteCallEntity> entities = this.list(lambdaQueryWrapper);
         return getAppRemoteCallResults(entities);

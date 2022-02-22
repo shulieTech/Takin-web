@@ -73,6 +73,7 @@ import io.shulie.takin.web.common.vo.agent.AgentBlacklistVO;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO.Blacklist;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO.RemoteCall;
+import io.shulie.takin.web.common.vo.agent.OldAgentRemoteCallVO;
 import io.shulie.takin.web.common.vo.application.AppRemoteCallListVO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallTemplateMappingDAO;
@@ -502,13 +503,13 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
     }
 
     @Override
-    public AgentRemoteCallVO oldAgentSelect(String appName) {
-        AgentRemoteCallVO callVO = new AgentRemoteCallVO();
+    public OldAgentRemoteCallVO oldAgentSelect(String appName) {
+        OldAgentRemoteCallVO callVO = new OldAgentRemoteCallVO();
         List<AppRemoteCallResult> results = appRemoteCallDAO.selectByAppNameAndType(appName,AppRemoteCallConfigEnum.OPEN_WHITELIST.getType());
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
 
         callVO.setWLists(results.stream().map(result -> {
-            RemoteCall remoteCall = new RemoteCall();
+            OldAgentRemoteCallVO.RemoteCall remoteCall = new OldAgentRemoteCallVO.RemoteCall();
             remoteCall.setINTERFACE_NAME(result.getInterfaceName());
             remoteCall.setTYPE(getSelectVO(result.getInterfaceType(), voList).getLabel().toLowerCase());
             remoteCall.setIsGlobal(true);

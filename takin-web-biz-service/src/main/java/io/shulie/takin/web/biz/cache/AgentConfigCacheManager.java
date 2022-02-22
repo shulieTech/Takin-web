@@ -26,6 +26,7 @@ import io.shulie.takin.web.biz.cache.agentimpl.ShadowServerConfigAgentCache;
 import io.shulie.takin.web.biz.pojo.output.application.ShadowServerConfigurationOutput;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
+import io.shulie.takin.web.common.vo.agent.OldAgentRemoteCallVO;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -255,7 +256,7 @@ public class AgentConfigCacheManager {
      * @param appName
      * @return
      */
-    public AgentRemoteCallVO getOldWhiteQuery(String appName) {
+    public OldAgentRemoteCallVO getOldWhiteQuery(String appName) {
         return remoteCallConfigOldAgentCache.get(appName);
     }
 

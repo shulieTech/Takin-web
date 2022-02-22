@@ -27,10 +27,11 @@ import io.shulie.takin.web.biz.pojo.input.application.AppRemoteCallUpdateInput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutput;
 import io.shulie.takin.web.biz.pojo.output.application.AppRemoteCallOutputV2;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallBatchUpdateV2Request;
+import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallCreateV2Request;
 import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallUpdateV2Request;
-import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigRequest;
 import io.shulie.takin.web.common.vo.agent.AgentRemoteCallVO;
+import io.shulie.takin.web.common.vo.agent.OldAgentRemoteCallVO;
 import io.shulie.takin.web.common.vo.application.AppRemoteCallListVO;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 
@@ -90,7 +91,7 @@ public interface AppRemoteCallService {
      * @param appName
      * @return
      */
-    AgentRemoteCallVO oldAgentSelect(String appName);
+    OldAgentRemoteCallVO oldAgentSelect(String appName);
 
     /**
      * 同步amdb数据

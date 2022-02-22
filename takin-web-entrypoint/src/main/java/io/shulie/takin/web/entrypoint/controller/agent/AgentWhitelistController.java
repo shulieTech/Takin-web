@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2021/10/26 2:42 下午
  */
 @RestController
-@RequestMapping(AgentUrls.PREFIX_URL + "/whitelist/")
+@RequestMapping(AgentUrls.PREFIX + "/whitelist/")
 @Api(tags = "接口: agent 白名单相关")
 public class AgentWhitelistController {
 

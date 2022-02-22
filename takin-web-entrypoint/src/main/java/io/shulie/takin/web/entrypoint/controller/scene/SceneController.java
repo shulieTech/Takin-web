@@ -7,7 +7,6 @@ import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
 import io.shulie.takin.web.biz.pojo.request.scene.ListSceneForSelectRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.ListSceneReportRequest;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
-import io.shulie.takin.web.common.constant.APIUrls;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 场景(Probe)表控制层
+ * 场景表控制层
  *
  * @author liuchuan
  * @since 2021-06-03 13:40:57

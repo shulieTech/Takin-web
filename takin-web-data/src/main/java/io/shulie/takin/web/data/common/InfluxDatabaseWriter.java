@@ -7,7 +7,8 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import io.shulie.takin.utils.json.JsonHelper;
+import cn.hutool.core.util.StrUtil;
+import io.shulie.takin.web.common.util.JsonUtil;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -144,9 +145,12 @@ public class InfluxDatabaseWriter {
      *
      * @return
      */
-    public <T> List<T> query(String command, Class<T> clazz) {
-        List<QueryResult.Result> results = select(command);
+    public <T> List<T> query(String command, Class<T> clazz, String database) {
+        if (StrUtil.isBlank(database)) {
+            database = this.database;
+        }
 
+        List<QueryResult.Result> results = getInfluxDatabase().query(new Query(command, database)).getResults();
         JSONArray resultArr = new JSONArray();
         for (QueryResult.Result result : results) {
             List<QueryResult.Series> series = result.getSeries();
@@ -164,6 +168,7 @@ public class InfluxDatabaseWriter {
                     if (tags != null && tags.keySet().size() > 0) {
                         tags.forEach(jsonData::put);
                     }
+
                     for (int j = 0; j < colums.size(); ++j) {
                         jsonData.put(colums.get(j), value.get(j));
                     }
@@ -171,7 +176,20 @@ public class InfluxDatabaseWriter {
                 }
             }
         }
-        return JsonHelper.json2List(resultArr.toJSONString(), clazz);
+        return JsonUtil.json2List(resultArr.toJSONString(), clazz);
+    }
+
+    /**
+     * 封装查询结果
+     *
+     * @param command
+     * @param clazz
+     * @param <T>
+     *
+     * @return
+     */
+    public <T> List<T> query(String command, Class<T> clazz) {
+        return this.query(command, clazz, null);
     }
 
     public <T> T querySingle(String command, Class<T> clazz) {

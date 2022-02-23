@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.annocation.SignAllow;
+import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
@@ -19,6 +21,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_app_remote_call")
+@SignAllow
 public class AppRemoteCallEntity extends UserBaseEntity {
     /**
      * 主键
@@ -30,18 +33,21 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 接口名称
      */
     @TableField(value = "interface_name")
+    @SignField(order = 1)
     private String interfaceName;
 
     /**
      * 接口类型
      */
     @TableField(value = "interface_type")
+    @SignField(order = 2)
     private Integer interfaceType;
 
     /**
      * 服务端应用名
      */
     @TableField(value = "SERVER_APP_NAME")
+    @SignField(order = 3)
     private String serverAppName;
 
     /**
@@ -54,6 +60,7 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 应用name
      */
     @TableField(value = "APP_NAME")
+    @SignField(order = 4)
     private String appName;
 
     /**
@@ -112,5 +119,8 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      */
     @TableField(value = "md5")
     private String md5;
+
+    @TableField(value = "sign")
+    private String sign;
 
 }

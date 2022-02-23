@@ -92,6 +92,8 @@ public class AppRemoteCallVO extends AuthQueryResponseCommonExt {
      */
     private String md5;
 
+    private String sign;
+
     public AppRemoteCallVO() {}
 
     public AppRemoteCallVO(Date gmtCreate, Date gmtModified) {

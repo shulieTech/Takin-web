@@ -38,7 +38,7 @@ public interface TakinTenantLineHandler extends TenantLineHandler {
     // * @return
     // */
     //default String getUserIdColumn() {
-    //    return TenantField.FIELD_USER_ID.getColumnName();
+    //    return SignField.FIELD_USER_ID.getColumnName();
     //}
 
     /**

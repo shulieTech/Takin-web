@@ -48,4 +48,6 @@ public class AppRemoteCallOutputV2 extends UserCommonExt {
 
     @ApiModelProperty(name = "remark", value = "备注")
     private String remark;
+
+    private String sign;
 }

@@ -157,6 +157,8 @@ public enum ExceptionCode implements ExceptionReadable {
 
     AGENT_INTERFACE_ERROR("0000_0103_0002",""),
 
+    SIGN_ERROR("0000_0104_0001","签名验证失败"),
+
     ;
 
     private final String errorCode;

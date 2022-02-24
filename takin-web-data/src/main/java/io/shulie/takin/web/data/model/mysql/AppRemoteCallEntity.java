@@ -2,12 +2,14 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.shulie.takin.web.data.annocation.SignAllow;
+import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.annocation.SignField;
+import io.shulie.takin.web.data.model.mysql.base.SignBaseEntity;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
@@ -21,8 +23,8 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_app_remote_call")
-@SignAllow
-public class AppRemoteCallEntity extends UserBaseEntity {
+@EnableSign
+public class AppRemoteCallEntity extends SignBaseEntity {
     /**
      * 主键
      */
@@ -120,7 +122,6 @@ public class AppRemoteCallEntity extends UserBaseEntity {
     @TableField(value = "md5")
     private String md5;
 
-    @TableField(value = "sign")
-    private String sign;
+
 
 }

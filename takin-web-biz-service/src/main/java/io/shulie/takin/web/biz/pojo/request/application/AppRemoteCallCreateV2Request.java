@@ -65,4 +65,6 @@ public class AppRemoteCallCreateV2Request extends UserCommonExt {
     @ApiModelProperty(name = "isManual", value = "是否手动录入")
     private Boolean isManual = true;
 
+    private String sign;
+
 }

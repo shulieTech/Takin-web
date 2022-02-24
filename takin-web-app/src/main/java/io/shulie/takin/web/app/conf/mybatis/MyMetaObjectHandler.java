@@ -1,10 +1,18 @@
 package io.shulie.takin.web.app.conf.mybatis;
 
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.crypto.SignUtil;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import io.shulie.takin.web.data.annocation.EnableSign;
+import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author fanxx
@@ -14,7 +22,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class MyMetaObjectHandler implements MetaObjectHandler {
 
+    public static String privateKey = "1545345";
 
+    public static String SIGN_FIELD = "sign";
 
     @Override
     public void insertFill(MetaObject metaObject) {
@@ -34,6 +44,27 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
             this.strictInsertFill(metaObject, TenantField.FIELD_TENANT_APP_KEY.getFieldName(), String.class, WebPluginUtils.traceTenantAppKey());
         }
 
+        Class<?> clz = metaObject.getOriginalObject().getClass();
+        if(clz.isAnnotationPresent(EnableSign.class)){
+            log.info("【sign operation】insert SQL 开始执行签名计算");
+            Map<String,Integer> signKeyOrderMap = new HashMap<>();
+            Map<String,String> signKeyValueMap = new HashMap<>();
+            Field[] fields = clz.getDeclaredFields();
+            for(Field field : fields){
+                if(field.isAnnotationPresent(SignField.class)){
+                    SignField signField = field.getAnnotation(SignField.class);
+                    signKeyOrderMap.put(field.getName(),signField.order());
+                }
+            }
+            signKeyOrderMap = MapUtil.sortByValue(signKeyOrderMap, false);
+            for (String key : signKeyOrderMap.keySet()) {
+                String value =String.valueOf(getFieldValByName(key, metaObject));
+                signKeyValueMap.put(key,value);
+            }
+
+            String signStr = SignUtil.signParamsMd5(signKeyValueMap, privateKey);
+            this.strictInsertFill(metaObject, SIGN_FIELD, String.class,signStr);
+        }
 
     }
 

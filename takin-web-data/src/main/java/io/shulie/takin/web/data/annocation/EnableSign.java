@@ -9,9 +9,10 @@ import java.lang.annotation.Target;
 /**
  * @Author: 南风
  * @Date: 2022/2/22 5:30 下午
+ *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-public @interface SignAllow {
+public @interface EnableSign {
 }

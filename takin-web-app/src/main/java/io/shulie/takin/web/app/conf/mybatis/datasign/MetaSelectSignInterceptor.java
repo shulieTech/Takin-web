@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Field;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import java.util.Properties;
 @Slf4j
 public class MetaSelectSignInterceptor implements Interceptor {
 
+    //todo demo写死，后面替换
     public static String privateKey = "1545345";
 
     public static String SIGN_FIELD = "sign";
@@ -43,13 +45,21 @@ public class MetaSelectSignInterceptor implements Interceptor {
         List result = (List) invocation.proceed();
         if (result.isEmpty()) return result;
         Class<?> clz = result.get(0).getClass();
+
         if (clz.isAnnotationPresent(EnableSign.class)) {
             log.info("【sign operation】select SQL 开始执行签名计算");
             Map<String, Integer> keySortMap = new HashMap<>();
             Map<String, String> signMap = new HashMap<>();
             Field[] fields = clz.getDeclaredFields();
+
+            //获取签名基类
+            Class<?> signClz = clz.getSuperclass();
+            Field[] declaredFields = signClz.getDeclaredFields();
+            List<Field> fieldsList = new ArrayList<Field>();
+            fieldsList.addAll(Arrays.asList(fields));
+            fieldsList.addAll(Arrays.asList(declaredFields));
             for(int i=0;i< result.size();i++){
-                for (Field field : fields) {
+                for (Field field : fieldsList) {
                     if (!field.isAccessible()) {
                         field.setAccessible(true);
                     }
@@ -81,6 +91,7 @@ public class MetaSelectSignInterceptor implements Interceptor {
 
             if(!sign){
                 log.info("【sign operation】select SQL 签名验证失败");
+                //todo 签名失败了，客户页面看不到数据没法修改，我们也不知道正确的数据；就算知道了也得经过签名计算才能刷数据，这要怎么搞 太难了
                 return new ArrayList<>();
             }
             log.info("【sign operation】select SQL 签名验证成功");

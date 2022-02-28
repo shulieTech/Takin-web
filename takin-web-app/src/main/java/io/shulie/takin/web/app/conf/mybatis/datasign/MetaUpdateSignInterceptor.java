@@ -68,6 +68,12 @@ public class MetaUpdateSignInterceptor implements Interceptor {
 
         if (isSign) {
             log.info("【sign operation】update SQL 开始执行签名计算");
+            //解析sql,拿出更新范围的数据,进行验签
+            //todo 是检测到验签失败的直接中断，还是全部检测完保存结果返回？性能怎么平衡
+
+
+
+
             //计算签名
             Map<String, String> signMap = buildSign(et, clz);
             Update update = (Update) CCJSqlParserUtil.parse(boundSql.getSql());

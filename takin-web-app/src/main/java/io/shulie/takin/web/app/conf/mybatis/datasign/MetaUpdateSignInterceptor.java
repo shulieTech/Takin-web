@@ -1,23 +1,25 @@
 package io.shulie.takin.web.app.conf.mybatis.datasign;
 
+import cn.hutool.core.lang.copier.Copier;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.crypto.SignUtil;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
+import com.google.common.base.Strings;
 import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.annocation.SignField;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.update.Update;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.mapping.ParameterMapping;
+import org.apache.ibatis.mapping.ParameterMode;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
@@ -26,11 +28,19 @@ import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.TypeException;
+import org.apache.ibatis.type.TypeHandler;
+import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -68,30 +78,43 @@ public class MetaUpdateSignInterceptor implements Interceptor {
 
         if (isSign) {
             log.info("【sign operation】update SQL 开始执行签名计算");
-            //解析sql,拿出更新范围的数据,进行验签
-            //todo 是检测到验签失败的直接中断，还是全部检测完保存结果返回？性能怎么平衡
+            //解析sql,拿出where条件，构建查询sql获取更新范围的数据,进行验签
+            String sql = boundSql.getSql();
 
+            Object parameterObject = statementHandler.getParameterHandler().getParameterObject();
+            TypeHandlerRegistry typeHandlerRegistry = mappedStatement.getConfiguration().getTypeHandlerRegistry();
+            Configuration configuration = mappedStatement.getConfiguration();
 
+            List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+            if (parameterMappings != null) {
+                for (ParameterMapping parameterMapping : parameterMappings) {
+                    if (parameterMapping.getMode() != ParameterMode.OUT) {
+                        Object value;
+                        String propertyName = parameterMapping.getProperty();
+                        if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
+                            value = boundSql.getAdditionalParameter(propertyName);
+                        } else if (parameterObject == null) {
+                            value = null;
+                        } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
+                            value = parameterObject;
+                        } else {
+                            metaObject = configuration.newMetaObject(parameterObject);
+                            value = metaObject.getValue(propertyName);
+                        }
+                        sql = sql.replaceFirst("\\?", "'" + value + "'");
 
+                    }
+                }
+            }
+            System.out.println("------sql-----:"+sql);
 
             //计算签名
-            Map<String, String> signMap = buildSign(et, clz);
-            Update update = (Update) CCJSqlParserUtil.parse(boundSql.getSql());
+            String newSign = buildSign(et, clz);
             //替换新签名
-            Field pluginVersion = clz.getDeclaredField(SIGN_FIELD);
-            pluginVersion.setAccessible(true);
-            pluginVersion.set(et, signMap.get("newSign"));
+            Field sign = clz.getDeclaredField(SIGN_FIELD);
+            sign.setAccessible(true);
+            sign.set(et, newSign);
 
-            // 拼接签名查询条件
-            Expression where = update.getWhere();
-            EqualsTo signCondition = new EqualsTo();
-            signCondition.setLeftExpression(new Column(SIGN_FIELD));
-            signCondition.setRightExpression(new StringValue(signMap.get("oldSign")));
-            AndExpression andExpression = new AndExpression(signCondition, where);
-            update.setWhere(andExpression);
-
-            log.debug("【sign operation】组装后的sql【{}】 ", update);
-            metaObject.setValue("delegate.boundSql.sql", update.toString());
             return invocation.proceed();
         }
         return invocation.proceed();
@@ -113,8 +136,7 @@ public class MetaUpdateSignInterceptor implements Interceptor {
     }
 
 
-    private Map<String, String> buildSign(Object et, Class<?> clz) throws IllegalAccessException {
-        String oldSign = "";
+    private String buildSign(Object et, Class<?> clz) throws IllegalAccessException {
         Map<String, Integer> keySortMap = new HashMap<>();
         Map<String, String> signMap = new HashMap<>();
         Field[] fields = clz.getDeclaredFields();
@@ -130,19 +152,13 @@ public class MetaUpdateSignInterceptor implements Interceptor {
 
             }
 
-            if (SIGN_FIELD.equals(field.getName())) {
-                oldSign = field.get(et).toString();
-            }
         }
         keySortMap = MapUtil.sortByValue(keySortMap, false);
         Map<String, String> signMapSort = new HashMap<>();
         for (String param : keySortMap.keySet()) {
             signMapSort.put(param, signMap.get(param));
         }
-        Map<String, String> map = new HashMap<>();
-        map.put("newSign", SignUtil.signParamsMd5(signMapSort, privateKey));
-        map.put("oldSign", oldSign);
 
-        return map;
+        return  SignUtil.signParamsMd5(signMapSort, privateKey);
     }
 }

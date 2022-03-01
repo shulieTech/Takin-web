@@ -20,12 +20,13 @@
     <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
     <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
     <result column="manual_tag" jdbcType="TINYINT" property="manualTag" />
+    <result column="sign" jdbcType="VARCHAR" property="sign" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     ID, interface_name, interface_type, server_appname, APPLICATION_ID, APP_NAME, `type`, 
     mock_response_time, mock_return_value, TENANT_ID,ENV_CODE, USER_ID, IS_DELETED, gmt_create,
-    gmt_modified,manual_tag
+    gmt_modified,manual_tag,sign
   </sql>
     <update id="updateWithOutTenant">
         update t_app_remote_call

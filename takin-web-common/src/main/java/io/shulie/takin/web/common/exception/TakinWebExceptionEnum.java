@@ -170,6 +170,12 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 应用标签
      */
     APPLICATION_TAG_CREATE_ERROR("1800-"+ErrorConstant.ADD_ERROR,"应用标签创建异常"),
+
+    /**
+     * 数据签名
+     */
+    DATA_SIGN_ERROR("19800-"+ErrorConstant.DATA_SIGN_ERROR,"数据签名异常"),
+
     ;
     private final String errorCode;
 

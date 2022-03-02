@@ -1339,19 +1339,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             .map(scriptManageDeployResult -> {
                 ScriptManageDeployResponse scriptManageDeployResponse = new ScriptManageDeployResponse();
                 BeanUtils.copyProperties(scriptManageDeployResult, scriptManageDeployResponse);
-
-                if (CollectionUtils.isNotEmpty(allowUpdateUserIdList)) {
-                    scriptManageDeployResponse.setCanEdit(
-                        allowUpdateUserIdList.contains(scriptManageDeployResult.getUserId()));
-                }
-                if (CollectionUtils.isNotEmpty(allowDeleteUserIdList)) {
-                    scriptManageDeployResponse.setCanRemove(
-                        allowDeleteUserIdList.contains(scriptManageDeployResult.getUserId()));
-                }
-                if (CollectionUtils.isNotEmpty(allowDownloadUserIdList)) {
-                    scriptManageDeployResponse.setCanDownload(
-                        allowDownloadUserIdList.contains(scriptManageDeployResult.getUserId()));
-                }
+                WebPluginUtils.fillQueryResponse(scriptManageDeployResponse);
                 //负责人id
                 scriptManageDeployResponse.setUserId(scriptManageDeployResult.getUserId());
                 //负责人名称

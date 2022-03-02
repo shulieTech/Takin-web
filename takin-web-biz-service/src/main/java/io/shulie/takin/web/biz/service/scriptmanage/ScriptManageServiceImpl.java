@@ -1339,13 +1339,13 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             .map(scriptManageDeployResult -> {
                 ScriptManageDeployResponse scriptManageDeployResponse = new ScriptManageDeployResponse();
                 BeanUtils.copyProperties(scriptManageDeployResult, scriptManageDeployResponse);
-                WebPluginUtils.fillQueryResponse(scriptManageDeployResponse);
                 //负责人id
-                scriptManageDeployResponse.setUserId(scriptManageDeployResult.getUserId());
-                //负责人名称
+                scriptManageDeployResponse.setUserId(scriptManageDeployResult.getUserId());  //负责人名称
                 String userName = Optional.ofNullable(userMap.get(scriptManageDeployResult.getUserId()))
                     .map(UserExt::getName).orElse("");
                 scriptManageDeployResponse.setUserName(userName);
+
+                WebPluginUtils.fillQueryResponse(scriptManageDeployResponse);
 
                 //m1版本不能在脚本管理页面进行编辑和删除操作
                 if (ScriptMVersionEnum.isM_1(scriptManageDeployResult.getMVersion())) {

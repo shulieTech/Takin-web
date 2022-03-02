@@ -7,7 +7,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import com.alibaba.fastjson.JSON;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
@@ -171,6 +170,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     }
 
     private boolean updateTaskEndTime(Long reportId, TenantCommonExt commonExt, Date endTime) {
+        if (endTime == null) {
+            return false;
+        }
         LocalDateTime endTimeLocal = null;
         try {
             endTimeLocal = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();

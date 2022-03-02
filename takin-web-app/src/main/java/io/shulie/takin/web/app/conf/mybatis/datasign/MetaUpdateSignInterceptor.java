@@ -1,20 +1,16 @@
 package io.shulie.takin.web.app.conf.mybatis.datasign;
 
-import cn.hutool.core.lang.copier.Copier;
-import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.crypto.SignUtil;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
-import com.google.common.base.Strings;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.annocation.EnableSign;
-import io.shulie.takin.web.data.annocation.SignField;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.update.Update;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -29,20 +25,22 @@ import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.type.JdbcType;
-import org.apache.ibatis.type.TypeException;
-import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.TypeHandlerRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * @Author: 南风
@@ -50,13 +48,24 @@ import java.util.Properties;
  */
 @Intercepts({@Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})})
 @Component
-@AllArgsConstructor
 @Slf4j
 public class MetaUpdateSignInterceptor implements Interceptor {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public MetaUpdateSignInterceptor() {
+    }
+
+    public MetaUpdateSignInterceptor(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
 
     public static String privateKey = "1545345";
 
     public static String SIGN_FIELD = "sign";
+
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -80,18 +89,16 @@ public class MetaUpdateSignInterceptor implements Interceptor {
             log.info("【sign operation】update SQL 开始执行签名计算");
             //解析sql,拿出where条件，构建查询sql获取更新范围的数据,进行验签
             String sql = boundSql.getSql();
-
             Object parameterObject = statementHandler.getParameterHandler().getParameterObject();
             TypeHandlerRegistry typeHandlerRegistry = mappedStatement.getConfiguration().getTypeHandlerRegistry();
             Configuration configuration = mappedStatement.getConfiguration();
-
             List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
             if (parameterMappings != null) {
                 for (ParameterMapping parameterMapping : parameterMappings) {
                     if (parameterMapping.getMode() != ParameterMode.OUT) {
                         Object value;
                         String propertyName = parameterMapping.getProperty();
-                        if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
+                        if (boundSql.hasAdditionalParameter(propertyName)) {
                             value = boundSql.getAdditionalParameter(propertyName);
                         } else if (parameterObject == null) {
                             value = null;
@@ -101,19 +108,48 @@ public class MetaUpdateSignInterceptor implements Interceptor {
                             metaObject = configuration.newMetaObject(parameterObject);
                             value = metaObject.getValue(propertyName);
                         }
-                        sql = sql.replaceFirst("\\?", "'" + value + "'");
 
+                        //类型处理
+                        if (value instanceof LocalDateTime) {
+                            value = DateUtil.format((LocalDateTime) value, DatePattern.NORM_DATETIME_PATTERN);
+                        } else if (value instanceof Date) {
+                            value = DateUtil.format((Date) value, DatePattern.NORM_DATETIME_PATTERN);
+                        } else if (value instanceof Boolean) {
+                            value = Boolean.FALSE.equals(value) ? "0" : "1";
+                        }
+                        sql = sql.replaceFirst("\\?", "'" + value + "'");
                     }
                 }
             }
-            System.out.println("------sql-----:"+sql);
+
+            Update update = (Update) CCJSqlParserUtil.parse(boundSql.getSql());
+            String tableName = update.getTable().getName();
+            String whereStr = " where" + sql.split("WHERE")[1];
+
+            String querySql = "select * from " + tableName + whereStr;
+
+            //开始校验签名
+            List<?> result = jdbcTemplate.query(querySql, new BeanPropertyRowMapper<>(clz));
+
+            if (result.isEmpty()) {
+                log.error("【sign operation fail】update SQL 签名验证失败,查不到需要更新的数据");
+                return new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "update SQL 签名验证失败");
+            }
+
+            boolean sign = SignCommonUtil.checkSignData(clz, result);
+
+            if (!sign) {
+                log.error("【sign operation fail】update before select SQL 签名验证失败");
+                return new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "update SQL 签名验证失败");
+            }
+            log.info("【sign operation】update before select SQL 签名验证通过");
 
             //计算签名
             String newSign = buildSign(et, clz);
             //替换新签名
-            Field sign = clz.getDeclaredField(SIGN_FIELD);
-            sign.setAccessible(true);
-            sign.set(et, newSign);
+            Field field = clz.getDeclaredField(SIGN_FIELD);
+            field.setAccessible(true);
+            field.set(et, newSign);
 
             return invocation.proceed();
         }
@@ -137,28 +173,16 @@ public class MetaUpdateSignInterceptor implements Interceptor {
 
 
     private String buildSign(Object et, Class<?> clz) throws IllegalAccessException {
-        Map<String, Integer> keySortMap = new HashMap<>();
-        Map<String, String> signMap = new HashMap<>();
-        Field[] fields = clz.getDeclaredFields();
-        for (Field field : fields) {
-            if (!field.isAccessible()) {
-                field.setAccessible(true);
+
+        List<Field> signFields = SignCommonUtil.getSignFields(clz);
+        Map<String, String> signMap = new LinkedHashMap<>();
+        for (Field field : signFields) {
+            if(SIGN_FIELD.equals(field.getName())){
+                continue;
             }
-
-            if (field.isAnnotationPresent(SignField.class)) {
-                SignField signField = field.getAnnotation(SignField.class);
-                keySortMap.put(field.getName(), signField.order());
-                signMap.put(field.getName(), field.get(et).toString());
-
-            }
-
+            signMap.put(field.getName(), field.get(et).toString());
         }
-        keySortMap = MapUtil.sortByValue(keySortMap, false);
-        Map<String, String> signMapSort = new HashMap<>();
-        for (String param : keySortMap.keySet()) {
-            signMapSort.put(param, signMap.get(param));
-        }
-
-        return  SignUtil.signParamsMd5(signMapSort, privateKey);
+        return SignUtil.signParamsMd5(signMap, privateKey);
     }
+
 }

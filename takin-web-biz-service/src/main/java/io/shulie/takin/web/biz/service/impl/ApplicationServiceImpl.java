@@ -1989,9 +1989,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         Assert.isTrue(StringUtils.isNotBlank(statusString), "状态 必须填写!");
         createRequest.setStatus(Integer.valueOf(statusString));
 
-        // 配置 判断
+        // 配置 判断 无需判断了 by 无涯 2022.3.2
         String config = ds.get(index++);
-        Assert.isTrue(StringUtils.isNotBlank(config), "xml 必须填写!");
+        //Assert.isTrue(StringUtils.isNotBlank(config), "xml 必须填写!");
         createRequest.setConfig(config);
 
         // 新版agent 影子库, 不需要判断, 其他都判断

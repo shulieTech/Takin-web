@@ -418,4 +418,15 @@ public interface ApplicationDAO {
      */
     List<ApplicationListResult> listByApplicationNamesAndUserId(Collection<String> applicationNames, Long userId);
 
+    /**
+     * 根据应用名称, 用户id, 获得应用列表分页
+     *
+     * @param applicationNames 应用名称
+     * @param userId 用户id
+     * @param pageBaseDTO 分页参数
+     * @return 应用列表
+     */
+    PagingList<ApplicationListResult> pageByApplicationNamesAndUserId(Collection<String> applicationNames, Long userId,
+        PageBaseDTO pageBaseDTO);
+
 }

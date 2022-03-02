@@ -427,6 +427,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         scriptCheckAndUpdateReq.setUploadPath(scriptFileUploadPath);
         scriptCheckAndUpdateReq.setAbsolutePath(true);
         scriptCheckAndUpdateReq.setUpdate(true);
+        if (mVersion != null) {scriptCheckAndUpdateReq.setVersion(mVersion);}
         List<BusinessLinkResult> businessActivityList = getBusinessActivity(refType, refValue);
         if (CollectionUtils.isEmpty(businessActivityList)) {
             dto.setErrmsg("找不到关联的业务活动！");

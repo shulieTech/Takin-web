@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -335,7 +336,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             callBackToWriteBalance(cloudResponse, scriptDebug.getId());
 
             log.info("调试 --> 异步启动循环查询启动成功, 压测完成!");
-            fastDebugThreadPool.execute(this.checkPressureStatus(scriptDebug));
+            tenantCommonExt.setSource(ContextSourceEnum.JOB_SCRIPT_DEBUG.getCode());
+            fastDebugThreadPool.execute(this.checkPressureStatus(scriptDebug,tenantCommonExt));
 
             log.info("调试 --> 接口完成!");
             return response;
@@ -887,8 +889,10 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @param scriptDebug 调试记录
      * @return 可运行
      */
-    private Runnable checkPressureStatus(ScriptDebugEntity scriptDebug) {
+    private Runnable checkPressureStatus(ScriptDebugEntity scriptDebug,TenantCommonExt tenantCommonExt) {
         return () -> {
+            // 赋值上下文
+            WebPluginUtils.setTraceTenantContext(tenantCommonExt);
             // 准备更新的调试记录
             ScriptDebugEntity newScriptDebug = new ScriptDebugEntity();
             newScriptDebug.setId(scriptDebug.getId());
@@ -962,6 +966,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             dto.setPageSize(1);
             dto.setStartTime(newScriptDebug.getCreatedAt().getTime());
             dto.setEndTime(System.currentTimeMillis());
+            log.info("查询amdb测试数据记录时间：报告id:{}-{}",dto.getTaskId(), com.pamirs.takin.common.util.http.DateUtil.getYYYYMMDDHHMMSS(new Date()));
             PagingList<EntryTraceInfoDTO> entryTracePage = traceClient.listEntryTraceByTaskIdV2(dto);
 
             if (entryTracePage.getTotal() != 0) {

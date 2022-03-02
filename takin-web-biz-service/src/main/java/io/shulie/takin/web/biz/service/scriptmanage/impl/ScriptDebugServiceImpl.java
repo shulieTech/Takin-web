@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -961,13 +960,22 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         // 查询记录, 有非200的记录, 就是调试失败
         try {
             QueryLinkDetailDTO dto = new QueryLinkDetailDTO();
-            dto.setResultTypeInt(LinkRequestResultTypeEnum.FAILED.getCode());
             dto.setTaskId(newScriptDebug.getCloudReportId().toString());
             dto.setPageSize(1);
             dto.setStartTime(newScriptDebug.getCreatedAt().getTime());
             dto.setEndTime(System.currentTimeMillis());
-            log.info("查询amdb测试数据记录时间：报告id:{}-{}",dto.getTaskId(), com.pamirs.takin.common.util.http.DateUtil.getYYYYMMDDHHMMSS(new Date()));
-            PagingList<EntryTraceInfoDTO> entryTracePage = traceClient.listEntryTraceByTaskIdV2(dto);
+            // 定时查询 查询1分钟 如果过程中数据达到调试条数，则直接跳出
+            long startTime = System.currentTimeMillis();
+            PagingList<EntryTraceInfoDTO> entryTracePage;
+            do {
+                dto.setEndTime(System.currentTimeMillis());
+                entryTracePage = traceClient.listEntryTraceByTaskIdV2(dto);
+                TimeUnit.SECONDS.sleep(5);
+            }while (entryTracePage.getTotal() != newScriptDebug.getRequestNum() && System.currentTimeMillis() - startTime <= 60*1000);
+            // 重新再查一次
+            dto.setResultTypeInt(LinkRequestResultTypeEnum.FAILED.getCode());
+            dto.setEndTime(System.currentTimeMillis());
+            entryTracePage = traceClient.listEntryTraceByTaskIdV2(dto);
 
             if (entryTracePage.getTotal() != 0) {
                 newScriptDebug.setFailedType(ScriptDebugFailedTypeEnum.FAILED_RESPONSE.getCode());

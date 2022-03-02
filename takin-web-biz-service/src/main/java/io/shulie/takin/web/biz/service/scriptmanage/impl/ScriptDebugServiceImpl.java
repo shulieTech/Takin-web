@@ -895,6 +895,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             // 准备更新的调试记录
             ScriptDebugEntity newScriptDebug = new ScriptDebugEntity();
             newScriptDebug.setId(scriptDebug.getId());
+            newScriptDebug.setRequestNum(scriptDebug.getRequestNum());
 
             try {
                 // 脚本变动更新

@@ -28,7 +28,6 @@ import io.shulie.takin.web.data.param.report.ReportApplicationSummaryCreateParam
 import io.shulie.takin.web.data.param.report.ReportMachineUpdateParam;
 import io.shulie.takin.web.data.param.report.ReportSummaryCreateParam;
 import io.shulie.takin.web.data.result.baseserver.BaseServerResult;
-import io.shulie.takin.web.data.result.report.ReportSummaryResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -131,12 +130,8 @@ public class SummaryService {
         reportSummary.setApplicationCount(appCount);
         reportSummary.setMachineCount(totalCount);
         reportSummary.setWarnCount(warnCount);
-
-        ReportSummaryResult summary = reportSummaryDAO.selectOneByReportId(reportId);
-        // 查询
-        if(summary != null) {
-            reportSummary.setId(summary.getId());
-        }
+        reportSummary.setTenantId(WebPluginUtils.traceTenantId());
+        reportSummary.setEnvCode(WebPluginUtils.traceEnvCode());
         reportSummaryDAO.insertOrUpdate(reportSummary);
         log.debug("Build ReportSummary Success, reportId={}", reportId);
     }

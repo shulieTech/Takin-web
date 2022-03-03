@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.param.report;
 
+import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @date 2021/11/23 09:57
  */
 @Data
-public class ReportSummaryCreateParam {
+public class ReportSummaryCreateParam extends TenantCommonExt {
     private Long id;
     private Long reportId;
 

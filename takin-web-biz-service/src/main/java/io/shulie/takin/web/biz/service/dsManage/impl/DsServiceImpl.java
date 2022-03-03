@@ -486,7 +486,11 @@ public class DsServiceImpl implements DsService {
             if (list.contains(oldResponse.getData().getDbType())) {
                 Integer dsType = oldResponse.getData().getDsType();
                 AbstractDsService abstractDsService = getAbstractDsService(dsType);
-                return Response.success(abstractDsService.convertDetailByTemplate(id));
+                ShadowDetailResponse response = abstractDsService.convertDetailByTemplate(id);
+                if (response != null) {
+                    response.setIsManual(1);
+                }
+                return Response.success(response);
             }
             return Response.success(this.dsQueryDetail(id, false));
         }

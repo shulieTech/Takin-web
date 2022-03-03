@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -119,6 +118,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setUrl(convert.getUrl());
         shadowDetailResponse.setUsername(StringUtils.isBlank(convert.getUserName())?"-":convert.getUserName());
         shadowDetailResponse.setPassword(convert.getPwd());
+        shadowDetailResponse.setIsManual(convert.getSource());
 
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
         if (StringUtils.isBlank(convert.getShaDowFileExtedn())

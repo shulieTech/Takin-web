@@ -954,8 +954,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         List<ExcelSheetVO<?>> sheets = new ArrayList<>();
 
-        // 影子库/表
-        sheets.add(this.getShadowSheet(applicationId));
+        // // 影子库/表 由于不支持新版影子库表导入导出
+        // sheets.add(this.getShadowSheet(applicationId));
 
         // 出口挡板配置
         sheets.add(this.getLinkGuardSheet(applicationId));
@@ -1547,8 +1547,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR, "应用不存在!");
         }
 
-        // 保存 影子库/表
-        this.saveDsFromImport(applicationId, configMap.get(AppConfigSheetEnum.DADABASE.getDesc()));
+        // 保存 影子库/表 不支持新版影子库表的导入导出
+        // this.saveDsFromImport(applicationId, configMap.get(AppConfigSheetEnum.DADABASE.getDesc()));
 
         // 保存挡板
         if (configMap.containsKey(AppConfigSheetEnum.GUARD.getDesc())) {

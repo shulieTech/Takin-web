@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSON;
 
@@ -13,9 +14,11 @@ import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
+import io.shulie.takin.web.biz.utils.job.JobRedisUtils;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.common.util.CommonUtil;
@@ -82,6 +85,9 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private DistributedLock distributedLock;
+
     @Override
     public Boolean finishReport(Long reportId, TenantCommonExt commonExt) {
         try {
@@ -95,6 +101,13 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             final ReportDetailOutput report = reportService.getReportById(reportId);
             if (report == null) {
                 return false;
+            }
+            // 加锁
+            // 分布式锁
+            String lockKey = JobRedisUtils.getRedisJobReport(WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),report.getId());
+            if (!distributedLock.checkLock(lockKey)) {
+                // 收集数据 单独线程收集
+                collectDataThreadPool.execute(collectData(reportId,commonExt,lockKey));
             }
             // 压测结束才锁报告
             Integer status = report.getTaskStatus();
@@ -127,9 +140,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                     log.error("锁定运行报告数据失败, reportId={}", reportId);
                 }
                 log.info("finish report，total data  Running Report :{}", reportId);
-
-                // 收集数据 单独线程收集
-                collectDataThreadPool.execute(collectData(reportId,commonExt));
 
                 // 停止报告
                 Boolean webResponse = reportService.finishReport(reportId);
@@ -205,10 +215,14 @@ public class ReportTaskServiceImpl implements ReportTaskService {
      * @param reportId 报告 id
      * @return 可运行
      */
-    private synchronized Runnable collectData(Long reportId, TenantCommonExt commonExt) {
+    private synchronized Runnable collectData(Long reportId, TenantCommonExt commonExt,String lockKey) {
         return () -> {
-            WebPluginUtils.setTraceTenantContext(commonExt);
+            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+            if(!tryLock) {
+                return;
+            }
             try {
+                WebPluginUtils.setTraceTenantContext(commonExt);
                 // 检查风险机器
                 problemAnalysisService.checkRisk(reportId);
             } catch (Exception e) {
@@ -226,6 +240,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             } catch (Exception e) {
                 log.error("reportId = {}: total report ,errorMsg= {}", reportId, e.getMessage());
             }
+            distributedLock.unLockSafely(lockKey);
         };
     }
 

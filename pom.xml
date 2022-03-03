@@ -52,7 +52,7 @@
         <!-- 3rd libs version -->
         <commons-lang3.version>3.5</commons-lang3.version>
         <spring.boot.version>2.3.0.RELEASE</spring.boot.version>
-        <mysql-jdbc.version>5.1.25</mysql-jdbc.version>
+        <mysql-jdbc.version>8.0.26</mysql-jdbc.version>
         <druid.version>1.1.22</druid.version>
         <common-pools2.version>2.3</common-pools2.version>
         <quartz.version>2.3.0</quartz.version>

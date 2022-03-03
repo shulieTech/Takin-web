@@ -210,6 +210,16 @@ public class SummaryService {
         if (CollectionUtils.isEmpty(vos)) {
             return null;
         }
+        // metric数据为空兼容
+        if(CollectionUtils.isEmpty(metrics)) {
+            // 展示原数据
+            metrics = vos.stream().map(result -> {
+                Metrices metrices = new Metrices();
+                metrices.setTime(result.getTime().toEpochMilli());
+                metrices.setAvgTps(0D);
+                return metrices;
+            }).collect(Collectors.toList());
+        }
         List<BaseServerResult> bases = Lists.newArrayList(vos);
         int currentIndex = 0;
         List<TpsTarget> targets = Lists.newArrayList();

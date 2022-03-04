@@ -703,14 +703,14 @@ public class ApplicationDAOImpl
         return this.getLambdaQueryWrapper()
             .select(ApplicationMntEntity::getApplicationId, ApplicationMntEntity::getApplicationName)
             .in(ApplicationMntEntity::getApplicationName, applicationNames)
-            .eq(ApplicationMntEntity::getUserId, userId);
+            .eq(userId != null, ApplicationMntEntity::getUserId, userId);
     }
 
     @Override
     public PagingList<ApplicationListResult> pageByApplicationNamesAndUserId(Collection<String> applicationNames,
-        Long userId, PageBaseDTO pageBaseDTO) {
+        PageBaseDTO pageBaseDTO) {
         Page<ApplicationMntEntity> page = applicationMntMapper.selectPage(this.setPage(pageBaseDTO),
-            this.getWrapperByApplicationNamesAndUserId(applicationNames, userId));
+            this.getWrapperByApplicationNamesAndUserId(applicationNames, null));
         if (page.getTotal() == 0) {
             return PagingList.empty();
         }

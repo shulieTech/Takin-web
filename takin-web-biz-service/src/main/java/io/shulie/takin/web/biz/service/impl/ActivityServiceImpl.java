@@ -189,7 +189,7 @@ public class ActivityServiceImpl implements ActivityService {
         // 列表
         // 根据应用名称, 用户id, 获得应用列表
         PagingList<ApplicationListResult> applicationPage = applicationDAO.pageByApplicationNamesAndUserId(
-            applicationNames, WebPluginUtils.traceUserId(), listApplicationRequest);
+            applicationNames, listApplicationRequest);
         if (applicationPage.getTotal() == 0) {
             return PagingList.empty();
         }

@@ -6,7 +6,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import lombok.Data;
 import org.springframework.validation.annotation.Validated;
 
@@ -36,7 +35,7 @@ public class ShadowConsumersOperateInput {
         private String topicGroup;
 
         @NotNull
-        private ShadowMqConsumerType type;
+        private String type;
 
     }
 }

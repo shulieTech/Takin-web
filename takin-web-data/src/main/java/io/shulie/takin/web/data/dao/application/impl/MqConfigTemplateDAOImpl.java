@@ -1,22 +1,22 @@
 package io.shulie.takin.web.data.dao.application.impl;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.web.data.dao.application.MqConfigTemplateDAO;
 import io.shulie.takin.web.data.mapper.mysql.MqConfigTemplateMapper;
-import io.shulie.takin.web.data.model.mysql.CacheConfigTemplateEntity;
 import io.shulie.takin.web.data.model.mysql.MqConfigTemplateEntity;
-import io.shulie.takin.web.data.result.application.CacheConfigTemplateDetailResult;
 import io.shulie.takin.web.data.result.application.MqConfigTemplateDetailResult;
 import io.shulie.takin.web.data.util.MPUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * MQ配置模版表(MqConfigTemplate)表数据库 dao 层实现
@@ -63,6 +63,15 @@ public class MqConfigTemplateDAOImpl  extends ServiceImpl<MqConfigTemplateMapper
             return null;
         }
         return Convert.convert(MqConfigTemplateDetailResult.class,entity);
+    }
+
+    @Override
+    public Map<String, MqConfigTemplateEntity> selectToMapWithNameKey() {
+        LambdaQueryWrapper<MqConfigTemplateEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
+            .eq(MqConfigTemplateEntity::getStatus, 0)
+            .eq(MqConfigTemplateEntity::getIsDeleted, 0);
+        return list(lambdaQueryWrapper).stream().collect(
+            Collectors.toMap(MqConfigTemplateEntity::getEngName, Function.identity(), (v1, v2) -> v1));
     }
 }
 

@@ -26,7 +26,6 @@ import io.shulie.takin.web.biz.pojo.output.application.ShadowConsumerOutput;
 import io.shulie.takin.web.biz.service.ShadowConsumerService;
 import io.shulie.takin.web.biz.service.config.ConfigService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
-import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.biz.service.linkmanage.WhiteListService;
 import io.shulie.takin.web.biz.service.simplify.ShadowJobConfigService;
@@ -39,7 +38,6 @@ import io.shulie.takin.web.config.entity.ShadowDB;
 import io.shulie.takin.web.config.entity.ShadowJob;
 import io.shulie.takin.web.config.enums.AllowListType;
 import io.shulie.takin.web.config.enums.BlockListType;
-import io.shulie.takin.web.config.enums.ShadowConsumerType;
 import io.shulie.takin.web.config.enums.ShadowDSType;
 import io.shulie.takin.web.config.enums.ShadowJobType;
 import io.shulie.takin.web.config.sync.api.AllowListSyncService;
@@ -50,6 +48,7 @@ import io.shulie.takin.web.config.sync.api.ShadowDbSyncService;
 import io.shulie.takin.web.config.sync.api.ShadowJobSyncService;
 import io.shulie.takin.web.config.sync.api.SwitchSyncService;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.application.MqConfigTemplateDAO;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import lombok.extern.slf4j.Slf4j;
@@ -100,6 +99,9 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
 
     @Autowired
     private ShadowConsumerService shadowConsumerService;
+
+    @Resource
+    private MqConfigTemplateDAO mqConfigTemplateDAO;
 
     @PostConstruct
     public void init() {
@@ -286,7 +288,7 @@ public class ConfigSyncServiceImpl implements ConfigSyncService {
                 shadowConsumer.setGroup(split[1]);
                 shadowConsumer.setTopic(split[0]);
                 shadowConsumer.setId(consumer.getId());
-                shadowConsumer.setType(ShadowConsumerType.of(consumer.getType().name()));
+                shadowConsumer.setType(consumer.getType());
                 return shadowConsumer;
             }).collect(Collectors.toList());
     }

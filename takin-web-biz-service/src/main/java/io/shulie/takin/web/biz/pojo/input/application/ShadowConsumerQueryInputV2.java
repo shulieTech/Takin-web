@@ -1,8 +1,6 @@
 package io.shulie.takin.web.biz.pojo.input.application;
 
 import io.shulie.takin.common.beans.page.PagingDevice;
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;

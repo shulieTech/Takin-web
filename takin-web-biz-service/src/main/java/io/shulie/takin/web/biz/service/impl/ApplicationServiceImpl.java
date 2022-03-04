@@ -104,7 +104,6 @@ import io.shulie.takin.web.common.enums.application.AppAccessStatusEnum;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.enums.excel.BooleanEnum;
 import io.shulie.takin.web.common.enums.probe.ApplicationNodeProbeOperateEnum;
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
@@ -2153,7 +2152,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return shadowMqConsumers.stream().map(response -> {
             ShadowConsumerExcelVO model = new ShadowConsumerExcelVO();
             model.setTopicGroup(response.getTopicGroup());
-            model.setType(ShadowMqConsumerType.of(response.getType()).name());
+            model.setType(response.getType());
             model.setStatus(response.getStatus());
             return model;
         }).collect(Collectors.toList());

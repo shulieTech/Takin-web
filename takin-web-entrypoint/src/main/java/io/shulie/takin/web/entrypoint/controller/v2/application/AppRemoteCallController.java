@@ -24,7 +24,6 @@ import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -89,7 +88,7 @@ public class AppRemoteCallController {
         OperationLogContextHolder.addVars(Vars.APPLICATION_ID, String.valueOf(request.getApplicationId()));
         OperationLogContextHolder.addVars(Vars.INTERFACE, request.getInterfaceName());
         OperationLogContextHolder.addVars(Vars.INTERFACE_TYPE, request.getInterfaceType());
-        OperationLogContextHolder.addVars(Vars.REMOTE_CALL_CONFIG, AppRemoteCallConfigEnum.getEnum(request.getType()).getConfigName());
+        OperationLogContextHolder.addVars(Vars.REMOTE_CALL_CONFIG, String.valueOf(request.getType()));
         appRemoteCallService.create(request);
         return new AppRemoteCallStringResponse("操作成功");
     }
@@ -108,7 +107,7 @@ public class AppRemoteCallController {
     public AppRemoteCallStringResponse update(@ApiParam(required=true) @Valid @RequestBody AppRemoteCallUpdateV2Request request) {
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.INTERFACE, request.getInterfaceName());
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.REMOTE_CALL_CONFIG, AppRemoteCallConfigEnum.getEnum(request.getType()).getConfigName());
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.REMOTE_CALL_CONFIG, String.valueOf(request.getType()));
         appRemoteCallService.updateV2(request);
         return new AppRemoteCallStringResponse("操作成功");
     }

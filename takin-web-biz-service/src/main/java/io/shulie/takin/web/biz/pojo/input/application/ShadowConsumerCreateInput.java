@@ -5,7 +5,6 @@ import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.web.common.annocation.Trimmed;
 import io.shulie.takin.web.common.annocation.Trimmed.TrimmerType;
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import lombok.Data;
 
 /**
@@ -20,7 +19,7 @@ public class ShadowConsumerCreateInput {
     private String topicGroup;
 
     @NotNull
-    private ShadowMqConsumerType type;
+    private String type;
 
     @NotNull
     private Long applicationId;

@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.cache;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,9 @@ import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastdebug.DebugHttp
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.fastdebug.DebugRequestTypeEnumMapping;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.remotecall.RemoteCallConfigEnumMapping;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
+import io.shulie.takin.web.data.dao.application.MqConfigTemplateDAO;
+import io.shulie.takin.web.data.dao.application.RemoteCallConfigDAO;
+import io.shulie.takin.web.data.result.application.MqConfigTemplateDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
@@ -48,6 +52,12 @@ public class DictionaryCache {
     private static final Map<String, List<EnumResult>> DICTIONARY_MAP = Maps.newHashMap();
     @Resource
     private TDictionaryDataMapper tDictionaryDataMapper;
+
+    @Resource
+    private RemoteCallConfigDAO remoteCallConfigDAO;
+
+    @Resource
+    private MqConfigTemplateDAO mqConfigTemplateDAO;
 
     public static EnumResult getObjectByParam(String key, Integer valueCode) {
         return getObjectByParam(key, String.valueOf(valueCode));
@@ -91,7 +101,6 @@ public class DictionaryCache {
         DICTIONARY_MAP.put("DEBUG_REQUEST_TYPE", DebugHttpTypeEnumMapping.neededEnumResults());
         DICTIONARY_MAP.put("DEBUG_HTTP_TYPE", DebugRequestTypeEnumMapping.neededEnumResults());
         // 远程调用
-        DICTIONARY_MAP.put("REMOTE_CALL_CONFIG_TYPE", RemoteCallConfigEnumMapping.neededEnumResults());
         //dicMap.put("REMOTE_CALL_TYPE", RemoteCallTypeEnumMapping.neededEnumResults());
 
         // agent快速接入
@@ -146,6 +155,7 @@ public class DictionaryCache {
     }
 
     public Map<String, List<EnumResult>> getDicMap(String key) {
+        alwaysRefresh();
         if (StringUtils.isEmpty(key)) {
             return DICTIONARY_MAP;
         } else {
@@ -155,4 +165,22 @@ public class DictionaryCache {
         }
     }
 
+    /**
+     * 一直使用最新数据
+     */
+    private void alwaysRefresh() {
+        DICTIONARY_MAP.put("REMOTE_CALL_CONFIG_TYPE", RemoteCallConfigEnumMapping.neededEnumResults(remoteCallConfigDAO.selectList()));
+        DICTIONARY_MAP.put("SHADOW_CONSUMER", neededEnumResults(mqConfigTemplateDAO.queryList()));
+    }
+
+    private List<EnumResult> neededEnumResults(List<MqConfigTemplateDetailResult> resultList) {
+        List<EnumResult> enumResults = new ArrayList<>();
+        resultList.forEach(entity -> {
+            EnumResult result = new EnumResult();
+            Long id = entity.getId();
+            result.label(entity.getName()).value(String.valueOf(id)).num(id.intValue());
+            enumResults.add(result);
+        });
+        return enumResults;
+    }
 }

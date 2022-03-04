@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.pojo.request.application;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import lombok.Data;
 
 /**
@@ -20,7 +19,7 @@ public class ShadowConsumerUpdateRequest {
     private String topicGroup;
 
     @NotNull
-    private ShadowMqConsumerType type;
+    private String type;
 
     @NotNull
     private Long applicationId;

@@ -2,6 +2,7 @@ package io.shulie.takin.web.data.dao.dictionary;
 
 import java.util.List;
 
+import com.pamirs.takin.entity.domain.entity.TDictionaryData;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
 
 /**

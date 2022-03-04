@@ -2,7 +2,6 @@ package io.shulie.takin.web.config.entity;
 
 import java.io.Serializable;
 
-import io.shulie.takin.web.config.enums.ShadowConsumerType;
 
 /**
  * @author shiyajian
@@ -14,7 +13,7 @@ public class ShadowConsumer implements Serializable {
 
     private Long id;
 
-    private ShadowConsumerType type;
+    private String type;
 
     private String group;
 
@@ -28,11 +27,11 @@ public class ShadowConsumer implements Serializable {
         this.id = id;
     }
 
-    public ShadowConsumerType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(ShadowConsumerType type) {
+    public void setType(String type) {
         this.type = type;
     }
 

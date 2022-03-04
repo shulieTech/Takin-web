@@ -8,8 +8,15 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.annocation.EnableSign;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.SignedExpression;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -33,6 +40,7 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +67,6 @@ public class MetaUpdateSignInterceptor implements Interceptor {
 
 
 
-    public static String SIGN_FIELD = "sign";
 
 
     @Override
@@ -100,8 +107,7 @@ public class MetaUpdateSignInterceptor implements Interceptor {
                         } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
                             value = parameterObject;
                         } else {
-                            metaObject = configuration.newMetaObject(parameterObject);
-                            value = metaObject.getValue(propertyName);
+                            value = configuration.newMetaObject(parameterObject).getValue(propertyName);
                         }
 
                         //类型处理
@@ -131,6 +137,11 @@ public class MetaUpdateSignInterceptor implements Interceptor {
                 return new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "update SQL 签名验证失败");
             }
 
+            if(result.size()>1){
+                log.error("【sign operation fail】update 结果集大于一条,不允许此类操作");
+                return new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "update SQL 签名验证失败");
+            }
+
             boolean sign = SignCommonUtil.checkSignData(clz, result);
 
             if (!sign) {
@@ -140,12 +151,14 @@ public class MetaUpdateSignInterceptor implements Interceptor {
             log.info("【sign operation】update before select SQL 签名验证通过");
 
             //计算签名
-            String newSign = SignCommonUtil.buildSign(et, clz);
-            //替换新签名
-            Field field = clz.getDeclaredField(SIGN_FIELD);
-            field.setAccessible(true);
-            field.set(et, newSign);
-
+            String newSign = SignCommonUtil.buildSign(et, clz,result);
+            UpdateSet updateSet = new UpdateSet();
+            EqualsTo signEquals = new EqualsTo();
+            signEquals.setLeftExpression(new Column(SignCommonUtil.SIGN_FIELD));
+            updateSet.add(new Column(SignCommonUtil.SIGN_FIELD),new StringValue(newSign));
+            update.addUpdateSet(updateSet);
+            log.debug("【sign operation】组装后的sql【{}】 ", update);
+            metaObject.setValue("delegate.boundSql.sql", update.toString());
             return invocation.proceed();
         }
         return invocation.proceed();

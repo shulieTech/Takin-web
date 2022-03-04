@@ -2,10 +2,13 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.annocation.EnableSign;
+import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
@@ -19,6 +22,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_app_remote_call")
+@EnableSign
 public class AppRemoteCallEntity extends UserBaseEntity {
     /**
      * 主键
@@ -30,12 +34,14 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 接口名称
      */
     @TableField(value = "interface_name")
+    @SignField(order = 1)
     private String interfaceName;
 
     /**
      * 接口类型
      */
     @TableField(value = "interface_type")
+    @SignField(order = 2)
     private Integer interfaceType;
 
     /**
@@ -54,6 +60,7 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 应用name
      */
     @TableField(value = "APP_NAME")
+    @SignField(order = 3)
     private String appName;
 
     /**
@@ -105,6 +112,7 @@ public class AppRemoteCallEntity extends UserBaseEntity {
     private String interfaceChildType;
 
     @TableField(value = "remark")
+    @SignField(order = 4)
     private String remark;
 
     /**
@@ -112,5 +120,8 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      */
     @TableField(value = "md5")
     private String md5;
+
+    @TableField(value = "sign",fill = FieldFill.INSERT)
+    private String sign;
 
 }

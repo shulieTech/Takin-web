@@ -992,7 +992,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         param.setInterfaceType(enumByDesc.getType());
         param.setInterfaceChildType(request.getInterfaceType());
         param.setMockReturnValue(request.getMockValue());
-        param.setRemark(request.getRemark());
+//        param.setRemark(request.getRemark());
         appRemoteCallDAO.update(param);
 
     }

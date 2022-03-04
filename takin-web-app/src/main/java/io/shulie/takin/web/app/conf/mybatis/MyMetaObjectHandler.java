@@ -2,15 +2,19 @@ package io.shulie.takin.web.app.conf.mybatis;
 
 import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import io.shulie.takin.utils.security.MD5Utils;
+import io.shulie.takin.web.app.conf.mybatis.datasign.SignCommonUtil;
 import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -21,10 +25,9 @@ import java.util.Map;
 @Component
 public class MyMetaObjectHandler implements MetaObjectHandler {
 
-    public static String privateKey = "1545345";
 
-    public static String SIGN_FIELD = "sign";
 
+    @SneakyThrows
     @Override
     public void insertFill(MetaObject metaObject) {
         // 判断下 环境字段是否存在
@@ -47,7 +50,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         if(clz.isAnnotationPresent(EnableSign.class)){
             log.info("【sign operation】insert SQL 开始执行签名计算");
             Map<String,Integer> signKeyOrderMap = new HashMap<>();
-            Map<String,String> signKeyValueMap = new HashMap<>();
+            Map<String,String> signKeyValueMap = new LinkedHashMap<>();
             Field[] fields = clz.getDeclaredFields();
             for(Field field : fields){
                 if(field.isAnnotationPresent(SignField.class)){
@@ -61,9 +64,8 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
                 signKeyValueMap.put(key,value);
             }
 
-//            String signStr = SignUtil.signParamsMd5(signKeyValueMap, privateKey);
-            String signStr = "";
-            this.strictInsertFill(metaObject, SIGN_FIELD, String.class,signStr);
+            String signStr  = MD5Utils.getInstance().getMD5(signKeyValueMap.toString());
+            this.strictInsertFill(metaObject, SignCommonUtil.SIGN_FIELD, String.class,signStr);
         }
 
     }

@@ -13,14 +13,12 @@ import java.util.Map;
  * @Date: 2021/8/30 4:16 下午
  */
 public interface TemplateParser {
-
-
     /**
      * 将影子方案信息按对应模版解析
      * @param dsType,protectArray
      * @return
      */
-    List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum);
+    List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum,ShadowTemplateSelect select);
 
 
     ShadowDetailResponse convertDetailByTemplate(Long recordId);

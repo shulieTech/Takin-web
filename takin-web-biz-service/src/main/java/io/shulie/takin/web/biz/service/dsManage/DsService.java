@@ -88,7 +88,8 @@ public interface DsService {
 
     Response dsUpdateConfig(ApplicationDsUpdateInputV2 updateRequestV2);
 
-    Response dsQueryConfigTemplate(String agentSourceType, Integer dsType, Boolean isNewData, String cacheType, String connectionPool);
+    Response dsQueryConfigTemplate(String agentSourceType, Integer dsType,
+                                   Boolean isNewData, String cacheType, String connectionPool,String applicationName);
 
     /**
      * 删除

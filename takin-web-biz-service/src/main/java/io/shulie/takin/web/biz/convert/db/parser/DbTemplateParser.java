@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +47,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class DbTemplateParser extends AbstractTemplateParser {
-
     @Autowired
     private ApplicationDsDbManageDAO dsDbManageDAO;
 
@@ -70,16 +70,20 @@ public class DbTemplateParser extends AbstractTemplateParser {
      * @return
      */
     @Override
-    public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum) {
+    public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum, ShadowTemplateSelect select) {
         List list = Lists.newArrayList();
 
         if (DsTypeEnum.SHADOW_TABLE.getCode().equals(dsType)) {
             list.add(new ListStyle());
         } else {
             List<String> attributeArray;
-            list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
+            if (select.isUserName()) {
+                list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
+            }
             list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
-            list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
+            if (select.isPassword()) {
+                list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
+            }
             if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
                 attributeArray = this.reflex();
             } else {
@@ -117,12 +121,12 @@ public class DbTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setMiddlewareType(Type.MiddleWareType.LINK_POOL.value());
         shadowDetailResponse.setDsType(convert.getDsType() == 100 ? DsTypeEnum.SHADOW_REDIS_SERVER.getCode() : convert.getDsType());
         shadowDetailResponse.setUrl(convert.getUrl());
-        shadowDetailResponse.setUsername(StringUtils.isBlank(convert.getUserName())?"-":convert.getUserName());
+        shadowDetailResponse.setUsername(StringUtils.isBlank(convert.getUserName()) ? "-" : convert.getUserName());
         shadowDetailResponse.setPassword(convert.getPwd());
 
         String shaDowFileExtedn = convert.getShaDowFileExtedn();
         if (StringUtils.isBlank(convert.getShaDowFileExtedn())
-                || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())){
+                || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
         }
 
@@ -236,8 +240,8 @@ public class DbTemplateParser extends AbstractTemplateParser {
     private List<String> getAttributeArray(Converter.TemplateConverter.TemplateEnum templateEnum) {
         List<String> attributeArray = Lists.newArrayList();
         try {
-            if(Objects.isNull(templateEnum) || Converter.TemplateConverter.TemplateEnum._default.equals(templateEnum)){
-                return  attributeArray;
+            if (Objects.isNull(templateEnum) || Converter.TemplateConverter.TemplateEnum._default.equals(templateEnum)) {
+                return attributeArray;
             }
             Object t = templateEnum.getaClass().newInstance();
             if (Template.class.isAssignableFrom(t

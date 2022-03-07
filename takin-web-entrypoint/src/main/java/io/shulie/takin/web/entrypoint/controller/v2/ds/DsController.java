@@ -104,7 +104,7 @@ public class DsController {
         return dsService.dsUpdateConfig(updateRequestV2);
     }
 
-    @ApiOperation("获取影子库表样式模版")
+    @ApiOperation(" 获取影子库表样式模版")
     @PostMapping("link/ds/config/template")
     @AuthVerification(
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,

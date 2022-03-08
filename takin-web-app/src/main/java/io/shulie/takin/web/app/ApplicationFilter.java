@@ -21,7 +21,7 @@ public class ApplicationFilter implements TypeFilter {
     @Override
     public boolean match(@NonNull MetadataReader metadataReader, @NonNull MetadataReaderFactory metadataReaderFactory) {
         // 调试用 - 忽略启动任务
-        if (2 > 1) {
+        if (1 > 1) {
             return metadataReader.getClassMetadata()
                 .getClassName().startsWith("io.shulie.takin.web.biz.job");
         }

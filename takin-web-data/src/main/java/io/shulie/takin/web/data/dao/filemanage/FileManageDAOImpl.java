@@ -73,6 +73,18 @@ public class FileManageDAOImpl implements FileManageDAO {
         return toFileManageResult(fileManageEntity);
     }
 
+    @Override
+    public List<FileManageEntity> getAllFile() {
+        LambdaQueryWrapper<FileManageEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(
+                FileManageEntity::getUploadPath,
+                FileManageEntity::getMd5
+        );
+        wrapper.isNotNull(FileManageEntity::getMd5);
+        List<FileManageEntity> fileList = fileManageMapper.selectList(wrapper);
+        return fileList;
+    }
+
     private FileManageResult toFileManageResult(FileManageEntity fileManageEntity) {
         if (fileManageEntity == null) {
             return null;

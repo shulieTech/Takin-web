@@ -1260,9 +1260,9 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileManageCreateParam.setUploadTime(fileManageUpdateRequest.getUploadTime());
             String targetP = fileManageCreateParam.getUploadPath().replaceAll("[/]", "");
             String targetPMd5 = MD5Utils.getInstance().getMD5(targetP);
-            String bodyMd5 = redisTemplate.opsForValue().get(FileManageSignCache.CACHE_NAME+targetPMd5)+"";
+            Object bodyMd5 = redisTemplate.opsForValue().get(FileManageSignCache.CACHE_NAME+targetPMd5);
             //写入md5
-            fileManageCreateParam.setMd5(bodyMd5);
+            fileManageCreateParam.setMd5(bodyMd5!=null?bodyMd5.toString():"");
             return fileManageCreateParam;
         }).collect(Collectors.toList());
 

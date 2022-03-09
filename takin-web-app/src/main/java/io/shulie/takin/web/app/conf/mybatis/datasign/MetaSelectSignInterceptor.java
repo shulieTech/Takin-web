@@ -13,7 +13,6 @@ import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Field;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Properties;

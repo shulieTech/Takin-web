@@ -5,6 +5,8 @@ import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.annocation.EnableSign;
+import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,6 +22,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_application_ds_db_manage")
 @ToString(callSuper = true)
+@EnableSign
 public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serializable {
     private static final long serialVersionUID = -95402226923523212L;
 
@@ -31,21 +34,25 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
     /**
      * 应用名称
      */
+    @SignField(order = 1)
     private String applicationName;
 
     /**
      * 连接池名称 druid, hikari,c3p0等
      */
+    @SignField(order = 2)
     private String connPoolName;
 
     /**
      * 数据源名称
      */
+    @SignField(order = 3)
     private String dbName;
 
     /**
      * 业务数据源url
      */
+    @SignField(order = 4)
     private String url;
 
     /**
@@ -61,6 +68,7 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
     /**
      * 方案类型 0:影子库 1:影子表 2:影子server
      */
+    @SignField(order = 5)
     private Integer dsType;
 
     /**
@@ -86,6 +94,7 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
     /**
      * 影子方案额外配置
      */
+
     private String shaDowFileExtedn;
 
     /**
@@ -96,6 +105,7 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
     /**
      * 方案类型 0:amdb 1:手动录入
      */
+    @SignField(order = 6)
     private Integer source;
 
     /**
@@ -109,7 +119,10 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
     @TableField(value = "user_id" , fill = FieldFill.INSERT)
     private Long userId;
 
-
+    @SignField(order = 7)
     private String agentSourceType;
+
+    @TableField(value = "sign" , fill = FieldFill.INSERT)
+    private String sign;
 
 }

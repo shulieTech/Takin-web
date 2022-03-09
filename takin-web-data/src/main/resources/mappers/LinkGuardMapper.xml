@@ -13,6 +13,7 @@
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
         <result column="is_deleted" jdbcType="TINYINT" property="isDeleted"/>
         <result column="is_enable" jdbcType="TINYINT" property="isEnable"/>
+        <result column="sign" jdbcType="VARCHAR" property="sign"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->

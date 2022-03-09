@@ -14,6 +14,7 @@
         <result column="is_deleted" jdbcType="BOOLEAN" property="isDeleted"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="sign" jdbcType="VARCHAR" property="sign"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->

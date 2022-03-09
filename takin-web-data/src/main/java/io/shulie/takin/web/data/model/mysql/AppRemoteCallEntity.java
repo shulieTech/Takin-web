@@ -67,6 +67,7 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 配置类型，0：未配置，1：白名单配置;2：返回值mock;3:转发mock
      */
     @TableField(value = "type")
+    @SignField(order = 4)
     private Integer type;
 
     /**
@@ -109,10 +110,11 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 接口子类型
      */
     @TableField(value = "interface_child_type")
+    @SignField(order = 5)
     private String interfaceChildType;
 
     @TableField(value = "remark")
-    @SignField(order = 4)
+
     private String remark;
 
     /**

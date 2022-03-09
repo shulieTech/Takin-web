@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.annocation.EnableSign;
+import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,6 +24,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_application_ds_cache_manage")
 @ToString(callSuper = true)
+@EnableSign
 public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Serializable {
     private static final long serialVersionUID = 214783401261180458L;
 
@@ -46,16 +49,19 @@ public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Se
     /**
      * 应用名称
      */
+    @SignField(order = 1)
     private String applicationName;
 
     /**
      * 中间件名称
      */
+    @SignField(order = 2)
     private String cacheName;
 
     /**
      * 集群地址
      */
+    @SignField(order = 4)
     private String colony;
 
     /**
@@ -68,7 +74,7 @@ public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Se
      */
     private String pwd;
 
-
+    @SignField(order = 5)
     private String type;
 
     /**
@@ -101,6 +107,7 @@ public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Se
      */
     private Integer status;
 
+    @SignField(order = 3)
     private String agentSourceType;
 
     /**

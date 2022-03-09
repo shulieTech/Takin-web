@@ -26,7 +26,6 @@ import java.util.Map;
 public class MyMetaObjectHandler implements MetaObjectHandler {
 
 
-
     @SneakyThrows
     @Override
     public void insertFill(MetaObject metaObject) {
@@ -47,25 +46,27 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         }
 
         Class<?> clz = metaObject.getOriginalObject().getClass();
-        if(clz.isAnnotationPresent(EnableSign.class)){
+        if (clz.isAnnotationPresent(EnableSign.class)) {
             log.info("【sign operation】insert SQL 开始执行签名计算");
-            Map<String,Integer> signKeyOrderMap = new HashMap<>();
-            Map<String,String> signKeyValueMap = new LinkedHashMap<>();
+            Map<String, Integer> signKeyOrderMap = new HashMap<>();
+            Map<String, String> signKeyValueMap = new LinkedHashMap<>();
             Field[] fields = clz.getDeclaredFields();
-            for(Field field : fields){
-                if(field.isAnnotationPresent(SignField.class)){
+            for (Field field : fields) {
+                if (field.isAnnotationPresent(SignField.class)) {
                     SignField signField = field.getAnnotation(SignField.class);
-                    signKeyOrderMap.put(field.getName(),signField.order());
+                    signKeyOrderMap.put(field.getName(), signField.order());
                 }
             }
             signKeyOrderMap = MapUtil.sortByValue(signKeyOrderMap, false);
             for (String key : signKeyOrderMap.keySet()) {
-                String value =String.valueOf(getFieldValByName(key, metaObject));
-                signKeyValueMap.put(key,value);
+                Object fieldValByName = getFieldValByName(key, metaObject);
+                {
+                    signKeyValueMap.put(key, String.valueOf(fieldValByName));
+                }
             }
 
-            String signStr  = MD5Utils.getInstance().getMD5(signKeyValueMap.toString());
-            this.strictInsertFill(metaObject, SignCommonUtil.SIGN_FIELD, String.class,signStr);
+            String signStr = MD5Utils.getInstance().getMD5(signKeyValueMap.toString());
+            this.strictInsertFill(metaObject, SignCommonUtil.SIGN_FIELD, String.class, signStr);
         }
 
     }

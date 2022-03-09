@@ -51,4 +51,9 @@ public class FileManageCreateParam extends TenantCommonExt {
      */
     private Integer isSplit;
 
+    /**
+     * 签名
+     */
+    private String md5;
+
 }

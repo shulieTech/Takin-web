@@ -33,7 +33,7 @@ public abstract class AbstractTemplateParser implements TemplateParser, StyleTem
      * @return
      */
     @Override
-    public abstract List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum);
+    public abstract List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum,ShadowTemplateSelect select);
 
     /**
      * 删除记录

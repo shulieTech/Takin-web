@@ -45,6 +45,11 @@ public class TenantInfoExt {
      */
     private Long createBy;
 
+    /**
+     * 安全中心地址
+     */
+    private String tenantSecurityCenter;
+
     @Data
     @NoArgsConstructor
     public static class TenantEnv {
@@ -66,5 +71,10 @@ public class TenantInfoExt {
          * 是否默认
          */
         private Boolean isDefault;
+
+        /**
+         * 安全中心地址
+         */
+        private String securityCenterDomain;
     }
 }

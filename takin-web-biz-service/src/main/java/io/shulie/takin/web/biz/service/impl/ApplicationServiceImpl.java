@@ -2533,7 +2533,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         Long result = null;
         if (detailResult != null) {
             result = detailResult.getApplicationId();
-            redisTemplate.opsForHash().put(ConfCenterService.APPLICATION_CACHE_PREFIX, key, String.valueOf(applicationId));
+            redisTemplate.opsForHash().put(ConfCenterService.APPLICATION_CACHE_PREFIX, key, String.valueOf(result));
         }
         return result;
     }

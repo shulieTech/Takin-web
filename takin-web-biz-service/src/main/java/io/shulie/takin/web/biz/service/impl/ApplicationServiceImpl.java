@@ -2518,17 +2518,24 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public ApplicationDetailResult queryTApplicationMntByName(String appName) {
+        return applicationDAO.getByName(appName);
+    }
+
+    @Override
+    public Long queryApplicationIdByAppName(String appName) {
         // 添加缓存：agent心跳接口太过于频繁
         String key = ConfCenterService.generateApplicationCacheKey(appName);
-        String application = (String)redisTemplate.opsForHash().get(ConfCenterService.APPLICATION_CACHE_PREFIX, key);
-        if (StringUtils.isNotBlank(application)) {
-            return JSONObject.parseObject(application, ApplicationDetailResult.class);
+        String applicationId = (String)redisTemplate.opsForHash().get(ConfCenterService.APPLICATION_CACHE_PREFIX, key);
+        if (StringUtils.isNotBlank(applicationId)) {
+            return Long.valueOf(applicationId);
         }
         ApplicationDetailResult detailResult = applicationDAO.getByName(appName);
+        Long result = null;
         if (detailResult != null) {
-            redisTemplate.opsForHash().put(ConfCenterService.APPLICATION_CACHE_PREFIX, key, JSONObject.toJSONString(detailResult));
+            result = detailResult.getApplicationId();
+            redisTemplate.opsForHash().put(ConfCenterService.APPLICATION_CACHE_PREFIX, key, String.valueOf(applicationId));
         }
-        return detailResult;
+        return result;
     }
 
     /**

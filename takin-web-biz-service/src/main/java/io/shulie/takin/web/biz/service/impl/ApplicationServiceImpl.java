@@ -2525,7 +2525,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return JSONObject.parseObject(application, ApplicationDetailResult.class);
         }
         ApplicationDetailResult detailResult = applicationDAO.getByName(appName);
-        redisTemplate.opsForHash().put(ConfCenterService.APPLICATION_CACHE_PREFIX, key, JSONObject.toJSONString(detailResult));
+        if (detailResult != null) {
+            redisTemplate.opsForHash().put(ConfCenterService.APPLICATION_CACHE_PREFIX, key, JSONObject.toJSONString(detailResult));
+        }
         return detailResult;
     }
 

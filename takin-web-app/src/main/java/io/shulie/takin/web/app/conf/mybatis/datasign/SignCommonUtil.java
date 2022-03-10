@@ -48,7 +48,7 @@ public class SignCommonUtil {
                     if (field.get(result.get(i)) == null) {
                         oldSign = null;
                         break;
-                    }else if(Objects.equals(field.getName(), "")){
+                    }else if(Objects.equals(field.get(result.get(i)), "")){
                         oldSign = null;
                         break;
                     } else {

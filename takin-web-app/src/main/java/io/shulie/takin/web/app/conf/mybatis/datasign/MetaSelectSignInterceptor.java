@@ -31,6 +31,7 @@ public class MetaSelectSignInterceptor implements Interceptor {
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         List result = (List) invocation.proceed();
+
         if (result.isEmpty()) return result;
         Class<?> clz = result.get(0).getClass();
 

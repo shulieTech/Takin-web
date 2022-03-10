@@ -26,10 +26,8 @@ import lombok.ToString;
 public class ApplicationDsDbTableEntity extends CommonWithUserIdAndTenantIdEntity implements Serializable {
     private static final long serialVersionUID = -96340134222281342L;
 
-    @SignField(order = 1)
     private Long appId;
 
-    @SignField(order = 2)
     private String url;
 
     private String userName;
@@ -42,19 +40,15 @@ public class ApplicationDsDbTableEntity extends CommonWithUserIdAndTenantIdEntit
     /**
      * 业务表
      */
-    @SignField(order = 3)
     private String bizTable;
 
-    @SignField(order = 4)
     private String shadowTable;
 
     /**
      * 是否手动录入 0:否;1:是
      */
-    @SignField(order = 5)
     private Integer manualTag;
 
-    @SignField(order = 6)
     private Integer isCheck;
 
     @TableField(value = "sign", fill = FieldFill.INSERT)

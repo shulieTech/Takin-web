@@ -168,7 +168,7 @@ public class DsServiceImpl implements DsService {
     @Autowired
     private CacheConfigTemplateDAO cacheConfigTemplateDAO;
 
-    @Value("${agent.ds.compareVersion}")
+    @Value("${agent.ds.compareVersion:100}")
     private String compareVersion;
 
     @Value("${jdbc:oracle:thin}")

@@ -40,28 +40,28 @@ public class LinkGuardEntity extends UserBaseEntity {
      * 项目名称
      */
     @TableField(value = "application_name")
-    @SignField(order = 1)
+    //@SignField(order = 1)
     private String applicationName;
 
     /**
      * 应用id
      */
     @TableField(value = "application_id")
-    @SignField(order = 2)
+    //@SignField(order = 2)
     private Long applicationId;
 
     /**
      * 出口信息
      */
     @TableField(value = "method_info")
-    @SignField(order = 3)
+    //@SignField(order = 3)
     private String methodInfo;
 
     /**
      * GROOVY脚本
      */
     @TableField(value = "groovy")
-    @SignField(order = 4)
+    //@SignField(order = 4)
     private String groovy;
 
     /**
@@ -84,7 +84,7 @@ public class LinkGuardEntity extends UserBaseEntity {
      * 0:未启用；1:启用
      */
     @TableField(value = "is_enable")
-    @SignField(order = 5)
+    //@SignField(order = 5)
     private Integer isEnable;
 
     @TableField(value = "sign",fill = FieldFill.INSERT)

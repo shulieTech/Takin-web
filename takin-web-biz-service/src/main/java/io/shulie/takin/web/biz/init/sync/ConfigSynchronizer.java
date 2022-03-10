@@ -49,9 +49,9 @@ public class ConfigSynchronizer {
                 sleep();
                 configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
                     application.getApplicationName());
-                sleep();
-                configSyncService.syncShadowConsumer(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
-                    application.getApplicationName());
+//                sleep();
+//                configSyncService.syncShadowConsumer(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
+//                    application.getApplicationName());
             }
         }
         configSyncService.syncClusterTestSwitch(WebPluginUtils.traceTenantCommonExt());

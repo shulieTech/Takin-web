@@ -33,37 +33,37 @@ public class ApplicationPluginsConfigEntity extends UserBaseEntity implements Se
     /**
      * 应用id
      */
-    @SignField(order = 1)
+    //@SignField(order = 1)
     private Long applicationId;
 
     /**
      * 应用名称
      */
-    @SignField(order = 2)
+    //@SignField(order = 2)
     private String applicationName;
 
     /**
      * 配置项
      */
-    @SignField(order = 3)
+    //@SignField(order = 3)
     private String configItem;
 
     /**
      * 配置项key
      */
-    @SignField(order = 4)
+    //@SignField(order = 4)
     private String configKey;
 
     /**
      * 配置说明
      */
-    @SignField(order = 5)
+    //@SignField(order = 5)
     private String configDesc;
 
     /**
      * 配置值
      */
-    @SignField(order = 6)
+    //@SignField(order = 6)
     private String configValue;
 
 

@@ -49,19 +49,19 @@ public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Se
     /**
      * 应用名称
      */
-    @SignField(order = 1)
+    //@SignField(order = 1)
     private String applicationName;
 
     /**
      * 中间件名称
      */
-    @SignField(order = 2)
+    //@SignField(order = 2)
     private String cacheName;
 
     /**
      * 集群地址
      */
-    @SignField(order = 4)
+    //@SignField(order = 4)
     private String colony;
 
     /**
@@ -74,7 +74,7 @@ public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Se
      */
     private String pwd;
 
-    @SignField(order = 5)
+    //@SignField(order = 5)
     private String type;
 
     /**
@@ -107,7 +107,7 @@ public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Se
      */
     private Integer status;
 
-    @SignField(order = 3)
+    //@SignField(order = 3)
     private String agentSourceType;
 
     /**

@@ -57,15 +57,17 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
                     signKeyOrderMap.put(field.getName(), signField.order());
                 }
             }
-            signKeyOrderMap = MapUtil.sortByValue(signKeyOrderMap, false);
-            for (String key : signKeyOrderMap.keySet()) {
-                Object fieldValByName = getFieldValByName(key, metaObject);
-                {
-                    signKeyValueMap.put(key, String.valueOf(fieldValByName));
+            String signStr = "";
+            if (!signKeyOrderMap.isEmpty()) {
+                signKeyOrderMap = MapUtil.sortByValue(signKeyOrderMap, false);
+                for (String key : signKeyOrderMap.keySet()) {
+                    Object fieldValByName = getFieldValByName(key, metaObject);
+                    {
+                        signKeyValueMap.put(key, String.valueOf(fieldValByName));
+                    }
                 }
+                 signStr = MD5Utils.getInstance().getMD5(signKeyValueMap.toString());
             }
-
-            String signStr = MD5Utils.getInstance().getMD5(signKeyValueMap.toString());
             this.strictInsertFill(metaObject, SignCommonUtil.SIGN_FIELD, String.class, signStr);
         }
 
@@ -75,5 +77,6 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     public void updateFill(MetaObject metaObject) {
 
     }
+
 
 }

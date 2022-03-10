@@ -34,14 +34,14 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 接口名称
      */
     @TableField(value = "interface_name")
-    @SignField(order = 1)
+    //@SignField(order = 1)
     private String interfaceName;
 
     /**
      * 接口类型
      */
     @TableField(value = "interface_type")
-    @SignField(order = 2)
+    //@SignField(order = 2)
     private Integer interfaceType;
 
     /**
@@ -60,14 +60,14 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 应用name
      */
     @TableField(value = "APP_NAME")
-    @SignField(order = 3)
+    //@SignField(order = 3)
     private String appName;
 
     /**
      * 配置类型，0：未配置，1：白名单配置;2：返回值mock;3:转发mock
      */
     @TableField(value = "type")
-    @SignField(order = 4)
+    //@SignField(order = 4)
     private Integer type;
 
     /**
@@ -110,7 +110,7 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 接口子类型
      */
     @TableField(value = "interface_child_type")
-    @SignField(order = 5)
+    //@SignField(order = 5)
     private String interfaceChildType;
 
     @TableField(value = "remark")

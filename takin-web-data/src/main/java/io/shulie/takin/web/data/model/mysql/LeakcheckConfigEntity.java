@@ -2,10 +2,8 @@ package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
@@ -15,6 +13,7 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_leakcheck_config")
+@EnableSign
 public class LeakcheckConfigEntity extends UserBaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
@@ -76,4 +75,7 @@ public class LeakcheckConfigEntity extends UserBaseEntity {
     public static final String COL_UPDATE_TIME = "update_time";
 
     public static final String COL_IS_DELETED = "is_deleted";
+
+    @TableField(value = "sign",fill = FieldFill.INSERT)
+    private String sign;
 }

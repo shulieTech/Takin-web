@@ -366,13 +366,6 @@ public class WebPluginUtils {
         return null;
     }
 
-    public static TenantInfoExt getTenantInfo(Long tenantId, String envCode) {
-        if (tenantExtApi != null) {
-            return tenantExtApi.getTenantInfo(tenantId, envCode);
-        }
-        return null;
-    }
-
     /**
      * 返回默认的环境 目前给插件user-module使用
      *

@@ -31,15 +31,6 @@ public interface WebTenantExtApi extends ExtensionPoint {
     TenantInfoExt getTenantInfo(String userAppKey, String envCode);
 
     /**
-     * 根据 tenantId  envCode 获取 租户信息
-     *
-     * @param tenantId tenantId
-     * @param envCode  环境编码
-     * @return 租户信息
-     */
-    TenantInfoExt getTenantInfo(Long tenantId, String envCode);
-
-    /**
      * 获取租户列表
      *
      * @return 租户列表

@@ -41,9 +41,15 @@ public class ConfigServerHelper {
     @Autowired
     private ConfigServerDAO csd;
 
+    @Value("${file.upload.tmp.path:/tmp/takin/}")
+    private String tempFile;
+
+    private static String tempFileDefault;
+
     @PostConstruct
     public void init() {
         configServerDAO = csd;
+        tempFileDefault = tempFile;
     }
 
     /**
@@ -107,8 +113,6 @@ public class ConfigServerHelper {
      * @param configServerKeyEnum 配置的枚举
      * @return 配置值
      */
-    @Value("${file.upload.tmp.path:/tmp/takin/}")
-    private static String tempFileDefault;
     public static String getValueByKey(ConfigServerKeyEnum configServerKeyEnum) {
         if(configServerKeyEnum==ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH){
             return tempFileDefault;

@@ -11,6 +11,7 @@ import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.config.ConfigServerDAO;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -106,7 +107,12 @@ public class ConfigServerHelper {
      * @param configServerKeyEnum 配置的枚举
      * @return 配置值
      */
+    @Value("${file.upload.tmp.path:/tmp/takin/}")
+    private static String tempFileDefault;
     public static String getValueByKey(ConfigServerKeyEnum configServerKeyEnum) {
+        if(configServerKeyEnum==ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_TMP_PATH){
+            return tempFileDefault;
+        }
         String redisKey = getRedisKey(configServerKeyEnum);
         String key = configServerKeyEnum.getNow();
 

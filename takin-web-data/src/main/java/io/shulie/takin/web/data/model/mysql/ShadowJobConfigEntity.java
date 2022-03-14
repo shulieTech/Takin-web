@@ -1,7 +1,5 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -9,10 +7,11 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.annocation.EnableSign;
-import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.Date;
 
 /**
  * 影子JOB任务配置
@@ -40,42 +39,36 @@ public class ShadowJobConfigEntity extends UserBaseEntity {
      * 应用ID
      */
     @TableField(value = "application_id")
-    //@SignField(order = 1)
     private Long applicationId;
 
     /**
      * 任务名称
      */
     @TableField(value = "name")
-    //@SignField(order = 2)
     private String name;
 
     /**
      * JOB类型 0-quartz、1-elastic-job、2-xxl-job
      */
     @TableField(value = "type")
-    //@SignField(order = 3)
     private Integer type;
 
     /**
      * 配置代码
      */
     @TableField(value = "config_code")
-    //@SignField(order = 4)
     private String configCode;
 
     /**
      * 0-可用 1-不可用
      */
     @TableField(value = "status")
-    //@SignField(order = 5)
     private Integer status;
 
     /**
      * 0-可用 1-不可用
      */
     @TableField(value = "active")
-    //@SignField(order = 6)
     private Integer active;
 
 
@@ -99,5 +92,7 @@ public class ShadowJobConfigEntity extends UserBaseEntity {
 
     @TableField(value = "sign", fill = FieldFill.INSERT)
     private String sign;
+
+    private Long customerId;
 
 }

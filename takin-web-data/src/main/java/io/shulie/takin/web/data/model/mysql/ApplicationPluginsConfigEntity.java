@@ -1,8 +1,5 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -10,10 +7,12 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.annocation.EnableSign;
-import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * (ApplicationPluginsConfig)实体类
@@ -33,37 +32,31 @@ public class ApplicationPluginsConfigEntity extends UserBaseEntity implements Se
     /**
      * 应用id
      */
-    //@SignField(order = 1)
     private Long applicationId;
 
     /**
      * 应用名称
      */
-    //@SignField(order = 2)
     private String applicationName;
 
     /**
      * 配置项
      */
-    //@SignField(order = 3)
     private String configItem;
 
     /**
      * 配置项key
      */
-    //@SignField(order = 4)
     private String configKey;
 
     /**
      * 配置说明
      */
-    //@SignField(order = 5)
     private String configDesc;
 
     /**
      * 配置值
      */
-    //@SignField(order = 6)
     private String configValue;
 
 
@@ -97,5 +90,7 @@ public class ApplicationPluginsConfigEntity extends UserBaseEntity implements Se
 
     @TableField(value = "sign",fill = FieldFill.INSERT)
     private String sign;
+
+    private Long customerId;
 
 }

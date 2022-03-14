@@ -1,16 +1,15 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.annocation.EnableSign;
-import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * @author 何仲奇
@@ -34,20 +33,18 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 接口名称
      */
     @TableField(value = "interface_name")
-    //@SignField(order = 1)
     private String interfaceName;
 
     /**
      * 接口类型
      */
     @TableField(value = "interface_type")
-    //@SignField(order = 2)
     private Integer interfaceType;
 
     /**
      * 服务端应用名
      */
-    @TableField(value = "SERVER_APP_NAME")
+    @TableField(value = "server_app_name")
     private String serverAppName;
 
     /**
@@ -60,14 +57,12 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 应用name
      */
     @TableField(value = "APP_NAME")
-    //@SignField(order = 3)
     private String appName;
 
     /**
      * 配置类型，0：未配置，1：白名单配置;2：返回值mock;3:转发mock
      */
     @TableField(value = "type")
-    //@SignField(order = 4)
     private Integer type;
 
     /**
@@ -75,6 +70,9 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      */
     @TableField(value = "mock_return_value")
     private String mockReturnValue;
+
+    @TableField(value = "CUSTOMER_ID")
+    private String customerId;
 
     /**
      * 是否有效 0:有效;1:无效
@@ -110,7 +108,6 @@ public class AppRemoteCallEntity extends UserBaseEntity {
      * 接口子类型
      */
     @TableField(value = "interface_child_type")
-    //@SignField(order = 5)
     private String interfaceChildType;
 
     @TableField(value = "remark")

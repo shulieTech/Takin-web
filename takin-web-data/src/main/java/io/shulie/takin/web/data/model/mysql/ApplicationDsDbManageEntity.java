@@ -1,16 +1,15 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.io.Serializable;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.annocation.EnableSign;
-import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.io.Serializable;
 
 /**
  * db连接池影子库表配置表(ApplicationDsDbManage)实体类
@@ -117,5 +116,7 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
 
     @TableField(value = "sign" , fill = FieldFill.INSERT)
     private String sign;
+
+    private Long customerId;
 
 }

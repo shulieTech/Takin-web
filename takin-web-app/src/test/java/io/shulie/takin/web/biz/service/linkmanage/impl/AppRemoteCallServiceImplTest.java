@@ -27,6 +27,8 @@ import io.shulie.takin.web.biz.pojo.response.datasource.DatasourceListResponse;
 import io.shulie.takin.web.biz.service.DataSourceService;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
+import io.shulie.takin.web.data.mapper.mysql.AppRemoteCallMapper;
+import io.shulie.takin.web.data.model.mysql.AppRemoteCallEntity;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 说明:
@@ -65,6 +70,9 @@ public class AppRemoteCallServiceImplTest {
 
     @Autowired
     DataSourceService dataSourceService;
+
+    @Autowired
+    private AppRemoteCallMapper mapper;
 
     @Test
     public void batchConfigTest(){
@@ -102,5 +110,31 @@ public class AppRemoteCallServiceImplTest {
         final PagingList<DatasourceListResponse> list = dataSourceService.listDatasource(
             request);
         System.out.println(JSON.toJSONString(list));
+    }
+
+    @Test
+    public void update(){
+        List<AppRemoteCallEntity> list = new ArrayList<>();
+        AppRemoteCallEntity app1 = new AppRemoteCallEntity();
+        app1.setId(905886L);
+        app1.setInterfaceName("app1");
+        app1.setInterfaceType(1);
+        app1.setServerAppName("app1");
+        app1.setApplicationId(6874645606158045184L);
+        app1.setAppName("aj");
+
+        AppRemoteCallEntity app2 = new AppRemoteCallEntity();
+        app1.setId(905372L);
+        app1.setInterfaceName("app2");
+        app1.setInterfaceType(1);
+        app1.setServerAppName("app2");
+        app1.setApplicationId(6889764269781422080L);
+        app1.setAppName("feign-new-test-okhttp-client");
+
+        list.add(app1);
+        list.add(app2);
+
+        mapper.updateWithOutTenant(list);
+
     }
 }

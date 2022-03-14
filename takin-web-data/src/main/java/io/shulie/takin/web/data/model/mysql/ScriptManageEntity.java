@@ -1,12 +1,15 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.annocation.EnableSign;
-import io.shulie.takin.web.data.annocation.SignField;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 @TableName(value = "t_script_manage")
@@ -19,7 +22,6 @@ public class ScriptManageEntity extends UserBaseEntity {
      * 名称
      */
     @TableField(value = "name")
-    @SignField(order = 1)
     private String name;
 
     /**

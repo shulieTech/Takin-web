@@ -694,9 +694,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         String tenantAppKey = WebPluginUtils.traceTenantAppKey();
 
-        ApplicationDetailResult applicationMnt = this.queryTApplicationMntByName(param.getApplicationName());
+        Long applicationId = this.queryApplicationIdByAppName(param.getApplicationName());
 
-        if (applicationMnt == null) {
+        if (applicationId == null) {
             log.error("查询不到应用【{}】,请先上报应用！", param.getApplicationName());
             return;
         }
@@ -705,12 +705,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             //应用id+ agent id唯一键 作为节点信息
             String envCode = WebPluginUtils.traceEnvCode();
             String key = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, tenantAppKey, envCode,
-                    applicationMnt.getApplicationId() + PRADAR_SEPERATE_FLAG + param.getAgentId());
+                    applicationId + PRADAR_SEPERATE_FLAG + param.getAgentId());
             List<String> nodeUploadDataDTOList = redisTemplate.opsForList().range(key, 0, -1);
             if (CollectionUtils.isEmpty(nodeUploadDataDTOList) || nodeUploadDataDTOList.size() <= appErrorNum) {
                 //节点key信息
                 String nodeSetKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3, tenantAppKey, envCode,
-                        applicationMnt.getApplicationId() + PRADARNODE_KEYSET);
+                        applicationId + PRADARNODE_KEYSET);
                 redisTemplate.opsForSet().add(nodeSetKey, key);
                 redisTemplate.expire(nodeSetKey, 1, TimeUnit.DAYS);
                 //节点异常信息列表
@@ -719,7 +719,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             } else {
                 // 大于 appErrorNum 个数 进行截取
                 redisTemplate.opsForList().leftPush(key, JSONObject.toJSONString(param));
-                redisTemplate.opsForList().trim(key,0,19);
+                redisTemplate.opsForList().trim(key, 0, 19);
             }
         }
     }
@@ -2525,7 +2525,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Long queryApplicationIdByAppName(String appName) {
         // 添加缓存：agent心跳接口太过于频繁
         String key = ConfCenterService.generateApplicationCacheKey(appName);
-        String applicationId = (String)redisTemplate.opsForHash().get(ConfCenterService.APPLICATION_CACHE_PREFIX, key);
+        String applicationId = (String) redisTemplate.opsForHash().get(ConfCenterService.APPLICATION_CACHE_PREFIX, key);
         if (StringUtils.isNotBlank(applicationId)) {
             return Long.valueOf(applicationId);
         }

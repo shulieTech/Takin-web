@@ -23,4 +23,10 @@ public class UserBaseEntity extends TenantBaseEntity {
      */
     @TableField(value = "user_id", fill = FieldFill.INSERT)
     private Long userId;
+
+    /**
+     * 租户ID（老的）
+     */
+    @TableField(value = "customer_id")
+    private String customerId;
 }

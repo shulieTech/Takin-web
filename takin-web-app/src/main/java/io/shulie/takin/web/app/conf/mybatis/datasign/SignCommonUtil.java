@@ -48,6 +48,9 @@ public class SignCommonUtil {
 
 
         Class<?> clz = mappedStatement.getParameterMap().getType();
+        if(clz == null){
+            return;
+        }
         boolean isSign = clz.isAnnotationPresent(EnableSign.class);
         if (isSign) {
 

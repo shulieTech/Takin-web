@@ -4,6 +4,8 @@ import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import io.shulie.takin.utils.security.MD5Utils;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.annocation.EnableSign;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
@@ -192,7 +194,7 @@ public class SignCommonUtil {
             }
 
             if (!valid) {
-                throw new SQLException("------");
+                throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR,"数据异常,请联系管理员!");
             }
 
         }

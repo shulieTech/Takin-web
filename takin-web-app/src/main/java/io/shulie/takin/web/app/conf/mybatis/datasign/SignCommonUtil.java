@@ -19,7 +19,6 @@ import org.apache.ibatis.mapping.ParameterMode;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.TypeHandlerRegistry;
-import org.bouncycastle.util.Strings;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
@@ -79,7 +78,7 @@ public class SignCommonUtil {
                 Map<String, Object> map = new HashMap<>();
                 while (rs.next()) {
                     for (int i = 0; i < md.getColumnCount(); i++) {
-                        map.put(Strings.toLowerCase(md.getColumnLabel(i + 1)), rs.getObject(md.getColumnLabel(i + 1)));
+                        map.put(md.getColumnLabel(i + 1).toLowerCase(), rs.getObject(md.getColumnLabel(i + 1)));
                     }
                 }
                 //计算签名后再更新回去
@@ -139,7 +138,7 @@ public class SignCommonUtil {
                 List<String> sqlList = new ArrayList<>();
                 while (rs.next()) {
                     for (int i = 0; i < md.getColumnCount(); i++) {
-                        map.put(Strings.toLowerCase(md.getColumnLabel(i + 1)), rs.getObject(md.getColumnLabel(i + 1)));
+                        map.put(md.getColumnLabel(i + 1).toLowerCase(), rs.getObject(md.getColumnLabel(i + 1)));
                     }
                     //计算签名后再更新回去
                     map.remove("sign");
@@ -176,7 +175,7 @@ public class SignCommonUtil {
             Map<String, Object> map = new HashMap<>();
             while (rs.next()) {
                 for (int i = 0; i < md.getColumnCount(); i++) {
-                    map.put(Strings.toLowerCase(md.getColumnLabel(i + 1)), rs.getObject(md.getColumnLabel(i + 1)));
+                    map.put(md.getColumnLabel(i + 1).toLowerCase(), rs.getObject(md.getColumnLabel(i + 1)));
                 }
                 if (map.get("sign") == null || Objects.equals(map.get("sign").toString(), "")) {
                     return;

@@ -71,9 +71,6 @@ public class AppRemoteCallEntity extends UserBaseEntity {
     @TableField(value = "mock_return_value")
     private String mockReturnValue;
 
-    @TableField(value = "CUSTOMER_ID")
-    private String customerId;
-
     /**
      * 是否有效 0:有效;1:无效
      */

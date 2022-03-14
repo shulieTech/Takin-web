@@ -28,5 +28,5 @@ public class UserBaseEntity extends TenantBaseEntity {
      * 租户ID（老的）
      */
     @TableField(value = "customer_id")
-    private String customerId;
+    private Long customerId;
 }

@@ -12,6 +12,7 @@ import cn.hutool.core.convert.Convert;
 import com.pamirs.takin.common.util.http.DateUtil;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
 import io.shulie.takin.web.biz.pojo.response.perfomanceanaly.ReportTimeResponse;
+import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.perfomanceanaly.ReportDetailService;
 import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
 import io.shulie.takin.web.data.dao.application.AppAgentConfigReportDAO;
@@ -45,6 +46,9 @@ public class ReportDetailServiceImpl implements ReportDetailService {
     @Autowired
     private AppAgentConfigReportDAO agentConfigReportDAO;
 
+    @Autowired
+    private ApplicationService applicationService;
+
     @Override
     public ReportTimeResponse getReportTime(Long reportId) {
         ReportDetailDTO reportDetail = reportApplicationService.getReportApplication(reportId).getReportDetail();
@@ -68,8 +72,9 @@ public class ReportDetailServiceImpl implements ReportDetailService {
             log.error("uploadConfigInfo 上传参数不能为空");
             return;
         }
-        ApplicationDetailResult info = applicationDAO.getByName(inputParam.getApplicationName());
-        if (Objects.isNull(info)) {
+        Long applicationId = applicationService.queryApplicationIdByAppName(inputParam.getApplicationName());
+//        ApplicationDetailResult info = applicationDAO.getByName(inputParam.getApplicationName());
+        if (Objects.isNull(applicationId)) {
             log.error("uploadConfigInfo 应用【{}】不存在", inputParam.getApplicationName());
             return;
         }
@@ -82,7 +87,7 @@ public class ReportDetailServiceImpl implements ReportDetailService {
             globalConf.forEach(global -> {
                 CreateAppAgentConfigReportParam reportParam = new CreateAppAgentConfigReportParam();
                 reportParam.setAgentId(inputParam.getAgentId());
-                reportParam.setApplicationId(info.getApplicationId());
+                reportParam.setApplicationId(applicationId);
                 reportParam.setApplicationName(inputParam.getApplicationName());
                 reportParam.setConfigType(global.getBizType());
                 reportParam.setConfigKey(global.getKey());
@@ -98,7 +103,7 @@ public class ReportDetailServiceImpl implements ReportDetailService {
             appConf.forEach(appConfig -> {
                 CreateAppAgentConfigReportParam reportParam = new CreateAppAgentConfigReportParam();
                 reportParam.setAgentId(inputParam.getAgentId());
-                reportParam.setApplicationId(info.getApplicationId());
+                reportParam.setApplicationId(applicationId);
                 reportParam.setApplicationName(inputParam.getApplicationName());
                 reportParam.setConfigType(appConfig.getBizType());
                 reportParam.setConfigKey(appConfig.getKey());
@@ -111,8 +116,7 @@ public class ReportDetailServiceImpl implements ReportDetailService {
         }
 
 
-        List<AppAgentConfigReportDetailResult> dbResults = agentConfigReportDAO.listByAppId(info.getApplicationId());
-
+        List<AppAgentConfigReportDetailResult> dbResults = agentConfigReportDAO.listByAppId(applicationId);
 
 
         Map<String, Map<Integer, List<AppAgentConfigReportDetailResult>>> dbMap = CollStreamUtil.groupBy2Key(dbResults,

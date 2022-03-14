@@ -2333,12 +2333,13 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Response<Integer> uploadMiddlewareStatus(Map<String, JarVersionVo> requestMap, String appName) {
         try {
             AppMiddlewareQuery query = new AppMiddlewareQuery();
-            ApplicationDetailResult tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
-            if (null == tApplicationMnt) {
+            Long applicationId = applicationService.queryApplicationIdByAppName(appName);
+//            ApplicationDetailResult tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
+            if (null == applicationId) {
                 return Response.fail("未查询到应用相关数据");
             }
 
-            query.setApplicationId(tApplicationMnt.getApplicationId());
+            query.setApplicationId(applicationId);
             List<TAppMiddlewareInfo> tAppMiddlewareInfos = tAppMiddlewareInfoMapper.selectList(query);
             if (null != tAppMiddlewareInfos && tAppMiddlewareInfos.size() > 0) {
                 List<Long> ids = tAppMiddlewareInfos.stream().map(TAppMiddlewareInfo::getId).collect(
@@ -2350,7 +2351,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 JarVersionVo entryValue = entry.getValue();
                 TAppMiddlewareInfo info = new TAppMiddlewareInfo();
                 info.setActive(entryValue.isActive());
-                info.setApplicationId(tApplicationMnt.getApplicationId());
+                info.setApplicationId(applicationId);
                 info.setJarName(entryValue.getJarName());
                 info.setPluginName(entryValue.getPluginName());
                 info.setJarType(entryValue.getJarType());

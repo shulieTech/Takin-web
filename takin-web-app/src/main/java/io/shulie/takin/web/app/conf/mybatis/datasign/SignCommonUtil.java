@@ -85,6 +85,7 @@ public class SignCommonUtil {
                 map.remove("sign");
                 map.remove("gmt_create");
                 map.remove("gmt_modified");
+                map.remove("gmt_update");
                 String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                 String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where id = " + id;
                 Connection connection = statement.getConnection();
@@ -144,6 +145,7 @@ public class SignCommonUtil {
                     map.remove("sign");
                     map.remove("gmt_create");
                     map.remove("gmt_modified");
+                    map.remove("gmt_update");
                     String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                     String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where id = " + map.get("id").toString();
                     sqlList.add(updateSql);
@@ -185,6 +187,7 @@ public class SignCommonUtil {
                 map.remove("sign");
                 map.remove("gmt_create");
                 map.remove("gmt_modified");
+                map.remove("gmt_update");
                 String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                 if (!oldSign.equals(sign)) {
                     valid = false;

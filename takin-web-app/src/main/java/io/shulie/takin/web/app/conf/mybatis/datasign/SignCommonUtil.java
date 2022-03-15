@@ -49,7 +49,7 @@ public class SignCommonUtil {
 
 
         Class<?> clz = mappedStatement.getParameterMap().getType();
-        if(clz == null){
+        if (clz == null) {
             return;
         }
         boolean isSign = clz.isAnnotationPresent(EnableSign.class);
@@ -128,11 +128,13 @@ public class SignCommonUtil {
                             } else if (value instanceof Boolean) {
                                 value = Boolean.FALSE.equals(value) ? "0" : "1";
                             }
-                            sql = sql.replaceFirst("\\?", "'" + value + "'");
+                            //这里替换是为了防止value中存在?,导致sql替换出错
+                            String valueSet = String.valueOf(value).replaceAll("\\?", "！@#¥%");
+                            sql = sql.replaceFirst("\\?", "'" + valueSet + "'");
                         }
                     }
                 }
-
+                sql = sql.replaceAll("！@#¥%", "\\?");
                 Update update = (Update) CCJSqlParserUtil.parse(boundSql.getSql());
                 String tableName = update.getTable().getName();
                 String whereStr = " where" + sql.split("WHERE")[1];
@@ -159,13 +161,12 @@ public class SignCommonUtil {
                     String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where id = " + map.get("id").toString();
                     sqlList.add(updateSql);
                 }
-                rs.last();
                 Connection connection = statement.getConnection();
                 Statement st = connection.createStatement();
                 for (String s : sqlList) {
-                    if(st.isClosed()){
+                    if (st.isClosed()) {
                         connection.createStatement().executeUpdate(s);
-                    }else {
+                    } else {
                         st.executeUpdate(s);
                     }
                 }
@@ -209,7 +210,7 @@ public class SignCommonUtil {
             }
 
             if (!valid) {
-                throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR,"数据签名异常,请联系管理员!");
+                throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "数据签名异常,请联系管理员!");
             }
 
         }

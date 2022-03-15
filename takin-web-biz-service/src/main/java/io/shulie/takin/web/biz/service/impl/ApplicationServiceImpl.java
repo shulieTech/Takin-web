@@ -954,8 +954,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
         List<ExcelSheetVO<?>> sheets = new ArrayList<>();
 
-        // 影子库/表
-        sheets.add(this.getShadowSheet(applicationId));
+        // // 影子库/表 由于不支持新版影子库表导入导出
+        // sheets.add(this.getShadowSheet(applicationId));
 
         // 出口挡板配置
         sheets.add(this.getLinkGuardSheet(applicationId));
@@ -1547,8 +1547,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_MANAGE_VALIDATE_ERROR, "应用不存在!");
         }
 
-        // 保存 影子库/表
-        this.saveDsFromImport(applicationId, configMap.get(AppConfigSheetEnum.DADABASE.getDesc()));
+        // 保存 影子库/表 不支持新版影子库表的导入导出
+        // this.saveDsFromImport(applicationId, configMap.get(AppConfigSheetEnum.DADABASE.getDesc()));
 
         // 保存挡板
         if (configMap.containsKey(AppConfigSheetEnum.GUARD.getDesc())) {
@@ -1989,9 +1989,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         Assert.isTrue(StringUtils.isNotBlank(statusString), "状态 必须填写!");
         createRequest.setStatus(Integer.valueOf(statusString));
 
-        // 配置 判断
+        // 配置 判断 无需判断了 by 无涯 2022.3.2
         String config = ds.get(index++);
-        Assert.isTrue(StringUtils.isNotBlank(config), "xml 必须填写!");
+        //Assert.isTrue(StringUtils.isNotBlank(config), "xml 必须填写!");
         createRequest.setConfig(config);
 
         // 新版agent 影子库, 不需要判断, 其他都判断
@@ -2519,6 +2519,23 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public ApplicationDetailResult queryTApplicationMntByName(String appName) {
         return applicationDAO.getByName(appName);
+    }
+
+    @Override
+    public Long queryApplicationIdByAppName(String appName) {
+        // 添加缓存：agent心跳接口太过于频繁
+        String key = ConfCenterService.generateApplicationCacheKey(appName);
+        String applicationId = (String)redisTemplate.opsForHash().get(ConfCenterService.APPLICATION_CACHE_PREFIX, key);
+        if (StringUtils.isNotBlank(applicationId)) {
+            return Long.valueOf(applicationId);
+        }
+        ApplicationDetailResult detailResult = applicationDAO.getByName(appName);
+        Long result = null;
+        if (detailResult != null) {
+            result = detailResult.getApplicationId();
+            redisTemplate.opsForHash().put(ConfCenterService.APPLICATION_CACHE_PREFIX, key, String.valueOf(result));
+        }
+        return result;
     }
 
     /**

@@ -129,14 +129,13 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
      * @return AgentHeartBeatBO对象
      */
     private AgentHeartbeatBO buildAgentHeartBeatBO(AgentHeartbeatRequest commandRequest) {
-        ApplicationDetailResult applicationMnt = applicationService.queryTApplicationMntByName(
-            commandRequest.getProjectName());
-        if (applicationMnt == null) {
+        Long applicationId = applicationService.queryApplicationIdByAppName(commandRequest.getProjectName());
+        if (applicationId == null) {
             throw new TakinWebException(ExceptionCode.AGENT_REGISTER_ERROR, "应用名不存在");
         }
 
         AgentHeartbeatBO agentHeartbeatBO = new AgentHeartbeatBO();
-        agentHeartbeatBO.setApplicationId(applicationMnt.getApplicationId());
+        agentHeartbeatBO.setApplicationId(applicationId);
         BeanUtils.copyProperties(commandRequest, agentHeartbeatBO);
 
         // 获取节点当前状态

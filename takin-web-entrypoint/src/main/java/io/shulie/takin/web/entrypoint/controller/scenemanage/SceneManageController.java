@@ -23,6 +23,7 @@ import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
@@ -229,8 +230,8 @@ public class SceneManageController {
         moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public ResponseResult getDetail(@ApiParam(name = "id", value = "ID", required = true) Long id) {
-        return sceneManageService.detailScene(id);
+    public SceneDetailResponse getDetail(@ApiParam(name = "id", value = "ID", required = true) Long id) {
+        return sceneManageService.getById(id);
     }
 
     @GetMapping("/list")

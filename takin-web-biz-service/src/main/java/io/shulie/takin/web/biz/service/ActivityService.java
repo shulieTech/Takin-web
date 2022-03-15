@@ -11,6 +11,7 @@ import io.shulie.takin.web.biz.pojo.request.activity.ActivityQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityVerifyRequest;
+import io.shulie.takin.web.biz.pojo.request.activity.ListApplicationRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityBottleneckResponse;
@@ -131,4 +132,11 @@ public interface ActivityService {
     List<BusinessApplicationListResponse> listApplicationByBusinessActivityIds(List<Long> businessActivityIds,
         String applicationName);
 
+    /**
+     * 根据业务流程ids, 获得应用列表
+     *
+     * @param listApplicationRequest 所需要的入参
+     * @return 应用列表
+     */
+    PagingList<BusinessApplicationListResponse> listApplicationByBusinessFlowIds(ListApplicationRequest listApplicationRequest);
 }

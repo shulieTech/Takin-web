@@ -3,9 +3,9 @@
 <mapper namespace="io.shulie.takin.web.data.mapper.mysql.SceneExcludedApplicationMapper">
 
     <insert id="insertBatch">
-        INSERT INTO t_scene_excluded_application(scene_id, application_id) VALUES
+        INSERT INTO t_scene_excluded_application(scene_id, application_id, tenant_id, env_code) VALUES
         <foreach collection ="createParams" item="createParam" separator =",">
-            (#{createParam.sceneId}, #{createParam.applicationId})
+            (#{createParam.sceneId}, #{createParam.applicationId}, #{createParam.tenantId}, #{createParam.envCode})
         </foreach >
     </insert>
 

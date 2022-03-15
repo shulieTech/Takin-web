@@ -218,6 +218,8 @@ public interface ApplicationService {
      */
     ApplicationDetailResult queryTApplicationMntByName(String appName);
 
+    Long queryApplicationIdByAppName(String appName);
+
     /**
      * 一键卸载所有应用
      */

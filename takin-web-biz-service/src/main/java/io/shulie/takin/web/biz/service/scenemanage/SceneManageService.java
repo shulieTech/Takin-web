@@ -68,4 +68,12 @@ public interface SceneManageService {
      */
     SceneDetailResponse getById(Long sceneId);
 
+    /**
+     * 创建排除应用
+     *
+     * @param sceneId                场景id
+     * @param excludedApplicationIds 排除应用ids
+     */
+    void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds);
+
 }

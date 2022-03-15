@@ -398,7 +398,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         // 在上传文件时已经校验脚本和业务活动的关联关系，此处不再校验
         if (ScriptTypeEnum.JMETER.getCode().equals(dto.getScriptType())) {
             ScriptCheckDTO checkDTO = this.checkScriptAndActivity(dto.getScriptType(), true, businessActivityList,
-                execList);
+                execList, scriptManageDeployDetail.getScriptVersion());
             if (StringUtils.isNoneBlank(checkDTO.getErrmsg())) {
                 throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, checkDTO.getErrmsg());
             }
@@ -547,7 +547,7 @@ public class SceneManageServiceImpl implements SceneManageService {
                 data -> businessActivityList.add(buildSceneBusinessActivityRef(data)));
             if (0 == scriptType) {
                 dto = checkScriptAndActivity(scriptType, sceneData.getIsAbsoluteScriptPath(),
-                    businessActivityList, execList);
+                    businessActivityList, execList, null);
             }
         } catch (ApiException apiException) {
             dto.setMatchActivity(false);
@@ -622,7 +622,7 @@ public class SceneManageServiceImpl implements SceneManageService {
      * @return dto
      */
     private ScriptCheckDTO checkScriptAndActivity(Integer scriptType, boolean absolutePath,
-        List<SceneBusinessActivityRef> businessActivityList, List<SceneScriptRefOpen> scriptList) {
+        List<SceneBusinessActivityRef> businessActivityList, List<SceneScriptRefOpen> scriptList, Integer version) {
         ScriptCheckDTO dto = new ScriptCheckDTO();
         if (scriptType == null) {
             return new ScriptCheckDTO(false, false, "无脚本文件");
@@ -642,6 +642,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         scriptCheckAndUpdateReq.setAbsolutePath(absolutePath);
         scriptCheckAndUpdateReq.setRequest(requestUrl);
         scriptCheckAndUpdateReq.setUploadPath(sceneScriptRef.getUploadPath());
+        if (version != null) {scriptCheckAndUpdateReq.setVersion(version);}
 
         List<Long> businessActivityIds = businessActivityList.stream().map(SceneBusinessActivityRef::getBusinessActivityId).distinct().collect(
             Collectors.toList());
@@ -835,7 +836,8 @@ public class SceneManageServiceImpl implements SceneManageService {
      * @param excludedApplicationIds 排除的应用ids
      * @param sceneId 场景id
      */
-    private void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds) {
+    @Override
+    public void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds) {
         if (CollectionUtil.isEmpty(excludedApplicationIds)) {
             return;
         }
@@ -846,6 +848,8 @@ public class SceneManageServiceImpl implements SceneManageService {
                     = new CreateSceneExcludedApplicationParam();
                 createSceneExcludedApplicationParam.setSceneId(sceneId);
                 createSceneExcludedApplicationParam.setApplicationId(excludedApplicationId);
+                createSceneExcludedApplicationParam.setTenantId(WebPluginUtils.traceTenantId());
+                createSceneExcludedApplicationParam.setEnvCode(WebPluginUtils.traceEnvCode());
                 return createSceneExcludedApplicationParam;
             }).collect(Collectors.toList());
 

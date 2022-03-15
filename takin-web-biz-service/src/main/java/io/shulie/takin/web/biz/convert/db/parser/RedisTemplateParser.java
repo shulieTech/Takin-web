@@ -66,6 +66,7 @@ public class RedisTemplateParser extends AbstractTemplateParser {
         shadowDetailResponse.setConnectionPool(convert.getCacheName());
         shadowDetailResponse.setShadowInfo(convert.getShaDowFileExtedn());
         shadowDetailResponse.setCacheType(convert.getType());
+        shadowDetailResponse.setIsManual(convert.getSource());
         return shadowDetailResponse;
     }
 

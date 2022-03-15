@@ -39,7 +39,7 @@
             resultType="io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity">
         SELECT LINK_ID,ENTRACE
         FROM t_business_link_manage_table
-        WHERE APPLICATION_NAME is null AND ENV_CODE = #{type}
+        WHERE APPLICATION_NAME is null AND `TYPE` = #{type}
     </select>
     <update id="updateIgnoreInterceptorById">
         UPDATE t_business_link_manage_table

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.entity.simplify.TAppMiddlewareInfo;
 import com.pamirs.takin.entity.domain.query.agent.AppMiddlewareQuery;
+import org.apache.ibatis.annotations.Param;
 
 public interface TAppMiddlewareInfoMapper {
 
@@ -20,4 +21,6 @@ public interface TAppMiddlewareInfoMapper {
     int update(TAppMiddlewareInfo record);
 
     int updateByPrimaryKey(TAppMiddlewareInfo record);
+
+    int batchInsert(@Param("tAppMiddlewareInfoList") List<TAppMiddlewareInfo> tAppMiddlewareInfoList);
 }

@@ -2334,7 +2334,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         try {
             AppMiddlewareQuery query = new AppMiddlewareQuery();
             Long applicationId = applicationService.queryApplicationIdByAppName(appName);
-//            ApplicationDetailResult tApplicationMnt = applicationService.queryTApplicationMntByName(appName);
             if (null == applicationId) {
                 return Response.fail("未查询到应用相关数据");
             }
@@ -2347,6 +2346,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 tAppMiddlewareInfoMapper.deleteBatch(ids);
             }
 
+            List<TAppMiddlewareInfo> tAppMiddlewareInfoList = new ArrayList<>();
             for (Map.Entry<String, JarVersionVo> entry : requestMap.entrySet()) {
                 JarVersionVo entryValue = entry.getValue();
                 TAppMiddlewareInfo info = new TAppMiddlewareInfo();
@@ -2357,8 +2357,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 info.setJarType(entryValue.getJarType());
                 info.setUserId(WebPluginUtils.traceUserId());
                 info.setHidden(entryValue.getHidden());
-                tAppMiddlewareInfoMapper.insert(info);
+                tAppMiddlewareInfoList.add(info);
             }
+            this.tAppMiddlewareInfoMapper.batchInsert(tAppMiddlewareInfoList);
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());

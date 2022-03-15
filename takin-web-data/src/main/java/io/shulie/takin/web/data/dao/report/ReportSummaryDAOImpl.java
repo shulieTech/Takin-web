@@ -34,9 +34,18 @@ public class ReportSummaryDAOImpl extends ServiceImpl<ReportSummaryMapper, Repor
      */
     @Override
     public void insertOrUpdate(ReportSummaryCreateParam param) {
+        LambdaQueryWrapper<ReportSummaryEntity> queryWrapper = this.getLambdaQueryWrapper();
+        queryWrapper.eq(ReportSummaryEntity::getReportId,param.getReportId());
+        ReportSummaryEntity summaryEntity = this.getOne(queryWrapper);
+
         ReportSummaryEntity entity = new ReportSummaryEntity();
         BeanUtils.copyProperties(param,entity);
-        this.saveOrUpdate(entity);
+        if(summaryEntity != null) {
+            entity.setId(summaryEntity.getId());
+            this.updateById(entity);
+            return;
+        }
+        this.save(entity);
     }
 
     @Override

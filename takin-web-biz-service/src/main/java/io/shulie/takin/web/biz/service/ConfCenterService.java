@@ -23,6 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.metadata.Sheet;
@@ -143,6 +144,11 @@ public class ConfCenterService extends CommonService {
 
     @Autowired
     private ApplicationService applicationService;
+
+    @Resource(name = "redisTemplate")
+    private RedisTemplate redisTemplate;
+
+    public static final String APPLICATION_CACHE_PREFIX = "application:cache";
 
     @PostConstruct
     public void init() {
@@ -358,6 +364,7 @@ public class ConfCenterService extends CommonService {
                 // 采用租户的userAppKey
                 //todo Aganet改造点
                 agentConfigCacheManager.evictRecallCalls(tApplicationMnt.getApplicationName());
+                delApplicationCache(tApplicationMnt.getApplicationName());
             });
             //删除白名单需要更新缓存
             redisManager.removeKey(WhiteBlackListRedisKey.TAKIN_WHITE_LIST_KEY);
@@ -428,7 +435,7 @@ public class ConfCenterService extends CommonService {
         applicationDAO.updateApplicationInfo(tApplicationMnt);
         //之所以这里要多维护一次是因为 agent也要使用这个表的applicationName
         updatePlugins(tApplicationMnt);
-
+        delApplicationCache(originApplicationName);
     }
 
     private void updatePlugins(ApplicationCreateParam tApplicationMnt) {
@@ -2102,5 +2109,14 @@ public class ConfCenterService extends CommonService {
             result = StringUtils.substringBeforeLast(sb.toString(), ",");
             return this;
         }
+    }
+
+    private void delApplicationCache(String applicationName) {
+        redisTemplate.opsForHash().delete(APPLICATION_CACHE_PREFIX, generateApplicationCacheKey(applicationName));
+    }
+
+    // 生成应用缓存key
+    public static String generateApplicationCacheKey(String applicationName) {
+        return String.format("%s:%s:%s", WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), applicationName);
     }
 }

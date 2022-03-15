@@ -335,7 +335,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             callBackToWriteBalance(cloudResponse, scriptDebug.getId());
 
             log.info("调试 --> 异步启动循环查询启动成功, 压测完成!");
-            fastDebugThreadPool.execute(this.checkPressureStatus(scriptDebug));
+            tenantCommonExt.setSource(ContextSourceEnum.JOB_SCRIPT_DEBUG.getCode());
+            fastDebugThreadPool.execute(this.checkPressureStatus(scriptDebug,tenantCommonExt));
 
             log.info("调试 --> 接口完成!");
             return response;
@@ -887,11 +888,14 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      * @param scriptDebug 调试记录
      * @return 可运行
      */
-    private Runnable checkPressureStatus(ScriptDebugEntity scriptDebug) {
+    private Runnable checkPressureStatus(ScriptDebugEntity scriptDebug,TenantCommonExt tenantCommonExt) {
         return () -> {
+            // 赋值上下文
+            WebPluginUtils.setTraceTenantContext(tenantCommonExt);
             // 准备更新的调试记录
             ScriptDebugEntity newScriptDebug = new ScriptDebugEntity();
             newScriptDebug.setId(scriptDebug.getId());
+            newScriptDebug.setRequestNum(scriptDebug.getRequestNum());
 
             try {
                 // 脚本变动更新
@@ -957,12 +961,22 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         // 查询记录, 有非200的记录, 就是调试失败
         try {
             QueryLinkDetailDTO dto = new QueryLinkDetailDTO();
-            dto.setResultTypeInt(LinkRequestResultTypeEnum.FAILED.getCode());
             dto.setTaskId(newScriptDebug.getCloudReportId().toString());
             dto.setPageSize(1);
             dto.setStartTime(newScriptDebug.getCreatedAt().getTime());
             dto.setEndTime(System.currentTimeMillis());
-            PagingList<EntryTraceInfoDTO> entryTracePage = traceClient.listEntryTraceByTaskIdV2(dto);
+            // 定时查询 查询1分钟 如果过程中数据达到调试条数，则直接跳出
+            long startTime = System.currentTimeMillis();
+            PagingList<EntryTraceInfoDTO> entryTracePage;
+            do {
+                dto.setEndTime(System.currentTimeMillis());
+                entryTracePage = traceClient.listEntryTraceByTaskIdV2(dto);
+                TimeUnit.SECONDS.sleep(5);
+            }while (entryTracePage.getTotal() != newScriptDebug.getRequestNum() && System.currentTimeMillis() - startTime <= 60*1000);
+            // 重新再查一次
+            dto.setResultTypeInt(LinkRequestResultTypeEnum.FAILED.getCode());
+            dto.setEndTime(System.currentTimeMillis());
+            entryTracePage = traceClient.listEntryTraceByTaskIdV2(dto);
 
             if (entryTracePage.getTotal() != 0) {
                 newScriptDebug.setFailedType(ScriptDebugFailedTypeEnum.FAILED_RESPONSE.getCode());

@@ -360,6 +360,8 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
             record.setErrorReqs(data.getErrorCount());
             record.setNodeCount(data.getNodeCount());
             record.setBottleneckWeight(data.getRealWeight());
+            record.setTenantId(WebPluginUtils.traceTenantId());
+            record.setEnvCode(WebPluginUtils.traceEnvCode());
             recordList.add(record);
             sortNo++;
         }

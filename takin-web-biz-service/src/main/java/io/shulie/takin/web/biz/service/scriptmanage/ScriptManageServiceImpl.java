@@ -435,6 +435,7 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         scriptCheckAndUpdateReq.setUploadPath(scriptFileUploadPath);
         scriptCheckAndUpdateReq.setAbsolutePath(true);
         scriptCheckAndUpdateReq.setUpdate(true);
+        if (mVersion != null) {scriptCheckAndUpdateReq.setVersion(mVersion);}
         List<BusinessLinkResult> businessActivityList = getBusinessActivity(refType, refValue);
         if (CollectionUtils.isEmpty(businessActivityList)) {
             dto.setErrmsg("找不到关联的业务活动！");
@@ -1004,8 +1005,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         // 获得业务活动列表
         // 1 1的话, 直接查业务活动表, 2的话, 查web的scene表, 然后
         if (ScriptManageConstant.BUSINESS_PROCESS_REF_TYPE.equals(refType)) {
-            return sceneLinkRelateDAO.listBusinessLinkIdsByBusinessFlowId(
-                Long.valueOf(scriptDeploy.getRefValue()));
+            return sceneLinkRelateDAO.listBusinessLinkIdsByBusinessFlowIds(
+                Arrays.asList(Long.valueOf(scriptDeploy.getRefValue())));
         }
 
         return Collections.singletonList(Long.valueOf(scriptDeploy.getRefValue()));
@@ -1359,25 +1360,13 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             .map(scriptManageDeployResult -> {
                 ScriptManageDeployResponse scriptManageDeployResponse = new ScriptManageDeployResponse();
                 BeanUtils.copyProperties(scriptManageDeployResult, scriptManageDeployResponse);
-
-                if (CollectionUtils.isNotEmpty(allowUpdateUserIdList)) {
-                    scriptManageDeployResponse.setCanEdit(
-                        allowUpdateUserIdList.contains(scriptManageDeployResult.getUserId()));
-                }
-                if (CollectionUtils.isNotEmpty(allowDeleteUserIdList)) {
-                    scriptManageDeployResponse.setCanRemove(
-                        allowDeleteUserIdList.contains(scriptManageDeployResult.getUserId()));
-                }
-                if (CollectionUtils.isNotEmpty(allowDownloadUserIdList)) {
-                    scriptManageDeployResponse.setCanDownload(
-                        allowDownloadUserIdList.contains(scriptManageDeployResult.getUserId()));
-                }
                 //负责人id
-                scriptManageDeployResponse.setUserId(scriptManageDeployResult.getUserId());
-                //负责人名称
+                scriptManageDeployResponse.setUserId(scriptManageDeployResult.getUserId());  //负责人名称
                 String userName = Optional.ofNullable(userMap.get(scriptManageDeployResult.getUserId()))
                     .map(UserExt::getName).orElse("");
                 scriptManageDeployResponse.setUserName(userName);
+
+                WebPluginUtils.fillQueryResponse(scriptManageDeployResponse);
 
                 //m1版本不能在脚本管理页面进行编辑和删除操作
                 if (ScriptMVersionEnum.isM_1(scriptManageDeployResult.getMVersion())) {

@@ -1,13 +1,17 @@
 package io.shulie.takin.web.biz.service.impl;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
 
+import cn.hutool.core.io.file.FileReader;
 import cn.hutool.core.util.StrUtil;
+import io.shulie.takin.web.biz.constant.AgentConstants;
 import io.shulie.takin.web.biz.pojo.request.agent.GetFileRequest;
 import io.shulie.takin.web.biz.pojo.request.agent.PushOperateRequest;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResponse;
 import io.shulie.takin.web.biz.pojo.response.agent.AgentApplicationNodeProbeOperateResultResponse;
 import io.shulie.takin.web.biz.service.AgentService;
+import io.shulie.takin.web.biz.service.linkmanage.impl.WhiteListFileService;
 import io.shulie.takin.web.biz.utils.business.probe.ApplicationNodeProbeUtil;
 import io.shulie.takin.web.common.constant.AgentUrls;
 import io.shulie.takin.web.common.constant.AppConstants;
@@ -15,6 +19,7 @@ import io.shulie.takin.web.common.constant.ProbeConstants;
 import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.util.JsonUtil;
+import io.shulie.takin.web.common.util.WhitelistFileCacheHelper;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.ProbeDAO;
 import io.shulie.takin.web.data.param.probe.UpdateOperateResultParam;
@@ -43,6 +48,9 @@ public class AgentServiceImpl implements AgentService {
 
     @Autowired
     private ApplicationNodeProbeDAO applicationNodeProbeDAO;
+
+    @Autowired
+    private WhiteListFileService whiteListFileService;
 
     @Override
     public AgentApplicationNodeProbeOperateResponse getOperateResponse(String applicationName, String agentId) {
@@ -162,6 +170,31 @@ public class AgentServiceImpl implements AgentService {
     private void isGetFileError(boolean condition, String message) {
         if (condition) {
             throw new TakinWebException(ExceptionCode.AGENT_APPLICATION_NODE_PROBE_GET_FILE_ERROR, message);
+        }
+    }
+
+    @Override
+    public Integer whitelistIsUpdate(String tenantAppKey, String sign) {
+        try {
+            // 根据 key, 先去缓存中取
+            String value = WhitelistFileCacheHelper.CACHE.get(tenantAppKey, () -> {
+                // 判断文件是否存在
+                // 如果不存在, 放入表示不存在的sign
+                File file = new File(whiteListFileService.getWhitelistFilename(tenantAppKey));
+                if (!file.exists()) {
+                    return AgentConstants.SIGN_WHITELIST_FILE_NOT_EXISTS;
+                }
+
+                // 存在, 读取文件
+                FileReader fileReader = new FileReader(whiteListFileService.getWhitelistFilename(tenantAppKey));
+                // 读到文件后, 计算一次 hashCode, 放入缓存
+                return String.valueOf(fileReader.readString().hashCode());
+            });
+
+            // hashCode 对比 sign, 相同返回 1, 不同返回 0
+            return value.equals(sign) ? AppConstants.YES : AppConstants.NO;
+        } catch (ExecutionException e) {
+            return AppConstants.NO;
         }
     }
 

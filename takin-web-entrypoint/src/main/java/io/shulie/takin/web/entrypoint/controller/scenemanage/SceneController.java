@@ -44,6 +44,8 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
@@ -54,6 +56,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -70,6 +73,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v2/scene")
 @Api(tags = "压测场景-新", value = "压测场景-新")
 public class SceneController {
+
+    @Autowired
+    private SceneExcludedApplicationDAO sceneExcludedApplicationDAO;
+
     @Resource
     SceneService sceneService;
     @Resource
@@ -87,6 +94,9 @@ public class SceneController {
      */
     @Resource
     SceneSchedulerTaskService sceneSchedulerTaskService;
+
+    @Autowired
+    private SceneExcludedApplicationDAO excludedApplicationDAO;
 
     /**
      * 创建压测场景 - 新
@@ -112,6 +122,12 @@ public class SceneController {
                 setExecuteTime(request.getBasicInfo().getExecuteTime());
             }});
         }
+
+        // 忽略检测的应用
+        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(),
+            request.getDataValidation()
+                .getExcludedApplicationIds());
+
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneId));
@@ -149,10 +165,20 @@ public class SceneController {
                 setExecuteTime(request.getBasicInfo().getExecuteTime());
             }});
         }
+
+        // 先删除
+        sceneExcludedApplicationDAO.removeBySceneId(request.getBasicInfo().getSceneId());
+
+        // 忽略检测的应用
+        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(),
+            request.getDataValidation()
+                .getExcludedApplicationIds());
+
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
         if (null != request.getBasicInfo()) {
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(request.getBasicInfo().getSceneId()));
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID,
+                String.valueOf(request.getBasicInfo().getSceneId()));
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_SELECTIVE_CONTENT, "");
         }
@@ -183,8 +209,12 @@ public class SceneController {
         {
             SceneResult scene = sceneService.getScene(sceneRequest.getBasicInfo().getBusinessFlowId());
             if (scene == null) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程");}
-            if (StrUtil.isBlank(scene.getScriptJmxNode())) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务流程未保存脚本解析结果");}
-            if (!scene.getLinkRelateNum().equals(scene.getTotalNodeNum())) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务流程尚未匹配完成");}
+            if (StrUtil.isBlank(scene.getScriptJmxNode())) {
+                throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务流程未保存脚本解析结果");
+            }
+            if (!scene.getLinkRelateNum().equals(scene.getTotalNodeNum())) {
+                throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务流程尚未匹配完成");
+            }
             sceneRequest.setAnalysisResult(JSONObject.parseArray(scene.getScriptJmxNode(), ScriptNode.class));
             sceneRequest.getBasicInfo().setType(0);
             sceneRequest.getBasicInfo().setScriptType(0);
@@ -193,8 +223,11 @@ public class SceneController {
         // 4. 填充压测内容
         {
             // 1. 获取业务流程关联的业务活动
-            List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(sceneRequest.getBasicInfo().getBusinessFlowId());
-            if (CollectionUtils.isEmpty(links)) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程关联的业务活动");}
+            List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(
+                sceneRequest.getBasicInfo().getBusinessFlowId());
+            if (CollectionUtils.isEmpty(links)) {
+                throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程关联的业务活动");
+            }
             // 2. 转换业务活动为压测内容
             List<SceneRequest.Content> content = links.stream().map(t -> new SceneRequest.Content() {{
                 setPathMd5(t.getScriptXpathMd5());
@@ -203,20 +236,29 @@ public class SceneController {
             // 3. 根据脚本解析结果，填充压测内容
             // 3.1. 脚本解析结果转换为一维数据
             List<ScriptNode> nodes = JmxUtil.toOneDepthList(sceneRequest.getAnalysisResult());
-            if (CollectionUtils.isEmpty(nodes)) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果转换为一维数据失败");}
+            if (CollectionUtils.isEmpty(nodes)) {
+                throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果转换为一维数据失败");
+            }
             // 3.2. 一维数据转换为Map，获得xPathMD5 和 脚本节点名称的对应关系
-            Map<String, String> nodeMap = nodes.stream().collect(Collectors.toMap(ScriptNode::getXpathMd5, ScriptNode::getTestName));
+            Map<String, String> nodeMap = nodes.stream().collect(
+                Collectors.toMap(ScriptNode::getXpathMd5, ScriptNode::getTestName));
             // 3.3 遍历压测内容并从Map中填充数据
             for (SceneRequest.Content item : content) {
-                if (!nodeMap.containsKey(item.getPathMd5())) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果存在不能匹配的业务活动");}
+                if (!nodeMap.containsKey(item.getPathMd5())) {
+                    throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果存在不能匹配的业务活动");
+                }
                 item.setName(nodeMap.get(item.getPathMd5()));
                 item.setApplicationId(sceneManageService.getAppIdsByBusinessActivityId(item.getBusinessActivityId()));
             }
             // 3.4 补充非业务活动目标到压测内容
-            List<String> contentNode = content.stream().map(SceneRequest.Content::getPathMd5).distinct().collect(Collectors.toList());
-            List<String> needFillNode = sceneRequest.getGoal().keySet().stream().filter(t -> !contentNode.contains(t)).distinct().collect(Collectors.toList());
+            List<String> contentNode = content.stream().map(SceneRequest.Content::getPathMd5).distinct().collect(
+                Collectors.toList());
+            List<String> needFillNode = sceneRequest.getGoal().keySet().stream().filter(t -> !contentNode.contains(t))
+                .distinct().collect(Collectors.toList());
             needFillNode.forEach(t -> content.add(new SceneRequest.Content() {{
-                if (!nodeMap.containsKey(t)) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果存在不能匹配的非业务活动的压测目标");}
+                if (!nodeMap.containsKey(t)) {
+                    throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果存在不能匹配的非业务活动的压测目标");
+                }
                 setPathMd5(t);
                 setName(nodeMap.get(t));
                 setBusinessActivityId(0L);
@@ -268,8 +310,14 @@ public class SceneController {
             copyDetailResult.getBasicInfo().setIsScheduler(false);
         } else {
             copyDetailResult.getBasicInfo().setIsScheduler(true);
-            copyDetailResult.getBasicInfo().setExecuteTime(DateUtil.formatDateTime(sceneSchedulerResponse.getExecuteTime()));
+            copyDetailResult.getBasicInfo().setExecuteTime(
+                DateUtil.formatDateTime(sceneSchedulerResponse.getExecuteTime()));
         }
+
+        // 添加排除的应用
+        List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
+        copyDetailResult.getDataValidation().setExcludedApplicationIds(
+            DataTransformUtil.list2list(excludedApplicationIds, String.class));
         return ResponseResult.success(copyDetailResult);
     }
 
@@ -353,10 +401,12 @@ public class SceneController {
         // 根据脚本主键获取文件主键集合
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDao.selectFileIdsByScriptDeployId(scriptId);
         // 根据文件主键集合查询文件信息
-        List<Long> fileIds = scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(Collectors.toList());
+        List<Long> fileIds = scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(
+            Collectors.toList());
         // 组装返回数据
         return fileManageDao.selectFileManageByIds(fileIds).stream().map(t -> {
-            Map<String, Object> extend = JSONObject.parseObject(t.getFileExtend(), new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> extend = JSONObject.parseObject(t.getFileExtend(),
+                new TypeReference<Map<String, Object>>() {});
             return new SceneRequest.File() {{
                 setName(t.getFileName());
                 setPath(t.getUploadPath());

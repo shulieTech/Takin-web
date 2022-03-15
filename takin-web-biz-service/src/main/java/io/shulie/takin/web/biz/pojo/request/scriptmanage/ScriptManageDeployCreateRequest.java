@@ -41,7 +41,7 @@ public class ScriptManageDeployCreateRequest implements Serializable {
     /**
      * 脚本版本
      */
-    private Integer mVersion;
+    private Integer mVersion = 0;
 
     /**
      * 关联文件列表

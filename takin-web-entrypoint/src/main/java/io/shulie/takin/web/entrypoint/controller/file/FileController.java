@@ -1,8 +1,8 @@
 package io.shulie.takin.web.entrypoint.controller.file;
 
 import java.io.File;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -11,33 +11,27 @@ import javax.servlet.http.HttpServletResponse;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
-
-import io.shulie.takin.web.common.util.FileUtil;
-import io.shulie.takin.web.common.util.CommonUtil;
-import io.shulie.takin.web.common.domain.WebResponse;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
-import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
 import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
-
-import lombok.extern.slf4j.Slf4j;
-
+import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
+import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
+import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
+import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.FileUtil;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author qianshui

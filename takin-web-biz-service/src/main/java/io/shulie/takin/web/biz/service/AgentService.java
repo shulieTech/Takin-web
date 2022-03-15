@@ -40,4 +40,15 @@ public interface AgentService {
      */
     AgentApplicationNodeProbeOperateResultResponse updateOperateResult(PushOperateRequest pushOperateRequest);
 
+    /**
+     * 白名单文件内容是否更新
+     * 读不到, 或者没有内容, 都返回 0
+     *
+     * @param tenantAppKey 租户key
+     * @param sign 协议
+     * @return 1 是, 0 否
+     */
+    Integer whitelistIsUpdate(String tenantAppKey, String sign);
+
+
 }

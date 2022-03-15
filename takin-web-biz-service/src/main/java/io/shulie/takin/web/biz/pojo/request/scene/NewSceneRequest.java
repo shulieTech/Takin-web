@@ -1,20 +1,19 @@
 package io.shulie.takin.web.biz.pojo.request.scene;
 
-import java.util.Map;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
-import lombok.Data;
-
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.NotBlank;
-
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 操作压测场景入参 -新
@@ -41,7 +40,14 @@ public class NewSceneRequest {
     private List<MonitoringGoal> warnMonitoringGoal;
     @ApiModelProperty(value = "数据验证配置")
     @NotNull(message = "数据验证配置不能为空")
-    private SceneRequest.DataValidation dataValidation;
+    private DataValidation dataValidation;
+
+    @Getter
+    @Setter
+    public static class DataValidation extends SceneRequest.DataValidation {
+        @ApiModelProperty("排除的应用id列表")
+        private List<Long> excludedApplicationIds;
+    }
 
     @Data
     public static class BasicInfo {

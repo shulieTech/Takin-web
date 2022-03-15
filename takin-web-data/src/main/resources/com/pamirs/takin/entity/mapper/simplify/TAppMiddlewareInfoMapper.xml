@@ -176,4 +176,18 @@
             order by ${orderBy}
         </if>
     </sql>
+
+    <insert id="batchInsert" parameterType="com.pamirs.takin.entity.domain.entity.simplify.TAppMiddlewareInfo"
+            keyProperty="id" useGeneratedKeys="true">
+        insert into
+        t_app_middleware_info(APPLICATION_ID,JAR_NAME,PLUGIN_NAME,JAR_TYPE,user_id,ACTIVE,HIDDEN,CREATE_TIME,UPDATE_TIME)
+        values
+        <foreach collection="tAppMiddlewareInfoList" item="model" separator=",">
+            (
+            #{model.applicationId,jdbcType=BIGINT},#{model.jarName,jdbcType=VARCHAR},#{model.pluginName,jdbcType=VARCHAR},#{model.jarType,jdbcType=VARCHAR},
+            #{model.userId},#{model.active,jdbcType=BIT},#{model.hidden},#{model.createTime,jdbcType=TIMESTAMP},#{model.updateTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+    </insert>
+
 </mapper>

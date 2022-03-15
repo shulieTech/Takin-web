@@ -44,7 +44,7 @@
         <takin.web.version>takin-web-5.3.0</takin.web.version>
         <takin.cloud.sdk.version>5.2.3</takin.cloud.sdk.version>
         <takin.cloud.version>5.2.3</takin.cloud.version>
-        <takin.common.version>common-2.0.3-SNAPSHOT</takin.common.version>
+        <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
         <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.6.2</pardar.log.protocol.version>
         <instrument.core.version>1.0.0</instrument.core.version>

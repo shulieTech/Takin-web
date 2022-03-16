@@ -82,9 +82,16 @@ public class ReportDetailServiceImpl implements ReportDetailService {
 
         List<ConfigReportInputParam.ConfigInfo> globalConf = inputParam.getGlobalConf();
         List<ConfigReportInputParam.ConfigInfo> appConf = inputParam.getAppConf();
-        globalConf.addAll(appConf);
+        List<ConfigReportInputParam.ConfigInfo> newConfigInfo = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(appConf)) {
+            newConfigInfo.addAll(appConf);
+        }
         if (CollectionUtils.isNotEmpty(globalConf)) {
-            globalConf.forEach(global -> {
+            newConfigInfo.addAll(globalConf);
+        }
+        if (CollectionUtils.isNotEmpty(newConfigInfo)) {
+            newConfigInfo.forEach(global -> {
                 CreateAppAgentConfigReportParam reportParam = new CreateAppAgentConfigReportParam();
                 reportParam.setAgentId(inputParam.getAgentId());
                 reportParam.setApplicationId(applicationId);

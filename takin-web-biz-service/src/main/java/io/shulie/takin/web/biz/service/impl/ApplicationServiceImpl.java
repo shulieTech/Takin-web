@@ -2358,7 +2358,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 info.setHidden(entryValue.getHidden());
                 tAppMiddlewareInfoList.add(info);
             }
-            this.tAppMiddlewareInfoMapper.batchInsert(tAppMiddlewareInfoList);
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppMiddlewareInfoList)){
+                this.tAppMiddlewareInfoMapper.batchInsert(tAppMiddlewareInfoList);
+            }
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);

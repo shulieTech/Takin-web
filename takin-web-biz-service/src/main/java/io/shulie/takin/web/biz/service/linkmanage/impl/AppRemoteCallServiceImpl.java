@@ -314,7 +314,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 result.setSort(0);
             }
             RemoteCallConfigEntity entity = entityMap.get(result.getType());
-            result.setTypeSelectVO(new SelectVO(entity.getName(), String.valueOf(entity.getId())));
+            result.setTypeSelectVO(new SelectVO(entity.getName(), String.valueOf(entity.getValueOrder())));
             // 支持类型
             result.setInterfaceTypeSelectVO(getSelectVO(result.getInterfaceType(), voList));
             // 补充权限

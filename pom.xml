@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-5.4.2</version>
+    <version>takin-web-5.5.0</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -41,7 +41,7 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-5.4.2</takin.web.version>
+        <takin.web.version>takin-web-5.5.0</takin.web.version>
         <takin.cloud.sdk.version>5.2.2</takin.cloud.sdk.version>
         <takin.cloud.version>5.2.2</takin.cloud.version>
         <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
@@ -77,6 +77,8 @@
 
         <easypoi-base.version>4.4.0</easypoi-base.version>
         <easypoi-annotation.version>4.3.0</easypoi-annotation.version>
+        <!-- 升级文档 -->
+        <upgrade.doc>https://shulietech.feishu.cn/docs/doccnvTvNxzVrH29Xvm60l7kgHc</upgrade.doc>
     </properties>
 
     <modules>

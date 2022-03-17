@@ -26,7 +26,7 @@ public class QueryLinkDetailDTO extends PagingDevice {
     /**
      * 结果类型, 字符串
      */
-    private String resultType;
+    private Integer resultType;
 
     /**
      * 业务活动入口名称
@@ -82,5 +82,48 @@ public class QueryLinkDetailDTO extends PagingDevice {
      * 环境编码
      */
     private String envCode;
+
+    private String traceIdList;
+
+    /**
+     * 耗时ms，比较规则 大于
+     */
+    private Long minCost;
+
+    /**
+     * 耗时ms，比较规则 小于等于
+     */
+    private Long maxCost;
+
+    /**
+     * 调用类型：middlewareName
+     */
+    private String middlewareName;
+
+    /**
+     * 方法名称
+     */
+    private String methodName;
+
+    /**
+     * 调用参数：request
+     */
+    private String request;
+
+    /**
+     * 排序字段：sortField （startDate、cost）
+     */
+    private String sortField;
+
+    /**
+     * 排序方式：sortType（asc、desc）
+     */
+    private String sortType;
+
+    /**
+     * 1-agent上报trace明细
+     * 2-压测报告请求trace明细
+     */
+    private Integer queryType;
 
 }

@@ -43,7 +43,6 @@ import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
-import io.shulie.takin.web.common.enums.application.AppRemoteCallTypeEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.application.AppRemoteCallListVO;
@@ -85,8 +84,8 @@ public class AppRemoteCallController {
     )
     public AppRemoteCallStringResponse insert(@Valid @RequestBody AppRemoteCallUpdateRequest request) {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.INTERFACE, request.getInterfaceName());
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.INTERFACE_TYPE, AppRemoteCallTypeEnum.getEnum(request.getInterfaceType()).getDesc());
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.REMOTE_CALL_CONFIG, AppRemoteCallConfigEnum.getEnum(request.getType()).getConfigName());
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.INTERFACE_TYPE, String.valueOf(request.getInterfaceType()));
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.REMOTE_CALL_CONFIG, String.valueOf(request.getType()));
         AppRemoteCallUpdateInput input = new AppRemoteCallUpdateInput();
         BeanUtils.copyProperties(request, input);
         appRemoteCallService.update(input);

@@ -25,7 +25,6 @@ import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
 import io.shulie.takin.web.common.util.application.RemoteCallUtils;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
@@ -216,7 +215,7 @@ public class AppConfigEntityConvertServiceImpl implements AppConfigEntityConvert
             }
             ShadowConsumerCreateInput request = new ShadowConsumerCreateInput();
             request.setTopicGroup(arrayList.get(0));
-            request.setType(ShadowMqConsumerType.of(arrayList.get(1)));
+            request.setType(arrayList.get(1));
             request.setStatus(Integer.valueOf(arrayList.get(2)));
             result.add(request);
         }

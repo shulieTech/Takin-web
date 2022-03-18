@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.pojo.request.application;
 
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -17,7 +16,7 @@ public class ShadowConsumerCreateRequest {
     private String topicGroup;
 
     @NotNull
-    private ShadowMqConsumerType type;
+    private String type;
 
     @NotNull
     private Long applicationId;

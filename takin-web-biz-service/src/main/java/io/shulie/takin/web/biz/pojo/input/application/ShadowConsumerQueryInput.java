@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.pojo.input.application;
 import javax.validation.constraints.NotNull;
 
 import io.shulie.takin.common.beans.page.PagingDevice;
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import lombok.Data;
 
 /**
@@ -13,7 +12,7 @@ import lombok.Data;
 @Data
 public class ShadowConsumerQueryInput extends PagingDevice {
 
-    private ShadowMqConsumerType type;
+    private String type;
 
     private Boolean enabled;
 

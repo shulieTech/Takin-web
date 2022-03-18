@@ -18,7 +18,6 @@ import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.pamirs.takin.common.enums.ds.MQTypeEnum;
 import com.pamirs.takin.common.util.MD5Util;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.takin.common.beans.component.SelectVO;
@@ -41,13 +40,13 @@ import io.shulie.takin.web.biz.pojo.output.application.ShadowMqConsumerOutput;
 import io.shulie.takin.web.biz.service.ShadowConsumerService;
 import io.shulie.takin.web.common.constant.ShadowConsumerConstants;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.MqConfigTemplateDAO;
 import io.shulie.takin.web.data.dao.application.ShadowMqConsumerDAO;
 import io.shulie.takin.web.data.mapper.mysql.ShadowMqConsumerMapper;
+import io.shulie.takin.web.data.model.mysql.MqConfigTemplateEntity;
 import io.shulie.takin.web.data.model.mysql.ShadowMqConsumerEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.application.MqConfigTemplateDetailResult;
@@ -94,7 +93,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             ShadowConsumerOutput response = new ShadowConsumerOutput();
             response.setId(entry.getId());
             response.setUnionId(null);
-            response.setType(ShadowMqConsumerType.of(entry.getType()));
+            response.setType(entry.getType());
             response.setTopicGroup(entry.getTopicGroup());
             response.setGmtCreate(entry.getCreateTime());
             response.setGmtUpdate(entry.getUpdateTime());
@@ -124,7 +123,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         ShadowConsumerOutput response = new ShadowConsumerOutput();
         response.setId(entity.getId());
         response.setUnionId(null);
-        response.setType(ShadowMqConsumerType.of(entity.getType()));
+        response.setType(entity.getType());
         response.setTopicGroup(entity.getTopicGroup());
         response.setEnabled(entity.getStatus() == ShadowConsumerConstants.ENABLE);
         response.setGmtCreate(entity.getCreateTime());
@@ -145,7 +144,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             lambdaQueryWrapper.like(ShadowMqConsumerEntity::getTopicGroup, request.getTopicGroup());
         }
         if (request.getType() != null) {
-            lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getType, request.getType().name());
+            lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getType, request.getType());
         }
         if (request.getEnabled() != null) {
             lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus,
@@ -182,7 +181,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                 Collectors.toList());
         }
         if (request.getType() != null) {
-            totalResult = totalResult.stream().filter(e -> e.getType() == request.getType()).collect(
+            totalResult = totalResult.stream().filter(e -> e.getType().equals(request.getType())).collect(
                 Collectors.toList());
         }
         return totalResult;
@@ -191,14 +190,15 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
     private List<ShadowConsumerOutput> mergeResult(List<ShadowMqConsumerOutput> amdbResult,
         List<ShadowMqConsumerEntity> dbResult) {
         Map<String, ShadowConsumerOutput> amdbMap = new HashMap<>();
+        Map<String, MqConfigTemplateEntity> entityMap = mqConfigTemplateDAO.selectToMapWithNameKey();
         if (CollectionUtils.isNotEmpty(amdbResult)) {
             amdbMap = amdbResult.stream()
-                .filter(item -> ShadowMqConsumerType.getByName(item.getType()) != null)
+                .filter(item -> entityMap.containsKey(item.getType()))
                 .map(e -> {
                     ShadowConsumerOutput response = new ShadowConsumerOutput();
                     response.setUnionId(
                         MD5Util.getMD5(e.getApplicationName() + "#" + e.getTopicGroup() + "#" + e.getType()));
-                    response.setType(ShadowMqConsumerType.of(e.getType()));
+                    response.setType(e.getType());
                     response.setTopicGroup(e.getTopicGroup());
                     response.setEnabled(e.getStatus() == ShadowConsumerConstants.ENABLE);
                     response.setGmtCreate(e.getCreateTime());
@@ -214,13 +214,13 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         Map<String, ShadowConsumerOutput> dbMap = new HashMap<>(dbResult.size());
         if (CollectionUtils.isNotEmpty(dbResult)) {
             dbMap = dbResult.stream()
-                .filter(item -> ShadowMqConsumerType.getByName(item.getType()) != null)
+                .filter(item -> entityMap.containsKey(item.getType()))
                 .map(e -> {
                     ShadowConsumerOutput response = new ShadowConsumerOutput();
                     response.setId(e.getId());
                     response.setUnionId(
                         MD5Util.getMD5(e.getApplicationName() + "#" + e.getTopicGroup() + "#" + e.getType()));
-                    response.setType(ShadowMqConsumerType.of(e.getType()));
+                    response.setType(e.getType());
                     response.setTopicGroup(e.getTopicGroup());
                     response.setEnabled(e.getStatus() == ShadowConsumerConstants.ENABLE);
                     response.setGmtCreate(e.getCreateTime());
@@ -255,7 +255,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         }
         if (Objects.nonNull(request.getType())) {
             mqTopicGroups = mqTopicGroups.stream()
-                .filter(dto -> dto.getMiddlewareName().equals(request.getType().name()))
+                .filter(dto -> dto.getMiddlewareName().equals(request.getType()))
                 .collect(Collectors.toList());
 
         }
@@ -315,14 +315,14 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             request.getType());
         if (CollectionUtils.isNotEmpty(exists)) {
             throw new RuntimeException(
-                String.format("类型为[%s]，对应的[%s]已存在", request.getType().name(), request.getTopicGroup()));
+                String.format("类型为[%s]，对应的[%s]已存在", request.getType(), request.getTopicGroup()));
         }
         OperationLogContextHolder.operationType(OpTypes.CREATE);
-        OperationLogContextHolder.addVars(Vars.CONSUMER_TYPE, request.getType().name());
+        OperationLogContextHolder.addVars(Vars.CONSUMER_TYPE, request.getType());
         OperationLogContextHolder.addVars(Vars.CONSUMER_TOPIC_GROUP, request.getTopicGroup());
         ShadowMqConsumerEntity shadowMqConsumerEntity = new ShadowMqConsumerEntity();
         shadowMqConsumerEntity.setTopicGroup(request.getTopicGroup());
-        shadowMqConsumerEntity.setType(request.getType().name());
+        shadowMqConsumerEntity.setType(request.getType());
         shadowMqConsumerEntity.setApplicationId(application.getApplicationId());
         shadowMqConsumerEntity.setApplicationName(application.getApplicationName());
 
@@ -354,15 +354,15 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         exists = exists.stream().filter(item -> !item.getId().equals(request.getId())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(exists)) {
             throw new RuntimeException(
-                String.format("类型为[%s]，对应的[%s]已存在", request.getType().name(), request.getTopicGroup()));
+                String.format("类型为[%s]，对应的[%s]已存在", request.getType(), request.getTopicGroup()));
         }
         OperationLogContextHolder.operationType(OpTypes.UPDATE);
-        OperationLogContextHolder.addVars(Vars.CONSUMER_TYPE, request.getType().name());
+        OperationLogContextHolder.addVars(Vars.CONSUMER_TYPE, request.getType());
         OperationLogContextHolder.addVars(Vars.CONSUMER_TOPIC_GROUP, request.getTopicGroup());
         ShadowMqConsumerEntity updateEntity = new ShadowMqConsumerEntity();
         updateEntity.setId(request.getId());
         updateEntity.setTopicGroup(request.getTopicGroup());
-        updateEntity.setType(request.getType().name());
+        updateEntity.setType(request.getType());
         updateEntity.setStatus(request.getStatus());
         shadowMqConsumerMapper.updateById(updateEntity);
         agentConfigCacheManager.evictShadowConsumer(application.getApplicationName());
@@ -384,7 +384,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         ShadowMqConsumerEntity updateEntity = new ShadowMqConsumerEntity();
         BeanUtils.copyProperties(request,updateEntity);
         updateEntity.setTopicGroup(request.getTopicGroup());
-        updateEntity.setType(request.getType().name());
+        updateEntity.setType(request.getType());
         updateEntity.setStatus(request.getStatus());
         shadowMqConsumerDAO.importUpdateData(updateEntity);
     }
@@ -437,7 +437,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
                     }
                     ShadowMqConsumerEntity shadowMqConsumerEntity = new ShadowMqConsumerEntity();
                     shadowMqConsumerEntity.setTopicGroup(request.getTopicGroup());
-                    shadowMqConsumerEntity.setType(request.getType().name());
+                    shadowMqConsumerEntity.setType(request.getType());
                     shadowMqConsumerEntity.setApplicationId(application.getApplicationId());
                     shadowMqConsumerEntity.setApplicationName(application.getApplicationName());
                     shadowMqConsumerEntity.setStatus(ShadowConsumerConstants.ENABLE);
@@ -536,10 +536,10 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         return 0;
     }
 
-    private List<ShadowMqConsumerEntity> getExists(String topicGroup, Long applicationId, ShadowMqConsumerType type) {
+    private List<ShadowMqConsumerEntity> getExists(String topicGroup, Long applicationId, String type) {
         LambdaQueryWrapper<ShadowMqConsumerEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getTopicGroup, topicGroup);
-        lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getType, type.name());
+        lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getType, type);
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getApplicationId, applicationId);
         lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getDeleted, ShadowConsumerConstants.LIVED);
         return shadowMqConsumerMapper.selectList(lambdaQueryWrapper);
@@ -552,7 +552,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             return Collections.emptyList();
         }
         List<SelectVO> vos = Lists.newArrayList();
-        results.forEach(mqTemplate -> vos.add(new SelectVO(MQTypeEnum.getCodeByValue(mqTemplate.getEngName()), mqTemplate.getEngName())));
+        results.forEach(mqTemplate -> vos.add(new SelectVO(mqTemplate.getEngName(), mqTemplate.getEngName())));
 
         return vos;
     }
@@ -592,15 +592,15 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             exists = exists.stream().filter(item -> !item.getId().equals(request.getId())).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(exists)) {
                 throw new RuntimeException(
-                    String.format("类型为[%s]，对应的[%s]已存在", request.getType().name(), request.getTopicGroup()));
+                    String.format("类型为[%s]，对应的[%s]已存在", request.getType(), request.getTopicGroup()));
             }
             OperationLogContextHolder.operationType(OpTypes.UPDATE);
-            OperationLogContextHolder.addVars(Vars.CONSUMER_TYPE, request.getType().name());
+            OperationLogContextHolder.addVars(Vars.CONSUMER_TYPE, request.getType());
             OperationLogContextHolder.addVars(Vars.CONSUMER_TOPIC_GROUP, request.getTopicGroup());
             ShadowMqConsumerEntity updateEntity = new ShadowMqConsumerEntity();
             updateEntity.setId(request.getId());
             updateEntity.setTopicGroup(request.getTopicGroup());
-            updateEntity.setType(request.getType().name());
+            updateEntity.setType(request.getType());
             updateEntity.setStatus(Integer.valueOf(request.getShadowconsumerEnable()));
             shadowMqConsumerMapper.updateById(updateEntity);
             agentConfigCacheManager.evictShadowConsumer(application.getApplicationName());
@@ -626,14 +626,14 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
             request.getType());
         if (CollectionUtils.isNotEmpty(exists)) {
             throw new RuntimeException(
-                String.format("类型为[%s]，对应的[%s]已存在", request.getType().name(), request.getTopicGroup()));
+                String.format("类型为[%s]，对应的[%s]已存在", request.getType(), request.getTopicGroup()));
         }
         OperationLogContextHolder.operationType(OpTypes.CREATE);
-        OperationLogContextHolder.addVars(Vars.CONSUMER_TYPE, request.getType().name());
+        OperationLogContextHolder.addVars(Vars.CONSUMER_TYPE, request.getType());
         OperationLogContextHolder.addVars(Vars.CONSUMER_TOPIC_GROUP, request.getTopicGroup());
         ShadowMqConsumerEntity shadowMqConsumerEntity = new ShadowMqConsumerEntity();
         shadowMqConsumerEntity.setTopicGroup(request.getTopicGroup());
-        shadowMqConsumerEntity.setType(request.getType().name());
+        shadowMqConsumerEntity.setType(request.getType());
         shadowMqConsumerEntity.setApplicationId(application.getApplicationId());
         shadowMqConsumerEntity.setApplicationName(application.getApplicationName());
 
@@ -659,7 +659,7 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
         }
         if (request.getType() != null) {
             lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getType, request.getType());
-            queryInput.setType(ShadowMqConsumerType.getByName(request.getType()));
+            queryInput.setType(request.getType());
         }
         // if (StringUtils.isNotBlank(request.getShadowConsumerEnable())) {
         //     lambdaQueryWrapper.eq(ShadowMqConsumerEntity::getStatus, request.getShadowConsumerEnable());

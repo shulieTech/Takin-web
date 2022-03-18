@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.EnumResult;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
+import io.shulie.takin.web.data.model.mysql.RemoteCallConfigEntity;
 
 /**
  * @author 无涯
@@ -20,38 +21,18 @@ public class RemoteCallConfigEnumMapping {
         return AppRemoteCallConfigEnum.CLOSE_CONFIGURATION;
     }
 
-    public static EnumResult parse(AppRemoteCallConfigEnum callConfigEnum) {
+    public static EnumResult parse(RemoteCallConfigEntity entity) {
         EnumResult result = new EnumResult();
-        if (callConfigEnum != null) {
-            switch (callConfigEnum) {
-                case CLOSE_CONFIGURATION:
-                    result.label(callConfigEnum.getConfigName()).value(String.valueOf(callConfigEnum.getType())).num(0);
-                    break;
-                case OPEN_WHITELIST:
-                    result.label(callConfigEnum.getConfigName()).value(String.valueOf(callConfigEnum.getType())).num(1);
-                    break;
-                case RETURN_MOCK:
-                    result.label(callConfigEnum.getConfigName()).value(String.valueOf(callConfigEnum.getType())).num(2);
-                    break;
-                case FORWARD_MOCK:
-                    result.label(callConfigEnum.getConfigName()).value(String.valueOf(callConfigEnum.getType())).num(3);
-                    break;
-                case  FIX_FORWARD_MOCK:
-                    result.label(callConfigEnum.getConfigName()).value(String.valueOf(callConfigEnum.getType())).num(4);
-                default:
-                    break;
-            }
-        } else {
-            result.label(callConfigEnum.getConfigName()).value(String.valueOf(callConfigEnum.getType())).num(0);
+        if (entity != null) {
+            Integer order = entity.getValueOrder();
+            result.label(entity.getName()).value(String.valueOf(order)).num(order);
         }
         return result;
     }
 
-    public static List<EnumResult> neededEnumResults() {
+    public static List<EnumResult> neededEnumResults(List<RemoteCallConfigEntity> entityList) {
         List<EnumResult> enumResults = new ArrayList<>();
-        for (AppRemoteCallConfigEnum callConfigEnum : AppRemoteCallConfigEnum.values()) {
-            enumResults.add(parse(callConfigEnum));
-        }
+        entityList.forEach(entity -> enumResults.add(parse(entity)));
         return enumResults;
     }
 }

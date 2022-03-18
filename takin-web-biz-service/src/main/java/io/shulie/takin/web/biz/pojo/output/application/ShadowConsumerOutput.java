@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.pojo.output.application;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.shulie.takin.web.common.enums.shadow.ShadowMqConsumerType;
 import io.shulie.takin.web.ext.entity.AuthQueryResponseCommonExt;
 import lombok.Data;
 import lombok.ToString;
@@ -24,7 +23,7 @@ public class ShadowConsumerOutput extends AuthQueryResponseCommonExt {
      */
     private String unionId;
 
-    private ShadowMqConsumerType type;
+    private String type;
 
     private String topicGroup;
 

@@ -1,9 +1,11 @@
 package io.shulie.takin.web.data.dao.application;
 
 
+import io.shulie.takin.web.data.model.mysql.MqConfigTemplateEntity;
 import io.shulie.takin.web.data.result.application.MqConfigTemplateDetailResult;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * MQ配置模版表(MqConfigTemplate)表数据库 dao 层
@@ -20,5 +22,7 @@ public interface MqConfigTemplateDAO {
     List<MqConfigTemplateDetailResult> queryList();
 
     MqConfigTemplateDetailResult queryOne(String engName);
+
+    Map<String, MqConfigTemplateEntity> selectToMapWithNameKey();
 }
 

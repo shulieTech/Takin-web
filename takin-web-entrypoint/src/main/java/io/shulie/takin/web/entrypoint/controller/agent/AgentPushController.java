@@ -89,13 +89,14 @@ public class AgentPushController {
     @PostMapping(value = AgentUrls.MIDDLE_STAUTS_URL)
     @ApiOperation("agent上传中间件列表状态")
     public Response uploadMiddlewareStatusAndRole(@RequestBody String requestJson,
-        @RequestParam("appName") String appName) {
+                                                  @RequestParam(required = false, name = "appName") String appName) {
         try {
             Map<String, JarVersionVo> requestMap = JSONObject.parseObject(requestJson,
-                new TypeReference<Map<String, JarVersionVo>>() {
-                });
+                    new TypeReference<Map<String, JarVersionVo>>() {
+                    });
             return applicationService.uploadMiddlewareStatus(requestMap, appName);
         } catch (Exception e) {
+            e.printStackTrace();
             return Response.fail("middle status error");
         }
     }
@@ -134,7 +135,7 @@ public class AgentPushController {
      */
 
     @PostMapping(value = AgentUrls.UPLOAD_APP_INFO,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("上传应用信息接口")
     public ResponseEntity<Object> judgeNeedUpload(@RequestBody TUploadInterfaceVo tUploadInterfaceVo) {
         try {
@@ -151,7 +152,7 @@ public class AgentPushController {
      * @return 成功, 则返回成功信息, 失败则返回错误编码和错误信息
      */
     @PostMapping(value = AgentUrls.UPLOAD,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("判断是否需要上传")
     public ResponseEntity<Object> judgeNeedUpload(@RequestBody TUploadNeedVo uploadNeedVo) {
         try {
@@ -163,12 +164,12 @@ public class AgentPushController {
 
     @ApiOperation(value = "影子JOB配置修改")
     @RequestMapping(value = AgentUrls.TAKIN_REPORT_ERROR_SHADOW_JOB_URL, method = {RequestMethod.PUT, RequestMethod.POST},
-        produces = MediaType.APPLICATION_JSON_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Response update(@RequestBody ShadowJobConfigQuery query) {
         try {
             if (query.getId() == null) {
                 return Response.fail(TakinWebExceptionEnum.AGENT_UPDATE_SHADOW_JOB_VALIDATE_ERROR.getErrorCode(),
-                    "ID不能为空");
+                        "ID不能为空");
             }
 
             Map<String, String> xmlMap = XmlUtil.readStringXml(query.getConfigCode());
@@ -178,7 +179,7 @@ public class AgentPushController {
             return shadowJobConfigService.update(query);
         } catch (Exception e) {
             return Response.fail(TakinWebExceptionEnum.AGENT_UPDATE_SHADOW_JOB_UPDATE_ERROR.getErrorCode(),
-                e.getMessage(), e);
+                    e.getMessage(), e);
         }
     }
 
@@ -190,13 +191,13 @@ public class AgentPushController {
     @Deprecated
     @GetMapping(value = AgentUrls.AGENT_VERSION, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> appAgentVersionUpdate(@RequestParam("appName") String appName,
-        @RequestParam(value = "agentVersion") String agentVersion,
-        @RequestParam(value = "pradarVersion") String pradarVersion) {
+                                                        @RequestParam(value = "agentVersion") String agentVersion,
+                                                        @RequestParam(value = "pradarVersion") String pradarVersion) {
         try {
             if (StringUtils.isBlank(agentVersion)
-                || StringUtils.isBlank(pradarVersion)
-                || "null".equalsIgnoreCase(agentVersion)
-                || "null".equalsIgnoreCase(pradarVersion)) {
+                    || StringUtils.isBlank(pradarVersion)
+                    || "null".equalsIgnoreCase(agentVersion)
+                    || "null".equalsIgnoreCase(pradarVersion)) {
                 return ResponseError.create(1010100102, "更新应用版本异常,参数为空");
             }
             confCenterService.updateAppAgentVersion(appName, agentVersion, pradarVersion);

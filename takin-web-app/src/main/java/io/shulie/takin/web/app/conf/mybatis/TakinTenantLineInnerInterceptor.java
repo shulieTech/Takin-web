@@ -61,10 +61,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_pradar_zk_config",
         "t_cache_config_template",
         "t_connectpool_config_template",
-        "t_http_client_config_template",
-        "t_app_remote_call_template_mapping",
         "t_mq_config_template",
-        "t_rpc_config_template",
         "t_agent_config",
         "t_agent_version",
         "t_exception_info",
@@ -74,7 +71,11 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_agent_plugin_lib_support",
         "t_plugin_library",
         "t_plugin_dependent",
-        "t_plugin_tenant_ref"
+        "t_plugin_tenant_ref",
+        "t_interface_type_main",
+        "t_interface_type_child",
+        "t_interface_type_config",
+        "t_remote_call_config"
     };
 
     private String[] tableArrWithoutEnvCode = new String[] {
@@ -91,10 +92,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_pradar_zk_config",
         "t_cache_config_template",
         "t_connectpool_config_template",
-        "t_http_client_config_template",
-        "t_app_remote_call_template_mapping",
         "t_mq_config_template",
-        "t_rpc_config_template",
         "t_agent_config",
         "t_agent_version",
         "t_exception_info",
@@ -105,7 +103,11 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_plugin_library",
         "t_plugin_dependent",
         "t_plugin_tenant_ref",
-        "t_tenant_env_ref"
+        "t_tenant_env_ref",
+        "t_interface_type_main",
+        "t_interface_type_child",
+        "t_remote_call_config",
+        "t_interface_type_config"
     };
 
     private String[] tableArrWithoutUserId = new String[] {
@@ -122,10 +124,8 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_pradar_zk_config",
         "t_cache_config_template",
         "t_connectpool_config_template",
-        "t_http_client_config_template",
         "t_app_remote_call_template_mapping",
         "t_mq_config_template",
-        "t_rpc_config_template",
         "t_agent_config",
         "t_agent_version",
         "t_exception_info",
@@ -135,7 +135,11 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_agent_plugin_lib_support",
         "t_plugin_library",
         "t_plugin_dependent",
-        "t_plugin_tenant_ref"
+        "t_plugin_tenant_ref",
+        "t_interface_type_main",
+        "t_interface_type_child",
+        "t_interface_type_config",
+        "t_remote_call_config"
     };
 
     /**

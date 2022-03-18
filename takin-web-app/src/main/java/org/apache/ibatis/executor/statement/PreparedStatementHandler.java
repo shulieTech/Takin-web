@@ -61,8 +61,7 @@ public class PreparedStatementHandler extends BaseStatementHandler {
 
         KeyGenerator keyGenerator = mappedStatement.getKeyGenerator();
         keyGenerator.processAfter(executor, mappedStatement, ps, parameterObject);
-        SignCommonUtil signCommonUtil = new SignCommonUtil();
-        signCommonUtil.setSign(mappedStatement,parameterObject,statement,boundSql);
+        SignCommonUtil.getInstance().setSign(mappedStatement,parameterObject,statement,boundSql);
         return rows;
     }
 
@@ -77,8 +76,7 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
         PreparedStatement ps = (PreparedStatement) statement;
         ps.execute();
-        SignCommonUtil signCommonUtil = new SignCommonUtil();
-        signCommonUtil.validSign(mappedStatement,ps);
+        SignCommonUtil.getInstance().validSign(mappedStatement,ps);
         ps.execute();
         return resultSetHandler.handleResultSets(ps);
     }

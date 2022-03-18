@@ -16,6 +16,7 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.ParameterMode;
+import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.TypeHandlerRegistry;
@@ -178,6 +179,10 @@ public class SignCommonUtil {
 
 
     public void validSign(MappedStatement mappedStatement, PreparedStatement ps) throws SQLException {
+        List<ResultMap> resultMaps = mappedStatement.getResultMaps();
+        if(resultMaps.size() == 0){
+            return;
+        }
         Class<?> clz = mappedStatement.getResultMaps().get(0).getType();
         boolean isSign = clz.isAnnotationPresent(EnableSign.class);
         boolean valid = true;

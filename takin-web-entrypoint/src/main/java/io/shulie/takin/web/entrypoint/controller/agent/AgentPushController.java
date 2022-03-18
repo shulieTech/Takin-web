@@ -78,7 +78,7 @@ public class AgentPushController {
         try {
             return apiService.registerApi(register);
         } catch (Exception e) {
-            return Response.fail(e.getMessage());
+            throw new TakinWebException(ExceptionCode.AGENT_INTERFACE_ERROR, "AgentController.registerApi 注册api异常", e);
         }
     }
 

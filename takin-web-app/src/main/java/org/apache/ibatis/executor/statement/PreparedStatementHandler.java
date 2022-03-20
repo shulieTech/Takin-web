@@ -18,6 +18,7 @@ package org.apache.ibatis.executor.statement;
 import io.shulie.takin.web.app.conf.mybatis.datasign.SignCommonUtil;
 import lombok.SneakyThrows;
 import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.apache.ibatis.executor.keygen.KeyGenerator;
@@ -65,10 +66,15 @@ public class PreparedStatementHandler extends BaseStatementHandler {
         return rows;
     }
 
+    @SneakyThrows
     @Override
     public void batch(Statement statement) throws SQLException {
         PreparedStatement ps = (PreparedStatement) statement;
         ps.addBatch();
+
+        List<BatchResult> batchResults = executor.flushStatements();
+        List<Object> parameterObjects = batchResults.get(0).getParameterObjects();
+        SignCommonUtil.getInstance().setSign(mappedStatement,parameterObjects.get(0),statement,boundSql);
     }
 
     @SneakyThrows

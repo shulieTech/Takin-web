@@ -71,10 +71,10 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     public void batch(Statement statement) throws SQLException {
         PreparedStatement ps = (PreparedStatement) statement;
         ps.addBatch();
-
+        Statement s1 = statement.getConnection().createStatement();
         List<BatchResult> batchResults = executor.flushStatements();
         List<Object> parameterObjects = batchResults.get(0).getParameterObjects();
-        SignCommonUtil.getInstance().setSign(mappedStatement,parameterObjects.get(0),statement,boundSql);
+        SignCommonUtil.getInstance().setSign(mappedStatement,parameterObjects.get(0),s1,boundSql);
     }
 
     @SneakyThrows

@@ -472,7 +472,7 @@ public class ActivityServiceImpl implements ActivityService {
             List<String> exists = activityDAO.exists(param);
             if (CollectionUtils.isNotEmpty(exists)) {
                 Optional<String> any = exists.stream()
-                    .filter(item -> !item.equals(request.getActivityName()))
+                    .filter(item -> !item.equals(oldActivity.getActivityName()))
                     .findAny();
                 if (any.isPresent()) {
                     throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, String

@@ -78,6 +78,7 @@ public final class BizOpConstants {
         public static final String BUSINESS_ACTIVITY = "businessActivity";
         public static final String BUSINESS_PROCESS = "businessFlow";
         public static final String APPLICATION_MANAGE = "appManage";
+        public static final String SECURITY_CENTER = "securityCenter";
         public static final String PRESSURE_TEST_MANAGE = "pressureTestManage";
         public static final String PRESSURE_TEST_SCENE = "pressureTestManage_pressureTestScene";
         public static final String PRESSURE_TEST_REPORT = "pressureTestManage_pressureTestReport";
@@ -108,17 +109,16 @@ public final class BizOpConstants {
 
         // 探针快速接入
         public static final String AGENT_CONFIG = "admins_simulationConfig";
-        public static final String AGENT_VERSION= "admins_admin";
-        public static final String NEW_PROJECT_ACCESS= "appManage_appAccess";
+        public static final String AGENT_VERSION = "admins_admin";
+        public static final String NEW_PROJECT_ACCESS = "appManage_appAccess";
 
         //探针管理
         public static final String AGENT_LIST = "appManage_agentManage";
 
 
-
         // 大盘查询放开  dashboard 不允许用到其他地方
         public static final String DASHBOARD = "dashboard";
-        public static final String DASHBOARD_APPMANAGE = "dashboard_"+ APPLICATION_MANAGE ;
+        public static final String DASHBOARD_APPMANAGE = "dashboard_" + APPLICATION_MANAGE;
         public static final String DASHBOARD_SCENE = "dashboard_" + PRESSURE_TEST_SCENE;
         public static final String DASHBOARD_REPORT = "dashboard_" + PRESSURE_TEST_REPORT;
     }
@@ -166,7 +166,6 @@ public final class BizOpConstants {
         public static final String MESSAGE_VIRTUAL_BUSINESS_ACTIVITY_UPDATE = "message.virtual.business_activity.update";
 
 
-
         /**
          * 业务流程
          */
@@ -192,7 +191,7 @@ public final class BizOpConstants {
         public static final String MESSAGE_SHADOW_DATABASE_TABLE_DELETE = "message.shadow_database_table.delete";
         public static final String MESSAGE_SHADOW_DATABASE_TABLE_UPDATE = "message.shadow_database_table.update";
         public static final String MESSAGE_SHADOW_DATABASE_ENABLE_DISABLE
-            = "message.shadow_database_table.enable_disable";
+                = "message.shadow_database_table.enable_disable";
         /**
          * 插件管理
          */
@@ -224,7 +223,7 @@ public final class BizOpConstants {
         public static final String MESSAGE_WHITE_LIST_DELETE = "message.white_list.delete";
 
         /**
-         *远程调用
+         * 远程调用
          */
         public static final String MESSAGE_REMOTE_CALL_CREATE = "message.remote_call.create";
         public static final String MESSAGE_REMOTE_CALL_UPDATE = "message.remote_call.update";
@@ -249,7 +248,7 @@ public final class BizOpConstants {
         public static final String MESSAGE_PRESSURE_TEST_SCENE_UPDATE = "message.pressure_test_scene.update";
         public static final String MESSAGE_PRESSURE_TEST_SCENE_START = "message.pressure_test_scene.start";
         public static final String MESSAGE_PRESSURE_TEST_SCENE_START_TRIAL_RUN
-            = "message.pressure_test_scene.startTrialRun";
+                = "message.pressure_test_scene.startTrialRun";
         public static final String MESSAGE_PRESSURE_TEST_SCENE_STOP = "message.pressure_test_scene.stop";
 
         /**
@@ -354,7 +353,6 @@ public final class BizOpConstants {
 
         /**
          * 远程调用配置
-         *
          */
         public static final String REMOTE_CALL_CONFIG = "remoteCallConfig";
 
@@ -384,12 +382,10 @@ public final class BizOpConstants {
         public static final String ENTRANCE = "entrance";
 
 
-
         /**
          * 绑定业务活动id
          */
         public static final String BIND_BUSINESS_ID = "bindBusinessId";
-
 
 
         /**

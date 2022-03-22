@@ -18,6 +18,8 @@ public interface InterfaceTypeMainDAO {
      */
     InterfaceTypeMainEntity selectByName(String typeName);
 
+    InterfaceTypeMainEntity selectById(Long id);
+
     /**
      * 查询所有的接口类型
      *

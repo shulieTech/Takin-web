@@ -28,6 +28,11 @@ public class InterfaceTypeMainDAOImpl extends ServiceImpl<InterfaceTypeMainMappe
     }
 
     @Override
+    public InterfaceTypeMainEntity selectById(Long id) {
+        return getById(id);
+    }
+
+    @Override
     public InterfaceTypeMainEntity selectByOrder(Integer order) {
         return selectByOrder(order, true);
     }

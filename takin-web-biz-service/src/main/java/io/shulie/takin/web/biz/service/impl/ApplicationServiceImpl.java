@@ -21,6 +21,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.collection.ListUtil;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -2358,7 +2359,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 info.setHidden(entryValue.getHidden());
                 tAppMiddlewareInfoList.add(info);
             }
-            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(tAppMiddlewareInfoList)){
+
+            if (org.apache.commons.collections4.CollectionUtils.isEmpty(tAppMiddlewareInfoList)) {
+                return Response.success();
+            }
+
+            int listPageSize = 200;
+            if (tAppMiddlewareInfoList.size() > listPageSize) {
+                List<List<TAppMiddlewareInfo>> tapeInfos = ListUtil.split(tAppMiddlewareInfoList, listPageSize);
+                for (List<TAppMiddlewareInfo> tapInfo : tapeInfos) {
+                    this.tAppMiddlewareInfoMapper.batchInsert(tapInfo);
+                }
+            } else {
                 this.tAppMiddlewareInfoMapper.batchInsert(tAppMiddlewareInfoList);
             }
 

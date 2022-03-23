@@ -218,7 +218,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         AppRemoteCallOutput output = new AppRemoteCallOutput();
         BeanUtils.copyProperties(result, output);
         RemoteCallConfigEntity configEntity = remoteCallConfigDAO.selectByOrder(output.getType());
-        output.setTypeSelectVO(new SelectVO(configEntity.getName(), String.valueOf(configEntity.getId())));
+        output.setTypeSelectVO(new SelectVO(configEntity.getName(), String.valueOf(configEntity.getValueOrder())));
         // 支持类型
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
         output.setInterfaceTypeSelectVO(getSelectVO(output.getInterfaceType(), voList));
@@ -239,7 +239,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             TDictionaryVo vos = dictionaryVoList.get(0);
             return new SelectVO(vos.getValueName(), type);
         } else {
-            return new SelectVO(mainEntity.getName(), String.valueOf(mainEntity.getId()));
+            return new SelectVO(mainEntity.getName(), String.valueOf(mainEntity.getValueOrder()));
         }
     }
 
@@ -350,7 +350,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             return Integer.valueOf(dictionaryVoList.get(0).getValueCode());
         }
 
-        return mainEntity.getId().intValue();
+        return mainEntity.getValueOrder();
 
     }
 
@@ -450,7 +450,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
         List<RemoteCallConfigEntity> entities = remoteCallConfigDAO.selectList();
         List<SelectVO> vos = entities.stream()
-            .map(t -> new SelectVO(t.getName(), String.valueOf(t.getId()))).collect(Collectors.toList());
+            .map(t -> new SelectVO(t.getName(), String.valueOf(t.getValueOrder()))).collect(Collectors.toList());
 
         TBaseConfig tBaseConfig = baseConfigService.selectByPrimaryKey("REMOTE_CALL_ABLE_CONFIG");
         Map<Integer, RemoteCallConfigEntity> entityMap = remoteCallConfigDAO.selectToMapWithOrderKey();
@@ -462,7 +462,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 if (!value.contains(selectVO.getLabel())) {
                     RemoteCallConfigEntity entity = entityMap.get(Integer.valueOf(key));
                     for (SelectVO vo : vos) {
-                        if (vo.getValue().equals(String.valueOf(entity.getId()))) {
+                        if (vo.getValue().equals(String.valueOf(entity.getValueOrder()))) {
                             vo.setDisable(false);
                             break;
                         }
@@ -673,7 +673,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
             listVO.setAppName(call.getAppName());
             listVO.setIsManual(false);
             listVO.setDefaultWhiteInfo(StringUtils.defaultIfBlank(call.getDefaultWhiteInfo(), ""));
-            if (childEntityMap.containsKey(call.getMiddlewareDetail())) {
+            if (!childEntityMap.containsKey(call.getMiddlewareDetail())) {
                 listVO.setInterfaceChildType(call.getMiddlewareName());
             } else {
                 listVO.setInterfaceChildType(call.getMiddlewareDetail());
@@ -798,7 +798,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                 listVO.setAppName(call.getAppName());
                 listVO.setIsManual(false);
                 listVO.setDefaultWhiteInfo(StringUtils.defaultIfBlank(call.getDefaultWhiteInfo(), ""));
-                if (childEntityMap.containsKey(call.getMiddlewareDetail())) {
+                if (!childEntityMap.containsKey(call.getMiddlewareDetail())) {
                     listVO.setInterfaceChildType(call.getMiddlewareName());
                 } else {
                     listVO.setInterfaceChildType(call.getMiddlewareDetail());
@@ -900,8 +900,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         this.checkRequest(request);
         // 补充插件内容
         WebPluginUtils.fillUserData(request);
-        int mainTypeId = interfaceTypeChildDAO.selectByName(request.getInterfaceType()).getMainId().intValue();
-        AppRemoteCallResult result = appRemoteCallDAO.queryOne(detailResult.getApplicationName(), mainTypeId, request.getInterfaceName());
+        Long mainTypeId = interfaceTypeChildDAO.selectByName(request.getInterfaceType()).getMainId();
+        Integer mainTypeOrder = interfaceTypeMainDAO.selectById(mainTypeId).getValueOrder();
+        AppRemoteCallResult result = appRemoteCallDAO.queryOne(detailResult.getApplicationName(), mainTypeOrder, request.getInterfaceName());
         if (Objects.nonNull(result)) {
             throw new TakinWebException(ExceptionCode.REMOTE_CALL_CONFIG_CHECK_ERROR, "相同接口已经存在");
         }
@@ -912,7 +913,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         WebPluginUtils.transferTenantParam(detailResult, param);
 
         param.setAppName(detailResult.getApplicationName());
-        param.setInterfaceType(mainTypeId);
+        param.setInterfaceType(mainTypeOrder);
         param.setInterfaceChildType(request.getInterfaceType());
         param.setMockReturnValue(request.getMockValue());
         param.setRemark(request.getRemark());
@@ -949,12 +950,13 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         getCallResult(request.getId());
         AppRemoteCallUpdateParam param = new AppRemoteCallUpdateParam();
         BeanUtils.copyProperties(request, param);
-        int mainTypeId = interfaceTypeChildDAO.selectByName(request.getInterfaceType()).getMainId().intValue();
+        Long mainId = interfaceTypeChildDAO.selectByName(request.getInterfaceType()).getMainId();
+        InterfaceTypeMainEntity mainEntity = interfaceTypeMainDAO.selectById(mainId);
 
         WebPluginUtils.transferTenantParam(detailResult, param);
 
         param.setAppName(detailResult.getApplicationName());
-        param.setInterfaceType(mainTypeId);
+        param.setInterfaceType(mainEntity.getValueOrder());
         param.setInterfaceChildType(request.getInterfaceType());
         param.setMockReturnValue(request.getMockValue());
 //        param.setRemark(request.getRemark());

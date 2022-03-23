@@ -175,8 +175,10 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
         // 裂变数据 @RequestMapping method 不写 默认 Get post
         manage.setMethod("GET");
         batch.add(manage);
-        manage.setMethod("POST");
-        batch.add(manage);
+        ApplicationApiCreateParam newManage = new ApplicationApiCreateParam();
+        BeanUtils.copyProperties(manage, newManage);
+        newManage.setMethod("POST");
+        batch.add(newManage);
     }
 
     @Override

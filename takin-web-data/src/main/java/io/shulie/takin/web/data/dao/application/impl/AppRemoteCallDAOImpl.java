@@ -152,7 +152,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     @Override
     public List<String> getRemoteCallMd5(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getAppRemoteCallEntityLambdaQueryWrapper(param);
-        lambdaQueryWrapper.select(AppRemoteCallEntity::getMd5);
+//        lambdaQueryWrapper.select(AppRemoteCallEntity::getMd5);  数据签名必须全部字段返回,不然签名计算结果对不上
         List<AppRemoteCallEntity> entities = this.list(lambdaQueryWrapper);
         if (CollectionUtils.isEmpty(entities)) {
             return Lists.newArrayList();

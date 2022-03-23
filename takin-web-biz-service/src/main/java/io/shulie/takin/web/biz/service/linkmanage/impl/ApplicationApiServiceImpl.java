@@ -106,7 +106,12 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
                             manage.setIsAgentRegiste(1);
                             manage.setTenantId(WebPluginUtils.traceTenantId());
                             manage.setEnvCode(WebPluginUtils.traceEnvCode());
-                            batch.add(manage);
+                            if(StringUtils.isNotBlank(manage.getMethod())) {
+                                batch.add(manage);
+                            }else {
+                                // 裂变数据 @RequestMapping method 不写 默认 Get post
+                                this.fission(manage,batch);
+                            }
                         }
 
                     } else {
@@ -122,10 +127,16 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
                         manage.setIsAgentRegiste(1);
                         manage.setTenantId(WebPluginUtils.traceTenantId());
                         manage.setEnvCode(WebPluginUtils.traceEnvCode());
-                        batch.add(manage);
-                    }
 
+                        if(StringUtils.isNotBlank(manage.getMethod())) {
+                            batch.add(manage);
+                        }else {
+                            // 裂变数据 @RequestMapping method 不写 默认 Get post
+                            this.fission(manage,batch);
+                        }
+                    }
                 });
+
 
                 // 把旧的记录删除了，新的再添加
                 applicationApiDAO.deleteByAppName(appName);
@@ -158,6 +169,14 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
             });
         }
         return Response.success();
+    }
+
+    private void fission(ApplicationApiCreateParam manage, List<ApplicationApiCreateParam> batch) {
+        // 裂变数据 @RequestMapping method 不写 默认 Get post
+        manage.setMethod("GET");
+        batch.add(manage);
+        manage.setMethod("POST");
+        batch.add(manage);
     }
 
     @Override

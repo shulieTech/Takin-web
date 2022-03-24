@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import cn.hutool.core.collection.ListUtil;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.collection.CollStreamUtil;
@@ -610,23 +611,13 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         // size个轮询一次
         int size = 10;
         if (applicationIds.size() > size) {
-            int i = 1;
-            boolean loop = true;
             List<String> list = new ArrayList<>();
-            do {
-                List<Long> subList;
-                //批量处理
-                if (applicationIds.size() > i * size) {
-                    subList = applicationIds.subList((i - 1) * size, i * size);
-                } else {
-                    subList = applicationIds.subList((i - 1) * size, applicationIds.size());
-                    loop = false;
-                }
-                i++;
-                param.setApplicationIds(subList);
+            List<List<Long>> splitList = ListUtil.split(applicationIds, size);
+            splitList.forEach(x ->{
+                param.setApplicationIds(x);
                 List<String> returns = appRemoteCallDAO.getRemoteCallMd5(param);
                 list.addAll(returns);
-            } while (loop);
+            });
             return list;
         } else {
             return appRemoteCallDAO.getRemoteCallMd5(param);

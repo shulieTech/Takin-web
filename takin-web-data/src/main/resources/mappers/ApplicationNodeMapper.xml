@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.ApplicationNodeMapper">
+    <select id="getAllNodesByApplicationName" resultType="java.lang.String">
+        SELECT blmt.LINK_ID AS linkId,blmt.LINK_NAME AS linkName, blmt.persistence AS persistence
+        FROM t_business_link_manage_table blmt
+                 INNER JOIN t_link_manage_table lmt
+                            ON blmt.RELATED_TECH_LINK = lmt.LINK_ID
+        WHERE blmt.ENTRACE LIKE #{entrance}
+          AND lmt.APPLICATION_NAME = #{appName}
+          AND blmt.IS_DELETED = 0
+    </select>
+</mapper>

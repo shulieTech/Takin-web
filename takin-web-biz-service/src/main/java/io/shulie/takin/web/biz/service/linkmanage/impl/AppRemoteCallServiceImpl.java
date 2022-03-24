@@ -16,6 +16,7 @@
 
 package io.shulie.takin.web.biz.service.linkmanage.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -605,7 +606,31 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
      * @return
      */
     private List<String> queryRemoteAppMd5(AppRemoteCallQueryParam param) {
-        return appRemoteCallDAO.getRemoteCallMd5(param);
+        List<Long> applicationIds = param.getApplicationIds();
+        // size个轮询一次
+        int size = 10;
+        if (applicationIds.size() > size) {
+            int i = 1;
+            boolean loop = true;
+            List<String> list = new ArrayList<>();
+            do {
+                List<Long> subList;
+                //批量处理
+                if (applicationIds.size() > i * size) {
+                    subList = applicationIds.subList((i - 1) * size, i * size);
+                } else {
+                    subList = applicationIds.subList((i - 1) * size, applicationIds.size());
+                    loop = false;
+                }
+                i++;
+                param.setApplicationIds(subList);
+                List<String> returns = appRemoteCallDAO.getRemoteCallMd5(param);
+                list.addAll(returns);
+            } while (loop);
+            return list;
+        } else {
+            return appRemoteCallDAO.getRemoteCallMd5(param);
+        }
     }
 
     private List<AppRemoteCallResult> queryAsyncIfNecessary(AppRemoteCallQueryParam param) {

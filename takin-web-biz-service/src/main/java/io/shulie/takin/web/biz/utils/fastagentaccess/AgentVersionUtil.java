@@ -68,4 +68,8 @@ public class AgentVersionUtil {
             return 0;
         }
     }
+
+    public static void main(String[] args) {
+        System.out.println(compareVersion("1.2","1.1",true));
+    }
 }

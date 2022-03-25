@@ -142,39 +142,40 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 影子配置
      */
     SHADOW_CONFIG_CREATE_ERROR("1400-" + ErrorConstant.VALIDATE_ERROR, "新增影子配置异常"),
+    SHADOW_CONFIG_URL_CREATE_ERROR("1401-" + ErrorConstant.VALIDATE_ERROR, "新增影子配置数据源异常"),
 
     /**
      * 业务域管理
      */
     BUSINESS_DOMAIN_ADD_ERROR("1500-" + ErrorConstant.ADD_ERROR, "新增业务域异常"),
-    BUSINESS_DOMAIN_UPDATE_ERROR("1500-"+ErrorConstant.UPDATE_ERROR,"更新业务域异常"),
+    BUSINESS_DOMAIN_UPDATE_ERROR("1500-" + ErrorConstant.UPDATE_ERROR, "更新业务域异常"),
     BUSINESS_DOMAIN_DELETE_ERROR("1500-" + ErrorConstant.DELETE_ERROR, "删除业务域异常"),
 
 
     /**
-     *  agent指令操作
+     * agent指令操作
      */
-    AGENT_COMMAND_VALID_ERROR("1500-"+ErrorConstant.VALIDATE_ERROR,"Agent 指令操作 数据校验异常"),
+    AGENT_COMMAND_VALID_ERROR("1500-" + ErrorConstant.VALIDATE_ERROR, "Agent 指令操作 数据校验异常"),
 
     /**
      * 插件根目录
      */
-    PLUGIN_PATH_VALID_ERROR("1600-"+ErrorConstant.VALIDATE_ERROR,"探针根目录数据校验异常"),
+    PLUGIN_PATH_VALID_ERROR("1600-" + ErrorConstant.VALIDATE_ERROR, "探针根目录数据校验异常"),
 
     /**
      * 升级
      */
-    PLUGIN_UPGRADE_VALID_ERROR("1700-"+ErrorConstant.VALIDATE_ERROR,"升级包数据异常"),
+    PLUGIN_UPGRADE_VALID_ERROR("1700-" + ErrorConstant.VALIDATE_ERROR, "升级包数据异常"),
 
     /**
      * 应用标签
      */
-    APPLICATION_TAG_CREATE_ERROR("1800-"+ErrorConstant.ADD_ERROR,"应用标签创建异常"),
+    APPLICATION_TAG_CREATE_ERROR("1800-" + ErrorConstant.ADD_ERROR, "应用标签创建异常"),
 
     /**
      * 数据签名
      */
-    DATA_SIGN_ERROR("19800-"+ErrorConstant.DATA_SIGN_ERROR,"数据签名异常"),
+    DATA_SIGN_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据签名异常"),
 
     ;
     private final String errorCode;

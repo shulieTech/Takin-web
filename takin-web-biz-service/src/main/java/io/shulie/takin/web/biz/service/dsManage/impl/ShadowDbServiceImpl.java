@@ -563,7 +563,7 @@ public class ShadowDbServiceImpl extends AbstractDsService {
         DataSource ds = config.getDataSources().get(1);
         DataSource bs = config.getDataSources().get(0);
 
-        String s = dbTemplateParser.convertData(JSON.toJSONString(ds),"druid");
+        String s = dbTemplateParser.convertData(JSON.toJSONString(ds),"druid",false);
         ShadowDetailResponse response = new ShadowDetailResponse();
         response.setId(recordId);
         response.setApplicationId(String.valueOf(dsResult.getApplicationId()));

@@ -169,6 +169,9 @@ public class DbTemplateParser extends AbstractTemplateParser {
         return new ArrayList<>(map.values());
     }
 
+    public String convertData(String str, String connPoolName){
+       return this.convertData(str,connPoolName,true);
+    }
 
     /**
      * 填充第一次的动态数据
@@ -176,7 +179,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
      * @param str
      * @return
      */
-    public String convertData(String str, String connPoolName) {
+    public String convertData(String str, String connPoolName,Boolean isHide) {
 
         Map<String, Object> convertMap = new HashMap<>();
         if (StringUtils.isBlank(str) || !JsonUtil.isJson(str)) {
@@ -200,9 +203,16 @@ public class DbTemplateParser extends AbstractTemplateParser {
             });
         }
 
-        convertMap.put(PWD_FILE_NAME, "");
-        convertMap.put(INPUT_FILE_NAME_USER_NAME, "");
-        convertMap.put(INPUT_FILE_NAME_URL, "");
+        if(isHide){
+            convertMap.put(PWD_FILE_NAME, "");
+            convertMap.put(INPUT_FILE_NAME_USER_NAME, "");
+            convertMap.put(INPUT_FILE_NAME_URL, "");
+        }else{
+            convertMap.put(PWD_FILE_NAME, convertMap.get("password"));
+            convertMap.put(INPUT_FILE_NAME_USER_NAME, convertMap.get("username"));
+            convertMap.put(INPUT_FILE_NAME_URL, convertMap.get("url"));
+        }
+
         return JSON.toJSONString(convertMap);
     }
 

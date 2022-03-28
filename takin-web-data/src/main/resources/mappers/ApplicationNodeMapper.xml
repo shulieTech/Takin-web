@@ -10,4 +10,15 @@
           AND lmt.APPLICATION_NAME = #{appName}
           AND blmt.IS_DELETED = 0
     </select>
+
+    <select id="getApplicationNamesWithIds" resultType="java.lang.String">
+        SELECT APPLICATION_NAME FROM t_application_mnt WHERE APPLICATION_ID IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getApplicationTags" resultType="java.lang.String">
+        SELECT tag_name FROM t_application_tag_ref WHERE application_name = #{applicationName}
+    </select>
 </mapper>

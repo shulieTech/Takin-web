@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web-bom</artifactId>
-    <version>takin-web-5.4.2</version>
+    <version>takin-web-5.4.3</version>
     <packaging>pom</packaging>
 
     <properties>
-        <takin.web.version>takin-web-5.4.2</takin.web.version>
+        <takin.web.version>takin-web-5.4.3</takin.web.version>
         <takin.plugin.version>1.0.3</takin.plugin.version>
     </properties>
 

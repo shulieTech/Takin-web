@@ -16,6 +16,7 @@ import java.util.Map;
 public enum ApplicationAgentPathTypeEnum {
     OSS(0, "OSS"),
     FTP(1, "FTP"),
+    SWIFT(2,"SWIFT"),
     ;
 
     private Integer val;

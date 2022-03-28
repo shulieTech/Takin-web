@@ -22,6 +22,9 @@ public class ApplicationAgentPathTypeEnumMapping {
                 case FTP:
                     result.label(pathTypeEnum.getDesc()).value(pathTypeEnum.getVal().toString()).num(1);
                     break;
+                case SWIFT:
+                    result.label(pathTypeEnum.getDesc()).value(pathTypeEnum.getVal().toString()).num(2);
+                    break;
             }
         }
         return result;

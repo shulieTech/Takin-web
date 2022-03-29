@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.convert.db.parser;
 
 import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.attach.plugin.dynamic.one.Converter;
 import com.pamirs.attach.plugin.dynamic.one.Type;
@@ -208,9 +209,13 @@ public class DbTemplateParser extends AbstractTemplateParser {
             convertMap.put(INPUT_FILE_NAME_USER_NAME, "");
             convertMap.put(INPUT_FILE_NAME_URL, "");
         }else{
-            convertMap.put(PWD_FILE_NAME, convertMap.get("password"));
-            convertMap.put(INPUT_FILE_NAME_USER_NAME, convertMap.get("username"));
-            convertMap.put(INPUT_FILE_NAME_URL, convertMap.get("url"));
+            convertMap.put(PWD_FILE_NAME, JSONUtil.parseObj(convertMap.get("password")).get("value"));
+            convertMap.put(INPUT_FILE_NAME_USER_NAME, JSONUtil.parseObj(convertMap.get("username")).get("value"));
+            convertMap.put(INPUT_FILE_NAME_URL, JSONUtil.parseObj(convertMap.get("url")).get("value"));
+            Map<String, Object> innerMap = new HashMap<>();
+            innerMap.put(key3, "1");
+            innerMap.put(key5, "");
+            convertMap.put("schema",innerMap);
         }
 
         return JSON.toJSONString(convertMap);

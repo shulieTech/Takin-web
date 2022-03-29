@@ -9,5 +9,6 @@ public class TendencyChart extends Metrics {
     private double totalCount;
     private String disk;
     private String net;
+    private double totalTps;
     private String hostIp;
 }

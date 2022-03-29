@@ -9,13 +9,16 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequestMapping("/api/waterline")
 @Api(tags = "容量水位管理", value = "容量水位管理")
@@ -44,15 +47,15 @@ public class WaterlineController {
 
     /**
      * 获取表格指标数据:需要当前节点的名称+上级名称
+     *
      * @param applicationName
      * @param startTime
      * @return
-     * @throws ParseException
-     * 如果applicationName没有值，就代表要查询所有的应用，否则查询applicationName
+     * @throws ParseException 如果applicationName没有值，就代表要查询所有的应用，否则查询applicationName
      */
     @ApiOperation("指标数据")
     @RequestMapping("/getAllApplicationWithMetrics")
-    public ResponseResult<List<Metrics>> getAllApplicationWithMetrics(@RequestParam(name = "applicationName") String applicationName, @RequestParam(name = "startTime") String startTime,@RequestParam(name = "sceneId") Long sceneId) throws ParseException {
+    public ResponseResult<List<Metrics>> getAllApplicationWithMetrics(@RequestParam(name = "applicationName", required = false) String applicationName, @RequestParam(name = "startTime") String startTime, @RequestParam(name = "sceneId") Long sceneId, @RequestParam(name = "tagName", required = false) String tagName) throws ParseException {
         List<String> names = null;
         if (StringUtils.isNotBlank(applicationName)) {
             names = Arrays.asList(applicationName);
@@ -64,7 +67,7 @@ public class WaterlineController {
         }
         List<Metrics> metrics = waterlineService.getAllApplicationWithMetrics(names, startTime);//metrics
         waterlineService.getApplicationNodesAmount(metrics);//node amount
-        waterlineService.getApplicationTags(metrics);//application tags
+        waterlineService.getApplicationTags(metrics, tagName);//application tags
         return ResponseResult.success(metrics);
     }
 
@@ -73,12 +76,40 @@ public class WaterlineController {
      */
     @ApiOperation("获取压测场景下所有的应用")
     @RequestMapping("/getAllApplicationsWithSceneId")
-    public ResponseResult<List<String>> getAllApplicationsWithSceneId(@RequestParam(name = "sceneId") Long sceneId){
+    public ResponseResult<List<String>> getAllApplicationsWithSceneId(@RequestParam(name = "sceneId") Long sceneId) {
         List<String> ids = waterlineService.getAllApplicationsWithSceneId(sceneId);
         List<String> names = null;
         if (CollectionUtils.isNotEmpty(ids)) {
             names = waterlineService.getApplicationNamesWithIds(ids);
         }
         return ResponseResult.success(names);
+    }
+
+    @ApiOperation("获取标签")
+    @GetMapping("/getApplicationTags")
+    public ResponseResult<List<String>> getApplicationTags(@RequestParam(name = "sceneId") Long sceneId) {
+        ResponseResult<List<String>> result = this.getAllApplicationsWithSceneId(sceneId);
+        if (CollectionUtils.isNotEmpty(result.getData())) {
+            List<Metrics> metricsList = result.getData().stream().map(name -> {
+                Metrics metrics = new Metrics();
+                metrics.setApplicationName(name);
+                return metrics;
+            }).collect(Collectors.toList());
+            waterlineService.getApplicationTags(metricsList, null);
+            List<String> tags = new ArrayList<>();
+            metricsList.forEach(metrics -> tags.addAll(metrics.getTags()));
+            return ResponseResult.success(tags);
+        }
+        return null;
+    }
+
+    @ApiOperation("获取趋势图")
+    @GetMapping("/getTendencyChart")
+    public ResponseResult getTendencyChart(
+            @RequestParam(name = "applicationName") String applicationName,
+            @RequestParam(name = "startTime") String startTime,
+            @RequestParam(name = "endTime") String endTime,
+            @RequestParam(name = "nodes") List<String> nodes) throws ParseException {
+        return ResponseResult.success(waterlineService.getTendencyChart(applicationName,startTime,endTime,nodes));
     }
 }

@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service;
 
 import io.shulie.takin.web.biz.pojo.response.waterline.Metrics;
+import io.shulie.takin.web.biz.pojo.response.waterline.TendencyChart;
 
 import java.text.ParseException;
 import java.util.List;
@@ -18,5 +19,7 @@ public interface WaterlineService {
 
     void getApplicationNodesAmount(List<Metrics> metrics);
 
-    void getApplicationTags(List<Metrics> metrics);
+    void getApplicationTags(List<Metrics> metrics, String tagName);
+
+    List<TendencyChart> getTendencyChart(String applicationName, String startTime, String endTime, List<String> nodes) throws ParseException;
 }

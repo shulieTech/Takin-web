@@ -159,8 +159,11 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         // 根据应用名称, 用户id, 获得应用列表
+//        List<ApplicationListResult> applicationList = applicationDAO.listByApplicationNamesAndUserId(
+//            applicationNames, WebPluginUtils.traceUserId());
+        //应用异常情况过滤的时候需要展示链路中的所有应用
         List<ApplicationListResult> applicationList = applicationDAO.listByApplicationNamesAndUserId(
-            applicationNames, WebPluginUtils.traceUserId());
+            applicationNames, null);
         if (applicationList.isEmpty()) {
             return Collections.emptyList();
         }

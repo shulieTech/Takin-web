@@ -610,7 +610,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         List<Long> applicationIds = param.getApplicationIds();
         // size个轮询一次
         int size = 10;
-        if (applicationIds.size() > size) {
+        if (Objects.nonNull(applicationIds) && applicationIds.size() > size) {
             List<String> list = new ArrayList<>();
             List<List<Long>> splitList = ListUtil.split(applicationIds, size);
             splitList.forEach(x ->{

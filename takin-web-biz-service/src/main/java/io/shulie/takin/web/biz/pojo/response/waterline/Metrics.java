@@ -9,14 +9,14 @@ import java.util.List;
 @NoArgsConstructor
 public class Metrics {
     private String applicationName;
-    private String cpuLoad;
+    private String cpuRate;
     private String memory;
     private int nodesNumber;
     private List<String> tags;
 
-    public Metrics(String applicationName, String cpuLoad, String memory) {
+    public Metrics(String applicationName, String cpuRate, String memory) {
         this.applicationName = applicationName;
-        this.cpuLoad = cpuLoad;
+        this.cpuRate = cpuRate;
         this.memory = memory;
     }
 }

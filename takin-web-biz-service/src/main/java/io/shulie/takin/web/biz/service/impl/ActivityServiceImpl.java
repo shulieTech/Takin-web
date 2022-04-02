@@ -204,6 +204,11 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    public Set<String> getApplicationName(List<Long> activityIds) {
+        return this.listApplicationNameByActivityIds(activityIds,null);
+    }
+
+    @Override
     @Transactional(rollbackFor = Throwable.class)
     public Long createActivity(ActivityCreateRequest request) {
         // 检查业务活动是否能入库

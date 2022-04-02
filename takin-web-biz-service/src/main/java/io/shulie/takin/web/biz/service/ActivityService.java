@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
@@ -139,4 +140,6 @@ public interface ActivityService {
      * @return 应用列表
      */
     PagingList<BusinessApplicationListResponse> listApplicationByBusinessFlowIds(ListApplicationRequest listApplicationRequest);
+
+    Set<String> getApplicationName(List<Long> activityIds);
 }

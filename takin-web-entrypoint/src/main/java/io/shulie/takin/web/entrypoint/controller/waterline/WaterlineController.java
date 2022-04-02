@@ -221,10 +221,10 @@ public class WaterlineController {
         Map response = new HashMap();
         if (CollectionUtils.isNotEmpty(charts)) {
             TendencyChart tendencyChart = charts.get(0);
-            String hostIp = tendencyChart.getHostIp();
+            String hostIp = tendencyChart.getAgentId();
             List<String> times = new ArrayList<>();
             charts.forEach(chart -> {
-                if (StringUtils.equals(chart.getHostIp(), hostIp)) times.add(chart.getTime());
+                if (StringUtils.equals(chart.getAgentId(), hostIp)) times.add(chart.getTime());
             });
             response.put("time", times);
             response.put("list", charts);

@@ -13,11 +13,15 @@ import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
 import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
+import com.pamirs.takin.entity.domain.dto.report.ReportPerformanceCostTrendDTO;
+import com.pamirs.takin.entity.domain.dto.report.ReportPerformanceInterfaceDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportPradarLinkDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.risk.ReportLinkDetail;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.pojo.request.report.ReportPerformanceCostTrendRequest;
+import io.shulie.takin.web.biz.pojo.request.report.ReportPerformanceInterfaceRequest;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.risk.ProblemAnalysisService;
@@ -29,9 +33,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -173,6 +180,19 @@ public class ReportLocalController {
             pradarLink.setTotalRT(totalRt.intValue());
         }
         return Response.success(pradarLink);
+    }
+
+    @GetMapping("/report/performanceInterface/list")
+    @ApiOperation("性能接口")
+    public Response<List<ReportPerformanceInterfaceDTO>> queryPerformanceInterfaceList(ReportPerformanceInterfaceRequest request) {
+        Pair<List<ReportPerformanceInterfaceDTO>, Long> pair = reportLocalService.listPerformanceInterface(request);
+        return Response.success(pair.getKey(), pair.getValue());
+    }
+
+    @PostMapping("/report/performanceInterface/costTrend")
+    @ApiOperation("自耗时趋势")
+    public Response<ReportPerformanceCostTrendDTO> queryCostTrend(@RequestBody ReportPerformanceCostTrendRequest request) {
+        return Response.success(reportLocalService.queryCostTrend(request));
     }
 
     private void initPageParam(ReportLocalQueryParam queryParam, int current, int pageSize) {

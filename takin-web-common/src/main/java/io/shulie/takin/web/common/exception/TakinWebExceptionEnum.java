@@ -23,6 +23,11 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     SCENE_REPORT_THIRD_PARTY_ERROR("0102-" + ErrorConstant.THIRD_PARTY_ERROR, "压测场景报告第三方返回异常"),
     SCENE_REPORT_VALIDATE_ERROR("0102-" + ErrorConstant.VALIDATE_ERROR, "压测报告数据校验异常"),
     SCENE_REPORT_LINK_DETAIL_THIRD_PARTY_ERROR("0103-" + ErrorConstant.THIRD_PARTY_ERROR, "压测场景报告流量明细第三方返回异常"),
+    REPORT_ACTIVITY_QUERY_ERROR("0104-" + ErrorConstant.THIRD_PARTY_ERROR, "压测报告业务活动信息查询第三方返回异常"),
+    REPORT_ACTIVITY_INTERFACE_QUERY_ERROR("0105-" + ErrorConstant.THIRD_PARTY_ERROR, "压测报告业务活动接口信息查询第三方返回异常"),
+    REPORT_INTERFACE_METRICS_QUERY_ERROR("0106-" + ErrorConstant.THIRD_PARTY_ERROR, "压测报告业务活动接口指标信息查询第三方返回异常"),
+    REPORT_CREATE_TABLE_ERROR("0107-" + ErrorConstant.THIRD_PARTY_ERROR, "压测报告建表第三方返回异常"),
+    REPORT_START_REPORT_ANALYZE_ERROR("0107-" + ErrorConstant.THIRD_PARTY_ERROR, "启动压测报告分析任务第三方返回异常"),
 
     /**
      * 脚本

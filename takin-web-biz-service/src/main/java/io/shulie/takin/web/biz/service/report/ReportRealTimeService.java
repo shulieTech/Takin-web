@@ -28,4 +28,14 @@ public interface ReportRealTimeService {
     ReportLinkDetailResponse getLinkDetail(String traceId, Integer amdbReportTraceId);
 
     List<EntranceRuleDTO> getEntryListByBusinessActivityIds(List<Long> businessActivityIds);
+
+    /**
+     * 查询场景对应的业务活动Id
+     *
+     * @param xpathMd5 xpathMd5
+     * @param sceneId  场景Id
+     * @param reportId 报告Id
+     * @return 业务活动Id集合
+     */
+    List<Long> querySceneActivities(String xpathMd5, Long sceneId, Long reportId);
 }

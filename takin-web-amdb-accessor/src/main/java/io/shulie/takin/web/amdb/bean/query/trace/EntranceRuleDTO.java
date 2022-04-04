@@ -11,4 +11,5 @@ public class EntranceRuleDTO {
     private String appName;
     private Integer businessType;
     private String entrance;
+    private Long linkId;
 }

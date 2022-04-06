@@ -105,7 +105,7 @@ public class WaterlineDaoImpl implements WaterlineDao {
             if (CollectionUtils.isNotEmpty(data)) {
                 return (List<String>) data.stream().map(obj -> {
                     JSONObject json = JSON.parseObject(JSON.toJSONString(obj));
-                    return (json.get("ipAddress").toString());
+                    return (json.get("agentId").toString());
                 }).collect(Collectors.toList());
             }
             return null;

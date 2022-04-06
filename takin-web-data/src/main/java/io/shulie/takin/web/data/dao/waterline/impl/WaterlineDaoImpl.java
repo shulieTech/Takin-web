@@ -13,6 +13,7 @@ import io.shulie.takin.web.data.mapper.mysql.ApplicationNodeMapper;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +91,8 @@ public class WaterlineDaoImpl implements WaterlineDao {
         String url = properties.getUrl().getAmdb() + GET_APPLICATION_NODES;
         HashMap request = new HashMap();
         request.put("appNames", applicationName);
+        request.put("tenantAppKey", WebPluginUtils.traceTenantAppKey());
+        request.put("envCode",WebPluginUtils.traceEnvCode());
         try {
             AmdbResult<List<Object>> appDataResult = AmdbHelper.builder().httpMethod(
                             HttpMethod.POST)

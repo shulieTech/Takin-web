@@ -138,6 +138,8 @@ public class WaterlineServiceImpl implements WaterlineService {
         request.put("startTime", sdf.parse(startTime).getTime());
         request.put("endTime",sdf.parse(endTime).getTime());
         request.put("nodes",nodes);
+        request.put("tenantAppKey",WebPluginUtils.traceTenantAppKey());
+        request.put("envCode",WebPluginUtils.traceEnvCode());
         try {
             AmdbResult<List<TendencyChart>> appDataResult = AmdbHelper.builder().httpMethod(
                             HttpMethod.GET)
@@ -163,6 +165,8 @@ public class WaterlineServiceImpl implements WaterlineService {
         request.put("names", names);
         long time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startTime).getTime();
         request.put("startTime", time);
+        request.put("tenantAppKey",WebPluginUtils.traceTenantAppKey());
+        request.put("envCode",WebPluginUtils.traceEnvCode());
         try {
             AmdbResult<List<Metrics>> appDataResult = AmdbHelper.builder().httpMethod(
                             HttpMethod.GET)

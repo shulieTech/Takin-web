@@ -22,4 +22,6 @@ public interface WaterlineService {
     void getApplicationTags(List<Metrics> metrics, String tagName);
 
     List<TendencyChart> getTendencyChart(String applicationName, String startTime, String endTime, List<String> nodes) throws ParseException;
+
+    List<String> getApplicationNodes(String applicationName);
 }

@@ -130,6 +130,11 @@ public class WaterlineServiceImpl implements WaterlineService {
         return doGetTendencyChart(applicationName,startTime,endTime,nodes);
     }
 
+    @Override
+    public List<String> getApplicationNodes(String applicationName) {
+        return waterlineDao.getAllNodesByApplicationName(applicationName);
+    }
+
     private List<TendencyChart> doGetTendencyChart(String applicationName, String startTime, String endTime, List<String> nodes) throws ParseException {
         String url = properties.getUrl().getAmdb() + GET_TENDENCY_CHART;
         Map request = new HashMap();

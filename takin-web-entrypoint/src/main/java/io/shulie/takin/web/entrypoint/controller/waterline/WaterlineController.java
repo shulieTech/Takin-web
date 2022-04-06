@@ -242,4 +242,10 @@ public class WaterlineController {
         }
         return ResponseResult.success(response);
     }
+
+    @ApiOperation("获取应用下的节点")
+    @GetMapping("/getApplicationNodes")
+    public ResponseResult<List<String>> getApplicationNodes(@RequestParam("applicationName")String applicationName) {
+        return ResponseResult.success(waterlineService.getApplicationNodes(applicationName));
+    }
 }

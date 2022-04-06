@@ -76,7 +76,7 @@ public class WaterlineController {
             @RequestParam(name = "tagName", required = false) String tagName,
             @RequestParam(name = "sortKey", required = false) String sortKey,
             @RequestParam(name = "sortOrder", required = false) String sortOrder) throws ParseException {
-        List<String> names = null;
+        List<String> names = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(applicationNames)) {
             names.addAll(applicationNames);
         } else {

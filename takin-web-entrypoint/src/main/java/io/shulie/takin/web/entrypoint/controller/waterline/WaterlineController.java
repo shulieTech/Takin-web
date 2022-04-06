@@ -44,7 +44,7 @@ public class WaterlineController {
     private ActivityService activityService;
 
     @ApiOperation("全部业务活动")
-    @RequestMapping("/getAllActivityNames")
+    @GetMapping("/getAllActivityNames")
     @Deprecated
     public ResponseResult<List<String>> getAllActivityNames() {
         List<String> allActivityNames = waterlineService.getAllActivityNames();
@@ -52,7 +52,7 @@ public class WaterlineController {
     }
 
     @ApiOperation("业务活动下的应用")
-    @RequestMapping("/getAllApplicationsByActivity")
+    @GetMapping("/getAllApplicationsByActivity")
     @Deprecated
     public ResponseResult<List<String>> getAllApplicationsByActivity(@RequestParam(name = "activityName") String activityName) {
         List<String> allActivityNames = waterlineService.getAllApplicationsByActivity(activityName);
@@ -68,7 +68,7 @@ public class WaterlineController {
      * @throws ParseException 如果applicationName没有值，就代表要查询所有的应用，否则查询applicationName
      */
     @ApiOperation("指标数据")
-    @RequestMapping("/getAllApplicationWithMetrics")
+    @GetMapping("/getAllApplicationWithMetrics")
     public ResponseResult<List<Metrics>> getAllApplicationWithMetrics(
             @RequestParam(name = "applicationName", required = false) List<String> applicationNames,
             @RequestParam(name = "startTime") String startTime,
@@ -126,7 +126,7 @@ public class WaterlineController {
      * 获取压测场景下所有的应用
      */
     @ApiOperation("获取压测场景下所有的应用")
-    @RequestMapping("/getAllApplicationsWithSceneId")
+    @GetMapping("/getAllApplicationsWithSceneId")
     public ResponseResult<List<String>> getAllApplicationsWithSceneId(
             @RequestParam(name = "sceneId") Long sceneId,
             @RequestParam(name = "reportId") Long reportId,

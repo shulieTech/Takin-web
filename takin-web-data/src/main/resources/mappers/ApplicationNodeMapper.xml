@@ -13,7 +13,7 @@
 
     <select id="getApplicationNamesWithIds" resultType="java.lang.String">
         SELECT APPLICATION_NAME FROM t_application_mnt WHERE APPLICATION_ID IN
-        <foreach collection="list" item="item" open="(" close=")" separator=",">
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">
             #{item}
         </foreach>
     </select>

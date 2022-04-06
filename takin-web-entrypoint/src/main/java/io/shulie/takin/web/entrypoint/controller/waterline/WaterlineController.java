@@ -205,7 +205,7 @@ public class WaterlineController {
             metricsList.forEach(metrics -> tags.addAll(metrics.getTags()));
             return ResponseResult.success(tags);
         }
-        return null;
+        return ResponseResult.success();
     }
 
     @ApiOperation("获取趋势图")

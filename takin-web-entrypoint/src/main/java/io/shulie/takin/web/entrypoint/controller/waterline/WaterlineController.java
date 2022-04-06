@@ -202,7 +202,11 @@ public class WaterlineController {
             }).collect(Collectors.toList());
             waterlineService.getApplicationTags(metricsList, null);
             List<String> tags = new ArrayList<>();
-            metricsList.forEach(metrics -> tags.addAll(metrics.getTags()));
+            metricsList.forEach(metrics -> {
+                if (CollectionUtils.isNotEmpty(metrics.getTags())) {
+                    tags.addAll(metrics.getTags());
+                }
+            });
             return ResponseResult.success(tags);
         }
         return ResponseResult.success();

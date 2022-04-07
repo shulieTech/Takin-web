@@ -7,6 +7,7 @@ import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.response.waterline.Metrics;
 import io.shulie.takin.web.biz.pojo.response.waterline.TendencyChart;
+import io.shulie.takin.web.biz.pojo.response.waterline.TendencyChartVo;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.WaterlineService;
@@ -15,6 +16,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -231,7 +233,7 @@ public class WaterlineController {
                 if (StringUtils.equals(chart.getAgentId(), hostIp)) times.add(chart.getTime());
             });
             response.put("time", times);
-            response.put("list", charts);
+            response.put("list", doConvertCharts(charts));
             ReportTrendQueryReq reportTrendQueryReq = new ReportTrendQueryReq();
             reportTrendQueryReq.setReportId(reportId);
             reportTrendQueryReq.setXpathMd5(xpathMd5);
@@ -241,6 +243,31 @@ public class WaterlineController {
             }
         }
         return ResponseResult.success(response);
+    }
+
+    private List<TendencyChartVo> doConvertCharts(List<TendencyChart> charts) {
+        Map<String, TendencyChartVo> vos = new HashMap<>();
+        for (TendencyChart chart : charts) {
+            String key = chart.getApplicationName() + chart.getAgentId();
+            TendencyChartVo tendencyChartVo = vos.get(key);
+            if (null == tendencyChartVo) {
+                tendencyChartVo = new TendencyChartVo();
+//                tendencyChartVo.setAgentId(chart.getAgentId());
+//                tendencyChartVo.setApplicationName(chart.getApplicationName());
+//                tendencyChartVo.setTags(chart.getTags());
+//                tendencyChartVo.setNodesNumber(chart.getNodesNumber());
+                BeanUtils.copyProperties(chart,tendencyChartVo);
+                vos.put(key,tendencyChartVo);
+            }
+            tendencyChartVo.setCpuLoad(chart.getCpuLoad());
+            tendencyChartVo.setCpuRate(chart.getCpuRate());
+            tendencyChartVo.setDisk(chart.getDisk());
+            tendencyChartVo.setMemory(chart.getMemory());
+            tendencyChartVo.setNet(chart.getNet());
+            tendencyChartVo.setTotalCount(chart.getTotalCount());
+            tendencyChartVo.setTotalTps(chart.getTotalTps());
+        }
+        return new ArrayList(vos.values());
     }
 
     @ApiOperation("获取应用下的节点")

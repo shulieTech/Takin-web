@@ -69,20 +69,38 @@ public class DbTemplateParser extends AbstractTemplateParser {
      * @return
      */
     @Override
-    public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum, ShadowTemplateSelect select) {
+    public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum) {
         List list = Lists.newArrayList();
 
         if (DsTypeEnum.SHADOW_TABLE.getCode().equals(dsType)) {
             list.add(new ListStyle());
         } else {
             List<String> attributeArray;
-            if (select.isUserName()) {
-                list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
-            }
+            //list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
+
+            List<InputWithSelectStyle.NodeDetail> dataSource_username = new ArrayList<>();
+            dataSource_username.add(new InputWithSelectStyle.NodeDetail(key7, "1"));
+            dataSource_username.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+
+            List<String> keys_username = Arrays.asList(key3, key4);
+            InputWithSelectStyle.NodeInfo nodeInfo_username = new InputWithSelectStyle.NodeInfo(keys_username, dataSource_username);
+            InputWithSelectStyle selectStyle_username = new InputWithSelectStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME,
+                    StyleEnums.INPUT.getCode(), nodeInfo_username);
+            list.add(selectStyle_username);
+
             list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
-            if (select.isPassword()) {
-                list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
-            }
+
+            //list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
+            List<InputWithSelectStyle.NodeDetail> dataSource_pwd = new ArrayList<>();
+            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key8, "1"));
+            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+
+            List<String> keys_pwd = Arrays.asList(key3, key4);
+            InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
+            InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME,
+                    StyleEnums.INPUT.getCode(), nodeInfo_pwd);
+            list.add(selectStyle_pwd);
+
             if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
                 attributeArray = this.reflex();
             } else {

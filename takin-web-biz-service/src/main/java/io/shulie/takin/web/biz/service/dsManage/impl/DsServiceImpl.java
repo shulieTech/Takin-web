@@ -656,9 +656,9 @@ public class DsServiceImpl implements DsService {
         AbstractTemplateParser templateParser = templateParserMap.get(type);
 
         // 判断当前模板中是否要添加用户名和密码
-        ShadowTemplateSelect select = this.processSelect(applicationName);
+        //ShadowTemplateSelect select = this.processSelect(applicationName);
 
-        return Response.success(templateParser.convertShadowMsgWithTemplate(dsType, isNewData, cacheType, templateEnum, select));
+        return Response.success(templateParser.convertShadowMsgWithTemplate(dsType, isNewData, cacheType, templateEnum));
     }
 
     /**

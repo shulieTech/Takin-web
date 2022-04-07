@@ -23,7 +23,7 @@ public interface StyleTemplate {
 
     String PWD_FILE_NAME = "shadowPwd";
 
-    String INPUT_FILE_NAME_USER_NAME_CONTEXT= "影子数据源用户名";
+    String INPUT_FILE_NAME_USER_NAME_CONTEXT = "影子数据源用户名";
 
     String INPUT_FILE_NAME_URL_CONTEXT = "影子数据源";
 
@@ -51,6 +51,10 @@ public interface StyleTemplate {
 
     String key6 = "SHADOW_REDIS_";
 
+    String key7 = "PT_业务连接用户名";
+
+    String key8 = "PT_业务连接密码";
+
 
     @AllArgsConstructor
     @Getter
@@ -65,8 +69,7 @@ public interface StyleTemplate {
 
         TABLE(4, "表单"),
 
-        TEXT_INPUT(5,"文本框");
-
+        TEXT_INPUT(5, "文本框");
 
 
         private final Integer code;
@@ -117,7 +120,7 @@ public interface StyleTemplate {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    class InputStyle extends AbstractStyleTemplate{
+    class InputStyle extends AbstractStyleTemplate {
 
         private String key;
 
@@ -141,7 +144,7 @@ public interface StyleTemplate {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    class InputWithSelectStyle extends AbstractStyleTemplate{
+    class InputWithSelectStyle extends AbstractStyleTemplate {
 
 
         private String key;
@@ -157,7 +160,7 @@ public interface StyleTemplate {
         @Data
         @AllArgsConstructor
         @NoArgsConstructor
-        public static class NodeInfo{
+        public static class NodeInfo {
 
             private List<String> keys;
 
@@ -167,7 +170,7 @@ public interface StyleTemplate {
         @Data
         @AllArgsConstructor
         @NoArgsConstructor
-        public static class NodeDetail{
+        public static class NodeDetail {
 
 
             private String label;
@@ -189,7 +192,7 @@ public interface StyleTemplate {
      */
     @Data
     @AllArgsConstructor
-    class ListStyle extends AbstractStyleTemplate{
+    class ListStyle extends AbstractStyleTemplate {
 
 
         private String key;
@@ -203,7 +206,7 @@ public interface StyleTemplate {
 
         public ListStyle() {
             this.key = "shaDowTaleInfo";
-            this.label ="";
+            this.label = "";
             this.nodeType = StyleEnums.TABLE.getCode();
             this.required = true;
         }

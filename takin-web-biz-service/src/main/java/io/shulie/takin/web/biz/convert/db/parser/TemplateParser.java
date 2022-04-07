@@ -18,7 +18,7 @@ public interface TemplateParser {
      * @param dsType,protectArray
      * @return
      */
-    List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum,ShadowTemplateSelect select);
+    List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum);
 
 
     ShadowDetailResponse convertDetailByTemplate(Long recordId);

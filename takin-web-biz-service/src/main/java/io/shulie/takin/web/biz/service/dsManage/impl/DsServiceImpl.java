@@ -596,6 +596,7 @@ public class DsServiceImpl implements DsService {
         if (Objects.isNull(detailResult)) {
             return Response.fail("0", "该应用不存在");
         }
+        buildNewDataSource(updateRequestV2);
         validateURL(updateRequestV2.getExtInfo(), updateRequestV2.getUrl(), updateRequestV2.getDsType());
         Integer code = MiddleWareTypeEnum.getEnumByValue(updateRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
@@ -689,6 +690,7 @@ public class DsServiceImpl implements DsService {
         if (Objects.isNull(detailResult)) {
             return Response.fail("0", "该应用不存在");
         }
+        buildNewDataSource(createRequestV2);
         validateURL(createRequestV2.getExtInfo(), createRequestV2.getUrl(), createRequestV2.getDsType());
         Integer code = MiddleWareTypeEnum.getEnumByValue(createRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
@@ -697,6 +699,45 @@ public class DsServiceImpl implements DsService {
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
         return Response.success();
+    }
+
+    /**
+     * 处理下新版的逻辑，把数据搞成原来的样子
+     *
+     * @param createRequestV2
+     */
+    private void buildNewDataSource(ApplicationDsCreateInputV2 createRequestV2) {
+        String extInfo = createRequestV2.getExtInfo();
+        JSONObject extObj = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject());
+        String shadowUserNameStr = extObj.getString("shadowUserName");
+        if (StringUtils.isNotBlank(shadowUserNameStr)) {
+            // 判断是否为新版本
+            if (shadowUserNameStr.startsWith("{") && shadowUserNameStr.endsWith("}")) {
+                String context = null;
+                JSONObject dataObj = JSONObject.parseObject(shadowUserNameStr);
+                String tag = dataObj.getString("tag");
+                if ("2".equals(tag)) {
+                    context = dataObj.getString("context");
+                }
+                extObj.put("shadowUserName", context);
+            }
+        }
+
+        String shadowPwdStr = extObj.getString("shadowPwd");
+        if (StringUtils.isNotBlank(shadowPwdStr)) {
+            // 判断是否为新版本,JSON就是新版本
+            if (shadowPwdStr.startsWith("{") && shadowPwdStr.endsWith("}")) {
+                String context = null;
+                JSONObject dataObj = JSONObject.parseObject(shadowPwdStr);
+                String tag = dataObj.getString("tag");
+                if ("2".equals(tag)) {
+                    context = dataObj.getString("context");
+                }
+                extObj.put("shadowPwd", context);
+            }
+        }
+        // 重新设置下
+        createRequestV2.setExtInfo(JSON.toJSONString(extObj));
     }
 
     /**

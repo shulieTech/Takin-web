@@ -2,6 +2,8 @@ package io.shulie.takin.web.biz.convert.db.parser;
 
 import cn.hutool.core.util.BooleanUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Maps;
 import com.pamirs.attach.plugin.dynamic.one.Converter;
 import com.pamirs.attach.plugin.dynamic.one.Type;
 import com.pamirs.attach.plugin.dynamic.one.template.Template;
@@ -29,14 +31,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -148,12 +143,47 @@ public class DbTemplateParser extends AbstractTemplateParser {
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
         }
 
+        if (StringUtils.isNotBlank(shaDowFileExtedn) &&
+                (DsTypeEnum.SHADOW_REDIS_SERVER.getCode().equals(convert.getDsType())
+                        || DsTypeEnum.SHADOW_DB.getCode().equals(convert.getDsType()))) {
+            shaDowFileExtedn = buildNewShadow(shaDowFileExtedn);
+        }
         shadowDetailResponse.setShadowInfo(shaDowFileExtedn);
         shadowDetailResponse.setConnectionPool(convert.getConnPoolName());
         List<ShadowDetailResponse.TableInfo> tableInfos = this.buildTableData(convert.getApplicationId(),
                 convert.getUrl(), convert.getUserName());
         shadowDetailResponse.setTables(tableInfos);
         return shadowDetailResponse;
+    }
+
+    /**
+     * 查询的时候，把历史数据拼接回去
+     *
+     * @param shaDowFileExtedn
+     * @return
+     */
+    public String buildNewShadow(String shaDowFileExtedn) {
+        JSONObject extObj = Optional.ofNullable(JSONObject.parseObject(shaDowFileExtedn)).orElse(new JSONObject());
+        String shadowUserNameStr = extObj.getString("shadowUserName");
+        Map<String, Object> userNameMap = Maps.newHashMap();
+        if (StringUtils.isBlank(shadowUserNameStr)) {
+            userNameMap.put("tag", "1");
+        } else {
+            userNameMap.put("tag", "2");
+            userNameMap.put("context", shadowUserNameStr);
+        }
+        extObj.put("shadowUserName", userNameMap);
+
+        Map<String, Object> pwdMap = Maps.newHashMap();
+        String shadowPwdStr = extObj.getString("shadowPwd");
+        if (StringUtils.isBlank(shadowPwdStr)) {
+            pwdMap.put("tag", "1");
+        } else {
+            pwdMap.put("tag", "2");
+            pwdMap.put("context", shadowPwdStr);
+        }
+        extObj.put("shadowPwd", userNameMap);
+        return JSON.toJSONString(extObj);
     }
 
     public List<ShadowDetailResponse.TableInfo> buildTableData(Long appId, String url, String userName) {

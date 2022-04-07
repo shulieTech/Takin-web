@@ -84,8 +84,8 @@ public class DbTemplateParser extends AbstractTemplateParser {
 
             List<String> keys_username = Arrays.asList(key3, key4);
             InputWithSelectStyle.NodeInfo nodeInfo_username = new InputWithSelectStyle.NodeInfo(keys_username, dataSource_username);
-            InputWithSelectStyle selectStyle_username = new InputWithSelectStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME,
-                    StyleEnums.INPUT.getCode(), nodeInfo_username);
+            InputWithSelectStyle selectStyle_username = new InputWithSelectStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT,
+                    StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo_username);
             list.add(selectStyle_username);
 
             list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
@@ -97,8 +97,8 @@ public class DbTemplateParser extends AbstractTemplateParser {
 
             List<String> keys_pwd = Arrays.asList(key3, key4);
             InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
-            InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME,
-                    StyleEnums.INPUT.getCode(), nodeInfo_pwd);
+            InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT,
+                    StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo_pwd);
             list.add(selectStyle_pwd);
 
             if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {

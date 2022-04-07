@@ -713,7 +713,7 @@ public class DsServiceImpl implements DsService {
         if (StringUtils.isNotBlank(shadowUserNameStr)) {
             // 判断是否为新版本
             if (shadowUserNameStr.startsWith("{") && shadowUserNameStr.endsWith("}")) {
-                String context = null;
+                String context = "";
                 JSONObject dataObj = JSONObject.parseObject(shadowUserNameStr);
                 String tag = dataObj.getString("tag");
                 if ("2".equals(tag)) {
@@ -727,7 +727,7 @@ public class DsServiceImpl implements DsService {
         if (StringUtils.isNotBlank(shadowPwdStr)) {
             // 判断是否为新版本,JSON就是新版本
             if (shadowPwdStr.startsWith("{") && shadowPwdStr.endsWith("}")) {
-                String context = null;
+                String context = "";
                 JSONObject dataObj = JSONObject.parseObject(shadowPwdStr);
                 String tag = dataObj.getString("tag");
                 if ("2".equals(tag)) {

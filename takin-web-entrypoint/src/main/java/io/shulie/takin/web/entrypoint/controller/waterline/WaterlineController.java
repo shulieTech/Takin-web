@@ -252,20 +252,9 @@ public class WaterlineController {
             TendencyChartVo tendencyChartVo = vos.get(key);
             if (null == tendencyChartVo) {
                 tendencyChartVo = new TendencyChartVo();
-//                tendencyChartVo.setAgentId(chart.getAgentId());
-//                tendencyChartVo.setApplicationName(chart.getApplicationName());
-//                tendencyChartVo.setTags(chart.getTags());
-//                tendencyChartVo.setNodesNumber(chart.getNodesNumber());
-                BeanUtils.copyProperties(chart,tendencyChartVo);
                 vos.put(key,tendencyChartVo);
             }
-            tendencyChartVo.setCpuLoad(chart.getCpuLoad());
-            tendencyChartVo.setCpuRate(chart.getCpuRate());
-            tendencyChartVo.setDisk(chart.getDisk());
-            tendencyChartVo.setMemory(chart.getMemory());
-            tendencyChartVo.setNet(chart.getNet());
-            tendencyChartVo.setTotalCount(chart.getTotalCount());
-            tendencyChartVo.setTotalTps(chart.getTotalTps());
+            BeanUtils.copyProperties(chart,tendencyChartVo);
         }
         return new ArrayList(vos.values());
     }

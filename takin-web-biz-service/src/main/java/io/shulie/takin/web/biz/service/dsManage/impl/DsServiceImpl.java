@@ -736,7 +736,7 @@ public class DsServiceImpl implements DsService {
                 extObj.put("shadowPwd", context);
             }
         }
-        // 重新设置下
+        // 重新设置下extObj
         createRequestV2.setExtInfo(JSON.toJSONString(extObj));
     }
 

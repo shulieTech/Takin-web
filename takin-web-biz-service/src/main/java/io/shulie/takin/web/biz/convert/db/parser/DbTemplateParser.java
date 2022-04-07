@@ -182,7 +182,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
             pwdMap.put("tag", "2");
             pwdMap.put("context", shadowPwdStr);
         }
-        extObj.put("shadowPwd", userNameMap);
+        extObj.put("shadowPwd", pwdMap);
         return JSON.toJSONString(extObj);
     }
 

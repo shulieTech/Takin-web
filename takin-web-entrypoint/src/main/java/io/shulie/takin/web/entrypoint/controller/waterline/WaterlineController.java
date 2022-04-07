@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -230,7 +232,13 @@ public class WaterlineController {
             String hostIp = tendencyChart.getAgentId();
             List<String> times = new ArrayList<>();
             charts.forEach(chart -> {
-                if (StringUtils.equals(chart.getAgentId(), hostIp)) times.add(chart.getTime());
+                if (StringUtils.equals(chart.getAgentId(), hostIp)) {
+                    try {
+                        times.add(doConvertTime(chart.getTime()));
+                    } catch (ParseException e) {
+                        //ignore
+                    }
+                }
             });
             response.put("time", times);
             response.put("list", doConvertCharts(charts));
@@ -245,6 +253,24 @@ public class WaterlineController {
         return ResponseResult.success(response);
     }
 
+    private String doConvertTime(String time) throws ParseException {
+        if (StringUtils.isNotBlank(time)) {
+            time = time.replace("T", " ").replace("Z", "");
+            SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date parse = ft.parse(time);
+            SimpleDateFormat ft2 = new SimpleDateFormat("MM-dd HH:mm:ss");
+            return ft2.format(parse);
+        }
+        return time;
+    }
+
+    public static String readableFileSize(long size) {
+        if (size <= 0) return "0";
+        final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
+        int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
+        return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+    }
+
     private List<TendencyChartVo> doConvertCharts(List<TendencyChart> charts) {
         Map<String, TendencyChartVo> vos = new HashMap<>();
         for (TendencyChart chart : charts) {
@@ -252,16 +278,23 @@ public class WaterlineController {
             TendencyChartVo tendencyChartVo = vos.get(key);
             if (null == tendencyChartVo) {
                 tendencyChartVo = new TendencyChartVo();
-                vos.put(key,tendencyChartVo);
+                vos.put(key, tendencyChartVo);
             }
-            BeanUtils.copyProperties(chart,tendencyChartVo);
+            BeanUtils.copyProperties(chart, tendencyChartVo);
+            doConvertDisk(tendencyChartVo, chart.getDisk());
         }
         return new ArrayList(vos.values());
     }
 
+    private void doConvertDisk(TendencyChartVo tendencyChartVo, String disk) {
+        if (StringUtils.isNotBlank(disk)) {
+            tendencyChartVo.setDisk(readableFileSize(Long.parseLong(disk.substring(0, "3462266433536.00".indexOf(".")))));
+        }
+    }
+
     @ApiOperation("获取应用下的节点")
     @GetMapping("/getApplicationNodes")
-    public ResponseResult<List<String>> getApplicationNodes(@RequestParam("applicationName")String applicationName) {
+    public ResponseResult<List<String>> getApplicationNodes(@RequestParam("applicationName") String applicationName) {
         return ResponseResult.success(waterlineService.getApplicationNodes(applicationName));
     }
 }

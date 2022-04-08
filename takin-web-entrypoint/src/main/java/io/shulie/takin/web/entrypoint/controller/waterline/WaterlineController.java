@@ -78,8 +78,8 @@ public class WaterlineController {
             @RequestParam(name = "startTime") String startTime,
             @RequestParam(name = "sceneId") Long sceneId,
             @RequestParam(name = "tagName", required = false) String tagName,
-            @RequestParam(name = "sortKey", required = false) String sortKey,
-            @RequestParam(name = "sortOrder", required = false) String sortOrder) throws ParseException {
+            @RequestParam(name = "sortField", required = false) String sortField,
+            @RequestParam(name = "sortType", required = false) String sortType) throws ParseException {
         List<String> names = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(applicationNames)) {
             names.addAll(applicationNames);
@@ -92,8 +92,8 @@ public class WaterlineController {
         List<Metrics> metrics = waterlineService.getAllApplicationWithMetrics(names, startTime);//metrics
         waterlineService.getApplicationNodesAmount(metrics);//node amount
         waterlineService.getApplicationTags(metrics, tagName);//application tags
-        if (org.springframework.util.StringUtils.hasText(sortKey) && org.springframework.util.StringUtils.hasText(sortOrder)) {
-            metrics = doSort(metrics, sortKey, sortOrder);
+        if (org.springframework.util.StringUtils.hasText(sortField) && org.springframework.util.StringUtils.hasText(sortType)) {
+            metrics = doSort(metrics, sortField, sortType);
         }
         return ResponseResult.success(metrics);
     }
@@ -107,7 +107,7 @@ public class WaterlineController {
                     } else {
                         return m1.getNodesNumber() - m2.getNodesNumber() > 0 ? -1 : 1;
                     }
-                case "CPU":
+                case "cpuRate":
                     if (sortOrder.equals("asc")) {
                         return Double.parseDouble(m1.getCpuRate()) - Double.parseDouble(m2.getCpuRate()) > 0 ? 1 : -1;
                     } else {

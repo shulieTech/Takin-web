@@ -288,7 +288,7 @@ public class WaterlineController {
 
     private void doConvertDisk(TendencyChartVo tendencyChartVo, String disk) {
         if (StringUtils.isNotBlank(disk)) {
-            tendencyChartVo.setDisk(readableFileSize(Long.parseLong(disk.substring(0, "3462266433536.00".indexOf(".")))));
+            tendencyChartVo.setDisks(readableFileSize(Long.parseLong(disk.substring(0, "3462266433536.00".indexOf(".")))));
         }
     }
 

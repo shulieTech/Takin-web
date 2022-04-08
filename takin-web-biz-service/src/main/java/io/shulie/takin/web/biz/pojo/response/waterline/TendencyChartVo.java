@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 public class TendencyChartVo {
     private List<Double> totalCount = new ArrayList<>();
-    private List<String> disk = new ArrayList<>();
+    private List<String> disks = new ArrayList<>();
     private List<String> net = new ArrayList<>();
     private List<Double> totalTps = new ArrayList<>();
     private String agentId;
@@ -25,8 +25,8 @@ public class TendencyChartVo {
         this.totalCount.add(totalCount);
     }
 
-    public void setDisk(String disk) {
-        this.disk.add(disk);
+    public void setDisks(String disks) {
+        this.disks.add(disks);
     }
 
     public void setNet(String net) {

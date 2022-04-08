@@ -233,15 +233,14 @@ public class SignCommonUtil {
             ResultSet rs = statement.getConnection().createStatement().executeQuery(querySql);
             ResultSetMetaData md = rs.getMetaData();
             Map<String, Object> map = new HashMap<>();
-            List<String> sqlList = new ArrayList<>();
             while (rs.next()) {
-                if (map.get("sign") == null || Objects.equals(map.get("sign").toString(), "")) {
-                    return;
-                }
-
 
                 for (int i = 0; i < md.getColumnCount(); i++) {
                     map.put(md.getColumnLabel(i + 1).toLowerCase(), rs.getObject(md.getColumnLabel(i + 1)));
+                }
+
+                if (map.get("sign") == null || Objects.equals(map.get("sign").toString(), "")) {
+                    return;
                 }
 
                 String oldSign = String.valueOf(map.get("sign"));

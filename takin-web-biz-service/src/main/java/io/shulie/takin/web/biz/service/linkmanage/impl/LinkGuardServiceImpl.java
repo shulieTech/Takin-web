@@ -17,6 +17,7 @@ import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.constant.GuardEnableConstants;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
 import io.shulie.takin.web.data.param.application.LinkGuardCreateParam;
@@ -115,7 +116,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         entity.setApplicationName(vo.getApplicationName());
         entity.setMethodInfo(vo.getMethodInfo());
         entity.setGroovy(vo.getGroovy());
-        entity.setIsEnable(vo.getIsEnable());
+        entity.setIsEnable(vo.getIsEnable()? GuardEnableConstants.GUARD_ENABLE : GuardEnableConstants.GUARD_UNABLE);
         entity.setRemark(vo.getRemark());
         try {
             tLinkGuardMapper.update(entity);
@@ -221,7 +222,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         LinkGuardEntity linkGuardEntity = tLinkGuardMapper.selectById(id);
         LinkGuardEntity entity = new LinkGuardEntity();
         entity.setId(id);
-        entity.setIsEnable(target);
+        entity.setIsEnable(target? GuardEnableConstants.GUARD_ENABLE : GuardEnableConstants.GUARD_UNABLE);
         tLinkGuardMapper.update(entity);
         configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), linkGuardEntity.getApplicationId(), null);
         agentConfigCacheManager.evictGuards(linkGuardEntity.getApplicationName());
@@ -245,7 +246,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         vo.setCreateTime(guardEntity.getCreateTime());
         vo.setUpdateTime(guardEntity.getUpdateTime());
         vo.setRemark(guardEntity.getRemark());
-        vo.setIsEnable(guardEntity.getIsEnable());
+        vo.setIsEnable(guardEntity.getIsEnable() == GuardEnableConstants.GUARD_ENABLE);
         // 判断权限，需要把用户传入
         vo.setUserId(guardEntity.getUserId());
         WebPluginUtils.fillQueryResponse(vo);

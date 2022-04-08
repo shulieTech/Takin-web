@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
+import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
 
@@ -13,10 +14,9 @@ import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
  */
 public interface ReportRealTimeService {
 
-    PageInfo<ReportTraceDTO> getReportLinkList(Long reportId, Long sceneId, Long startTime, Integer type,
-        int current, int pageSize);
+    PageInfo<ReportTraceDTO> getReportLinkList(ReportTraceQueryDTO queryDTO);
 
-    PageInfo<ReportTraceDTO> getReportLinkListByReportId(Long reportId, Integer type, int current, int pageSize);
+    PageInfo<ReportTraceDTO> getReportLinkListByReportId(ReportTraceQueryDTO queryDTO);
 
     /**
      * 报告链路详情

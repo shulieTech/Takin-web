@@ -1,5 +1,8 @@
 package io.shulie.takin.web.entrypoint.controller.linkmanage;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Resource;
@@ -55,7 +58,11 @@ public class ApplicationApiController {
     public Response pull(@RequestParam(value = "appName", required = false) String appName) {
         try {
             // 拉取也改成一致（amdb 不用了）
-            return Response.success(applicationApiManageAmdbCache.get(appName));
+            Map<String, List<String>> map = applicationApiManageAmdbCache.get(appName);
+            if( map == null){
+                return Response.success(new HashMap<>());
+            }
+            return Response.success(map);
         } catch (Exception e) {
             return Response.fail(e.getMessage());
         }

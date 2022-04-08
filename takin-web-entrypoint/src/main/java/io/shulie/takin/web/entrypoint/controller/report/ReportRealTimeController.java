@@ -32,14 +32,13 @@ public class ReportRealTimeController {
     @GetMapping("/report/realtime/link/list")
     @ApiOperation("实况链路列表")
     private Response getLinkList(ReportTraceQueryDTO queryDTO) {
+        queryDTO.setQueryType(2);
         if (queryDTO.getReportId() != null) {
-            PageInfo<ReportTraceDTO> reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(
-                queryDTO.getReportId(), queryDTO.getType(), queryDTO.getRealCurrent(), queryDTO.getPageSize());
+            PageInfo<ReportTraceDTO> reportLinkListByReportId = reportRealTimeService.getReportLinkListByReportId(queryDTO);
             return Response.success(reportLinkListByReportId);
         }
         if (queryDTO.getStartTime() != null) {
-            PageInfo<ReportTraceDTO> reportLinkList = reportRealTimeService.getReportLinkList(queryDTO.getReportId(), queryDTO.getSceneId(),
-                queryDTO.getStartTime(), queryDTO.getType(), queryDTO.getRealCurrent(), queryDTO.getPageSize());
+            PageInfo<ReportTraceDTO> reportLinkList = reportRealTimeService.getReportLinkList(queryDTO);
             return Response.success(reportLinkList);
         }
 

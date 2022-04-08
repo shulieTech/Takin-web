@@ -258,7 +258,7 @@ public class WaterlineController {
             time = time.replace("T", " ").replace("Z", "");
             SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date parse = ft.parse(time);
-            SimpleDateFormat ft2 = new SimpleDateFormat("MM-dd HH:mm:ss");
+            SimpleDateFormat ft2 = new SimpleDateFormat("HH:mm:ss");
             return ft2.format(parse);
         }
         return time;
@@ -266,9 +266,9 @@ public class WaterlineController {
 
     public static String readableFileSize(long size) {
         if (size <= 0) return "0";
-        final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
+//        final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
-        return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+        return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups));
     }
 
     private List<TendencyChartVo> doConvertCharts(List<TendencyChart> charts) {
@@ -288,7 +288,7 @@ public class WaterlineController {
 
     private void doConvertDisk(TendencyChartVo tendencyChartVo, String disk) {
         if (StringUtils.isNotBlank(disk)) {
-            tendencyChartVo.setDisks(readableFileSize(Long.parseLong(disk.substring(0, "3462266433536.00".indexOf(".")))));
+            tendencyChartVo.setDisks(readableFileSize(Long.parseLong(disk.substring(0, disk.indexOf(".")))));
         }
     }
 

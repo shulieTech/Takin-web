@@ -227,6 +227,7 @@ public class SignCommonUtil {
                 if (!oldSign.equals(sign)) {
                     valid = false;
                     break;
+
                 }
             }
 

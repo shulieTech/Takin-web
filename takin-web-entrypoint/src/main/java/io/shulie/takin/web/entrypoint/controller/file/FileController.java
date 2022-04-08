@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ArrayUtil;
 import com.pamirs.takin.entity.domain.dto.file.FileDTO;
 import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
 import io.shulie.takin.cloud.sdk.model.request.file.DeleteTempRequest;
@@ -23,6 +24,7 @@ import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -72,7 +74,14 @@ public class FileController {
     @PostMapping("/upload")
     @ApiOperation(value = "文件上传")
     public List<UploadResponse> upload(List<MultipartFile> file) {
-        if (CollectionUtil.isEmpty(file)) {throw new RuntimeException("上传文件不能为空");}
+        if (CollectionUtil.isEmpty(file)) {
+            throw new RuntimeException("上传文件不能为空");
+        }
+        for (MultipartFile multipartFile : file) {
+            if (null == multipartFile || multipartFile.isEmpty()) {
+                throw new RuntimeException("上传文件不能为空");
+            }
+        }
         return cloudFileApi.upload(new UploadRequest() {{
             setFileList(FileUtil.convertMultipartFileList(file));
         }});
@@ -89,9 +98,9 @@ public class FileController {
         }});
         FileUtil.deleteTempFile(file);
         List<FileDTO> dtoList = response.stream()
-            .map(t -> BeanUtil.copyProperties(t, FileDTO.class))
-            .peek(t -> t.setFileType(2))
-            .collect(Collectors.toList());
+                .map(t -> BeanUtil.copyProperties(t, FileDTO.class))
+                .peek(t -> t.setFileType(2))
+                .collect(Collectors.toList());
         return WebResponse.success(dtoList);
     }
 

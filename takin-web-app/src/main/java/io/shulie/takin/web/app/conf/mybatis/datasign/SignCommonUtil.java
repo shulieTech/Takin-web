@@ -4,6 +4,7 @@ import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ReflectUtil;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.shulie.takin.utils.security.MD5Utils;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -76,11 +77,15 @@ public class SignCommonUtil {
             if (SqlCommandType.INSERT.equals(mappedStatement.getSqlCommandType())) {
                 //新增方法获取id
                 Field idField = ReflectUtil.getField(clz, "id");
+                if (idField == null) {
+                    //兼容 t_black_list
+                    idField = ReflectUtil.getField(clz, "BLIST_ID");
+                }
                 idField.setAccessible(true);
                 long id = Long.parseLong(idField.get(parameterObject).toString());
                 Insert insert = (Insert) CCJSqlParserUtil.parse(boundSql.getSql());
                 String tableName = insert.getTable().getName();
-                String whereStr = " where id = " + id;
+                String whereStr = " where " + idField.getAnnotation(TableId.class).value() + " = " + id;
                 String querySql = "select * from " + tableName + whereStr;
 
                 ResultSet rs = statement.getConnection().createStatement().executeQuery(querySql);
@@ -168,7 +173,17 @@ public class SignCommonUtil {
                     map.remove("UPDATE_TIME");
                     map.remove("CREATE_TIME");
                     String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
-                    String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where id = " + map.get("id").toString();
+                    String id = "";
+                    String updateSql = "";
+                    if (map.containsKey("id")) {
+                        id = map.get("id").toString();
+                        updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where id = " + id;
+                    }
+
+                    if (map.containsKey("BLIST_ID")) {
+                        id = map.get("BLIST_ID").toString();
+                        updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where BLIST_ID = " + id;
+                    }
                     sqlList.add(updateSql);
                 }
                 Connection connection = statement.getConnection();

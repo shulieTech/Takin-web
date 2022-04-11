@@ -30,7 +30,7 @@ public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Se
     /**
      * 主键
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.AUTO,value = "Id")
     private Long id;
 
     /**

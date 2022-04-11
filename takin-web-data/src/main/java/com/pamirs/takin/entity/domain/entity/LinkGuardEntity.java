@@ -3,7 +3,9 @@ package com.pamirs.takin.entity.domain.entity;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.shulie.takin.web.data.annocation.EnableSign;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,6 +22,7 @@ import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 @EnableSign
 public class LinkGuardEntity extends UserBaseEntity {
 
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     private String applicationName;
     private Long applicationId;

@@ -2,6 +2,7 @@ package com.pamirs.takin.entity.domain.entity.simplify;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModel;
@@ -19,6 +20,7 @@ import lombok.Data;
 public class TShadowJobConfig extends UserCommonExt {
 
     @ApiModelProperty(name = "id", value = "id")
+    @TableId(value = "id")
     private Long id;
 
     @ApiModelProperty(name = "applicationId", value = "应用ID")

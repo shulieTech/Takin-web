@@ -25,7 +25,7 @@ public class LinkGuardEntity extends UserBaseEntity {
     /**
      * 主键
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.AUTO,value = "id")
     private Long id;
 
     /**

@@ -106,7 +106,7 @@ public class SignCommonUtil {
                 map.remove("UPDATE_TIME");
                 map.remove("CREATE_TIME");
                 String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
-                String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where id = " + id;
+                String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where " + idField.getAnnotation(TableId.class).value() + id;
                 Connection connection = statement.getConnection();
                 PreparedStatement ps1 = connection.prepareStatement(updateSql, PreparedStatement.RETURN_GENERATED_KEYS);
                 ps1.execute();
@@ -173,7 +173,7 @@ public class SignCommonUtil {
                     map.remove("UPDATE_TIME");
                     map.remove("CREATE_TIME");
                     String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
-                    String id = "";
+                    String id;
                     String updateSql = "";
                     if (map.containsKey("id")) {
                         id = map.get("id").toString();
@@ -271,7 +271,6 @@ public class SignCommonUtil {
                 if (!oldSign.equals(sign)) {
                     valid = false;
                     break;
-
                 }
             }
 

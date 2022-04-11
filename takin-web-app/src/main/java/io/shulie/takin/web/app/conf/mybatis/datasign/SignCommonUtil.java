@@ -50,6 +50,8 @@ public class SignCommonUtil {
 
     private static SignCommonUtil instance;
 
+    private final Map<BoundSql, ResultSet> cacheMap = new HashMap<>();
+
     private SignCommonUtil() {
     }
 
@@ -87,8 +89,9 @@ public class SignCommonUtil {
                 String tableName = insert.getTable().getName();
                 String whereStr = " where " + idField.getAnnotation(TableId.class).value() + " = " + id;
                 String querySql = "select * from " + tableName + whereStr;
-
                 ResultSet rs = statement.getConnection().createStatement().executeQuery(querySql);
+
+
                 ResultSetMetaData md = rs.getMetaData();
                 Map<String, Object> map = new HashMap<>();
                 while (rs.next()) {
@@ -97,16 +100,8 @@ public class SignCommonUtil {
                     }
                 }
                 //计算签名后再更新回去
-                map.remove("sign");
-                map.remove("gmt_create");
-                map.remove("gmt_modified");
-                map.remove("gmt_update");
-                map.remove("create_time");
-                map.remove("update_time");
-                map.remove("UPDATE_TIME");
-                map.remove("CREATE_TIME");
-                String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
-                String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where " + idField.getAnnotation(TableId.class).value() +" = "+ id;
+                String sign = this.buildSign(map);
+                String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + whereStr;
                 Connection connection = statement.getConnection();
                 PreparedStatement ps1 = connection.prepareStatement(updateSql, PreparedStatement.RETURN_GENERATED_KEYS);
                 ps1.execute();
@@ -115,47 +110,16 @@ public class SignCommonUtil {
             }
 
             if (SqlCommandType.UPDATE.equals(mappedStatement.getSqlCommandType())) {
+                //todo 可以把preCheckData已经查过了的结果集缓存起来，这里复用，以后再优化吧
                 //解析sql,拿出where条件，构建查询sql获取更新范围的数据,进行验签
-                String sql = boundSql.getSql();
-                TypeHandlerRegistry typeHandlerRegistry = mappedStatement.getConfiguration().getTypeHandlerRegistry();
-                Configuration configuration = mappedStatement.getConfiguration();
-                List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-                if (parameterMappings != null) {
-                    for (ParameterMapping parameterMapping : parameterMappings) {
-                        if (parameterMapping.getMode() != ParameterMode.OUT) {
-                            Object value;
-                            String propertyName = parameterMapping.getProperty();
-                            if (boundSql.hasAdditionalParameter(propertyName)) {
-                                value = boundSql.getAdditionalParameter(propertyName);
-                            } else if (parameterObject == null) {
-                                value = null;
-                            } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
-                                value = parameterObject;
-                            } else {
-                                value = configuration.newMetaObject(parameterObject).getValue(propertyName);
-                            }
-
-                            //类型处理
-                            if (value instanceof LocalDateTime) {
-                                value = DateUtil.format((LocalDateTime) value, DatePattern.NORM_DATETIME_PATTERN);
-                            } else if (value instanceof Date) {
-                                value = DateUtil.format((Date) value, DatePattern.NORM_DATETIME_PATTERN);
-                            } else if (value instanceof Boolean) {
-                                value = Boolean.FALSE.equals(value) ? "0" : "1";
-                            }
-                            //这里替换是为了防止value中存在?,导致sql替换出错
-                            String valueSet = String.valueOf(value).replaceAll("\\?", "！@#¥%");
-                            sql = StringUtils.replaceOnce(sql, "?", "'" + valueSet + "'");
-                        }
-                    }
-                }
-                sql = sql.replaceAll("！@#¥%", "\\?");
+//                String querySql = this.buildQuerySql(mappedStatement, parameterObject, boundSql);
                 Update update = (Update) CCJSqlParserUtil.parse(boundSql.getSql());
                 String tableName = update.getTable().getName();
-                String whereStr = " where" + sql.split("WHERE")[1];
-                String querySql = "select * from " + tableName + whereStr;
+//                ResultSet rs = statement.getConnection().createStatement().executeQuery(querySql);
 
-                ResultSet rs = statement.getConnection().createStatement().executeQuery(querySql);
+                ResultSet rs = cacheMap.get(boundSql);
+                cacheMap.clear();
+
                 ResultSetMetaData md = rs.getMetaData();
                 Map<String, Object> map = new HashMap<>();
                 List<String> sqlList = new ArrayList<>();
@@ -164,15 +128,7 @@ public class SignCommonUtil {
                         map.put(md.getColumnLabel(i + 1).toLowerCase(), rs.getObject(md.getColumnLabel(i + 1)));
                     }
                     //计算签名后再更新回去
-                    map.remove("sign");
-                    map.remove("gmt_create");
-                    map.remove("gmt_modified");
-                    map.remove("gmt_update");
-                    map.remove("create_time");
-                    map.remove("update_time");
-                    map.remove("UPDATE_TIME");
-                    map.remove("CREATE_TIME");
-                    String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
+                    String sign = this.buildSign(map);
                     String id;
                     String updateSql = "";
                     if (map.containsKey("id")) {
@@ -203,80 +159,11 @@ public class SignCommonUtil {
 
 
     public void preCheckData(MappedStatement mappedStatement, Object parameterObject, Statement statement, BoundSql boundSql) throws SQLException, JSQLParserException {
-        boolean valid = true;
         if (SqlCommandType.UPDATE.equals(mappedStatement.getSqlCommandType())) {
-            //解析sql,拿出where条件，构建查询sql获取更新范围的数据,进行验签
-            String sql = boundSql.getSql();
-            TypeHandlerRegistry typeHandlerRegistry = mappedStatement.getConfiguration().getTypeHandlerRegistry();
-            Configuration configuration = mappedStatement.getConfiguration();
-            List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-            if (parameterMappings != null) {
-                for (ParameterMapping parameterMapping : parameterMappings) {
-                    if (parameterMapping.getMode() != ParameterMode.OUT) {
-                        Object value;
-                        String propertyName = parameterMapping.getProperty();
-                        if (boundSql.hasAdditionalParameter(propertyName)) {
-                            value = boundSql.getAdditionalParameter(propertyName);
-                        } else if (parameterObject == null) {
-                            value = null;
-                        } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
-                            value = parameterObject;
-                        } else {
-                            value = configuration.newMetaObject(parameterObject).getValue(propertyName);
-                        }
-
-                        //类型处理
-                        if (value instanceof LocalDateTime) {
-                            value = DateUtil.format((LocalDateTime) value, DatePattern.NORM_DATETIME_PATTERN);
-                        } else if (value instanceof Date) {
-                            value = DateUtil.format((Date) value, DatePattern.NORM_DATETIME_PATTERN);
-                        } else if (value instanceof Boolean) {
-                            value = Boolean.FALSE.equals(value) ? "0" : "1";
-                        }
-                        //这里替换是为了防止value中存在?,导致sql替换出错
-                        String valueSet = String.valueOf(value).replaceAll("\\?", "！@#¥%");
-                        sql = StringUtils.replaceOnce(sql, "?", "'" + valueSet + "'");
-                    }
-                }
-            }
-            sql = sql.replaceAll("！@#¥%", "\\?");
-            Update update = (Update) CCJSqlParserUtil.parse(boundSql.getSql());
-            String tableName = update.getTable().getName();
-            String whereStr = " where" + sql.split("WHERE")[1];
-            String querySql = "select * from " + tableName + whereStr;
-
+            String querySql = this.buildQuerySql(mappedStatement, parameterObject, boundSql);
             ResultSet rs = statement.getConnection().createStatement().executeQuery(querySql);
-            ResultSetMetaData md = rs.getMetaData();
-            Map<String, Object> map = new HashMap<>();
-            while (rs.next()) {
-
-                for (int i = 0; i < md.getColumnCount(); i++) {
-                    map.put(md.getColumnLabel(i + 1).toLowerCase(), rs.getObject(md.getColumnLabel(i + 1)));
-                }
-
-                if (map.get("sign") == null || Objects.equals(map.get("sign").toString(), "")) {
-                    return;
-                }
-
-                String oldSign = String.valueOf(map.get("sign"));
-                map.remove("sign");
-                map.remove("gmt_create");
-                map.remove("gmt_modified");
-                map.remove("gmt_update");
-                map.remove("create_time");
-                map.remove("update_time");
-                map.remove("UPDATE_TIME");
-                map.remove("CREATE_TIME");
-                String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
-                if (!oldSign.equals(sign)) {
-                    valid = false;
-                    break;
-                }
-            }
-
-            if (!valid) {
-                throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "数据签名异常,请联系管理员!");
-            }
+            cacheMap.put(boundSql, rs);
+            this.validSign(rs);
         }
     }
 
@@ -287,41 +174,90 @@ public class SignCommonUtil {
         }
         Class<?> clz = mappedStatement.getResultMaps().get(0).getType();
         boolean isSign = clz.isAnnotationPresent(EnableSign.class);
-        boolean valid = true;
         if (isSign) {
-            ResultSet rs = ps.getResultSet();
-            ResultSetMetaData md = rs.getMetaData();
-            Map<String, Object> map = new HashMap<>();
-            while (rs.next()) {
-                for (int i = 0; i < md.getColumnCount(); i++) {
-                    map.put(md.getColumnLabel(i + 1).toLowerCase(), rs.getObject(md.getColumnLabel(i + 1)));
-                }
-                if (map.get("sign") == null || Objects.equals(map.get("sign").toString(), "")) {
-                    return;
-                }
-                String oldSign = String.valueOf(map.get("sign"));
-
-                map.remove("sign");
-                map.remove("gmt_create");
-                map.remove("gmt_modified");
-                map.remove("gmt_update");
-                map.remove("create_time");
-                map.remove("update_time");
-                map.remove("UPDATE_TIME");
-                map.remove("CREATE_TIME");
-                String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
-                if (!oldSign.equals(sign)) {
-                    valid = false;
-                    break;
-
-                }
-            }
-
-            if (!valid) {
-                throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "数据签名异常,请联系管理员!");
-            }
-
+            this.validSign(ps.getResultSet());
         }
+    }
+
+
+    private String buildSign(Map<String, Object> map) {
+        //排除掉不需要参与签名的字段
+        map.remove("sign");
+        map.remove("gmt_create");
+        map.remove("gmt_modified");
+        map.remove("gmt_update");
+        map.remove("create_time");
+        map.remove("update_time");
+        map.remove("UPDATE_TIME");
+        map.remove("CREATE_TIME");
+        return MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
+    }
+
+
+    private void validSign(String newSign, String oldSign) {
+        if (!oldSign.equals(newSign)) {
+            throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "数据签名异常,请联系管理员!");
+        }
+    }
+
+    private void validSign(ResultSet rs) throws SQLException {
+        ResultSetMetaData md = rs.getMetaData();
+        Map<String, Object> map = new HashMap<>();
+        while (rs.next()) {
+            for (int i = 0; i < md.getColumnCount(); i++) {
+                map.put(md.getColumnLabel(i + 1).toLowerCase(), rs.getObject(md.getColumnLabel(i + 1)));
+            }
+            if (map.get("sign") == null || Objects.equals(map.get("sign").toString(), "")) {
+                return;
+            }
+
+            String oldSign = String.valueOf(map.get("sign"));
+            this.validSign(this.buildSign(map), oldSign);
+        }
+
+    }
+
+    private String buildQuerySql(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) throws JSQLParserException {
+        //解析sql,拿出where条件，构建查询sql获取更新范围的数据,进行验签
+        String sql = boundSql.getSql();
+        TypeHandlerRegistry typeHandlerRegistry = mappedStatement.getConfiguration().getTypeHandlerRegistry();
+        Configuration configuration = mappedStatement.getConfiguration();
+        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+        if (parameterMappings != null) {
+            for (ParameterMapping parameterMapping : parameterMappings) {
+                if (parameterMapping.getMode() != ParameterMode.OUT) {
+                    Object value;
+                    String propertyName = parameterMapping.getProperty();
+                    if (boundSql.hasAdditionalParameter(propertyName)) {
+                        value = boundSql.getAdditionalParameter(propertyName);
+                    } else if (parameterObject == null) {
+                        value = null;
+                    } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
+                        value = parameterObject;
+                    } else {
+                        value = configuration.newMetaObject(parameterObject).getValue(propertyName);
+                    }
+
+                    //类型处理
+                    if (value instanceof LocalDateTime) {
+                        value = DateUtil.format((LocalDateTime) value, DatePattern.NORM_DATETIME_PATTERN);
+                    } else if (value instanceof Date) {
+                        value = DateUtil.format((Date) value, DatePattern.NORM_DATETIME_PATTERN);
+                    } else if (value instanceof Boolean) {
+                        value = Boolean.FALSE.equals(value) ? "0" : "1";
+                    }
+                    //这里替换是为了防止value中存在?,导致sql替换出错
+                    String valueSet = String.valueOf(value).replaceAll("\\?", "！@#¥%");
+                    sql = StringUtils.replaceOnce(sql, "?", "'" + valueSet + "'");
+                }
+            }
+        }
+        sql = sql.replaceAll("！@#¥%", "\\?");
+        Update update = (Update) CCJSqlParserUtil.parse(boundSql.getSql());
+        String tableName = update.getTable().getName();
+        String whereStr = " where" + sql.split("WHERE")[1];
+        String querySql = "select * from " + tableName + whereStr;
+        return querySql;
     }
 
 

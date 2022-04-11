@@ -603,7 +603,7 @@ public class DsServiceImpl implements DsService {
             return Response.fail("0", "该应用不存在");
         }
         buildNewDataSource(updateRequestV2);
-        validateURL(updateRequestV2.getExtInfo(), updateRequestV2.getUrl(), updateRequestV2.getDsType(), detailResult.getApplicationName());
+        validateURL(updateRequestV2.getExtInfo(), updateRequestV2.getUrl(), updateRequestV2.getDsType(), updateRequestV2.getUserName());
         Integer code = MiddleWareTypeEnum.getEnumByValue(updateRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
 
@@ -697,7 +697,7 @@ public class DsServiceImpl implements DsService {
             return Response.fail("0", "该应用不存在");
         }
         buildNewDataSource(createRequestV2);
-        validateURL(createRequestV2.getExtInfo(), createRequestV2.getUrl(), createRequestV2.getDsType(), createRequestV2.getApplicationName());
+        validateURL(createRequestV2.getExtInfo(), createRequestV2.getUrl(), createRequestV2.getDsType(), createRequestV2.getUserName());
         Integer code = MiddleWareTypeEnum.getEnumByValue(createRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
         service.createShadowProgramme(createRequestV2, true);
@@ -762,12 +762,13 @@ public class DsServiceImpl implements DsService {
                     throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_URL_CREATE_ERROR, "影子数据源与业务数据源一致且用户名一致，会导致压测数据写入业务库，请更改后重新提交!");
                 }
             }
-        }
-        // 影子库或影子库影子表方案的时候
-        if (DsTypeEnum.SHADOW_REDIS_SERVER.getCode() == dsType || DsTypeEnum.SHADOW_DB.getCode() == dsType) {
-            String shadowUrl = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject()).getString("shadowUrl");
-            if (url.equals(shadowUrl)) {
-                throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_URL_CREATE_ERROR, "影子数据源与业务数据源一致，会导致压测数据写入业务库，请更改后重新提交!");
+        } else {
+            // 影子库或影子库影子表方案的时候
+            if (DsTypeEnum.SHADOW_REDIS_SERVER.getCode() == dsType || DsTypeEnum.SHADOW_DB.getCode() == dsType) {
+                String shadowUrl = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject()).getString("shadowUrl");
+                if (url.equals(shadowUrl)) {
+                    throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_URL_CREATE_ERROR, "影子数据源与业务数据源一致，会导致压测数据写入业务库，请更改后重新提交!");
+                }
             }
         }
 

@@ -25,7 +25,6 @@
     <select id="selectList" parameterType="com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery"
             resultMap="BaseResultMap">
         select
-        'false' as QUERYID,
         <include refid="Base_Column_List"/>
         from t_shadow_job_config
         <include refid="Data_Where_Clause"/>
@@ -34,13 +33,11 @@
     </select>
     <select id="selectListCount" parameterType="com.pamirs.takin.entity.domain.entity.simplify.TShadowJobConfig"
             resultMap="BaseResultMap">
-        'false' as QUERYID,
         select count (*) from t_shadow_job_config
         <include refid="Data_Where_Clause"/>
     </select>
     <select id="selectOneById" parameterType="com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery" resultMap="BaseResultMap">
         select
-        'false' as QUERYID,
         <include refid="Base_Column_List"/>
         from t_shadow_job_config where id = #{id,jdbcType=BIGINT} and is_deleted = 0
     </select>

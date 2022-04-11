@@ -1075,7 +1075,7 @@ public class DsServiceImpl implements DsService {
      */
     @Override
     public ShadowTemplateSelect processSelect(String appName) {
-        ShadowTemplateSelect select = new ShadowTemplateSelect(false);
+        ShadowTemplateSelect select = new ShadowTemplateSelect(true);
         if (StringUtils.isBlank(appName)) {
             // 默认
             return select;

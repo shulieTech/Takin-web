@@ -168,8 +168,14 @@ public class DsServiceImpl implements DsService {
     @Autowired
     private CacheConfigTemplateDAO cacheConfigTemplateDAO;
 
-    @Value("${jdbc:oracle:thin}")
+    @Value("${ds.database.url}")
     private String oracleUrl;
+
+    @Value("${agent.ds.compareVersion}")
+    private String compareVersion;
+
+    @Value("${agent.ds.newVersion:false}")
+    private boolean newVersion;
 
     @PostConstruct
     public void init() {
@@ -494,7 +500,7 @@ public class DsServiceImpl implements DsService {
             return Response.success(this.dsQueryDetail(id, false));
         }
         AbstractTemplateParser templateParser = templateParserMap.get(Type.MiddleWareType.ofKey(middlewareType));
-        return Response.success(templateParser.convertDetailByTemplate(id));
+        return Response.success(templateParser.convertDetailByTemplate(id, detailResult.getApplicationName()));
     }
 
     private void filterAndSave(List<AppShadowDatabaseDTO> shadowDataBaseInfos, Long applicationId, ApplicationDsQueryParam queryParam) {
@@ -597,7 +603,7 @@ public class DsServiceImpl implements DsService {
             return Response.fail("0", "该应用不存在");
         }
         buildNewDataSource(updateRequestV2);
-        validateURL(updateRequestV2.getExtInfo(), updateRequestV2.getUrl(), updateRequestV2.getDsType());
+        validateURL(updateRequestV2.getExtInfo(), updateRequestV2.getUrl(), updateRequestV2.getDsType(), updateRequestV2.getUserName());
         Integer code = MiddleWareTypeEnum.getEnumByValue(updateRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
 
@@ -654,9 +660,9 @@ public class DsServiceImpl implements DsService {
         AbstractTemplateParser templateParser = templateParserMap.get(type);
 
         // 判断当前模板中是否要添加用户名和密码
-        //ShadowTemplateSelect select = this.processSelect(applicationName);
+        ShadowTemplateSelect select = this.processSelect(applicationName);
 
-        return Response.success(templateParser.convertShadowMsgWithTemplate(dsType, isNewData, cacheType, templateEnum));
+        return Response.success(templateParser.convertShadowMsgWithTemplate(dsType, isNewData, cacheType, templateEnum, select));
     }
 
     /**
@@ -691,7 +697,7 @@ public class DsServiceImpl implements DsService {
             return Response.fail("0", "该应用不存在");
         }
         buildNewDataSource(createRequestV2);
-        validateURL(createRequestV2.getExtInfo(), createRequestV2.getUrl(), createRequestV2.getDsType());
+        validateURL(createRequestV2.getExtInfo(), createRequestV2.getUrl(), createRequestV2.getDsType(), createRequestV2.getUserName());
         Integer code = MiddleWareTypeEnum.getEnumByValue(createRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
         service.createShadowProgramme(createRequestV2, true);
@@ -743,21 +749,29 @@ public class DsServiceImpl implements DsService {
     /**
      * 校验影子url和业务url是否一致
      */
-    private void validateURL(String extInfo, String url, int dsType) {
+    private void validateURL(String extInfo, String url, int dsType, String userName) {
         if (StringUtils.isBlank(extInfo) || StringUtils.isBlank(url)) {
             return;
         }
         // 判断是否是oracle库,不处理
         if (url.startsWith(oracleUrl)) {
-            return;
-        }
-        // 影子库或影子库影子表方案的时候
-        if (DsTypeEnum.SHADOW_REDIS_SERVER.getCode() == dsType || DsTypeEnum.SHADOW_DB.getCode() == dsType) {
-            String shadowUrl = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject()).getString("shadowUrl");
-            if (url.equals(shadowUrl)) {
-                throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_URL_CREATE_ERROR, "影子数据源与业务数据源一致，会导致压测数据写入业务库，请更改后重新提交!");
+            if (DsTypeEnum.SHADOW_REDIS_SERVER.getCode() == dsType || DsTypeEnum.SHADOW_DB.getCode() == dsType) {
+                String shadowUrl = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject()).getString("shadowUrl");
+                String shadowUserName = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject()).getString("shadowUserName");
+                if (url.equals(shadowUrl) && userName.equals(shadowUserName)) {
+                    throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_URL_CREATE_ERROR, "影子数据源与业务数据源一致且用户名一致，会导致压测数据写入业务库，请更改后重新提交!");
+                }
+            }
+        } else {
+            // 影子库或影子库影子表方案的时候
+            if (DsTypeEnum.SHADOW_REDIS_SERVER.getCode() == dsType || DsTypeEnum.SHADOW_DB.getCode() == dsType) {
+                String shadowUrl = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject()).getString("shadowUrl");
+                if (url.equals(shadowUrl)) {
+                    throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_URL_CREATE_ERROR, "影子数据源与业务数据源一致，会导致压测数据写入业务库，请更改后重新提交!");
+                }
             }
         }
+
     }
 
     private boolean validateOracleURL(String shadowUrl, String url, int dsType,
@@ -1059,10 +1073,11 @@ public class DsServiceImpl implements DsService {
      * @param appName
      * @return
      */
-    private ShadowTemplateSelect processSelect(String appName) {
-        ShadowTemplateSelect select = new ShadowTemplateSelect(true, true);
+    @Override
+    public ShadowTemplateSelect processSelect(String appName) {
+        ShadowTemplateSelect select = new ShadowTemplateSelect(newVersion);
         if (StringUtils.isBlank(appName)) {
-            // 默认填充,新版本需要判断
+            // 默认
             return select;
         }
         ApplicationNodeQueryDTO queryDTO = new ApplicationNodeQueryDTO();
@@ -1082,11 +1097,10 @@ public class DsServiceImpl implements DsService {
         Collections.sort(agentVersionList, (o1, o2) -> AgentVersionUtil.compareVersion(o1, o2, false));
         // 获取最大版本号
         String maxVersion = agentVersionList.stream().findFirst().get();
-        /*if (AgentVersionUtil.compareVersion(maxVersion, compareVersion, true) > 0) {
-            select.setUserName(false);
-            select.setPassword(false);
+        if (AgentVersionUtil.compareVersion(maxVersion, compareVersion, true) > 0) {
+            select.setNewVersion(true);
             return select;
-        }*/
+        }
         return select;
     }
 }

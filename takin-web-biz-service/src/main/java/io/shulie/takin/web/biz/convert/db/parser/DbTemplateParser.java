@@ -13,6 +13,7 @@ import io.shulie.takin.web.amdb.api.ApplicationClient;
 import io.shulie.takin.web.amdb.bean.result.application.ApplicationBizTableDTO;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
+import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
@@ -56,6 +57,8 @@ public class DbTemplateParser extends AbstractTemplateParser {
     @Autowired
     private ConnectpoolConfigTemplateDAO connectpoolConfigTemplateDAO;
 
+    @Autowired
+    private DsService dsService;
 
     /**
      * 将影子方案信息按对应模版解析
@@ -64,37 +67,39 @@ public class DbTemplateParser extends AbstractTemplateParser {
      * @return
      */
     @Override
-    public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum) {
+    public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum, ShadowTemplateSelect select) {
         List list = Lists.newArrayList();
 
         if (DsTypeEnum.SHADOW_TABLE.getCode().equals(dsType)) {
             list.add(new ListStyle());
         } else {
             List<String> attributeArray;
-            //list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
-
-            List<InputWithSelectStyle.NodeDetail> dataSource_username = new ArrayList<>();
-            dataSource_username.add(new InputWithSelectStyle.NodeDetail(key7, "1"));
-            dataSource_username.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
-
-            List<String> keys_username = Arrays.asList(key3, key4);
-            InputWithSelectStyle.NodeInfo nodeInfo_username = new InputWithSelectStyle.NodeInfo(keys_username, dataSource_username);
-            InputWithSelectStyle selectStyle_username = new InputWithSelectStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT,
-                    StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo_username);
-            list.add(selectStyle_username);
-
+            if (select.isNewVersion()) {
+                List<InputWithSelectStyle.NodeDetail> dataSource_username = new ArrayList<>();
+                dataSource_username.add(new InputWithSelectStyle.NodeDetail(key7, "1"));
+                dataSource_username.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
+                List<String> keys_username = Arrays.asList(key3, key4);
+                InputWithSelectStyle.NodeInfo nodeInfo_username = new InputWithSelectStyle.NodeInfo(keys_username, dataSource_username);
+                InputWithSelectStyle selectStyle_username = new InputWithSelectStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT,
+                        StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo_username);
+                list.add(selectStyle_username);
+            } else {
+                list.add(new InputStyle(INPUT_FILE_NAME_USER_NAME, INPUT_FILE_NAME_USER_NAME_CONTEXT, StyleEnums.INPUT.getCode()));
+            }
             list.add(new InputStyle(INPUT_FILE_NAME_URL, INPUT_FILE_NAME_URL_CONTEXT, StyleEnums.INPUT.getCode()));
+            if (select.isNewVersion()) {
+                List<InputWithSelectStyle.NodeDetail> dataSource_pwd = new ArrayList<>();
+                dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key8, "1"));
+                dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
 
-            //list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
-            List<InputWithSelectStyle.NodeDetail> dataSource_pwd = new ArrayList<>();
-            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key8, "1"));
-            dataSource_pwd.add(new InputWithSelectStyle.NodeDetail(key2, "2"));
-
-            List<String> keys_pwd = Arrays.asList(key3, key4);
-            InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
-            InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT,
-                    StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo_pwd);
-            list.add(selectStyle_pwd);
+                List<String> keys_pwd = Arrays.asList(key3, key4);
+                InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
+                InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT,
+                        StyleEnums.PWD_INPUT.getCode(), nodeInfo_pwd);
+                list.add(selectStyle_pwd);
+            } else {
+                list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
+            }
 
             if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
                 attributeArray = this.reflex();
@@ -124,7 +129,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
      * @return
      */
     @Override
-    public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
+    public ShadowDetailResponse convertDetailByTemplate(Long recordId, String appName) {
         ApplicationDsDbManageDetailResult convert = dsDbManageDAO.selectOneById(recordId);
 
         ShadowDetailResponse shadowDetailResponse = new ShadowDetailResponse();
@@ -142,8 +147,9 @@ public class DbTemplateParser extends AbstractTemplateParser {
                 || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
         }
-
-        if (StringUtils.isNotBlank(shaDowFileExtedn) &&
+        // 新版本适配
+        ShadowTemplateSelect select = dsService.processSelect(appName);
+        if (select.isNewVersion() && StringUtils.isNotBlank(shaDowFileExtedn) &&
                 (DsTypeEnum.SHADOW_REDIS_SERVER.getCode().equals(convert.getDsType())
                         || DsTypeEnum.SHADOW_DB.getCode().equals(convert.getDsType()))) {
             shaDowFileExtedn = buildNewShadow(shaDowFileExtedn);

@@ -27,7 +27,7 @@ import java.util.Date;
 public class ApplicationPluginsConfigEntity extends UserBaseEntity implements Serializable {
     private static final long serialVersionUID = -20702119464891307L;
 
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.AUTO,value = "id")
     private Long id;
     /**
      * 应用id

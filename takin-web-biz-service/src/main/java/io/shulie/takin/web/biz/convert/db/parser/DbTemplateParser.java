@@ -95,7 +95,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
                 List<String> keys_pwd = Arrays.asList(key3, key4);
                 InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
                 InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT,
-                        StyleEnums.SELECT_WITH_INPUT.getCode(), nodeInfo_pwd);
+                        StyleEnums.PWD_INPUT.getCode(), nodeInfo_pwd);
                 list.add(selectStyle_pwd);
             } else {
                 list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));

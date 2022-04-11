@@ -6,7 +6,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ShadowTemplateSelect {
-    private boolean password;
-    private boolean userName;
-
+    private boolean newVersion;
 }

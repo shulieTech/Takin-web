@@ -15,15 +15,16 @@
         <result column="env_code" jdbcType="VARCHAR" property="envCode"/>
         <result column="user_id" jdbcType="BIGINT" property="userId"/>
         <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="customer_id" jdbcType="BIGINT" property="customerId"/>
+        <result column="is_deleted" jdbcType="TINYINT" property="isDeleted"/>
+        <result column="sign" jdbcType="VARCHAR" property="sign"/>
     </resultMap>
-    <sql id="Base_Column_List">
-        id, application_id, `name`, `type`, status,config_code, active,create_time, update_time,tenant_id,env_code,user_id,remark
-    </sql>
+
     <select id="selectList" parameterType="com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery"
             resultMap="BaseResultMap">
         select
         'false' as QUERYID,
-        <include refid="Base_Column_List"/>
+        *
         from t_shadow_job_config
         <include refid="Data_Where_Clause"/>
         <include refid="Data_Where_Plus"/>
@@ -38,13 +39,13 @@
     <select id="selectOneById" parameterType="com.pamirs.takin.entity.domain.query.ShadowJobConfigQuery" resultMap="BaseResultMap">
         select
         'false' as QUERYID,
-        <include refid="Base_Column_List"/>
+        *
         from t_shadow_job_config where id = #{id,jdbcType=BIGINT} and is_deleted = 0
     </select>
     <select id="getAllEnableShadowJobs"
             resultType="com.pamirs.takin.entity.domain.entity.simplify.TShadowJobConfig">
         select
-        <include refid="Base_Column_List"/>
+       *
         from t_shadow_job_config
         where
         status=0

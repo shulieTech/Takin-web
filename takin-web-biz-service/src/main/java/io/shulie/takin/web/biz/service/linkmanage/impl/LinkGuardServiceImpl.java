@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.linkmanage.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -116,7 +117,9 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         entity.setApplicationName(vo.getApplicationName());
         entity.setMethodInfo(vo.getMethodInfo());
         entity.setGroovy(vo.getGroovy());
-        entity.setIsEnable(vo.getIsEnable()? GuardEnableConstants.GUARD_ENABLE : GuardEnableConstants.GUARD_UNABLE);
+        if(Objects.nonNull(vo.getIsEnable())){
+            entity.setIsEnable(vo.getIsEnable()? GuardEnableConstants.GUARD_ENABLE : GuardEnableConstants.GUARD_UNABLE);
+        }
         entity.setRemark(vo.getRemark());
         try {
             tLinkGuardMapper.update(entity);
@@ -246,7 +249,9 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         vo.setCreateTime(guardEntity.getCreateTime());
         vo.setUpdateTime(guardEntity.getUpdateTime());
         vo.setRemark(guardEntity.getRemark());
-        vo.setIsEnable(guardEntity.getIsEnable() == GuardEnableConstants.GUARD_ENABLE);
+        if(Objects.nonNull(guardEntity.getIsEnable())){
+            vo.setIsEnable(guardEntity.getIsEnable() == GuardEnableConstants.GUARD_ENABLE);
+        }
         // 判断权限，需要把用户传入
         vo.setUserId(guardEntity.getUserId());
         WebPluginUtils.fillQueryResponse(vo);

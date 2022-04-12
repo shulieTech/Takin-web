@@ -81,7 +81,7 @@ public class SignCommonUtil {
                 Field idField = ReflectUtil.getField(clz, "id");
                 if (idField == null) {
                     //兼容 t_black_list
-                    idField = ReflectUtil.getField(clz, "BLIST_ID");
+                    idField = ReflectUtil.getField(clz, "blistId");
                 }
                 idField.setAccessible(true);
                 long id = Long.parseLong(idField.get(parameterObject).toString());
@@ -182,8 +182,8 @@ public class SignCommonUtil {
                         updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where id = " + id;
                     }
 
-                    if (map.containsKey("BLIST_ID")) {
-                        id = map.get("BLIST_ID").toString();
+                    if (map.containsKey("blist_id")) {
+                        id = map.get("blist_id").toString();
                         updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where BLIST_ID = " + id;
                     }
                     sqlList.add(updateSql);

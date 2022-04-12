@@ -50,7 +50,7 @@ public class RedisTemplateParser extends AbstractTemplateParser {
      * @return
      */
     @Override
-    public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
+    public ShadowDetailResponse convertDetailByTemplate(Long recordId,String appName) {
         ApplicationDsCacheManageDetailResult convert = dsCacheManageDAO.selectOneById(recordId);
         if (Objects.isNull(convert)) {
             return null;

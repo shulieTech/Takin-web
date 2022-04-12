@@ -502,7 +502,7 @@ public class DsServiceImpl implements DsService {
             return Response.success(this.dsQueryDetail(id, false));
         }
         AbstractTemplateParser templateParser = templateParserMap.get(Type.MiddleWareType.ofKey(middlewareType));
-        return Response.success(templateParser.convertDetailByTemplate(id));
+        return Response.success(templateParser.convertDetailByTemplate(id,detailResult.getApplicationName()));
     }
 
     private void filterAndSave(List<AppShadowDatabaseDTO> shadowDataBaseInfos, Long applicationId, ApplicationDsQueryParam queryParam) {
@@ -1105,7 +1105,7 @@ public class DsServiceImpl implements DsService {
         Collections.sort(agentVersionList, (o1, o2) -> AgentVersionUtil.compareVersion(o1, o2, false));
         // 获取最大版本号
         String maxVersion = agentVersionList.stream().findFirst().get();
-        if (AgentVersionUtil.compareVersion(maxVersion, compareVersion, true) > 0) {
+        if (AgentVersionUtil.compareVersion(maxVersion, compareVersion, true) >= 0) {
             select.setNewVersion(true);
             return select;
         }

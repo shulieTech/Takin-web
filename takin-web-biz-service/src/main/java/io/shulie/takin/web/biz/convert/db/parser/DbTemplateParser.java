@@ -130,7 +130,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
      * @return
      */
     @Override
-    public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
+    public ShadowDetailResponse convertDetailByTemplate(Long recordId, String appName) {
         ApplicationDsDbManageDetailResult convert = dsDbManageDAO.selectOneById(recordId);
 
         ShadowDetailResponse shadowDetailResponse = new ShadowDetailResponse();
@@ -151,7 +151,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
         if (StringUtils.isNotBlank(shaDowFileExtedn) &&
                 (DsTypeEnum.SHADOW_REDIS_SERVER.getCode().equals(convert.getDsType())
                         || DsTypeEnum.SHADOW_DB.getCode().equals(convert.getDsType()))) {
-            shaDowFileExtedn = buildNewShadow(shaDowFileExtedn);
+            shaDowFileExtedn = buildNewShadow(shaDowFileExtedn, appName);
         }
         shadowDetailResponse.setShadowInfo(shaDowFileExtedn);
         shadowDetailResponse.setConnectionPool(convert.getConnPoolName());
@@ -167,13 +167,17 @@ public class DbTemplateParser extends AbstractTemplateParser {
      * @param shaDowFileExtedn
      * @return
      */
-    public String buildNewShadow(String shaDowFileExtedn) {
+    public String buildNewShadow(String shaDowFileExtedn, String appName) {
         JSONObject extObj = Optional.ofNullable(JSONObject.parseObject(shaDowFileExtedn)).orElse(new JSONObject());
-        // 获取写入时候的标记字段，是否为新版本
+        // 获取写入时候的标记字段，是否为新版本,先判断标记
         String extFlag = extObj.getString(DsServiceImpl.EXT_FLAG);
         if (StringUtils.isBlank(extFlag)) {
-            // 返回默认
-            return shaDowFileExtedn;
+            // 根据应用去判断下当前应用版本是否最新，把旧数据的展现形式也调整下
+            ShadowTemplateSelect select = dsService.processSelect(appName);
+            if (!select.isNewVersion()) {
+                // 返回默认
+                return shaDowFileExtedn;
+            }
         }
         String shadowUserNameStr = extObj.getString("shadowUserName");
         Map<String, Object> userNameMap = Maps.newHashMap();

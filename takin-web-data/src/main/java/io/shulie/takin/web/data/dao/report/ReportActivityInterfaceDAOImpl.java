@@ -62,10 +62,13 @@ public class ReportActivityInterfaceDAOImpl
                 )));
         }
         String sortField = param.getSortField();
-        if (StringUtils.isNotBlank(sortField)) {
-            // 驼峰转下划线
-            wrapper.last(" order by " + StrUtil.toUnderlineCase(sortField) + " " + param.getSortType() + " ");
+        if (StringUtils.isBlank(sortField)) {
+            sortField = "costPercent";
+            param.setSortType("desc");
         }
+        // 驼峰转下划线
+        wrapper.last(" order by " + StrUtil.toUnderlineCase(sortField) + " "
+            + ("desc".equals(param.getSortType()) ? "desc" : "asc") + " ");
         return wrapper;
     }
 }

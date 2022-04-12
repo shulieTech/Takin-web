@@ -177,6 +177,8 @@ public class DsServiceImpl implements DsService {
     @Value("${agent.ds.newVersion:false}")
     private boolean newVersion;
 
+    public static final String EXT_FLAG = "extFlag";
+
     @PostConstruct
     public void init() {
         map = new HashMap<>(6);
@@ -500,7 +502,7 @@ public class DsServiceImpl implements DsService {
             return Response.success(this.dsQueryDetail(id, false));
         }
         AbstractTemplateParser templateParser = templateParserMap.get(Type.MiddleWareType.ofKey(middlewareType));
-        return Response.success(templateParser.convertDetailByTemplate(id, detailResult.getApplicationName()));
+        return Response.success(templateParser.convertDetailByTemplate(id));
     }
 
     private void filterAndSave(List<AppShadowDatabaseDTO> shadowDataBaseInfos, Long applicationId, ApplicationDsQueryParam queryParam) {
@@ -722,10 +724,13 @@ public class DsServiceImpl implements DsService {
                 String context = "";
                 JSONObject dataObj = JSONObject.parseObject(shadowUserNameStr);
                 String tag = dataObj.getString("tag");
+                // 2是选择输入，获取值，重新处理
                 if ("2".equals(tag)) {
                     context = dataObj.getString("context");
                 }
                 extObj.put("shadowUserName", context);
+                // 打一个标记字段,是否处理为新版本
+                extObj.put(EXT_FLAG, "true");
             }
         }
 
@@ -740,6 +745,8 @@ public class DsServiceImpl implements DsService {
                     context = dataObj.getString("context");
                 }
                 extObj.put("shadowPwd", context);
+                // 打一个标记字段,是否处理为新版本，解析使用
+                extObj.put(EXT_FLAG, "true");
             }
         }
         // 重新设置下extObj
@@ -759,7 +766,7 @@ public class DsServiceImpl implements DsService {
                 String shadowUrl = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject()).getString("shadowUrl");
                 String shadowUserName = Optional.ofNullable(JSONObject.parseObject(extInfo)).orElse(new JSONObject()).getString("shadowUserName");
                 if (url.equals(shadowUrl) && userName.equals(shadowUserName)) {
-                    throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_URL_CREATE_ERROR, "影子数据源与业务数据源一致且用户名一致，会导致压测数据写入业务库，请更改后重新提交!");
+                    throw new TakinWebException(TakinWebExceptionEnum.SHADOW_CONFIG_URL_CREATE_ERROR, "影子数据源与业务数据源一致，会导致压测数据写入业务库，请更改后重新提交!");
                 }
             }
         } else {
@@ -1087,6 +1094,7 @@ public class DsServiceImpl implements DsService {
         List<ApplicationNodeAgentDTO> dtoList = responsePagingList.getList();
         // TODO 没有获取到数据,这个时候怎么处理呢
         if (CollectionUtils.isEmpty(dtoList)) {
+            log.error("从amdb未获取到应用版本信息,当前应用名{}", appName);
             return select;
         }
         // 获取所有探针版本

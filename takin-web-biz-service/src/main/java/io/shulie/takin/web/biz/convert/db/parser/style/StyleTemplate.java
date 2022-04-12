@@ -13,8 +13,6 @@ import java.util.List;
  * @Date: 2021/9/13 2:19 下午
  */
 public interface StyleTemplate {
-
-
     String PREFIX = "pt_";
 
     String INPUT_FILE_NAME_USER_NAME = "shadowUserName";
@@ -60,20 +58,13 @@ public interface StyleTemplate {
     @Getter
     enum StyleEnums {
         INPUT(1, "输入框"),
-
-
         PWD_INPUT(2, "密码框"),
-
-
         SELECT_WITH_INPUT(3, "下拉选择后输入"),
-
         TABLE(4, "表单"),
-
-        TEXT_INPUT(5, "文本框");
-
+        TEXT_INPUT(5, "文本框"),
+        SELECT_WITH_INPUT_PWD(7, "下拉选择后输入密码");
 
         private final Integer code;
-
         private final String desc;
 
         /**
@@ -121,13 +112,9 @@ public interface StyleTemplate {
     @AllArgsConstructor
     @NoArgsConstructor
     class InputStyle extends AbstractStyleTemplate {
-
         private String key;
-
         private String label;
-
         private Integer nodeType;
-
         private Boolean required;
 
         public InputStyle(String key, String label, Integer nodeType) {
@@ -145,25 +132,17 @@ public interface StyleTemplate {
     @AllArgsConstructor
     @NoArgsConstructor
     class InputWithSelectStyle extends AbstractStyleTemplate {
-
-
         private String key;
-
         private String label;
-
         private Integer nodeType;
-
         private InputWithSelectStyle.NodeInfo nodeInfo;
-
         private Boolean required;
 
         @Data
         @AllArgsConstructor
         @NoArgsConstructor
         public static class NodeInfo {
-
             private List<String> keys;
-
             private List<InputWithSelectStyle.NodeDetail> dataSource;
         }
 
@@ -171,10 +150,7 @@ public interface StyleTemplate {
         @AllArgsConstructor
         @NoArgsConstructor
         public static class NodeDetail {
-
-
             private String label;
-
             private String value;
         }
 
@@ -193,16 +169,10 @@ public interface StyleTemplate {
     @Data
     @AllArgsConstructor
     class ListStyle extends AbstractStyleTemplate {
-
-
         private String key;
-
         private String label;
-
         private Integer nodeType;
-
         private Boolean required;
-
 
         public ListStyle() {
             this.key = "shaDowTaleInfo";
@@ -219,7 +189,6 @@ public interface StyleTemplate {
     @AllArgsConstructor
     @NoArgsConstructor
     class TipsInputStyle extends InputStyle {
-
         private String tips;
 
         public TipsInputStyle(String key, String label, Integer nodeType, String tips) {

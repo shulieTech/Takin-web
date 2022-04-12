@@ -14,6 +14,7 @@ import io.shulie.takin.web.amdb.bean.result.application.ApplicationBizTableDTO;
 import io.shulie.takin.web.biz.convert.db.parser.style.StyleTemplate;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowDetailResponse;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
+import io.shulie.takin.web.biz.service.dsManage.impl.DsServiceImpl;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
@@ -95,7 +96,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
                 List<String> keys_pwd = Arrays.asList(key3, key4);
                 InputWithSelectStyle.NodeInfo nodeInfo_pwd = new InputWithSelectStyle.NodeInfo(keys_pwd, dataSource_pwd);
                 InputWithSelectStyle selectStyle_pwd = new InputWithSelectStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT,
-                        StyleEnums.PWD_INPUT.getCode(), nodeInfo_pwd);
+                        StyleEnums.SELECT_WITH_INPUT_PWD.getCode(), nodeInfo_pwd);
                 list.add(selectStyle_pwd);
             } else {
                 list.add(new InputStyle(PWD_FILE_NAME, PWD_FILE_NAME_CONTEXT, StyleEnums.PWD_INPUT.getCode()));
@@ -129,7 +130,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
      * @return
      */
     @Override
-    public ShadowDetailResponse convertDetailByTemplate(Long recordId, String appName) {
+    public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
         ApplicationDsDbManageDetailResult convert = dsDbManageDAO.selectOneById(recordId);
 
         ShadowDetailResponse shadowDetailResponse = new ShadowDetailResponse();
@@ -147,9 +148,7 @@ public class DbTemplateParser extends AbstractTemplateParser {
                 || DsTypeEnum.SHADOW_TABLE.getCode().equals(convert.getDsType())) {
             shaDowFileExtedn = this.convertData(convert.getFileExtedn(), convert.getConnPoolName());
         }
-        // 新版本适配
-        ShadowTemplateSelect select = dsService.processSelect(appName);
-        if (select.isNewVersion() && StringUtils.isNotBlank(shaDowFileExtedn) &&
+        if (StringUtils.isNotBlank(shaDowFileExtedn) &&
                 (DsTypeEnum.SHADOW_REDIS_SERVER.getCode().equals(convert.getDsType())
                         || DsTypeEnum.SHADOW_DB.getCode().equals(convert.getDsType()))) {
             shaDowFileExtedn = buildNewShadow(shaDowFileExtedn);
@@ -170,6 +169,12 @@ public class DbTemplateParser extends AbstractTemplateParser {
      */
     public String buildNewShadow(String shaDowFileExtedn) {
         JSONObject extObj = Optional.ofNullable(JSONObject.parseObject(shaDowFileExtedn)).orElse(new JSONObject());
+        // 获取写入时候的标记字段，是否为新版本
+        String extFlag = extObj.getString(DsServiceImpl.EXT_FLAG);
+        if (StringUtils.isBlank(extFlag)) {
+            // 返回默认
+            return shaDowFileExtedn;
+        }
         String shadowUserNameStr = extObj.getString("shadowUserName");
         Map<String, Object> userNameMap = Maps.newHashMap();
         if (StringUtils.isBlank(shadowUserNameStr)) {

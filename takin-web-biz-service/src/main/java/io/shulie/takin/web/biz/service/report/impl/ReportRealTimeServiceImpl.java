@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -11,14 +12,18 @@ import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
 
+import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import io.shulie.takin.cloud.entrypoint.scene.manage.SceneManageApi;
+import io.shulie.takin.cloud.sdk.model.request.report.ScriptNodeTreeQueryReq;
+import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.web.diff.api.report.ReportApi;
 import lombok.extern.slf4j.Slf4j;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.Lists;
-import org.springframework.http.HttpMethod;
+import org.springframework.beans.BeanUtils;
 import com.google.common.collect.HashBiMap;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -73,37 +78,49 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     private SceneTaskService sceneTaskService;
     @Resource
     private BusinessLinkManageDAO businessLinkManageDAO;
+    @Resource
+    private ReportApi reportApi;
 
     @Override
-    public PageInfo<ReportTraceDTO> getReportLinkList(Long reportId, Long sceneId, Long startTime,
-        Integer type, int current,
-        int pageSize) {
-        if (startTime == null) {
+    public PageInfo<ReportTraceDTO> getReportLinkList(ReportTraceQueryDTO queryDTO) {
+        if (queryDTO.getStartTime() == null) {
             return new PageInfo<>(Lists.newArrayList());
         }
+        Long reportId = queryDTO.getReportId();
+        Long sceneId = queryDTO.getSceneId();
         if (reportId == null) {
             reportId = sceneTaskService.getReportIdFromCache(sceneId);
+            queryDTO.setReportId(reportId);
             if (reportId == null) {
                 log.warn("get report id by sceneId is empty,sceneId：{}", sceneId);
             }
         }
-        // 取延迟1分钟时间 前5分钟数据 因为 agent上报数据需要1分钟计算出来
-        return getReportTraceDtoList(reportId, sceneId, System.currentTimeMillis() - 6 * 60 * 1000L,
-            System.currentTimeMillis() - (1 * 60 * 1000), type, current, pageSize);
+        // 取延迟1分钟时间 前5分钟数据 因为 agent上报数据需要1分钟计算出来：改为前端控制
+        return getReportTraceDtoList(queryDTO);
     }
 
     @Override
-    public PageInfo<ReportTraceDTO> getReportLinkListByReportId(Long reportId, Integer type, int current, int pageSize) {
+    public PageInfo<ReportTraceDTO> getReportLinkListByReportId(ReportTraceQueryDTO queryDTO) {
+        Long reportId = queryDTO.getReportId();
         ReportDetailOutput response = reportService.getReportByReportId(reportId);
         ReportDetailDTO reportDetail = BeanUtil.copyProperties(response, ReportDetailDTO.class);
 
         if (reportDetail == null || reportDetail.getStartTime() == null) {
             return new PageInfo<>(Lists.newArrayList());
         }
-        long startTime = DateUtil.parseSecondFormatter(reportDetail.getStartTime()).getTime() - 5 * 60 * 1000L;
+        Long startTime = queryDTO.getStartTime();
+        long reportStartTime = DateUtil.parseSecondFormatter(reportDetail.getStartTime()).getTime() - 5 * 60 * 1000L;
+        if (startTime == null || startTime.compareTo(0L) <= 0) {
+            queryDTO.setStartTime(reportStartTime);
+        }
         // 如果reportDetail.getEndTime()为空，取值5min,考虑到取当前时间的话，后续可能会查太多数据
-        long endTime = reportDetail.getEndTime() != null ? (reportDetail.getEndTime().getTime() + 5 * 60 * 1000L) : (startTime + 10 * 60 * 1000L);
-        return getReportTraceDtoList(reportId, reportDetail.getSceneId(), startTime, endTime, type, current, pageSize);
+        Long endTime = queryDTO.getEndTime();
+        if (endTime == null || endTime.compareTo(queryDTO.getStartTime()) <= 0) {
+            queryDTO.setEndTime(
+                reportDetail.getEndTime() != null ? (reportDetail.getEndTime().getTime() + 5 * 60 * 1000L) : (reportStartTime + 10 * 60 * 1000L));
+        }
+        queryDTO.setSceneId(reportDetail.getSceneId());
+        return getReportTraceDtoList(queryDTO);
     }
 
     @Override
@@ -286,32 +303,17 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         return item.getRequest();
     }
 
-    private PageInfo<ReportTraceDTO> getReportTraceDtoList(Long reportId, Long sceneId, Long startTime, Long endTime, Integer type, int current, int pageSize) {
+    private PageInfo<ReportTraceDTO> getReportTraceDtoList(ReportTraceQueryDTO queryDTO) {
         // 查询场景下的业务活动信息
-        SceneManageWrapperResp response = cloudSceneApi.getSceneDetail(new SceneManageIdReq() {{
-            setId(sceneId);
-        }});
-        List<SceneBusinessActivityRefResp> businessActivityConfig = response.getBusinessActivityConfig();
-        List<Long> businessActivityIdList = businessActivityConfig.stream().
-            map(SceneBusinessActivityRefResp::getBusinessActivityId).collect(Collectors.toList());
+        List<Long> businessActivityIdList = querySceneActivities(queryDTO);
 
         // entryList 获得
         List<EntranceRuleDTO> entranceList = this.getEntryListByBusinessActivityIds(businessActivityIdList);
 
         TraceInfoQueryDTO traceInfoQueryDTO = new TraceInfoQueryDTO();
-
-        traceInfoQueryDTO.setStartTime(startTime);
-        traceInfoQueryDTO.setEndTime(endTime);
-        traceInfoQueryDTO.setReportId(reportId);
-
-        if (type != null) {
-            traceInfoQueryDTO.setType(String.valueOf(type));
-        }
-
-        //traceInfoQueryDTO.setEntranceList(entranceList);
+        BeanUtils.copyProperties(queryDTO, traceInfoQueryDTO);
         traceInfoQueryDTO.setEntranceRuleDTOS(entranceList);
-        traceInfoQueryDTO.setPageNum(current);
-        traceInfoQueryDTO.setPageSize(pageSize);
+        traceInfoQueryDTO.setPageNum(queryDTO.getRealCurrent());
         PagingList<EntryTraceInfoDTO> entryTraceInfoDtoPagingList = traceClient.listEntryTraceInfo(traceInfoQueryDTO);
         if (entryTraceInfoDtoPagingList.isEmpty()) {
             return new PageInfo<>(Collections.emptyList());
@@ -352,16 +354,20 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
      */
     @Override
     public List<EntranceRuleDTO> getEntryListByBusinessActivityIds(List<Long> businessActivityIds) {
+        if (CollectionUtils.isEmpty(businessActivityIds)) {
+            return Lists.newArrayList();
+        }
         // 查询入口集合
         List<BusinessLinkResult> results = businessLinkManageDAO.getListByIds(businessActivityIds);
         List<EntranceRuleDTO> entranceList = Lists.newArrayList();
         for (BusinessLinkResult result : results) {
             EntranceRuleDTO dto = new EntranceRuleDTO();
-            String entrance = result.getEntrace();
-            if (ActivityUtil.isNormalBusiness(result.getType()) && entrance.contains("http")) {
-                entrance = entrance.substring(entrance.indexOf("http"));
-            }
-            dto.setEntrance(entrance);
+            // 如果业务活动为：tohttp#GET, 则出现问题
+            //String entrance = result.getEntrace();
+            //if (ActivityUtil.isNormalBusiness(result.getType()) && entrance.contains("http")) {
+            //    entrance = entrance.substring(entrance.indexOf("http"));
+            //}
+            dto.setEntrance(result.getEntrace());
             dto.setBusinessType(result.getType());
             entranceList.add(dto);
         }
@@ -386,4 +392,62 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         return builder.toString();
     }
 
+    // 查询场景对应的业务活动Id
+    private List<Long> querySceneActivities(ReportTraceQueryDTO queryDTO) {
+        String xpath = queryDTO.getXpathMd5();
+        if (StringUtils.isBlank(xpath)) {
+            SceneManageWrapperResp response = cloudSceneApi.getSceneDetail(new SceneManageIdReq() {{
+                setId(queryDTO.getSceneId());
+            }});
+            List<SceneBusinessActivityRefResp> businessActivityConfig = response.getBusinessActivityConfig();
+            return businessActivityConfig.stream().
+                map(SceneBusinessActivityRefResp::getBusinessActivityId).collect(Collectors.toList());
+        }
+        // 通过xpath递归node
+        List<ScriptNodeTreeResp> nodeTree = reportApi.scriptNodeTree(
+            new ScriptNodeTreeQueryReq() {{
+                setSceneId(queryDTO.getSceneId());
+                setReportId(queryDTO.getReportId());
+            }});
+        List<Long> activityIds = new ArrayList<>();
+        boolean matchNext = true;
+        for (ScriptNodeTreeResp node : nodeTree) {
+            if (matchNext) {
+                matchNext = recursionMatchXpath(false, xpath, node, activityIds);
+            }
+        }
+        return activityIds;
+    }
+
+    /**
+     * 递归查询对应xpath的所有子节点
+     *
+     * @param parentMatched 父节点是否匹配
+     * @param xpath         xpathMd5
+     * @param node          节点
+     * @param result        结果集
+     * @return 是否继续递归 true-继续
+     */
+    private boolean recursionMatchXpath(boolean parentMatched, String xpath, ScriptNodeTreeResp node, List<Long> result) {
+        String xpathMd5 = node.getXpathMd5();
+        boolean curMatched = xpath.equals(xpathMd5);
+        if (curMatched && StringUtils.isNotBlank(node.getIdentification())) {
+            result.add(node.getBusinessActivityId());
+            return false;
+        }
+        if (parentMatched && StringUtils.isNotBlank(node.getIdentification())) {
+            result.add(node.getBusinessActivityId());
+        }
+        boolean matched = parentMatched || curMatched;
+        List<ScriptNodeTreeResp> children = node.getChildren();
+        boolean matchNext = true;
+        if (CollectionUtils.isNotEmpty(children)) {
+            for (ScriptNodeTreeResp child : children) {
+                if (matchNext) {
+                    matchNext = recursionMatchXpath(matched, xpath, child, result);
+                }
+            }
+        }
+        return !curMatched && matchNext;
+    }
 }

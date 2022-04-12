@@ -18,7 +18,7 @@ public class TraceInfoQueryDTO implements Serializable {
 
     private Long endTime;
 
-    private String type;
+    private Integer resultType;
 
     private List<String> entranceList;
 
@@ -37,4 +37,51 @@ public class TraceInfoQueryDTO implements Serializable {
      */
     private Long reportId;
 
+    private String traceId;
+
+    /**
+     * 耗时ms，比较规则 大于
+     */
+    private Long minCost;
+
+    /**
+     * 耗时ms，比较规则 小于等于
+     */
+    private Long maxCost;
+
+    /**
+     * 调用类型：middlewareName
+     */
+    private String middlewareName;
+
+    /**
+     * 接口名称
+     */
+    private String serviceName;
+
+    /**
+     * 方法名称
+     */
+    private String methodName;
+
+    /**
+     * 调用参数：request
+     */
+    private String request;
+
+    /**
+     * 排序字段：sortField （startDate、cost）
+     */
+    private String sortField;
+
+    /**
+     * 排序方式：sortType（asc、desc）
+     */
+    private String sortType;
+
+    /**
+     * 1-agent上报trace明细
+     * 2-压测报告请求trace明细
+     */
+    private Integer queryType;
 }

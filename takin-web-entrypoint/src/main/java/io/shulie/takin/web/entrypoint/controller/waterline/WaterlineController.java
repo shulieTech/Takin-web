@@ -92,7 +92,7 @@ public class WaterlineController {
         List<Metrics> metrics = waterlineService.getAllApplicationWithMetrics(names, startTime);//metrics
         waterlineService.getApplicationNodesAmount(metrics);//node amount
         waterlineService.getApplicationTags(metrics, tagName);//application tags
-        if (org.springframework.util.StringUtils.hasText(sortField) && org.springframework.util.StringUtils.hasText(sortType)) {
+        if (CollectionUtils.isNotEmpty(metrics) && org.springframework.util.StringUtils.hasText(sortField) && org.springframework.util.StringUtils.hasText(sortType)) {
             metrics = doSort(metrics, sortField, sortType);
         }
         return ResponseResult.success(metrics);

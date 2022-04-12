@@ -103,7 +103,7 @@ public class WaterlineServiceImpl implements WaterlineService {
     }
 
     @Override
-    public void getApplicationTags(List<Metrics> metrics, String tagName) {
+    public List getApplicationTags(List<Metrics> metrics, String tagName) {
         if (CollectionUtils.isNotEmpty(metrics)) {
             List<Metrics> cacheMetrics = null;
             if (StringUtils.hasText(tagName)) {
@@ -120,9 +120,10 @@ public class WaterlineServiceImpl implements WaterlineService {
                 }
             });
             if (CollectionUtils.isNotEmpty(finalMetrics_)) {
-                metrics = finalMetrics_;
+                return finalMetrics_;
             }
         }
+        return null;
     }
 
     @Override

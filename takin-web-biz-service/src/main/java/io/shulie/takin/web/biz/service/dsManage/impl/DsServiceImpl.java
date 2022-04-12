@@ -502,7 +502,7 @@ public class DsServiceImpl implements DsService {
             return Response.success(this.dsQueryDetail(id, false));
         }
         AbstractTemplateParser templateParser = templateParserMap.get(Type.MiddleWareType.ofKey(middlewareType));
-        return Response.success(templateParser.convertDetailByTemplate(id));
+        return Response.success(templateParser.convertDetailByTemplate(id, detailResult.getApplicationName()));
     }
 
     private void filterAndSave(List<AppShadowDatabaseDTO> shadowDataBaseInfos, Long applicationId, ApplicationDsQueryParam queryParam) {
@@ -639,7 +639,8 @@ public class DsServiceImpl implements DsService {
 
     @Override
     public Response dsQueryConfigTemplate(String agentSourceType, Integer dsType, Boolean isNewData,
-                                          String cacheType, String connectionPool, String applicationName) {
+                                          String cacheType, String connectionPool, String applicationName,
+                                          String applicationId) {
         Converter.TemplateConverter.TemplateEnum templateEnum;
         if (StrUtil.isNotBlank(connectionPool)) {
             templateEnum = redisTemplateParser.convert(connectionPool);
@@ -662,6 +663,14 @@ public class DsServiceImpl implements DsService {
         AbstractTemplateParser templateParser = templateParserMap.get(type);
 
         // 判断当前模板中是否要添加用户名和密码
+        // 用id查一下name
+        if (StringUtils.isNotBlank(applicationId) && StringUtils.isBlank(applicationName)) {
+            ApplicationDetailResult detailResult = applicationDAO.getApplicationById(Long.valueOf(applicationId));
+            if (Objects.isNull(detailResult)) {
+                return Response.fail("0", "该应用不存在");
+            }
+            applicationName = detailResult.getApplicationName();
+        }
         ShadowTemplateSelect select = this.processSelect(applicationName);
 
         return Response.success(templateParser.convertShadowMsgWithTemplate(dsType, isNewData, cacheType, templateEnum, select));
@@ -1105,7 +1114,7 @@ public class DsServiceImpl implements DsService {
         Collections.sort(agentVersionList, (o1, o2) -> AgentVersionUtil.compareVersion(o1, o2, false));
         // 获取最大版本号
         String maxVersion = agentVersionList.stream().findFirst().get();
-        if (AgentVersionUtil.compareVersion(maxVersion, compareVersion, true) > 0) {
+        if (AgentVersionUtil.compareVersion(maxVersion, compareVersion, true) >= 0) {
             select.setNewVersion(true);
             return select;
         }

@@ -605,7 +605,7 @@ public class DsServiceImpl implements DsService {
             return Response.fail("0", "该应用不存在");
         }
         buildNewDataSource(updateRequestV2);
-        validateURL(updateRequestV2.getExtInfo(), updateRequestV2.getUrl(), updateRequestV2.getDsType(), updateRequestV2.getUserName());
+        validateURL(updateRequestV2.getExtInfo(), updateRequestV2.getUrl(), updateRequestV2.getDsType(), updateRequestV2.getUsername());
         Integer code = MiddleWareTypeEnum.getEnumByValue(updateRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
 
@@ -699,7 +699,7 @@ public class DsServiceImpl implements DsService {
             return Response.fail("0", "该应用不存在");
         }
         buildNewDataSource(createRequestV2);
-        validateURL(createRequestV2.getExtInfo(), createRequestV2.getUrl(), createRequestV2.getDsType(), createRequestV2.getUserName());
+        validateURL(createRequestV2.getExtInfo(), createRequestV2.getUrl(), createRequestV2.getDsType(), createRequestV2.getUsername());
         Integer code = MiddleWareTypeEnum.getEnumByValue(createRequestV2.getMiddlewareType()).getCode();
         AbstractShaDowManageService service = shaDowServiceMap.get(code);
         service.createShadowProgramme(createRequestV2, true);

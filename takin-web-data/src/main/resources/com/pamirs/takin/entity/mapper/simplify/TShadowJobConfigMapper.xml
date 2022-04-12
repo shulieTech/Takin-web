@@ -6,9 +6,9 @@
         <result column="application_id" jdbcType="BIGINT" property="applicationId"/>
         <result column="name" jdbcType="VARCHAR" property="name"/>
         <result column="type" jdbcType="VARCHAR" property="type"/>
-        <result column="status" jdbcType="BIT" property="status"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
         <result column="config_code" jdbcType="VARCHAR" property="configCode"/>
-        <result column="active" jdbcType="BIT" property="active"/>
+        <result column="active" jdbcType="TINYINT" property="active"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
         <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>

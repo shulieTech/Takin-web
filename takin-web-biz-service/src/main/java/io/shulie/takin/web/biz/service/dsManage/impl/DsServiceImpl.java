@@ -502,7 +502,7 @@ public class DsServiceImpl implements DsService {
             return Response.success(this.dsQueryDetail(id, false));
         }
         AbstractTemplateParser templateParser = templateParserMap.get(Type.MiddleWareType.ofKey(middlewareType));
-        return Response.success(templateParser.convertDetailByTemplate(id));
+        return Response.success(templateParser.convertDetailByTemplate(id,detailResult.getApplicationName()));
     }
 
     private void filterAndSave(List<AppShadowDatabaseDTO> shadowDataBaseInfos, Long applicationId, ApplicationDsQueryParam queryParam) {

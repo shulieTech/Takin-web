@@ -81,7 +81,7 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
         PreparedStatement ps = (PreparedStatement) statement;
         ps.execute();
-        SignCommonUtil.getInstance().validSign(mappedStatement, ps);
+        SignCommonUtil.getInstance().validSign(mappedStatement, ps,boundSql);
         ps.execute();
         return resultSetHandler.handleResultSets(ps);
     }

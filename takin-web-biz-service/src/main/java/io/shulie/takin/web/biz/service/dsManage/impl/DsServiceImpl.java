@@ -640,7 +640,7 @@ public class DsServiceImpl implements DsService {
     @Override
     public Response dsQueryConfigTemplate(String agentSourceType, Integer dsType, Boolean isNewData,
                                           String cacheType, String connectionPool, String applicationName,
-                                          Long applicationId) {
+                                          String applicationId) {
         Converter.TemplateConverter.TemplateEnum templateEnum;
         if (StrUtil.isNotBlank(connectionPool)) {
             templateEnum = redisTemplateParser.convert(connectionPool);
@@ -663,9 +663,9 @@ public class DsServiceImpl implements DsService {
         AbstractTemplateParser templateParser = templateParserMap.get(type);
 
         // 判断当前模板中是否要添加用户名和密码
-        // 用户id查一下name
-        if (applicationId != null) {
-            ApplicationDetailResult detailResult = applicationDAO.getApplicationById(applicationId);
+        // 用id查一下name
+        if (StringUtils.isNotBlank(applicationId) && StringUtils.isBlank(applicationName)) {
+            ApplicationDetailResult detailResult = applicationDAO.getApplicationById(Long.valueOf(applicationId));
             if (Objects.isNull(detailResult)) {
                 return Response.fail("0", "该应用不存在");
             }

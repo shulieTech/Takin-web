@@ -93,7 +93,7 @@ public interface DsService {
     Response dsQueryConfigTemplate(String agentSourceType, Integer dsType,
                                    Boolean isNewData, String cacheType,
                                    String connectionPool, String applicationName,
-                                   Long applicationId);
+                                   String applicationId);
 
     /**
      * 删除

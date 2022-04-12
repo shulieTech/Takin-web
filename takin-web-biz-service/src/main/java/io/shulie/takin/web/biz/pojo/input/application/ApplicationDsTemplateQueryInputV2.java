@@ -21,7 +21,7 @@ public class ApplicationDsTemplateQueryInputV2 {
     private String applicationName;
 
     @ApiModelProperty(value = "applicationId",name = "应用Id",required = true)
-    private Long applicationId;
+    private String applicationId;
 
     @ApiModelProperty(name = "数据版本", value = "isNewData")
     private Boolean isNewData = true;

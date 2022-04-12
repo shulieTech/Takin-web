@@ -19,12 +19,18 @@ import com.pamirs.takin.entity.domain.dto.report.ApplicationDTO;
 import com.pamirs.takin.entity.domain.dto.report.BottleneckInterfaceDTO;
 import com.pamirs.takin.entity.domain.dto.report.MachineDetailDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
+import com.pamirs.takin.entity.domain.dto.report.ReportPerformanceCostTrendDTO;
+import com.pamirs.takin.entity.domain.dto.report.ReportPerformanceInterfaceDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceDTO;
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskApplicationCountDTO;
 import com.pamirs.takin.entity.domain.dto.report.RiskMacheineDTO;
 import com.pamirs.takin.entity.domain.entity.report.TpsTargetArray;
 import io.shulie.takin.web.amdb.enums.LinkRequestResultTypeEnum;
+import io.shulie.takin.web.biz.pojo.request.report.ReportPerformanceCostTrendRequest;
+import io.shulie.takin.web.biz.pojo.request.report.ReportPerformanceInterfaceRequest;
+import io.shulie.takin.web.biz.service.report.ReportActivityInterfaceService;
+import io.shulie.takin.web.biz.service.report.ReportInterfaceMetricsService;
 import io.shulie.takin.web.biz.service.report.ReportLocalService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.common.constant.ReportConfigConstant;
@@ -41,6 +47,7 @@ import io.shulie.takin.web.data.result.report.ReportSummaryResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -64,6 +71,12 @@ public class ReportLocalServiceImpl implements ReportLocalService {
 
     @Autowired
     private ReportRealTimeService reportRealTimeService;
+
+    @Resource
+    private ReportActivityInterfaceService interfaceService;
+
+    @Resource
+    private ReportInterfaceMetricsService metricsService;
 
     public static void main(String[] args) {
         String data1
@@ -239,6 +252,16 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         }
 
         return failedTotal + failedAssertTotal;
+    }
+
+    @Override
+    public Pair<List<ReportPerformanceInterfaceDTO>, Long> listPerformanceInterface(ReportPerformanceInterfaceRequest request) {
+        return interfaceService.queryInterfaceByRequest(request);
+    }
+
+    @Override
+    public ReportPerformanceCostTrendDTO queryCostTrend(ReportPerformanceCostTrendRequest request) {
+        return metricsService.queryCostTrend(request);
     }
 
     private ReportCountDTO convert2ReportCountDTO(ReportSummaryResult result) {

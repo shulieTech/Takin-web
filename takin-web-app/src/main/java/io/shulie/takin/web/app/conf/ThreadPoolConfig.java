@@ -337,4 +337,14 @@ public class ThreadPoolConfig {
         return springSessionRedisTaskExecutor;
     }
 
+    /**
+     * 压测报告接口指标数据同步线程池
+     */
+    @Bean(name = "reportInterfaceMetricsSyncThreadPool")
+    public ExecutorService reportInterfaceMetricsSyncThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("report-interface-metrics-%d").build();
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(10000), nameThreadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+    }
+
 }

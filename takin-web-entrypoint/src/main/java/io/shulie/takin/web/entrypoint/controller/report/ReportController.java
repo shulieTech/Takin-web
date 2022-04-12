@@ -1,6 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.report;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Resource;
 
@@ -22,6 +23,9 @@ import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.report.ReportJtlDownloadResponse;
+import io.shulie.takin.web.biz.service.report.ReportActivityInterfaceService;
+import io.shulie.takin.web.biz.service.report.ReportActivityService;
+import io.shulie.takin.web.biz.service.report.ReportInterfaceMetricsService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.constant.ApiUrls;
@@ -30,6 +34,8 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,6 +51,15 @@ public class ReportController {
 
     @Resource
     private ReportService reportService;
+
+    @Resource
+    private ReportActivityService activityService;
+
+    @Resource
+    private ReportActivityInterfaceService interfaceService;
+
+    @Resource
+    private ReportInterfaceMetricsService metricsService;
 
     @GetMapping("report/listReport")
     @ApiOperation("报告列表")
@@ -167,4 +182,13 @@ public class ReportController {
         return response;
     }
 
+    @PutMapping("report/completed/{reportId}")
+    @ApiOperation("报告分析任务完成通知")
+    public void reportAnalyzeCompleted(@PathVariable("reportId") String reportId) {
+        // 更新状态，并开始同步数据
+        activityService.startSync(reportId);
+        CompletableFuture.allOf(CompletableFuture.runAsync(() -> activityService.syncActivity(reportId)),
+            CompletableFuture.runAsync(() -> interfaceService.syncActivityInterface(reportId)))
+            .thenRun(() -> metricsService.syncInterfaceMetrics(reportId));
+    }
 }

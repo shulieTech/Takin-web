@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -21,6 +23,7 @@ import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.amdb.api.ReportClient;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStopRequest;
@@ -69,6 +72,8 @@ public class SceneTaskController {
     private SceneManageService sceneManageService;
     @Autowired
     private RedisClientUtils redisClientUtils;
+    @Resource
+    private ReportClient reportClient;
 
     @ApiOperation("|_ 启动时停止")
     @PutMapping("/preStop")
@@ -111,6 +116,8 @@ public class SceneTaskController {
             SceneActionResp startTaskResponse = sceneTaskService.startTask(param);
             // 开启漏数
             startCheckLeakTask(param, sceneData);
+            // 根据报告Id建表
+            createReportTraceTable(startTaskResponse.getData());
             return WebResponse.success(startTaskResponse);
         } catch (TakinWebException ex) {
             // 解除 场景锁
@@ -156,6 +163,10 @@ public class SceneTaskController {
     private void setStartLogVars(SceneManageWrapperDTO sceneData) {
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneData.getId()));
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
+    }
+
+    private void createReportTraceTable(Long reportId) {
+        reportClient.createReportTraceTable(reportId);
     }
 
     /**

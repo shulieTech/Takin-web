@@ -22,6 +22,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dom4j.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -65,7 +66,7 @@ public class ShadowJobConfigController {
             query.setOrderBy(orderBy);
             query.setApplicationId(applicationId);
             return shadowJobConfigService.queryByPage(query);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());
         }
@@ -82,7 +83,7 @@ public class ShadowJobConfigController {
         try {
             Estimate.notBlank(id, "ID不能为空");
             return shadowJobConfigService.queryDetail(id);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());
         }
@@ -114,7 +115,7 @@ public class ShadowJobConfigController {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.TASK, className);
 
             return shadowJobConfigService.insert(config);
-        } catch (Exception e) {
+        } catch (RuntimeException | DocumentException e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());
         }
@@ -146,7 +147,7 @@ public class ShadowJobConfigController {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.TASKConfig, query.getConfigCode());
             shadowJobConfigService.update(query);
             return Response.success();
-        } catch (Exception e) {
+        } catch (RuntimeException | DocumentException e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());
         }
@@ -178,7 +179,7 @@ public class ShadowJobConfigController {
 
             shadowJobConfigService.update(query);
             return Response.success();
-        } catch (Exception e) {
+        } catch (RuntimeException | DocumentException e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());
         }
@@ -206,7 +207,7 @@ public class ShadowJobConfigController {
         try {
             Estimate.notBlank(query.getId(), "ID不能为空");
             return shadowJobConfigService.delete(query.getId());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());
         }

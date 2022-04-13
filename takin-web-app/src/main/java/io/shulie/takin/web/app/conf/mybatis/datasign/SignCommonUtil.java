@@ -108,7 +108,7 @@ public class SignCommonUtil {
                 map.remove("UPDATE_TIME");
                 map.remove("CREATE_TIME");
                 String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
-                String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where " + idField.getAnnotation(TableId.class).value() +" = "+ id;
+                String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where " + idField.getAnnotation(TableId.class).value() + " = " + id;
                 Connection connection = statement.getConnection();
                 PreparedStatement ps1 = connection.prepareStatement(updateSql, PreparedStatement.RETURN_GENERATED_KEYS);
                 ps1.execute();
@@ -206,6 +206,7 @@ public class SignCommonUtil {
 
     public void preCheckData(MappedStatement mappedStatement, Object parameterObject, Statement statement, BoundSql boundSql) throws SQLException, JSQLParserException {
         if (SqlCommandType.UPDATE.equals(mappedStatement.getSqlCommandType())) {
+            boolean valid = true;
             //解析sql,拿出where条件，构建查询sql获取更新范围的数据,进行验签
             String sql = boundSql.getSql();
             TypeHandlerRegistry typeHandlerRegistry = mappedStatement.getConfiguration().getTypeHandlerRegistry();
@@ -270,14 +271,19 @@ public class SignCommonUtil {
                 map.remove("CREATE_TIME");
                 String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                 if (!oldSign.equals(sign)) {
-                    log.error("【数据签名异常】-【pre-update-check】 sql:{}",querySql);
-                    throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "数据签名异常,请联系管理员!");
+                    log.error("【数据签名异常】-【pre-update-check】 sql:{}", querySql);
+                    valid = false;
                 }
+            }
+
+
+            if (!valid) {
+                throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "数据签名异常,请联系管理员!");
             }
         }
     }
 
-    public void validSign(MappedStatement mappedStatement, PreparedStatement ps,BoundSql boundSql) throws SQLException, JSQLParserException {
+    public void validSign(MappedStatement mappedStatement, PreparedStatement ps, BoundSql boundSql) throws SQLException, JSQLParserException {
         List<ResultMap> resultMaps = mappedStatement.getResultMaps();
         if (resultMaps.size() == 0) {
             return;
@@ -285,6 +291,7 @@ public class SignCommonUtil {
         Class<?> clz = mappedStatement.getResultMaps().get(0).getType();
         boolean isSign = clz.isAnnotationPresent(EnableSign.class);
         if (isSign) {
+            boolean valid = true;
             ResultSet rs = ps.getResultSet();
             ResultSetMetaData md = rs.getMetaData();
             Map<String, Object> map = new HashMap<>();
@@ -307,10 +314,15 @@ public class SignCommonUtil {
                 map.remove("CREATE_TIME");
                 String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                 if (!oldSign.equals(sign)) {
-                    log.error("【数据签名异常】-【select】 map:{} , sql:{}", JSON.toJSONString(map),boundSql.getSql());
-                    throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "数据签名异常,请联系管理员!");
+                    log.error("【数据签名异常】-【select】 map:{} , sql:{}", JSON.toJSONString(map), boundSql.getSql());
+                    valid = false;
 
                 }
+            }
+
+
+            if (!valid) {
+                throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "数据签名异常,请联系管理员!");
             }
         }
     }

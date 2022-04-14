@@ -153,8 +153,19 @@ public class SignCommonUtil {
                 sql = sql.replaceAll("！@#¥%", "\\?");
                 Update update = (Update) CCJSqlParserUtil.parse(boundSql.getSql());
                 String tableName = update.getTable().getName();
-                String whereStr = " where" + sql.toUpperCase().split("WHERE")[1];
-                String querySql = "select * from " + tableName + whereStr;
+                String whereStr ;
+                String querySql ;
+                if(sql.contains("WHERE")){
+                    whereStr = " where" + sql.split("WHERE")[1];
+                    querySql = "select * from " + tableName + whereStr;
+                }else if(sql.contains("where")){
+                    whereStr = " where" + sql.split("where")[1];
+                    querySql = "select * from " + tableName + whereStr;
+                }else {
+                    querySql = "select * from " + tableName ;
+                }
+
+
 
                 ResultSet rs = statement.getConnection().createStatement().executeQuery(querySql);
                 ResultSetMetaData md = rs.getMetaData();
@@ -250,8 +261,17 @@ public class SignCommonUtil {
                 sql = sql.replaceAll("！@#¥%", "\\?");
                 Update update = (Update) CCJSqlParserUtil.parse(boundSql.getSql());
                 String tableName = update.getTable().getName();
-                String whereStr = " where" + sql.toUpperCase().split("WHERE")[1];
-                String querySql = "select * from " + tableName + whereStr;
+                String whereStr ;
+                String querySql ;
+                if(sql.contains("WHERE")){
+                    whereStr = " where" + sql.split("WHERE")[1];
+                    querySql = "select * from " + tableName + whereStr;
+                }else if(sql.contains("where")){
+                    whereStr = " where" + sql.split("where")[1];
+                    querySql = "select * from " + tableName + whereStr;
+                }else {
+                    querySql = "select * from " + tableName ;
+                }
 
                 ResultSet rs = statement.getConnection().createStatement().executeQuery(querySql);
                 ResultSetMetaData md = rs.getMetaData();

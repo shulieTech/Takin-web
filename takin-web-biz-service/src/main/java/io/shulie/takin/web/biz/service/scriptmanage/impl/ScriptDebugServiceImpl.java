@@ -128,6 +128,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -199,6 +200,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     private SceneService sceneService;
     @Resource
     private SceneManageService sceneManageService;
+
 
     @Override
     public void stop(Long scriptDeployId) {
@@ -597,6 +599,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }
 
         // 查询应用列表
+        //TODO 这边需要改成使用applicationId查询数据，另外新增业务活动接口需要冗余applicationId字段
         List<ApplicationMntEntity> applications = applicationDAO.listByApplicationNamesAndTenantId(applicationNames);
         if (applications.isEmpty()) {
             return "业务活动对应的应用程序不存在!";

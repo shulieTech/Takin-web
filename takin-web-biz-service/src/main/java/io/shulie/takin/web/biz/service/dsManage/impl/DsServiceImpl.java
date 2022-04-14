@@ -819,7 +819,14 @@ public class DsServiceImpl implements DsService {
     @Override
     public List<SelectVO> querySupperName(String middlewareType) {
         AbstractDsTemplateService templateService = templateServiceMap.get(middlewareType);
-        return templateService.queryDsSupperName();
+        List<SelectVO> list =  templateService.queryDsSupperName();
+        List<SelectVO> tmpList = list.stream().filter(a -> {
+            if ("兼容老版本(影子库)".equals(a.getLabel()) || "兼容老版本(影子表)".equals(a.getLabel())) {
+                return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
+        return tmpList;
     }
 
     /**

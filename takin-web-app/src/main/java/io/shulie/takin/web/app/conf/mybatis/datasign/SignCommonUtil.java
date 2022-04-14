@@ -106,6 +106,8 @@ public class SignCommonUtil {
                 map.remove("update_time");
                 map.remove("UPDATE_TIME");
                 map.remove("CREATE_TIME");
+                map.remove("update_time");
+                map.remove("update_time");
                 String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                 String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where " + idField.getAnnotation(TableId.class).value() + " = " + id;
                 Connection connection = statement.getConnection();
@@ -184,6 +186,8 @@ public class SignCommonUtil {
                     map.remove("update_time");
                     map.remove("UPDATE_TIME");
                     map.remove("CREATE_TIME");
+                    map.remove("update_time");
+                    map.remove("update_time");
                     String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                     String id;
                     String updateSql = "";
@@ -294,6 +298,7 @@ public class SignCommonUtil {
                     map.remove("update_time");
                     map.remove("UPDATE_TIME");
                     map.remove("CREATE_TIME");
+                    map.remove("update_time");
                     String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                     if (!oldSign.equals(sign)) {
                         log.error("【数据签名异常】-【pre-update-check】 sql:{}", querySql);
@@ -338,6 +343,7 @@ public class SignCommonUtil {
                 map.remove("update_time");
                 map.remove("UPDATE_TIME");
                 map.remove("CREATE_TIME");
+                map.remove("update_time");
                 String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                 if (!oldSign.equals(sign)) {
                     log.error("【数据签名异常】-【select】 map:{} , sql:{}", JSON.toJSONString(map), boundSql.getSql());

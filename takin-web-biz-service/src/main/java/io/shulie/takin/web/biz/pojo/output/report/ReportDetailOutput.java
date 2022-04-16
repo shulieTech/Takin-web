@@ -6,10 +6,10 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import io.shulie.takin.cloud.common.bean.scenemanage.WarnBean;
-import io.shulie.takin.cloud.sdk.model.ScriptNodeSummaryBean;
-import io.shulie.takin.cloud.sdk.model.common.SlaBean;
-import io.shulie.takin.cloud.sdk.model.common.StopReasonBean;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.adapter.api.model.ScriptNodeSummaryBean;
+import io.shulie.takin.adapter.api.model.common.SlaBean;
+import io.shulie.takin.adapter.api.model.common.StopReasonBean;
+import io.shulie.takin.adapter.api.model.response.scenemanage.BusinessActivitySummaryBean;
 import io.shulie.takin.web.ext.entity.UserCommonExt;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -110,4 +110,22 @@ public class ReportDetailOutput extends UserCommonExt {
     @ApiModelProperty("是否存在JTL文件")
     private boolean hasJtl;
 
+    /**
+     * 资源Id
+     */
+    private String resourceId;
+
+    /**
+     * 压测引擎任务Id
+     */
+    private Long jobId;
+    /**
+     * 0-未校准
+     * 1-校准中
+     * 2-校准失败
+     * 3-校准成功
+     */
+    private Integer calibration;
+    private Integer calibrationStatus;
+    private String calibrationMessage;
 }

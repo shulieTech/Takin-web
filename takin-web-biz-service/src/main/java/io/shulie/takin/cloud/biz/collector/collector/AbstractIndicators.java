@@ -1,0 +1,489 @@
+package io.shulie.takin.cloud.biz.collector.collector;
+
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
+import cn.hutool.core.bean.BeanUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import io.shulie.takin.adapter.api.entrypoint.pressure.PressureTaskApi;
+import io.shulie.takin.adapter.api.entrypoint.resource.CloudResourceApi;
+import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStopReq;
+import io.shulie.takin.adapter.api.model.request.resource.ResourceUnLockRequest;
+import io.shulie.takin.cloud.biz.notify.StartFailEventSource;
+import io.shulie.takin.cloud.biz.notify.StopEventSource;
+import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
+import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
+import io.shulie.takin.cloud.common.bean.task.TaskResult;
+import io.shulie.takin.cloud.common.constants.ScheduleConstants;
+import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
+import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
+import io.shulie.takin.cloud.common.utils.GsonUtil;
+import io.shulie.takin.cloud.data.dao.report.ReportDao;
+import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
+import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
+import io.shulie.takin.cloud.data.result.report.ReportResult;
+import io.shulie.takin.cloud.data.util.PressureStartCache;
+import io.shulie.takin.eventcenter.Event;
+import io.shulie.takin.eventcenter.EventCenterTemplate;
+import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.web.common.util.RedisClientUtil;
+import jodd.util.Bits;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.BitFieldSubCommands;
+import org.springframework.data.redis.connection.BitFieldSubCommands.BitFieldType;
+import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.types.Expiration;
+import org.springframework.util.CollectionUtils;
+
+/**
+ * @author <a href="tangyuhan@shulie.io">yuhan.tang</a>
+ * @date 2020-04-20 21:08
+ */
+@Slf4j
+public abstract class AbstractIndicators {
+
+    /**
+     * 1、判断key是否存在，不存在插入value
+     * 2、key存在，比较值大小
+     */
+    private static final String MAX_SCRIPT =
+        "if (redis.call('exists', KEYS[1]) == 0 or redis.call('get', KEYS[1]) < ARGV[1]) then\n" +
+            "    redis.call('set', KEYS[1], ARGV[1]);\n" +
+            //            "    return 1;\n" +
+            "else\n" +
+            //            "    return 0;\n" +
+            "end";
+    private static final String MIN_SCRIPT =
+        "if (redis.call('exists', KEYS[1]) == 0 or redis.call('get', KEYS[1]) > ARGV[1]) then\n" +
+            "    redis.call('set', KEYS[1], ARGV[1]);\n" +
+            //            "    return 1;\n" +
+            "else\n" +
+            //            "    return 0;\n" +
+            "end";
+    private static final String UNLOCK_SCRIPT = "if redis.call('exists',KEYS[1]) == 1 then\n" +
+        "   redis.call('del',KEYS[1])\n" +
+        "else\n" +
+        //                    "   return 0\n" +
+        "end";
+    @Autowired
+    protected CloudSceneManageService cloudSceneManageService;
+    @Autowired
+    protected EventCenterTemplate eventCenterTemplate;
+    @Resource
+    protected RedisTemplate<String, Object> redisTemplate;
+    @Resource
+    private RedisClientUtil redisClientUtil;
+    @Resource
+    private ReportDao reportDao;
+    @Resource
+    private PressureTaskDAO pressureTaskDAO;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private PressureTaskApi pressureTaskApi;
+    @Resource
+    private CloudResourceApi cloudResourceApi;
+    private DefaultRedisScript<Void> minRedisScript;
+    private DefaultRedisScript<Void> maxRedisScript;
+    private DefaultRedisScript<Void> unlockRedisScript;
+
+    private static final int REDIS_KEY_TIMEOUT = 60;
+
+    private final Expiration expiration = Expiration.seconds(REDIS_KEY_TIMEOUT);
+
+    /**
+     * 获取Metrics key
+     * 示例：COLLECTOR:TASK:102121:213124512312
+     *
+     * @param sceneId  场景主键
+     * @param reportId 报告主键
+     * @return -
+     */
+    protected String getPressureTaskKey(Long sceneId, Long reportId, Long tenantId) {
+        // 兼容原始redis key
+        if (tenantId == null) {
+            return String.format("COLLECTOR:TASK:%s:%s", sceneId, reportId);
+        }
+        return String.format("COLLECTOR:TASK:%s:%s:%S", sceneId, reportId, tenantId);
+    }
+
+    public Boolean lock(String key, String value) {
+        return redisTemplate.execute((RedisCallback<Boolean>)connection -> {
+            Boolean bl = connection.set(getLockPrefix(key).getBytes(), value.getBytes(), expiration,
+                RedisStringCommands.SetOption.SET_IF_ABSENT);
+            return null != bl && bl;
+        });
+    }
+
+    public void unlock(String key, String value) {
+        redisTemplate.execute(unlockRedisScript, Lists.newArrayList(getLockPrefix(key)), value);
+    }
+
+    private String getLockPrefix(String key) {
+        return String.format("COLLECTOR LOCK:%s", key);
+    }
+
+    /**
+     * 获取Metrics 指标key
+     * 示例：COLLECTOR:TASK:102121:213124512312:1587375600000:rt
+     *
+     * @param indicatorsName 指标名称
+     * @return -
+     */
+    protected String getIndicatorsKey(String windowKey, String indicatorsName) {
+        return String.format("%s:%s", windowKey, indicatorsName);
+    }
+
+    /**
+     * time 不进行转换
+     *
+     * @param taskKey 任务key
+     * @return -
+     */
+    protected String last(String taskKey) {
+        return getIndicatorsKey(String.format("%s:%s", taskKey, "last"), "last");
+    }
+
+    protected void setLast(String key, String value) {
+        redisTemplate.opsForValue().set(key, value);
+    }
+
+    protected void setError(String key, String timestampPodNum, String value) {
+        redisTemplate.opsForHash().put(key, timestampPodNum, value);
+        setTtl(key);
+    }
+
+    protected void setMax(String key, Long value) {
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
+            long temp = getEventTimeStrap(key);
+            if (value > temp) {
+                redisTemplate.opsForValue().set(key, value);
+            }
+        } else {
+            redisTemplate.opsForValue().set(key, value);
+        }
+    }
+
+    protected void setMin(String key, Long value) {
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
+            long temp = getEventTimeStrap(key);
+            if (value < temp) {
+                redisTemplate.opsForValue().set(key, value);
+            }
+        } else {
+            redisTemplate.opsForValue().set(key, value);
+        }
+    }
+
+    private void setTtl(String key) {
+        redisTemplate.expire(key, REDIS_KEY_TIMEOUT, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 获取时间搓，取time 求min max
+     *
+     * @param key key
+     * @return -
+     */
+    protected Long getEventTimeStrap(String key) {
+        Object object = redisTemplate.opsForValue().get(key);
+        if (null != object) {
+            return (long)object;
+        }
+        return null;
+    }
+
+    @PostConstruct
+    public void init() {
+        minRedisScript = new DefaultRedisScript<>();
+        minRedisScript.setResultType(Void.class);
+        minRedisScript.setScriptText(MIN_SCRIPT);
+
+        maxRedisScript = new DefaultRedisScript<>();
+        maxRedisScript.setResultType(Void.class);
+        maxRedisScript.setScriptText(MAX_SCRIPT);
+
+        unlockRedisScript = new DefaultRedisScript<>();
+        unlockRedisScript.setResultType(Void.class);
+        unlockRedisScript.setScriptText(UNLOCK_SCRIPT);
+
+    }
+
+    protected ResourceContext getResourceContext(String resourceId) {
+        String resourceKey = PressureStartCache.getResourceKey(resourceId);
+        Map<Object, Object> resource = redisClientUtil.hmget(resourceKey);
+        if (CollectionUtils.isEmpty(resource)) {
+            return null;
+        }
+        ResourceContext context = new ResourceContext();
+        context.setResourceId(resourceId);
+        context.setSceneId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.SCENE_ID))));
+        context.setReportId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.REPORT_ID))));
+        context.setTenantId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.TENANT_ID))));
+        context.setCheckStatus(String.valueOf(resource.get(PressureStartCache.CHECK_STATUS)));
+        context.setTaskId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.TASK_ID))));
+        context.setUniqueKey(String.valueOf(resource.get(PressureStartCache.UNIQUE_KEY)));
+        context.setPtTestTime(Long.valueOf(String.valueOf(resource.get(PressureStartCache.PT_TEST_TIME))));
+        Object jobId = resource.get(PressureStartCache.JOB_ID);
+        if (Objects.nonNull(jobId)) {
+            context.setJobId(Long.valueOf(String.valueOf(jobId)));
+        }
+        return context;
+    }
+
+    protected void callStartFailedEvent(String resourceId, String message) {
+        ResourceContext context = getResourceContext(resourceId);
+        if (context != null) {
+            String stopTaskMessageKey = PressureStartCache.getStopTaskMessageKey(context.getSceneId());
+            String stopMessage = redisClientUtil.getString(stopTaskMessageKey);
+            if (StringUtils.isNotBlank(stopMessage)) {
+                redisClientUtil.del(stopTaskMessageKey);
+                message = stopMessage;
+            }
+            Event event = new Event();
+            event.setEventName(PressureStartCache.START_FAILED);
+            event.setExt(new StartFailEventSource(context, message));
+            eventCenterTemplate.doEvents(event);
+        }
+    }
+
+    // 心跳超时不知道是否能够正常回调其他事件
+    protected void callRunningFailedEvent(String resourceId, String message) {
+        ResourceContext context = getResourceContext(resourceId);
+        if (context != null) {
+            Event event = new Event();
+            event.setEventName(PressureStartCache.RUNNING_FAILED);
+            event.setExt(new StopEventSource(context, message));
+            eventCenterTemplate.doEvents(event);
+        }
+    }
+
+    protected void removeSuccessKey(String resourceId, String podId, String jmeterId) {
+        redisClientUtil.removeSetValue(
+            PressureStartCache.getResourcePodSuccessKey(resourceId), podId);
+        if (Objects.nonNull(jmeterId)) {
+            redisClientUtil.removeSetValue(
+                PressureStartCache.getResourceJmeterSuccessKey(resourceId), jmeterId);
+        }
+    }
+
+    protected void detectEnd(String resourceId, Date time) {
+        ResourceContext context = getResourceContext(resourceId);
+        Long sceneId = context.getSceneId();
+        Long reportId = context.getReportId();
+        Long tenantId = context.getTenantId();
+        String engineName = ScheduleConstants.getEngineName(sceneId, reportId, tenantId);
+        setMax(engineName + ScheduleConstants.LAST_SIGN, time.getTime());
+        if ((redisClientUtil.getSetSize(PressureStartCache.getResourcePodSuccessKey(resourceId)) == 0 ||
+            redisClientUtil.getSetSize(PressureStartCache.getResourceJmeterSuccessKey(resourceId)) == 0) &&
+            redisClientUtil.lockExpire(PressureStartCache.getFinishStopKey(resourceId),
+                String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
+            setLast(last(getPressureTaskKey(sceneId, reportId, tenantId)), ScheduleConstants.LAST_SIGN);
+            // 压测停止
+            notifyEnd(context, time);
+        }
+    }
+
+    protected void notifyFinish(ResourceContext context) {
+        // 清除 SLA配置  生成报告拦截 状态拦截
+        Event event = new Event();
+        event.setEventName("finished");
+        TaskResult result = new TaskResult(context.getSceneId(), context.getReportId(), context.getTenantId());
+        result.setResourceId(context.getResourceId());
+        event.setExt(result);
+        eventCenterTemplate.doEvents(event);
+    }
+
+    protected void notifyEnd(ResourceContext context, Date time) {
+        String now = String.valueOf(System.currentTimeMillis());
+        if (redisClientUtil.lockExpire(
+            PressureStartCache.getStopSuccessFlag(context.getResourceId()), now, 10, TimeUnit.MINUTES)) {
+            Long sceneId = context.getSceneId();
+            Long reportId = context.getReportId();
+            Long tenantId = context.getTenantId();
+            log.info("场景[{}-{}]压测任务已完成,更新结束时间{}", sceneId, reportId, System.currentTimeMillis());
+            // 更新压测场景状态  压测引擎运行中,压测引擎停止压测 ---->压测引擎停止压测
+            cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(sceneId, reportId, tenantId)
+                .checkEnum(SceneManageStatusEnum.PRESSURE_NODE_RUNNING, SceneManageStatusEnum.ENGINE_RUNNING,
+                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.STOP).build());
+            updateReportEndTime(context, time);
+            pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.INACTIVE, null);
+            notifyFinish(context);
+        }
+    }
+
+    protected void updateReportStartTime(ResourceContext context) {
+        Long reportId = context.getReportId();
+        String engineName = ScheduleConstants.getEngineName(context.getSceneId(), reportId, context.getTenantId());
+        String startTimeKey = engineName + ScheduleConstants.FIRST_SIGN;
+        String dateTimeString = stringRedisTemplate.opsForValue().get(startTimeKey);
+        if (StringUtils.isNotBlank(dateTimeString)) {
+            reportDao.updateReportStartTime(reportId, (new Date(Long.parseLong(dateTimeString))));
+            stringRedisTemplate.delete(startTimeKey);
+        }
+    }
+
+    protected void updateReportEndTime(ResourceContext context, Date time) {
+        Long reportId = context.getReportId();
+        String engineName = ScheduleConstants.getEngineName(context.getSceneId(), reportId, context.getTenantId());
+        String endTimeKey = engineName + ScheduleConstants.LAST_SIGN;
+        String dateTimeString = stringRedisTemplate.opsForValue().get(endTimeKey);
+        if (StringUtils.isNotBlank(dateTimeString)) {
+            time = new Date(Long.parseLong(dateTimeString));
+        }
+        reportDao.updateReportEndTime(reportId, time);
+    }
+
+    protected void notifyStop(ResourceContext context) {
+        pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.STOPPING, null);
+    }
+
+    protected void generateReport(Long taskId) {
+        if (redisClientUtil.lockExpire(PressureStartCache.getReportGenerateKey(taskId),
+            String.valueOf(System.currentTimeMillis()), 5, TimeUnit.MINUTES)) {
+            pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_GENERATING, null);
+        }
+    }
+
+    protected void doneReport(Long taskId) {
+        if (redisClientUtil.lockExpire(PressureStartCache.getReportDoneKey(taskId),
+            String.valueOf(System.currentTimeMillis()), 5, TimeUnit.MINUTES)) {
+            pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_DONE, null);
+        }
+    }
+
+    protected void pressureEnd(ReportResult reportResult) {
+        Event event = new Event();
+        event.setEventName(PressureStartCache.PRESSURE_END);
+        ResourceContext context = new ResourceContext();
+        context.setSceneId(reportResult.getSceneId());
+        context.setResourceId(reportResult.getResourceId());
+        context.setTaskId(reportResult.getTaskId());
+        context.setJobId(reportResult.getJobId());
+        context.setTenantId(reportResult.getTenantId());
+        context.setReportId(reportResult.getId());
+        event.setExt(context);
+        eventCenterTemplate.doEvents(event);
+    }
+
+    protected void stopJob(String resourceId, Long jobId) {
+        if (redisClientUtil.hasKey(PressureStartCache.getJmeterStartFirstKey(resourceId))) {
+            PressureTaskStopReq request = new PressureTaskStopReq();
+            request.setJobId(jobId);
+            pressureTaskApi.stop(request);
+        } else {
+            releaseResource(resourceId);
+        }
+    }
+
+    /**
+     * 释放资源
+     *
+     * @param resourceId 资源Id
+     */
+    protected void releaseResource(String resourceId) {
+        if (StringUtils.isNotBlank(resourceId)) {
+            ResourceUnLockRequest request = new ResourceUnLockRequest();
+            request.setResourceId(resourceId);
+            cloudResourceApi.unLock(request);
+        }
+    }
+
+    /**
+     * amdb	    cloud
+     * 00		00      未校准
+     * 01		01      校准中
+     * 10		10      校准失败
+     * 11		11      校准成功
+     */
+    // 设置数据校准成功/失败
+    protected void processCalibrationStatus(Long jobId, boolean success, String message, boolean cloud) {
+        String type = cloud ? "cloud" : "amdb";
+        int offset = cloud ? 2 : 0;
+        String statusKey = PressureStartCache.getDataCalibrationStatusKey(jobId);
+        redisClientUtil.setBit(statusKey, offset, true);
+        redisClientUtil.setBit(statusKey, offset + 1, success);
+        if (!success) {
+            redisClientUtil.hmset(PressureStartCache.getDataCalibrationMessageKey(jobId), type, message);
+        }
+        updateReport(jobId);
+        /**
+         * 位数右往左数
+         * int中第n位为0 ：(int & (1 << (n - 1))) != 0
+         * int中第x、y位为0 ：(int & (1 << (x - 1) + 1 << (y - 1))) != 0
+         * (1 << (2 - 1)) + (1 << (4 -1)) = 10
+         */
+        if (Bits.isSet(getStatus(jobId), 10)) { // 此处判断第2、4位为1，完成校验
+            redisClientUtil.del(statusKey,
+                PressureStartCache.getDataCalibrationMessageKey(jobId),
+                PressureStartCache.getDataCalibrationLockKey(jobId));
+        }
+    }
+
+    // 设置数据校准中
+    protected void dataCalibration_ing(Long jobId, boolean cloud) {
+        int offset = cloud ? 2 : 0;
+        redisClientUtil.setBit(PressureStartCache.getDataCalibrationStatusKey(jobId), offset + 1, true);
+        updateReport(jobId);
+    }
+
+    private void updateReport(Long jobId) {
+        ReportResult report = reportDao.selectByJobId(jobId);
+        if (Objects.nonNull(report)) {
+            String messageKey = PressureStartCache.getDataCalibrationMessageKey(jobId);
+            Map<Object, Object> message = redisClientUtil.hmget(messageKey);
+            Map<String, String> map = Maps.newHashMap();
+            String calibrationMessage = report.getCalibrationMessage();
+            if (StringUtils.isNotBlank(calibrationMessage)) {
+                map.putAll(JsonHelper.string2Obj(calibrationMessage, new TypeReference<Map<String, String>>() {
+                }));
+            }
+            message.forEach((key, value) -> map.put(String.valueOf(key), String.valueOf(value)));
+            report.setCalibrationMessage(GsonUtil.gsonToString(map));
+            report.setCalibrationStatus(getStatus(jobId));
+            ReportUpdateParam param = BeanUtil.copyProperties(report, ReportUpdateParam.class);
+            reportDao.updateReport(param);
+        }
+    }
+
+    private int getStatus(Long jobId) {
+        BitFieldSubCommands commands = BitFieldSubCommands.create()
+            .get(BitFieldType.unsigned(4)).valueAt(0);
+        String statusKey = PressureStartCache.getDataCalibrationStatusKey(jobId);
+        return redisClientUtil.getBit(statusKey, commands).get(0).intValue();
+    }
+
+    protected void updatePressureTaskMessageByResourceId(String resourceId, String message) {
+        pressureTaskDAO.updatePressureTaskMessageByResourceId(resourceId, message);
+    }
+
+    @Data
+    public static class ResourceContext {
+        private Long sceneId;
+        private Long reportId;
+        private Long taskId;
+        private Long jobId;
+        private String resourceId;
+        private Long tenantId;
+        private Long podNumber;
+        private String checkStatus;
+        private String uniqueKey;
+        private Long ptTestTime;
+
+        private String message;
+    }
+}

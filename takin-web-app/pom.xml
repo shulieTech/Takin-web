@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.5.2</version>
+        <version>takin-web-5.6.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-app</artifactId>
@@ -47,18 +47,6 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>curator-client</artifactId>
-                    <groupId>com.netflix.curator</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>curator-framework</artifactId>
-                    <groupId>com.netflix.curator</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>curator-recipes</artifactId>
-                    <groupId>com.netflix.curator</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -144,14 +132,6 @@
                     <groupId>com.github.jsqlparser</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>curator-framework</artifactId>
-                    <groupId>com.netflix.curator</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>curator-recipes</artifactId>
-                    <groupId>com.netflix.curator</groupId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
                     <artifactId>log4j-api</artifactId>
                 </exclusion>
@@ -160,6 +140,10 @@
         <!--内部module 业务依赖-->
 
         <!--cloud 依赖-->
+        <dependency>
+            <groupId>io.shulie.takin</groupId>
+            <artifactId>takin-web-adapter-cloud</artifactId>
+        </dependency>
         <!--cloud 依赖-->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -313,27 +297,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-cloud-common</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>pagehelper</artifactId>
-                    <groupId>com.github.pagehelper</groupId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.pagehelper</groupId>
-                    <artifactId>pagehelper-spring-boot-starter</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>druid-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>

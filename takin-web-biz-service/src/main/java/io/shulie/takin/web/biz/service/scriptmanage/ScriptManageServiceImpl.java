@@ -44,21 +44,21 @@ import com.pamirs.takin.entity.domain.entity.linkmanage.BusinessLinkManageTable;
 import com.pamirs.takin.entity.domain.entity.linkmanage.Scene;
 import io.shulie.amdb.common.enums.RpcType;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.cloud.sdk.model.common.UploadFileDTO;
-import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginDetailsWrapperReq;
-import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginFetchWrapperReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileContentParamReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCopyParamReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileDeleteParamReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileZipParamReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.CloudUpdateSceneFileRequest;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptCheckAndUpdateReq;
-import io.shulie.takin.cloud.sdk.model.response.engine.EnginePluginDetailResp;
-import io.shulie.takin.cloud.sdk.model.response.engine.EnginePluginSimpleInfoResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
+import io.shulie.takin.adapter.api.model.common.UploadFileDTO;
+import io.shulie.takin.adapter.api.model.request.engine.EnginePluginDetailsWrapperReq;
+import io.shulie.takin.adapter.api.model.request.engine.EnginePluginFetchWrapperReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileContentParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileCopyParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileCreateByStringParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileDeleteParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileZipParamReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.CloudUpdateSceneFileRequest;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptCheckAndUpdateReq;
+import io.shulie.takin.adapter.api.model.response.engine.EnginePluginDetailResp;
+import io.shulie.takin.adapter.api.model.response.engine.EnginePluginSimpleInfoResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.PathFormatForTest;
@@ -973,18 +973,6 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                     manageResult.set(result);
                 }
             });
-
-            // 文件路径填充
-            // 获取已经存在的第一个文件, 拿到其路径
-            FileManageResult file = fileManageResults.get(0);
-            String uploadPath = file.getUploadPath();
-            String filePath = partRequest.getFilePath();
-            if (StringUtils.isNotBlank(uploadPath) && uploadPath.lastIndexOf(File.separator) > 0
-                && StringUtils.isNotBlank(filePath) && filePath.lastIndexOf(File.separator) > -1) {
-                // 截取倒数第一个 / 后的, 拼接上传的路径, set
-                partRequest.setFilePath(uploadPath.substring(0, uploadPath.lastIndexOf(File.separator) + 1)
-                    + filePath.substring(filePath.lastIndexOf(File.separator) + 1));
-            }
         }
 
         //文件已存在，则更新文件数据

@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
  * @date 2020/11/4 下午3:54
  */
 public class WebRedisKeyConstant {
-    //性能分析 线程、内存数据
-    public static final String CACHE_PERFOMANCE_BASE_DATA_KEY = "WEB#PERFOMANCE_BASE_DATA";
 
     //报告告警set数据
     public final static String REPORT_WARN_PREFIX = "report:warn:";

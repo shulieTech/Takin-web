@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web-bom</artifactId>
-    <version>takin-web-5.5.2</version>
+    <version>takin-web-5.6.0</version>
     <packaging>pom</packaging>
 
     <properties>
-        <takin.web.version>takin-web-5.5.2</takin.web.version>
+        <takin.web.version>takin-web-5.6.0</takin.web.version>
         <takin.plugin.version>1.0.3</takin.plugin.version>
     </properties>
 
@@ -89,6 +89,21 @@
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-web-amdb-accessor</artifactId>
+                <version>${takin.web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-web-adapter-api</artifactId>
+                <version>${takin.web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-web-adapter-cloud</artifactId>
+                <version>${takin.web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-web-eventcenter</artifactId>
                 <version>${takin.web.version}</version>
             </dependency>
             <!--内部module 业务依赖-->

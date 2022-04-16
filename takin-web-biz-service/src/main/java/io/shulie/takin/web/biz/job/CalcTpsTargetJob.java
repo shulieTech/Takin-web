@@ -11,6 +11,7 @@ import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
+import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,8 @@ public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
                         if (task == null) {
                             reportThreadPool.execute(() -> {
                                 try {
+                                    taskDto.setSource(ContextSourceEnum.JOB.getCode());
+                                    WebPluginUtils.setTraceTenantContext(taskDto);
                                     reportTaskService.calcTpsTarget(reportId);
                                 } catch (Throwable e) {
                                     log.error("execute CalcTpsTargetJob occured error. reportId={}", reportId, e);
@@ -81,6 +84,7 @@ public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
         //将任务放入线程池
         reportThreadPool.execute(() -> {
             try {
+                tenantTask.setSource(ContextSourceEnum.JOB.getCode());
                 WebPluginUtils.setTraceTenantContext(tenantTask);
                 reportTaskService.calcTpsTarget(tenantTask.getReportId());
             } catch (Throwable e) {

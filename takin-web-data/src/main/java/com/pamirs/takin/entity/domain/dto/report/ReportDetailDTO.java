@@ -90,4 +90,7 @@ public class ReportDetailDTO extends UserCommonExt implements Serializable {
 
     @ApiModelProperty(name = "leakVerifyResult", value = "漏数验证结果")
     private LeakVerifyResult leakVerifyResult;
+
+    @ApiModelProperty(name = "jobId", value = "压测引擎任务Id")
+    private Long jobId;
 }

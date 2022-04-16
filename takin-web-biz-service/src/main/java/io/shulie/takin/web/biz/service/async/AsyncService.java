@@ -2,7 +2,7 @@ package io.shulie.takin.web.biz.service.async;
 
 import java.util.List;
 
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp.SceneSlaRefResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp.SceneSlaRefResp;
 import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseDataParam;
 
 /**

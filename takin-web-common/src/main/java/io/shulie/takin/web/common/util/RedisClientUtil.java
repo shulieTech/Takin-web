@@ -8,15 +8,14 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
 import com.google.common.collect.Lists;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.connection.RedisStringCommands;
-import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -32,22 +31,29 @@ public class RedisClientUtil {
      * lock 超时时间
      */
     private static final int EXPIREMSECS = 30;
-    private static final String unlockScript = "if redis.call('exists',KEYS[1]) == 1 then\n" +
-        "   redis.call('del',KEYS[1])\n" +
-        "else\n" +
-        //                    "   return 0\n" +
-        "end";
+
+    private static final String REENTRY_LOCK_SCRIPT =
+        " if redis.call('GET', KEYS[1]) == ARGV[1] then return '1' end;"
+        + " if redis.call('SETNX', KEYS[1], ARGV[1]) == 1 then return '1' else return '0' end";
+
+    private static final String UNLOCK_SCRIPT = "if redis.call('get',KEYS[1]) == ARGV[1] then "
+        + " redis.call('del',KEYS[1]) return '1' else return '0' end";
+
+    private static final String REM_RETURN_COUNT =
+        " redis.call('SREM', KEYS[1], ARGV[1]); return redis.call('SCARD', KEYS[1])";
+
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private RedisTemplate redisTemplate;
-    private DefaultRedisScript<Void> unlockRedisScript;
-    private Expiration expiration = Expiration.seconds(EXPIREMSECS);
+    private DefaultRedisScript<Integer> unlockRedisScript;
+    private DefaultRedisScript<Integer> reentryLockRedisScript;
+    private DefaultRedisScript<Object> remAndCountScript;
 
     @PostConstruct
     public void init() {
-        unlockRedisScript = new DefaultRedisScript<>();
-        unlockRedisScript.setResultType(Void.class);
-        unlockRedisScript.setScriptText(unlockScript);
+        unlockRedisScript = new DefaultRedisScript<>(UNLOCK_SCRIPT, Integer.class);
+        reentryLockRedisScript = new DefaultRedisScript<>(REENTRY_LOCK_SCRIPT, Integer.class);
+        remAndCountScript = new DefaultRedisScript<>(REM_RETURN_COUNT, Object.class);
     }
 
     @Autowired
@@ -81,20 +87,29 @@ public class RedisClientUtil {
     }
 
     public boolean lock(String key, String value) {
-
-        return (boolean)redisTemplate.execute((RedisCallback<Boolean>)connection -> {
-            Boolean bl = connection.set(getLockPrefix(key).getBytes(), value.getBytes(), expiration,
-                RedisStringCommands.SetOption.SET_IF_ABSENT);
-            return null != bl && bl;
-        });
+        return lockExpire(key, value, EXPIREMSECS, TimeUnit.SECONDS);
     }
 
-    private String getLockPrefix(String key) {
+    public boolean reentryLockNoExpire(String key, String value) {
+        return "1".equals(String.valueOf(redisTemplate.execute(reentryLockRedisScript,
+            Lists.newArrayList(getLockPrefix(key)), value)));
+    }
+
+    public boolean lockNoExpire(String key, String value) {
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(getLockPrefix(key), value));
+    }
+
+    public boolean lockExpire(String key, String value, long time, TimeUnit unit) {
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(getLockPrefix(key), value, time, unit));
+    }
+
+    private static String getLockPrefix(String key) {
         return String.format("LOCK:%s", key);
     }
 
-    public void unlock(String key, String value) {
-        redisTemplate.execute(unlockRedisScript, Lists.newArrayList(getLockPrefix(key)), value);
+    public boolean unlock(String key, String value) {
+        return "1".equals(String.valueOf(redisTemplate.execute(unlockRedisScript,
+            Lists.newArrayList(getLockPrefix(key)), value)));
     }
 
     public Long increment(final String key, final long l) {
@@ -127,7 +142,8 @@ public class RedisClientUtil {
             }
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> expire方法执行异常，异常信息: {}", e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> expire方法执行异常，异常信息: {}",
+                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -154,7 +170,8 @@ public class RedisClientUtil {
             redisTemplate.opsForValue().set(key, value);
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> set方法执行异常，异常信息: {}", e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> set方法执行异常，异常信息: {}",
+                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
 
@@ -177,7 +194,8 @@ public class RedisClientUtil {
             }
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> set with time方法执行异常，异常信息: {}", e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> set with time方法执行异常，异常信息: {}",
+                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -194,7 +212,8 @@ public class RedisClientUtil {
             redisTemplate.opsForHash().putAll(key, map);
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset 方法执行异常，异常信息: {}", e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset 方法执行异常，异常信息: {}",
+                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -204,7 +223,8 @@ public class RedisClientUtil {
             redisTemplate.opsForHash().put(key, field, value);
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset with time方法执行异常，异常信息: {}",e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset with time方法执行异常，异常信息: {}",
+                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -225,9 +245,14 @@ public class RedisClientUtil {
             }
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset map with time方法执行异常，异常信息: {}",e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset map with time方法执行异常，异常信息: {}",
+                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
+    }
+
+    public boolean hExists(String key, String field) {
+        return Boolean.TRUE.equals(redisTemplate.opsForHash().hasKey(key, field));
     }
 
     /**
@@ -256,9 +281,24 @@ public class RedisClientUtil {
         try {
             return redisTemplate.hasKey(key);
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hasKey方法执行异常，异常信息: {}",e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hasKey方法执行异常，异常信息: {}",
+                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
+    }
+
+    public boolean hasLockKey(String key) {
+        try {
+            return redisTemplate.hasKey(getLockPrefix(key));
+        } catch (Exception e) {
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hasKey方法执行异常，异常信息: {}",
+                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+            return false;
+        }
+    }
+
+    public static String getLockKey(String key) {
+        return getLockPrefix(key);
     }
 
     /**
@@ -396,6 +436,14 @@ public class RedisClientUtil {
         return redisTemplate.opsForSet().add(key, value);
     }
 
+    public Long remSetValueAndReturnCount(String key, String value) {
+        Object count = redisTemplate.execute(remAndCountScript, Lists.newArrayList(key), value);
+        if (count instanceof List) {
+            return Long.valueOf(String.valueOf(((List<Object>)count).get(0)));
+        }
+        return Long.valueOf(String.valueOf(count));
+    }
+
     public Long getSetSize(String key) {
         return redisTemplate.opsForSet().size(key);
     }
@@ -410,5 +458,21 @@ public class RedisClientUtil {
 
     public Long zsetAdd(String key, String value) {
         return redisTemplate.opsForSet().add(key, value);
+    }
+
+    public void setBit(String key, long offset, boolean value) {
+        redisTemplate.opsForValue().setBit(key, offset, value);
+    }
+
+    public boolean isSet(String key, long offset) {
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().getBit(key, offset));
+    }
+
+    public List<Long> getBit(String key, BitFieldSubCommands subCommands) {
+        return redisTemplate.opsForValue().bitField(key, subCommands);
+    }
+
+    public boolean lockStopFlagExpire(String stopFlagKey, String value) {
+        return lockExpire(stopFlagKey, value, 10, TimeUnit.MINUTES);
     }
 }

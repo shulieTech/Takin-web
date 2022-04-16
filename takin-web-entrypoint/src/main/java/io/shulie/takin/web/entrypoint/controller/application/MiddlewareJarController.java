@@ -8,7 +8,6 @@ import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,9 +33,7 @@ import io.shulie.takin.web.biz.pojo.response.application.MiddlewareJarResponse;
 import io.shulie.takin.web.biz.service.application.MiddlewareJarService;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.model.mysql.MiddlewareJarEntity;
-import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

@@ -31,12 +31,12 @@ public class PressureController {
 
     @ApiOperation("|_ 通过报告id获得应用入口")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "reportId", value = "报告id", required = true,
+        @ApiImplicitParam(name = "reportId", value = "任务id", required = true,
             dataType = "long", paramType = "query")
     })
     @GetMapping("/entries")
     public List<ApplicationEntryResponse> getApplicationEntries(@RequestParam Long reportId) {
-        return pressureService.getApplicationEntriesByReportId(reportId);
+        return pressureService.getApplicationEntriesByJobId(reportId);
     }
 
 }

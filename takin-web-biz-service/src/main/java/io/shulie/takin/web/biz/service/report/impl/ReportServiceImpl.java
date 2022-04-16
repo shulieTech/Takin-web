@@ -19,23 +19,23 @@ import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
 import com.pamirs.takin.entity.domain.vo.report.ReportQueryParam;
-import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailBySceneIdReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportQueryReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ReportTrendQueryReq;
-import io.shulie.takin.cloud.sdk.model.request.report.ScriptNodeTreeQueryReq;
-import io.shulie.takin.cloud.sdk.model.request.report.TrendRequest;
-import io.shulie.takin.cloud.sdk.model.request.report.WarnQueryReq;
-import io.shulie.takin.cloud.sdk.model.response.report.ActivityResponse;
-import io.shulie.takin.cloud.sdk.model.response.report.MetricesResponse;
-import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
-import io.shulie.takin.cloud.sdk.model.response.report.ReportDetailResp;
-import io.shulie.takin.cloud.sdk.model.response.report.ReportResp;
-import io.shulie.takin.cloud.sdk.model.response.report.ReportTrendResp;
-import io.shulie.takin.cloud.sdk.model.response.report.ScriptNodeTreeResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
+import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
+import io.shulie.takin.adapter.api.model.request.report.ReportDetailByIdReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportDetailBySceneIdReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportQueryReq;
+import io.shulie.takin.adapter.api.model.request.report.ReportTrendQueryReq;
+import io.shulie.takin.adapter.api.model.request.report.ScriptNodeTreeQueryReq;
+import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
+import io.shulie.takin.adapter.api.model.request.report.WarnQueryReq;
+import io.shulie.takin.adapter.api.model.response.report.ActivityResponse;
+import io.shulie.takin.adapter.api.model.response.report.MetricesResponse;
+import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
+import io.shulie.takin.adapter.api.model.response.report.ReportDetailResp;
+import io.shulie.takin.adapter.api.model.response.report.ReportResp;
+import io.shulie.takin.adapter.api.model.response.report.ReportTrendResp;
+import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
@@ -240,11 +240,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<MetricesResponse> queryMetrics(Long reportId, Long sceneId) {
-        return cloudReportApi.metrics(new TrendRequest() {{
-            setReportId(reportId);
-            setSceneId(sceneId);
-        }});
+    public List<MetricesResponse> queryMetrics(TrendRequest req) {
+        return cloudReportApi.metrics(req);
     }
 
     @Override

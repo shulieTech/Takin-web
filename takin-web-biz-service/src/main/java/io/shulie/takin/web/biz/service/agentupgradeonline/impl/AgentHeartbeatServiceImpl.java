@@ -1,15 +1,5 @@
 package io.shulie.takin.web.biz.service.agentupgradeonline.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandResBO;
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentHeartbeatBO;
 import io.shulie.takin.web.biz.pojo.request.agentupgradeonline.AgentHeartbeatRequest;
@@ -28,7 +18,6 @@ import io.shulie.takin.web.common.exception.ExceptionCode;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
 import io.shulie.takin.web.data.result.agentUpgradeOnline.ApplicationPluginUpgradeDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +25,15 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Description agent心跳处理器
@@ -75,6 +73,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         processorList.forEach(processor -> commandProcessorMap.put(processor.getCommand().getCommand(), processor));
     }
 
+    @Override
     public List<AgentCommandResBO> process(AgentHeartbeatRequest commandRequest) {
 
         // 1、获取处理器集合
@@ -114,8 +113,8 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
             enterpriseProcessorList.forEach(processor -> {
                 if (processor instanceof IAgentCommandProcessor) {
                     enterpriseCommandProcessorMap.put(
-                        ((IAgentCommandProcessor)processor).getCommand().getCommand(),
-                        (IAgentCommandProcessor)processor);
+                            ((IAgentCommandProcessor) processor).getCommand().getCommand(),
+                            (IAgentCommandProcessor) processor);
                 }
             });
         }
@@ -164,33 +163,33 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
 
         // 判断是否为启动中，agent状态为成功，simulator状态为null或者空字符串
         if (AgentStatusEnum.INSTALLED.getCode().equals(agentHeartBeatBO.getAgentStatus()) && StringUtils.isEmpty(
-            agentHeartBeatBO.getSimulatorStatus())) {
+                agentHeartBeatBO.getSimulatorStatus())) {
             return AgentReportStatusEnum.STARTING;
         }
 
         // 判断是否为刚启动，agent状态为未安装，simulator状态为null或者空字符串
         if (AgentStatusEnum.UNINSTALL.getCode().equals(agentHeartBeatBO.getAgentStatus()) && StringUtils.isEmpty(
-            agentHeartBeatBO.getSimulatorStatus())) {
+                agentHeartBeatBO.getSimulatorStatus())) {
             return AgentReportStatusEnum.BEGIN;
         }
 
         // 判断是否异常 agent状态异常 或 simulator状态不是安装成功
         if (AgentStatusEnum.INSTALL_FAILED.getCode().equals(agentHeartBeatBO.getAgentStatus())
-            || !ProbeStatusEnum.INSTALLED.getCode().equals(agentHeartBeatBO.getSimulatorStatus())) {
+                || !ProbeStatusEnum.INSTALLED.getCode().equals(agentHeartBeatBO.getSimulatorStatus())) {
             return AgentReportStatusEnum.ERROR;
         }
 
         // 查询当前应用的升级单批次
         if (AgentStatusEnum.INSTALLED.getCode().equals(agentHeartBeatBO.getAgentStatus())
-            && ProbeStatusEnum.INSTALLED.getCode().equals(agentHeartBeatBO.getSimulatorStatus())) {
+                && ProbeStatusEnum.INSTALLED.getCode().equals(agentHeartBeatBO.getSimulatorStatus())) {
 
             // 查询最新的升级单
             ApplicationPluginUpgradeDetailResult pluginUpgradeDetailResult
-                = applicationPluginUpgradeService.queryLatestUpgradeByAppIdAndStatus(
-                agentHeartBeatBO.getApplicationId(), AgentUpgradeEnum.UPGRADE_SUCCESS.getVal());
+                    = applicationPluginUpgradeService.queryLatestUpgradeByAppIdAndStatus(
+                    agentHeartBeatBO.getApplicationId(), AgentUpgradeEnum.UPGRADE_SUCCESS.getVal());
 
             if (pluginUpgradeDetailResult == null
-                || pluginUpgradeDetailResult.getUpgradeBatch().equals(agentHeartBeatBO.getCurUpgradeBatch())) {
+                    || pluginUpgradeDetailResult.getUpgradeBatch().equals(agentHeartBeatBO.getCurUpgradeBatch())) {
                 return AgentReportStatusEnum.RUNNING;
             } else {
                 return AgentReportStatusEnum.WAIT_RESTART;
@@ -209,26 +208,26 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
      * @return 需要跳过的指令
      */
     private List<Long> asyncProcessCommandResult(AgentHeartbeatRequest commandRequest,
-        AgentHeartbeatBO agentHeartbeatBO, Map<Long, IAgentCommandProcessor> processorMap) {
+                                                 AgentHeartbeatBO agentHeartbeatBO, Map<Long, IAgentCommandProcessor> processorMap) {
         // 需要跳过的指令
         List<Long> skipCommandIds = new ArrayList<>();
         // 异步处理上报的命令数据
         if (!CollectionUtils.isEmpty(commandRequest.getCommandResult())) {
             // 记录日志
             reportLog.info("envCode:{}, tenantId:{}, agentHeartbeatBO:{}, commands:{}",
-                WebPluginUtils.traceEnvCode(),
-                WebPluginUtils.traceTenantId(),
-                agentHeartbeatBO,
-                commandRequest.getCommandResult());
+                    WebPluginUtils.traceEnvCode(),
+                    WebPluginUtils.traceTenantId(),
+                    agentHeartbeatBO,
+                    commandRequest.getCommandResult());
 
             commandRequest.getCommandResult().forEach(commandResult ->
-                agentHeartbeatThreadPool.execute(() -> {
-                    skipCommandIds.add(commandResult.getId());
-                    IAgentCommandProcessor processor = processorMap.get(commandResult.getId());
-                    if (processor != null) {
-                        processor.process(agentHeartbeatBO, commandResult);
-                    }
-                })
+                    agentHeartbeatThreadPool.execute(() -> {
+                        skipCommandIds.add(commandResult.getId());
+                        IAgentCommandProcessor processor = processorMap.get(commandResult.getId());
+                        if (processor != null) {
+                            processor.process(agentHeartbeatBO, commandResult);
+                        }
+                    })
             );
         }
         return skipCommandIds;
@@ -240,6 +239,8 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
      * @param agentHeartbeatBO 心跳数据
      */
     private void saveHeartbeatData(AgentHeartbeatBO agentHeartbeatBO) {
+        // 清空多余数据
+        agentReportService.clearExpiredData();
         CreateAgentReportParam createAgentReportParam = new CreateAgentReportParam();
         BeanUtils.copyProperties(agentHeartbeatBO, createAgentReportParam);
         createAgentReportParam.setApplicationName(agentHeartbeatBO.getProjectName());
@@ -256,7 +257,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
      * @return AgentCommandResBO集合
      */
     private List<AgentCommandResBO> asyncDealHeartbeatData(AgentHeartbeatBO agentHeartbeatBO,
-        Map<Long, IAgentCommandProcessor> processorMap, List<Long> skipCommandIds) {
+                                                           Map<Long, IAgentCommandProcessor> processorMap, List<Long> skipCommandIds) {
 
         List<Future<AgentCommandResBO>> futures = new ArrayList<>();
         // 异步处理各种命令
@@ -265,7 +266,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
                 continue;
             }
             Future<AgentCommandResBO> future = agentHeartbeatThreadPool.submit(
-                () -> entry.getValue().dealHeartbeat(agentHeartbeatBO));
+                    () -> entry.getValue().dealHeartbeat(agentHeartbeatBO));
             futures.add(future);
         }
 
@@ -286,7 +287,7 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         // 记录日志
         if (!CollectionUtils.isEmpty(result)) {
             distributionLog.info("envCode:{}, tenantId:{}, agentHeartbeatBO:{}, commands:{}",
-                WebPluginUtils.traceEnvCode(), WebPluginUtils.traceTenantId(), agentHeartbeatBO, result);
+                    WebPluginUtils.traceEnvCode(), WebPluginUtils.traceTenantId(), agentHeartbeatBO, result);
         }
 
         return result;
@@ -315,12 +316,12 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
         // 如果有 100100 就不允许有 100110
         for (AgentCommandResBO command : commandBOList) {
             if (haveAgentGetFileCommand
-                && (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())
-                || AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId()))) {
+                    && (AgentCommandEnum.REPORT_AGENT_UPLOAD_PATH_STATUS.getCommand().equals(command.getId())
+                    || AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId()))) {
                 continue;
             }
             if (haveReportAgentUploadPathStatusCommand
-                && AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId())) {
+                    && AgentCommandEnum.REPORT_UPGRADE_RESULT.getCommand().equals(command.getId())) {
                 continue;
             }
             result.add(command);

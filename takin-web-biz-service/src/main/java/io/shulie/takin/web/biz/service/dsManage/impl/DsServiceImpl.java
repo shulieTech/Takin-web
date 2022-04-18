@@ -1039,6 +1039,7 @@ public class DsServiceImpl implements DsService {
         shadowMap.remove("shadowUrl");
         shadowMap.remove("shadowPwd");
         shadowMap.remove("applicationName");
+        shadowMap.remove(EXT_FLAG);
 
         shadowMap.forEach((k, v) -> {
             String value = null;

@@ -43,6 +43,12 @@ public class BusinessLinkManageTableEntity extends UserBaseEntity {
     private String applicationName;
 
     /**
+     * 入口应用名称
+     */
+    @TableField(value = "application_id")
+    private Long applicationId;
+
+    /**
      * 业务链路绑定的技术链路
      */
     @TableField(value = "RELATED_TECH_LINK")

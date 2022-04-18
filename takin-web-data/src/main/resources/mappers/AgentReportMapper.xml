@@ -18,6 +18,29 @@
     </insert>
 
     <delete id="selfDelete">
-        DELETE FROM t_agent_report WHERE gmt_update &lt;= #{date}
+        DELETE
+        FROM t_agent_report
+        WHERE gmt_update &lt;= #{date}
     </delete>
+    <delete id="deleteByIds">
+        DELETE
+        FROM t_agent_report
+        WHERE id in(
+        <foreach collection="list" item="item" separator=",">
+            #{item}
+        </foreach>)
+    </delete>
+
+    <select id="selectDeleteCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM t_agent_report
+        WHERE gmt_update &lt;= #{date}
+    </select>
+
+    <select id="selectDeleteIds" resultType="java.lang.Long">
+        SELECT id
+        FROM t_agent_report
+        WHERE gmt_update &lt;= #{date} LIMIT #{start}
+            , #{length}
+    </select>
 </mapper>

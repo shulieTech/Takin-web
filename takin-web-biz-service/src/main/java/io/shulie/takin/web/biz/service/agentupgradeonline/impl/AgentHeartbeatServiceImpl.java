@@ -239,8 +239,6 @@ public class AgentHeartbeatServiceImpl implements AgentHeartbeatService {
      * @param agentHeartbeatBO 心跳数据
      */
     private void saveHeartbeatData(AgentHeartbeatBO agentHeartbeatBO) {
-        // 清空多余数据
-        agentReportService.clearExpiredData();
         CreateAgentReportParam createAgentReportParam = new CreateAgentReportParam();
         BeanUtils.copyProperties(agentHeartbeatBO, createAgentReportParam);
         createAgentReportParam.setApplicationName(agentHeartbeatBO.getProjectName());

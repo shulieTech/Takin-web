@@ -2,7 +2,6 @@ package io.shulie.takin.web.biz.service.agentupgradeonline.impl;
 
 import cn.hutool.core.collection.CollStreamUtil;
 import io.shulie.takin.web.biz.service.agentupgradeonline.AgentReportService;
-import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.agentupgradeonline.AgentReportDAO;
 import io.shulie.takin.web.data.param.agentupgradeonline.CreateAgentReportParam;
 import io.shulie.takin.web.data.result.application.AgentReportDetailResult;
@@ -14,7 +13,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 探针心跳数据(AgentReport)service
@@ -24,8 +22,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class AgentReportServiceImpl implements AgentReportService {
-
-    private static final String insertingKey = "TRO_WEB_AGENT_HEARTBEAT_INSERTING";
 
     @Resource
     private AgentReportDAO agentReportDAO;
@@ -62,20 +58,12 @@ public class AgentReportServiceImpl implements AgentReportService {
 
     @Override
     public Integer insertOrUpdate(CreateAgentReportParam createAgentReportParam) {
-        try {
-            RedisHelper.stringExpireSet(insertingKey, true, 60L, TimeUnit.SECONDS);
-            return agentReportDAO.insertOrUpdate(createAgentReportParam);
-        } finally {
-            RedisHelper.delete(insertingKey);
-        }
+        return agentReportDAO.insertOrUpdate(createAgentReportParam);
     }
 
     @Override
     public void clearExpiredData() {
-        // 当此时没有数据在insert的时候进行delete，避免死锁
-        if (RedisHelper.stringGet(insertingKey) == null) {
-            agentReportDAO.clearExpiredData();
-        }
+        agentReportDAO.clearExpiredData();
     }
 
     @Override

@@ -1,16 +1,7 @@
 package io.shulie.takin.web.data.dao.agentupgradeonline.impl;
 
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import com.alibaba.excel.util.CollectionUtils;
-
 import cn.hutool.core.convert.Convert;
+import com.alibaba.excel.util.CollectionUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.web.data.dao.agentupgradeonline.AgentReportDAO;
@@ -23,6 +14,13 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 /**
  * 探针心跳数据(AgentReport)表数据库 dao 层实现
  *
@@ -31,7 +29,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentReportEntity>
-    implements AgentReportDAO, MPUtil<AgentReportEntity> {
+        implements AgentReportDAO, MPUtil<AgentReportEntity> {
 
     @Resource
     private AgentReportMapper agentReportMapper;
@@ -87,15 +85,27 @@ public class AgentReportDAOImpl extends ServiceImpl<AgentReportMapper, AgentRepo
     @Override
     public void clearExpiredData() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        // 删除1分钟前的数据
-        agentReportMapper.selfDelete(simpleDateFormat.format(System.currentTimeMillis() - 60 * 1000));
+        String date = simpleDateFormat.format(System.currentTimeMillis() - 120 * 1000);
+
+        // 先去数据库查有多少记录
+        Integer needDeleteCount = agentReportMapper.selectDeleteCount(date);
+        if (needDeleteCount == 0) {
+            return;
+        }
+        int count = needDeleteCount % 100 == 0 ? needDeleteCount / 100 : needDeleteCount / 100 + 1;
+        for (int i = 0; i < count; i++) {
+            List<Long> needDeleteList = agentReportMapper.selectDeleteIds(date, i * 100, 100);
+            if (!CollectionUtils.isEmpty(needDeleteList)) {
+                agentReportMapper.deleteByIds(needDeleteList);
+            }
+        }
     }
 
     @Override
     public AgentReportDetailResult queryAgentReportDetail(Long applicationId, String agentId) {
         AgentReportEntity entity = agentReportMapper.selectOne(this.getLambdaQueryWrapper()
-            .eq(AgentReportEntity::getApplicationId, applicationId)
-            .eq(AgentReportEntity::getAgentId, agentId));
+                .eq(AgentReportEntity::getApplicationId, applicationId)
+                .eq(AgentReportEntity::getAgentId, agentId));
         if (entity == null) {
             return null;
         }

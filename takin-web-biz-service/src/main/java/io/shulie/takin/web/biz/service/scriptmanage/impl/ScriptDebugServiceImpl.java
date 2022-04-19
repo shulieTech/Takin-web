@@ -560,11 +560,11 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
      */
     private String checkBusinessActivityCorrelationAndGetError(List<BusinessLinkManageTableEntity> businessActivities) {
         // 然后获得应用程序列表
-        List<Long> applicationIds = businessActivities.stream().filter(a -> ActivityUtil.isNormalBusiness(a.getType())).map(businessActivity -> {
-            // rpcType 判断
-            ScriptDebugExceptionUtil.isDebugError(!this.checkBusinessActivityRpcType(businessActivity), String.format("脚本调试暂时支持 http, %s 的业务活动!", ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_DEBUG_RPC_TYPE)));
-            return businessActivity.getApplicationId();
-        }).collect(Collectors.toList());
+        List<Long> applicationIds = businessActivities.stream().filter(a -> ActivityUtil.isNormalBusiness(a.getType()))
+                .map(businessActivity -> {
+                    ScriptDebugExceptionUtil.isDebugError(!this.checkBusinessActivityRpcType(businessActivity), String.format("脚本调试暂时支持 http, %s 的业务活动!", ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_SCRIPT_DEBUG_RPC_TYPE)));
+                    return businessActivity.getApplicationId();
+                }).collect(Collectors.toList());
 
         // 没有绑定应用, 不校验
         if (applicationIds.isEmpty()) {
@@ -573,7 +573,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         // 查询应用列表
         List<ApplicationDetailResult> listApplications = this.applicationDAO.getApplicationByIds(applicationIds);
         if (listApplications.isEmpty()) {
-            return "业务活动对应的应用程序不存在!";
+            return "业务活动关联的应用程序不存在或重命名，请尝试重建业务活动!";
         }
 
         // 检查

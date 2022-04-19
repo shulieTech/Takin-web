@@ -573,7 +573,7 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         // 查询应用列表
         List<ApplicationDetailResult> listApplications = this.applicationDAO.getApplicationByIds(applicationIds);
         if (listApplications.isEmpty()) {
-            return "业务活动关联的应用程序不存在或重命名，请尝试重建业务活动!";
+            return "业务活动对应的应用程序不存在!";
         }
 
         // 检查

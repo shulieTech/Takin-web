@@ -1,15 +1,17 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.util.Date;
-
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.Date;
 
 /**
  * 挡板实体类
@@ -17,12 +19,13 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName(value = "t_link_guard")
+@EnableSign
 public class LinkGuardEntity extends UserBaseEntity {
 
     /**
      * 主键
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.AUTO,value = "id")
     private Long id;
 
     /**
@@ -78,5 +81,9 @@ public class LinkGuardEntity extends UserBaseEntity {
     @TableField(value = "is_enable")
     private Integer isEnable;
 
+    @TableField(value = "sign",fill = FieldFill.INSERT)
+    private String sign;
+
+    private Long customerId;
 
 }

@@ -2384,25 +2384,21 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public void resumeAllAgent(List<String> appIds) {
-        try {
-            // 查询所有应用
-            ApplicationQueryParam queryParam = new ApplicationQueryParam();
-            queryParam.setPageSize(-1);
-            queryParam.setCurrentPage(-1);
-            queryParam.setApplicationIds(appIds.stream().map(Long::valueOf).collect(Collectors.toList()));
-            PagingList<ApplicationDetailResult> pagingList = applicationDAO.queryApplicationList(queryParam);
-            if (CollectionUtil.isEmpty(pagingList.getList())) {
-                return;
-            }
-            List<ApplicationDetailResult> applicationList = pagingList.getList();
-            List<String> appNames = applicationList.stream().map(ApplicationDetailResult::getApplicationName).collect(
-                    Collectors.toList());
-            applicationNodeProbeDAO.delByAppNamesAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(),
-                    appNames);
-        } catch (Exception e) {
-            log.error("一键恢复探针异常", e);
-            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_RESUME_AGENT_ERROR, e);
+        // 查询所有应用
+        ApplicationQueryParam queryParam = new ApplicationQueryParam();
+        queryParam.setPageSize(-1);
+        queryParam.setCurrentPage(-1);
+        queryParam.setApplicationIds(appIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+        PagingList<ApplicationDetailResult> pagingList = applicationDAO.queryApplicationList(queryParam);
+        if (CollectionUtil.isEmpty(pagingList.getList())) {
+            return;
         }
+        List<ApplicationDetailResult> applicationList = pagingList.getList();
+        List<String> appNames = applicationList.stream().map(ApplicationDetailResult::getApplicationName).collect(
+                Collectors.toList());
+        applicationNodeProbeDAO.delByAppNamesAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(),
+                appNames);
+
     }
 
     @Override

@@ -15,7 +15,9 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.data.dao.application.InterfaceTypeChildDAO;
 import io.shulie.takin.web.data.dao.application.InterfaceTypeConfigDAO;
 import io.shulie.takin.web.data.dao.application.InterfaceTypeMainDAO;
+import io.shulie.takin.web.data.dao.application.MiddlewareTypeDAO;
 import io.shulie.takin.web.data.dao.application.RemoteCallConfigDAO;
+import io.shulie.takin.web.data.model.mysql.InheritedSelectVO;
 import io.shulie.takin.web.data.model.mysql.InterfaceTypeChildEntity;
 import io.shulie.takin.web.data.model.mysql.InterfaceTypeConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfaceTypeMainEntity;
@@ -39,6 +41,9 @@ public class ApplicationRemoteInterfaceConfigServiceImpl implements ApplicationR
 
     @Resource
     private InterfaceTypeConfigDAO interfaceTypeConfigDAO;
+
+    @Resource
+    private MiddlewareTypeDAO middlewareTypeDAO;
 
     @Override
     public void addInterfaceTypeMain(InterfaceTypeMainCreateRequest request) {
@@ -104,6 +109,11 @@ public class ApplicationRemoteInterfaceConfigServiceImpl implements ApplicationR
     @Override
     public void deleteInterfaceTypeConfig(Long id) {
         interfaceTypeConfigDAO.deleteById(id);
+    }
+
+    @Override
+    public List<InheritedSelectVO> queryMiddlewareTypeList() {
+        return middlewareTypeDAO.selectList();
     }
 
     // 前置检查新增 接口子类型

@@ -502,6 +502,9 @@ public class SceneManageServiceImpl implements SceneManageService {
         ResponseResult<SceneManageWrapperResp> sceneDetail = sceneManageApi.getSceneDetail(req);
 
         if (Objects.isNull(sceneDetail) || Objects.isNull(sceneDetail.getData())) {
+            if(sceneDetail.getError().getMsg().contains("19800-T0103")){
+                throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "数据签名异常,请联系管理员!");
+            }
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景不存在!");
         }
         if (!sceneDetail.getSuccess()) {

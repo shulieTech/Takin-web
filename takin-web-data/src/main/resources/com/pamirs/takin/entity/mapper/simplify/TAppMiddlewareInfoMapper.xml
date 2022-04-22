@@ -38,7 +38,7 @@
     </select>
     <update id="delete" parameterType="java.lang.Long">
         update t_app_middleware_info
-        set is_deleted = 1
+        set  = 1
         where ID = #{id,jdbcType=BIGINT}
     </update>
 

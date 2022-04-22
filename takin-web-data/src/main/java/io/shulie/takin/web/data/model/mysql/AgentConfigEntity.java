@@ -1,13 +1,15 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.io.Serializable;
-
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.io.Serializable;
 
 /**
  * agent配置管理(AgentConfig)实体类
@@ -19,6 +21,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_agent_config")
 @ToString(callSuper = true)
+@EnableSign
 public class AgentConfigEntity extends NewBaseEntity implements Serializable {
     private static final long serialVersionUID = 339110573700928675L;
 
@@ -123,5 +126,8 @@ public class AgentConfigEntity extends NewBaseEntity implements Serializable {
      * 1 删除, 0 未删除
      */
     private Integer isDeleted;
+
+    @TableField(value = "sign",fill = FieldFill.INSERT)
+    private String sign;
 
 }

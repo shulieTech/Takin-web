@@ -16,6 +16,7 @@
 
 package io.shulie.takin.web.biz.service.linkmanage.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import cn.hutool.core.collection.ListUtil;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.hutool.core.collection.CollStreamUtil;
@@ -605,7 +607,21 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
      * @return
      */
     private List<String> queryRemoteAppMd5(AppRemoteCallQueryParam param) {
-        return appRemoteCallDAO.getRemoteCallMd5(param);
+        List<Long> applicationIds = param.getApplicationIds();
+        // size个轮询一次
+        int size = 10;
+        if (Objects.nonNull(applicationIds) && applicationIds.size() > size) {
+            List<String> list = new ArrayList<>();
+            List<List<Long>> splitList = ListUtil.split(applicationIds, size);
+            splitList.forEach(x ->{
+                param.setApplicationIds(x);
+                List<String> returns = appRemoteCallDAO.getRemoteCallMd5(param);
+                list.addAll(returns);
+            });
+            return list;
+        } else {
+            return appRemoteCallDAO.getRemoteCallMd5(param);
+        }
     }
 
     private List<AppRemoteCallResult> queryAsyncIfNecessary(AppRemoteCallQueryParam param) {
@@ -959,7 +975,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         param.setInterfaceType(mainEntity.getValueOrder());
         param.setInterfaceChildType(request.getInterfaceType());
         param.setMockReturnValue(request.getMockValue());
-        param.setRemark(request.getRemark());
+//        param.setRemark(request.getRemark());
         appRemoteCallDAO.update(param);
 
     }

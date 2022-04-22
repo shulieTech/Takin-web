@@ -482,8 +482,8 @@ public class ActivityServiceImpl implements ActivityService {
             List<String> exists = activityDAO.exists(param);
             if (CollectionUtils.isNotEmpty(exists)) {
                 Optional<String> any = exists.stream()
-                        .filter(item -> !item.equals(request.getActivityName()))
-                        .findAny();
+                    .filter(item -> !item.equals(oldActivity.getActivityName()))
+                    .findAny();
                 if (any.isPresent()) {
                     throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, String
                             .format("保存失败，入口已[应用名称：%s，类型：%s，入口：%s]已被使用，对应的虚拟业务活动为：%s", request.getActivityName(),

@@ -98,7 +98,6 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     public void update(AppRemoteCallUpdateParam param) {
         AppRemoteCallEntity entity = new AppRemoteCallEntity();
         BeanUtils.copyProperties(param, entity);
-        this.updateById(entity);
         // 同时更新md5
         AppRemoteCallEntity newEntity = this.getById(param.getId());
         entity.setMd5(RemoteCallUtils.buildRemoteCallName(newEntity.getAppName(),newEntity.getInterfaceName(),newEntity.getInterfaceType()));
@@ -153,7 +152,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     @Override
     public List<String> getRemoteCallMd5(AppRemoteCallQueryParam param) {
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getAppRemoteCallEntityLambdaQueryWrapper(param);
-        lambdaQueryWrapper.select(AppRemoteCallEntity::getMd5);
+//        lambdaQueryWrapper.select(AppRemoteCallEntity::getMd5);  数据签名必须全部字段返回,不然签名计算结果对不上
         List<AppRemoteCallEntity> entities = this.list(lambdaQueryWrapper);
         if (CollectionUtils.isEmpty(entities)) {
             return Lists.newArrayList();

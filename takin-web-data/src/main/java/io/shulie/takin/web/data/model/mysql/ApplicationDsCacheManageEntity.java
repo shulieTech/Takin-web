@@ -1,16 +1,17 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 缓存影子库表配置表(ApplicationDsCacheManage)实体类
@@ -22,13 +23,14 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_application_ds_cache_manage")
 @ToString(callSuper = true)
+@EnableSign
 public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Serializable {
     private static final long serialVersionUID = 214783401261180458L;
 
     /**
      * 主键
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.AUTO,value = "Id")
     private Long id;
 
     /**
@@ -67,7 +69,6 @@ public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Se
      * 源密码
      */
     private String pwd;
-
 
     private String type;
 
@@ -112,5 +113,9 @@ public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Se
      * 更新时间
      */
     private Date gmtUpdate;
+
+    private Long customerId;
+
+    private String sign;
 
 }

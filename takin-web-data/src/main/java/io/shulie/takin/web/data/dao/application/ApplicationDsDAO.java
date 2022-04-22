@@ -29,9 +29,9 @@ public interface ApplicationDsDAO {
 
     int delete(ApplicationDsDeleteParam deleteParam);
 
-    ApplicationDsResult queryByPrimaryKey(Long id);
-
     List<ApplicationDsResult> queryList(ApplicationDsQueryParam param);
+
+    ApplicationDsResult queryByPrimaryKey(Long id);
 
     int allocationUser(ApplicationDsUpdateUserParam param);
 

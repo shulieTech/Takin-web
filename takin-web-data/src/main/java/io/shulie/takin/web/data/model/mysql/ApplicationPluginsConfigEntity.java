@@ -1,15 +1,18 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.io.Serializable;
-import java.util.Date;
-
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * (ApplicationPluginsConfig)实体类
@@ -20,10 +23,11 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_application_plugins_config")
+@EnableSign
 public class ApplicationPluginsConfigEntity extends UserBaseEntity implements Serializable {
     private static final long serialVersionUID = -20702119464891307L;
 
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.AUTO,value = "id")
     private Long id;
     /**
      * 应用id
@@ -83,5 +87,10 @@ public class ApplicationPluginsConfigEntity extends UserBaseEntity implements Se
      */
     @TableLogic
     private Integer isDeleted;
+
+    @TableField(value = "sign",fill = FieldFill.INSERT)
+    private String sign;
+
+    private Long customerId;
 
 }

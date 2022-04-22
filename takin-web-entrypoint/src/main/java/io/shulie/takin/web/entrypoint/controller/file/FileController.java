@@ -57,10 +57,10 @@ public class FileController {
     @ApiOperation("|_ 文件下载")
     @GetMapping("/download")
     public void download(@RequestParam("filePath") String filePath, HttpServletResponse response) {
-        if (!this.filePathValidate(filePath)) {
-            log.error("非法下载路径文件，禁止下载：{}", filePath);
-            return;
-        }
+        //if (!this.filePathValidate(filePath)) {
+        //    log.error("非法下载路径文件，禁止下载：{}", filePath);
+        //    return;
+        //}
 
         File file = new File(filePath);
         if (!file.exists()) {

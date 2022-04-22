@@ -22,6 +22,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MyBatisPlusConfig {
 
+//
+
+
     /**
      * 新多租户插件配置,一缓和二缓遵循mybatis的规则,需要设置 MybatisConfiguration#useDeprecatedExecutor = false 避免缓存万一出现问题
      */
@@ -78,5 +81,20 @@ public class MyBatisPlusConfig {
     public MySqlInjector sqlInjector() {
         return new MySqlInjector();
     }
+
+
+//    @Bean
+//    @ConditionalOnMissingBean
+//    public MetaSelectSignInterceptor selectSignInterceptor() {
+//        return new MetaSelectSignInterceptor();
+//    }
+
+//    @Bean
+//    @ConditionalOnMissingBean
+//    public MetaUpdateSignInterceptor updateSignInterceptor() {
+//        return new MetaUpdateSignInterceptor();
+//    }
+
+
 }
 

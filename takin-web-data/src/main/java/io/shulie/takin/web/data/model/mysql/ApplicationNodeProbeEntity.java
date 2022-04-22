@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.model.mysql;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.web.data.annocation.EnableSign;
 import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,6 +17,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName(value = "t_application_node_probe")
+@EnableSign
 public class ApplicationNodeProbeEntity extends NewBaseEntity implements Serializable {
     private static final long serialVersionUID = 621811300794225122L;
 
@@ -54,5 +56,9 @@ public class ApplicationNodeProbeEntity extends NewBaseEntity implements Seriali
      * 操作的id, 时间戳, 递增, agent 需要, 进行操作的时候会创建或更新
      */
     private Long operateId;
+
+    private String sign;
+
+    private Long customerId;
 
 }

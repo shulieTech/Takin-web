@@ -6,6 +6,7 @@ import io.shulie.takin.web.biz.pojo.request.application.InterfaceTypeChildCreate
 import io.shulie.takin.web.biz.pojo.request.application.InterfaceTypeConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.InterfaceTypeMainCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.application.RemoteCallConfigCreateRequest;
+import io.shulie.takin.web.data.model.mysql.InheritedSelectVO;
 import io.shulie.takin.web.data.model.mysql.InterfaceTypeChildEntity;
 import io.shulie.takin.web.data.model.mysql.InterfaceTypeConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfaceTypeMainEntity;
@@ -42,4 +43,6 @@ public interface ApplicationRemoteInterfaceConfigService {
     List<RemoteCallConfigEntity> queryRemoteCallConfig();
 
     void deleteInterfaceTypeConfig(Long id);
+
+    List<InheritedSelectVO> queryMiddlewareTypeList();
 }

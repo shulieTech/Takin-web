@@ -48,7 +48,9 @@ import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
+import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
@@ -298,7 +300,9 @@ public class SceneController {
     @ApiOperation("获取压测场景详情 - 新")
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<SceneDetailResponse> detail(@RequestParam(required = false) Long sceneId) {
-        SceneManageQueryReq request = new SceneManageQueryReq() {{setSceneId(sceneId);}};
+        SceneManageQueryReq request = new SceneManageQueryReq() {
+            {setSceneId(sceneId);}
+        };
         WebPluginUtils.fillCloudUserData(request);
         SceneDetailV2Response detailResult = multipleSceneApi.detail(request);
 
@@ -414,5 +418,24 @@ public class SceneController {
                 setExtend(extend);
             }};
         }).collect(Collectors.toList());
+    }
+
+    @GetMapping("getAppsBySceneId")
+    @ApiOperation("获取压测场景下所有应用")
+    public ResponseResult<List<ApplicationDetailResult>> getAppsBySceneId(@RequestParam(required = false) Long sceneId) {
+        SceneManageQueryReq request = new SceneManageQueryReq() {{
+            setSceneId(sceneId);
+        }};
+        WebPluginUtils.fillCloudUserData(request);
+        SceneDetailV2Response detailResult = multipleSceneApi.detail(request);
+        Long businessFlowId = detailResult.getBasicInfo().getBusinessFlowId();
+        List<ApplicationDetailResult> applicationMntEntities = this.sceneService.getAppsByFlowId(businessFlowId);
+        // 添加排除的应用
+        List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
+        List<ApplicationDetailResult> entityList = applicationMntEntities
+                .stream()
+                .filter(a -> excludedApplicationIds.contains(a.getApplicationId()))
+                .collect(Collectors.toList());
+        return ResponseResult.success(entityList) ;
     }
 }

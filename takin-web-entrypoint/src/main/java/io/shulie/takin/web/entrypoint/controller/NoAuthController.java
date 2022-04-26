@@ -2,7 +2,7 @@ package io.shulie.takin.web.entrypoint.controller;
 
 import java.util.Map;
 
-import io.shulie.takin.cloud.common.utils.redis.RedisClientUtils;
+import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.common.common.Separator;

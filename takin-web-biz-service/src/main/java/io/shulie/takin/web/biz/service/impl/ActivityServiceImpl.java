@@ -24,7 +24,7 @@ import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.cloud.common.utils.redis.RedisClientUtils;
+import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;

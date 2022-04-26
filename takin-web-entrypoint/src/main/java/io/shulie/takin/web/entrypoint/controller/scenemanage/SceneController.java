@@ -432,6 +432,9 @@ public class SceneController {
         List<ApplicationDetailResult> applicationMntEntities = this.sceneService.getAppsByFlowId(businessFlowId);
         // 添加排除的应用
         List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
+        if (excludedApplicationIds.isEmpty()){
+            return ResponseResult.success(applicationMntEntities);
+        }
         List<ApplicationDetailResult> entityList = applicationMntEntities
                 .stream()
                 .filter(a -> excludedApplicationIds.contains(a.getApplicationId()))

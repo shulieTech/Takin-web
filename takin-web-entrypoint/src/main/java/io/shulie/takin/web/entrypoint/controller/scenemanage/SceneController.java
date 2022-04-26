@@ -1,9 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -107,11 +104,7 @@ public class SceneController {
      */
     @PostMapping("create")
     @ApiOperation("创建压测场景 - 新")
-    @ModuleDef(
-        moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
-        logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_CREATE
-    )
+    @ModuleDef(moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE, subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE, logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_CREATE)
     @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<Long> create(@RequestBody @Valid NewSceneRequest request) {
         SceneRequest sceneRequest = buildSceneRequest(request);
@@ -126,9 +119,7 @@ public class SceneController {
         }
 
         // 忽略检测的应用
-        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(),
-            request.getDataValidation()
-                .getExcludedApplicationIds());
+        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation().getExcludedApplicationIds());
 
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
@@ -147,11 +138,7 @@ public class SceneController {
      */
     @PostMapping("update")
     @ApiOperation("更新压测场景 - 新")
-    @ModuleDef(
-        moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE,
-        subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
-        logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_UPDATE
-    )
+    @ModuleDef(moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE, subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE, logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_UPDATE)
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<Boolean> update(@RequestBody @Valid NewSceneRequest request) {
         if (null == request.getBasicInfo().getSceneId()) {
@@ -172,15 +159,12 @@ public class SceneController {
         sceneExcludedApplicationDAO.removeBySceneId(request.getBasicInfo().getSceneId());
 
         // 忽略检测的应用
-        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(),
-            request.getDataValidation()
-                .getExcludedApplicationIds());
+        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation().getExcludedApplicationIds());
 
         // 操作日志
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
         if (null != request.getBasicInfo()) {
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID,
-                String.valueOf(request.getBasicInfo().getSceneId()));
+            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(request.getBasicInfo().getSceneId()));
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_SELECTIVE_CONTENT, "");
         }
@@ -203,14 +187,15 @@ public class SceneController {
             // 2. 构建实例内容
             ptConfig.setThreadGroupConfigMap(new HashMap<>(0));
             // 3. 填充实例内容
-            request.getConfig().getThreadGroupConfigMap().forEach((k, v) -> ptConfig.getThreadGroupConfigMap().put(
-                k, BeanUtil.copyProperties(v, ThreadGroupConfigExt.class)));
+            request.getConfig().getThreadGroupConfigMap().forEach((k, v) -> ptConfig.getThreadGroupConfigMap().put(k, BeanUtil.copyProperties(v, ThreadGroupConfigExt.class)));
             sceneRequest.setConfig(ptConfig);
         }
         // 3. 填充脚本解析结果
         {
             SceneResult scene = sceneService.getScene(sceneRequest.getBasicInfo().getBusinessFlowId());
-            if (scene == null) {throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程");}
+            if (scene == null) {
+                throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程");
+            }
             if (StrUtil.isBlank(scene.getScriptJmxNode())) {
                 throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "业务流程未保存脚本解析结果");
             }
@@ -225,8 +210,7 @@ public class SceneController {
         // 4. 填充压测内容
         {
             // 1. 获取业务流程关联的业务活动
-            List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(
-                sceneRequest.getBasicInfo().getBusinessFlowId());
+            List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(sceneRequest.getBasicInfo().getBusinessFlowId());
             if (CollectionUtils.isEmpty(links)) {
                 throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程关联的业务活动");
             }
@@ -242,8 +226,7 @@ public class SceneController {
                 throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果转换为一维数据失败");
             }
             // 3.2. 一维数据转换为Map，获得xPathMD5 和 脚本节点名称的对应关系
-            Map<String, String> nodeMap = nodes.stream().collect(
-                Collectors.toMap(ScriptNode::getXpathMd5, ScriptNode::getTestName));
+            Map<String, String> nodeMap = nodes.stream().collect(Collectors.toMap(ScriptNode::getXpathMd5, ScriptNode::getTestName));
             // 3.3 遍历压测内容并从Map中填充数据
             for (SceneRequest.Content item : content) {
                 if (!nodeMap.containsKey(item.getPathMd5())) {
@@ -253,10 +236,8 @@ public class SceneController {
                 item.setApplicationId(sceneManageService.getAppIdsByBusinessActivityId(item.getBusinessActivityId()));
             }
             // 3.4 补充非业务活动目标到压测内容
-            List<String> contentNode = content.stream().map(SceneRequest.Content::getPathMd5).distinct().collect(
-                Collectors.toList());
-            List<String> needFillNode = sceneRequest.getGoal().keySet().stream().filter(t -> !contentNode.contains(t))
-                .distinct().collect(Collectors.toList());
+            List<String> contentNode = content.stream().map(SceneRequest.Content::getPathMd5).distinct().collect(Collectors.toList());
+            List<String> needFillNode = sceneRequest.getGoal().keySet().stream().filter(t -> !contentNode.contains(t)).distinct().collect(Collectors.toList());
             needFillNode.forEach(t -> content.add(new SceneRequest.Content() {{
                 if (!nodeMap.containsKey(t)) {
                     throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "脚本解析结果存在不能匹配的非业务活动的压测目标");
@@ -271,16 +252,11 @@ public class SceneController {
         // 5. 填充SLA
         {
             // 1. 销毁的监控目标
-            List<SceneRequest.MonitoringGoal> destroyMonitoringGoal = request.getDestroyMonitoringGoal().stream()
-                .map(t -> BeanUtil.copyProperties(t, SceneRequest.MonitoringGoal.class))
-                .peek(t -> t.setType(0)).collect(Collectors.toList());
+            List<SceneRequest.MonitoringGoal> destroyMonitoringGoal = request.getDestroyMonitoringGoal().stream().map(t -> BeanUtil.copyProperties(t, SceneRequest.MonitoringGoal.class)).peek(t -> t.setType(0)).collect(Collectors.toList());
             // 2. 警告的监控目标
-            List<SceneRequest.MonitoringGoal> warnMonitoringGoal = request.getWarnMonitoringGoal().stream()
-                .map(t -> BeanUtil.copyProperties(t, SceneRequest.MonitoringGoal.class))
-                .peek(t -> t.setType(1)).collect(Collectors.toList());
+            List<SceneRequest.MonitoringGoal> warnMonitoringGoal = request.getWarnMonitoringGoal().stream().map(t -> BeanUtil.copyProperties(t, SceneRequest.MonitoringGoal.class)).peek(t -> t.setType(1)).collect(Collectors.toList());
             // 3. 组合警告目标
-            List<SceneRequest.MonitoringGoal> monitoringGoal =
-                new ArrayList<>(destroyMonitoringGoal.size() + warnMonitoringGoal.size());
+            List<SceneRequest.MonitoringGoal> monitoringGoal = new ArrayList<>(destroyMonitoringGoal.size() + warnMonitoringGoal.size());
             monitoringGoal.addAll(destroyMonitoringGoal);
             monitoringGoal.addAll(warnMonitoringGoal);
             // 4. 填充
@@ -301,7 +277,9 @@ public class SceneController {
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<SceneDetailResponse> detail(@RequestParam(required = false) Long sceneId) {
         SceneManageQueryReq request = new SceneManageQueryReq() {
-            {setSceneId(sceneId);}
+            {
+                setSceneId(sceneId);
+            }
         };
         WebPluginUtils.fillCloudUserData(request);
         SceneDetailV2Response detailResult = multipleSceneApi.detail(request);
@@ -314,14 +292,12 @@ public class SceneController {
             copyDetailResult.getBasicInfo().setIsScheduler(false);
         } else {
             copyDetailResult.getBasicInfo().setIsScheduler(true);
-            copyDetailResult.getBasicInfo().setExecuteTime(
-                DateUtil.formatDateTime(sceneSchedulerResponse.getExecuteTime()));
+            copyDetailResult.getBasicInfo().setExecuteTime(DateUtil.formatDateTime(sceneSchedulerResponse.getExecuteTime()));
         }
 
         // 添加排除的应用
         List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
-        copyDetailResult.getDataValidation().setExcludedApplicationIds(
-            DataTransformUtil.list2list(excludedApplicationIds, String.class));
+        copyDetailResult.getDataValidation().setExcludedApplicationIds(DataTransformUtil.list2list(excludedApplicationIds, String.class));
         return ResponseResult.success(copyDetailResult);
     }
 
@@ -344,8 +320,7 @@ public class SceneController {
      */
     @GetMapping("business_activity_flow/detail")
     @ApiOperation("获取业务流程详情 - 压测场景用")
-    public ResponseResult<SceneEntity> businessActivityFlowDetail(
-        @RequestParam(name = "id", required = false) Long id) {
+    public ResponseResult<SceneEntity> businessActivityFlowDetail(@RequestParam(name = "id", required = false) Long id) {
         return ResponseResult.success(sceneService.businessActivityFlowDetail(id));
     }
 
@@ -357,20 +332,19 @@ public class SceneController {
      */
     @GetMapping("business_activity_flow/leak_sql")
     @ApiOperation("获取业务流程下的漏数脚本 - 压测场景用")
-    public ResponseResult<List<LeakSqlBatchRefsResponse>> businessActivityFlowLeakSql(
-        @RequestParam(name = "id", required = false) Long id) {
+    public ResponseResult<List<LeakSqlBatchRefsResponse>> businessActivityFlowLeakSql(@RequestParam(name = "id", required = false) Long id) {
         // 1. 获取业务流程关联的业务活动
         List<SceneLinkRelateResult> links = sceneService.getSceneLinkRelates(id);
         // 2. 组装业务活动主键
-        List<Long> collect = links.stream().map(t -> Long.valueOf(t.getBusinessLinkId()))
-            .collect(Collectors.toList());
+        List<Long> collect = links.stream().map(t -> Long.valueOf(t.getBusinessLinkId())).collect(Collectors.toList());
         // 3. 提前返回
-        if (collect.size() == 0) {return ResponseResult.success(new ArrayList<>(0));}
+        if (collect.size() == 0) {
+            return ResponseResult.success(new ArrayList<>(0));
+        }
         // 4. 调用原有业务逻辑
-        List<LeakSqlBatchRefsResponse> batchLeakCheckConfig =
-            leakSqlService.getBatchLeakCheckConfig(new LeakSqlBatchRefsRequest() {{
-                setBusinessActivityIds(collect);
-            }});
+        List<LeakSqlBatchRefsResponse> batchLeakCheckConfig = leakSqlService.getBatchLeakCheckConfig(new LeakSqlBatchRefsRequest() {{
+            setBusinessActivityIds(collect);
+        }});
         // 5. 返回数据
         return ResponseResult.success(batchLeakCheckConfig);
     }
@@ -388,9 +362,13 @@ public class SceneController {
         AtomicInteger concurrenceNum = new AtomicInteger(0);
         request.forEach((k, v) -> {
             // 并发模式
-            if ("0".equals(v.get("type"))) {concurrenceNum.updateAndGet(t -> t + Integer.parseInt(v.get("threadNum")));}
+            if ("0".equals(v.get("type"))) {
+                concurrenceNum.updateAndGet(t -> t + Integer.parseInt(v.get("threadNum")));
+            }
             // TPS模式
-            if ("1".equals(v.get("type"))) {tpsNum.updateAndGet(t -> t + Integer.parseInt(v.get("tpsSum")));}
+            if ("1".equals(v.get("type"))) {
+                tpsNum.updateAndGet(t -> t + Integer.parseInt(v.get("tpsSum")));
+            }
         });
         return sceneManageService.getIpNum(concurrenceNum.get(), tpsNum.get());
     }
@@ -405,12 +383,11 @@ public class SceneController {
         // 根据脚本主键获取文件主键集合
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDao.selectFileIdsByScriptDeployId(scriptId);
         // 根据文件主键集合查询文件信息
-        List<Long> fileIds = scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(
-            Collectors.toList());
+        List<Long> fileIds = scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(Collectors.toList());
         // 组装返回数据
         return fileManageDao.selectFileManageByIds(fileIds).stream().map(t -> {
-            Map<String, Object> extend = JSONObject.parseObject(t.getFileExtend(),
-                new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> extend = JSONObject.parseObject(t.getFileExtend(), new TypeReference<Map<String, Object>>() {
+            });
             return new SceneRequest.File() {{
                 setName(t.getFileName());
                 setPath(t.getUploadPath());
@@ -430,15 +407,18 @@ public class SceneController {
         SceneDetailV2Response detailResult = multipleSceneApi.detail(request);
         Long businessFlowId = detailResult.getBasicInfo().getBusinessFlowId();
         List<ApplicationDetailResult> applicationMntEntities = this.sceneService.getAppsByFlowId(businessFlowId);
+        if (CollectionUtils.isEmpty(applicationMntEntities)){
+            return ResponseResult.success(Collections.EMPTY_LIST);
+        }
         // 添加排除的应用
         List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
-        if (excludedApplicationIds.isEmpty()){
-            return ResponseResult.success(applicationMntEntities);
+        if (CollectionUtils.isNotEmpty(applicationMntEntities)) {
+            List<ApplicationDetailResult> entityList = applicationMntEntities
+                    .stream()
+                    .filter(a -> excludedApplicationIds.contains(a.getApplicationId()))
+                    .collect(Collectors.toList());
+            return ResponseResult.success(entityList);
         }
-        List<ApplicationDetailResult> entityList = applicationMntEntities
-                .stream()
-                .filter(a -> excludedApplicationIds.contains(a.getApplicationId()))
-                .collect(Collectors.toList());
-        return ResponseResult.success(entityList) ;
+        return ResponseResult.success(applicationMntEntities);
     }
 }

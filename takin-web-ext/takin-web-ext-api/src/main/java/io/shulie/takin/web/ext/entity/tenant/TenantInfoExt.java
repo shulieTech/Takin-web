@@ -66,5 +66,7 @@ public class TenantInfoExt {
          * 是否默认
          */
         private Boolean isDefault;
+
+        private String securityCenterDomain;
     }
 }

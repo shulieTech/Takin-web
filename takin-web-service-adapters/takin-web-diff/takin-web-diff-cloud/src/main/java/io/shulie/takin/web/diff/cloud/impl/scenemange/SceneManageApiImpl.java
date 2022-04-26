@@ -47,6 +47,11 @@ public class SceneManageApiImpl implements SceneManageApi {
     private ProcessApi processApi;
 
     @Override
+    public ResponseResult<List<SceneManageListResp>> querySceneByStatus(SceneManageQueryReq sceneManageQueryReq) {
+        return cloudSceneApi.querySceneByStatus(sceneManageQueryReq);
+    }
+
+    @Override
     public ResponseResult<Object> updateSceneFileByScriptId(CloudUpdateSceneFileRequest updateSceneFileRequest) {
         try {
             cloudSceneApi.updateSceneFileByScriptId(updateSceneFileRequest);

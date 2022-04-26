@@ -2,6 +2,8 @@ package io.shulie.takin.web.diff.cloud.impl.scenetask;
 
 import javax.annotation.Resource;
 
+import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdsReq;
+import io.shulie.takin.cloud.sdk.model.response.report.ReportActivityResp;
 import org.springframework.stereotype.Service;
 
 import io.shulie.takin.cloud.sdk.model.request.report.WarnCreateReq;
@@ -20,6 +22,8 @@ import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskCheckReq
 import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskStartReq;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStartResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStatusResp;
+
+import java.util.List;
 
 /**
  * @author qianshui
@@ -124,4 +128,8 @@ public class SceneTaskApiImpl implements SceneTaskApi {
         }
     }
 
+	@Override
+    public ResponseResult<List<ReportActivityResp>> listQueryTpsParam(ReportDetailByIdsReq reportDetailByIdsReq) {
+        return cloudReportApi.getActivities(reportDetailByIdsReq);
+    }
 }

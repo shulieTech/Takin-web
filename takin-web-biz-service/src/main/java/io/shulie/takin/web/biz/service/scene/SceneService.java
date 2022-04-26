@@ -13,7 +13,9 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailRespon
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
+import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 
@@ -71,4 +73,6 @@ public interface SceneService {
     SceneEntity businessActivityFlowDetail(long id);
 
     void updateBusinessFlow(BusinessFlowUpdateRequest businessFlowUpdateRequest);
+
+    List<ApplicationDetailResult> getAppsByFlowId(Long flowId);
 }

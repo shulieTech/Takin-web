@@ -14,6 +14,10 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperRe
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneListForSelectOutput;
+import io.shulie.takin.web.biz.pojo.output.scene.SceneReportListOutput;
+import io.shulie.takin.web.biz.pojo.request.scene.ListSceneForSelectRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.ListSceneReportRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.ScenePositionPointResponse;
 import io.shulie.takin.web.common.domain.WebResponse;
@@ -75,5 +79,29 @@ public interface SceneManageService {
      * @param excludedApplicationIds 排除应用ids
      */
     void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds);
+	
+	/**
+     * 下拉框的压测场景列表, 暂时只查询压测中状态的
+     *
+     * @param request 请求入参
+     * @return 压测场景列表
+     */
+    List<SceneListForSelectOutput> listForSelect(ListSceneForSelectRequest request);
+
+    /**
+     * 通过场景id, 查询对应的正在运行的报告
+     *
+     * @param request 请求入参
+     * @return 报告列表
+     */
+    List<SceneReportListOutput> listReportBySceneIds(ListSceneReportRequest request);
+
+    /**
+     * 报告排名
+     *
+     * @param request 请求入参
+     * @return 报告排名
+     */
+    List<SceneReportListOutput> rankReport(ListSceneReportRequest request);
 
 }

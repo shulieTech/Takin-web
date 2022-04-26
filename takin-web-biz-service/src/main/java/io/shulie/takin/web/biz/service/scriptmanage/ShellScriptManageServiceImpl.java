@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.cloud.common.utils.redis.RedisClientUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;

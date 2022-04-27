@@ -1,9 +1,16 @@
 package io.shulie.takin.web.amdb.api.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONObject;
+import com.google.common.collect.Lists;
 import io.shulie.amdb.common.dto.link.entrance.ServiceInfoDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.RpcType;
@@ -23,6 +30,7 @@ import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.http.HttpMethod;
@@ -145,20 +153,31 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         }
     }
 
+    ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
     @Override
     public List<JSONObject> queryBatchMetrics(QueryMetricsFromAMDB queryMetricsFromAMDB) {
         String url = properties.getUrl().getAmdb() + QUERY_METRICS;
-
+        AmdbResult<List<JSONObject>> amdbResponseObj = new AmdbResult<>();
+        amdbResponseObj.setData(new ArrayList<>());
+        List<List<String>> resultList = Lists.partition(queryMetricsFromAMDB.getEagleIds(), 300);
+        List<CompletableFuture<Void>> futures = resultList.stream().map(result -> {
+            Runnable runnableTask = () -> {
+                QueryMetricsFromAMDB tempObj = BeanUtil.copyProperties(queryMetricsFromAMDB,QueryMetricsFromAMDB.class, "eagleIds");
+                tempObj.setEagleIds(result);
+                AmdbResult<List<JSONObject>> amdbResponse = AmdbHelper.builder().url(url)
+                        .httpMethod(HttpMethod.POST)
+                        .param(tempObj)
+                        .eventName("批量查询指标")
+                        .exception(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR)
+                        .list(JSONObject.class);
+                amdbResponseObj.getData().addAll(amdbResponse.getData());
+            };
+            return CompletableFuture.runAsync(runnableTask, cachedThreadPool);
+        }).collect(Collectors.toList());
         try {
-            AmdbResult<List<JSONObject>> amdbResponse = AmdbHelper.builder().url(url)
-                .httpMethod(HttpMethod.POST)
-                .param(queryMetricsFromAMDB)
-                .eventName("批量查询指标")
-                .exception(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR)
-                .list(JSONObject.class);
-
-            return amdbResponse.getData();
-        } catch (Exception e) {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get();
+            return amdbResponseObj.getData();
+        }catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR, e.getMessage());
         }

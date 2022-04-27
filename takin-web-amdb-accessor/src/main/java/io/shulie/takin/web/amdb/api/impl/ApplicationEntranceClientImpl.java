@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -153,13 +154,16 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         }
     }
 
+    @Value("${call.amdb.eagle_size:300}")
+    private int eagle_size;
+
     ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
     @Override
     public List<JSONObject> queryBatchMetrics(QueryMetricsFromAMDB queryMetricsFromAMDB) {
         String url = properties.getUrl().getAmdb() + QUERY_METRICS;
         AmdbResult<List<JSONObject>> amdbResponseObj = new AmdbResult<>();
         amdbResponseObj.setData(new ArrayList<>());
-        List<List<String>> resultList = Lists.partition(queryMetricsFromAMDB.getEagleIds(), 300);
+        List<List<String>> resultList = Lists.partition(queryMetricsFromAMDB.getEagleIds(), eagle_size);
         List<CompletableFuture<Void>> futures = resultList.stream().map(result -> {
             Runnable runnableTask = () -> {
                 QueryMetricsFromAMDB tempObj = BeanUtil.copyProperties(queryMetricsFromAMDB,QueryMetricsFromAMDB.class, "eagleIds");

@@ -177,6 +177,8 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      */
     DATA_SIGN_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据签名异常"),
 
+    REDIS_CMD_EXECUTE_ERROR("cloud-009-s0209", "REDIS命令执行异常"),
+
     ;
     private final String errorCode;
 

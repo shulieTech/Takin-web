@@ -18,6 +18,8 @@ public class UserExt {
 
     private String name;
 
+    private String key;
+    
     private String nick;
 
     private String salt;

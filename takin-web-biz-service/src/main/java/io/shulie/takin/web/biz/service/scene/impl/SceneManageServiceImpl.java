@@ -861,6 +861,10 @@ public class SceneManageServiceImpl implements SceneManageService {
                     createSceneExcludedApplicationParam.setEnvCode(WebPluginUtils.traceEnvCode());
                     return createSceneExcludedApplicationParam;
                 }).collect(Collectors.toList());
+        // 再插入
+        if (!sceneExcludedApplicationDAO.saveBatch(createSceneExcludedApplicationParams)) {
+            throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, "排除的应用保存失败!");
+        }
     }
     	
 	@Override

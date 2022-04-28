@@ -260,6 +260,9 @@ public class SceneManageController {
         queryVO.setTagId(tagId);
         queryVO.setLastPtStartTime(lastPtStartTime);
         queryVO.setLastPtEndTime(lastPtEndTime);
+        if(Objects.isNull(recovery)){
+            recovery = false;
+        }
         queryVO.setIsDeleted(recovery?1:0);
         ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
         return Response.success(responseResult.getData(), responseResult.getTotalNum());

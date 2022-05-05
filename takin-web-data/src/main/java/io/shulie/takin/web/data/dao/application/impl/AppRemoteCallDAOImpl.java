@@ -98,7 +98,6 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
     public void update(AppRemoteCallUpdateParam param) {
         AppRemoteCallEntity entity = new AppRemoteCallEntity();
         BeanUtils.copyProperties(param, entity);
-        this.updateById(entity);
         // 同时更新md5
         AppRemoteCallEntity newEntity = this.getById(param.getId());
         entity.setMd5(RemoteCallUtils.buildRemoteCallName(newEntity.getAppName(),newEntity.getInterfaceName(),newEntity.getInterfaceType()));

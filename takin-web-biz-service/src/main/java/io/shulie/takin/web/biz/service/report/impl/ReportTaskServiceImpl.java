@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.fastjson.JSON;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.web.common.util.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;

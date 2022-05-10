@@ -9,6 +9,7 @@ import cn.hutool.extra.template.TemplateUtil;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BaseFont;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.stereotype.Component;
 import org.xhtmlrenderer.pdf.ITextFontResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
@@ -31,9 +32,12 @@ public class PDFUtil {
     @Value("${pdf.path}")
     private  String PDF_DOWN_PATH ;
 
+    private static final String DEFAULT_SEARCH_LOCATIONS = "classpath:/";
+
     public String exportPDF(String html,String pdfName) throws IOException {
-        String font = this.getClass().getResource("/fonts/msyh.ttf").toString();
-//        String font = "/fonts/msyh.ttf";
+        //        String font = "/fonts/msyh.ttf";
+        DefaultResourceLoader loader = new DefaultResourceLoader();
+        String font = loader.getResource(DEFAULT_SEARCH_LOCATIONS + "/fonts/msyh.ttf").getFile().getAbsolutePath();
         String pdf = PDF_DOWN_PATH + File.separator + pdfName;
         if(FileUtil.exist(pdf)){
             //如果同名文件存在,直接返回路径

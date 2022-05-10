@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.utils;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.extra.template.Template;
 import cn.hutool.extra.template.TemplateConfig;
 import cn.hutool.extra.template.TemplateEngine;
@@ -31,7 +32,8 @@ public class PDFUtil {
     private  String PDF_DOWN_PATH ;
 
     public String exportPDF(String html,String pdfName) throws IOException {
-        String font = "/fonts/msyh.ttf";
+        String font = this.getClass().getResource("/fonts/msyh.ttf").toString();
+//        String font = "/fonts/msyh.ttf";
         String pdf = PDF_DOWN_PATH + File.separator + pdfName;
         if(FileUtil.exist(pdf)){
             //如果同名文件存在,直接返回路径

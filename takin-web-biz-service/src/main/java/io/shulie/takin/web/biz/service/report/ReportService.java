@@ -165,4 +165,6 @@ public interface ReportService {
      */
     ReportDetailOutput getReportById(Long id);
 
+    String downloadPDFPath(Long reportId);
+
 }

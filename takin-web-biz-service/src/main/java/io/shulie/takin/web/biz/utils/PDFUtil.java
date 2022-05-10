@@ -32,10 +32,9 @@ public class PDFUtil {
     @Value("${pdf.path}")
     private  String PDF_DOWN_PATH ;
 
-    private static final String DEFAULT_SEARCH_LOCATIONS = "classpath:/";
+    private static final String DEFAULT_SEARCH_LOCATIONS = "file:./config/";
 
     public String exportPDF(String html,String pdfName) throws IOException {
-        //        String font = "/fonts/msyh.ttf";
         DefaultResourceLoader loader = new DefaultResourceLoader();
         String font = loader.getResource(DEFAULT_SEARCH_LOCATIONS + "/fonts/msyh.ttf").getFile().getAbsolutePath();
         String pdf = PDF_DOWN_PATH + File.separator + pdfName;

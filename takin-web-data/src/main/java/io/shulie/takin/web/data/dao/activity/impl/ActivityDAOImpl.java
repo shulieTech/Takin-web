@@ -98,7 +98,6 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         linkManageTableEntity.setUserId(param.getUserId());
         linkManageTableEntity.setIsChange(0);
         linkManageTableEntity.setApplicationName(param.getApplicationName());
-        linkManageTableEntity.setApplicationId(param.getApplicationId());
         Map<String, String> map = new HashMap<>();
         map.put(FeaturesConstants.EXTEND_KEY, param.getExtend());
         map.put(FeaturesConstants.METHOD_KEY, param.getMethod());

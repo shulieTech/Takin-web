@@ -68,7 +68,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(ApiUrls.TAKIN_API_URL)
 @Api(tags = "接口: 应用管理中心", value = "应用管理中心")
 public class ApplicationController {
-
     private static final String FALSE_CODE = "0";
 
     @Resource

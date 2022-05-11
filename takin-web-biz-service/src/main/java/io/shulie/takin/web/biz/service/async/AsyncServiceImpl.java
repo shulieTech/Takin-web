@@ -21,7 +21,7 @@ import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.util.CommonUtil;
-import io.shulie.takin.web.common.util.RedisClientUtils;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
 import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;
@@ -57,7 +57,7 @@ public class AsyncServiceImpl implements AsyncService {
     private SceneTaskApi sceneTaskApi;
 
     @Autowired
-    private RedisClientUtils redisClientUtils;
+    private RedisClientUtil redisClientUtil;
 
     @Async("agentDataThreadPool")
     @Override
@@ -160,7 +160,7 @@ public class AsyncServiceImpl implements AsyncService {
                             break;
                         } else {
                             String value = prefix + "|" + baseList.get(i).getExtTime();
-                            if (redisClientUtils.zsetAdd(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId, value) == 0) {
+                            if (redisClientUtil.zsetAdd(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId, value) == 0) {
                                 continue;
                             }
                             //发起warn
@@ -185,7 +185,7 @@ public class AsyncServiceImpl implements AsyncService {
                             break;
                         } else {
                             String value = prefix + "|" + baseList.get(i).getExtTime();
-                            if (redisClientUtils.zsetAdd(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId, value) == 0) {
+                            if (redisClientUtil.zsetAdd(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId, value) == 0) {
                                 continue;
                             }
                             //发起warn

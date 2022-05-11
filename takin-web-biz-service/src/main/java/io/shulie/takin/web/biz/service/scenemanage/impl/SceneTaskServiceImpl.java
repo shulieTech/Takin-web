@@ -35,7 +35,7 @@ import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParamNew;
 import com.pamirs.takin.entity.domain.vo.report.ScenePluginParam;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
-import io.shulie.takin.web.common.util.RedisClientUtils;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdReq;
@@ -139,7 +139,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     @Resource
     private ScriptManageService scriptManageService;
     @Resource
-    private RedisClientUtils redisClientUtils;
+    private RedisClientUtil redisClientUtil;
     @Resource
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
@@ -240,13 +240,13 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
         // 校验该场景是否正在压测中
         if (!SceneManageStatusEnum.ifFinished(sceneData.getStatus())) {
-            //        if (redisClientUtils.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))) {
+            //        if (redisClientUtil.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))) {
             // 正在压测中
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_STATUS_ERROR,
                 "场景，id=" + param.getSceneId() + "已启动压测，请刷新页面！");
         } else {
             // 记录key 过期时长为压测时长
-            redisClientUtils.setString(SceneTaskUtils.getSceneTaskKey(param.getSceneId()),
+            redisClientUtil.setString(SceneTaskUtils.getSceneTaskKey(param.getSceneId()),
                 DateUtils.getServerTime(),
                 Integer.parseInt(sceneData.getPressureTestTime().getTime().toString()), TimeUnit.MINUTES);
         }
@@ -366,7 +366,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     @Override
     public ResponseResult<String> stopTask(SceneActionParam param) {
         // 释放 场景锁
-        redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
+        redisClientUtil.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
         // 停止先删除 redis中的
         SceneManageIdReq req = new SceneManageIdReq();
         req.setId(param.getSceneId());
@@ -379,7 +379,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
             WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
             String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, resp.getReportId()));
-        redisClientUtils.del(redisKey);
+        redisClientUtil.del(redisKey);
         // 最后删除
         return sceneTaskApi.stopTask(req);
     }
@@ -398,7 +398,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         //非压测中
         if (response.getData() == null || resp.getData() != 2L) {
             // 解除 场景锁
-            redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(sceneId));
+            redisClientUtil.delete(SceneTaskUtils.getSceneTaskKey(sceneId));
             return response;
         }
         Long reportId = resp.getReportId();
@@ -438,7 +438,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
             String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
                 WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
                 String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
-            redisClientUtils.set(redisKey, applicationNames, wrapperResp.getPressureTestSecond() + 10);
+            redisClientUtil.set(redisKey, applicationNames, wrapperResp.getPressureTestSecond() + 10);
         }
 
         Map<String, List<SceneSlaRefResp>> slaMap = getSceneSla(wrapperResp);

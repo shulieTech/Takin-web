@@ -27,7 +27,7 @@ import org.springframework.util.CollectionUtils;
  */
 @Component
 @Slf4j
-public class RedisClientUtils {
+public class RedisClientUtil {
     /**
      * lock 超时时间
      */

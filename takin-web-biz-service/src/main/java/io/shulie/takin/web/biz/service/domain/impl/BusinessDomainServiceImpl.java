@@ -12,7 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.entity.dao.dict.TDictionaryDataMapper;
 import com.pamirs.takin.entity.domain.vo.TDictionaryVo;
-import io.shulie.takin.web.common.util.RedisClientUtils;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.domain.BusinessDomainCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.domain.BusinessDomainDeleteRequest;
@@ -64,7 +64,7 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
     private BusinessLinkManageDAO businessLinkManageDAO;
 
     @Autowired
-    private RedisClientUtils redisClientUtils;
+    private RedisClientUtil redisClientUtil;
 
     @Autowired
     private DistributedLock distributedLock;
@@ -212,7 +212,7 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
     private boolean isExistDefaultDomain(List<TDictionaryVo> voList) {
         String tenantSuffix = WebPluginUtils.traceTenantId() + ":" + WebPluginUtils.traceEnvCode();
         // 先查缓存
-        String initFlag = redisClientUtils.getString(
+        String initFlag = redisClientUtil.getString(
             BusinessDomainConstant.BUSINESS_DOMAIN_INIT_FLAG_KEY + tenantSuffix);
         if (StringUtils.isNotBlank(initFlag)) {
             return true;
@@ -233,7 +233,7 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
         queryParam.setDomainCodes(voList.stream().map(TDictionaryVo::getValueCode).map(Integer::parseInt).collect(Collectors.toList()));
         List<BusinessDomainListResult> results = businessDomainDAO.selectList(queryParam);
         if (CollectionUtils.isNotEmpty(results)) {
-            redisClientUtils.setString(BusinessDomainConstant.BUSINESS_DOMAIN_INIT_FLAG_KEY + tenantSuffix,
+            redisClientUtil.setString(BusinessDomainConstant.BUSINESS_DOMAIN_INIT_FLAG_KEY + tenantSuffix,
                 "INITIALIZED");
             return true;
         }
@@ -251,7 +251,7 @@ public class BusinessDomainServiceImpl implements BusinessDomainService {
         });
         // 设置初始化标志为：已初始化
         String tenantSuffix = WebPluginUtils.traceTenantId() + ":" + WebPluginUtils.traceEnvCode();
-        redisClientUtils.setString(BusinessDomainConstant.BUSINESS_DOMAIN_INIT_FLAG_KEY + tenantSuffix,
+        redisClientUtil.setString(BusinessDomainConstant.BUSINESS_DOMAIN_INIT_FLAG_KEY + tenantSuffix,
             "INITIALIZED");
     }
 

@@ -14,7 +14,7 @@ import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
-import io.shulie.takin.web.common.util.RedisClientUtils;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
@@ -68,7 +68,7 @@ public class SceneTaskController {
     @Autowired
     private SceneManageService sceneManageService;
     @Autowired
-    private RedisClientUtils redisClientUtils;
+    private RedisClientUtil redisClientUtil;
 
     @ApiOperation("|_ 启动时停止")
     @PutMapping("/preStop")
@@ -114,7 +114,7 @@ public class SceneTaskController {
             return WebResponse.success(startTaskResponse);
         } catch (TakinWebException ex) {
             // 解除 场景锁
-            redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
+            redisClientUtil.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
             SceneActionResp sceneStart = new SceneActionResp();
             //sceneStart.setMsg(Arrays.asList(StringUtils.split(ex.getMessage(), Constants.SPLIT)));
             List<String> message = Lists.newArrayList();

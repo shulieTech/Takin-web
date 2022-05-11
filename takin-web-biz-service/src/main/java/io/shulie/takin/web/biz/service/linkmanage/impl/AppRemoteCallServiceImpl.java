@@ -886,7 +886,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
      */
     @Override
     public Map<Long, List<AppRemoteCallResult>> getListGroupByAppId() {
-        List<AppRemoteCallResult> allRecord = appRemoteCallDAO.getAllRecord();
+        List<AppRemoteCallResult> allRecord = appRemoteCallDAO.getAllRecordByPage();
         return CollStreamUtil.groupByKey(allRecord, AppRemoteCallResult::getApplicationId);
     }
 

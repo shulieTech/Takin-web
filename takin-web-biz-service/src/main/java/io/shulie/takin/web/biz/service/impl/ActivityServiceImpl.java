@@ -23,7 +23,7 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.web.common.util.RedisClientUtils;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
@@ -63,6 +63,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoRe
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.LinkTopologyService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
@@ -150,6 +151,9 @@ public class ActivityServiceImpl implements ActivityService {
     @Autowired
     private ApplicationDAO applicationDAO;
 
+    @Autowired
+    private ApplicationService applicationService;
+
     @Override
     public List<BusinessApplicationListResponse> listApplicationByBusinessActivityIds(List<Long> businessActivityIds,
                                                                                       String applicationName) {
@@ -215,6 +219,10 @@ public class ActivityServiceImpl implements ActivityService {
         createParam.setEntranceName(request.getServiceName());
         createParam.setIsChange(false);
         createParam.setApplicationName(request.getApplicationName());
+        Long applicationId = this.applicationService.queryApplicationIdByAppName(request.getApplicationName());
+        if (null != applicationId) {
+            createParam.setApplicationId(applicationId);
+        }
         createParam.setType(request.getType());
         createParam.setActivityLevel(request.getActivityLevel());
         createParam.setIsCore(request.getIsCore());

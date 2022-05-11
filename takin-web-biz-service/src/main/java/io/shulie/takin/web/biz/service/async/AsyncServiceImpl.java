@@ -22,6 +22,7 @@ import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
 import io.shulie.takin.web.biz.service.risk.util.DateUtil;
 import io.shulie.takin.web.common.common.Separator;
 import io.shulie.takin.web.common.util.CommonUtil;
+import io.shulie.takin.web.common.util.RedisClientUtils;
 import io.shulie.takin.web.common.util.RedisHelper;
 import io.shulie.takin.web.data.dao.baseserver.BaseServerDao;
 import io.shulie.takin.web.data.dao.perfomanceanaly.PerformanceBaseDataDAO;

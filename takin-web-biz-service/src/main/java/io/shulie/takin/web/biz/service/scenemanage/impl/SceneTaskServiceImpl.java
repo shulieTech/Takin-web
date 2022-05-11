@@ -35,7 +35,7 @@ import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParamNew;
 import com.pamirs.takin.entity.domain.vo.report.ScenePluginParam;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.web.common.util.RedisClientUtils;
 import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdReq;

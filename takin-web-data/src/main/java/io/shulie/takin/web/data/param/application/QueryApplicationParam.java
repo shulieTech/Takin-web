@@ -29,4 +29,7 @@ public class QueryApplicationParam extends PageBaseDTO {
     private Long tenantId;
     private String envCode;
 
+    private String updateStartTime;
+    private String updateEndTime;
+
 }

@@ -329,7 +329,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         long allCount = this.count(lambdaQueryWrapper);
         if (allCount > 0) {
             long current = 1;
-            long pageSize = 2000;
+            long pageSize = 1000;
             for(;;){
                 Page<AppRemoteCallEntity> page = new Page<>(current, pageSize);
                 IPage<AppRemoteCallEntity> entityPageInfo = this.page(page, lambdaQueryWrapper);

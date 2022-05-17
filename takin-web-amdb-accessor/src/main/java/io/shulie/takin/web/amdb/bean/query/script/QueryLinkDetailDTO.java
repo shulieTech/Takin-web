@@ -18,6 +18,11 @@ import lombok.EqualsAndHashCode;
 public class QueryLinkDetailDTO extends PagingDevice {
 
     /**
+     * 查询数据类型(1-agent上报trace明细,2-压测报告请求trace明细)
+     * 默认查询trace明细
+     */
+    private Integer queryType;
+    /**
      * 结果类型, 0:失败  1:成功   2:断言失败
      * 整型
      */

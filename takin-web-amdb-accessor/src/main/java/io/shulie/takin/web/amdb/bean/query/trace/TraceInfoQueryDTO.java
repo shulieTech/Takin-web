@@ -14,6 +14,12 @@ public class TraceInfoQueryDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 查询数据类型(1-agent上报trace明细,2-压测报告请求trace明细)
+     * 默认查询trace明细
+     */
+    private Integer queryType;
+
     private Long startTime;
 
     private Long endTime;

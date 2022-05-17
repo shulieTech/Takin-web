@@ -171,7 +171,7 @@ public class SummaryService {
             //机器信息
             long startTime = System.currentTimeMillis();
             String searchAppIdSql = "select distinct(app_ip) as app_ip from app_base_data " +
-                "where time>=" + minTime + "ms and time <= " + maxTime + "ms and app_name = '" + applicationName + "'" +
+                "where time>=" + minTime + "ms and time <= " + maxTime + "ms and tag_app_name = '" + applicationName + "'" +
                 // 增加租户
                 " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                 " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";
@@ -186,7 +186,7 @@ public class SummaryService {
                 long baseTime = System.currentTimeMillis();
                 String searchBaseSql = "select time, app_ip, cpu_rate, cpu_load, mem_rate, iowait, net_bandwidth_rate" +
                     " from app_base_data where time>=" + minTime + "ms and time <= " + maxTime
-                    + "ms and app_name = '" + applicationName + "'" + " and app_ip = '" + host + "'" +
+                    + "ms and tag_app_name = '" + applicationName + "'" + " and tag_app_ip = '" + host + "'" +
                     // 增加租户
                     " and tenant_app_key = '" + WebPluginUtils.traceTenantAppKey() + "'" +
                     " and env_code = '" + WebPluginUtils.traceEnvCode() + "'";

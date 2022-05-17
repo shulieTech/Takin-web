@@ -95,6 +95,12 @@ public class LinkManageTableEntity extends UserBaseEntity {
     private String applicationName;
 
     /**
+     * 应用id
+     */
+    @TableField(value = "APPLICATION_ID")
+    private Long applicationId;
+
+    /**
      * 变更类型: 1:无流量调用通知;2:添加调用关系通知
      */
     @TableField(value = "CHANGE_TYPE")

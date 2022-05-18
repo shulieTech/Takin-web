@@ -105,8 +105,9 @@ public class TraceClientImpl implements TraceClient {
             dto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             dto.setEnvCode(WebPluginUtils.traceEnvCode());
             dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
-            //固定查询影子链路明细数据
-            dto.setClusterTest(1);
+            //固定查询影子链路明细数据；
+            //压测流量明细查询，去掉固定查压测流量
+            //dto.setClusterTest(1);
             dto.setTraceIdList(query.getTraceId());
             AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.builder().url(url)
                     .param(dto)

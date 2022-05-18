@@ -314,6 +314,7 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         BeanUtils.copyProperties(queryDTO, traceInfoQueryDTO);
         traceInfoQueryDTO.setEntranceRuleDTOS(entranceList);
         traceInfoQueryDTO.setPageNum(queryDTO.getRealCurrent());
+        traceInfoQueryDTO.setQueryType(2);
         PagingList<EntryTraceInfoDTO> entryTraceInfoDtoPagingList = traceClient.listEntryTraceInfo(traceInfoQueryDTO);
         if (entryTraceInfoDtoPagingList.isEmpty()) {
             return new PageInfo<>(Collections.emptyList());

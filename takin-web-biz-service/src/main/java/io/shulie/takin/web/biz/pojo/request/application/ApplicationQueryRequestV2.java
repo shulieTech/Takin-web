@@ -23,4 +23,9 @@ public class ApplicationQueryRequestV2 extends PageBaseDTO {
     @Range(min = 0, max = 3, message = "错误的接入状态")
     private Integer accessStatus;
 
+    @ApiModelProperty("更新时间开始")
+    private String updateStartTime;
+
+    @ApiModelProperty("更新时间结束")
+    private String updateEndTime;
 }

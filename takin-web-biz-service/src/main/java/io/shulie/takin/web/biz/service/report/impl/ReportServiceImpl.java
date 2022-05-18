@@ -1,7 +1,9 @@
 package io.shulie.takin.web.biz.service.report.impl;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -11,6 +13,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
@@ -36,12 +39,18 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.WarnDetailResponse;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailTempOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDownLoadOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportJtlDownloadOutput;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.report.ReportQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.leakverify.LeakVerifyTaskResultResponse;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.report.ReportService;
+import io.shulie.takin.web.biz.utils.PDFUtil;
+import io.shulie.takin.web.common.constant.LockKeyConstants;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import io.shulie.takin.web.ext.entity.UserExt;
@@ -50,6 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +81,12 @@ public class ReportServiceImpl implements ReportService {
 
     @Value("${file.upload.url:''}")
     private String fileUploadUrl;
+
+    @Autowired
+    private PDFUtil pdfUtil;
+
+    @Autowired
+    private DistributedLock distributedLock;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -286,6 +302,34 @@ public class ReportServiceImpl implements ReportService {
         final ReportDetailOutput output = new ReportDetailOutput();
         output.setTaskStatus(status);
         return output;
+    }
+
+    @Override
+    public String downloadPDFPath(Long reportId){
+        String lockKey = String.format(LockKeyConstants.LOCK_REPORT_EXPORT,reportId);
+        if(!distributedLock.tryLockSecondsTimeUnit(lockKey, 0L, 30L)){
+            throw  new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, "操作太频繁!");
+        }
+        //获取需要导出的数据
+        ReportDetailOutput detailOutput = this.getReportByReportId(reportId);
+        NodeTreeSummaryResp nodeTreeSummaryResp = this.querySummaryList(reportId);
+        ReportDownLoadOutput downLoadOutput = new ReportDownLoadOutput(detailOutput, nodeTreeSummaryResp);
+
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("data", downLoadOutput);
+        String content = pdfUtil.parseFreemarker("report/report.html", dataModel);
+        String pdf = "report_" + reportId + "_" + ".pdf";
+        try {
+            String path = pdfUtil.exportPDF(content, pdf);
+            while (!(FileUtil.exist(path))) {
+                //一直等待文件生成成功
+            }
+            return path;
+        }catch (IOException e){
+            throw  new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, e.getMessage(), e);
+        }finally {
+            distributedLock.unLock(lockKey);
+        }
     }
 
 }

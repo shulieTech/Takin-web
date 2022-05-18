@@ -98,6 +98,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         linkManageTableEntity.setUserId(param.getUserId());
         linkManageTableEntity.setIsChange(0);
         linkManageTableEntity.setApplicationName(param.getApplicationName());
+        linkManageTableEntity.setApplicationId(param.getApplicationId());
         Map<String, String> map = new HashMap<>();
         map.put(FeaturesConstants.EXTEND_KEY, param.getExtend());
         map.put(FeaturesConstants.METHOD_KEY, param.getMethod());
@@ -134,6 +135,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         businessLinkManageTableEntity.setUserId(param.getUserId());
         businessLinkManageTableEntity.setCanDelete(0);
         businessLinkManageTableEntity.setApplicationName(param.getApplicationName());
+        businessLinkManageTableEntity.setApplicationId(param.getApplicationId());
         if (null != param.getServerMiddlewareType()) {
             businessLinkManageTableEntity.setServerMiddlewareType(param.getServerMiddlewareType().getType());
         }

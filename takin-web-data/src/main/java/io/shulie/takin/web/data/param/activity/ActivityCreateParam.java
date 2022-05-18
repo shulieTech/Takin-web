@@ -15,6 +15,8 @@ public class ActivityCreateParam extends UserCommonExt {
 
     private String applicationName;
 
+    private Long applicationId;
+
     private String entranceName;
 
     private EntranceTypeEnum type;

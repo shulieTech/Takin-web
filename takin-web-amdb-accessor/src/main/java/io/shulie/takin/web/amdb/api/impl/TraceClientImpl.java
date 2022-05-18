@@ -105,7 +105,8 @@ public class TraceClientImpl implements TraceClient {
             dto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
             dto.setEnvCode(WebPluginUtils.traceEnvCode());
             dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
-            //固定查询影子链路明细数据；
+            //固定查询影子链路明细数据
+            dto.setQueryType(query.getQueryType());
             //压测流量明细查询，去掉固定查压测流量
             //dto.setClusterTest(1);
             dto.setTraceIdList(query.getTraceId());

@@ -48,5 +48,15 @@ public class ReportQueryParam extends PagingDevice implements Serializable {
      */
     @ApiModelProperty(value = "负责人姓名")
     private String managerName;
+    /**
+     * 报告开始时间
+     */
+    @ApiModelProperty(value = "报告开始时间")
+    private String reportStartTime;
 
+    /**
+     * 报告结束时间
+     */
+    @ApiModelProperty(value = "报告结束时间")
+    private String reportEndTime;
 }

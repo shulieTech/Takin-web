@@ -37,7 +37,7 @@ public class PerformanceConfigController {
         return ResponseResult.success();
     }
 
-    @ApiOperation("单接口压测新增")
+    @ApiOperation("单接口压测更新")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult update(@RequestBody PerformanceConfigCreateInput input) {
         performanceConfigService.update(input);

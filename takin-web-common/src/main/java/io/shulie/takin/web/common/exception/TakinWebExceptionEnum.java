@@ -147,29 +147,36 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 业务域管理
      */
     BUSINESS_DOMAIN_ADD_ERROR("1500-" + ErrorConstant.ADD_ERROR, "新增业务域异常"),
-    BUSINESS_DOMAIN_UPDATE_ERROR("1500-"+ErrorConstant.UPDATE_ERROR,"更新业务域异常"),
+    BUSINESS_DOMAIN_UPDATE_ERROR("1500-" + ErrorConstant.UPDATE_ERROR, "更新业务域异常"),
     BUSINESS_DOMAIN_DELETE_ERROR("1500-" + ErrorConstant.DELETE_ERROR, "删除业务域异常"),
 
 
     /**
-     *  agent指令操作
+     * agent指令操作
      */
-    AGENT_COMMAND_VALID_ERROR("1500-"+ErrorConstant.VALIDATE_ERROR,"Agent 指令操作 数据校验异常"),
+    AGENT_COMMAND_VALID_ERROR("1500-" + ErrorConstant.VALIDATE_ERROR, "Agent 指令操作 数据校验异常"),
 
     /**
      * 插件根目录
      */
-    PLUGIN_PATH_VALID_ERROR("1600-"+ErrorConstant.VALIDATE_ERROR,"探针根目录数据校验异常"),
+    PLUGIN_PATH_VALID_ERROR("1600-" + ErrorConstant.VALIDATE_ERROR, "探针根目录数据校验异常"),
 
     /**
      * 升级
      */
-    PLUGIN_UPGRADE_VALID_ERROR("1700-"+ErrorConstant.VALIDATE_ERROR,"升级包数据异常"),
+    PLUGIN_UPGRADE_VALID_ERROR("1700-" + ErrorConstant.VALIDATE_ERROR, "升级包数据异常"),
 
     /**
      * 应用标签
      */
-    APPLICATION_TAG_CREATE_ERROR("1800-"+ErrorConstant.ADD_ERROR,"应用标签创建异常"),
+    APPLICATION_TAG_CREATE_ERROR("1800-" + ErrorConstant.ADD_ERROR, "应用标签创建异常"),
+
+    /**
+     * 接口压测
+     */
+    INTERFACE_PERFORMANCE_PARAM_ERROR("1900-" + ErrorConstant.DELETE_ERROR, "接口压测删除异常"),
+    INTERFACE_PERFORMANCE_CREATE_ERROR("1901-" + ErrorConstant.ADD_ERROR, "接口压测新增异常"),
+    INTERFACE_PERFORMANCE_QUERY_ERROR("1902-" + ErrorConstant.QUERY_ERROR, "接口压测查询异常"),
     ;
     private final String errorCode;
 

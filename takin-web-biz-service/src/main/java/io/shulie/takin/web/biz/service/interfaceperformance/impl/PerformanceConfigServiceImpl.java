@@ -1,10 +1,14 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
+import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConvert;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
+import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
@@ -16,6 +20,7 @@ import io.shulie.takin.web.ext.api.user.WebUserExtApi;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -103,5 +108,13 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         BeanUtils.copyProperties(request, param);
         PagingList<PerformanceConfigVO> resultList = performanceConfigDAO.pageList(param);
         return resultList;
+    }
+
+
+    @Autowired
+    PerformancePressureService performancePressureService;
+    @Override
+    public ResponseResult<SceneActionResp> start(SceneActionParam param) {
+        return performancePressureService.start(param);
     }
 }

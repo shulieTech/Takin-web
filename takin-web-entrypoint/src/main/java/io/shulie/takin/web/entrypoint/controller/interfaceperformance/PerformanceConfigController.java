@@ -1,20 +1,22 @@
 package io.shulie.takin.web.entrypoint.controller.interfaceperformance;
 
+import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
+import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 /**
@@ -58,5 +60,12 @@ public class PerformanceConfigController {
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     public ResponseResult query(@RequestBody PerformanceConfigQueryRequest request) {
         return ResponseResult.success(performanceConfigService.query(request));
+    }
+
+
+    @PostMapping("/start")
+    @ApiOperation(value = "启动压测")
+    public ResponseResult start(@RequestBody SceneActionParam param) {
+        return ResponseResult.success(performanceConfigService.start(param));
     }
 }

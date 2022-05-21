@@ -66,7 +66,6 @@ public class ResponseWrapAdvice extends ResponseEntityExceptionHandler implement
 //                || body instanceof io.shulie.takin.common.beans.response.ResponseResult) {
 //            return body;
 //        }
-        response.setStatusCode(HttpStatus.OK);
 
         if (body instanceof File) {
             return body;

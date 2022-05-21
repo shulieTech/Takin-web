@@ -15,13 +15,17 @@ import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.domain.WebResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.ServerHttpRequest;
 import com.pamirs.takin.common.ResponseOk.ResponseResult;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.util.WebUtils;
 
 /**
  * @author shiyajian
@@ -29,7 +33,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
  */
 @ControllerAdvice(basePackages = "io.shulie.takin")
 @Slf4j
-public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
+public class ResponseWrapAdvice extends ResponseEntityExceptionHandler implements ResponseBodyAdvice<Object> {
 
     @Override
     public boolean supports(@NonNull MethodParameter parameter, @NonNull Class<? extends HttpMessageConverter<?>> converter) {
@@ -62,6 +66,7 @@ public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
 //                || body instanceof io.shulie.takin.common.beans.response.ResponseResult) {
 //            return body;
 //        }
+        response.setStatusCode(HttpStatus.OK);
 
         if (body instanceof File) {
             return body;
@@ -95,8 +100,8 @@ public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
         }
 
         if (body instanceof io.shulie.takin.common.beans.response.ResponseResult) {
-            io.shulie.takin.common.beans.response.ResponseResult result = (io.shulie.takin.common.beans.response.ResponseResult)body;
-            if (!result.getSuccess()){
+            io.shulie.takin.common.beans.response.ResponseResult result = (io.shulie.takin.common.beans.response.ResponseResult) body;
+            if (!result.getSuccess()) {
                 result.setSuccess(true);
                 result.setError(null);
             }
@@ -109,7 +114,6 @@ public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
         if (body instanceof PagingList) {
             return Response.successPagingList((PagingList) body);
         }
-        response.setStatusCode(HttpStatus.OK);
         return Response.success(body);
     }
 }

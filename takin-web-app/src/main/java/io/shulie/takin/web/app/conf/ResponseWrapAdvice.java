@@ -7,6 +7,7 @@ import java.util.HashSet;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import com.github.pagehelper.PageInfo;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.core.MethodParameter;
@@ -108,6 +109,7 @@ public class ResponseWrapAdvice implements ResponseBodyAdvice<Object> {
         if (body instanceof PagingList) {
             return Response.successPagingList((PagingList) body);
         }
+        response.setStatusCode(HttpStatus.OK);
         return Response.success(body);
     }
 }

@@ -36,4 +36,6 @@ public class SceneManageQueryVO extends PagingContextExt {
 
     private Integer isDeleted;
 
+    private String userName;
+
 }

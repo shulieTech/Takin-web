@@ -22,6 +22,7 @@ import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.FileUtils;
 import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceParamVO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
@@ -196,27 +197,20 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         List<PerformanceParamRequest> fileParams = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(request.getFilePaths())) {
             // 刚上传的，从临时文件中读取
-            CsvReader reader = CsvUtil.getReader();
             List<String> filePaths = request.getFilePaths();
             for (int i = 0; i < filePaths.size(); i++) {
                 String path = filePaths.get(i);
                 try {
-                    File file = FileUtil.file(filePaths.get(i));
+                    File file = FileUtil.file(path);
                     //获取文件名
                     String fileName = FileUtil.getName(file);
-                    if (fileName.endsWith("csv")) {
+                    if (!fileName.endsWith("csv")) {
                         throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_FILE_TYPE_ERROR, fileName);
                     }
-                    CsvData csvData = reader.read(file);
-                    // 获取所有行数
-                    List<CsvRow> rows = csvData.getRows();
-                    if (CollectionUtils.isEmpty(rows)) {
-                        continue;
-                    }
-                    // 第一行代表key,默认要写，没有也区分不了
-                    CsvRow csvRow = rows.get(0);
 
-                    Iterator<String> it = csvRow.stream().iterator();
+                    // 读取第一行数据
+                    Map<String, String> firstRow = FileUtils.readCsvFirstRows(path);
+                    Iterator<String> it = firstRow.keySet().iterator();
                     int index = 1;
                     while (it.hasNext()) {
                         String next = it.next();

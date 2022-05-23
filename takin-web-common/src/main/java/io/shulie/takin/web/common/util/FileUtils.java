@@ -49,7 +49,7 @@ public class FileUtils {
                 if (i == 0) {
                     // TODO 这里有个很难受的事情，第一行,第一列读取的时候，有个点，这里去掉
                     String columnKey = String.valueOf(obj).trim();
-                    if(isFirstColumn){
+                    if (isFirstColumn) {
                         columnKey = columnKey.substring(1);
                         isFirstColumn = false;
                     }
@@ -65,6 +65,27 @@ public class FileUtils {
                 }
                 index++;
             }
+        }
+        return dataMap;
+    }
+
+    public static Map<String, String> readCsvFirstRows(String path) {
+        Map<String, String> dataMap = Maps.newHashMap();
+        CsvData csvData = csvReaderThreadLocal.get().read(FileUtil.file(path));
+        // 获取第一行
+        CsvRow csvRow = csvData.getRow(0);
+        boolean isFirstColumn = true;
+        Iterator it = csvRow.stream().iterator();
+        while (it.hasNext()) {
+            Object obj = it.next();
+            // 表示为第一行，第一样是key,设置为column
+            // TODO 这里有个很难受的事情，第一行,第一列读取的时候，有个点，这里去掉
+            String columnKey = String.valueOf(obj).trim();
+            if (isFirstColumn) {
+                columnKey = columnKey.substring(1);
+                isFirstColumn = false;
+            }
+            dataMap.put(columnKey, "");
         }
         return dataMap;
     }

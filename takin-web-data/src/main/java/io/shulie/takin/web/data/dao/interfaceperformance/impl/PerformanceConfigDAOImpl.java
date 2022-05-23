@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
@@ -37,15 +39,29 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
      * @param entity
      */
     @Override
-    public void add(InterfacePerformanceConfigEntity entity) {
+    public Long add(InterfacePerformanceConfigEntity entity) {
         interfacePerformanceConfigMapper.insert(entity);
+        return entity.getId();
+    }
+
+    /**
+     * 新增接口压测配置
+     *
+     * @param entity
+     */
+    @Override
+    public void updateById(InterfacePerformanceConfigEntity entity) {
+        if(entity.getId() == null){
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR,"参数未设置");
+        }
+        interfacePerformanceConfigMapper.updateById(entity);
     }
 
     @Override
     public InterfacePerformanceConfigEntity queryConfigByName(String name) {
         QueryWrapper<InterfacePerformanceConfigEntity> wrapper = new QueryWrapper<>();
         wrapper.eq("name", name);
-        wrapper.eq("is_delete", 0);
+        wrapper.eq("is_deleted", 0);
         wrapper.last("limit 1");
         return interfacePerformanceConfigMapper.selectOne(wrapper);
     }

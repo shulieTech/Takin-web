@@ -5,4 +5,5 @@ import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 
 public interface InterfacePerformanceParamMapper
         extends BaseMapper<InterfacePerformanceParamEntity> {
+
 }

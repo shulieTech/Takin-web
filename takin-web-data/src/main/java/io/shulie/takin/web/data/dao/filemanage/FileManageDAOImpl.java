@@ -65,6 +65,15 @@ public class FileManageDAOImpl implements FileManageDAO {
     }
 
     @Override
+    public List<FileManageEntity> createFileManageList_ext(List<FileManageCreateParam> fileList) {
+        return fileList.stream().map(t -> {
+            FileManageEntity entity = BeanUtil.copyProperties(t, FileManageEntity.class);
+            fileManageMapper.insert(entity);
+            return entity;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
     public FileManageResult selectFileManageById(Long id) {
         if (id == null) {
             return null;

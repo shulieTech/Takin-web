@@ -11,7 +11,10 @@ import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQuer
  * @date 2022/5/19 11:53 上午
  */
 public interface PerformanceConfigDAO {
-    void add(InterfacePerformanceConfigEntity entity);
+    Long add(InterfacePerformanceConfigEntity entity);
+
+
+    void updateById(InterfacePerformanceConfigEntity entity);
 
     /**
      * 获取name是否唯一

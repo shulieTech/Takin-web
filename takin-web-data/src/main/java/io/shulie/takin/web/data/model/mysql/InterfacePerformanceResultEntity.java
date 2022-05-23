@@ -19,7 +19,7 @@ import java.util.Date;
 @Data
 @TableName(value = "t_interface_performance_result")
 @ToString(callSuper = true)
-public class InterfacePerformanceResultEntity implements Serializable {
+public class InterfacePerformanceResultEntity extends TenantBaseEntity {
     /**
      * 主键
      */
@@ -31,6 +31,18 @@ public class InterfacePerformanceResultEntity implements Serializable {
      */
     @TableField(value = "config_id")
     private Long configId;
+
+    /**
+     * 请求地址或者域名
+     */
+    @TableField(value = "request_url")
+    private String requestUrl;
+
+    /**
+     * 请求地址或者域名
+     */
+    @TableField(value = "http_method")
+    private String httpMethod;
 
     /**
      * 请求地址或者域名

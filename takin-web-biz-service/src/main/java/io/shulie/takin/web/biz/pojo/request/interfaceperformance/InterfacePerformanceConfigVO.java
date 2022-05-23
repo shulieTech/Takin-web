@@ -9,6 +9,7 @@ public class InterfacePerformanceConfigVO extends UserCommonExt {
      * 配置Id
      */
     private Long id;
+
     /**
      * 压测场景名称
      */

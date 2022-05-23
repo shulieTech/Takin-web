@@ -19,7 +19,7 @@ import java.util.Date;
 @Data
 @TableName(value = "t_interface_performance_param")
 @ToString(callSuper = true)
-public class InterfacePerformanceParamEntity implements Serializable {
+public class InterfacePerformanceParamEntity extends TenantBaseEntity {
     /**
      * 主键
      */
@@ -53,8 +53,8 @@ public class InterfacePerformanceParamEntity implements Serializable {
     /**
      * 列索引
      */
-    @TableField(value = "file_index")
-    private Integer fileIndex;
+    @TableField(value = "file_column_index")
+    private Integer fileColumnIndex;
 
     /**
      * 文件Id

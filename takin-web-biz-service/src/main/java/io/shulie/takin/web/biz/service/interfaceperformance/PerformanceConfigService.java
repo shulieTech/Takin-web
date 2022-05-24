@@ -8,6 +8,9 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConf
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDebugRequest;
 import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
+import io.shulie.takin.web.common.vo.interfaceperformance.RelationAppNameVO;
+
+import java.util.List;
 
 /**
  * @author xingchen
@@ -38,4 +41,6 @@ public interface PerformanceConfigService {
     PerformanceConfigVO detail(Long configId);
 	
 	ResponseResult<SceneActionResp> start(SceneActionParam param);
+
+	List<RelationAppNameVO> relationName(PerformanceConfigQueryRequest param);
 }

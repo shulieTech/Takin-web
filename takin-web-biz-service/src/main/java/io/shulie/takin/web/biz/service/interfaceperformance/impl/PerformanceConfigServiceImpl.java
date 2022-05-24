@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
+import cn.hutool.core.util.URLUtil;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -13,17 +14,22 @@ import io.shulie.takin.web.biz.service.interfaceperformance.aspect.Action;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
+import io.shulie.takin.web.common.vo.interfaceperformance.RelationAppNameVO;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.net.URL;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author xingchen
@@ -149,5 +155,29 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
     @Override
     public ResponseResult<SceneActionResp> start(SceneActionParam param) {
         return performancePressureService.start(param);
+    }
+
+    /**
+     * 关联入口应用
+     *
+     * @param param
+     * @return
+     */
+    @Override
+    public List<RelationAppNameVO> relationName(PerformanceConfigQueryRequest param) {
+        String requestUrl = param.getRequestUrl();
+        // 格式化一下
+        String path = "";
+        if (StringUtils.isNotBlank(requestUrl)) {
+            try {
+                path = URLUtil.getPath(requestUrl);
+            } catch (Throwable e) {
+                log.error("格式化URL错误,{}}", requestUrl);
+            }
+        }
+        if (StringUtils.isNotBlank(path)) {
+            // TODO 调用AMDB
+        }
+        return null;
     }
 }

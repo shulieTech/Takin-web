@@ -5,6 +5,7 @@ import cn.hutool.core.text.csv.CsvData;
 import cn.hutool.core.text.csv.CsvReader;
 import cn.hutool.core.text.csv.CsvRow;
 import cn.hutool.core.text.csv.CsvUtil;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
 import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCopyParamReq;
@@ -209,12 +210,12 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
                     File file = FileUtil.file(path);
                     //获取文件名
                     String fileName = FileUtil.getName(file);
-                    if (!fileName.endsWith("csv")) {
+                    // 支持csv和Excel文件
+                    if (!fileName.endsWith("csv") || !fileName.endsWith("xlsx")) {
                         throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_FILE_TYPE_ERROR, fileName);
                     }
-
                     // 读取第一行数据
-                    Map<String, String> firstRow = FileUtils.readCsvFirstRows(path);
+                    Map<String, String> firstRow = FileUtils.readFirstRow(path);
                     Iterator<String> it = firstRow.keySet().iterator();
                     int index = 1;
                     while (it.hasNext()) {
@@ -260,6 +261,24 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             }
         }
         response.setParamList(fileParams);
+        // 判断参数名是否重复
+        if (CollectionUtils.isNotEmpty(fileParams)) {
+            List<String> repeatParamNames = Lists.newArrayList();
+            Map<String, Long> repeatDataMap = fileParams.stream().
+                    collect(Collectors.groupingBy(PerformanceParamRequest::getParamName,
+                            Collectors.counting()));
+            for (Map.Entry<String, Long> entry : repeatDataMap.entrySet()) {
+                String paramName = entry.getKey();
+                Long count = entry.getValue();
+                if (count > 1) {
+                    repeatParamNames.add(paramName);
+                }
+            }
+            if (CollectionUtils.isNotEmpty(repeatParamNames)) {
+                throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_FILE_PARAM_ERROR,
+                        "参数名重复," + repeatParamNames);
+            }
+        }
         return response;
     }
 

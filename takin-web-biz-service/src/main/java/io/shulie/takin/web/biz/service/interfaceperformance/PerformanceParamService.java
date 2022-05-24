@@ -10,6 +10,9 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformancePara
  * @date 2022/5/20 10:20 上午
  */
 public interface PerformanceParamService {
+    /**
+     * 更新数据文件
+     */
     void updatePerformanceData(PerformanceDataFileRequest request);
 
     /**

@@ -113,7 +113,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     if (fileIdDataMap.containsKey(String.valueOf(fileId))) {
                         continue;
                     }
-                    fileData = FileUtils.readCsv(path);
+                    fileData = FileUtils.readAll(path);
                     // 设置值
                     fileIdDataMap.put(String.valueOf(fileId), fileData);
                     // 设置一个文件最大条数

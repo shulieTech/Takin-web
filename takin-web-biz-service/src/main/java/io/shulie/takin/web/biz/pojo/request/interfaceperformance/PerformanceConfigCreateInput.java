@@ -8,4 +8,9 @@ public class PerformanceConfigCreateInput extends InterfacePerformanceConfigVO {
      * contentType数据
      */
     private ContentTypeVO contentTypeVo;
+
+    /**
+     * 压测相关配置
+     */
+    private PressureConfigRequest pressureConfigRequest;
 }

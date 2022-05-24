@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConf
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConvert;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
+import io.shulie.takin.web.biz.service.interfaceperformance.aspect.Action;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
@@ -37,15 +38,16 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
 
     @Resource
     private InterfacePerformanceConfigMapper interfacePerformanceConfigMapper;
-	
-	@Autowired
+
+    @Autowired
     PerformancePressureService performancePressureService;
-	
+
     /**
      * 新增
      *
      * @param input
      */
+    @Action(action = Action.ActionEnum.create)
     @Override
     public Long add(PerformanceConfigCreateInput input) {
         // 名称是否重复
@@ -65,6 +67,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      *
      * @param input
      */
+    @Action(action = Action.ActionEnum.update)
     @Override
     public void update(PerformanceConfigCreateInput input) {
         // 校验数据是否存在
@@ -97,6 +100,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      *
      * @param configId
      */
+    @Action(action = Action.ActionEnum.delete)
     @Override
     public void delete(Long configId) {
         // 判断数据是否存在
@@ -127,6 +131,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      * @param configId
      * @return
      */
+    @Action(action = Action.ActionEnum.delete)
     @Override
     public PerformanceConfigVO detail(Long configId) {
         if (configId == null) {
@@ -140,8 +145,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         BeanUtils.copyProperties(queryEntity, result);
         return result;
     }
-	
-	@Override
+
+    @Override
     public ResponseResult<SceneActionResp> start(SceneActionParam param) {
         return performancePressureService.start(param);
     }

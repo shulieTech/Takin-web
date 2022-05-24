@@ -4,14 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
-import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
-import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
@@ -59,7 +56,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
     }
 
 
-    private ReqBuilder processHeader(String header, ReqBuilder builder) {
+    private ReqBuilder buildHeader(String header, ReqBuilder builder) {
         if (StringUtil.isNotBlank(header)) {
             List<String> lines = null;
             if (header.contains("\n")) {
@@ -83,7 +80,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         return builder;
     }
 
-    private ReqBuilder processBody(Long id, ReqBuilder builder) {
+    private ReqBuilder buildBody(Long id, ReqBuilder builder) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("config_id", id);
         List<InterfacePerformanceParamEntity> paramEntityList
@@ -119,9 +116,9 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
                 .setBody(record.getBody())
                 .setMethod(record.getHttpMethod());
         //放header
-        processHeader(record.getHeaders(), builder);
+        buildHeader(record.getHeaders(), builder);
         //放data
-        processBody(id, builder);
+        buildBody(id, builder);
 
         return builder.build();
     }
@@ -137,6 +134,11 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         List<String> dataList;
 
 
+        /**
+         * 构建请求体
+         *
+         * @return
+         */
         public ReqBuilder build() {
             this.headers = headerList.toArray(new String[headerList.size()]);
             this.datas = dataList.toArray(new String[dataList.size()]);

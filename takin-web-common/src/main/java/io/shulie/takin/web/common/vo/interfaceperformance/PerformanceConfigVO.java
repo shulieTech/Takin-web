@@ -72,7 +72,7 @@ public class PerformanceConfigVO {
     private Integer status;
 
     /**
-     * contentType数据
+     * 关联入口应用
      */
     private String entranceAppName;
 

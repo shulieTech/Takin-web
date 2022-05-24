@@ -2,6 +2,7 @@ package io.shulie.takin.web.entrypoint.controller.interfaceperformance;
 
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.InterfacePerformanceConfigVO;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
@@ -68,5 +69,12 @@ public class PerformanceConfigController {
     @ApiOperation(value = "启动压测")
     public ResponseResult start(@RequestBody SceneActionParam param) {
         return ResponseResult.success(performanceConfigService.start(param));
+    }
+
+
+    @PostMapping("/relationName")
+    @ApiOperation(value = "获取关联入口应用信息")
+    public ResponseResult relationName(@RequestBody PerformanceConfigQueryRequest param) {
+        return ResponseResult.success(performanceConfigService.relationName(param));
     }
 }

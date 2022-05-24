@@ -15,4 +15,7 @@ public class PerformanceConfigQueryRequest extends PageBaseDTO {
 
     // 配置Id
     private Long id;
+
+    // 请求URL
+    private String requestUrl;
 }

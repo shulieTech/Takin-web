@@ -1,5 +1,8 @@
 package io.shulie.takin.web.biz.pojo.request.interfaceperformance;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -13,13 +16,7 @@ import java.util.List;
 public class PerformanceParamDetailRequest {
     private Long configId;
 
-    /**
-     * 配置Id
-     */
-    private List<Long> fileIds;
-
-    /**
-     * 临时文件路径
-     */
-    private List<String> filePaths;
+    @ApiModelProperty(name = "uploadFiles", value = "数据文件")
+    @JsonProperty("uploadFiles")
+    private List<FileManageUpdateRequest> fileManageUpdateRequests;
 }

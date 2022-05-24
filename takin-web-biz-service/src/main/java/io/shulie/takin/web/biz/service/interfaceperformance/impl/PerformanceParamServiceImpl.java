@@ -193,11 +193,16 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
          * 这里主要是有两类信息，一个是新增的文件读取内容出来
          * 另外一类是已经存到表里面的,已经保存的参数信息，这就读表就好了
          */
+        List<FileManageUpdateRequest> fileList = request.getFileManageUpdateRequests();
         PerformanceParamDetailResponse response = new PerformanceParamDetailResponse();
+        if (CollectionUtils.isEmpty(fileList)) {
+            return response;
+        }
+        // 1、过滤出那种刚上传的文件
+        List<String> filePaths = fileList.stream().filter(file -> file.getUploadId() != null).map(file -> file.getDownloadUrl()).collect(Collectors.toList());
         List<PerformanceParamRequest> fileParams = Lists.newArrayList();
-        if (CollectionUtils.isNotEmpty(request.getFilePaths())) {
+        if (CollectionUtils.isNotEmpty(filePaths)) {
             // 刚上传的，从临时文件中读取
-            List<String> filePaths = request.getFilePaths();
             for (int i = 0; i < filePaths.size(); i++) {
                 String path = filePaths.get(i);
                 try {
@@ -220,7 +225,8 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
                         paramRequest.setParamName(next);
                         // 文件名 test.csv
                         paramRequest.setParamValue(fileName);
-
+                        // 数据文件
+                        paramRequest.setType(2);
                         // 添加到集合
                         fileParams.add(paramRequest);
                         index++;
@@ -232,10 +238,11 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         }
 
         // 2、已经解析过的，存在表里面的,直接查询
-        if (CollectionUtils.isNotEmpty(request.getFileIds())) {
+        List<Long> fileIds = fileList.stream().filter(file -> file.getId() != null).map(file -> file.getId()).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(fileIds)) {
             PerformanceParamQueryParam queryParam = new PerformanceParamQueryParam();
             queryParam.setConfigId(request.getConfigId());
-            queryParam.setFileIds(request.getFileIds());
+            queryParam.setFileIds(fileIds);
             List<PerformanceParamVO> paramVOS = performanceParamDAO.queryParamByCondition(queryParam);
             if (CollectionUtils.isNotEmpty(paramVOS)) {
                 paramVOS.stream().forEach(vo -> {
@@ -245,6 +252,8 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
                     paramRequest.setParamName(vo.getParamName());
                     // 文件名 test.csv
                     paramRequest.setParamValue(vo.getParamValue());
+                    // 数据文件
+                    paramRequest.setType(vo.getType());
                     // 添加到集合
                     fileParams.add(paramRequest);
                 });

@@ -137,7 +137,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      * @param configId
      * @return
      */
-    @Action(action = Action.ActionEnum.delete)
+    @Action(action = Action.ActionEnum.detail)
     @Override
     public PerformanceConfigVO detail(Long configId) {
         if (configId == null) {

@@ -58,6 +58,7 @@ public class PressureActionAspect {
                 if (response.getClass().isAssignableFrom(PerformanceConfigVO.class)) {
                     // TODO: 2022/5/24  需要吧打data放进响应体
                 }
+                break;
             case select:
                 break;
 

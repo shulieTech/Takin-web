@@ -240,7 +240,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
         // 校验该场景是否正在压测中
         if (!SceneManageStatusEnum.ifFinished(sceneData.getStatus())) {
-            //        if (redisClientUtil.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))) {
+            //        if (redisClientUtils.hasKey(SceneTaskUtils.getSceneTaskKey(param.getSceneId()))) {
             // 正在压测中
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_START_STATUS_ERROR,
                 "场景，id=" + param.getSceneId() + "已启动压测，请刷新页面！");

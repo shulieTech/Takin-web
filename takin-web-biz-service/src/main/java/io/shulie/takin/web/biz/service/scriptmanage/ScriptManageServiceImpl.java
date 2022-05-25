@@ -973,18 +973,6 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                     manageResult.set(result);
                 }
             });
-
-            // 文件路径填充
-            // 获取已经存在的第一个文件, 拿到其路径
-            FileManageResult file = fileManageResults.get(0);
-            String uploadPath = file.getUploadPath();
-            String filePath = partRequest.getFilePath();
-            if (StringUtils.isNotBlank(uploadPath) && uploadPath.lastIndexOf(File.separator) > 0
-                && StringUtils.isNotBlank(filePath) && filePath.lastIndexOf(File.separator) > -1) {
-                // 截取倒数第一个 / 后的, 拼接上传的路径, set
-                partRequest.setFilePath(uploadPath.substring(0, uploadPath.lastIndexOf(File.separator) + 1)
-                    + filePath.substring(filePath.lastIndexOf(File.separator) + 1));
-            }
         }
 
         //文件已存在，则更新文件数据

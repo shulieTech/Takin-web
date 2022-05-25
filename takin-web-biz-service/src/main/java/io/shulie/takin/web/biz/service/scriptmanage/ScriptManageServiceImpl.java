@@ -506,6 +506,24 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         ScriptManageExceptionUtil.isUpdateValidError(CollectionUtils.isEmpty(scriptFile)
             || scriptFile.size() != 1, "脚本文件不唯一!");
 
+        //兼容还没上传源脚本，却直接更改后再上传的场景,只有在页面修改了脚本文件这么处理 eg: 删除-> 拖进->编辑->保存
+        if (StringUtil.isNotBlank(scriptFile.get(0).getScriptContent())) {
+            List<FileManageUpdateRequest> originRequests =
+                    scriptManageDeployUpdateRequest.getFileManageUpdateRequests();
+            if (originRequests.size() > 1) {
+                List<FileManageUpdateRequest> oldList =
+                        scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream()
+                                .filter(o -> o.getIsDeleted() == 1 && FileTypeEnum.SCRIPT.getCode().equals(o.getFileType()))
+                                .collect(Collectors.toList());
+                if (oldList.size() != 0) {
+                    //把老的记录的主键给新的
+                    if (Objects.isNull(scriptFile.get(0).getId())) {
+                        scriptFile.get(0).setId(oldList.get(0).getId());
+                    }
+                }
+            }
+        }
+
         // 更新的脚本文件落盘
         this.uploadUpdateScriptFile(scriptFile);
 

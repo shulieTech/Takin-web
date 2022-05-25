@@ -42,8 +42,8 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
         <takin.web.version>takin-web-5.5.2</takin.web.version>
-        <takin.cloud.version>5.2.6</takin.cloud.version>
-        <takin.cloud.sdk.version>5.2.6</takin.cloud.sdk.version>
+        <takin.cloud.sdk.version>5.5.1.1</takin.cloud.sdk.version>
+        <takin.cloud.version>5.5.1.1</takin.cloud.version>
         <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
         <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.6.2</pardar.log.protocol.version>
@@ -66,7 +66,7 @@
         <jedis.version>3.1.0</jedis.version>
         <!--版本升级 3.4.0 -> 3.4.3.4-->
         <mybatis.plus.version>3.4.3.4</mybatis.plus.version>
-        <freemarker.version>2.3.30</freemarker.version>
+        <freemarker.version>2.3.31</freemarker.version>
         <mybatis.version>3.5.5</mybatis.version>
         <druid.stater.version>1.1.22</druid.stater.version>
 
@@ -77,6 +77,7 @@
 
         <easypoi-base.version>4.4.0</easypoi-base.version>
         <easypoi-annotation.version>4.3.0</easypoi-annotation.version>
+        <openpdf.version>9.1.22</openpdf.version>
         <!-- 升级文档 -->
         <upgrade.doc>https://shulietech.feishu.cn/docs/doccnvTvNxzVrH29Xvm60l7kgHc</upgrade.doc>
     </properties>
@@ -433,6 +434,18 @@
                         <artifactId>simulator-internal-bootstrap-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xhtmlrenderer</groupId>
+                <artifactId>flying-saucer-pdf-openpdf</artifactId>
+                <version>${openpdf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.freemarker</groupId>
+                <artifactId>freemarker</artifactId>
+                <version>${freemarker.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

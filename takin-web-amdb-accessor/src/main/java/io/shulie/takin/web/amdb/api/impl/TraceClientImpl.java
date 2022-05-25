@@ -106,7 +106,9 @@ public class TraceClientImpl implements TraceClient {
             dto.setEnvCode(WebPluginUtils.traceEnvCode());
             dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
             //固定查询影子链路明细数据
-            dto.setClusterTest(1);
+            dto.setQueryType(query.getQueryType());
+            //压测流量明细查询，去掉固定查压测流量
+            //dto.setClusterTest(1);
             dto.setTraceIdList(query.getTraceId());
             AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.builder().url(url)
                     .param(dto)
@@ -232,12 +234,7 @@ public class TraceClientImpl implements TraceClient {
                         entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
             } else {
                 EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertVirtualEntrance(entrance.getEntrance());
-                return String.format("%s#%s#%s#%s", "",
-                        entranceJoinEntity.getServiceName(),
-                        entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
-/*
                 return String.format("%s#%s#%s#%s", "", "", entranceJoinEntity.getVirtualEntrance(), entranceJoinEntity.getRpcType());
-*/
             }
 
         }).collect(Collectors.joining(AppConstants.COMMA));

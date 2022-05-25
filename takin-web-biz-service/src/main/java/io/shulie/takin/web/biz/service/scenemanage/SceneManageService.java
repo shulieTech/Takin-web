@@ -76,4 +76,11 @@ public interface SceneManageService {
      */
     void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds);
 
+    /**
+     * 从回收站恢复
+     * @param  sceneId
+     * @return
+     */
+    String recoveryScene(SceneManageDeleteReq deleteVO);
+
 }

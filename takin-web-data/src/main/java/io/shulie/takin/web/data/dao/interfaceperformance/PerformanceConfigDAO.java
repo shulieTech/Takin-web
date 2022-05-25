@@ -1,7 +1,7 @@
 package io.shulie.takin.web.data.dao.interfaceperformance;
 
 import io.shulie.takin.common.beans.page.PagingList;
-import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
+import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigDto;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
 
@@ -30,7 +30,7 @@ public interface PerformanceConfigDAO {
      * @param param
      * @return
      */
-    PagingList<PerformanceConfigVO> pageList(PerformanceConfigQueryParam param);
+    PagingList<PerformanceConfigDto> pageList(PerformanceConfigQueryParam param);
 
     /**
      * 逻辑删除

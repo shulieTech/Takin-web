@@ -15,7 +15,8 @@ import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.FileUtils;
-import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceParamVO;
+import io.shulie.takin.web.biz.service.interfaceperformance.vo.PerformanceParamVO;
+import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceParamDto;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceParamDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
@@ -31,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -145,7 +147,9 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         // 读取所有的参数信息
         PerformanceParamQueryParam param = new PerformanceParamQueryParam();
         param.setConfigId(request.getConfigId());
-        List<PerformanceParamVO> resultVos = performanceParamDAO.queryParamByCondition(param);
+        List<PerformanceParamDto> dtoList = performanceParamDAO.queryParamByCondition(param);
+        List<PerformanceParamVO> resultVos = Lists.newArrayList();
+        BeanUtils.copyProperties(dtoList, resultVos);
         Set<Long> fileIds = Sets.newHashSet();
         List<PerformanceParamRequest> params = resultVos.stream().map(vo -> {
             PerformanceParamRequest tmpParam = new PerformanceParamRequest();
@@ -229,7 +233,9 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             PerformanceParamQueryParam queryParam = new PerformanceParamQueryParam();
             queryParam.setConfigId(request.getConfigId());
             queryParam.setFileIds(fileIds);
-            List<PerformanceParamVO> paramVOS = performanceParamDAO.queryParamByCondition(queryParam);
+            List<PerformanceParamDto> dtoList = performanceParamDAO.queryParamByCondition(queryParam);
+            List<PerformanceParamVO> paramVOS = Lists.newArrayList();
+            BeanUtils.copyProperties(dtoList, paramVOS);
             if (CollectionUtils.isNotEmpty(paramVOS)) {
                 paramVOS.stream().forEach(vo -> {
                     PerformanceParamRequest paramRequest = new PerformanceParamRequest();

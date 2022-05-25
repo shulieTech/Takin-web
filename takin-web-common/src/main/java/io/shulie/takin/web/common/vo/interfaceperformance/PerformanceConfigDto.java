@@ -10,7 +10,7 @@ import java.util.Date;
  * @date 2022/5/19 3:05 下午
  */
 @Data
-public class PerformanceConfigVO {
+public class PerformanceConfigDto {
     /**
      * 主键
      */

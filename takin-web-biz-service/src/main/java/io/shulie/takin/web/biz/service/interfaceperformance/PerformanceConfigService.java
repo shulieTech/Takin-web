@@ -6,9 +6,8 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDebugRequest;
-import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
-import io.shulie.takin.web.common.vo.interfaceperformance.RelationAppNameVO;
+import io.shulie.takin.web.biz.service.interfaceperformance.vo.PerformanceConfigVO;
+import io.shulie.takin.web.biz.service.interfaceperformance.vo.RelationAppNameVO;
 
 import java.util.List;
 

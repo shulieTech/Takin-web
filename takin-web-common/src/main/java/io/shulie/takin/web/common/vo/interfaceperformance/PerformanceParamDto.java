@@ -2,15 +2,13 @@ package io.shulie.takin.web.common.vo.interfaceperformance;
 
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * @author xingchen
  * @description: TODO
  * @date 2022/5/19 3:05 下午
  */
 @Data
-public class PerformanceParamVO {
+public class PerformanceParamDto {
     /**
      * 主键
      */

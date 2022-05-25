@@ -1,13 +1,12 @@
 package io.shulie.takin.web.data.dao.interfaceperformance.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
+import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigDto;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
@@ -73,7 +72,7 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
      * @return
      */
     @Override
-    public PagingList<PerformanceConfigVO> pageList(PerformanceConfigQueryParam param) {
+    public PagingList<PerformanceConfigDto> pageList(PerformanceConfigQueryParam param) {
         QueryWrapper<InterfacePerformanceConfigEntity> queryWrapper = this.getWrapper(param);
         Page<InterfacePerformanceConfigEntity> page = new Page<>(param.getCurrent() + 1, param.getPageSize());
         queryWrapper.orderByDesc("gmt_modified");
@@ -81,8 +80,8 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
         if (pageList.getRecords().isEmpty()) {
             return PagingList.empty();
         }
-        List<PerformanceConfigVO> results = pageList.getRecords().stream().map(entity -> {
-            PerformanceConfigVO result = new PerformanceConfigVO();
+        List<PerformanceConfigDto> results = pageList.getRecords().stream().map(entity -> {
+            PerformanceConfigDto result = new PerformanceConfigDto();
             BeanUtils.copyProperties(entity, result);
             return result;
         }).collect(Collectors.toList());

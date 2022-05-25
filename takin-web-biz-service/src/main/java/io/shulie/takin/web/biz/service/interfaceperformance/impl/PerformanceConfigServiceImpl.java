@@ -8,26 +8,31 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConvert;
+import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
 import io.shulie.takin.web.biz.service.interfaceperformance.aspect.Action;
+import io.shulie.takin.web.biz.service.interfaceperformance.vo.PressureConfigDetailVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
-import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
-import io.shulie.takin.web.common.vo.interfaceperformance.RelationAppNameVO;
+import io.shulie.takin.web.biz.service.interfaceperformance.vo.PerformanceConfigVO;
+import io.shulie.takin.web.biz.service.interfaceperformance.vo.RelationAppNameVO;
+import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigDto;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 
@@ -53,7 +58,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      *
      * @param input
      */
-    @Action(action = Action.ActionEnum.create)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Long add(PerformanceConfigCreateInput input) {
         // 名称是否重复
@@ -65,7 +70,13 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         insertConfigEntity.setGmtCreate(new Date());
         insertConfigEntity.setGmtModified(new Date());
         // 新增配置信息
-        return performanceConfigDAO.add(insertConfigEntity);
+        Long returnObj = performanceConfigDAO.add(insertConfigEntity);
+        /**
+         * id回填给后续操作
+         */
+        input.setId(returnObj);
+        doAction(input, returnObj, Action.ActionEnum.create);
+        return returnObj;
     }
 
     /**
@@ -73,7 +84,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      *
      * @param input
      */
-    @Action(action = Action.ActionEnum.update)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(PerformanceConfigCreateInput input) {
         // 校验数据是否存在
@@ -98,7 +109,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         updateEntity.setName(input.getName());
         updateEntity.setGmtModified(new Date());
         updateEntity.setId(input.getId());
-        interfacePerformanceConfigMapper.updateById(updateEntity);
+        Integer returnObj = interfacePerformanceConfigMapper.updateById(updateEntity);
+        doAction(input, returnObj, Action.ActionEnum.update);
     }
 
     /**
@@ -106,7 +118,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      *
      * @param configId
      */
-    @Action(action = Action.ActionEnum.delete)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(Long configId) {
         // 判断数据是否存在
@@ -115,6 +127,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
             throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "数据不存在!");
         }
         performanceConfigDAO.delete(configId);
+        doAction(configId, null, Action.ActionEnum.delete);
     }
 
     /**
@@ -127,8 +140,13 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
     public PagingList<PerformanceConfigVO> query(PerformanceConfigQueryRequest request) {
         PerformanceConfigQueryParam param = new PerformanceConfigQueryParam();
         BeanUtils.copyProperties(request, param);
-        PagingList<PerformanceConfigVO> resultList = performanceConfigDAO.pageList(param);
-        return resultList;
+        PagingList<PerformanceConfigDto> dtoPagingList = performanceConfigDAO.pageList(param);
+        //转换下
+        List<PerformanceConfigDto> source = dtoPagingList.getList();
+        long total = dtoPagingList.getTotal();
+        List<PerformanceConfigVO> returnList = Lists.newArrayList();
+        BeanUtils.copyProperties(source, returnList);
+        return PagingList.of(returnList, total);
     }
 
     /**
@@ -137,7 +155,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      * @param configId
      * @return
      */
-    @Action(action = Action.ActionEnum.detail)
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public PerformanceConfigVO detail(Long configId) {
         if (configId == null) {
@@ -149,6 +168,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         }
         PerformanceConfigVO result = new PerformanceConfigVO();
         BeanUtils.copyProperties(queryEntity, result);
+        doAction(configId, result, Action.ActionEnum.detail);
         return result;
     }
 
@@ -180,4 +200,47 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         }
         return null;
     }
+
+    private void _doAction(Object arg, Object response, Action.ActionEnum action) throws Throwable {
+        switch (action) {
+            case create:
+                PerformanceConfigCreateInput createIn = (PerformanceConfigCreateInput) arg;
+                performancePressureService.add(createIn);
+                break;
+            case delete:
+                Long deleteIn = (Long) arg;
+                performancePressureService.delete(deleteIn);
+                break;
+            case update:
+                PerformanceConfigCreateInput updateIn = (PerformanceConfigCreateInput) arg;
+                performancePressureService.update(updateIn);
+                break;
+            case detail:
+                Long detailIn = (Long) arg;
+                PerformanceConfigQueryRequest request = new PerformanceConfigQueryRequest();
+                request.setId(detailIn);
+                ResponseResult<SceneDetailResponse> result = performancePressureService.query(request);
+                SceneDetailResponse source = result.getData();
+                PressureConfigDetailVO target = new PressureConfigDetailVO();
+                BeanUtils.copyProperties(source, target);
+                if (response.getClass().isAssignableFrom(PerformanceConfigVO.class)) {
+                    ((PerformanceConfigVO) response).setPressureConfigDetailVO(target);
+                }
+                break;
+            case select:
+                break;
+        }
+    }
+
+    Logger logger = LoggerFactory.getLogger(getClass());
+
+    private void doAction(Object arg, Object response, Action.ActionEnum action) {
+        try {
+            _doAction(arg, response, action);
+        } catch (Throwable t) {
+            logger.error("do pressure config action error:{}", t.getCause());
+            throw new RuntimeException(t.getCause());
+        }
+    }
+
 }

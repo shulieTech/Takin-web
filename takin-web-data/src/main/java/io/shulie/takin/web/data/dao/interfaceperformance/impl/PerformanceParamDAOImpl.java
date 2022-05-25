@@ -1,7 +1,7 @@
 package io.shulie.takin.web.data.dao.interfaceperformance.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceParamVO;
+import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceParamDto;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceParamDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceParamMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
@@ -11,7 +11,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,7 +46,7 @@ public class PerformanceParamDAOImpl implements PerformanceParamDAO {
     }
 
     @Override
-    public List<PerformanceParamVO> queryParamByCondition(PerformanceParamQueryParam param) {
+    public List<PerformanceParamDto> queryParamByCondition(PerformanceParamQueryParam param) {
         QueryWrapper<InterfacePerformanceParamEntity> queryWrapper = getWrapper(param);
         // 更新倒序
         queryWrapper.orderByDesc("gmt_modified");
@@ -56,7 +55,7 @@ public class PerformanceParamDAOImpl implements PerformanceParamDAO {
             return Collections.EMPTY_LIST;
         }
         return resultList.stream().map(resultEntity -> {
-            PerformanceParamVO vo = new PerformanceParamVO();
+            PerformanceParamDto vo = new PerformanceParamDto();
             BeanUtils.copyProperties(resultEntity, vo);
             return vo;
         }).collect(Collectors.toList());

@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
@@ -14,6 +15,7 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
+import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
 import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
@@ -25,14 +27,13 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Respons
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
 import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
-import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
@@ -44,17 +45,18 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
-import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
-import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
+import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
+import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigSceneRelateShipMapper;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceParamMapper;
+import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
@@ -76,9 +78,18 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractPerformancePressureService implements PerformancePressureService {
 
+
+    Long fetchSceneId(Long apiId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("api_id", apiId);
+        queryWrapper.eq("is_deleted", 0);
+        return performanceConfigSceneRelateShipMapper.selectOne(queryWrapper).getSceneId();
+    }
+
     @Override
-    public ResponseResult delete(Long configId) {
-        ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(configId);
+    public ResponseResult delete(Long apiId) {
+        Long sceneId = fetchSceneId(apiId);
+        ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(sceneId);
         if (Objects.isNull(webResponse.getData())) {
             OperationLogContextHolder.ignoreLog();
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景不存在");
@@ -89,13 +100,16 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneData.getId()));
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
         SceneManageDeleteReq deleteReq = new SceneManageDeleteReq();
-        deleteReq.setId(configId);
+        deleteReq.setId(sceneId);
         sceneManageService.deleteScene(deleteReq);
         return ResponseResult.success();
     }
 
+
     @Override
-    public ResponseResult<Boolean> update(PressureConfigRequest request) {
+    public ResponseResult<Boolean> update(PerformanceConfigCreateInput in) throws Throwable {
+        PressureConfigRequest request = in.getPressureConfigRequest();
+        request.getBasicInfo().setSceneId(fetchSceneId(in.getId()));
         if (null == request.getBasicInfo().getSceneId()) {
             return ResponseResult.fail(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR.getErrorCode(), "压测场景ID不能为空");
         }
@@ -127,7 +141,8 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
     }
 
     @Override
-    public ResponseResult<Long> add(PressureConfigRequest request) {
+    public ResponseResult<Long> add(PerformanceConfigCreateInput in) throws Throwable {
+        PressureConfigRequest request = in.getPressureConfigRequest();
         SceneRequest sceneRequest = buildSceneRequest(request);
 
         WebPluginUtils.fillCloudUserData(sceneRequest);
@@ -149,6 +164,15 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
         if (null != request.getBasicInfo() && null != request.getBasicInfo().getName()) {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
         }
+        Long apiId = in.getId();
+        InterfacePerformanceConfigSceneRelateShipEntity
+                entity = new InterfacePerformanceConfigSceneRelateShipEntity();
+        entity.setApiId(apiId);
+        entity.setSceneId(sceneId);
+        entity.setIsDeleted(0);
+        entity.setEnvCode(in.getEnvCode());
+        entity.setTenantId(in.getTenantId());
+        performanceConfigSceneRelateShipMapper.insert(entity);
         return ResponseResult.success(sceneId);
     }
 
@@ -177,6 +201,21 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
     ScriptFileRefDAO scriptFileRefDao;
     @Resource
     SceneManageService sceneManageService;
+
+    /**
+     * 场景和接口关联表
+     */
+    @Resource
+    InterfacePerformanceConfigSceneRelateShipMapper performanceConfigSceneRelateShipMapper;
+
+    @Resource
+    PerformanceConfigDAO performanceConfigDAO;
+
+    /**
+     * 文件处理
+     */
+    @Resource
+    CloudFileApi cloudFileApi;
     /**
      * 定时压测
      */
@@ -251,6 +290,8 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
     public ResponseResult<SceneActionResp> start(SceneActionParam param) {
         // TODO: 2022/5/20 报错信息合并后再改
         Assert.isTrue(doStartCheck(), "启动检查失败.");
+        Long sceneId = fetchSceneId(param.getSceneId());
+        param.setSceneId(sceneId);
         try {
             ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(param.getSceneId());
             OperationLogContextHolder.operationType(BizOpConstants.OpTypes.START);
@@ -287,11 +328,12 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
 
 
     @Override
-    public ResponseResult<SceneDetailResponse> query(PerformanceConfigQueryRequest input) {
-        Long sceneId = input.getId();
+    public ResponseResult<SceneDetailResponse> query(PerformanceConfigQueryRequest input) throws Throwable {
+        Long sceneId = fetchSceneId(input.getId());
         if (Objects.isNull(sceneId)) {
             String queryName = input.getQueryName();
             // TODO: 2022/5/20 名字查出id
+            throw new RuntimeException("不支持名字查详情.");
         }
         SceneManageQueryReq request = new SceneManageQueryReq() {
             {

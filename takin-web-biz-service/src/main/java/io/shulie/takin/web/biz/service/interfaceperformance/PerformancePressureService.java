@@ -2,12 +2,11 @@ package io.shulie.takin.web.biz.service.interfaceperformance;
 
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
-import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
-import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigVO;
 
 /**
  * @Author: vernon
@@ -21,7 +20,7 @@ public interface PerformancePressureService {
      * @param input
      * @return
      */
-    ResponseResult<Long> add(PressureConfigRequest input);
+    ResponseResult<Long> add(PerformanceConfigCreateInput input) throws Throwable;
 
     /**
      * 更新
@@ -29,14 +28,14 @@ public interface PerformancePressureService {
      * @param input
      * @return
      */
-    ResponseResult<Boolean> update(PressureConfigRequest input);
+    ResponseResult<Boolean> update(PerformanceConfigCreateInput input) throws Throwable;
 
     /**
      * 删除
      *
      * @param configId
      */
-    ResponseResult delete(Long configId);
+    ResponseResult delete(Long configId) throws Throwable;
 
     /**
      * 查询详情
@@ -44,7 +43,7 @@ public interface PerformancePressureService {
      * @param input
      * @return
      */
-    ResponseResult<SceneDetailResponse> query(PerformanceConfigQueryRequest input);
+    ResponseResult<SceneDetailResponse> query(PerformanceConfigQueryRequest input) throws Throwable;
 
     /**
      * 启动压测
@@ -60,5 +59,5 @@ public interface PerformancePressureService {
      * @param id 场景id
      * @return 返回脚本内容
      */
-    ResponseResult<String> scriptGenerator(Long id);
+    String scriptGenerator(Long id);
 }

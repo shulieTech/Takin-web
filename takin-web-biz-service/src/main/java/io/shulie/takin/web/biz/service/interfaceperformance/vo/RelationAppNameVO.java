@@ -1,4 +1,4 @@
-package io.shulie.takin.web.common.vo.interfaceperformance;
+package io.shulie.takin.web.biz.service.interfaceperformance.vo;
 
 import lombok.Data;
 

@@ -862,4 +862,10 @@ public class SceneManageServiceImpl implements SceneManageService {
         }
     }
 
+
+    @Override
+    public String recoveryScene(SceneManageDeleteReq vo) {
+        return cloudSceneManageApi.recovery(vo);
+    }
+
 }

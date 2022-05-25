@@ -59,9 +59,6 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
     @Resource
     private FileManageDAO fileManageDAO;
 
-    @Resource
-    private DiffFileApi diffFileApi;
-
     /**
      * 更新接口压测数据文件
      *

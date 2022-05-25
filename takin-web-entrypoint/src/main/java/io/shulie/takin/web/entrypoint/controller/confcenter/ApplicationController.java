@@ -365,7 +365,7 @@ public class ApplicationController {
                 result.put(entity.getLinkId(), false);
             }else {
                 List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                    request.getApplicationName(), "");
+                    request.getApplicationName(), "",1,500);
                 if (CollectionUtils.isNotEmpty(applicationEntrances)) {
                     List<ApplicationEntrancesResponse> responseList = applicationEntrances.stream()
                         .filter(item -> !item.getServiceName().startsWith("PT_"))

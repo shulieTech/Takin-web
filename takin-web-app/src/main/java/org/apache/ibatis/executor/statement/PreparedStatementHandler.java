@@ -16,6 +16,7 @@
 package org.apache.ibatis.executor.statement;
 
 import io.shulie.takin.web.app.conf.mybatis.datasign.SignCommonUtil;
+import io.shulie.takin.web.biz.constant.TakinWebContext;
 import lombok.SneakyThrows;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.BatchResult;
@@ -61,7 +62,9 @@ public class PreparedStatementHandler extends BaseStatementHandler {
         Object parameterObject = boundSql.getParameterObject();
         KeyGenerator keyGenerator = mappedStatement.getKeyGenerator();
         keyGenerator.processAfter(executor, mappedStatement, ps, parameterObject);
-        SignCommonUtil.getInstance().setSign(mappedStatement, parameterObject, statement, boundSql);
+        if(TakinWebContext.getTenantStatus()){
+            SignCommonUtil.getInstance().setSign(mappedStatement, parameterObject, statement, boundSql);
+        }
         return rows;
     }
 
@@ -70,10 +73,12 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     public void batch(Statement statement) throws SQLException {
         PreparedStatement ps = (PreparedStatement) statement;
         ps.addBatch();
-        Statement s1 = statement.getConnection().createStatement();
-        List<BatchResult> batchResults = executor.flushStatements();
-        List<Object> parameterObjects = batchResults.get(0).getParameterObjects();
-        SignCommonUtil.getInstance().setSign(mappedStatement, parameterObjects.get(0), s1, boundSql);
+        if(TakinWebContext.getTenantStatus()){
+            Statement s1 = statement.getConnection().createStatement();
+            List<BatchResult> batchResults = executor.flushStatements();
+            List<Object> parameterObjects = batchResults.get(0).getParameterObjects();
+            SignCommonUtil.getInstance().setSign(mappedStatement, parameterObjects.get(0), s1, boundSql);
+        }
     }
 
     @SneakyThrows
@@ -81,8 +86,10 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
         PreparedStatement ps = (PreparedStatement) statement;
         ps.execute();
-        SignCommonUtil.getInstance().validSign(mappedStatement, ps,boundSql);
-        ps.execute();
+        if(TakinWebContext.getTenantStatus()){
+            SignCommonUtil.getInstance().validSign(mappedStatement, ps,boundSql);
+            ps.execute();
+        }
         return resultSetHandler.handleResultSets(ps);
     }
 

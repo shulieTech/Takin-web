@@ -77,6 +77,7 @@
 
         <easypoi-base.version>4.4.0</easypoi-base.version>
         <easypoi-annotation.version>4.3.0</easypoi-annotation.version>
+        <transmittable-thread-local>2.12.4</transmittable-thread-local>
         <!-- 升级文档 -->
         <upgrade.doc>https://shulietech.feishu.cn/docs/doccnvTvNxzVrH29Xvm60l7kgHc</upgrade.doc>
     </properties>
@@ -433,6 +434,12 @@
                         <artifactId>simulator-internal-bootstrap-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>transmittable-thread-local</artifactId>
+                <version>${transmittable-thread-local}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

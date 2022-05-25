@@ -172,10 +172,13 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      */
     APPLICATION_TAG_CREATE_ERROR("1800-" + ErrorConstant.ADD_ERROR, "应用标签创建异常"),
 
+    REDIS_CMD_EXECUTE_ERROR("cloud-009-s0209", "REDIS命令执行异常"),
+
     /**
      * 数据签名
      */
     DATA_SIGN_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据签名异常"),
+    DATA_SIGN_CLEAR_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据正在清理中,暂时无法开启"),
 
     ;
     private final String errorCode;

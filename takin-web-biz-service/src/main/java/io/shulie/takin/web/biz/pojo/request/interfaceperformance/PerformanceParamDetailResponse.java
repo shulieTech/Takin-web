@@ -1,8 +1,7 @@
 package io.shulie.takin.web.biz.pojo.request.interfaceperformance;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
-import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
+import io.shulie.takin.web.data.result.filemanage.FileManageResponse;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

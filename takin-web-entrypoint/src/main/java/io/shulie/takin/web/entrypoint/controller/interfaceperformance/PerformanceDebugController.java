@@ -51,7 +51,8 @@ public class PerformanceDebugController {
             performanceConfigService.update(input);
         }
         performanceDebugService.debug(request);
-        return ResponseResult.success();
+        // 返回接口压测Id到前端
+        return ResponseResult.success(request.getId());
     }
 
     @ApiOperation("调试")

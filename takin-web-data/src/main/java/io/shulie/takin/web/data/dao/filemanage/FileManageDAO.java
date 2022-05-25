@@ -3,6 +3,7 @@ package io.shulie.takin.web.data.dao.filemanage;
 import java.util.List;
 
 import io.shulie.takin.web.data.model.mysql.FileManageEntity;
+import io.shulie.takin.web.data.result.filemanage.FileManageResponse;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import io.shulie.takin.web.data.param.filemanage.FileManageCreateParam;
 
@@ -48,4 +49,6 @@ public interface FileManageDAO {
      * @return
      */
     FileManageResult selectFileManageById(Long id);
+
+    List<FileManageResponse> getFileManageResponseByFileIds(List<Long> fileIds);
 }

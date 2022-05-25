@@ -1,32 +1,22 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.text.csv.CsvData;
-import cn.hutool.core.text.csv.CsvReader;
-import cn.hutool.core.text.csv.CsvRow;
-import cn.hutool.core.text.csv.CsvUtil;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
 import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCopyParamReq;
 import io.shulie.takin.cloud.sdk.model.request.filemanager.FileDeleteParamReq;
 import io.shulie.takin.utils.json.JsonHelper;
-import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamDetailRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamRequest;
-import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceParamService;
-import io.shulie.takin.web.biz.utils.xlsx.ExcelUtils;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.FileUtils;
 import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceParamVO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
-import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceParamDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.FileManageEntity;
@@ -34,15 +24,13 @@ import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.param.filemanage.FileManageCreateParam;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceParamQueryParam;
-import io.shulie.takin.web.data.result.filemanage.FileManageResult;
+import io.shulie.takin.web.data.result.filemanage.FileManageResponse;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.DiffFileApi;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -175,7 +163,7 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             return tmpParam;
         }).collect(Collectors.toList());
         // 找到文件列表
-        List<FileManageResponse> fileManageResponseList = getFileManageResponseByFileIds(new ArrayList<>(fileIds));
+        List<FileManageResponse> fileManageResponseList = fileManageDAO.getFileManageResponseByFileIds(new ArrayList<>(fileIds));
         response.setConfigId(request.getConfigId());
         response.setFileManageResponseList(fileManageResponseList);
         response.setParamList(params);
@@ -280,44 +268,6 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             }
         }
         return response;
-    }
-
-    private List<FileManageResponse> getFileManageResponseByFileIds(List<Long> fileIds) {
-        List<FileManageResult> fileManageResults = fileManageDAO.selectFileManageByIds(fileIds);
-        List<FileManageResponse> fileManageResponses = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(fileManageResults)) {
-            for (FileManageResult fileManageResult : fileManageResults) {
-                FileManageResponse fileManageResponse = new FileManageResponse();
-                BeanUtils.copyProperties(fileManageResult, fileManageResponse);
-                if (StringUtils.isNotEmpty(fileManageResult.getFileExtend())) {
-                    Map<String, Object> stringObjectMap = JsonHelper.json2Map(fileManageResult.getFileExtend(),
-                            String.class, Object.class);
-                    if (stringObjectMap != null && stringObjectMap.get("dataCount") != null && !StringUtil.isBlank(
-                            stringObjectMap.get("dataCount").toString())) {
-                        fileManageResponse.setDataCount(Long.valueOf(stringObjectMap.get("dataCount").toString()));
-                    }
-                    if (stringObjectMap != null && stringObjectMap.get("isSplit") != null && !StringUtil.isBlank(
-                            stringObjectMap.get("isSplit").toString())) {
-                        fileManageResponse.setIsSplit(Integer.valueOf(stringObjectMap.get("isSplit").toString()));
-                    }
-                    if (stringObjectMap != null && stringObjectMap.get("isOrderSplit") != null && !StringUtil.isBlank(
-                            stringObjectMap.get("isOrderSplit").toString())) {
-                        fileManageResponse.setIsOrderSplit(
-                                Integer.valueOf(stringObjectMap.get("isOrderSplit").toString()));
-                    }
-                    fileManageResponse.setIsBigFile(0);
-                    if (stringObjectMap != null && stringObjectMap.get("isBigFile") != null && !StringUtil.isBlank(
-                            stringObjectMap.get("isBigFile").toString())) {
-                        fileManageResponse.setIsBigFile(Integer.valueOf(stringObjectMap.get("isBigFile").toString()));
-                    }
-                }
-                String uploadUrl = fileManageResult.getUploadPath();
-                fileManageResponse.setUploadPath(uploadUrl);
-                fileManageResponses.add(fileManageResponse);
-            }
-            return fileManageResponses;
-        }
-        return null;
     }
 
     private List<FileManageCreateParam> getFileManageCreateParamsByUpdateReq(

@@ -49,6 +49,10 @@ public class TenantInfoExt {
     @NoArgsConstructor
     public static class TenantEnv {
         /**
+         * 租户ID
+         */
+        private Long tenantId;
+        /**
          * 环境代码
          */
         private String envCode;

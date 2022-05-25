@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.*;
 
 /**
@@ -14,6 +15,7 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.*;
  * @Date: 2022/5/25 14:59
  * @Description:
  */
+@Data
 public class PressureConfigDetailVO {
     /**
      * 基础信息

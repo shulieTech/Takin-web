@@ -8,11 +8,11 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConvert;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
 import io.shulie.takin.web.biz.service.interfaceperformance.aspect.Action;
-import io.shulie.takin.web.biz.service.interfaceperformance.vo.PressureConfigDetailVO;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.biz.service.interfaceperformance.vo.PerformanceConfigVO;
@@ -177,6 +177,10 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         return performancePressureService.start(param);
     }
 
+    public ResponseResult uploadDataFile(BusinessFlowDataFileRequest request) {
+        return performancePressureService.uploadDataFile(request);
+    }
+
     /**
      * 关联入口应用
      *
@@ -217,14 +221,10 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
                 break;
             case detail:
                 Long detailIn = (Long) arg;
-                PerformanceConfigQueryRequest request = new PerformanceConfigQueryRequest();
-                request.setId(detailIn);
-                ResponseResult<SceneDetailResponse> result = performancePressureService.query(request);
+                ResponseResult<SceneDetailResponse> result = performancePressureService.query(detailIn);
                 SceneDetailResponse source = result.getData();
-                PressureConfigDetailVO target = new PressureConfigDetailVO();
-                BeanUtils.copyProperties(source, target);
                 if (response.getClass().isAssignableFrom(PerformanceConfigVO.class)) {
-                    ((PerformanceConfigVO) response).setPressureConfigDetailVO(target);
+                    ((PerformanceConfigVO) response).setPressureConfigDetail(source);
                 }
                 break;
             case select:

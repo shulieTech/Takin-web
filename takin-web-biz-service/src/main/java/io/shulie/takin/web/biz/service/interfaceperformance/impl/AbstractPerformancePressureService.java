@@ -3,10 +3,10 @@ package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.google.common.collect.Lists;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
@@ -31,15 +31,17 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
 import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
@@ -57,6 +59,7 @@ import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigSceneRelateShipMapper;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceParamMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
+import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
@@ -76,7 +79,8 @@ import java.util.stream.Collectors;
  * @Date: 2022/5/20 10:51
  * @Description:
  */
-public abstract class AbstractPerformancePressureService implements PerformancePressureService {
+public abstract class AbstractPerformancePressureService
+        extends PerformancePressureAdaptor implements PerformancePressureService {
 
 
     Long fetchSceneId(Long apiId) {
@@ -86,29 +90,64 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
         return performanceConfigSceneRelateShipMapper.selectOne(queryWrapper).getSceneId();
     }
 
+    /**
+     * 删除业务流程
+     * 删除关联映射
+     *
+     * @param apiId
+     */
+    public void doAfterDelete(Long apiId) {
+        //删业务流程
+        Long flowId = fetBizFlowId(apiId);
+        if (Objects.nonNull(flowId)) {
+            // linkManageService.deleteScene(flowId.toString());
+        }
+        //最后删映射表
+        QueryWrapper deleteWrapper = new QueryWrapper();
+        deleteWrapper.eq("api_id", apiId);
+        performanceConfigSceneRelateShipMapper.delete(deleteWrapper);
+    }
+
     @Override
     public ResponseResult delete(Long apiId) {
         Long sceneId = fetchSceneId(apiId);
-        ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(sceneId);
-        if (Objects.isNull(webResponse.getData())) {
-            OperationLogContextHolder.ignoreLog();
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景不存在");
-        }
-        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
-        SceneManageWrapperDTO sceneData = JSON.parseObject(JSON.toJSONString(webResponse.getData()),
-                SceneManageWrapperDTO.class);
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneData.getId()));
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
         SceneManageDeleteReq deleteReq = new SceneManageDeleteReq();
         deleteReq.setId(sceneId);
         sceneManageService.deleteScene(deleteReq);
+        doAfterDelete(apiId);
         return ResponseResult.success();
     }
 
 
     @Override
+    public Boolean update(PerformanceDataFileRequest input) {
+        try {
+            Long apiId = input.getId();
+            PerformanceConfigCreateInput updateIn = new PerformanceConfigCreateInput();
+            PressureConfigRequest configRequest = PressureConfigRequest.DEFAULT;
+            ResponseResult<SceneDetailResponse> responseResponseResult = query(apiId);
+            if (responseResponseResult != null) {
+                SceneDetailResponse pressureConfigDetail = responseResponseResult.getData();
+                //build baseInfo
+                PressureConfigRequest.BasicInfo basicInfo = buildBaseInfo(pressureConfigDetail);
+                //build PtConfig
+                PressureConfigRequest.PtConfig ptConfig = buildPtConfig(pressureConfigDetail);
+                configRequest.setBasicInfo(basicInfo);
+                configRequest.setConfig(ptConfig);
+            }
+            configRequest.setId(apiId);
+            updateIn.setId(apiId);
+            updateIn.setPressureConfigRequest(configRequest);
+            this.update(updateIn);
+        } catch (Throwable e) {
+            throw new RuntimeException(e.getCause());
+        }
+        return true;
+    }
+
+    @Override
     public ResponseResult<Boolean> update(PerformanceConfigCreateInput in) throws Throwable {
-        PressureConfigRequest request = in.getPressureConfigRequest();
+      /*  PressureConfigRequest request = in.getPressureConfigRequest();
         request.getBasicInfo().setSceneId(fetchSceneId(in.getId()));
         if (null == request.getBasicInfo().getSceneId()) {
             return ResponseResult.fail(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR.getErrorCode(), "压测场景ID不能为空");
@@ -129,15 +168,13 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
 
         // 忽略检测的应用
         sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation().getExcludedApplicationIds());
-
-        // 操作日志
-        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.UPDATE);
-        if (null != request.getBasicInfo()) {
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(request.getBasicInfo().getSceneId()));
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
-            OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_SELECTIVE_CONTENT, "");
-        }
-        return ResponseResult.success(updateResult);
+*/
+        /**
+         * 逻辑太复杂了,直接删了重建吧
+         */
+        delete(in.getId());
+        add(in);
+        return ResponseResult.success(Boolean.TRUE);
     }
 
     @Override
@@ -172,8 +209,25 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
         entity.setIsDeleted(0);
         entity.setEnvCode(in.getEnvCode());
         entity.setTenantId(in.getTenantId());
-        performanceConfigSceneRelateShipMapper.insert(entity);
+        this.upsert(entity);
         return ResponseResult.success(sceneId);
+    }
+
+    public void upsert(InterfacePerformanceConfigSceneRelateShipEntity entity) {
+        Long apiId = entity.getApiId();
+
+        QueryWrapper exitQuery = new QueryWrapper();
+        exitQuery.eq("api_id", apiId);
+        exitQuery.eq("is_deleted", 0);
+        boolean exit = false;
+        exit = performanceConfigSceneRelateShipMapper.selectCount(exitQuery) > 0 ? true : exit;
+        if (!exit) {
+            performanceConfigSceneRelateShipMapper.insert(entity);
+            return;
+        }
+        UpdateWrapper updateWrapper = new UpdateWrapper();
+        updateWrapper.eq("api_id", apiId);
+        performanceConfigSceneRelateShipMapper.update(entity, updateWrapper);
     }
 
     @Resource
@@ -211,6 +265,9 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
     @Resource
     PerformanceConfigDAO performanceConfigDAO;
 
+    @Resource
+    private LinkManageService linkManageService;
+
     /**
      * 文件处理
      */
@@ -235,6 +292,12 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
 
     @Autowired
     private VerifyTaskService verifyTaskService;
+
+    InterfacePerformanceParamEntity fetchParamEntryByApiId(Long apiId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("config_id", apiId);
+        return paramMapper.selectOne(queryWrapper);
+    }
 
     private boolean doStartCheck() {
         // TODO: 2022/5/20   后面从5.6.0合过来
@@ -328,20 +391,20 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
 
 
     @Override
-    public ResponseResult<SceneDetailResponse> query(PerformanceConfigQueryRequest input) throws Throwable {
-        Long sceneId = fetchSceneId(input.getId());
-        if (Objects.isNull(sceneId)) {
-            String queryName = input.getQueryName();
-            // TODO: 2022/5/20 名字查出id
-            throw new RuntimeException("不支持名字查详情.");
-        }
+    public ResponseResult<SceneDetailResponse> query(Long apiId) throws Throwable {
+        Long sceneId = fetchSceneId(apiId);
         SceneManageQueryReq request = new SceneManageQueryReq() {
             {
                 setSceneId(sceneId);
             }
         };
         WebPluginUtils.fillCloudUserData(request);
-        SceneDetailV2Response detailResult = multipleSceneApi.detail(request);
+        SceneDetailV2Response detailResult = null;
+        try {
+            detailResult = multipleSceneApi.detail(request);
+        } catch (RuntimeException e) {
+            return null;
+        }
 
         SceneDetailResponse copyDetailResult = BeanUtil.copyProperties(detailResult, SceneDetailResponse.class);
         copyDetailResult.setBasicInfo(BeanUtil.copyProperties(detailResult.getBasicInfo(), SceneDetailResponse.BasicInfo.class));
@@ -479,5 +542,27 @@ public abstract class AbstractPerformancePressureService implements PerformanceP
                 setExtend(extend);
             }};
         }).collect(Collectors.toList());
+    }
+
+
+    public Long fetBizFlowId(Long apiId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("api_id", apiId);
+        queryWrapper.eq("is_deleted", 0);
+        return performanceConfigSceneRelateShipMapper.selectOne(queryWrapper).getFlowId();
+    }
+
+    /**
+     * 上传数据文件
+     *
+     * @param request
+     * @return
+     */
+    public ResponseResult uploadDataFile(BusinessFlowDataFileRequest request) {
+        Long bizFlowId = fetBizFlowId(request.getId());
+        request.setId(bizFlowId);
+        sceneService.uploadDataFile(request);
+        return ResponseResult.success();
+
     }
 }

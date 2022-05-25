@@ -11,6 +11,7 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformancePara
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamRequest;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceParamService;
+import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -35,6 +36,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -61,11 +63,16 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
     @Resource
     private FileManageDAO fileManageDAO;
 
+    @Resource
+    PerformancePressureService pressureService;
+
+
     /**
      * 更新接口压测数据文件
      *
      * @param request
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updatePerformanceData(PerformanceDataFileRequest request) {
         // 1、查看当前接口压测场景是否存在
@@ -130,6 +137,10 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
                 performanceParamDAO.add(insertList);
             }
         }
+        /**
+         * 更新脚本和场景和业务流程
+         */
+        pressureService.update(request);
     }
 
     @Override

@@ -5,7 +5,9 @@ import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 
 /**
@@ -30,6 +32,9 @@ public interface PerformancePressureService {
      */
     ResponseResult<Boolean> update(PerformanceConfigCreateInput input) throws Throwable;
 
+
+    Boolean update(PerformanceDataFileRequest input);
+
     /**
      * 删除
      *
@@ -40,10 +45,10 @@ public interface PerformancePressureService {
     /**
      * 查询详情
      *
-     * @param input
+     * @param
      * @return
      */
-    ResponseResult<SceneDetailResponse> query(PerformanceConfigQueryRequest input) throws Throwable;
+    ResponseResult<SceneDetailResponse> query(Long apiId) throws Throwable;
 
     /**
      * 启动压测
@@ -52,6 +57,14 @@ public interface PerformancePressureService {
      * @return
      */
     ResponseResult<SceneActionResp> start(SceneActionParam param);
+
+    /**
+     * 上传数据文件
+     *
+     * @param request
+     * @return
+     */
+    public ResponseResult uploadDataFile(BusinessFlowDataFileRequest request);
 
     /**
      * 生成脚本

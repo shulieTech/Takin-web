@@ -41,4 +41,10 @@ public class InterfacePerformanceConfigSceneRelateShipEntity extends TenantBaseE
     @TableField(value = "is_deleted")
     private int isDeleted;
 
+    /**
+     * 业务流程Id
+     */
+    @TableField(value = "flow_id")
+    private Long flowId;
+
 }

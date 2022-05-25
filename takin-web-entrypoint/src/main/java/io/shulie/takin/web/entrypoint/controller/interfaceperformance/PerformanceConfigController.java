@@ -5,6 +5,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.InterfacePerformanceConfigVO;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -64,8 +65,8 @@ public class PerformanceConfigController {
     public ResponseResult detail(@PathVariable(value = "configId") Long configId) {
         return ResponseResult.success(performanceConfigService.detail(configId));
     }
-	
-	@PostMapping("/start")
+
+    @PostMapping("/start")
     @ApiOperation(value = "启动压测")
     public ResponseResult start(@RequestBody SceneActionParam param) {
         return ResponseResult.success(performanceConfigService.start(param));
@@ -76,5 +77,11 @@ public class PerformanceConfigController {
     @ApiOperation(value = "获取关联入口应用信息")
     public ResponseResult relationName(@RequestBody PerformanceConfigQueryRequest param) {
         return ResponseResult.success(performanceConfigService.relationName(param));
+    }
+
+    @PostMapping("/uploadDataFile")
+    @ApiOperation(value = "上传数据文件")
+    public ResponseResult uploadDataFile(@RequestBody BusinessFlowDataFileRequest request) {
+        return performanceConfigService.uploadDataFile(request);
     }
 }

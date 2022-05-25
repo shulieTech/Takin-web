@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.vo;
 
+import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import lombok.Data;
 
 import java.util.Date;
@@ -103,5 +104,5 @@ public class PerformanceConfigVO {
     /**
      * 压测相关配置
      */
-    private PressureConfigDetailVO pressureConfigDetailVO;
+    private SceneDetailResponse pressureConfigDetail;
 }

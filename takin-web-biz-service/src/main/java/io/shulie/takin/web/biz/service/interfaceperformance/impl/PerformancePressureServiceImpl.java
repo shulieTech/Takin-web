@@ -10,11 +10,13 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
+import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import org.apache.commons.compress.utils.Lists;
@@ -22,13 +24,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @Author: vernon
@@ -46,7 +48,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
 
     /**
-     * 上传文件
+     * 临时文件目录
      *
      * @return
      */
@@ -62,7 +64,6 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
     }
 
     public List<UploadResponse> upload(Long id, String name) throws IOException {
-
 
         String script = scriptGenerator(id);
         String fileName = name + ".jmx";
@@ -130,37 +131,55 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         List<UploadResponse> uploadResult = upload(input.getId(), input.getName());
         //创建业务流程
         BusinessFlowDetailResponse flowInfo = bizFlowCreator(uploadResult);
+
+        //保存业务流程id到关系映射表
+        InterfacePerformanceConfigSceneRelateShipEntity entity = new InterfacePerformanceConfigSceneRelateShipEntity();
+        entity.setApiId(input.getId());
+        entity.setFlowId(flowInfo.getId());
+        upsert(entity);
+
         //自动匹配活动
         activityAutoMatcher(flowInfo.getId());
         //回填创建压测场景的ID和名字
         input.getPressureConfigRequest().getBasicInfo().setSceneId(flowInfo.getId());
         input.getPressureConfigRequest().getBasicInfo().setName(flowInfo.getBusinessProcessName());
+        input.getPressureConfigRequest().getBasicInfo().setBusinessFlowId(flowInfo.getId());
         return;
     }
 
 
     @Override
     public ResponseResult<Boolean> update(PerformanceConfigCreateInput request) throws Throwable {
-        doBefore(request);
+        //  doBefore(request);
         return super.update(request);
     }
 
     @Override
-    public ResponseResult delete(Long configId) {
-        return super.delete(configId);
+    public Boolean update(PerformanceDataFileRequest input) {
+        return super.update(input);
+    }
+
+    @Override
+    public ResponseResult delete(Long apiId) {
+        return super.delete(apiId);
     }
 
 
     @Override
-    public ResponseResult<SceneDetailResponse> query(PerformanceConfigQueryRequest input) throws Throwable {
-        return super.query(input);
+    public ResponseResult<SceneDetailResponse> query(Long apiId) throws Throwable {
+        return super.query(apiId);
+    }
+
+    @Override
+    public ResponseResult uploadDataFile(BusinessFlowDataFileRequest request) {
+        return super.uploadDataFile(request);
     }
 
     @Override
     public String scriptGenerator(Long id) {
 
         // TODO: 2022/5/20 调用cloud sdk 生成脚本
-        //  ReqBuilder reqParam = buildReq(id);
+        ReqBuilder reqParam = buildReq(id);
         /*  return null;*/
         return TestConstant.default_jmx_str;
     }
@@ -173,6 +192,9 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
                 lines = Splitter.on("\n").splitToList(header);
             } else if (header.contains("\n\t")) {
                 lines = Splitter.on("\n\t").splitToList(header);
+            } else {
+                lines = Lists.newArrayList();
+                lines.add(header);
             }
 
             if (!CollectionUtils.isEmpty(lines)) {
@@ -190,7 +212,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         return builder;
     }
 
-    private ReqBuilder buildBody(Long id, ReqBuilder builder) {
+    private ReqBuilder buildData(Long id, ReqBuilder builder) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("config_id", id);
         List<InterfacePerformanceParamEntity> paramEntityList = paramMapper.selectList(queryWrapper);
@@ -205,12 +227,19 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
                 String path = fileManageResult.getUploadPath();
                 Map<String, String> $data = Maps.newHashMap();
                 $data.put("name", name);
-                $data.put("format", format);
+                $data.put("format", formatName(name));
                 $data.put("path", path);
                 builder.addDatas(JSON.toJSONString($data));
             });
         }
         return builder;
+    }
+
+    private String formatName(String name) {
+        if (StringUtil.isEmpty(name)) {
+            return name;
+        }
+        return "${" + name + "}";
     }
 
     private ReqBuilder buildReq(Long id) {
@@ -221,8 +250,15 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         builder.setName(record.getName()).setUrl(record.getRequestUrl()).setBody(record.getBody()).setMethod(record.getHttpMethod());
         //放header
         buildHeader(record.getHeaders(), builder);
-        //放data
-        buildBody(id, builder);
+
+
+        //获取param表的id
+        InterfacePerformanceParamEntity paramEntity = fetchParamEntryByApiId(id);
+        if (!Objects.isNull(paramEntity)) {
+            //放data
+            buildData(id, builder);
+        }
+
 
         return builder.build();
     }
@@ -232,10 +268,10 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         String url;
         String method;
         String[] headers;
-        List<String> headerList;
+        List<String> headerList = Lists.newArrayList();
         String body;
         String datas[];
-        List<String> dataList;
+        List<String> dataList = Lists.newArrayList();
 
 
         /**
@@ -244,8 +280,12 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
          * @return
          */
         public ReqBuilder build() {
-            this.headers = headerList.toArray(new String[headerList.size()]);
-            this.datas = dataList.toArray(new String[dataList.size()]);
+            if (!CollectionUtils.isEmpty(headerList)) {
+                this.headers = headerList.toArray(new String[headerList.size()]);
+            }
+            if (!CollectionUtils.isEmpty(dataList)) {
+                this.datas = dataList.toArray(new String[dataList.size()]);
+            }
             this.headerList = null;
             this.dataList = null;
             return this;

@@ -11,4 +11,6 @@ public class ShiftCloudVO extends BaseShiftCloudVO {
     private int page_index = 1;
     private int page_size = 10;
     private String task_name;
+    private int task_id;
+    private String tool_task_id;
 }

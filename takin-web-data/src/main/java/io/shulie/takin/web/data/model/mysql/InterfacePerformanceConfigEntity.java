@@ -98,6 +98,12 @@ public class InterfacePerformanceConfigEntity extends TenantBaseEntity {
     private String entranceAppName;
 
     /**
+     * 备注
+     */
+    @TableField(value = "remark")
+    private String remark;
+
+    /**
      * 软删
      */
     @TableField(value = "is_deleted")

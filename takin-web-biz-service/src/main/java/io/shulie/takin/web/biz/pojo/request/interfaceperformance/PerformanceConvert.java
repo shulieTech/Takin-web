@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.pojo.request.interfaceperformance;
 
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 
 /**
  * @author xingchen
@@ -24,12 +25,18 @@ public class PerformanceConvert {
         entity.setEntranceAppName(input.getEntranceAppName());
         entity.setTimeout(input.getTimeout());
         entity.setIsRedirect(input.getIsRedirect());
+        entity.setRemark(input.getRemark());
 
         // header头,body
         entity.setContentType(JsonHelper.bean2Json(input.getContentTypeVo()));
         entity.setHeaders(input.getHeaders());
         entity.setBody(input.getBody());
         entity.setCookies(input.getCookies());
+
+        // 操作人信息
+        entity.setCustomerId(WebPluginUtils.getCustomerId());
+        entity.setCreatorId(WebPluginUtils.traceUserId());
+        entity.setModifierId(WebPluginUtils.traceUserId());
 
         return entity;
     }

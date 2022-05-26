@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.pojo.request.interfaceperformance;
 
-import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import lombok.Data;
 
 import java.util.Date;
@@ -11,6 +10,11 @@ public class PerformanceResultResponse {
      * 主键
      */
     private Long id;
+
+    /**
+     * 压测结果Id
+     */
+    private String resultId;
 
     /**
      * 接口压测配置Id

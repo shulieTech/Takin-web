@@ -54,4 +54,9 @@ public class InterfacePerformanceConfigVO extends UserCommonExt {
      * 入口应用名
      */
     private String entranceAppName;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }

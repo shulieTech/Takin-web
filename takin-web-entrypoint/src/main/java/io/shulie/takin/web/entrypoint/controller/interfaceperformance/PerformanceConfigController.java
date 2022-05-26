@@ -72,7 +72,6 @@ public class PerformanceConfigController {
         return ResponseResult.success(performanceConfigService.start(param));
     }
 
-
     @PostMapping("/relationName")
     @ApiOperation(value = "获取关联入口应用信息")
     public ResponseResult relationName(@RequestBody PerformanceConfigQueryRequest param) {

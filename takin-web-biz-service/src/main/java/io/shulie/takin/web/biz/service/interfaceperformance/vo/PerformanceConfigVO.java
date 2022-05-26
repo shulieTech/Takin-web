@@ -98,9 +98,20 @@ public class PerformanceConfigVO {
     private Date gmtCreate;
 
     /**
+     * 创建人
+     */
+    private String creatorName;
+
+    /**
      * 更新时间
      */
     private Date gmtModified;
+
+    /**
+     * 备注
+     */
+    private String remark;
+
     /**
      * 压测相关配置
      */

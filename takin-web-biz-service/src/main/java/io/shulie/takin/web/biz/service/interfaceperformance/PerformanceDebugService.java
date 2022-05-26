@@ -11,5 +11,10 @@ public interface PerformanceDebugService {
     /**
      * @param request
      */
-    void debug(PerformanceDebugRequest request);
+    String debug(PerformanceDebugRequest request);
+
+    /**
+     * @param request
+     */
+    String simple_debug(PerformanceDebugRequest request);
 }

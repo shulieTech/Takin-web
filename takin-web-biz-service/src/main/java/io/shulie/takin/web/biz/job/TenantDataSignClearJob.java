@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 
 
 @Component
-@ElasticSchedulerJob(jobName = "tenantDataSignClearJob", cron = "0/5 * * * * ? *", description = "签名数据重制任务")
+@ElasticSchedulerJob(jobName = "tenantDataSignClearJob", cron = "0 0/5 * * * ? *", description = "签名数据重制任务")
 @Slf4j
 public class TenantDataSignClearJob implements SimpleJob {
 

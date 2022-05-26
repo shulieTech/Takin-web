@@ -1,18 +1,25 @@
 package io.shulie.takin.web.entrypoint.controller.shift;
 
 import com.alibaba.fastjson.JSON;
+import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.shift.BaseResult;
 import com.pamirs.takin.entity.domain.vo.shift.SceneManagerResult;
 import com.pamirs.takin.entity.domain.vo.shift.ShiftCloudVO;
+import io.shulie.takin.cloud.sdk.model.common.DataBean;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.BusinessActivitySummaryBean;
 import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.TagService;
 import io.shulie.takin.web.biz.service.UserService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
+import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.entrypoint.controller.report.ReportController;
+import io.shulie.takin.web.entrypoint.controller.report.ReportLocalController;
 import io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController;
 import io.swagger.annotations.Api;
 import org.apache.commons.collections4.CollectionUtils;
@@ -27,7 +34,6 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -37,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@RequestMapping("/api/c/self-service-api/tool-code/task_api")
 @Api(tags = "移动云接口", value = "移动云接口")
 @RestController
 public class ShiftCloudController {
@@ -52,7 +57,13 @@ public class ShiftCloudController {
     private TagService tagService;
 
     @Autowired
-    private SceneTaskController controller;
+    private SceneTaskController sceneTaskController;
+
+    @Autowired
+    private ReportController reportController;
+
+    @Autowired
+    private ReportLocalController reportLocalController;
 
     private static final Map<Integer, String> TASK_CACHE = new ConcurrentHashMap();
 
@@ -64,7 +75,7 @@ public class ShiftCloudController {
         CloseableHttpResponse response = null;
         try {
             Map data = new HashMap();
-            data.put("token","");
+            data.put("token", "");
             StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
             httpPost.setEntity(stringEntity);
             response = httpClient.execute(httpPost);
@@ -87,7 +98,7 @@ public class ShiftCloudController {
     }
 
     //2.2
-    @PostMapping("/task_list")
+    @PostMapping("/api/c/self-service-api/tool-code/task_api/task_list")
     public BaseResult getSceneManagers(@RequestBody ShiftCloudVO shiftCloudVO) {
         BaseResult result = new BaseResult<>();
         try {
@@ -127,7 +138,7 @@ public class ShiftCloudController {
     }
 
     //2.3
-    @PostMapping("/relate_task")
+    @PostMapping("/api/c/self-service-api/tool-code/task_api/relate_task")
     public BaseResult relateTask(@RequestBody ShiftCloudVO shiftCloudVO) {
         BaseResult baseResult = new BaseResult();
         TASK_CACHE.put(shiftCloudVO.getTask_id(), shiftCloudVO.getTool_task_id());
@@ -135,7 +146,7 @@ public class ShiftCloudController {
     }
 
     //2.4
-    @PostMapping("/execute_task")
+    @PostMapping("/api/c/self-service-api/tool-code/task_api/execute_task")
     public BaseResult executeTask(@RequestBody ShiftCloudVO shiftCloudVO) {
         BaseResult baseResult = new BaseResult();
         try {
@@ -144,7 +155,7 @@ public class ShiftCloudController {
             param.setSceneId(Long.parseLong(taskId));
             param.setLeakSqlEnable(false);
             param.setContinueRead("0");
-            WebResponse<SceneActionResp> response = controller.start(param);
+            WebResponse<SceneActionResp> response = sceneTaskController.start(param);
             if (null != response && response.getSuccess()) {
                 SceneActionResp sceneActionResp = response.getData();
                 if (null != sceneActionResp) {
@@ -161,5 +172,107 @@ public class ShiftCloudController {
             baseResult.fail(e.getMessage());
             return baseResult;
         }
+    }
+
+    //2.5
+    public void pushStatus() {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpPost httpPost = new HttpPost("http://域名/ms/testcloudplatform/api/service/test/plan/task/status");
+        CloseableHttpResponse response = null;
+        try {
+            Map data = this.getData(0l);
+            StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
+            httpPost.setEntity(stringEntity);
+            response = httpClient.execute(httpPost);
+        } catch (Exception e) {
+            //Ignore
+        } finally {
+            try {
+                if (null != response) {
+                    response.close();
+                }
+                httpClient.close();
+            } catch (IOException e) {
+                //Ignore
+            }
+        }
+    }
+
+}
+
+    //2.6
+    @PostMapping("/ms/task/api/service/task/sdk/log")
+    public BaseResult log(@RequestBody ShiftCloudVO shiftCloudVO) {
+        BaseResult baseResult = new BaseResult();
+        if (StringUtils.isNotBlank(shiftCloudVO.getTool_excute_id())) {
+            Map data = this.getData(Long.parseLong(shiftCloudVO.getTool_excute_id()));
+            baseResult.setData(data);
+        }
+
+        return baseResult;
+    }
+
+    private Map getData(long reportId) {
+        HashMap data = new HashMap();
+        ResponseResult<ReportDetailOutput> responseResult = reportController.getReportByReportId(reportId);
+        Response<ReportCountDTO> reportCount = reportLocalController.getReportCount(reportId);
+        if (null != responseResult && responseResult.getSuccess()) {
+            ReportDetailOutput output = responseResult.getData();
+            Long id = output.getId();
+            Long sceneId = output.getSceneId();
+            Integer conclusion = output.getConclusion();
+            String conclusionRemark = output.getConclusionRemark();
+            Integer taskStatus = output.getTaskStatus();
+            String testTotalTime = output.getTestTotalTime();
+            List<BusinessActivitySummaryBean> businessActivity = output.getBusinessActivity();
+            Long totalRequest = output.getTotalRequest();
+            data.put("tool_excute_id", id);
+            data.put("tool_task_id", sceneId);
+            data.put("tool_code", "tool_code");
+            data.put("task_status", null != conclusion && 1 == conclusion ? 1 : 2);
+            data.put("task_message", conclusionRemark);
+            data.put("task_progress", testTotalTime);
+            if (null != taskStatus && taskStatus == 2) {
+                Map analysis = new HashMap();
+                analysis.put("coverDemand", 0);
+                if (null != reportCount && reportCount.getSuccess()) {
+                    ReportCountDTO dto = reportCount.getData();
+                    if (null != dto) {
+                        analysis.put("totalCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() : 0);
+                        analysis.put("succeedCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() - (null != dto.getNotpassBusinessActivityCount() ? dto.getNotpassBusinessActivityCount() : 0) : 0);
+                        analysis.put("failedCase", null != dto.getNotpassBusinessActivityCount() ? dto.getNotpassBusinessActivityCount() : 0);
+                    }
+                }
+                analysis.put("executedCase", null != totalRequest ? totalRequest : 0);
+                analysis.put("performanceResult", null != conclusion && 1 == conclusion ? 1 : 2);
+                analysis.put("executeDuration", testTotalTime);
+                List list = new ArrayList();
+                if (CollectionUtils.isNotEmpty(businessActivity)) {
+                    for (int i = 0; i < businessActivity.size(); i++) {
+                        if (businessActivity.get(i).getPassFlag() == 0) {
+                            Map failedCaseInfo = new HashMap();
+                            failedCaseInfo.put("name", businessActivity.get(i).getBusinessActivityName());
+                            Long t = businessActivity.get(i).getTotalRequest();
+                            int failCount = 0;
+                            DataBean successRate = businessActivity.get(i).getSuccessRate();
+                            if (null != successRate) {
+                                Integer value = (Integer) successRate.getValue();
+                                if (null != value) {
+                                    failCount = (int) (t * (100 - value) / 100);
+                                }
+                            }
+                            failedCaseInfo.put("reason", JSON.toJSONString(businessActivity.get(i)));
+                            failedCaseInfo.put("failCount", failCount);
+                            list.add(failedCaseInfo);
+                        }
+                    }
+                }
+                analysis.put("failedCaseInfo", list);
+                data.put("last_analysis_result_list", analysis);
+            } else {
+                data.put("last_analysis_result_list", "none");
+            }
+        }
+        return data;
     }
 }

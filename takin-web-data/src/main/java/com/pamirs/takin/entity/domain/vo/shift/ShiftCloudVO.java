@@ -13,4 +13,5 @@ public class ShiftCloudVO extends BaseShiftCloudVO {
     private String task_name;
     private int task_id;
     private String tool_task_id;
+    private String tool_excute_id;
 }

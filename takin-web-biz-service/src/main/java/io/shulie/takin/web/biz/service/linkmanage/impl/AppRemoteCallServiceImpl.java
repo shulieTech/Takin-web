@@ -886,7 +886,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
      */
     @Override
     public Map<Long, List<AppRemoteCallResult>> getListGroupByAppId() {
-        List<AppRemoteCallResult> allRecord = appRemoteCallDAO.getAllRecord();
+        List<AppRemoteCallResult> allRecord = appRemoteCallDAO.getAllRecordByPage();
         return CollStreamUtil.groupByKey(allRecord, AppRemoteCallResult::getApplicationId);
     }
 
@@ -975,7 +975,7 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         param.setInterfaceType(mainEntity.getValueOrder());
         param.setInterfaceChildType(request.getInterfaceType());
         param.setMockReturnValue(request.getMockValue());
-        param.setRemark(request.getRemark());
+//        param.setRemark(request.getRemark());
         appRemoteCallDAO.update(param);
 
     }

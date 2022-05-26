@@ -18,7 +18,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T> {
 
     private final String cacheName;
-    private final RedisTemplate redisTemplate;
+    protected final RedisTemplate redisTemplate;
 
 
     public AbstractAgentConfigCache(String cacheName, RedisTemplate redisTemplate) {
@@ -63,7 +63,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      * @param namespace
      * @return
      */
-    private String getCacheKey(String namespace) {
+    protected String getCacheKey(String namespace) {
         return CommonUtil.generateRedisKey(cacheName,
             WebPluginUtils.traceTenantCode(), WebPluginUtils.traceEnvCode(), namespace);
 

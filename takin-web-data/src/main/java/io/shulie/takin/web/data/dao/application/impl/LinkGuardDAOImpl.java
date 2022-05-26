@@ -80,9 +80,11 @@ public class LinkGuardDAOImpl extends ServiceImpl<LinkGuardMapper, LinkGuardEnti
 
     @Override
     public List<LinkGuardEntity> listFromExportByApplicationId(Long applicationId) {
-        return this.list(this.getLambdaQueryWrapper().select(LinkGuardEntity::getId, LinkGuardEntity::getMethodInfo,
-                LinkGuardEntity::getGroovy, LinkGuardEntity::getIsEnable, LinkGuardEntity::getRemark)
-            .eq(LinkGuardEntity::getApplicationId, applicationId));
+//        return this.list(this.getLambdaQueryWrapper().select(LinkGuardEntity::getId, LinkGuardEntity::getMethodInfo,
+//                LinkGuardEntity::getGroovy, LinkGuardEntity::getIsEnable, LinkGuardEntity::getRemark)
+//            .eq(LinkGuardEntity::getApplicationId, applicationId));
+//       数据签名必须全部字段返回,不然签名计算结果对不上
+        return this.list(this.getLambdaQueryWrapper().eq(LinkGuardEntity::getApplicationId, applicationId));
     }
 
     @Override

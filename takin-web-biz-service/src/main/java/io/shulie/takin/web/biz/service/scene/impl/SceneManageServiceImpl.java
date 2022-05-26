@@ -868,6 +868,12 @@ public class SceneManageServiceImpl implements SceneManageService {
     }
     	
 	@Override
+    public String recoveryScene(SceneManageDeleteReq vo) {
+        //return cloudSceneManageApi.recovery(vo);
+        return "";
+    }
+		
+	@Override
     public List<SceneListForSelectOutput> listForSelect(ListSceneForSelectRequest request) {
         // 查询cloud, 场景列表, 状态是压测中
         SceneManageQueryReq sceneManageQueryReq = new SceneManageQueryReq();

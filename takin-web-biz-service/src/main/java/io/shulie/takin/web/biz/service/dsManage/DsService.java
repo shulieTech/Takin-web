@@ -9,6 +9,7 @@ import com.pamirs.takin.entity.domain.query.agent.AppBusinessTableQuery;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DsAgentVO;
 import com.pamirs.takin.entity.domain.vo.dsmanage.DsServerVO;
 import io.shulie.takin.common.beans.component.SelectVO;
+import io.shulie.takin.web.biz.convert.db.parser.ShadowTemplateSelect;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsDeleteInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsEnableInput;
@@ -25,6 +26,7 @@ import io.shulie.takin.web.common.common.Response;
  * @date 2020/3/12 下午3:35
  */
 public interface DsService {
+    ShadowTemplateSelect processSelect(String appName);
 
     String parseShadowDbUrl(String config);
 
@@ -88,7 +90,10 @@ public interface DsService {
 
     Response dsUpdateConfig(ApplicationDsUpdateInputV2 updateRequestV2);
 
-    Response dsQueryConfigTemplate(String agentSourceType, Integer dsType, Boolean isNewData, String cacheType, String connectionPool);
+    Response dsQueryConfigTemplate(String agentSourceType, Integer dsType,
+                                   Boolean isNewData, String cacheType,
+                                   String connectionPool, String applicationName,
+                                   String applicationId);
 
     /**
      * 删除

@@ -22,6 +22,7 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     SCENE_START_VALIDATE_ERROR("0101-" + ErrorConstant.VALIDATE_ERROR, "压测场景启动模块参数校验"),
     SCENE_REPORT_THIRD_PARTY_ERROR("0102-" + ErrorConstant.THIRD_PARTY_ERROR, "压测场景报告第三方返回异常"),
     SCENE_REPORT_VALIDATE_ERROR("0102-" + ErrorConstant.VALIDATE_ERROR, "压测报告数据校验异常"),
+    SCENE_REPORT_EXPORT_ERROR("0102-" + ErrorConstant.FILE_UPLOAD_ERROR, "压测报告数据下载异常"),
     SCENE_REPORT_LINK_DETAIL_THIRD_PARTY_ERROR("0103-" + ErrorConstant.THIRD_PARTY_ERROR, "压测场景报告流量明细第三方返回异常"),
 
     /**
@@ -142,6 +143,7 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 影子配置
      */
     SHADOW_CONFIG_CREATE_ERROR("1400-" + ErrorConstant.VALIDATE_ERROR, "新增影子配置异常"),
+    SHADOW_CONFIG_URL_CREATE_ERROR("1401-" + ErrorConstant.VALIDATE_ERROR, "新增影子配置数据源异常"),
 
     /**
      * 业务域管理
@@ -170,7 +172,11 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 应用标签
      */
     APPLICATION_TAG_CREATE_ERROR("1800-" + ErrorConstant.ADD_ERROR, "应用标签创建异常"),
-
+	
+	/**
+     * 数据签名
+     */
+    DATA_SIGN_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据签名异常"),
     /**
      * 接口压测
      */

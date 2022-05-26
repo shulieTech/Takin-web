@@ -1025,6 +1025,11 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         return absoluteZipName;
     }
 
+    @Override
+    public List<FileManageEntity> getAllFile() {
+        return fileManageDAO.getAllFile();
+    }
+
     private List<FileManageResult> addScriptFile(WebPartRequest partRequest, Long takinScriptId) {
         //插入新的数据到数据库
         // 创建文件记录, 获得文件ids

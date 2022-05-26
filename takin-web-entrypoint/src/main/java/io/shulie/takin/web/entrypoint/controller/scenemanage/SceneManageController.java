@@ -247,7 +247,8 @@ public class SceneManageController {
         @ApiParam(name = "status", value = "压测状态") Integer status,
         @ApiParam(name = "tagId", value = "标签id") Long tagId,
         @ApiParam(name = "lastPtStartTime", value = "压测结束时间") String lastPtStartTime,
-        @ApiParam(name = "lastPtEndTime", value = "压测结束时间") String lastPtEndTime
+        @ApiParam(name = "lastPtEndTime", value = "压测结束时间") String lastPtEndTime,
+        @ApiParam(name = "recovery", value = "是否是回收站") Boolean recovery
     ) {
         SceneManageQueryVO queryVO = new SceneManageQueryVO();
 
@@ -259,6 +260,10 @@ public class SceneManageController {
         queryVO.setTagId(tagId);
         queryVO.setLastPtStartTime(lastPtStartTime);
         queryVO.setLastPtEndTime(lastPtEndTime);
+        if(Objects.isNull(recovery)){
+            recovery = false;
+        }
+        queryVO.setIsDeleted(recovery?1:0);
         ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
         return Response.success(responseResult.getData(), responseResult.getTotalNum());
     }
@@ -328,5 +333,15 @@ public class SceneManageController {
         @ApiParam(name = "id", value = "压测场景ID") Long id
     ) {
         return sceneManageService.getPositionPoint(id);
+    }
+
+    @PutMapping("/recovery")
+    @ApiOperation(value = "恢复压测场景")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.ENABLE_DISABLE
+    )
+    public WebResponse<String> recovery(@RequestBody @Valid SceneManageDeleteReq deleteVO) {
+        return WebResponse.success(sceneManageService.recoveryScene(deleteVO));
     }
 }

@@ -79,6 +79,13 @@ public interface SceneManageService {
      * @param excludedApplicationIds 排除应用ids
      */
     void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds);
+		
+	/**
+     * 从回收站恢复
+     * @param  sceneId
+     * @return
+     */
+    String recoveryScene(SceneManageDeleteReq deleteVO);
 	
 	/**
      * 下拉框的压测场景列表, 暂时只查询压测中状态的

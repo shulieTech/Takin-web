@@ -23,8 +23,8 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
 import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
@@ -121,7 +121,7 @@ public class ActivityServiceImpl implements ActivityService {
     private SceneLinkRelateDAO sceneLinkRelateDAO;
 
     @Autowired
-    RedisClientUtils redisClientUtils;
+    RedisClientUtil redisClientUtil;
     @Autowired
     private RedisTemplate redisTemplate;
     @Autowired
@@ -482,8 +482,8 @@ public class ActivityServiceImpl implements ActivityService {
             List<String> exists = activityDAO.exists(param);
             if (CollectionUtils.isNotEmpty(exists)) {
                 Optional<String> any = exists.stream()
-                        .filter(item -> !item.equals(request.getActivityName()))
-                        .findAny();
+                    .filter(item -> !item.equals(oldActivity.getActivityName()))
+                    .findAny();
                 if (any.isPresent()) {
                     throw new TakinWebException(TakinWebExceptionEnum.LINK_VALIDATE_ERROR, String
                             .format("保存失败，入口已[应用名称：%s，类型：%s，入口：%s]已被使用，对应的虚拟业务活动为：%s", request.getActivityName(),
@@ -510,7 +510,7 @@ public class ActivityServiceImpl implements ActivityService {
                 StringUtils.isNotBlank(oldActivity.getEntranceName()) ? oldActivity.getEntranceName() : oldActivity.getVirtualEntrance());
         activityDAO.deleteActivity(activityId);
         //记录业务活动删除事件
-        redisClientUtils.hmset(Vars.ACTIVITY_DELETE_EVENT,
+        redisClientUtil.hmset(Vars.ACTIVITY_DELETE_EVENT,
                 oldActivity.getTenantId() + ":" + oldActivity.getEnvCode() + ":" + activityId, 0);
         // 正常业务活动
         if (oldActivity.getApplicationName() != null && oldActivity.getBusinessType().equals(
@@ -807,7 +807,7 @@ public class ActivityServiceImpl implements ActivityService {
         response.setActivityId(activityId);
         response.setScriptId(scriptId);
         //1.根据业务活动ID查询缓存
-        String reportId = redisClientUtils.getString(
+        String reportId = redisClientUtil.getString(
                 BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + request.getActivityId());
         if (!StringUtil.isBlank(reportId)) {
             Integer verifyStatus = getVerifyStatus(activityId).getVerifyStatus();
@@ -883,7 +883,7 @@ public class ActivityServiceImpl implements ActivityService {
         response.setVerifiedFlag(false);
         response.setVerifyStatus(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFYING);
         //3.缓存任务ID并返回
-        redisClientUtils.setString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId,
+        redisClientUtil.setString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId,
                 String.valueOf(startResult), BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY_EXPIRE,
                 TimeUnit.SECONDS);
         response.setScriptId(scriptId);
@@ -916,7 +916,7 @@ public class ActivityServiceImpl implements ActivityService {
         response.setVerifyStatus(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_UNVERIFIED);
 
         //1.从缓存获取taskId
-        String reportId = redisClientUtils.getString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId);
+        String reportId = redisClientUtil.getString(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_KEY + activityId);
         //2.根据taskId获取报告状态即任务状态
         if (!StringUtil.isBlank(reportId)) {
             ReportDetailOutput responseResult = reportService.getReportByReportId(Long.valueOf(reportId));

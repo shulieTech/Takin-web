@@ -50,5 +50,10 @@ public interface FileManageDAO {
      */
     FileManageResult selectFileManageById(Long id);
 
+    /**
+     * 查询所有有签名值的文件
+     */
+    List<FileManageEntity> getAllFile();
+
     List<FileManageResponse> getFileManageResponseByFileIds(List<Long> fileIds);
 }

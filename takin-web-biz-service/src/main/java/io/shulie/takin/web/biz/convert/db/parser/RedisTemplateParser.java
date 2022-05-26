@@ -50,7 +50,7 @@ public class RedisTemplateParser extends AbstractTemplateParser {
      * @return
      */
     @Override
-    public ShadowDetailResponse convertDetailByTemplate(Long recordId) {
+    public ShadowDetailResponse convertDetailByTemplate(Long recordId,String appName) {
         ApplicationDsCacheManageDetailResult convert = dsCacheManageDAO.selectOneById(recordId);
         if (Objects.isNull(convert)) {
             return null;
@@ -77,7 +77,7 @@ public class RedisTemplateParser extends AbstractTemplateParser {
      * @return
      */
     @Override
-    public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum) {
+    public List<? extends StyleTemplate> convertShadowMsgWithTemplate(Integer dsType, Boolean isNewData, String cacheType, Converter.TemplateConverter.TemplateEnum templateEnum, ShadowTemplateSelect select) {
         List list = Lists.newArrayList();
         if (DsTypeEnum.SHADOW_REDIS_CLUSTER.getCode().equals(dsType)) {
             Map<String, String> tipsMap = this.generateTips();

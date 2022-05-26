@@ -326,7 +326,7 @@ public class BaseServerDaoImpl implements BaseServerDao {
         sb.append(" and tag_app_name = '").append(param.getApplicationName()).append("'");
         sb.append(" and tag_app_ip = '").append(param.getAppIp()).append("'");
         if (param.getAgentId() != null) {
-            sb.append(" and agent_id = '").append(param.getAgentId()).append("'");
+            sb.append(" and tag_agent_id = '").append(param.getAgentId()).append("'");
         }
         // 增加租户
         sb.append(" and tenant_app_key = '").append(WebPluginUtils.traceTenantAppKey()).append("'");

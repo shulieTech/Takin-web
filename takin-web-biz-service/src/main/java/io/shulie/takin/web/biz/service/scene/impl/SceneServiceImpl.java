@@ -667,6 +667,9 @@ public class SceneServiceImpl implements SceneService {
                 .apply("total_node_num = link_relate_num")
                 // 倒序排列
                 .orderByDesc(SceneEntity::getId);
+        if (CollectionUtils.isNotEmpty(queryParam.getUserIdList())) {
+            wrapper.in(SceneEntity::getUserId, queryParam.getUserIdList());
+        }
         return sceneMapper.selectList(wrapper);
     }
 

@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class DbTemplateParser extends AbstractTemplateParser {
-
     @Autowired
     private ApplicationDsDbManageDAO dsDbManageDAO;
 

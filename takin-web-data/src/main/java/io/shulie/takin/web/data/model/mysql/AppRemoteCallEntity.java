@@ -41,7 +41,7 @@ public class AppRemoteCallEntity extends UserBaseEntity {
     /**
      * 服务端应用名
      */
-    @TableField(value = "SERVER_APP_NAME")
+    @TableField(value = "server_app_name")
     private String serverAppName;
 
     /**

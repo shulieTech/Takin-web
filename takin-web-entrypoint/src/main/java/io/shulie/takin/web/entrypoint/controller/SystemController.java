@@ -8,13 +8,18 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import com.google.common.collect.Lists;
 import com.pamirs.takin.entity.domain.entity.TBaseConfig;
-import io.shulie.takin.cloud.sdk.model.request.common.CloudCommonInfoWrapperReq;
-import io.shulie.takin.cloud.sdk.model.response.common.CommonInfosResp;
+import io.shulie.takin.adapter.api.model.request.common.CloudCommonInfoWrapperReq;
+import io.shulie.takin.adapter.api.model.response.common.CommonInfosResp;
+import io.shulie.takin.cloud.biz.service.strategy.StrategyConfigService;
+import io.shulie.takin.cloud.common.utils.CommonUtil;
+import io.shulie.takin.cloud.ext.content.enginecall.StrategyConfigExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
@@ -67,6 +72,9 @@ public class SystemController {
     @Autowired
     private BaseConfigService baseConfigService;
 
+    @Resource
+    private StrategyConfigService strategyConfigService;
+
     /**
      * 前端样式存储
      * @return
@@ -109,8 +117,11 @@ public class SystemController {
             if (!infos.getSuccess()) {
                 ResponseResult.ErrorInfo error = infos.getError();
                 log.error("cloud接口返回错误：{}", error.getMsg());
-                //throw new takinException(ExceptionCode.HTTP_REQUEST_ERROR, error.getMsg());
             }
+        }
+        StrategyConfigExt config = strategyConfigService.getCurrentStrategyConfig();
+        if (config != null) {
+            data.setEngineVersion(CommonUtil.getValue("", config, StrategyConfigExt::getPressureEngineImage));
         }
         String version = this.getAmdbVersion();
 
@@ -118,8 +129,8 @@ public class SystemController {
         itemVo.setTitle("产品版本信息");
         HashMap<String, String> dataMap = new LinkedHashMap<>();
         dataMap.put("takin版本", ifNull(takinWebVersion));
-        dataMap.put("cloud版本", ifNull(data.getCloudVersion()));
-        dataMap.put("流量引擎版本", ifNull(data.getPressureEngineVersion()));
+        dataMap.put("cloud版本", ifNull(data.getVersion()));
+        dataMap.put("流量引擎版本", ifNull(data.getEngineVersion()));
         dataMap.put("前端版本", ifNull(this.getUiVersion(uiVersion)));
         dataMap.put("AMDB版本", version);
 

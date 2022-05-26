@@ -1,5 +1,6 @@
 package io.shulie.takin.web.data.result.tracemanage;
 
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -10,7 +11,7 @@ import java.util.List;
  * @author shulie
  */
 @Data
-public class TraceManageDeployResult {
+public class TraceManageDeployResult extends ContextExt {
 
     private Long id;
 

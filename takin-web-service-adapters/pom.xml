@@ -30,5 +30,6 @@
     <modules>
         <module>takin-web-config</module>
         <module>takin-web-diff</module>
+        <module>takin-web-adapter</module>
     </modules>
 </project>

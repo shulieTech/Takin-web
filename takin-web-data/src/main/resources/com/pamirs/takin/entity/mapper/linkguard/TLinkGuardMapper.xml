@@ -159,13 +159,7 @@
         <if test="param.applicationName != null">and application_name = #{param.applicationName,jdbcType=VARCHAR}</if>
     </select>
     <select id="getAllEnabledGuard" resultType="com.pamirs.takin.entity.domain.entity.LinkGuardEntity">
-        select id,
-               application_name,
-               application_id,
-               method_info,
-               groovy,
-               remark,
-               is_enable
+        select *
         from t_link_guard
         where application_id = #{applicationId}
           and is_deleted = 0

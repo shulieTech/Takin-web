@@ -97,13 +97,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-cloud-sdk</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-
     </dependencies>
 
 </project>

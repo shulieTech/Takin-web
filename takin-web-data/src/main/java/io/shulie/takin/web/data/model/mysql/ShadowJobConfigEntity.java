@@ -11,6 +11,8 @@ import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Date;
+
 /**
  * 影子JOB任务配置
  */
@@ -87,4 +89,5 @@ public class ShadowJobConfigEntity extends UserBaseEntity {
     @TableField(value = "remark")
     private String remark;
 
+	private Long customerId;
 }

@@ -42,8 +42,6 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
         <takin.web.version>takin-web-5.5.5</takin.web.version>
-        <takin.cloud.sdk.version>5.2.7</takin.cloud.sdk.version>
-        <takin.cloud.version>5.2.7</takin.cloud.version>
         <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
         <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.6.2</pardar.log.protocol.version>
@@ -92,6 +90,7 @@
         <module>takin-web-ext</module>
         <module>takin-web-entrypoint</module>
         <module>takin-web-biz-service</module>
+        <module>takin-web-eventcenter</module>
     </modules>
     <dependencyManagement>
         <dependencies>
@@ -109,6 +108,12 @@
                 <groupId>io.springfox</groupId>
                 <artifactId>springfox-spring-webmvc</artifactId>
                 <version>2.10.5</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.github.classgraph</groupId>
+                        <artifactId>classgraph</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.springfox</groupId>
@@ -188,21 +193,6 @@
                 <type>pom</type>
             </dependency>
 
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-sdk</artifactId>
-                <version>${takin.cloud.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-ext</artifactId>
-                <version>${takin.cloud.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-common</artifactId>
-                <version>${takin.cloud.version}</version>
-            </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-common-bom</artifactId>

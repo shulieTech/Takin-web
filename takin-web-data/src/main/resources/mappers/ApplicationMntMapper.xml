@@ -389,6 +389,14 @@
             </foreach>
         </if>
 
+        <if test="param.updateStartTime != null">
+            and a.UPDATE_TIME  <![CDATA[ >= ]]>  #{param.updateStartTime}
+        </if>
+
+        <if test="param.updateEndTime != null">
+            and a.UPDATE_TIME  <![CDATA[ <= ]]> #{param.updateEndTime}
+        </if>
+
         ORDER BY a.id DESC
     </select>
     <select id="getAllApplicationsWithoutTenant" resultType="io.shulie.takin.web.data.model.mysql.ApplicationMntEntity">

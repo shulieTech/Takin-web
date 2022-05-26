@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.linkmanage.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -17,6 +18,7 @@ import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
 import io.shulie.takin.web.biz.utils.PageUtils;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.constant.GuardEnableConstants;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
 import io.shulie.takin.web.data.param.application.LinkGuardCreateParam;
@@ -73,7 +75,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         if (vo.getApplicationId() != null && !vo.getApplicationId().isEmpty()) {
             param.setAppId(Long.valueOf(vo.getApplicationId()));
         }
-        List<LinkGuardEntity> dbList = tLinkGuardMapper.selectByExample(param,WebPluginUtils.getQueryAllowUserIdList());
+        List<LinkGuardEntity> dbList = tLinkGuardMapper.selectByExample(param, WebPluginUtils.getQueryAllowUserIdList());
         if (dbList != null && dbList.size() > 0) {
             return Response.fail(FALSE_CORE, "同一个methodInfo只能设置一个挡板");
         }
@@ -115,7 +117,9 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         entity.setApplicationName(vo.getApplicationName());
         entity.setMethodInfo(vo.getMethodInfo());
         entity.setGroovy(vo.getGroovy());
-        entity.setIsEnable(vo.getIsEnable());
+        if (Objects.nonNull(vo.getIsEnable())) {
+            entity.setIsEnable(vo.getIsEnable() ? GuardEnableConstants.GUARD_ENABLE : GuardEnableConstants.GUARD_UNABLE);
+        }
         entity.setRemark(vo.getRemark());
         try {
             tLinkGuardMapper.update(entity);
@@ -198,7 +202,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         try {
             LinkGuardQueryParam param = new LinkGuardQueryParam();
             param.setIsEnable(true);
-            list = tLinkGuardMapper.selectByExample(param,WebPluginUtils.getQueryAllowUserIdList());
+            list = tLinkGuardMapper.selectByExample(param, WebPluginUtils.getQueryAllowUserIdList());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Response.fail(FALSE_CORE, "查询挡板失败", null);
@@ -221,7 +225,7 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         LinkGuardEntity linkGuardEntity = tLinkGuardMapper.selectById(id);
         LinkGuardEntity entity = new LinkGuardEntity();
         entity.setId(id);
-        entity.setIsEnable(target);
+        entity.setIsEnable(target ? GuardEnableConstants.GUARD_ENABLE : GuardEnableConstants.GUARD_UNABLE);
         tLinkGuardMapper.update(entity);
         configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), linkGuardEntity.getApplicationId(), null);
         agentConfigCacheManager.evictGuards(linkGuardEntity.getApplicationName());
@@ -245,7 +249,9 @@ public class LinkGuardServiceImpl implements LinkGuardService {
         vo.setCreateTime(guardEntity.getCreateTime());
         vo.setUpdateTime(guardEntity.getUpdateTime());
         vo.setRemark(guardEntity.getRemark());
-        vo.setIsEnable(guardEntity.getIsEnable());
+        if (Objects.nonNull(guardEntity.getIsEnable())) {
+            vo.setIsEnable(guardEntity.getIsEnable() == GuardEnableConstants.GUARD_ENABLE);
+        }
         // 判断权限，需要把用户传入
         vo.setUserId(guardEntity.getUserId());
         WebPluginUtils.fillQueryResponse(vo);

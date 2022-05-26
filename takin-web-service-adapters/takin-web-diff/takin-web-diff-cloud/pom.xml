@@ -59,9 +59,5 @@
             <artifactId>takin-web-common</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-cloud-sdk</artifactId>
-        </dependency>
     </dependencies>
 </project>

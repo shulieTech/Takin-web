@@ -6,8 +6,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.shulie.takin.utils.PathFormatForTest;
 import io.shulie.takin.web.data.model.mysql.base.TenantBaseEntity;
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 @TableName(value = "t_file_manage")
@@ -67,6 +70,10 @@ public class FileManageEntity extends TenantBaseEntity {
      */
     @TableField(value = "upload_path")
     private String uploadPath;
+
+    public String getUploadPath() {
+        return PathFormatForTest.format(uploadPath);
+    }
 
     @TableField(value = "is_deleted")
     private Integer isDeleted;

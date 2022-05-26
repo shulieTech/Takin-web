@@ -113,9 +113,9 @@ public class SummaryService {
         Integer passBusinessCount = 0;
         Map<String, Object> cloudMap = reportService.queryReportCount(reportId);
         if (MapUtils.isNotEmpty(cloudMap)) {
-            warnCount = (Integer)cloudMap.get("warnCount");
-            businessCount = (Integer)cloudMap.get("count");
-            passBusinessCount = (Integer)cloudMap.get("passSum");
+            warnCount = convertLong((Long)cloudMap.get("warnCount"));
+            businessCount = convertLong((Long)cloudMap.get("count"));
+            passBusinessCount = convertBigDecimal((BigDecimal)cloudMap.get("passSum"));
         }
         warnCount = warnCount != null ? warnCount : 0;
         businessCount = businessCount != null ? businessCount : 0;

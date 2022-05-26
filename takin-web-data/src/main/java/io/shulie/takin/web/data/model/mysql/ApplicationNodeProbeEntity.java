@@ -55,4 +55,5 @@ public class ApplicationNodeProbeEntity extends NewBaseEntity implements Seriali
      */
     private Long operateId;
 
+	private Long customerId;
 }

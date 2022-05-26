@@ -5,10 +5,10 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 import io.shulie.takin.web.diff.api.common.CloudCommonApi;
-import io.shulie.takin.cloud.entrypoint.common.CommonInfoApi;
+import io.shulie.takin.adapter.api.entrypoint.common.CommonInfoApi;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.cloud.sdk.model.response.common.CommonInfosResp;
-import io.shulie.takin.cloud.sdk.model.request.common.CloudCommonInfoWrapperReq;
+import io.shulie.takin.adapter.api.model.response.common.CommonInfosResp;
+import io.shulie.takin.adapter.api.model.request.common.CloudCommonInfoWrapperReq;
 
 /**
  * @author caijianying

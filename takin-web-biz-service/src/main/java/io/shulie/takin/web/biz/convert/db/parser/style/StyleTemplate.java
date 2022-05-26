@@ -111,14 +111,10 @@ public interface StyleTemplate {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    class InputStyle extends AbstractStyleTemplate{
-
+    class InputStyle extends AbstractStyleTemplate {
         private String key;
-
         private String label;
-
         private Integer nodeType;
-
         private Boolean required;
 
         public InputStyle(String key, String label, Integer nodeType) {

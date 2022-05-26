@@ -67,4 +67,8 @@ public class BlackListEntity extends UserBaseEntity {
     @TableField(value = "is_deleted")
     private Boolean isDeleted;
 
+	@TableField(value = "PRINCIPAL_NO")
+    private String principalNo;
+
+    private String value;
 }

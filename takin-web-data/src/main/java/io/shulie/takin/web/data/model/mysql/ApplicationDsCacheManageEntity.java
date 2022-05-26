@@ -113,4 +113,5 @@ public class ApplicationDsCacheManageEntity extends UserBaseEntity implements Se
      */
     private Date gmtUpdate;
 
+	private Long customerId;
 }

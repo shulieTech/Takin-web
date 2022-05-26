@@ -2,8 +2,8 @@ package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
 import cn.hutool.core.io.FileUtil;
 import com.google.common.collect.Sets;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCopyParamReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileDeleteParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileCopyParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileDeleteParamReq;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;

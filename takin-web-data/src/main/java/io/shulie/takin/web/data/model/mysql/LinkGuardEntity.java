@@ -11,6 +11,8 @@ import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Date;
+
 /**
  * 挡板实体类
  */
@@ -78,5 +80,6 @@ public class LinkGuardEntity extends UserBaseEntity {
     @TableField(value = "is_enable")
     private Integer isEnable;
 
+	private Long customerId;
 
 }

@@ -48,4 +48,5 @@ public class ApplicationDsDbTableEntity extends CommonWithUserIdAndTenantIdEntit
 
     private Integer isCheck;
 
+	private Long customerId;
 }

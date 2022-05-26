@@ -2,26 +2,22 @@ package io.shulie.takin.web.diff.cloud.impl.scenetask;
 
 import javax.annotation.Resource;
 
-import io.shulie.takin.cloud.sdk.model.request.report.ReportDetailByIdsReq;
-import io.shulie.takin.cloud.sdk.model.response.report.ReportActivityResp;
+import io.shulie.takin.adapter.api.model.request.scenetask.*;
 import org.springframework.stereotype.Service;
 
-import io.shulie.takin.cloud.sdk.model.request.report.WarnCreateReq;
+import io.shulie.takin.adapter.api.model.request.report.WarnCreateReq;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
-import io.shulie.takin.cloud.entrypoint.report.CloudReportApi;
+import io.shulie.takin.adapter.api.entrypoint.report.CloudReportApi;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
-import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
-import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneJobStateResp;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneStartCheckResp;
-import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneStartPreCheckReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAssetBalanceReq;
-import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskCheckReq;
-import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskStartReq;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStartResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStatusResp;
+import io.shulie.takin.adapter.api.entrypoint.scenetask.CloudTaskApi;
+import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.adapter.api.model.response.scenetask.SceneJobStateResp;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.adapter.api.model.request.report.UpdateReportConclusionReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneStartPreCheckReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptAssetBalanceReq;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneTryRunTaskStartResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneTryRunTaskStatusResp;
 
 import java.util.List;
 
@@ -130,6 +126,7 @@ public class SceneTaskApiImpl implements SceneTaskApi {
 
 	@Override
     public ResponseResult<List<ReportActivityResp>> listQueryTpsParam(ReportDetailByIdsReq reportDetailByIdsReq) {
-        return cloudReportApi.getActivities(reportDetailByIdsReq);
+        //return cloudReportApi.getActivities(reportDetailByIdsReq);
+        return null;
     }
 }

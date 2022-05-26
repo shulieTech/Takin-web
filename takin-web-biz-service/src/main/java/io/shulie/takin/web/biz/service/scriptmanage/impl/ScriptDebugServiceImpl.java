@@ -32,18 +32,22 @@ import com.pamirs.takin.common.exception.ApiException;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
-import com.pamirs.takin.entity.domain.vo.ApplicationVo;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import io.shulie.amdb.common.enums.RpcType;
-import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAssetBalanceReq;
-import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskCheckReq;
-import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneTryRunTaskStartReq;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStartResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneTryRunTaskStatusResp;
+import io.shulie.takin.adapter.api.model.request.engine.EnginePluginsRefOpen;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneBusinessActivityRefOpen;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneScriptRefOpen;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptAssetBalanceReq;
+import io.shulie.takin.adapter.api.model.request.scenetask.SceneTryRunTaskCheckReq;
+import io.shulie.takin.adapter.api.model.request.scenetask.SceneTryRunTaskStartReq;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneTryRunTaskStartResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneTryRunTaskStatusResp;
+import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
+import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.cloud.data.dao.report.ReportDao;
+import io.shulie.takin.cloud.data.result.report.ReportResult;
+import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
@@ -106,7 +110,6 @@ import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.LinkManageDAO;
 import io.shulie.takin.web.data.dao.script.ScriptDebugDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptManageDAO;
-import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.BusinessLinkManageTableEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptDebugEntity;
 import io.shulie.takin.web.data.model.mysql.ScriptManageDeployEntity;
@@ -129,7 +132,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -143,7 +145,7 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
-public class ScriptDebugServiceImpl implements ScriptDebugService {
+public class ScriptDebugServiceImpl extends AbstractIndicators implements ScriptDebugService {
 
     @Value("${file.upload.script.path:/nfs/takin/script/}")
     private String scriptFilePath;
@@ -201,7 +203,10 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     private SceneService sceneService;
     @Resource
     private SceneManageService sceneManageService;
-
+    @Resource
+    private RedisClientUtil redisClientUtil;
+    @Resource
+    private ReportDao reportDao;
 
     @Override
     public void stop(Long scriptDeployId) {
@@ -251,6 +256,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 }
 
                 // 失败, 则调用停止压测
+                String stopTaskMessageKey = PressureStartCache.getStopTaskMessageKey(scriptDebug.getCloudSceneId());
+                redisClientUtil.setString(stopTaskMessageKey, "手动停止调试");
                 ResponseResult<String> response = sceneTaskApi.stopTask(req);
                 if (response != null && !response.getSuccess()) {
                     throw ApiException.create(AppConstants.RESPONSE_CODE_FAIL, JsonHelper.bean2Json(response.getError()));
@@ -664,12 +671,18 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         Long scriptDebugId = request.getScriptDebugId();
         ScriptDebugEntity scriptDebugEntity = scriptDebugDAO.getById(scriptDebugId);
         ScriptDebugExceptionUtil.isRequestListError(scriptDebugEntity == null, "调试记录不存在!");
+        Long reportId = scriptDebugEntity.getCloudReportId();
+        ReportResult report = reportDao.getById(reportId);
+        Long jobId = report.getJobId();
+        if (Objects.nonNull(jobId)) { // 如果压测引擎任务Id不为空，替换reportId，现在大数据taskId对应的是压测引擎任务Id
+            reportId = jobId;
+        }
 
         // 拼接入参
         QueryLinkDetailDTO queryLinkDetailDTO = new QueryLinkDetailDTO();
         queryLinkDetailDTO.setCurrentPage(request.getRealCurrent());
         queryLinkDetailDTO.setPageSize(request.getPageSize());
-        queryLinkDetailDTO.setTaskId(scriptDebugEntity.getCloudReportId().toString());
+        queryLinkDetailDTO.setTaskId(reportId.toString());
         queryLinkDetailDTO.setStartTime(scriptDebugEntity.getCreatedAt().getTime());
         queryLinkDetailDTO.setEndTime(DateUtil.offsetHour(scriptDebugEntity.getUpdatedAt(), 1).getTime());
 
@@ -923,8 +936,14 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         // 非200检查
         // 查询记录, 有非200的记录, 就是调试失败
         try {
+            Long reportId = newScriptDebug.getCloudReportId();
+            ReportResult report = reportDao.selectById(reportId);
+            Long jobId = report.getJobId();
+            if (Objects.nonNull(jobId)) { // 如果压测引擎任务Id不为空，替换reportId，现在大数据taskId对应的是压测引擎任务Id
+                reportId = jobId;
+            }
             QueryLinkDetailDTO dto = new QueryLinkDetailDTO();
-            dto.setTaskId(newScriptDebug.getCloudReportId().toString());
+            dto.setTaskId(reportId.toString());
             dto.setPageSize(1);
             dto.setStartTime(newScriptDebug.getCreatedAt().getTime());
             dto.setEndTime(System.currentTimeMillis());
@@ -1050,6 +1069,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
             newScriptDebug.setStatus(ScriptDebugStatusEnum.FAILED.getCode());
             newScriptDebug.setRemark("压测未有响应，请重试，或者联系技术人员");
             newScriptDebug.setFailedType(ScriptDebugFailedTypeEnum.FAILED_TIMEOUT.getCode());
+            // 主动释放资源
+            releaseResourceByReportId(newScriptDebug.getCloudReportId());
             this.updateScriptDebugAndCheck(newScriptDebug);
         }
 
@@ -1329,6 +1350,15 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
         }
 
         return false;
+    }
+
+    protected void releaseResourceByReportId(Long reportId) {
+        if (Objects.nonNull(reportId)) {
+            ReportResult report = reportDao.selectById(reportId);
+            if (Objects.nonNull(report)) {
+                callRunningFailedEvent(report.getResourceId(), "调试超时");
+            }
+        }
     }
 
 }

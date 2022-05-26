@@ -4,11 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
+import io.shulie.takin.adapter.api.model.request.file.UploadRequest;
+import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
-import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
-import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.string.StringUtil;
@@ -17,7 +17,6 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConf
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
-import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
@@ -80,8 +79,9 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
             UploadRequest uploadRequest = new UploadRequest();
             uploadRequest.setFileList(files);
-            List<UploadResponse> uploadResponse = cloudFileApi.upload(uploadRequest);
-            return uploadResponse;
+            // TODO 这里没有了
+            // List<UploadResponse> uploadResponse = cloudFileApi.upload(uploadRequest);
+            return null;
         } finally {
             tempFile.delete();
         }
@@ -183,7 +183,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         input.getPressureConfigRequest().setGoal(goal);
         //压测模式配置
         // TODO: 2022/5/26
-       // input.getPressureConfigRequest().setConfig();
+        // input.getPressureConfigRequest().setConfig();
         //置空停止条件
         input.getPressureConfigRequest().setDestroyMonitoringGoal(Collections.emptyList());
         //置空告警条件

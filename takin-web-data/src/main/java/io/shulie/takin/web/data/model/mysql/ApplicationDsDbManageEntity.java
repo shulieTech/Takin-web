@@ -112,4 +112,5 @@ public class ApplicationDsDbManageEntity extends NewBaseEntity implements Serial
 
     private String agentSourceType;
 
+	private Long customerId;
 }

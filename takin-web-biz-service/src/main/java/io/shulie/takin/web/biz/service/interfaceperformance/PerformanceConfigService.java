@@ -1,7 +1,7 @@
 package io.shulie.takin.web.biz.service.interfaceperformance;
 
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
-import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;

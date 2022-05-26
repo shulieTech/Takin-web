@@ -549,6 +549,7 @@ public class WebPluginUtils {
             traceContextExt.setEnvCode(DEFAULT_ENV_CODE);
             traceContextExt.setTenantId(DEFAULT_TENANT_ID);
             traceContextExt.setTenantCode(DEFAULT_TENANT_CODE);
+            traceContextExt.setUserAppKey(DEFAULT_TENANT_APP_KEY);
         }
     }
 

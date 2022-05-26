@@ -13,20 +13,19 @@ import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.adapter.api.entrypoint.file.CloudFileApi;
+import io.shulie.takin.adapter.api.entrypoint.scene.mix.SceneMixApi;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageQueryReq;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneDetailV2Response;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
+import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
-import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
 import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
-import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
@@ -51,6 +50,7 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.DataTransformUtil;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
@@ -185,7 +185,9 @@ public abstract class AbstractPerformancePressureService
         SceneRequest sceneRequest = buildSceneRequest(request);
 
         WebPluginUtils.fillCloudUserData(sceneRequest);
-        Long sceneId = multipleSceneApi.create(sceneRequest);
+        // TODO 没有了
+        // Long sceneId = multipleSceneApi.create(sceneRequest);
+        Long sceneId = 0L;
         if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler())) {
             sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
                 setSceneId(sceneId);
@@ -300,7 +302,7 @@ public abstract class AbstractPerformancePressureService
     private SceneTaskService sceneTaskService;
 
     @Autowired
-    private RedisClientUtils redisClientUtils;
+    private RedisClientUtil redisClientUtil;
 
     @Autowired
     private SceneTaskApi sceneTaskApi;
@@ -389,7 +391,7 @@ public abstract class AbstractPerformancePressureService
             return ResponseResult.success(startTaskResponse);
         } catch (TakinWebException ex) {
             // 解除 场景锁
-            redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
+            redisClientUtil.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
             SceneActionResp sceneStart = new SceneActionResp();
             //sceneStart.setMsg(Arrays.asList(StringUtils.split(ex.getMessage(), Constants.SPLIT)));
             List<String> message = Lists.newArrayList();

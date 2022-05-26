@@ -51,8 +51,8 @@ public class ShadowJobConfigController {
     @ApiOperation(value = "影子JOB配置分页查询, Owner: yuhan.tang")
     @GetMapping(value = ApiUrls.API_TAKIN_SIMPLIFY_SHADOW_QUERY_CONFIGS, produces = MediaType.APPLICATION_JSON_VALUE)
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.QUERY
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
     )
     public Response queryByPage(@RequestParam(value = "pageSize", defaultValue = "0") Integer pageSize,
         @RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
@@ -115,7 +115,7 @@ public class ShadowJobConfigController {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.TASK, className);
 
             return shadowJobConfigService.insert(config);
-        } catch (Exception e) {
+        } catch (DocumentException e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());
         }
@@ -147,7 +147,7 @@ public class ShadowJobConfigController {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.TASKConfig, query.getConfigCode());
             shadowJobConfigService.update(query);
             return Response.success();
-        } catch (Exception e) {
+        } catch (DocumentException e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());
         }
@@ -174,12 +174,12 @@ public class ShadowJobConfigController {
                 return Response.fail("影子JOB不存在");
             }
             OperationLogContextHolder.operationType(
-                query.getStatus() == 0 ? BizOpConstants.OpTypes.ENABLE : BizOpConstants.OpTypes.DISABLE);
+                    query.getStatus() == 0 ? BizOpConstants.OpTypes.ENABLE : BizOpConstants.OpTypes.DISABLE);
             OperationLogContextHolder.addVars(BizOpConstants.Vars.TASK, shadowJobConfigVo.getName());
 
             shadowJobConfigService.update(query);
             return Response.success();
-        } catch (Exception e) {
+        } catch (DocumentException e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());
         }
@@ -187,15 +187,15 @@ public class ShadowJobConfigController {
 
     @ApiOperation(value = "影子JOB配置删除, Owner: yuhan.tang")
     @DeleteMapping(value = ApiUrls.API_TAKIN_SIMPLIFY_SHADOW_DELETE_CONFIGS,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ModuleDef(
-        moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
-        subModuleName = BizOpConstants.SubModules.JOB_TASK,
-        logMsgKey = BizOpConstants.Message.MESSAGE_JOB_TASK_DELETE
+            moduleName = BizOpConstants.Modules.APPLICATION_MANAGE,
+            subModuleName = BizOpConstants.SubModules.JOB_TASK,
+            logMsgKey = BizOpConstants.Message.MESSAGE_JOB_TASK_DELETE
     )
     @AuthVerification(
-        moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
-        needAuth = ActionTypeEnum.DELETE
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.DELETE
     )
     public Response delete(@RequestBody ShadowJobConfigQuery query) {
         ShadowJobConfigVo shadowJobConfigVo = shadowJobConfigVo(query.getId());
@@ -207,7 +207,7 @@ public class ShadowJobConfigController {
         try {
             Estimate.notBlank(query.getId(), "ID不能为空");
             return shadowJobConfigService.delete(query.getId());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.error(e.getMessage(), e);
             return Response.fail(e.getMessage());
         }

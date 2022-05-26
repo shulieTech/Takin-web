@@ -74,7 +74,9 @@ public interface TraceManageDAO {
      * @param currentStatus
      */
     void updateTraceManageDeployStatus(TraceManageDeployUpdateParam traceManageDeployUpdateParam, Integer currentStatus);
-
+	
+	List<TraceManageDeployResult> queryRunningTraceManageDeploy();
+	
     /**
      * 根据状态查询追踪实例
      * @param status

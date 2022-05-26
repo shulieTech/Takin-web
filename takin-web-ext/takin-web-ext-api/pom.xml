@@ -46,21 +46,6 @@
         </dependency>
 
 
-        <!--cloud ext-->
-        <dependency>
-            <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-cloud-ext</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-common-bom</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.shulie.takin</groupId>
-                    <artifactId>takin-common-beans</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>

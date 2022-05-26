@@ -29,4 +29,9 @@ public class SceneActionParam extends ContextExt {
      * 来源名称。压测报告取场景名称、流量验证取业务活动名称、脚本调试取脚本名称
      */
     private String resourceName;
+
+    /**
+     * 资源id
+     */
+    private String resourceId;
 }

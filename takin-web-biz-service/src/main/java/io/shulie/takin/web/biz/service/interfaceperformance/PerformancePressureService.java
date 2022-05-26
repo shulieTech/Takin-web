@@ -1,12 +1,10 @@
 package io.shulie.takin.web.biz.service.interfaceperformance;
 
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
-import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;

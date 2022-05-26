@@ -23,8 +23,8 @@ public class LinkGuardEntity extends UserBaseEntity {
     private String groovy;
     private Date createTime;
     private Date updateTime;
-    private Boolean isDeleted;
-    private Boolean isEnable;
+    private Integer isDeleted;
+    private Integer isEnable;
 
     private String remark;
 }

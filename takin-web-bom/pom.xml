@@ -91,6 +91,21 @@
                 <artifactId>takin-web-amdb-accessor</artifactId>
                 <version>${takin.web.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-web-adapter-api</artifactId>
+                <version>${takin.web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-web-adapter-cloud</artifactId>
+                <version>${takin.web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.shulie.takin</groupId>
+                <artifactId>takin-web-eventcenter</artifactId>
+                <version>${takin.web.version}</version>
+            </dependency>
             <!--内部module 业务依赖-->
 
             <!--性能分析用-->

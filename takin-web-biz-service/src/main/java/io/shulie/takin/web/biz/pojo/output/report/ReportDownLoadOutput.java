@@ -1,6 +1,6 @@
 package io.shulie.takin.web.biz.pojo.output.report;
 
-import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
+import io.shulie.takin.adapter.api.model.response.report.NodeTreeSummaryResp;
 import lombok.Data;
 
 /**

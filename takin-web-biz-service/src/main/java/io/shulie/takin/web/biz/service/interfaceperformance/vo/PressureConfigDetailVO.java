@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.vo;
 
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -7,8 +8,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.*;
 
 /**
  * @Author: vernon
@@ -29,7 +28,7 @@ public class PressureConfigDetailVO {
 
     @Data
     @EqualsAndHashCode(callSuper = true)
-    public static class BasicInfo extends io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest.BasicInfo {
+    public static class BasicInfo extends io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest.BasicInfo {
         @ApiModelProperty(value = "是否定时执行")
         private Boolean isScheduler;
         @ApiModelProperty(name = "executeTime", value = "定时执行时间")

@@ -229,7 +229,16 @@ public class TraceManageDAOImpl implements TraceManageDAO{
         updateWrapper.eq(TraceManageDeployEntity::getStatus,currentStatus);
         traceManageDeployMapper.update(traceManageDeployEntity,updateWrapper);
     }
-
+	
+	@Override
+    public List<TraceManageDeployResult> queryRunningTraceManageDeploy() {
+        List<TraceManageDeployEntity> entities = traceManageDeployMapper.queryRunningTraceManageDeploy();
+        if (CollectionUtils.isNotEmpty(entities)) {
+            return entities.stream().map(this::getTraceManageDeployResult).collect(Collectors.toList());
+        }
+        return null;
+    }
+	
     @Override
     public List<TraceManageDeployResult> queryTraceManageDeployByStatus(Integer status) {
         LambdaQueryWrapper<TraceManageDeployEntity> wrapper = new LambdaQueryWrapper<>();

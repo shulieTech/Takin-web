@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @TableName(value = "t_script_manage")
 public class ScriptManageEntity extends UserBaseEntity {

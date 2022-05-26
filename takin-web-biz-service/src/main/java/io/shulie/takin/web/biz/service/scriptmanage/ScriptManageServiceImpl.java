@@ -44,26 +44,29 @@ import com.pamirs.takin.entity.domain.entity.linkmanage.BusinessLinkManageTable;
 import com.pamirs.takin.entity.domain.entity.linkmanage.Scene;
 import io.shulie.amdb.common.enums.RpcType;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
-import io.shulie.takin.cloud.sdk.model.common.UploadFileDTO;
-import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginDetailsWrapperReq;
-import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginFetchWrapperReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileContentParamReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCopyParamReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileDeleteParamReq;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileZipParamReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.CloudUpdateSceneFileRequest;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptCheckAndUpdateReq;
-import io.shulie.takin.cloud.sdk.model.response.engine.EnginePluginDetailResp;
-import io.shulie.takin.cloud.sdk.model.response.engine.EnginePluginSimpleInfoResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
+import io.shulie.takin.adapter.api.model.common.UploadFileDTO;
+import io.shulie.takin.adapter.api.model.request.engine.EnginePluginDetailsWrapperReq;
+import io.shulie.takin.adapter.api.model.request.engine.EnginePluginFetchWrapperReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileContentParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileCopyParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileCreateByStringParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileDeleteParamReq;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileZipParamReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.CloudUpdateSceneFileRequest;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptCheckAndUpdateReq;
+import io.shulie.takin.adapter.api.model.response.engine.EnginePluginDetailResp;
+import io.shulie.takin.adapter.api.model.response.engine.EnginePluginSimpleInfoResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListResp;
+import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.utils.PathFormatForTest;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.linux.LinuxHelper;
+import io.shulie.takin.utils.security.MD5Utils;
 import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.biz.cache.agentimpl.FileManageSignCache;
 import io.shulie.takin.web.biz.convert.performace.TraceManageResponseConvertor;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
@@ -144,7 +147,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -193,6 +198,9 @@ public class ScriptManageServiceImpl implements ScriptManageService {
     private ScriptManageDeployDAO scriptManageDeployDAO;
     @Resource
     private SceneLinkRelateDAO sceneLinkRelateDAO;
+
+    @Autowired
+    RedisTemplate redisTemplate;
 
     //TODO 这里不要直接用mapper，用dao，而且mapper用新版本，不带T的， 带T的逐渐要删除
     @Resource
@@ -497,6 +505,24 @@ public class ScriptManageServiceImpl implements ScriptManageService {
         // 验证
         ScriptManageExceptionUtil.isUpdateValidError(CollectionUtils.isEmpty(scriptFile)
             || scriptFile.size() != 1, "脚本文件不唯一!");
+
+        //兼容还没上传源脚本，却直接更改后再上传的场景,只有在页面修改了脚本文件这么处理 eg: 删除-> 拖进->编辑->保存
+        if (StringUtil.isNotBlank(scriptFile.get(0).getScriptContent())) {
+            List<FileManageUpdateRequest> originRequests =
+                    scriptManageDeployUpdateRequest.getFileManageUpdateRequests();
+            if (originRequests.size() > 1) {
+                List<FileManageUpdateRequest> oldList =
+                        scriptManageDeployUpdateRequest.getFileManageUpdateRequests().stream()
+                                .filter(o -> o.getIsDeleted() == 1 && FileTypeEnum.SCRIPT.getCode().equals(o.getFileType()))
+                                .collect(Collectors.toList());
+                if (oldList.size() != 0) {
+                    //把老的记录的主键给新的
+                    if (Objects.isNull(scriptFile.get(0).getId())) {
+                        scriptFile.get(0).setId(oldList.get(0).getId());
+                    }
+                }
+            }
+        }
 
         // 更新的脚本文件落盘
         this.uploadUpdateScriptFile(scriptFile);
@@ -947,18 +973,6 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                     manageResult.set(result);
                 }
             });
-
-            // 文件路径填充
-            // 获取已经存在的第一个文件, 拿到其路径
-            FileManageResult file = fileManageResults.get(0);
-            String uploadPath = file.getUploadPath();
-            String filePath = partRequest.getFilePath();
-            if (StringUtils.isNotBlank(uploadPath) && uploadPath.lastIndexOf(File.separator) > 0
-                && StringUtils.isNotBlank(filePath) && filePath.lastIndexOf(File.separator) > -1) {
-                // 截取倒数第一个 / 后的, 拼接上传的路径, set
-                partRequest.setFilePath(uploadPath.substring(0, uploadPath.lastIndexOf(File.separator) + 1)
-                    + filePath.substring(filePath.lastIndexOf(File.separator) + 1));
-            }
         }
 
         //文件已存在，则更新文件数据
@@ -1247,8 +1261,15 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             fileExtend.put("isOrderSplit", fileManageUpdateRequest.getIsOrderSplit());
             fileExtend.put("isBigFile", fileManageUpdateRequest.getIsBigFile());
             fileManageCreateParam.setFileExtend(JsonHelper.bean2Json(fileExtend));
-            fileManageCreateParam.setUploadPath(targetScriptPath + fileManageUpdateRequest.getFileName());
+            String uploadPath = targetScriptPath + fileManageUpdateRequest.getFileName();
+            uploadPath = PathFormatForTest.format(uploadPath);
+            fileManageCreateParam.setUploadPath(uploadPath);
             fileManageCreateParam.setUploadTime(fileManageUpdateRequest.getUploadTime());
+            String targetP = fileManageCreateParam.getUploadPath().replaceAll("[/]", "");
+            String targetPMd5 = MD5Utils.getInstance().getMD5(targetP);
+            Object bodyMd5 = redisTemplate.opsForValue().get(FileManageSignCache.CACHE_NAME+targetPMd5);
+            //写入md5
+            fileManageCreateParam.setMd5(bodyMd5!=null?bodyMd5.toString():"");
             return fileManageCreateParam;
         }).collect(Collectors.toList());
 

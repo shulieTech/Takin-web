@@ -84,4 +84,5 @@ public class ApplicationPluginsConfigEntity extends UserBaseEntity implements Se
     @TableLogic
     private Integer isDeleted;
 
+	private Long customerId;
 }

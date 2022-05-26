@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceData
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
 
 /**
  * @Author: vernon
@@ -49,6 +50,13 @@ public interface PerformancePressureService {
      * @return
      */
     ResponseResult<SceneDetailResponse> query(Long apiId) throws Throwable;
+
+
+    /**
+     * @param apiId apiid
+     * @return 业务流程详情
+     */
+    SceneEntity bizFlowDetailByApiId(Long apiId);
 
     /**
      * 启动压测

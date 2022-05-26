@@ -9,6 +9,7 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConf
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.service.interfaceperformance.vo.PerformanceConfigVO;
 import io.shulie.takin.web.biz.service.interfaceperformance.vo.RelationAppNameVO;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
 
 import java.util.List;
 
@@ -42,7 +43,9 @@ public interface PerformanceConfigService {
 	
 	ResponseResult<SceneActionResp> start(SceneActionParam param);
 
-	List<RelationAppNameVO> relationName(PerformanceConfigQueryRequest param);
+    public SceneEntity bizFlowDetail(Long apiId);
+
+    List<RelationAppNameVO> relationName(PerformanceConfigQueryRequest param);
 
     public ResponseResult uploadDataFile(BusinessFlowDataFileRequest request);
 

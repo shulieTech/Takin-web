@@ -18,6 +18,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailRespon
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.stereotype.Component;
@@ -168,6 +169,11 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
     @Override
     public ResponseResult<SceneDetailResponse> query(Long apiId) throws Throwable {
         return super.query(apiId);
+    }
+
+    @Override
+    public SceneEntity bizFlowDetailByApiId(Long apiId) {
+        return super.bizFlowDetailByApiId(apiId);
     }
 
     @Override

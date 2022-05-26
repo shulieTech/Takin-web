@@ -21,6 +21,7 @@ import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigDto;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
@@ -170,6 +171,10 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         BeanUtils.copyProperties(queryEntity, result);
         doAction(configId, result, Action.ActionEnum.detail);
         return result;
+    }
+
+    public SceneEntity bizFlowDetail(Long apiId) {
+        return performancePressureService.bizFlowDetailByApiId(apiId);
     }
 
     @Override

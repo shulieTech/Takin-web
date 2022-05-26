@@ -10,6 +10,7 @@ import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigSer
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -83,5 +84,14 @@ public class PerformanceConfigController {
     @ApiOperation(value = "上传数据文件")
     public ResponseResult uploadDataFile(@RequestBody BusinessFlowDataFileRequest request) {
         return performanceConfigService.uploadDataFile(request);
+    }
+
+    @GetMapping("/flowDetail")
+    @ApiOperation(value = "业务流程详情")
+    public ResponseResult<SceneEntity> bizFlowDetail(PerformanceConfigQueryRequest request) {
+        if (request.getId() == null) {
+            return ResponseResult.fail("请先保存接口配置.", "请先保存接口配置");
+        }
+        return ResponseResult.success(performanceConfigService.bizFlowDetail(request.getId()));
     }
 }

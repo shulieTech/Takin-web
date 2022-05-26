@@ -60,6 +60,7 @@ import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigSceneRela
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceParamMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
@@ -228,6 +229,19 @@ public abstract class AbstractPerformancePressureService
         UpdateWrapper updateWrapper = new UpdateWrapper();
         updateWrapper.eq("api_id", apiId);
         performanceConfigSceneRelateShipMapper.update(entity, updateWrapper);
+    }
+
+    @Override
+    public SceneEntity bizFlowDetailByApiId(Long apiId) {
+        Long flowId = fetBizFlowId(apiId);
+        if (flowId == null) {
+            return null;
+        }
+        return bizFlowDetailByFlowId(flowId);
+    }
+
+    public SceneEntity bizFlowDetailByFlowId(Long flowId) {
+        return sceneService.businessActivityFlowDetail(flowId);
     }
 
     @Resource

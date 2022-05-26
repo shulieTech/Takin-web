@@ -35,6 +35,7 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceData
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
@@ -125,14 +126,14 @@ public abstract class AbstractPerformancePressureService
         try {
             Long apiId = input.getId();
             PerformanceConfigCreateInput updateIn = new PerformanceConfigCreateInput();
-            PressureConfigRequest configRequest = PressureConfigRequest.DEFAULT;
+            NewSceneRequest configRequest = NewSceneRequest.DEFAULT;
             ResponseResult<SceneDetailResponse> responseResponseResult = query(apiId);
             if (responseResponseResult != null) {
                 SceneDetailResponse pressureConfigDetail = responseResponseResult.getData();
                 //build baseInfo
-                PressureConfigRequest.BasicInfo basicInfo = buildBaseInfo(pressureConfigDetail);
+                NewSceneRequest.BasicInfo basicInfo = buildBaseInfo(pressureConfigDetail);
                 //build PtConfig
-                PressureConfigRequest.PtConfig ptConfig = buildPtConfig(pressureConfigDetail);
+                NewSceneRequest.PtConfig ptConfig = buildPtConfig(pressureConfigDetail);
                 configRequest.setBasicInfo(basicInfo);
                 configRequest.setConfig(ptConfig);
             }
@@ -180,7 +181,7 @@ public abstract class AbstractPerformancePressureService
 
     @Override
     public ResponseResult<Long> add(PerformanceConfigCreateInput in) throws Throwable {
-        PressureConfigRequest request = in.getPressureConfigRequest();
+        NewSceneRequest request = in.getPressureConfigRequest();
         SceneRequest sceneRequest = buildSceneRequest(request);
 
         WebPluginUtils.fillCloudUserData(sceneRequest);
@@ -443,7 +444,7 @@ public abstract class AbstractPerformancePressureService
      * @param request 前端入参
      * @return 调用Cloud接口用的入参
      */
-    public SceneRequest buildSceneRequest(PressureConfigRequest request) {
+    public SceneRequest buildSceneRequest(NewSceneRequest request) {
         // 1. 基本信息
         SceneRequest sceneRequest = BeanUtil.copyProperties(request, SceneRequest.class);
         // 2. 线程组施压配置 （字段相同，但是由于类型不同，导致的无法拷贝属性，需要手动转换）

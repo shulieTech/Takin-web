@@ -87,10 +87,10 @@ public class PerformanceConfigController {
 
     @GetMapping("/flowDetail")
     @ApiOperation(value = "业务流程详情")
-    public ResponseResult<SceneEntity> bizFlowDetail(PerformanceConfigQueryRequest request) {
-        if (request.getId() == null) {
+    public ResponseResult<SceneEntity> bizFlowDetail(@RequestParam("id") Long id) {
+        if (id == null) {
             return ResponseResult.fail("请先保存接口配置.", "请先保存接口配置");
         }
-        return ResponseResult.success(performanceConfigService.bizFlowDetail(request.getId()));
+        return ResponseResult.success(performanceConfigService.bizFlowDetail(id));
     }
 }

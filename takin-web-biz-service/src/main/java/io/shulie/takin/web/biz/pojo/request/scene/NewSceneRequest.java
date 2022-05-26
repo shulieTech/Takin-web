@@ -7,8 +7,11 @@ import java.util.Map;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -23,6 +26,15 @@ import lombok.Setter;
 @Data
 @ApiModel(value = "创建/修改 场景 - 新")
 public class NewSceneRequest {
+
+    /**
+     * 接口id
+     */
+    private Long id;
+    /**
+     * 单接口压测目标值
+     */
+    private SceneRequest.Goal targetGoal;
     @ApiModelProperty(value = "基础信息")
     @NotNull(message = "场景基础信息不能为空")
     private BasicInfo basicInfo;
@@ -129,4 +141,68 @@ public class NewSceneRequest {
         @NotNull(message = "连续出现次数不能为空")
         private Integer numberOfIgnore;
     }
+
+    public static NewSceneRequest DEFAULT = JSON.parseObject("{\n" +
+                    "  \"basicInfo\": {\n" +
+                    "    \"businessFlowId\": 241,\n" +
+                    "    \"name\": \"DEFAULT\"\n" +
+                    "  },\n" +
+                    "  \"goal\": {\n" +
+                    "    \"79c598b24f61e1f5a73600e6ffed1305\": {\n" +
+                    "      \"tps\": 100,\n" +
+                    "      \"rt\": 100,\n" +
+                    "      \"sr\": 100,\n" +
+                    "      \"sa\": 100\n" +
+                    "    },\n" +
+                    "    \"0ae306fb8361ee58e89b18b58d15c21c\": {\n" +
+                    "      \"tps\": 100,\n" +
+                    "      \"rt\": 100,\n" +
+                    "      \"sr\": 100,\n" +
+                    "      \"sa\": 100\n" +
+                    "    },\n" +
+                    "    \"b787744da465501175f19effa9b29855\": {\n" +
+                    "      \"tps\": 100,\n" +
+                    "      \"rt\": 100,\n" +
+                    "      \"sr\": 100,\n" +
+                    "      \"sa\": 100\n" +
+                    "    }\n" +
+                    "  },\n" +
+                    "  \"config\": {\n" +
+                    "    \"unit\": \"m\",\n" +
+                    "    \"threadGroupConfigMap\": {\n" +
+                    "      \"403e557d1984ce2fb6176e579b4e8830\": {\n" +
+                    "        \"type\": 0,\n" +
+                    "        \"threadNum\": 1,\n" +
+                    "        \"mode\": 1\n" +
+                    "      },\n" +
+                    "      \"7dae7383a28b5c45069b528a454d1164\": {\n" +
+                    "        \"type\": 0,\n" +
+                    "        \"threadNum\": 1,\n" +
+                    "        \"mode\": 1\n" +
+                    "      }\n" +
+                    "    },\n" +
+                    "    \"podNum\": 1,\n" +
+                    "    \"duration\": 5\n" +
+                    "  },\n" +
+                    "  \"destroyMonitoringGoal\": [\n" +
+                    "    {\n" +
+                    "      \"name\": \"DEFAULT\",\n" +
+                    "      \"target\": [\n" +
+                    "        \"0f1a197a2040e645dcdb4dfff8a3f960\"\n" +
+                    "      ],\n" +
+                    "      \"formulaTarget\": 0,\n" +
+                    "      \"formulaSymbol\": 0,\n" +
+                    "      \"formulaNumber\": 100000000,\n" +
+                    "      \"numberOfIgnore\": 100000000\n" +
+                    "    }\n" +
+                    "  ],\n" +
+                    "  \"warnMonitoringGoal\": [],\n" +
+                    "  \"dataValidation\": {\n" +
+                    "    \"excludedApplicationIds\": [],\n" +
+                    "    \"timeInterval\": 10\n" +
+                    "  }\n" +
+                    "}"
+            ,
+            new TypeReference<NewSceneRequest>() {
+            });
 }

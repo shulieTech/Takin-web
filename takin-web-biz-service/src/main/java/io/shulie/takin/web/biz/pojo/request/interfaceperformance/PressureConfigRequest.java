@@ -28,6 +28,8 @@ public class PressureConfigRequest {
      * 接口id
      */
     private Long id;
+    @ApiModelProperty(value = "目标")
+    private SceneRequest.Goal targetGoal;
 
     @ApiModelProperty(value = "基础信息")
     private BasicInfo basicInfo;

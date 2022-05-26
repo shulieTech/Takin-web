@@ -5,6 +5,7 @@ import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PressureConfigRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 
 import java.util.Iterator;
@@ -19,11 +20,11 @@ import java.util.Objects;
 public class PerformancePressureAdaptor {
 
 
-    public PressureConfigRequest.BasicInfo buildBaseInfo(SceneDetailResponse in) {
+    public NewSceneRequest.BasicInfo buildBaseInfo(SceneDetailResponse in) {
         if (in == null) {
             return null;
         }
-        PressureConfigRequest.BasicInfo basicInfo = new PressureConfigRequest.BasicInfo();
+        NewSceneRequest.BasicInfo basicInfo = new NewSceneRequest.BasicInfo();
         basicInfo.setSceneId(in.getBasicInfo().getSceneId());
         basicInfo.setName(in.getBasicInfo().getName());
         basicInfo.setBusinessFlowId(in.getBasicInfo().getBusinessFlowId());
@@ -32,11 +33,11 @@ public class PerformancePressureAdaptor {
         return basicInfo;
     }
 
-    public PressureConfigRequest.PtConfig buildPtConfig(SceneDetailResponse in) {
+    public NewSceneRequest.PtConfig buildPtConfig(SceneDetailResponse in) {
         if (in == null) {
             return null;
         }
-        PressureConfigRequest.PtConfig ptConfig = new PressureConfigRequest.PtConfig();
+        NewSceneRequest.PtConfig ptConfig = new NewSceneRequest.PtConfig();
         ptConfig.setDuration(in.getConfig().getDuration());
         ptConfig.setEstimateFlow(in.getConfig().getEstimateFlow());
         ptConfig.setPodNum(in.getConfig().getPodNum());
@@ -45,17 +46,17 @@ public class PerformancePressureAdaptor {
         return ptConfig;
     }
 
-    private Map<String, PressureConfigRequest.ThreadGroupConfig> convertThreadGroupConfig(Map<String, ThreadGroupConfigExt> in) {
+    private Map<String, NewSceneRequest.ThreadGroupConfig> convertThreadGroupConfig(Map<String, ThreadGroupConfigExt> in) {
         if (Objects.isNull(in) || in.isEmpty()) {
             return null;
         }
-        Map<String, PressureConfigRequest.ThreadGroupConfig> returnObj = Maps.newHashMap();
+        Map<String, NewSceneRequest.ThreadGroupConfig> returnObj = Maps.newHashMap();
         Iterator<Map.Entry<String, ThreadGroupConfigExt>> iterator = in.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<String, ThreadGroupConfigExt> entry = iterator.next();
             String key = entry.getKey();
             ThreadGroupConfigExt source = entry.getValue();
-            PressureConfigRequest.ThreadGroupConfig target = new PressureConfigRequest.ThreadGroupConfig();
+            NewSceneRequest.ThreadGroupConfig target = new NewSceneRequest.ThreadGroupConfig();
             target.setEstimateFlow(source.getEstimateFlow());
             target.setMode(source.getMode());
             target.setRampUp(source.getRampUp());

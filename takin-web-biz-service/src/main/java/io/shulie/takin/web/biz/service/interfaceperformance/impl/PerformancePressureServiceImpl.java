@@ -4,15 +4,20 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
+import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.cloud.sdk.model.request.file.UploadRequest;
 import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
@@ -28,10 +33,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @Author: vernon
@@ -132,20 +134,85 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         List<UploadResponse> uploadResult = upload(input.getId(), input.getName());
         //创建业务流程
         BusinessFlowDetailResponse flowInfo = bizFlowCreator(uploadResult);
-
+        //自动匹配活动
+        activityAutoMatcher(flowInfo.getId());
         //保存业务流程id到关系映射表
         InterfacePerformanceConfigSceneRelateShipEntity entity = new InterfacePerformanceConfigSceneRelateShipEntity();
         entity.setApiId(input.getId());
         entity.setFlowId(flowInfo.getId());
         upsert(entity);
 
-        //自动匹配活动
-        activityAutoMatcher(flowInfo.getId());
+
         //回填创建压测场景的ID和名字
         input.getPressureConfigRequest().getBasicInfo().setSceneId(flowInfo.getId());
         input.getPressureConfigRequest().getBasicInfo().setName(flowInfo.getBusinessProcessName());
         input.getPressureConfigRequest().getBasicInfo().setBusinessFlowId(flowInfo.getId());
+
+        // TODO: 2022/5/26 回写真实的压测目标
+        List<ScriptNode> scriptNodes = JsonHelper.json2List(bizFlowDetailByApiId(input.getId())
+                .getScriptJmxNode(), ScriptNode.class);
+        List<ScriptNode> threadGroup = Lists.newArrayList();
+        List<ScriptNode> apiScriptNode = Lists.newArrayList();
+        if (!CollectionUtils.isEmpty(scriptNodes)) {
+            for (ScriptNode root : scriptNodes) {
+                List<ScriptNode> secondList = root.getChildren();
+                if (!CollectionUtils.isEmpty(secondList)) {
+                    for (ScriptNode second : secondList) {
+                        if (second.getType() == NodeTypeEnum.THREAD_GROUP) {
+                            threadGroup.add(second);
+                        }
+                    }
+                    for (ScriptNode second : secondList) {
+                        if (!CollectionUtils.isEmpty(second.getChildren())) {
+                            for (ScriptNode node : second.getChildren()) {
+                                if (node.getType() == NodeTypeEnum.SAMPLER) {
+                                    apiScriptNode.add(node);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //目标
+        Map<String, SceneRequest.Goal> goal = Maps.newHashMap();
+        String key = apiScriptNode.get(0).getXpathMd5();
+        SceneRequest.Goal value = input.getPressureConfigRequest().getTargetGoal();
+        goal.put(key, value);
+        input.getPressureConfigRequest().setGoal(goal);
+        //压测模式配置
+        // TODO: 2022/5/26
+       // input.getPressureConfigRequest().setConfig();
+        //置空停止条件
+        input.getPressureConfigRequest().setDestroyMonitoringGoal(Collections.emptyList());
+        //置空告警条件
+        input.getPressureConfigRequest().setWarnMonitoringGoal(Collections.emptyList());
+
         return;
+    }
+
+    void findChild(ScriptNode root
+            , List<ScriptNode> list
+            , List<ScriptNode> threadGroup
+            , List<ScriptNode> apiScriptNode) {
+        List<ScriptNode> childlist = new ArrayList<>();
+        for (ScriptNode child :
+                list) {
+            if (child.getChildren() != null)
+                childlist.addAll(child.getChildren());
+        }
+        //若子节点不存在，那么就不必再遍历子节点中的子节点了 直接返回。
+        if (childlist.size() == 0)
+            return;
+        //设置父节点的子节点列表
+        root.setChildren(childlist);
+        //若子节点存在，接着递归调用该方法，寻找子节点的子节点。
+        for (ScriptNode childs :
+                childlist) {
+            findChild(childs, list, threadGroup, apiScriptNode);
+        }
+
     }
 
 

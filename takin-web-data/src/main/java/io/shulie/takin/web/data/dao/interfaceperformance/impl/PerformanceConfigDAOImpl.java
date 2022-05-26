@@ -12,6 +12,7 @@ import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
 import io.shulie.takin.web.data.util.MPUtil;
+import io.shulie.takin.web.ext.entity.UserExt;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -90,11 +91,7 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
 
     @Override
     public void delete(Long id) {
-        InterfacePerformanceConfigEntity updateEntity = new InterfacePerformanceConfigEntity();
-        updateEntity.setId(id);
-        updateEntity.setIsDeleted(true);
-        updateEntity.setGmtModified(new Date());
-        interfacePerformanceConfigMapper.updateById(updateEntity);
+        interfacePerformanceConfigMapper.deleteById(id);
     }
 
     public QueryWrapper<InterfacePerformanceConfigEntity> getWrapper(PerformanceConfigQueryParam param) {

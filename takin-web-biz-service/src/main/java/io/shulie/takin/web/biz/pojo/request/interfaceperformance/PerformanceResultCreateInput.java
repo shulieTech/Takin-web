@@ -13,6 +13,11 @@ public class PerformanceResultCreateInput extends PageBaseDTO {
     private Long id;
 
     /**
+     * 结果Id
+     */
+    private String resultId;
+
+    /**
      * 接口压测配置Id
      */
     private Long configId;

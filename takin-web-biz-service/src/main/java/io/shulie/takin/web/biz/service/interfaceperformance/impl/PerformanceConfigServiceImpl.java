@@ -23,6 +23,8 @@ import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
+import io.shulie.takin.web.ext.entity.UserExt;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author xingchen
@@ -122,6 +126,9 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(Long configId) {
+        if (configId == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "参数未设置!");
+        }
         // 判断数据是否存在
         InterfacePerformanceConfigEntity entity = interfacePerformanceConfigMapper.selectById(configId);
         if (entity == null) {
@@ -145,8 +152,14 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         //转换下
         List<PerformanceConfigDto> source = dtoPagingList.getList();
         long total = dtoPagingList.getTotal();
-        List<PerformanceConfigVO> returnList = Lists.newArrayList();
-        BeanUtils.copyProperties(source, returnList);
+        List<Long> userIds = source.stream().map(dto -> dto.getCreatorId()).collect(Collectors.toList());
+        Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
+        List<PerformanceConfigVO> returnList = source.stream().map(configDto -> {
+            PerformanceConfigVO vo = new PerformanceConfigVO();
+            BeanUtils.copyProperties(configDto, vo);
+            vo.setCreatorName(WebPluginUtils.getUserName(configDto.getCreatorId(), userMap));
+            return vo;
+        }).collect(Collectors.toList());
         return PagingList.of(returnList, total);
     }
 

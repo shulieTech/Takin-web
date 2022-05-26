@@ -18,6 +18,7 @@ import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpEntity;
@@ -28,10 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
@@ -68,7 +66,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
      * @param request
      */
     @Override
-    public void debug(PerformanceDebugRequest request) {
+    public String debug(PerformanceDebugRequest request) {
         if (request.getId() == null) {
             throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "未设置Id参数");
         }
@@ -85,12 +83,73 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         PerformanceParamDetailRequest detailRequest = new PerformanceParamDetailRequest();
         detailRequest.setConfigId(request.getId());
         PerformanceParamDetailResponse detailResponse = performanceParamService.detail(detailRequest);
+        // 3、处理请求参数
+        Map<String, Map<String, List<Object>>> fileIdDataMap = buildFileIdDataMap(request, detailResponse);
+
+        InterfacePerformanceConfigEntity updateEntity = new InterfacePerformanceConfigEntity();
+        updateEntity.setStatus(1);
+        updateEntity.setId(queryEntity.getId());
+        updateEntity.setGmtModified(new Date());
+        // 更新状态为调试中
+        performanceConfigDAO.updateById(updateEntity);
+
+        // 生成一个临时的配置ID,给前端查询使用,config表Id
+        String uuId = UUID.randomUUID().toString();
+        request.setResultId(uuId);
+        // 5、发起请求
+        CompletableFuture.runAsync(() -> processRequest(
+                fileIdDataMap,
+                request,
+                queryEntity,
+                detailResponse,
+                false),
+                performanceDebugThreadPool);
+        return uuId;
+    }
+
+    /**
+     * 简单调试使用,不保存数据
+     */
+    @Override
+    public String simple_debug(PerformanceDebugRequest request) {
+        // 1、读取数据库中的调试数据
+        InterfacePerformanceConfigEntity queryEntity = PerformanceConvert.convertConfigEntity(request);
+        // 2、读取文件关联的文件信息
+        PerformanceParamDetailResponse detailResponse = new PerformanceParamDetailResponse();
+        if (request.getId() != null) {
+            // 2、读取文件关联的文件信息
+            PerformanceParamDetailRequest detailRequest = new PerformanceParamDetailRequest();
+            detailRequest.setConfigId(request.getId());
+            detailResponse = performanceParamService.detail(detailRequest);
+        }
+        // 生成一个临时的配置ID,给前端查询使用,config表Id
+        String uuId = UUID.randomUUID().toString();
+        request.setResultId(uuId);
 
         // 3、处理请求参数
-        List<PerformanceParamRequest> paramList = detailResponse.getParamList();
+        Map<String, Map<String, List<Object>>> fileIdDataMap = buildFileIdDataMap(request, detailResponse);
+        // 4、发起请求
+        PerformanceParamDetailResponse finalDetailResponse = detailResponse;
+        CompletableFuture.runAsync(() -> processRequest(
+                fileIdDataMap,
+                request,
+                queryEntity,
+                finalDetailResponse,
+                true),
+                performanceDebugThreadPool);
+        return uuId;
+    }
 
+    /**
+     * 构建文件请求参数
+     */
+    private Map<String, Map<String, List<Object>>> buildFileIdDataMap(PerformanceDebugRequest request, PerformanceParamDetailResponse detailResponse) {
         // 文件Id对应的文件数据
         Map<String, Map<String, List<Object>>> fileIdDataMap = Maps.newHashMap();
+        if (detailResponse == null) {
+            return fileIdDataMap;
+        }
+        List<PerformanceParamRequest> paramList = detailResponse.getParamList();
         // 文件列和数据Map
         Map<String, List<Object>> fileData = Maps.newHashMap();
         // 解析参数 Map,key = paramName
@@ -118,25 +177,13 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     fileIdDataMap.put(String.valueOf(fileId), fileData);
                     // 设置一个文件最大条数
                     Long maxCount = request.getRelateFileMaxCount() == null ? 0 : request.getRelateFileMaxCount();
+
+                    // 设置一个文件的最大条数
                     request.setRelateFileMaxCount(maxCount > fileData.values().size() ? maxCount : fileData.values().size());
                 }
             }
         }
-
-        InterfacePerformanceConfigEntity updateEntity = new InterfacePerformanceConfigEntity();
-        updateEntity.setStatus(1);
-        updateEntity.setId(queryEntity.getId());
-        updateEntity.setGmtModified(new Date());
-        // 更新状态为调试中
-        performanceConfigDAO.updateById(updateEntity);
-
-        // 5、发起请求
-        CompletableFuture.runAsync(() -> processRequest(
-                fileIdDataMap,
-                request,
-                queryEntity,
-                detailResponse),
-                performanceDebugThreadPool);
+        return fileIdDataMap;
     }
 
     /**
@@ -145,7 +192,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
     private void processRequest(Map<String, Map<String, List<Object>>> fileIdDataMap,
                                 PerformanceDebugRequest request,
                                 InterfacePerformanceConfigEntity configEntity,
-                                PerformanceParamDetailResponse detailResponse) {
+                                PerformanceParamDetailResponse detailResponse,
+                                boolean isSimpleDebug) {
         // 获取请求文件最大条数,把所有文件数据跑完
         Long requestCount = request.getRequestCount();
         Long relateFileMaxCount = request.getRelateFileMaxCount();
@@ -208,19 +256,24 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     log.error("调试错误 --> 错误信息: {}", e.getMessage(), e);
                     refreshDebugErrorMessage(PerformanceDebugErrorEnum.REQUEST_FAILED, insertResult, e.getLocalizedMessage());
                 }
+
+                insertResult.setResultId(request.getResultId());
                 // 保存请求结果
                 performanceResultService.add(insertResult);
             }
         } catch (Throwable e) {
             log.error("单接口压测场景异常{}", ExceptionUtils.getStackTrace(e));
         }
-        // 更新场景已完成
-        InterfacePerformanceConfigEntity updateEntity = new InterfacePerformanceConfigEntity();
-        updateEntity.setStatus(0);
-        updateEntity.setId(request.getId());
-        updateEntity.setGmtModified(new Date());
-        // 更新状态为完成
-        performanceConfigDAO.updateById(updateEntity);
+        // 非简单调试，要更新配置表数据
+        if (!isSimpleDebug) {
+            // 更新场景已完成
+            InterfacePerformanceConfigEntity updateEntity = new InterfacePerformanceConfigEntity();
+            updateEntity.setStatus(0);
+            updateEntity.setId(request.getId());
+            updateEntity.setGmtModified(new Date());
+            // 更新状态为完成
+            performanceConfigDAO.updateById(updateEntity);
+        }
     }
 
     private void refreshDebugErrorMessage(PerformanceDebugErrorEnum errorEnum, PerformanceResultCreateInput insertResult,

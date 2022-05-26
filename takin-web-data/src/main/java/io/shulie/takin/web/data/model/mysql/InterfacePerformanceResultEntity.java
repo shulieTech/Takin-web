@@ -27,6 +27,12 @@ public class InterfacePerformanceResultEntity extends TenantBaseEntity {
     private Long id;
 
     /**
+     * 结果Id
+     */
+    @TableField(value = "result_id")
+    private String resultId;
+
+    /**
      * 接口压测配置Id
      */
     @TableField(value = "config_id")

@@ -12,5 +12,13 @@ public class PerformanceConfigCreateInput extends InterfacePerformanceConfigVO {
     /**
      * 压测相关配置
      */
-    private PressureConfigRequest pressureConfigRequest = PressureConfigRequest.DEFAULT;
+    private PressureConfigRequest pressureConfigRequest  = PressureConfigRequest.DEFAULT;;
+
+    // 临时调试使用,需要这里的参数信息
+    private PerformanceParamDetailResponse dataFileDataRequest;
+
+    /**
+     * 结果Id
+     */
+    private String resultId;
 }

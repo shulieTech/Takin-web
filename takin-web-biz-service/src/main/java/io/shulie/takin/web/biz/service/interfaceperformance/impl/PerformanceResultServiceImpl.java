@@ -70,6 +70,9 @@ public class PerformanceResultServiceImpl implements PerformanceResultService {
         if (param.getConfigId() != null) {
             queryWrapper.eq("config_id", param.getConfigId());
         }
+        if (StringUtils.isNotBlank(param.getResultId())) {
+            queryWrapper.eq("result_id", param.getResultId());
+        }
         return queryWrapper;
     }
 }

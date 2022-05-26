@@ -35,7 +35,7 @@ public class PerformanceDebugController {
     @Resource
     private PerformanceResultService performanceResultService;
 
-    @ApiOperation("调试,如果未设置调试Id,则默认是更新以后开启调试")
+    @ApiOperation("调试,如果未设置调试Id,则默认是新增以后开启调试")
     @RequestMapping(value = "/startAndSave", method = RequestMethod.POST)
     public ResponseResult startAndSave(@RequestBody PerformanceDebugRequest request) {
         // 配置Id为空,则需要保存以后，再做调试功能
@@ -50,16 +50,16 @@ public class PerformanceDebugController {
             BeanUtils.copyProperties(request, input);
             performanceConfigService.update(input);
         }
-        performanceDebugService.debug(request);
+        String uuid = performanceDebugService.debug(request);
         // 返回接口压测Id到前端
-        return ResponseResult.success(request.getId());
+        return ResponseResult.success(uuid);
     }
 
-    @ApiOperation("调试")
+    @ApiOperation("简单调试")
     @RequestMapping(value = "/start", method = RequestMethod.POST)
-    public ResponseResult start(@RequestBody PerformanceDebugRequest request) {
-        performanceDebugService.debug(request);
-        return ResponseResult.success();
+    public ResponseResult simpleDebug(@RequestBody PerformanceDebugRequest request) {
+        String resultId = performanceDebugService.simple_debug(request);
+        return ResponseResult.success(resultId);
     }
 
     @ApiOperation("获取调试结果")

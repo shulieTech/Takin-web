@@ -87,6 +87,11 @@ public class PerformanceConfigDto {
     private Long creatorId;
 
     /**
+     * 创建人
+     */
+    private String creatorName;
+
+    /**
      * 修改人
      */
     private Long modifierId;
@@ -100,4 +105,9 @@ public class PerformanceConfigDto {
      * 更新时间
      */
     private Date gmtModified;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }

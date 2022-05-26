@@ -241,6 +241,9 @@ public class PerformanceDebugUtil {
                                       String regexStr,
                                       Integer valueIndex,
                                       PerformanceParamDetailResponse detailResponse) {
+        if (fileIdDataMap.isEmpty()) {
+            return regexStr;
+        }
         List<String> groups = this.generateJavaPattern(regexStr);
         // 无需匹配，直接返回
         if (CollectionUtils.isEmpty(groups)) {

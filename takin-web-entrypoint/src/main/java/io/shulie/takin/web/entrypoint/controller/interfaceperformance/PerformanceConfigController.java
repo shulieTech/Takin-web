@@ -34,15 +34,15 @@ public class PerformanceConfigController {
     @ApiOperation("单接口压测新增")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseResult create(@RequestBody PerformanceConfigCreateInput input) {
-        performanceConfigService.add(input);
-        return ResponseResult.success();
+        Long configId = performanceConfigService.add(input);
+        return ResponseResult.success(configId);
     }
 
     @ApiOperation("单接口压测更新")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseResult update(@RequestBody PerformanceConfigCreateInput input) {
         performanceConfigService.update(input);
-        return ResponseResult.success();
+        return ResponseResult.success(input.getId());
     }
 
     @ApiOperation("单接口压测删除")

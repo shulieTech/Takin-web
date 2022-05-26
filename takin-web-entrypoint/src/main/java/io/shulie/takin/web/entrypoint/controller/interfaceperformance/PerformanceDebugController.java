@@ -55,7 +55,7 @@ public class PerformanceDebugController {
         return ResponseResult.success(uuid);
     }
 
-    @ApiOperation("简单调试")
+    @ApiOperation("简单调试,不保存数据，也不更新数据")
     @RequestMapping(value = "/start", method = RequestMethod.POST)
     public ResponseResult simpleDebug(@RequestBody PerformanceDebugRequest request) {
         String resultId = performanceDebugService.simple_debug(request);
@@ -66,5 +66,12 @@ public class PerformanceDebugController {
     @RequestMapping(value = "/result", method = RequestMethod.POST)
     public ResponseResult result(@RequestBody PerformanceResultCreateInput input) {
         return ResponseResult.success(performanceResultService.pageResult(input));
+    }
+
+    @ApiOperation("清理结果")
+    @RequestMapping(value = "/flush", method = RequestMethod.POST)
+    public ResponseResult flush(@RequestBody PerformanceResultCreateInput input) {
+        performanceResultService.flushAll(input);
+        return ResponseResult.success();
     }
 }

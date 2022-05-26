@@ -7,6 +7,8 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceResultCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceResultResponse;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceResultService;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceResultMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceResultEntity;
@@ -60,6 +62,20 @@ public class PerformanceResultServiceImpl implements PerformanceResultService {
             return result;
         }).collect(Collectors.toList());
         return PagingList.of(results, pageList.getTotal());
+    }
+
+    /**
+     * 清空结果数据
+     *
+     * @param param
+     */
+    @Override
+    public void flushAll(PerformanceResultCreateInput param) {
+        if (param.getConfigId() == null && StringUtils.isNotBlank(param.getResultId())) {
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_PARAM_ERROR, "参数未传递");
+        }
+        QueryWrapper<InterfacePerformanceResultEntity> queryWrapper = this.getWrapper(param);
+        interfacePerformanceResultMapper.delete(queryWrapper);
     }
 
     public QueryWrapper<InterfacePerformanceResultEntity> getWrapper(PerformanceResultCreateInput param) {

@@ -8,10 +8,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import cn.hutool.core.bean.BeanUtil;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import io.shulie.takin.adapter.api.entrypoint.pressure.PressureTaskApi;
 import io.shulie.takin.adapter.api.entrypoint.resource.CloudResourceApi;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStopReq;
@@ -25,24 +22,18 @@ import io.shulie.takin.cloud.common.bean.task.TaskResult;
 import io.shulie.takin.cloud.common.constants.ScheduleConstants;
 import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
-import io.shulie.takin.cloud.common.utils.GsonUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
-import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.eventcenter.Event;
 import io.shulie.takin.eventcenter.EventCenterTemplate;
-import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
-import jodd.util.Bits;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.connection.BitFieldSubCommands;
-import org.springframework.data.redis.connection.BitFieldSubCommands.BitFieldType;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -426,70 +417,6 @@ public abstract class AbstractIndicators {
             request.setResourceId(resourceId);
             cloudResourceApi.unLock(request);
         }
-    }
-
-    /**
-     * amdb	    cloud
-     * 00		00      未校准
-     * 01		01      校准中
-     * 10		10      校准失败
-     * 11		11      校准成功
-     */
-    // 设置数据校准成功/失败
-    protected void processCalibrationStatus(Long jobId, boolean success, String message, boolean cloud) {
-        String type = cloud ? "cloud" : "amdb";
-        int offset = cloud ? 2 : 0;
-        String statusKey = PressureStartCache.getDataCalibrationStatusKey(jobId);
-        redisClientUtil.setBit(statusKey, offset, true);
-        redisClientUtil.setBit(statusKey, offset + 1, success);
-        if (!success) {
-            redisClientUtil.hmset(PressureStartCache.getDataCalibrationMessageKey(jobId), type, message);
-        }
-        updateReport(jobId);
-        /**
-         * 位数右往左数
-         * int中第n位为0 ：(int & (1 << (n - 1))) != 0
-         * int中第x、y位为0 ：(int & (1 << (x - 1) + 1 << (y - 1))) != 0
-         * (1 << (2 - 1)) + (1 << (4 -1)) = 10
-         */
-        if (Bits.isSet(getStatus(jobId), 10)) { // 此处判断第2、4位为1，完成校验
-            redisClientUtil.del(statusKey,
-                PressureStartCache.getDataCalibrationMessageKey(jobId),
-                PressureStartCache.getDataCalibrationLockKey(jobId));
-        }
-    }
-
-    // 设置数据校准中
-    protected void dataCalibration_ing(Long jobId, boolean cloud) {
-        int offset = cloud ? 2 : 0;
-        redisClientUtil.setBit(PressureStartCache.getDataCalibrationStatusKey(jobId), offset + 1, true);
-        updateReport(jobId);
-    }
-
-    private void updateReport(Long jobId) {
-        ReportResult report = reportDao.selectByJobId(jobId);
-        if (Objects.nonNull(report)) {
-            String messageKey = PressureStartCache.getDataCalibrationMessageKey(jobId);
-            Map<Object, Object> message = redisClientUtil.hmget(messageKey);
-            Map<String, String> map = Maps.newHashMap();
-            String calibrationMessage = report.getCalibrationMessage();
-            if (StringUtils.isNotBlank(calibrationMessage)) {
-                map.putAll(JsonHelper.string2Obj(calibrationMessage, new TypeReference<Map<String, String>>() {
-                }));
-            }
-            message.forEach((key, value) -> map.put(String.valueOf(key), String.valueOf(value)));
-            report.setCalibrationMessage(GsonUtil.gsonToString(map));
-            report.setCalibrationStatus(getStatus(jobId));
-            ReportUpdateParam param = BeanUtil.copyProperties(report, ReportUpdateParam.class);
-            reportDao.updateReport(param);
-        }
-    }
-
-    private int getStatus(Long jobId) {
-        BitFieldSubCommands commands = BitFieldSubCommands.create()
-            .get(BitFieldType.unsigned(4)).valueAt(0);
-        String statusKey = PressureStartCache.getDataCalibrationStatusKey(jobId);
-        return redisClientUtil.getBit(statusKey, commands).get(0).intValue();
     }
 
     protected void updatePressureTaskMessageByResourceId(String resourceId, String message) {

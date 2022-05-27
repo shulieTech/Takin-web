@@ -320,4 +320,10 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         cloudSceneManageService.recovery(req.getId());
         return "恢复成功";
     }
+
+    @Override
+    public String archive(SceneManageDeleteReq vo) {
+        cloudSceneManageService.archive(vo.getId());
+        return "归档成功";
+    }
 }

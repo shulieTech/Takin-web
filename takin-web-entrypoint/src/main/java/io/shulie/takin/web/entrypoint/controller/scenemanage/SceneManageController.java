@@ -344,4 +344,30 @@ public class SceneManageController {
     public WebResponse<String> recovery(@RequestBody @Valid SceneManageDeleteReq deleteVO) {
         return WebResponse.success(sceneManageService.recoveryScene(deleteVO));
     }
+
+    @DeleteMapping
+    @ApiOperation("归档")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE,
+            subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
+            logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_DELETE
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.DELETE
+    )
+    public WebResponse<String> archive(@RequestBody @Valid SceneManageDeleteReq deleteVO) {
+        ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(deleteVO.getId());
+        if (Objects.isNull(webResponse.getData())) {
+            OperationLogContextHolder.ignoreLog();
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景不存在");
+        }
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
+        SceneManageWrapperDTO sceneData = JSON.parseObject(JSON.toJSONString(webResponse.getData()),
+                SceneManageWrapperDTO.class);
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneData.getId()));
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
+        String deleteSceneResponse = sceneManageService.deleteScene(deleteVO);
+        return WebResponse.success(deleteSceneResponse);
+    }
 }

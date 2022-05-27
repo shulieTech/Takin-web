@@ -127,5 +127,12 @@ public interface CloudSceneManageApi {
      */
     String recovery(SceneManageDeleteReq req);
 
+    /**
+     * 归档
+     * @param vo
+     * @return
+     */
+    String archive(SceneManageDeleteReq vo);
+
 
 }

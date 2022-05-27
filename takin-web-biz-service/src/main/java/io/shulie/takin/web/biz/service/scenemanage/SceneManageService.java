@@ -83,4 +83,11 @@ public interface SceneManageService {
      */
     String recoveryScene(SceneManageDeleteReq deleteVO);
 
+    /**
+     * 归档
+     * @param vo
+     * @return
+     */
+    String archive(SceneManageDeleteReq vo);
+
 }

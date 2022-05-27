@@ -1358,7 +1358,16 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         SceneManageEntity entity = new SceneManageEntity();
         entity.setId(id);
         entity.setStatus(0);
-        entity.setIsDeleted(0);
+        entity.setIsArchive(0);
+        sceneManageDAO.updateById(entity);
+    }
+
+    @Override
+    public void archive(Long id) {
+        SceneManageEntity entity = new SceneManageEntity();
+        entity.setId(id);
+        entity.setStatus(-1);
+        entity.setIsArchive(1);
         sceneManageDAO.updateById(entity);
     }
 }

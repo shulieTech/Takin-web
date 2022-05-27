@@ -866,4 +866,8 @@ public class SceneManageServiceImpl implements SceneManageService {
         return cloudSceneManageApi.recovery(vo);
     }
 
+    @Override
+    public String archive(SceneManageDeleteReq vo) {
+        return cloudSceneManageApi;
+    }
 }

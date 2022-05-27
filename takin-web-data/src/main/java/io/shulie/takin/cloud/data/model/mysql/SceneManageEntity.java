@@ -119,6 +119,8 @@ public class SceneManageEntity {
     private Long createUid;
     @TableField(value = "customer_id")
     private Long customerId;
+    @TableField(value = "is_archive")
+    private Integer isArchive;
 
 
 }

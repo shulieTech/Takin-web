@@ -3,8 +3,6 @@ package io.shulie.takin.adapter.api.entrypoint.scene.manage;
 import java.math.BigDecimal;
 import java.util.List;
 
-import javax.validation.Valid;
-
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.adapter.api.model.request.scenemanage.CloudUpdateSceneFileRequest;
@@ -19,13 +17,11 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListRes
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
-import org.springframework.validation.annotation.Validated;
 
 /**
  * @author 何仲奇
  * @date 2020/10/20 3:42 下午
  */
-@Validated
 @SuppressWarnings("unused")
 public interface CloudSceneManageApi {
 
@@ -34,7 +30,7 @@ public interface CloudSceneManageApi {
      *
      * @param updateSceneFileRequest 请求入参
      */
-    void updateSceneFileByScriptId(@Valid CloudUpdateSceneFileRequest updateSceneFileRequest);
+    void updateSceneFileByScriptId(CloudUpdateSceneFileRequest updateSceneFileRequest);
 
     /**
      * 保存

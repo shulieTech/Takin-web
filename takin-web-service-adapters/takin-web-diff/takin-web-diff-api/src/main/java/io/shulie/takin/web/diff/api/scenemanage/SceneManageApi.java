@@ -32,7 +32,6 @@ import org.springframework.validation.annotation.Validated;
  * @author 无涯
  * @date 2020/10/27 4:22 下午
  */
-@Valid
 public interface SceneManageApi {
 
     /**
@@ -41,7 +40,7 @@ public interface SceneManageApi {
      * @param updateSceneFileRequest 请求入参
      * @return 响应参数
      */
-    ResponseResult<Object> updateSceneFileByScriptId(@Validated CloudUpdateSceneFileRequest updateSceneFileRequest);
+    ResponseResult<Object> updateSceneFileByScriptId(CloudUpdateSceneFileRequest updateSceneFileRequest);
 
     /**
      * 保存

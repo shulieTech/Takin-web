@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -69,20 +70,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class CloudSceneManageApiImpl implements CloudSceneManageApi {
 
-    @Resource(type = CloudSceneManageService.class)
+    @Resource
     private CloudSceneManageService cloudSceneManageService;
 
-    @Resource(type = CloudReportService.class)
+    @Resource
     private CloudReportService cloudReportService;
 
     @Resource
     private PluginManager pluginManager;
 
-    @Resource(type = StrategyConfigService.class)
+    @Resource
     private StrategyConfigService strategyConfigService;
 
     @Override
     public void updateSceneFileByScriptId(CloudUpdateSceneFileRequest request) {
+        if (Objects.isNull(request.getNewScriptId())
+            || Objects.isNull(request.getOldScriptId())
+            || Objects.isNull(request.getScriptType())
+            || org.springframework.util.CollectionUtils.isEmpty(request.getUploadFiles())) {
+            throw new IllegalArgumentException("缺少参数");
+        }
         cloudSceneManageService.updateFileByScriptId(request);
     }
 

@@ -81,7 +81,6 @@ import io.shulie.takin.cloud.common.utils.LinuxUtil;
 import io.shulie.takin.cloud.common.utils.UrlUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
-import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.cloud.data.param.scenemanage.SceneManageCreateOrUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
@@ -155,9 +154,6 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
     public static final String SCENE_BUSINESS_ACTIVITY = "sceneBusinessActivity";
     public static final String SCENE_SCRIPT = "sceneScript";
     public static final String SCENE_SLA = "sceneSla";
-
-    @Resource
-    private PressureTaskDAO pressureTaskDAO;
 
     @Override
     @Transactional(rollbackFor = Exception.class)

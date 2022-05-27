@@ -2,9 +2,6 @@ package io.shulie.takin.adapter.api.model.request.scenemanage;
 
 import java.util.List;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.adapter.api.model.common.UploadFileDTO;
 import io.swagger.annotations.ApiModel;
@@ -31,25 +28,21 @@ public class CloudUpdateSceneFileRequest extends ContextExt {
      * 新的脚本发布id
      */
     @ApiModelProperty("新的脚本发布id")
-    @NotNull(message = "新的脚本发布id不能为空")
     private Long newScriptId;
     /**
      * 旧的脚本发布id
      */
     @ApiModelProperty("旧的脚本发布id")
-    @NotNull(message = "旧的脚本发布id不能为空")
     private Long oldScriptId;
     /**
      * 脚本类型
      */
     @ApiModelProperty("脚本类型")
-    @NotNull(message = "脚本类型不能为空")
     private Integer scriptType;
     /**
      * 上传文件
      */
     @ApiModelProperty("上传文件")
-    @NotEmpty(message = "上传文件不能为空")
     private List<UploadFileDTO> uploadFiles;
 
     @ApiModelProperty("是否覆盖大文件 1=覆盖 0=不覆盖")

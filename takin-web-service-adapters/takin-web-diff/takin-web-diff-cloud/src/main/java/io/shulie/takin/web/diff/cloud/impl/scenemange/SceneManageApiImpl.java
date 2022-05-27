@@ -9,8 +9,6 @@ import javax.annotation.Resource;
 import io.shulie.takin.adapter.api.entrypoint.engine.CloudEngineApi;
 import io.shulie.takin.adapter.api.entrypoint.process.ProcessApi;
 import io.shulie.takin.adapter.api.entrypoint.scene.manage.CloudSceneManageApi;
-import io.shulie.takin.cloud.ext.content.script.ScriptNode;
-import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.adapter.api.model.request.engine.EnginePluginDetailsWrapperReq;
 import io.shulie.takin.adapter.api.model.request.engine.EnginePluginFetchWrapperReq;
 import io.shulie.takin.adapter.api.model.request.scenemanage.CloudUpdateSceneFileRequest;
@@ -28,6 +26,8 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListRes
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
+import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;

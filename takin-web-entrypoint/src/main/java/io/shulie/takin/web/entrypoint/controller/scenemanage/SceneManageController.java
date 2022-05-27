@@ -367,7 +367,7 @@ public class SceneManageController {
                 SceneManageWrapperDTO.class);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneData.getId()));
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
-        String deleteSceneResponse = sceneManageService.deleteScene(deleteVO);
+        String deleteSceneResponse = sceneManageService.archive(deleteVO);
         return WebResponse.success(deleteSceneResponse);
     }
 }

@@ -16,7 +16,6 @@ import io.shulie.takin.cloud.biz.notify.PressureEventCenter.CloudCalibrationExce
 import io.shulie.takin.cloud.common.bean.task.TaskResult;
 import io.shulie.takin.cloud.common.utils.GsonUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
-import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
 import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
@@ -52,8 +51,6 @@ public class PressureDataCalibration {
     private RedisClientUtil redisClientUtil;
     @Resource
     private ReportDao reportDao;
-    @Resource
-    private PressureTaskDAO pressureTaskDAO;
 
     // 数据校准事件
     @Async("dataCalibration")

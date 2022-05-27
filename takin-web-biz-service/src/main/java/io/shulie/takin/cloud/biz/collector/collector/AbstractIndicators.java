@@ -18,6 +18,7 @@ import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStopReq;
 import io.shulie.takin.adapter.api.model.request.resource.ResourceUnLockRequest;
 import io.shulie.takin.cloud.biz.notify.StartFailEventSource;
 import io.shulie.takin.cloud.biz.notify.StopEventSource;
+import io.shulie.takin.cloud.biz.notify.processor.calibration.PressureDataCalibration;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
 import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
 import io.shulie.takin.cloud.common.bean.task.TaskResult;
@@ -34,6 +35,7 @@ import io.shulie.takin.eventcenter.Event;
 import io.shulie.takin.eventcenter.EventCenterTemplate;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import jodd.util.Bits;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -97,6 +99,8 @@ public abstract class AbstractIndicators {
     private PressureTaskApi pressureTaskApi;
     @Resource
     private CloudResourceApi cloudResourceApi;
+    @Resource
+    private PressureDataCalibration pressureDataCalibration;
     private DefaultRedisScript<Void> minRedisScript;
     private DefaultRedisScript<Void> maxRedisScript;
     private DefaultRedisScript<Void> unlockRedisScript;
@@ -363,10 +367,27 @@ public abstract class AbstractIndicators {
         }
     }
 
-    protected void doneReport(Long taskId) {
+    protected void doneReport(ReportResult report) {
+        Long taskId = report.getTaskId();
         if (redisClientUtil.lockExpire(PressureStartCache.getReportDoneKey(taskId),
             String.valueOf(System.currentTimeMillis()), 5, TimeUnit.MINUTES)) {
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_DONE, null);
+            dataCalibration(report);
+        }
+    }
+
+    private void dataCalibration(ReportResult report) {
+        Long jobId = report.getJobId();
+        Long reportId = report.getId();
+        if (redisClientUtil.lockExpire(PressureStartCache.getDataCalibrationLockKey(jobId), String.valueOf(reportId),
+            5, TimeUnit.MINUTES)) {
+            TaskResult result = new TaskResult();
+            result.setSceneId(report.getSceneId());
+            result.setTaskId(report.getJobId());
+            result.setResourceId(report.getResourceId());
+            WebPluginUtils.fillCloudUserData(result);
+            pressureDataCalibration.dataCalibrationAmdb(result);
+            pressureDataCalibration.dataCalibrationCloud(result);
         }
     }
 

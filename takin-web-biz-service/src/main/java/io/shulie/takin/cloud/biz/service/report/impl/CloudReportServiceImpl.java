@@ -1333,7 +1333,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             }
             reportResult.setEndTime(finalDateTime);
         }
-        // 更新
+        // 更新，此处不更报告状态
+        reportResult.setStatus(null);
         ReportUpdateParam param = BeanUtil.copyProperties(reportResult, ReportUpdateParam.class);
         reportDao.updateReport(param);
     }

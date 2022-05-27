@@ -927,11 +927,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
 
     @Override
     public void delete(Long id) {
-        SceneManageEntity entity = new SceneManageEntity();
-        entity.setIsDeleted(1);
-        entity.setStatus(-1);
-        entity.setId(id);
-        sceneManageDAO.updateById(entity);
+        sceneManageDAO.removeById(id);
     }
 
     @Override

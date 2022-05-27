@@ -868,6 +868,6 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     @Override
     public String archive(SceneManageDeleteReq vo) {
-        return cloudSceneManageApi;
+        return cloudSceneManageApi.archive(vo);
     }
 }

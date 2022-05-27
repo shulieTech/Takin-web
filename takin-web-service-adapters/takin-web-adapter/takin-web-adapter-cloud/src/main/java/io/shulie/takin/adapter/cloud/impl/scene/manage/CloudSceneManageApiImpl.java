@@ -151,8 +151,7 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         queryVO.setSceneIds(sceneIdList);
         queryVO.setLastPtStartTime(req.getLastPtStartTime());
         queryVO.setLastPtEndTime(req.getLastPtEndTime());
-        Integer isDeleted = req.getIsDeleted();
-        queryVO.setIsDeleted(isDeleted == null ? 0 : isDeleted);
+        queryVO.setIsArchive(req.getIsArchive() == null?0:req.getIsArchive());
         PageInfo<SceneManageListOutput> pageInfo = cloudSceneManageService.queryPageList(queryVO);
         // 转换
         List<SceneManageListResp> list = pageInfo.getList().stream()

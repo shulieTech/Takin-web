@@ -263,7 +263,7 @@ public class SceneManageController {
         if(Objects.isNull(recovery)){
             recovery = false;
         }
-        queryVO.setIsDeleted(recovery?1:0);
+        queryVO.setIsArchive(recovery?1:0);
         ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
         return Response.success(responseResult.getData(), responseResult.getTotalNum());
     }

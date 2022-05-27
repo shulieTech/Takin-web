@@ -27,6 +27,6 @@ public class SceneManageQueryReq extends PagingContextExt {
 
     private String lastPtEndTime;
 
-    private Integer isDeleted;
+    private Integer isArchive;
 
 }

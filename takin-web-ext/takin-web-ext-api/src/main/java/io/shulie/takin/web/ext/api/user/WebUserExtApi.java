@@ -98,7 +98,9 @@ public interface WebUserExtApi extends ExtensionPoint {
      * @param traceContextExt 溯源数据对象
      */
     void setCloudUserData(ContextExt traceContextExt);
-
+	
+	Long getCustomerId();
+	
     /**
      * 获取系统个人信息
      *
@@ -129,6 +131,13 @@ public interface WebUserExtApi extends ExtensionPoint {
     void removeTraceContext();
 
     /**
+     * 获取登录用户
+     *
+     * @return
+     */
+    UserExt getUser();
+	
+	/**
      * 获取登录用户
      *
      * @return -

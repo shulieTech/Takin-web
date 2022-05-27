@@ -181,6 +181,16 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      */
     DATA_SIGN_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据签名异常"),
 
+	/**
+     * 接口压测
+     */
+    INTERFACE_PERFORMANCE_PARAM_ERROR("1900-" + ErrorConstant.DELETE_ERROR, "接口压测删除异常"),
+    INTERFACE_PERFORMANCE_CREATE_ERROR("1901-" + ErrorConstant.ADD_ERROR, "接口压测新增异常"),
+    INTERFACE_PERFORMANCE_QUERY_ERROR("1902-" + ErrorConstant.QUERY_ERROR, "接口压测查询异常"),
+    INTERFACE_PERFORMANCE_FILE_TYPE_ERROR("1903-" + ErrorConstant.ADD_ERROR, "不支持的文件类型"),
+    INTERFACE_PERFORMANCE_DEBUG_ERROR("1904-" + ErrorConstant.STATUS_ERROR, "当前场景已在调试中"),
+    INTERFACE_PERFORMANCE_FILE_PARAM_ERROR("1905-" + ErrorConstant.VALIDATE_ERROR, "参数存在重复"),
+    
     ;
     private final String errorCode;
 

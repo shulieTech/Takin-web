@@ -1,11 +1,4 @@
-package io.shulie.takin.web.biz.pojo.request.scene;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+package io.shulie.takin.web.biz.pojo.request.interfaceperformance;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
@@ -17,6 +10,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 /**
  * 操作压测场景入参 -新
  *
@@ -24,21 +23,17 @@ import lombok.Setter;
  */
 @Data
 @ApiModel(value = "创建/修改 场景 - 新")
-public class NewSceneRequest {
+public class PressureConfigRequest {
     /**
      * 接口id
      */
     private Long id;
-    /**
-     * 单接口压测目标值
-     */
+    @ApiModelProperty(value = "目标")
     private SceneRequest.Goal targetGoal;
 
     @ApiModelProperty(value = "基础信息")
-    @NotNull(message = "场景基础信息不能为空")
     private BasicInfo basicInfo;
     @ApiModelProperty(value = "施压配置")
-    @NotNull(message = "施压配置不能为空")
     private PtConfig config;
     @ApiModelProperty(value = "压测目标")
     @NotNull(message = "业压测目标不能为空,key节点的xpathMd5，value是配置信息")
@@ -53,8 +48,7 @@ public class NewSceneRequest {
     @NotNull(message = "数据验证配置不能为空")
     private DataValidation dataValidation;
 
-    @Getter
-    @Setter
+    @Data
     public static class DataValidation extends SceneRequest.DataValidation {
         @ApiModelProperty("排除的应用id列表")
         private List<Long> excludedApplicationIds;
@@ -81,14 +75,11 @@ public class NewSceneRequest {
     @Data
     public static class PtConfig {
         @ApiModelProperty(value = "启动的POD数")
-        @NotNull(message = "POD数不能为空")
-        private Integer podNum;
+        private Integer podNum = 1;
         @ApiModelProperty(value = "压测时长")
-        @NotNull(message = "压测时长不能为空")
-        private Long duration;
+        private Long duration = 5l;
         @ApiModelProperty(value = "压测时长单位")
-        @NotNull(message = "压测时长单位")
-        private String unit;
+        private String unit = "m";
         @ApiModelProperty(value = "预估流量")
         private Double estimateFlow;
         @ApiModelProperty(value = "线程组内施压配置，key为xpathMd5,value为具体配置")
@@ -98,11 +89,9 @@ public class NewSceneRequest {
     @Data
     public static class ThreadGroupConfig {
         @ApiModelProperty(value = "压力模式：0并发、1TPS、2自定义等")
-        @NotNull(message = "压力模式不能为空")
-        private Integer type;
+        private Integer type = 0;
         @ApiModelProperty(value = "施压模式：1固定压力值，2线性递增，3阶梯递增")
-        @NotNull(message = "压力模式不能为空")
-        private Integer mode;
+        private Integer mode = 1;
         @ApiModelProperty(value = "并发线程数")
         private Integer threadNum;
         @ApiModelProperty(value = "递增时长,施压模式为线性递增或阶梯递增时的递增时长")
@@ -141,7 +130,8 @@ public class NewSceneRequest {
         private Integer numberOfIgnore;
     }
 
-    public static NewSceneRequest DEFAULT = JSON.parseObject("{\n" +
+
+    public static PressureConfigRequest DEFAULT = JSON.parseObject("{\n" +
                     "  \"basicInfo\": {\n" +
                     "    \"businessFlowId\": 241,\n" +
                     "    \"name\": \"DEFAULT\"\n" +
@@ -202,6 +192,6 @@ public class NewSceneRequest {
                     "  }\n" +
                     "}"
             ,
-            new TypeReference<NewSceneRequest>() {
+            new TypeReference<PressureConfigRequest>() {
             });
 }

@@ -42,6 +42,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Api(tags = "移动云接口", value = "移动云接口")
 @RestController
@@ -98,7 +102,7 @@ public class ShiftCloudController {
     }
 
     //2.2
-    @PostMapping("/api/c/self-service-api/tool-code/task_api/task_list")
+    @PostMapping("/api/c/self-service-api/Performance/task_api/task_list")
     public BaseResult getSceneManagers(@RequestBody ShiftCloudVO shiftCloudVO) {
         BaseResult result = new BaseResult<>();
         try {
@@ -138,7 +142,7 @@ public class ShiftCloudController {
     }
 
     //2.3
-    @PostMapping("/api/c/self-service-api/tool-code/task_api/relate_task")
+    @PostMapping("/api/c/self-service-api/Performance/task_api/relate_task")
     public BaseResult relateTask(@RequestBody ShiftCloudVO shiftCloudVO) {
         BaseResult baseResult = new BaseResult();
         TASK_CACHE.put(shiftCloudVO.getTask_id(), shiftCloudVO.getTool_task_id());
@@ -146,7 +150,7 @@ public class ShiftCloudController {
     }
 
     //2.4
-    @PostMapping("/api/c/self-service-api/tool-code/task_api/execute_task")
+    @PostMapping("/api/c/self-service-api/Performance/task_api/execute_task")
     public BaseResult executeTask(@RequestBody ShiftCloudVO shiftCloudVO) {
         BaseResult baseResult = new BaseResult();
         try {
@@ -163,6 +167,10 @@ public class ShiftCloudController {
                     if (null != toolExecuteId) {
                         Map data = new HashMap(1);
                         data.put("tool_execute_id", toolExecuteId);
+                        ScheduledExecutorService pool = Executors.newScheduledThreadPool(4);
+                        pool.scheduleWithFixedDelay(()->{
+                            this.pushStatus(toolExecuteId);
+                        },30,30, TimeUnit.SECONDS);
                         baseResult.setData(data);
                     }
                 }
@@ -175,12 +183,12 @@ public class ShiftCloudController {
     }
 
     //2.5
-    public void pushStatus() {
+    public void pushStatus(long reportId) {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        HttpPost httpPost = new HttpPost("http://域名/ms/testcloudplatform/api/service/test/plan/task/status");
+        HttpPost httpPost = new HttpPost("http://devops.testcloud.com/ms/testcloudplatform/api/service/test/plan/task/status");
         CloseableHttpResponse response = null;
         try {
-            Map data = this.getData(0l);
+            Map data = this.getData(reportId);
             StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
             httpPost.setEntity(stringEntity);
             response = httpClient.execute(httpPost);
@@ -226,7 +234,7 @@ public class ShiftCloudController {
             Long totalRequest = output.getTotalRequest();
             data.put("tool_excute_id", id);
             data.put("tool_task_id", sceneId);
-            data.put("tool_code", "tool_code");
+            data.put("tool_code", "Performance");
             data.put("task_status", null != conclusion && 1 == conclusion ? 1 : 2);
             data.put("task_message", conclusionRemark);
             data.put("task_progress", testTotalTime);

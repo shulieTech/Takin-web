@@ -127,5 +127,5 @@ public interface CloudSceneManageApi {
      */
     String recovery(SceneManageDeleteReq req);
 
-
+    ResponseResult<List<SceneManageListResp>> querySceneByStatus(SceneManageQueryReq req);
 }

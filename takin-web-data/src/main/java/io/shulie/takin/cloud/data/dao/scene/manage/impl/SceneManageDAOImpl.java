@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.cloud.common.bean.scenemanage.SceneManageQueryBean;
+import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
 import io.shulie.takin.cloud.data.converter.senemange.SceneManageEntityConverter;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
@@ -30,8 +31,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SceneManageDAOImpl
-    extends ServiceImpl<SceneManageMapper, SceneManageEntity>
-    implements SceneManageDAO, MPUtil<SceneManageEntity> {
+        extends ServiceImpl<SceneManageMapper, SceneManageEntity>
+        implements SceneManageDAO, MPUtil<SceneManageEntity> {
 
     @Override
     public Long insert(SceneManageCreateOrUpdateParam createParam) {
@@ -68,27 +69,27 @@ public class SceneManageDAOImpl
             userIds = CloudPluginUtils.getContext().getFilterSql();
             // 去除左右的括号
             if (userIds.lastIndexOf("(") == 0
-                && userIds.lastIndexOf(")") == userIds.length() - 1) {
+                    && userIds.lastIndexOf(")") == userIds.length() - 1) {
                 userIds = userIds.substring(1, userIds.length() - 1);
             }
         }
         List<String> userIdList = Arrays.stream(userIds.split(","))
-            .filter(StrUtil::isNotBlank).collect(Collectors.toList());
+                .filter(StrUtil::isNotBlank).collect(Collectors.toList());
         // 组装查询条件
         LambdaQueryWrapper<SceneManageEntity> wrapper = Wrappers.lambdaQuery(SceneManageEntity.class)
-            .eq(!Objects.isNull(queryBean.getSceneId()), SceneManageEntity::getId, queryBean.getSceneId())
-            .in(!CollectionUtils.isEmpty(queryBean.getSceneIds()), SceneManageEntity::getId, queryBean.getSceneIds())
-            .like(!StrUtil.isBlank(queryBean.getSceneName()), SceneManageEntity::getSceneName, queryBean.getSceneName())
-            .eq(!Objects.isNull(queryBean.getStatus()), SceneManageEntity::getStatus, queryBean.getStatus())
-            .eq(!Objects.isNull(queryBean.getType()), SceneManageEntity::getType, queryBean.getType())
-            .le(!Objects.isNull(queryBean.getLastPtEndTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtEndTime())
-            .ge(!Objects.isNull(queryBean.getLastPtStartTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtStartTime())
-            .eq(Objects.nonNull(queryBean.getIsDeleted()), SceneManageEntity::getIsDeleted, queryBean.getIsDeleted())
-            .eq(SceneManageEntity::getTenantId, CloudPluginUtils.getContext().getTenantId())
-            .eq(SceneManageEntity::getEnvCode, CloudPluginUtils.getContext().getEnvCode())
-            .in(userIdList.size() > 0, SceneManageEntity::getUserId, userIdList)
-            .orderByDesc(SceneManageEntity::getLastPtTime)
-            .orderByDesc(SceneManageEntity::getId);
+                .eq(!Objects.isNull(queryBean.getSceneId()), SceneManageEntity::getId, queryBean.getSceneId())
+                .in(!CollectionUtils.isEmpty(queryBean.getSceneIds()), SceneManageEntity::getId, queryBean.getSceneIds())
+                .like(!StrUtil.isBlank(queryBean.getSceneName()), SceneManageEntity::getSceneName, queryBean.getSceneName())
+                .eq(!Objects.isNull(queryBean.getStatus()), SceneManageEntity::getStatus, queryBean.getStatus())
+                .eq(!Objects.isNull(queryBean.getType()), SceneManageEntity::getType, queryBean.getType())
+                .le(!Objects.isNull(queryBean.getLastPtEndTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtEndTime())
+                .ge(!Objects.isNull(queryBean.getLastPtStartTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtStartTime())
+                .eq(Objects.nonNull(queryBean.getIsDeleted()), SceneManageEntity::getIsDeleted, queryBean.getIsDeleted())
+                .eq(SceneManageEntity::getTenantId, CloudPluginUtils.getContext().getTenantId())
+                .eq(SceneManageEntity::getEnvCode, CloudPluginUtils.getContext().getEnvCode())
+                .in(userIdList.size() > 0, SceneManageEntity::getUserId, userIdList)
+                .orderByDesc(SceneManageEntity::getLastPtTime)
+                .orderByDesc(SceneManageEntity::getId);
         return this.baseMapper.selectList(wrapper);
     }
 
@@ -104,12 +105,12 @@ public class SceneManageDAOImpl
     @Override
     public List<SceneManageEntity> listFromUpdateScript(ContextExt contextExt) {
         return this.getBaseMapper()
-            .selectList(new LambdaQueryWrapper<SceneManageEntity>()
-                .eq(SceneManageEntity::getEnvCode, contextExt.getEnvCode())
-                .eq(SceneManageEntity::getTenantId, contextExt.getTenantId())
-                .eq(SceneManageEntity::getIsDeleted, 0)
-                .select(SceneManageEntity::getId, SceneManageEntity::getTenantId, SceneManageEntity::getFeatures)
-            );
+                .selectList(new LambdaQueryWrapper<SceneManageEntity>()
+                        .eq(SceneManageEntity::getEnvCode, contextExt.getEnvCode())
+                        .eq(SceneManageEntity::getTenantId, contextExt.getTenantId())
+                        .eq(SceneManageEntity::getIsDeleted, 0)
+                        .select(SceneManageEntity::getId, SceneManageEntity::getTenantId, SceneManageEntity::getFeatures)
+                );
     }
 
     @Override
@@ -141,8 +142,10 @@ public class SceneManageDAOImpl
     @Override
     public int updateStatus(Long sceneId, Integer status) {
         return this.baseMapper.update(
-            new SceneManageEntity() {{setStatus(status);}},
-            Wrappers.lambdaQuery(SceneManageEntity.class).eq(SceneManageEntity::getId, sceneId));
+                new SceneManageEntity() {{
+                    setStatus(status);
+                }},
+                Wrappers.lambdaQuery(SceneManageEntity.class).eq(SceneManageEntity::getId, sceneId));
     }
 
     /**
@@ -156,8 +159,36 @@ public class SceneManageDAOImpl
     @Override
     public int updateStatus(Long sceneId, Integer status, Integer compareStatus) {
         LambdaQueryWrapper<SceneManageEntity> wrapper = Wrappers.lambdaQuery(SceneManageEntity.class)
-            .eq(!Objects.isNull(sceneId), SceneManageEntity::getId, sceneId)
-            .eq(!Objects.isNull(compareStatus), SceneManageEntity::getStatus, compareStatus);
-        return this.baseMapper.update(new SceneManageEntity() {{setStatus(status);}}, wrapper);
+                .eq(!Objects.isNull(sceneId), SceneManageEntity::getId, sceneId)
+                .eq(!Objects.isNull(compareStatus), SceneManageEntity::getStatus, compareStatus);
+        return this.baseMapper.update(new SceneManageEntity() {{
+            setStatus(status);
+        }}, wrapper);
+    }
+
+    @Override
+    public List<SceneManageEntity> queryScene(SceneManageQueryBean param) {
+        if (Objects.isNull(param)) {
+            log.error("查询压测场景参数未空！");
+            return null;
+        }
+        LambdaQueryWrapper<SceneManageEntity> wrapper = new LambdaQueryWrapper<>();
+        if (Objects.nonNull(param.getSceneId())) {
+            wrapper.eq(SceneManageEntity::getId, param.getSceneId());
+        } else if (CollectionUtils.isNotEmpty(param.getSceneIds())) {
+            wrapper.in(SceneManageEntity::getId, param.getSceneIds());
+        }
+        if (Objects.nonNull(param.getSceneName())) {
+            wrapper.eq(SceneManageEntity::getSceneName, param.getSceneName());
+        }
+        if (Objects.nonNull(param.getStatus())) {
+            wrapper.eq(SceneManageEntity::getStatus, param.getStatus());
+        } else if (CollectionUtils.isNotEmpty(param.getStatusList())) {
+            wrapper.in(SceneManageEntity::getStatus, param.getStatusList());
+        }
+        wrapper.eq(SceneManageEntity::getType, PressureSceneEnum.DEFAULT.getCode());
+        wrapper.eq(SceneManageEntity::getIsDeleted, 0);
+        wrapper.orderByDesc(SceneManageEntity::getLastPtTime);
+        return this.baseMapper.selectList(wrapper);
     }
 }

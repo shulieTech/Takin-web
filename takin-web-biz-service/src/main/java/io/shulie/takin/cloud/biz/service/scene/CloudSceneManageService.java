@@ -154,4 +154,6 @@ public interface CloudSceneManageService {
      * @param id
      */
     void recovery(Long id);
+
+    List<SceneManageListOutput> getSceneByStatus(Integer status);
 }

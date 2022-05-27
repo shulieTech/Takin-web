@@ -9,13 +9,13 @@ import com.pamirs.takin.cloud.entity.domain.dto.report.CloudReportDTO;
 import com.pamirs.takin.cloud.entity.domain.dto.report.Metrices;
 import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ReportActivityResp;
 import io.shulie.takin.cloud.biz.input.report.UpdateReportConclusionInput;
 import io.shulie.takin.cloud.biz.input.report.UpdateReportSlaDataInput;
 import io.shulie.takin.cloud.biz.input.report.WarnCreateInput;
 import io.shulie.takin.cloud.biz.output.report.ReportDetailOutput;
 import io.shulie.takin.cloud.biz.output.report.ReportOutput;
 import io.shulie.takin.cloud.biz.output.scene.manage.WarnDetailOutput;
-import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
@@ -260,4 +260,6 @@ public interface CloudReportService {
     StatReportDTO statReport(Long jobId, Long sceneId, Long reportId, Long customerId, String transaction);
 
     boolean updateReportBusinessActivity(Long jobId, Long sceneId, Long reportId, Long tenantId);
+
+    List<ReportActivityResp> getActivities(List<Long> sceneIds);
 }

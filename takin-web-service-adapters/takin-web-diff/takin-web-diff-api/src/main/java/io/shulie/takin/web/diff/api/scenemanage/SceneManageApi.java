@@ -35,6 +35,14 @@ import org.springframework.validation.annotation.Validated;
 public interface SceneManageApi {
 
     /**
+     * 通过场景状态查询场景列表
+     *
+     * @param sceneManageQueryReq 入参
+     * @return 场景列表
+     */
+    ResponseResult<List<SceneManageListResp>> querySceneByStatus(SceneManageQueryReq sceneManageQueryReq);
+
+    /**
      * 根据脚本发布id, 更新所有的场景对应该脚本的文件
      *
      * @param updateSceneFileRequest 请求入参

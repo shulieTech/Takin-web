@@ -345,7 +345,7 @@ public class SceneManageController {
         return WebResponse.success(sceneManageService.recoveryScene(deleteVO));
     }
 
-    @DeleteMapping
+    @PutMapping("/archive")
     @ApiOperation("归档")
     @ModuleDef(
             moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE,

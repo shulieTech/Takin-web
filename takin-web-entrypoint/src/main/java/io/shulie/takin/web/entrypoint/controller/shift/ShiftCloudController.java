@@ -169,7 +169,10 @@ public class ShiftCloudController {
                         data.put("tool_execute_id", toolExecuteId);
                         ScheduledExecutorService pool = Executors.newScheduledThreadPool(4);
                         pool.scheduleWithFixedDelay(()->{
-                            this.pushStatus(toolExecuteId);
+                            boolean status = this.pushStatus(toolExecuteId);
+                            if (status) {
+                                pool.shutdown();
+                            }
                         },30,30, TimeUnit.SECONDS);
                         baseResult.setData(data);
                     }
@@ -183,7 +186,7 @@ public class ShiftCloudController {
     }
 
     //2.5
-    public void pushStatus(long reportId) {
+    public boolean pushStatus(long reportId) {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpPost httpPost = new HttpPost("http://devops.testcloud.com/ms/testcloudplatform/api/service/test/plan/task/status");
         CloseableHttpResponse response = null;
@@ -192,8 +195,11 @@ public class ShiftCloudController {
             StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
             httpPost.setEntity(stringEntity);
             response = httpClient.execute(httpPost);
+            Object task_status = data.remove("task_status");
+            return task_status != null && Integer.parseInt(task_status.toString()) == 2;
         } catch (Exception e) {
             //Ignore
+            return false;
         } finally {
             try {
                 if (null != response) {
@@ -238,6 +244,7 @@ public class ShiftCloudController {
             data.put("task_status", null != conclusion && 1 == conclusion ? 1 : 2);
             data.put("task_message", conclusionRemark);
             data.put("task_progress", testTotalTime);
+            data.put("task_status",taskStatus);
             if (null != taskStatus && taskStatus == 2) {
                 Map analysis = new HashMap();
                 analysis.put("coverDemand", 0);

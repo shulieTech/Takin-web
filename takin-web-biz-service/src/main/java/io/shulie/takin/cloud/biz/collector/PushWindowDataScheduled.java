@@ -482,10 +482,12 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             }
             log.info("本次压测{}-{}-{},push data 完成", sceneId, reportId, customerId);
             // 清除 SLA配置 清除PushWindowDataScheduled 删除pod job configMap  生成报告
-            Event event = new Event();
-            event.setEventName("finished");
-            event.setExt(new TaskResult(sceneId, reportId, customerId));
-            eventCenterTemplate.doEvents(event);
+            ResourceContext context = new ResourceContext();
+            context.setSceneId(sceneId);
+            context.setReportId(reportId);
+            context.setTenantId(customerId);
+            context.setResourceId(report.getResourceId());
+            notifyFinish(context);
             // 触发数据校准通知
             dataCalibration(report);
             redisTemplate.delete(last(taskKey));

@@ -173,6 +173,10 @@ public abstract class PressureStartCache {
         return String.format("pressure:resource:%s:cached", reportId);
     }
 
+    public static String getResourceFinishEventKey(String resourceId) {
+        return String.format("pressure:resource:%s:finish_event", resourceId);
+    }
+
     public static List<String> clearCacheKey(String resourceId, Long sceneId) {
         return Arrays.asList(PressureStartCache.getResourceKey(resourceId),
             PressureStartCache.getResourcePodSuccessKey(resourceId),

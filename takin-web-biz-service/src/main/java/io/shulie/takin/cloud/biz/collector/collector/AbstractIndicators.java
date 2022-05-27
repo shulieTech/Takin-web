@@ -369,13 +369,14 @@ public abstract class AbstractIndicators {
 
     private void dataCalibration(ReportResult report) {
         Long jobId = report.getJobId();
-        Long reportId = report.getId();
-        if (redisClientUtil.lockExpire(PressureStartCache.getDataCalibrationLockKey(jobId), String.valueOf(reportId),
-            5, TimeUnit.MINUTES)) {
+        String resourceId = report.getResourceId();
+        if (redisClientUtil.hasKey(PressureStartCache.getJmeterStartFirstKey(resourceId))
+            && redisClientUtil.lockExpire(PressureStartCache.getDataCalibrationLockKey(jobId),
+            String.valueOf(report.getId()), 5, TimeUnit.MINUTES)) {
             TaskResult result = new TaskResult();
             result.setSceneId(report.getSceneId());
-            result.setTaskId(report.getJobId());
-            result.setResourceId(report.getResourceId());
+            result.setTaskId(jobId);
+            result.setResourceId(resourceId);
             WebPluginUtils.fillCloudUserData(result);
             pressureDataCalibration.dataCalibrationAmdb(result);
             pressureDataCalibration.dataCalibrationCloud(result);

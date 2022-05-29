@@ -17,6 +17,7 @@ public enum SceneManageStatusEnum {
      */
     WAIT(0, "待启动"),
     STARTING(1, "启动中"),
+    RECYCLE(-1, "已回收"),
     PRESSURE_TESTING(2, "压测中"),
     JOB_CREATING(3, "job创建中"),
     PRESSURE_NODE_RUNNING(4, "压力节点工作中"),

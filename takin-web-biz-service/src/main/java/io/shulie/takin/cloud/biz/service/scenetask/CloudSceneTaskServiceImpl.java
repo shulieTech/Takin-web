@@ -583,6 +583,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
 
         StartConditionCheckerContext context = StartConditionCheckerContext.of(sceneManageId);
         context.setUniqueKey(PressureStartCache.getSceneResourceLockingKey(sceneManageId));
+        context.setInspect(true);
         CheckResult checkResult = engineResourceChecker.check(context);
         if (checkResult.getStatus().equals(CheckStatus.FAIL.ordinal())) {
             redisClientUtil.del(inspectKey, PressureStartCache.getSceneResourceLockingKey(sceneManageId));

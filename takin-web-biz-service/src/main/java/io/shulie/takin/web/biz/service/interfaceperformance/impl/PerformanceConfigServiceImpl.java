@@ -1,10 +1,14 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
 import cn.hutool.core.util.URLUtil;
+import com.google.common.collect.Maps;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
+import io.shulie.amdb.common.dto.trace.EntryTraceInfoDTO;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.amdb.bean.common.AmdbResult;
+import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConvert;
@@ -26,12 +30,15 @@ import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQuer
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +64,11 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
 
     @Autowired
     PerformancePressureService performancePressureService;
+
+    @Autowired
+    private AmdbClientProperties properties;
+
+    private String APP_REQ_URL = "/amdb/trace/getAppAndReqByUrl";
 
     /**
      * 新增
@@ -207,8 +219,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      */
     @Override
     public List<RelationAppNameVO> relationName(PerformanceConfigQueryRequest param) {
+        List<RelationAppNameVO> relationAppNameVOList = Lists.newArrayList();
         String requestUrl = param.getRequestUrl();
-        // 格式化一下
         String path = "";
         if (StringUtils.isNotBlank(requestUrl)) {
             try {
@@ -218,11 +230,31 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
             }
         }
         if (StringUtils.isNotBlank(path)) {
-            // TODO 调用AMDB
-            // name
-            // param
+            String url = properties.getUrl().getAmdb() + APP_REQ_URL;
+            Map<String, Object> queryMap = Maps.newHashMap();
+            queryMap.put("serviceName", path);
+            queryMap.put("methodName", param.getHttpMethod());
+            queryMap.put("tenantAppKey", WebPluginUtils.traceTenantAppKey());
+            queryMap.put("envCode", WebPluginUtils.traceEnvCode());
+
+            AmdbResult<List<EntryTraceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
+                    .httpMethod(HttpMethod.GET)
+                    .param(queryMap)
+                    .eventName("查询入口请求参数")
+                    .exception(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_PARAM_ERROR)
+                    .list(EntryTraceInfoDTO.class);
+            List<EntryTraceInfoDTO> infos = amdbResponse.getData();
+            if (CollectionUtils.isNotEmpty(infos)) {
+                final String tmpPath = path;
+                relationAppNameVOList = infos.stream().map(info -> {
+                    RelationAppNameVO tmpVo = new RelationAppNameVO();
+                    tmpVo.setEntranceAppName(info.getAppName() + "|" + tmpPath);
+                    tmpVo.setParam(info.getRequest());
+                    return tmpVo;
+                }).collect(Collectors.toList());
+            }
         }
-        return null;
+        return relationAppNameVOList;
     }
 
     private void _doAction(Object arg, Object response, Action.ActionEnum action) throws Throwable {

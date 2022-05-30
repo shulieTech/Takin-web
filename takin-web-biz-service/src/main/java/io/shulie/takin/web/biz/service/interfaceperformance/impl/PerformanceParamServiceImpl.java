@@ -214,7 +214,7 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
                     //获取文件名
                     String fileName = FileUtil.getName(file);
                     // 支持csv和Excel文件
-                    if (!fileName.endsWith("csv") || !fileName.endsWith("xlsx")) {
+                    if (!fileName.endsWith("csv") || !fileName.endsWith("xlsx") || !fileName.endsWith("xls")) {
                         throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_FILE_TYPE_ERROR, fileName);
                     }
                     // 读取第一行数据

@@ -43,7 +43,7 @@ public class FileUtils {
         if (filePathName.endsWith("csv")) {
             return readCsvAll(filePathName);
         }
-        if (filePathName.endsWith("xlsx")) {
+        if (filePathName.endsWith("xlsx") || filePathName.endsWith("xls")) {
             return readExcelAll(filePathName);
         }
         return Maps.newHashMap();
@@ -56,7 +56,7 @@ public class FileUtils {
         if (filePathName.endsWith("csv")) {
             return readCsvFirstRow(filePathName);
         }
-        if (filePathName.endsWith("xlsx")) {
+        if (filePathName.endsWith("xlsx") || filePathName.endsWith("xls")) {
             return readExcelFirstRow(filePathName);
         }
         return Maps.newHashMap();

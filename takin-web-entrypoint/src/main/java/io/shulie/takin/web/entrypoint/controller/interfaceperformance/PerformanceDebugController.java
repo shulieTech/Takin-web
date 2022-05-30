@@ -64,7 +64,7 @@ public class PerformanceDebugController {
 
     @ApiOperation("获取调试结果")
     @RequestMapping(value = "/result", method = RequestMethod.GET)
-    public ResponseResult result(@RequestBody PerformanceResultCreateInput input) {
+    public ResponseResult result(PerformanceResultCreateInput input) {
         return ResponseResult.success(performanceResultService.pageResult(input));
     }
 

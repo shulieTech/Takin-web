@@ -888,4 +888,9 @@ public class SceneServiceImpl implements SceneService {
         List<ApplicationDetailResult> applicationPage = applicationDAO.getApplicationList(new ArrayList<>(applicationNames));
         return applicationPage;
     }
+
+    @Override
+    public boolean existsScene(Long tenantId, String envCode) {
+        return sceneDao.existsScene(tenantId, envCode);
+    }
 }

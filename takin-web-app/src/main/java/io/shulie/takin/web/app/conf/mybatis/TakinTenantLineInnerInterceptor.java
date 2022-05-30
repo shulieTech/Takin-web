@@ -78,6 +78,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_remote_call_config",
         "t_middleware_type",
         "t_tro_version",
+        "t_user_config",
         // cloud迁移
         "t_ac_account_balance",
         "t_ac_account_book",
@@ -129,6 +130,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_interface_type_config",
         "t_middleware_type",
         "t_tro_version",
+        "t_user_config",
         // cloud迁移
         "t_ac_account_balance",
         "t_ac_account_book",
@@ -180,6 +182,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_remote_call_config",
         "t_middleware_type",
         "t_tro_version",
+        "t_user_config",
         // cloud迁移
         "t_ac_account_balance",
         "t_ac_account_book",

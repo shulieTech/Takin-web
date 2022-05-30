@@ -14,6 +14,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -504,5 +505,14 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     @Override
     public List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace) {
         return businessLinkManageTableMapper.findActivityAppName(appName, entrace);
+    }
+
+    @Override
+    public boolean existsActivity(Long tenantId, String envCode) {
+        LambdaQueryWrapper<BusinessLinkManageTableEntity> wrapper = this.getLambdaQueryWrapper()
+            .eq(BusinessLinkManageTableEntity::getTenantId, tenantId)
+            .eq(BusinessLinkManageTableEntity::getEnvCode, envCode)
+            .eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
+        return SqlHelper.retBool(businessLinkManageTableMapper.selectCount(wrapper));
     }
 }

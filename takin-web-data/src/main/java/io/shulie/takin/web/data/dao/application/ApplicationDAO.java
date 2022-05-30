@@ -428,4 +428,5 @@ public interface ApplicationDAO {
     PagingList<ApplicationListResult> pageByApplicationNamesAndUserId(Collection<String> applicationNames,
         PageBaseDTO pageBaseDTO);
 
+    boolean existsApplication(Long tenantId, String envCode);
 }

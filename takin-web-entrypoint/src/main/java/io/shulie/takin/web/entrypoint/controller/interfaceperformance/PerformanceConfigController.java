@@ -56,8 +56,8 @@ public class PerformanceConfigController {
     }
 
     @ApiOperation("单接口压测-压测场景查询")
-    @RequestMapping(value = "/query", method = RequestMethod.POST)
-    public ResponseResult query(@RequestBody PerformanceConfigQueryRequest request) {
+    @RequestMapping(value = "/query", method = RequestMethod.GET)
+    public ResponseResult query(PerformanceConfigQueryRequest request) {
         return ResponseResult.success(performanceConfigService.query(request));
     }
 

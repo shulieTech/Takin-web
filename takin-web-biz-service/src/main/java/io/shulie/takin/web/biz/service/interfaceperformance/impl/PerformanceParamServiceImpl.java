@@ -159,7 +159,7 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         PerformanceParamQueryParam param = new PerformanceParamQueryParam();
         param.setConfigId(request.getConfigId());
         List<PerformanceParamDto> dtoList = performanceParamDAO.queryParamByCondition(param);
-        if(CollectionUtils.isEmpty(dtoList)){
+        if (CollectionUtils.isEmpty(dtoList)) {
             return response;
         }
         List<PerformanceParamVO> resultVos = Lists.newArrayList();
@@ -214,7 +214,7 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
                     //获取文件名
                     String fileName = FileUtil.getName(file);
                     // 支持csv和Excel文件
-                    if (!fileName.endsWith("csv") || !fileName.endsWith("xlsx") || !fileName.endsWith("xls")) {
+                    if (!supportFileType(fileName)) {
                         throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_FILE_TYPE_ERROR, fileName);
                     }
                     // 读取第一行数据
@@ -329,5 +329,14 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             fileDeleteParamReq.setPaths(tmpFilePaths);
             fileApi.deleteFile(fileDeleteParamReq);
         }
+    }
+
+    public boolean supportFileType(String fileName) {
+        if (fileName.endsWith("csv")
+                || fileName.endsWith("xlsx")
+                || fileName.endsWith("xls")) {
+            return true;
+        }
+        return false;
     }
 }

@@ -96,7 +96,6 @@ public class SceneManageDAOImpl
     public SceneManageListResult queryBySceneName(String pressureTestSceneName) {
         LambdaQueryWrapper<SceneManageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SceneManageEntity::getSceneName, pressureTestSceneName);
-        wrapper.eq(SceneManageEntity::getIsDeleted, 0);
         SceneManageEntity sceneManageEntity = this.getBaseMapper().selectOne(wrapper);
         return SceneManageEntityConverter.INSTANCE.ofSceneManageEntity(sceneManageEntity);
     }
@@ -107,7 +106,6 @@ public class SceneManageDAOImpl
             .selectList(new LambdaQueryWrapper<SceneManageEntity>()
                 .eq(SceneManageEntity::getEnvCode, contextExt.getEnvCode())
                 .eq(SceneManageEntity::getTenantId, contextExt.getTenantId())
-                .eq(SceneManageEntity::getIsDeleted, 0)
                 .select(SceneManageEntity::getId, SceneManageEntity::getTenantId, SceneManageEntity::getFeatures)
             );
     }

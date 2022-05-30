@@ -2,6 +2,8 @@ package io.shulie.takin.web.amdb.api.impl;
 
 import java.util.List;
 
+import cn.hutool.http.HttpGlobalConfig;
+import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
@@ -57,7 +59,7 @@ public class AgentConfigClientImpl implements AgentConfigClient {
 
         try {
             //添加请求头参数
-            String responseEntity = HttpUtil.post(url, JSONObject.parseObject(JSON.toJSONString(queryDTO)));
+            String responseEntity = HttpRequest.post(url).header("Content-Type","application/json").form(JSONObject.parseObject(JSON.toJSONString(queryDTO))).timeout(-1).execute().body();
             if (StringUtils.isEmpty(responseEntity)) {
                 return null;
             }

@@ -105,8 +105,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         InterfacePerformanceConfigEntity nameEntity = performanceConfigDAO.queryConfigByName(input.getName());
         if (nameEntity != null) {
             // 判断两个是否为同一条数据
-            if (nameEntity.getId() != null && nameEntity.getId() != input.getId()) {
-                throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "名称重复");
+            if (nameEntity.getId() != null && !nameEntity.getId().equals(input.getId())) {
+                throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, input.getName() + "已存在");
             }
         }
         // 更新数据

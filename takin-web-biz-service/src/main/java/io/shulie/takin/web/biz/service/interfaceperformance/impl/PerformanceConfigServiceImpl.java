@@ -219,6 +219,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         }
         if (StringUtils.isNotBlank(path)) {
             // TODO 调用AMDB
+            // name
+            // param
         }
         return null;
     }

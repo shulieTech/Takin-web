@@ -20,4 +20,10 @@ public class RelationAppNameVO {
      * 关联入口应用
      */
     private String entranceAppName;
+
+    /**
+     * 参数
+     */
+    private String param;
+
 }

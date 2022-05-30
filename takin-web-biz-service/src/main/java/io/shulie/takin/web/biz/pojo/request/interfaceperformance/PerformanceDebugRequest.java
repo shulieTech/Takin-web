@@ -3,7 +3,7 @@ package io.shulie.takin.web.biz.pojo.request.interfaceperformance;
 import lombok.Data;
 
 @Data
-public class PerformanceDebugRequest extends PerformanceConfigCreateInput {
+public class PerformanceDebugRequest extends PerformanceConfigDebugInput {
     /**
      * 请求条数
      */

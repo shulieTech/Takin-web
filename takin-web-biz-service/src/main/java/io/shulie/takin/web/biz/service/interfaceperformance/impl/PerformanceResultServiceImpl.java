@@ -89,6 +89,9 @@ public class PerformanceResultServiceImpl implements PerformanceResultService {
         if (StringUtils.isNotBlank(param.getResultId())) {
             queryWrapper.eq("result_id", param.getResultId());
         }
+        if(param.getStatus() != null){
+            queryWrapper.eq("`status`",param.getStatus());
+        }
         return queryWrapper;
     }
 }

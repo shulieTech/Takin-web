@@ -98,12 +98,10 @@ public class ReportDaoImpl implements ReportDao {
     @Override
     public ReportResult selectById(Long id) {
         List<ReportEntity> entityList = reportMapper.selectList(
-                Wrappers.lambdaQuery(ReportEntity.class)
-                        .eq(ReportEntity::getId, id)
+            Wrappers.lambdaQuery(ReportEntity.class)
+                .eq(ReportEntity::getId, id)
         );
-        if (entityList.size() != 1) {
-            return null;
-        }
+        if (entityList.size() != 1) {return null;}
         return BeanUtil.copyProperties(entityList.get(0), ReportResult.class);
     }
 
@@ -221,10 +219,8 @@ public class ReportDaoImpl implements ReportDao {
     @Override
     public int updateStatus(Long sceneId, Integer status) {
         return reportMapper.update(
-                new ReportEntity() {{
-                    setStatus(status);
-                }},
-                Wrappers.lambdaQuery(ReportEntity.class).eq(ReportEntity::getSceneId, sceneId));
+            new ReportEntity() {{setStatus(status);}},
+            Wrappers.lambdaQuery(ReportEntity.class).eq(ReportEntity::getSceneId, sceneId));
     }
 
     @Override
@@ -238,9 +234,7 @@ public class ReportDaoImpl implements ReportDao {
 
     @Override
     public ReportResult getById(Long resultId) {
-        if (resultId == null) {
-            return null;
-        }
+        if (resultId == null) {return null;}
         ReportEntity reportEntity = reportMapper.selectById(resultId);
         return BeanUtil.copyProperties(reportEntity, ReportResult.class);
     }

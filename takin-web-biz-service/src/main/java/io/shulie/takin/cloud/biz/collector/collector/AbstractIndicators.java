@@ -8,39 +8,32 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import cn.hutool.core.bean.BeanUtil;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import io.shulie.takin.adapter.api.entrypoint.pressure.PressureTaskApi;
 import io.shulie.takin.adapter.api.entrypoint.resource.CloudResourceApi;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStopReq;
 import io.shulie.takin.adapter.api.model.request.resource.ResourceUnLockRequest;
 import io.shulie.takin.cloud.biz.notify.StartFailEventSource;
 import io.shulie.takin.cloud.biz.notify.StopEventSource;
+import io.shulie.takin.cloud.biz.notify.processor.calibration.PressureDataCalibration;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
 import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
 import io.shulie.takin.cloud.common.bean.task.TaskResult;
 import io.shulie.takin.cloud.common.constants.ScheduleConstants;
 import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
-import io.shulie.takin.cloud.common.utils.GsonUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
-import io.shulie.takin.cloud.data.param.report.ReportUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.eventcenter.Event;
 import io.shulie.takin.eventcenter.EventCenterTemplate;
-import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.common.util.RedisClientUtil;
-import jodd.util.Bits;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.connection.BitFieldSubCommands;
-import org.springframework.data.redis.connection.BitFieldSubCommands.BitFieldType;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -97,6 +90,8 @@ public abstract class AbstractIndicators {
     private PressureTaskApi pressureTaskApi;
     @Resource
     private CloudResourceApi cloudResourceApi;
+    @Resource
+    private PressureDataCalibration pressureDataCalibration;
     private DefaultRedisScript<Void> minRedisScript;
     private DefaultRedisScript<Void> maxRedisScript;
     private DefaultRedisScript<Void> unlockRedisScript;
@@ -299,13 +294,17 @@ public abstract class AbstractIndicators {
     }
 
     protected void notifyFinish(ResourceContext context) {
+        String resourceId = context.getResourceId();
         // 清除 SLA配置  生成报告拦截 状态拦截
-        Event event = new Event();
-        event.setEventName("finished");
-        TaskResult result = new TaskResult(context.getSceneId(), context.getReportId(), context.getTenantId());
-        result.setResourceId(context.getResourceId());
-        event.setExt(result);
-        eventCenterTemplate.doEvents(event);
+        if (redisClientUtil.lockExpire(PressureStartCache.getResourceFinishEventKey(resourceId),
+            String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
+            Event event = new Event();
+            event.setEventName("finished");
+            TaskResult result = new TaskResult(context.getSceneId(), context.getReportId(), context.getTenantId());
+            result.setResourceId(context.getResourceId());
+            event.setExt(result);
+            eventCenterTemplate.doEvents(event);
+        }
     }
 
     protected void notifyEnd(ResourceContext context, Date time) {
@@ -359,10 +358,28 @@ public abstract class AbstractIndicators {
         }
     }
 
-    protected void doneReport(Long taskId) {
+    protected void doneReport(ReportResult report) {
+        Long taskId = report.getTaskId();
         if (redisClientUtil.lockExpire(PressureStartCache.getReportDoneKey(taskId),
             String.valueOf(System.currentTimeMillis()), 5, TimeUnit.MINUTES)) {
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_DONE, null);
+            dataCalibration(report);
+        }
+    }
+
+    private void dataCalibration(ReportResult report) {
+        Long jobId = report.getJobId();
+        String resourceId = report.getResourceId();
+        if (redisClientUtil.hasKey(PressureStartCache.getJmeterStartFirstKey(resourceId))
+            && redisClientUtil.lockExpire(PressureStartCache.getDataCalibrationLockKey(jobId),
+            String.valueOf(report.getId()), 5, TimeUnit.MINUTES)) {
+            TaskResult result = new TaskResult();
+            result.setSceneId(report.getSceneId());
+            result.setTaskId(jobId);
+            result.setResourceId(resourceId);
+            WebPluginUtils.fillCloudUserData(result);
+            pressureDataCalibration.dataCalibrationAmdb(result);
+            pressureDataCalibration.dataCalibrationCloud(result);
         }
     }
 
@@ -401,70 +418,6 @@ public abstract class AbstractIndicators {
             request.setResourceId(resourceId);
             cloudResourceApi.unLock(request);
         }
-    }
-
-    /**
-     * amdb	    cloud
-     * 00		00      未校准
-     * 01		01      校准中
-     * 10		10      校准失败
-     * 11		11      校准成功
-     */
-    // 设置数据校准成功/失败
-    protected void processCalibrationStatus(Long jobId, boolean success, String message, boolean cloud) {
-        String type = cloud ? "cloud" : "amdb";
-        int offset = cloud ? 2 : 0;
-        String statusKey = PressureStartCache.getDataCalibrationStatusKey(jobId);
-        redisClientUtil.setBit(statusKey, offset, true);
-        redisClientUtil.setBit(statusKey, offset + 1, success);
-        if (!success) {
-            redisClientUtil.hmset(PressureStartCache.getDataCalibrationMessageKey(jobId), type, message);
-        }
-        updateReport(jobId);
-        /**
-         * 位数右往左数
-         * int中第n位为0 ：(int & (1 << (n - 1))) != 0
-         * int中第x、y位为0 ：(int & (1 << (x - 1) + 1 << (y - 1))) != 0
-         * (1 << (2 - 1)) + (1 << (4 -1)) = 10
-         */
-        if (Bits.isSet(getStatus(jobId), 10)) { // 此处判断第2、4位为1，完成校验
-            redisClientUtil.del(statusKey,
-                PressureStartCache.getDataCalibrationMessageKey(jobId),
-                PressureStartCache.getDataCalibrationLockKey(jobId));
-        }
-    }
-
-    // 设置数据校准中
-    protected void dataCalibration_ing(Long jobId, boolean cloud) {
-        int offset = cloud ? 2 : 0;
-        redisClientUtil.setBit(PressureStartCache.getDataCalibrationStatusKey(jobId), offset + 1, true);
-        updateReport(jobId);
-    }
-
-    private void updateReport(Long jobId) {
-        ReportResult report = reportDao.selectByJobId(jobId);
-        if (Objects.nonNull(report)) {
-            String messageKey = PressureStartCache.getDataCalibrationMessageKey(jobId);
-            Map<Object, Object> message = redisClientUtil.hmget(messageKey);
-            Map<String, String> map = Maps.newHashMap();
-            String calibrationMessage = report.getCalibrationMessage();
-            if (StringUtils.isNotBlank(calibrationMessage)) {
-                map.putAll(JsonHelper.string2Obj(calibrationMessage, new TypeReference<Map<String, String>>() {
-                }));
-            }
-            message.forEach((key, value) -> map.put(String.valueOf(key), String.valueOf(value)));
-            report.setCalibrationMessage(GsonUtil.gsonToString(map));
-            report.setCalibrationStatus(getStatus(jobId));
-            ReportUpdateParam param = BeanUtil.copyProperties(report, ReportUpdateParam.class);
-            reportDao.updateReport(param);
-        }
-    }
-
-    private int getStatus(Long jobId) {
-        BitFieldSubCommands commands = BitFieldSubCommands.create()
-            .get(BitFieldType.unsigned(4)).valueAt(0);
-        String statusKey = PressureStartCache.getDataCalibrationStatusKey(jobId);
-        return redisClientUtil.getBit(statusKey, commands).get(0).intValue();
     }
 
     protected void updatePressureTaskMessageByResourceId(String resourceId, String message) {

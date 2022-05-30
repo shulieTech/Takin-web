@@ -43,6 +43,8 @@ public class DataCalibrationProcessor extends AbstractIndicators
     private InfluxWriter influxWriter;
     @Resource
     private PushWindowDataScheduled pushWindowDataScheduled;
+    @Resource
+    private PressureDataCalibration pressureDataCalibration;
 
     @Override
     public CallbackType type() {
@@ -86,7 +88,7 @@ public class DataCalibrationProcessor extends AbstractIndicators
     }
 
     private void processAmdb(DataCalibrationNotifyParam param, Runnable finalAction) {
-        processCalibrationStatus(param.getJobId(),
+        pressureDataCalibration.processCalibrationStatus(param.getJobId(),
             Boolean.TRUE.equals(param.getCompleted()), param.getContent(), false);
         finalAction.run();
     }
@@ -99,7 +101,7 @@ public class DataCalibrationProcessor extends AbstractIndicators
             influxWriter.truncateMeasurement(InfluxUtil.getMeasurement(jobId, null, null, null));
             Runnable action = () -> {
                 updateReport(jobId);
-                processCalibrationStatus(jobId, true, "", true);
+                pressureDataCalibration.processCalibrationStatus(jobId, true, "", true);
                 if (Objects.nonNull(finalAction)) {
                     finalAction.run();
                 }
@@ -107,7 +109,7 @@ public class DataCalibrationProcessor extends AbstractIndicators
             pushWindowDataScheduled.combineMetricsData(reportDao.selectByJobId(jobId), true, action);
         } else {
             // 失败了直接更新
-            processCalibrationStatus(jobId, false, param.getContent(), true);
+            pressureDataCalibration.processCalibrationStatus(jobId, false, param.getContent(), true);
         }
     }
 

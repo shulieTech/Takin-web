@@ -235,8 +235,7 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         if (StringUtils.isBlank(features)) {
             return;
         }
-        Map<String, Object> map = JSON.parseObject(features, new TypeReference<Map<String, Object>>() {
-        });
+        Map<String, Object> map = JSON.parseObject(features, new TypeReference<Map<String, Object>>(){});
         Integer configType = -1;
         if (map.containsKey(SceneManageConstant.FEATURES_CONFIG_TYPE)) {
             configType = (Integer) map.get(SceneManageConstant.FEATURES_CONFIG_TYPE);

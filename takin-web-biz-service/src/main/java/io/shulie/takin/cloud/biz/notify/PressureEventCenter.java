@@ -192,23 +192,16 @@ public class PressureEventCenter extends AbstractIndicators {
     private void dealStartFail(ResourceContext context, String message) {
         String stopFlag = PressureStartCache.getStopFlag(context.getResourceId());
         if (redisClientUtil.lockStopFlagExpire(stopFlag, message)) {
-            Long sceneId = context.getSceneId();
-            Long reportId = context.getReportId();
             Long taskId = context.getTaskId();
             setTryRunTaskFailInfo(context.getSceneId(), context.getReportId(), context.getTenantId(), message);
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, message);
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.STOPPING, null);
-            unLockFlow(reportId, context.getTenantId());
+            unLockFlow(context.getReportId(), context.getTenantId());
             try {
                 stopJob(context.getResourceId(), context.getJobId());
             } catch (Exception ignore) {}
             updateSceneFailed(context.getSceneId(), SceneManageStatusEnum.STOP);
-            Event event = new Event();
-            event.setEventName("finished");
-            TaskResult result = new TaskResult(sceneId, reportId, context.getTenantId());
-            result.setResourceId(context.getResourceId());
-            event.setExt(result);
-            eventCenterTemplate.doEvents(event);
+            notifyFinish(context);
         }
     }
 

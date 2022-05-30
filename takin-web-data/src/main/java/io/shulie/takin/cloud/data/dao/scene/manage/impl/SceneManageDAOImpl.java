@@ -142,10 +142,8 @@ public class SceneManageDAOImpl
     @Override
     public int updateStatus(Long sceneId, Integer status) {
         return this.baseMapper.update(
-                new SceneManageEntity() {{
-                    setStatus(status);
-                }},
-                Wrappers.lambdaQuery(SceneManageEntity.class).eq(SceneManageEntity::getId, sceneId));
+            new SceneManageEntity() {{setStatus(status);}},
+            Wrappers.lambdaQuery(SceneManageEntity.class).eq(SceneManageEntity::getId, sceneId));
     }
 
     /**
@@ -159,11 +157,9 @@ public class SceneManageDAOImpl
     @Override
     public int updateStatus(Long sceneId, Integer status, Integer compareStatus) {
         LambdaQueryWrapper<SceneManageEntity> wrapper = Wrappers.lambdaQuery(SceneManageEntity.class)
-                .eq(!Objects.isNull(sceneId), SceneManageEntity::getId, sceneId)
-                .eq(!Objects.isNull(compareStatus), SceneManageEntity::getStatus, compareStatus);
-        return this.baseMapper.update(new SceneManageEntity() {{
-            setStatus(status);
-        }}, wrapper);
+            .eq(!Objects.isNull(sceneId), SceneManageEntity::getId, sceneId)
+            .eq(!Objects.isNull(compareStatus), SceneManageEntity::getStatus, compareStatus);
+        return this.baseMapper.update(new SceneManageEntity() {{setStatus(status);}}, wrapper);
     }
 
     @Override

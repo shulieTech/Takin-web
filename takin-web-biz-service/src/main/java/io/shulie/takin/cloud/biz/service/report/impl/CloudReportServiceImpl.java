@@ -91,6 +91,12 @@ import io.shulie.takin.cloud.common.utils.*;
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
+import io.shulie.takin.cloud.common.utils.GsonUtil;
+import io.shulie.takin.cloud.common.utils.JsonPathUtil;
+import io.shulie.takin.cloud.common.utils.JsonUtil;
+import io.shulie.takin.cloud.common.utils.NumberUtil;
+import io.shulie.takin.cloud.common.utils.TestTimeUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
@@ -662,10 +668,10 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (!reportResult.getPressureType().equals(PressureSceneEnum.DEFAULT.getCode())) {
             reportDao.finishReport(reportId);
             cloudSceneManageService.updateSceneLifeCycle(
-                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                            .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
-                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
-            doneReport(reportResult.getTaskId());
+                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                    .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
+                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+            doneReport(reportResult);
             pressureEnd(reportResult);
             return true;
         }
@@ -698,18 +704,18 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         SceneManageEntity sceneManage = sceneManageDao.getSceneById(reportResult.getSceneId());
         //如果是强制停止 不需要更新
         log.info("finish scene {}, state :{}", reportResult.getSceneId(), Optional.ofNullable(sceneManage)
-                .map(SceneManageEntity::getStatus)
-                .map(SceneManageStatusEnum::getSceneManageStatusEnum)
-                .map(SceneManageStatusEnum::getDesc).orElse("未找到场景"));
+            .map(SceneManageEntity::getStatus)
+            .map(SceneManageStatusEnum::getSceneManageStatusEnum)
+            .map(SceneManageStatusEnum::getDesc).orElse("未找到场景"));
         if (sceneManage != null && !sceneManage.getType().equals(SceneManageStatusEnum.FORCE_STOP.getValue())) {
             cloudSceneManageService.updateSceneLifeCycle(
-                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                            .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
-                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                    .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
+                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
         }
         //报告结束应该放在场景之后
         reportDao.finishReport(reportId);
-        doneReport(reportResult.getTaskId());
+        doneReport(reportResult);
         pressureEnd(reportResult);
         log.info("报告{} finish done", reportId);
 
@@ -724,12 +730,12 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (reportResult.getStatus() != ReportConstants.FINISH_STATUS) {
             log.info("{}报告触发强制停止", reportId);
             reportDao.finishReport(reportId);
-            doneReport(reportResult.getTaskId());
+            doneReport(reportResult);
         }
 
         cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(),
                 reportResult.getTenantId())
-                .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.FORCE_STOP).build());
+            .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.FORCE_STOP).build());
         pressureEnd(reportResult);
     }
 
@@ -1000,24 +1006,22 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             // 等待时间 influxDB完成
             Thread.sleep(2000);
             long start = System.currentTimeMillis();
-            TaskResult taskResult = (TaskResult) event.getExt();
+            TaskResult taskResult = (TaskResult)event.getExt();
             log.info("通知报告模块，开始生成本次压测{}-{}-{}的报告", taskResult.getSceneId(), taskResult.getTaskId(),
-                    taskResult.getTenantId());
+                taskResult.getTenantId());
             modifyReport(taskResult);
             log.info("本次压测{}-{}-{}的报告生成时间-{}", taskResult.getSceneId(), taskResult.getTaskId(),
-                    taskResult.getTenantId(), System.currentTimeMillis() - start);
+                taskResult.getTenantId(), System.currentTimeMillis() - start);
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：生成报告异常 --> 【通知报告模块】处理finished事件异常: {}",
-                    TakinCloudExceptionEnum.TASK_STOP_DEAL_REPORT_ERROR, e);
+                TakinCloudExceptionEnum.TASK_STOP_DEAL_REPORT_ERROR, e);
         }
     }
 
     @Override
     public ReportOutput selectById(Long id) {
         ReportResult reportResult = reportDao.selectById(id);
-        if (reportResult == null) {
-            return null;
-        }
+        if (reportResult == null) {return null;}
         return BeanUtil.copyProperties(reportResult, ReportOutput.class);
     }
 
@@ -1104,12 +1108,12 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             reportStatus.setPreStatus(ReportConstants.INIT_STATUS);
             reportStatus.setAfterStatus(ReportConstants.FINISH_STATUS);
             tReportMapper.updateReportStatus(reportStatus);
-            doneReport(reportResult.getTaskId());
+            doneReport(reportResult);
             //更新场景 压测引擎停止压测---> 待启动  版本不一样，关闭不一样
             cloudSceneManageService.updateSceneLifeCycle(
-                    UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
-                            .checkEnum(
-                                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
+                UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
+                    .checkEnum(
+                        SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
         }
 
     }
@@ -1268,7 +1272,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
      */
     private boolean isPass(ReportBusinessActivityDetail detail) {
         if (isTargetBiggerThanZero(detail.getTargetSuccessRate()) && detail.getTargetSuccessRate().compareTo(
-                detail.getSuccessRate()) > 0) {
+            detail.getSuccessRate()) > 0) {
             return false;
         } else if (isTargetBiggerThanZero(detail.getTargetSa()) && detail.getTargetSa().compareTo(detail.getSa()) > 0) {
             return false;
@@ -1371,7 +1375,8 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             }
             reportResult.setEndTime(finalDateTime);
         }
-        // 更新
+        // 更新，此处不更报告状态
+        reportResult.setStatus(null);
         ReportUpdateParam param = BeanUtil.copyProperties(reportResult, ReportUpdateParam.class);
         reportDao.updateReport(param);
     }
@@ -1427,8 +1432,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         List<DistributeBean> result;
         if (StringUtils.isNoneBlank(distributes)) {
             Map<String, String> distributeMap = JsonHelper.string2Obj(distributes,
-                    new TypeReference<Map<String, String>>() {
-                    });
+                new TypeReference<Map<String, String>>() {});
             List<DistributeBean> distributeBeans = Lists.newArrayList();
             distributeMap.forEach((key, value) -> {
                 DistributeBean distribute = new DistributeBean();
@@ -1580,9 +1584,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 return jtlPath + "/" + "Jmeter.zip";
             }
             throw new TakinCloudException(TakinCloudExceptionEnum.FILE_ZIP_ERROR, "查看" + jtlPath);
-        } else {
-            return "";
-        }
+        } else {return "";}
     }
 
     @Override

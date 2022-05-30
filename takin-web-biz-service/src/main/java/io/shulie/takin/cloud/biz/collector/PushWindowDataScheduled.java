@@ -18,7 +18,6 @@ import javax.annotation.Resource;
 import cn.hutool.core.date.DateUnit;
 import com.google.common.collect.Lists;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
-import io.shulie.takin.cloud.biz.notify.processor.calibration.PressureDataCalibration;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
 import io.shulie.takin.cloud.biz.output.statistics.PressureOutput;
 import io.shulie.takin.cloud.biz.output.statistics.RtDataOutput;
@@ -26,7 +25,6 @@ import io.shulie.takin.cloud.biz.utils.DataUtils;
 import io.shulie.takin.cloud.biz.utils.Executors;
 import io.shulie.takin.cloud.common.bean.collector.ResponseMetrics;
 import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
-import io.shulie.takin.cloud.common.bean.task.TaskResult;
 import io.shulie.takin.cloud.common.constants.CollectorConstants;
 import io.shulie.takin.cloud.common.constants.ScheduleConstants;
 import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
@@ -44,13 +42,10 @@ import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.param.report.ReportQueryParam;
 import io.shulie.takin.cloud.data.param.report.ReportQueryParam.PressureTypeRelation;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
-import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
-import io.shulie.takin.eventcenter.Event;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.entity.tenant.TenantInfoExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -77,10 +72,6 @@ public class PushWindowDataScheduled extends AbstractIndicators {
     private ReportDao reportDao;
     @Resource
     private InfluxWriter influxWriter;
-    @Resource
-    private RedisClientUtil redisClientUtil;
-    @Resource
-    private PressureDataCalibration pressureDataCalibration;
 
     @Value("${report.metric.isSaveLastPoint:true}")
     private boolean isSaveLastPoint;
@@ -482,12 +473,12 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             }
             log.info("本次压测{}-{}-{},push data 完成", sceneId, reportId, customerId);
             // 清除 SLA配置 清除PushWindowDataScheduled 删除pod job configMap  生成报告
-            Event event = new Event();
-            event.setEventName("finished");
-            event.setExt(new TaskResult(sceneId, reportId, customerId));
-            eventCenterTemplate.doEvents(event);
-            // 触发数据校准通知
-            dataCalibration(report);
+            ResourceContext context = new ResourceContext();
+            context.setSceneId(sceneId);
+            context.setReportId(reportId);
+            context.setTenantId(customerId);
+            context.setResourceId(report.getResourceId());
+            notifyFinish(context);
             redisTemplate.delete(last(taskKey));
             log.info("---> 本次压测{}-{}-{}完成，已发送finished事件！<------", sceneId, reportId, customerId);
         }
@@ -693,20 +684,5 @@ public class PushWindowDataScheduled extends AbstractIndicators {
             }
         };
         Executors.execute(runnable);
-    }
-
-    private void dataCalibration(ReportResult report) {
-        Long jobId = report.getJobId();
-        String reportId = String.valueOf(report.getId());
-        if (redisClientUtil.lockExpire(PressureStartCache.getDataCalibrationLockKey(jobId), reportId,
-            5, TimeUnit.MINUTES)) {
-            TaskResult result = new TaskResult();
-            result.setSceneId(report.getSceneId());
-            result.setTaskId(report.getJobId());
-            result.setResourceId(report.getResourceId());
-            WebPluginUtils.fillCloudUserData(result);
-            pressureDataCalibration.dataCalibrationAmdb(result);
-            pressureDataCalibration.dataCalibrationCloud(result);
-        }
     }
 }

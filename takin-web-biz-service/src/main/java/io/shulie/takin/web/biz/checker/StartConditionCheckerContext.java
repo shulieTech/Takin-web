@@ -21,6 +21,7 @@ public class StartConditionCheckerContext {
     private boolean initTaskAndReport;
 
     // 临时记录错误信息使用
+    private boolean isInspect; // 是否巡检
     private String message;
     private String uniqueKey;
     private long time = System.currentTimeMillis();

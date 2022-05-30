@@ -6,12 +6,12 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.ScriptCheckDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryByIdsReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageQueryByIdsReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageWrapperReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneScriptRefOpen;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneDetailResponse;
@@ -75,5 +75,19 @@ public interface SceneManageService {
      * @param excludedApplicationIds 排除应用ids
      */
     void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds);
+
+    /**
+     * 从回收站恢复
+     * @param
+     * @return
+     */
+    String recoveryScene(SceneManageDeleteReq deleteVO);
+
+    /**
+     * 归档
+     * @param vo
+     * @return
+     */
+    String archive(SceneManageDeleteReq vo);
 
 }

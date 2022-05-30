@@ -1,6 +1,5 @@
 package io.shulie.takin.web.amdb.api.impl;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,6 +16,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.bean.query.script.QueryLinkDetailDTO;
+import io.shulie.takin.web.amdb.bean.query.trace.DataCalibrationDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
@@ -59,6 +59,8 @@ public class TraceClientImpl implements TraceClient {
      * trace日志
      */
     private static final String ENTRY_TRACE_LOG_PATH = "/amdb/trace/getAllTraceList";
+
+    private static final String DATA_CALIBRATION_PATH = "/amdb/trace/compensate";
 
     @Autowired
     private AmdbClientProperties properties;
@@ -106,7 +108,9 @@ public class TraceClientImpl implements TraceClient {
             dto.setEnvCode(WebPluginUtils.traceEnvCode());
             dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
             //固定查询影子链路明细数据
-            dto.setClusterTest(1);
+            dto.setQueryType(query.getQueryType());
+            //压测流量明细查询，去掉固定查压测流量
+            //dto.setClusterTest(1);
             dto.setTraceIdList(query.getTraceId());
             AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.builder().url(url)
                     .param(dto)
@@ -232,16 +236,17 @@ public class TraceClientImpl implements TraceClient {
                         entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
             } else {
                 EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertVirtualEntrance(entrance.getEntrance());
-                return String.format("%s#%s#%s#%s", "",
-                        entranceJoinEntity.getServiceName(),
-                        entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
-/*
                 return String.format("%s#%s#%s#%s", "", "", entranceJoinEntity.getVirtualEntrance(), entranceJoinEntity.getRpcType());
-*/
             }
 
         }).collect(Collectors.joining(AppConstants.COMMA));
     }
 
-
+    @Override
+    public String dataCalibration(DataCalibrationDTO dataCalibration) {
+        String url = properties.getUrl().getAmdb() + DATA_CALIBRATION_PATH;
+        return AmdbHelper.builder().url(url).httpMethod(HttpMethod.POST).param(dataCalibration)
+            .exception(TakinWebExceptionEnum.SCENE_REPORT_DATA_CALIBRATION)
+            .eventName("压测报告数据校准").one(String.class).getData();
+    }
 }

@@ -17,9 +17,9 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
@@ -247,7 +247,8 @@ public class SceneManageController {
         @ApiParam(name = "status", value = "压测状态") Integer status,
         @ApiParam(name = "tagId", value = "标签id") Long tagId,
         @ApiParam(name = "lastPtStartTime", value = "压测结束时间") String lastPtStartTime,
-        @ApiParam(name = "lastPtEndTime", value = "压测结束时间") String lastPtEndTime
+        @ApiParam(name = "lastPtEndTime", value = "压测结束时间") String lastPtEndTime,
+        @ApiParam(name = "recovery", value = "是否是回收站") Boolean recovery
     ) {
         SceneManageQueryVO queryVO = new SceneManageQueryVO();
 
@@ -259,6 +260,10 @@ public class SceneManageController {
         queryVO.setTagId(tagId);
         queryVO.setLastPtStartTime(lastPtStartTime);
         queryVO.setLastPtEndTime(lastPtEndTime);
+        if(Objects.isNull(recovery)){
+            recovery = false;
+        }
+        queryVO.setIsArchive(recovery?1:0);
         ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
         return Response.success(responseResult.getData(), responseResult.getTotalNum());
     }
@@ -328,5 +333,41 @@ public class SceneManageController {
         @ApiParam(name = "id", value = "压测场景ID") Long id
     ) {
         return sceneManageService.getPositionPoint(id);
+    }
+
+    @PutMapping("/recovery")
+    @ApiOperation(value = "恢复压测场景")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.ENABLE_DISABLE
+    )
+    public WebResponse<String> recovery(@RequestBody @Valid SceneManageDeleteReq deleteVO) {
+        return WebResponse.success(sceneManageService.recoveryScene(deleteVO));
+    }
+
+    @PutMapping("/archive")
+    @ApiOperation("归档")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE,
+            subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
+            logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_DELETE
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.DELETE
+    )
+    public WebResponse<String> archive(@RequestBody @Valid SceneManageDeleteReq deleteVO) {
+        ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(deleteVO.getId());
+        if (Objects.isNull(webResponse.getData())) {
+            OperationLogContextHolder.ignoreLog();
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景不存在");
+        }
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
+        SceneManageWrapperDTO sceneData = JSON.parseObject(JSON.toJSONString(webResponse.getData()),
+                SceneManageWrapperDTO.class);
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneData.getId()));
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());
+        String deleteSceneResponse = sceneManageService.archive(deleteVO);
+        return WebResponse.success(deleteSceneResponse);
     }
 }

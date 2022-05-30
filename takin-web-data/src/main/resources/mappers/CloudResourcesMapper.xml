@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.web.data.mapper.mysql.CloudResourcesMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.adapter.api.model.response.cloud.resources.Resource">
+        <result column="status" jdbcType="INTEGER" javaType="java.lang.Integer" property="status"/>
+        <result column="exception_msg" jdbcType="VARCHAR" javaType="java.lang.String" property="errorMessage"/>
+    </resultMap>
+    <select id="getResourceStatus" resultType="map">
+        SELECT `status`,exception_msg FROM t_pressure_task WHERE resource_id = #{resourceId}
+    </select>
+</mapper>

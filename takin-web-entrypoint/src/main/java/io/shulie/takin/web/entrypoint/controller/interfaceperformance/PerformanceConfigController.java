@@ -46,8 +46,8 @@ public class PerformanceConfigController {
     }
 
     @ApiOperation("单接口压测删除")
-    @RequestMapping(value = "/delete", method = RequestMethod.POST)
-    public ResponseResult delete(@RequestBody PerformanceConfigQueryRequest request) {
+    @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
+    public ResponseResult delete(PerformanceConfigQueryRequest request) {
         if (request == null) {
             throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_PARAM_ERROR, "参数为空");
         }

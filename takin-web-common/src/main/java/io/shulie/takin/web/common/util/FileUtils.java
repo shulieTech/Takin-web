@@ -7,14 +7,18 @@ import cn.hutool.core.text.csv.CsvRow;
 import cn.hutool.core.text.csv.CsvUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.sax.handler.RowHandler;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -22,6 +26,7 @@ import java.util.Objects;
  * @description: TODO
  * @date 2022/5/22 6:18 下午
  */
+@Slf4j
 public class FileUtils {
     private static ThreadLocal<CsvReader> csvReaderThreadLocal = ThreadLocal.withInitial(() -> CsvUtil.getReader());
 
@@ -180,5 +185,20 @@ public class FileUtils {
             }
         }
         return dataMap;
+    }
+
+    public static Long getFileCount(String path) {
+        AtomicLong length = new AtomicLong(0);
+        try {
+            ExcelUtil.readBySax(path, 0, new RowHandler() {
+                @Override
+                public void handle(int i, long l, List<Object> list) {
+                    length.incrementAndGet();
+                }
+            });
+        } catch (Throwable e) {
+            log.error("获取文件条数失败,{}", ExceptionUtils.getStackTrace(e));
+        }
+        return length.get();
     }
 }

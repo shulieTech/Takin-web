@@ -30,6 +30,7 @@ import io.shulie.takin.adapter.api.model.request.filemanager.FileCreateByStringP
 import io.shulie.takin.adapter.api.model.request.filemanager.FileDeleteParamReq;
 import io.shulie.takin.adapter.api.model.request.filemanager.FileZipParamReq;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
+import io.shulie.takin.web.common.util.FileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -129,7 +130,7 @@ public class CloudFileApiImpl implements CloudFileApi {
                 log.debug("io.shulie.takin.adapter.cloud.impl.file.CloudFileApiImpl.upload:{}", mkdirResult);
             }
             File targetFile = new File(tempPath + SceneManageConstant.FILE_SPLIT
-                + uploadId + SceneManageConstant.FILE_SPLIT + t.getOriginalFilename());
+                    + uploadId + SceneManageConstant.FILE_SPLIT + t.getOriginalFilename());
             UploadResponse dto = new UploadResponse();
             try {
                 if (StrUtil.isBlank(t.getOriginalFilename())) {
@@ -159,32 +160,39 @@ public class CloudFileApiImpl implements CloudFileApi {
     }
 
     private void setDataCount(File file, UploadResponse dto) {
-        if (!file.getName().endsWith(".csv")) {
+        String topic = SceneManageConstant.SCENE_TOPIC_PREFIX + System.currentTimeMillis();
+        if (file.getName().endsWith("xlsx")) {
+            dto.setUploadedData(FileUtils.getFileCount(file.getAbsolutePath()));
+            dto.setTopic(topic);
             return;
         }
-        String topic = SceneManageConstant.SCENE_TOPIC_PREFIX + System.currentTimeMillis();
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(file));
-            Long length = 0L;
-            while (br.readLine() != null) {length++;}
-            dto.setUploadedData(length);
-            dto.setTopic(topic);
-        } catch (FileNotFoundException e) {
-            log.error("异常代码【{}】,异常内容：找不到对应的文件 --> 异常信息: {}",
-                TakinCloudExceptionEnum.FILE_NOT_FOUND_ERROR, e);
-        } catch (IOException e) {
-            log.error("异常代码【{}】,异常内容：文件处理异常 --> 异常信息: {}",
-                TakinCloudExceptionEnum.FILE_CMD_EXECUTE_ERROR, e);
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    log.error("异常代码【{}】,异常内容：文件流关闭异常 --> 异常信息: {}",
-                        TakinCloudExceptionEnum.FILE_CLOSE_ERROR, e);
+        if (file.getName().endsWith(".csv")) {
+            BufferedReader br = null;
+            try {
+                br = new BufferedReader(new FileReader(file));
+                Long length = 0L;
+                while (br.readLine() != null) {
+                    length++;
+                }
+                dto.setUploadedData(length);
+                dto.setTopic(topic);
+            } catch (FileNotFoundException e) {
+                log.error("异常代码【{}】,异常内容：找不到对应的文件 --> 异常信息: {}",
+                        TakinCloudExceptionEnum.FILE_NOT_FOUND_ERROR, e);
+            } catch (IOException e) {
+                log.error("异常代码【{}】,异常内容：文件处理异常 --> 异常信息: {}",
+                        TakinCloudExceptionEnum.FILE_CMD_EXECUTE_ERROR, e);
+            } finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (IOException e) {
+                        log.error("异常代码【{}】,异常内容：文件流关闭异常 --> 异常信息: {}",
+                                TakinCloudExceptionEnum.FILE_CLOSE_ERROR, e);
+                    }
                 }
             }
+            return;
         }
     }
 

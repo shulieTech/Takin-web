@@ -159,6 +159,9 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         PerformanceParamQueryParam param = new PerformanceParamQueryParam();
         param.setConfigId(request.getConfigId());
         List<PerformanceParamDto> dtoList = performanceParamDAO.queryParamByCondition(param);
+        if(CollectionUtils.isEmpty(dtoList)){
+            return response;
+        }
         List<PerformanceParamVO> resultVos = Lists.newArrayList();
         BeanUtils.copyProperties(dtoList, resultVos);
         Set<Long> fileIds = Sets.newHashSet();

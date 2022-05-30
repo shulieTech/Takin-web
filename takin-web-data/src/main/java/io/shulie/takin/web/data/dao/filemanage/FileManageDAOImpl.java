@@ -38,14 +38,14 @@ public class FileManageDAOImpl implements FileManageDAO {
     public List<FileManageResult> selectFileManageByIds(List<Long> fileIds) {
         LambdaQueryWrapper<FileManageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.select(
-            FileManageEntity::getFileExtend,
-            FileManageEntity::getFileName,
-            FileManageEntity::getFileSize,
-            FileManageEntity::getFileType,
-            FileManageEntity::getUploadPath,
-            FileManageEntity::getUploadTime,
-            FileManageEntity::getId,
-            FileManageEntity::getIsDeleted
+                FileManageEntity::getFileExtend,
+                FileManageEntity::getFileName,
+                FileManageEntity::getFileSize,
+                FileManageEntity::getFileType,
+                FileManageEntity::getUploadPath,
+                FileManageEntity::getUploadTime,
+                FileManageEntity::getId,
+                FileManageEntity::getIsDeleted
         );
         wrapper.in(FileManageEntity::getId, fileIds);
         List<FileManageEntity> fileManageEntities = fileManageMapper.selectList(wrapper);
@@ -89,11 +89,14 @@ public class FileManageDAOImpl implements FileManageDAO {
         FileManageEntity fileManageEntity = fileManageMapper.selectById(id);
         return toFileManageResult(fileManageEntity);
     }
-	
-	@Override
+
+    @Override
     public List<FileManageResponse> getFileManageResponseByFileIds(List<Long> fileIds) {
-        List<FileManageResult> fileManageResults = this.selectFileManageByIds(fileIds);
         List<FileManageResponse> fileManageResponses = new ArrayList<>();
+        if (CollectionUtils.isEmpty(fileIds)) {
+            return fileManageResponses;
+        }
+        List<FileManageResult> fileManageResults = this.selectFileManageByIds(fileIds);
         if (CollectionUtils.isNotEmpty(fileManageResults)) {
             for (FileManageResult fileManageResult : fileManageResults) {
                 FileManageResponse fileManageResponse = new FileManageResponse();
@@ -128,7 +131,7 @@ public class FileManageDAOImpl implements FileManageDAO {
         }
         return Collections.EMPTY_LIST;
     }
-	
+
     @Override
     public List<FileManageEntity> getAllFile() {
         LambdaQueryWrapper<FileManageEntity> wrapper = new LambdaQueryWrapper<>();

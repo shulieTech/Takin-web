@@ -667,7 +667,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                 UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())
                     .checkEnum(SceneManageStatusEnum.ENGINE_RUNNING,
                         SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.WAIT).build());
-            doneReport(reportResult.getTaskId());
+            doneReport(reportResult);
             pressureEnd(reportResult);
             return true;
         }
@@ -711,7 +711,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         }
         //报告结束应该放在场景之后
         reportDao.finishReport(reportId);
-        doneReport(reportResult.getTaskId());
+        doneReport(reportResult);
         pressureEnd(reportResult);
         log.info("报告{} finish done", reportId);
 
@@ -726,7 +726,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
         if (reportResult.getStatus() != ReportConstants.FINISH_STATUS) {
             log.info("{}报告触发强制停止", reportId);
             reportDao.finishReport(reportId);
-            doneReport(reportResult.getTaskId());
+            doneReport(reportResult);
         }
 
         cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(),
@@ -1104,7 +1104,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             reportStatus.setPreStatus(ReportConstants.INIT_STATUS);
             reportStatus.setAfterStatus(ReportConstants.FINISH_STATUS);
             tReportMapper.updateReportStatus(reportStatus);
-            doneReport(reportResult.getTaskId());
+            doneReport(reportResult);
             //更新场景 压测引擎停止压测---> 待启动  版本不一样，关闭不一样
             cloudSceneManageService.updateSceneLifeCycle(
                 UpdateStatusBean.build(reportResult.getSceneId(), reportResult.getId(), reportResult.getTenantId())

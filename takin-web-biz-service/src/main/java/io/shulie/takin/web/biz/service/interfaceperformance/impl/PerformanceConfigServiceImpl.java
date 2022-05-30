@@ -226,30 +226,30 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
     }
 
     private void _doAction(Object arg, Object response, Action.ActionEnum action) throws Throwable {
-        //switch (action) {
-        //    case create:
-        //        PerformanceConfigCreateInput createIn = (PerformanceConfigCreateInput) arg;
-        //        performancePressureService.add(createIn);
-        //        break;
-        //    case delete:
-        //        Long deleteIn = (Long) arg;
-        //        performancePressureService.delete(deleteIn);
-        //        break;
-        //    case update:
-        //        PerformanceConfigCreateInput updateIn = (PerformanceConfigCreateInput) arg;
-        //        performancePressureService.update(updateIn);
-        //        break;
-        //    case detail:
-        //        Long detailIn = (Long) arg;
-        //        ResponseResult<SceneDetailResponse> result = performancePressureService.query(detailIn);
-        //        SceneDetailResponse source = result.getData();
-        //        if (response.getClass().isAssignableFrom(PerformanceConfigVO.class)) {
-        //            ((PerformanceConfigVO) response).setPressureConfigDetail(source);
-        //        }
-        //        break;
-        //    case select:
-        //        break;
-        //}
+        switch (action) {
+            case create:
+                PerformanceConfigCreateInput createIn = (PerformanceConfigCreateInput) arg;
+                performancePressureService.add(createIn);
+                break;
+            case delete:
+                Long deleteIn = (Long) arg;
+                performancePressureService.delete(deleteIn);
+                break;
+            case update:
+                PerformanceConfigCreateInput updateIn = (PerformanceConfigCreateInput) arg;
+                performancePressureService.update(updateIn);
+                break;
+            case detail:
+                Long detailIn = (Long) arg;
+                ResponseResult<SceneDetailResponse> result = performancePressureService.query(detailIn);
+                SceneDetailResponse source = result.getData();
+                if (response.getClass().isAssignableFrom(PerformanceConfigVO.class)) {
+                    ((PerformanceConfigVO) response).setPressureConfigDetail(source);
+                }
+                break;
+            case select:
+                break;
+        }
     }
 
     Logger logger = LoggerFactory.getLogger(getClass());
@@ -259,7 +259,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
             _doAction(arg, response, action);
         } catch (Throwable t) {
             logger.error("do pressure config action error:{}", t.getCause());
-            throw new RuntimeException(t.getMessage());
+            // TODO 所有异常不处理
+            //throw new RuntimeException(t.getMessage());
         }
     }
 

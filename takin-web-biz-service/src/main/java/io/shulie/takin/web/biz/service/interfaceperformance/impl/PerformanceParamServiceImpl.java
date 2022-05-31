@@ -250,10 +250,8 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             queryParam.setConfigId(request.getConfigId());
             queryParam.setFileIds(fileIds);
             List<PerformanceParamDto> dtoList = performanceParamDAO.queryParamByCondition(queryParam);
-            List<PerformanceParamVO> paramVOS = Lists.newArrayList();
-            BeanUtils.copyProperties(dtoList, paramVOS);
-            if (CollectionUtils.isNotEmpty(paramVOS)) {
-                paramVOS.stream().forEach(vo -> {
+            if (CollectionUtils.isNotEmpty(dtoList)) {
+                dtoList.stream().forEach(vo -> {
                     PerformanceParamRequest paramRequest = new PerformanceParamRequest();
                     // 索引列
                     paramRequest.setFileColumnIndex(vo.getFileColumnIndex());

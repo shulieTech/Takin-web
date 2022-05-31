@@ -34,8 +34,6 @@ public class PerformanceParamController {
     @ApiOperation("获取参数详情")
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
     public ResponseResult detail(PerformanceParamDetailRequest request) {
-        request.setConfigId(request.getId());
-        request.setId(null);
         return ResponseResult.success(performanceParamService.detail(request));
     }
 

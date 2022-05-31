@@ -292,7 +292,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         } catch (Throwable t) {
             logger.error("do pressure config action error:{}", t.getCause());
             // TODO 所有异常不处理
-            //throw new RuntimeException(t.getMessage());
+            throw new RuntimeException(t.getMessage());
         }
     }
 

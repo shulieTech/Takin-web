@@ -166,10 +166,8 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         if (CollectionUtils.isEmpty(dtoList)) {
             return response;
         }
-        List<PerformanceParamVO> resultVos = Lists.newArrayList();
-        BeanUtils.copyProperties(dtoList, resultVos);
         Set<Long> fileIds = Sets.newHashSet();
-        List<PerformanceParamRequest> params = resultVos.stream().map(vo -> {
+        List<PerformanceParamRequest> params = dtoList.stream().map(vo -> {
             PerformanceParamRequest tmpParam = new PerformanceParamRequest();
             tmpParam.setParamName(vo.getParamName());
             // 文件名

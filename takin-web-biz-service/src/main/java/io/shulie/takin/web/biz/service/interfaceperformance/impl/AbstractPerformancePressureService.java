@@ -70,6 +70,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
@@ -85,12 +86,18 @@ public abstract class AbstractPerformancePressureService
         extends PerformancePressureAdaptor implements PerformancePressureService {
 
 
+    @Value("${takin.cloud.backend.url}")
+    protected String urlOfCloud;
+
+    protected String uriOfScriptGenerator = "/script/build";
+
     Long fetchSceneId(Long apiId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("api_id", apiId);
         queryWrapper.eq("is_deleted", 0);
         return performanceConfigSceneRelateShipMapper.selectOne(queryWrapper).getSceneId();
     }
+
 
     /**
      * 删除业务流程

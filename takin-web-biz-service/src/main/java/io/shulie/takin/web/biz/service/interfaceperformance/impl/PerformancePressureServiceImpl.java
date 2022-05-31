@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
+import com.pamirs.takin.common.util.HttpSupport;
+import com.pamirs.takin.common.util.ResponseWrapper;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.adapter.api.model.request.file.UploadRequest;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
@@ -28,6 +30,7 @@ import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelat
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
+import lombok.Data;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.BeanUtils;
 import org.springframework.mock.web.MockMultipartFile;
@@ -36,11 +39,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @Author: vernon
@@ -82,7 +83,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
             tempFile.createNewFile();
         }
         try {
-            FileWriter writer = new FileWriter(tempFile.getName());
+            FileWriter writer = new FileWriter(tempFile.getAbsoluteFile());
             writer.write(script);
             writer.close();
             List files = Lists.newArrayList();
@@ -150,12 +151,17 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         activityAutoMatcher(flowInfo.getId());
         //设置为虚拟业务活动 businessType设置为1(因为自动匹配可能匹配不上)
         // xpathMd5取业务流程返回的threadgroup的xpathmd5 。。。。这堆业务逻辑是真的混乱和恶心
-        String threadGroupXpathMd5 = flowInfo.getScriptJmxNodeList().get(0).getValue();
-        BusinessFlowThreadResponse response = sceneService.getThreadGroupDetail(flowInfo.getId(), threadGroupXpathMd5);
+        //先取xpathMd5 很麻烦才能取到。。。先获取业务流程详情，再遍历下面节点
+        BusinessFlowDetailResponse dto = sceneService.getBusinessFlowDetail(flowInfo.getId());
+        //根结点的xpathmd5
+        String rootXpathMd5 = dto.getScriptJmxNodeList().get(0).getValue();
+
+        BusinessFlowThreadResponse response = sceneService.getThreadGroupDetail(flowInfo.getId(), rootXpathMd5);
         ScriptJmxNode scriptJmxNode = response.getThreadScriptJmxNodes().get(0).getChildren().get(0);
         SceneLinkRelateRequest sceneLinkRelateRequest = new SceneLinkRelateRequest();
         BeanUtils.copyProperties(scriptJmxNode, sceneLinkRelateRequest);
         sceneLinkRelateRequest.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+        sceneLinkRelateRequest.setBusinessFlowId(flowInfo.getId());
         sceneService.matchActivity(sceneLinkRelateRequest);
 
         //保存业务流程id到关系映射表
@@ -166,7 +172,6 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
 
         //回填创建压测场景的ID和名字
-        input.getPressureConfigRequest().getBasicInfo().setSceneId(flowInfo.getId());
         input.getPressureConfigRequest().getBasicInfo().setName(flowInfo.getBusinessProcessName());
         input.getPressureConfigRequest().getBasicInfo().setBusinessFlowId(flowInfo.getId());
 
@@ -251,8 +256,22 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
         // TODO: 2022/5/20 调用cloud sdk 生成脚本
         ReqBuilder reqParam = buildReq(id);
-        /*  return null;*/
-        return TestConstant.default_jmx_str;
+
+        Map<String, Object> header = Maps.newHashMap();
+        header.put("Content-Type", "application/json");
+        ResponseWrapper responseWrapper = null;
+        try {
+
+            responseWrapper = HttpSupport.get().get("post").to
+                    (urlOfCloud + uriOfScriptGenerator, JSON.toJSONString(reqParam), header);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (Objects.isNull(responseWrapper) || Objects.isNull(responseWrapper.getData())) {
+            throw new RuntimeException("生成脚本异常.");
+        }
+        return JSON.parseObject(responseWrapper.getData()).getString("data");
     }
 
 
@@ -274,8 +293,10 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
                         String[] keyValue = line.trim().split(":");
 
                         Map<String, String> toHeader = Maps.newHashMap();
-                        toHeader.put(keyValue[0], keyValue[1]);
-                        builder.addHeaders(JSON.toJSONString(toHeader));
+
+                        toHeader.put("key", keyValue[0]);
+                        toHeader.put("value", keyValue[1]);
+                        builder.addHeaders(toHeader);
                     }
                 }
             }
@@ -318,7 +339,10 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         InterfacePerformanceConfigEntity record = configMapper.selectById(id);
 
         ReqBuilder builder = new ReqBuilder();
-        builder.setName(record.getName()).setUrl(record.getRequestUrl()).setBody(record.getBody()).setMethod(record.getHttpMethod());
+        builder.setName(record.getName());
+        builder.setUrl(record.getRequestUrl());
+        builder.setBody(record.getBody());
+        builder.setMethod(record.getHttpMethod());
         //放header
         buildHeader(record.getHeaders(), builder);
 
@@ -334,12 +358,12 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         return builder.build();
     }
 
-    public class ReqBuilder {
+    @Data
+    public class ReqBuilder implements Serializable {
         String name;
         String url;
         String method;
-        String[] headers;
-        List<String> headerList = Lists.newArrayList();
+        List<Map<String, String>> headers = Lists.newArrayList();
         String body;
         String datas[];
         List<String> dataList = Lists.newArrayList();
@@ -351,55 +375,33 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
          * @return
          */
         public ReqBuilder build() {
-            if (!CollectionUtils.isEmpty(headerList)) {
-                this.headers = headerList.toArray(new String[headerList.size()]);
-            }
-            if (!CollectionUtils.isEmpty(dataList)) {
-                this.datas = dataList.toArray(new String[dataList.size()]);
-            }
-            this.headerList = null;
+            this.datas = dataList.toArray(new String[dataList.size()]);
             this.dataList = null;
             return this;
         }
 
-        public ReqBuilder setName(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public ReqBuilder setUrl(String url) {
-            this.url = url;
-            return this;
-        }
 
         public ReqBuilder setMethod(String method) {
             this.method = method;
             return this;
         }
 
-        public ReqBuilder setHeaders(String[] headers) {
+        public ReqBuilder setHeaders(List headers) {
             this.headers = headers;
             return this;
         }
 
-        public ReqBuilder addHeaders(String header) {
-            this.headerList.add(header);
+        public ReqBuilder addHeaders(Map<String, String> header) {
+            this.headers.add(header);
             return this;
         }
 
-        public ReqBuilder setBody(String body) {
-            this.body = body;
-            return this;
-        }
 
         public ReqBuilder addDatas(String data) {
             this.dataList.add(data);
             return this;
         }
 
-        public ReqBuilder setDatas(String[] datas) {
-            this.datas = datas;
-            return this;
-        }
+
     }
 }

@@ -149,8 +149,10 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             Map<String, List<FileManageEntity>> fileNameMap = fileEntitys.stream().collect(Collectors.groupingBy(FileManageEntity::getFileName));
             // 把解析的参数给放到参数表里面
             List<PerformanceParamRequest> paramList = request.getParamList();
+            // 过滤掉那种未修改的，这种就在新增的文件Map里面找不到
             List<InterfacePerformanceParamEntity> insertList = paramList.stream()
-                    .filter(paramRequest -> StringUtils.isNotBlank(paramRequest.getParamName()))
+                    .filter(paramRequest -> StringUtils.isNotBlank(paramRequest.getParamName())
+                            && !fileNameMap.containsKey(paramRequest.getParamValue()))
                     .map(paramRequest -> {
                         InterfacePerformanceParamEntity paramEntity = new InterfacePerformanceParamEntity();
 

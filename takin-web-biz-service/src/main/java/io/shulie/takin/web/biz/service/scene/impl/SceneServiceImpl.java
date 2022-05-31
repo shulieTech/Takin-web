@@ -654,6 +654,8 @@ public class SceneServiceImpl implements SceneService {
     @Override
     public List<SceneEntity> businessActivityFlowList() {
         // 查询所有业务流程
+        ScenePageQueryParam queryParam = new ScenePageQueryParam();
+        WebPluginUtils.fillQueryParam(queryParam);
         // TODO 租户隔离
         LambdaQueryWrapper<SceneEntity> wrapper = Wrappers.lambdaQuery(SceneEntity.class)
                 // 只返回主键和名称
@@ -666,6 +668,9 @@ public class SceneServiceImpl implements SceneService {
                 .apply("total_node_num = link_relate_num")
                 // 倒序排列
                 .orderByDesc(SceneEntity::getId);
+        if (CollectionUtils.isNotEmpty(queryParam.getUserIdList())) {
+            wrapper.in(SceneEntity::getUserId, queryParam.getUserIdList());
+        }
         return sceneMapper.selectList(wrapper);
     }
 

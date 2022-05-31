@@ -39,4 +39,6 @@ public class PerformanceParamRequest implements Serializable {
     private Long configId;
 
     private String filePath;
+
+    private String id;
 }

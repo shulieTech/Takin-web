@@ -12,7 +12,7 @@ import java.util.List;
  * @date 2022/5/19 11:53 上午
  */
 public interface PerformanceParamDAO {
-    void deleteByIds(List<Long> ids);
+    void deleteByParam(PerformanceParamQueryParam param);
 
     void add(List<InterfacePerformanceParamEntity> insertEntitys);
 

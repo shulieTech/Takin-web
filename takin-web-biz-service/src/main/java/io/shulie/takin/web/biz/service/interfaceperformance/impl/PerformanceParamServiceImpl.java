@@ -119,7 +119,10 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             // 清理数据
             List<Long> deleteIdList = deleteParam.stream().map(file -> file.getFileId()).collect(Collectors.toList());
             // 清理掉这部分数据
-            performanceParamDAO.deleteByIds(deleteIdList);
+            PerformanceParamQueryParam deleteParams = new PerformanceParamQueryParam();
+            deleteParams.setConfigId(configId);
+            deleteParams.setFileIds(deleteIdList);
+            performanceParamDAO.deleteByParam(deleteParams);
             // 删除对应路径文件
             List<String> filePaths = deleteParam.stream().map(file -> file.getFilePath()).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(filePaths)) {

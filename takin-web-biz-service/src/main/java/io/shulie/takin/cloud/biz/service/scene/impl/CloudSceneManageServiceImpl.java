@@ -46,6 +46,7 @@ import io.shulie.takin.adapter.api.model.common.RuleBean;
 import io.shulie.takin.adapter.api.model.common.TimeBean;
 import io.shulie.takin.adapter.api.model.common.UploadFileDTO;
 import io.shulie.takin.adapter.api.model.request.scenemanage.CloudUpdateSceneFileRequest;
+import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
 import io.shulie.takin.cloud.biz.cloudserver.SceneManageDTOConvert;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.input.scenemanage.SceneBusinessActivityRefInput;
@@ -73,6 +74,7 @@ import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.TimeUnitEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageErrorEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
+import io.shulie.takin.cloud.common.enums.scenemanage.SceneRunTaskStatusEnum;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
@@ -146,6 +148,8 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
     private RedisClientUtil redisClientUtil;
     @Resource
     private PressureTaskDAO pressureTaskDAO;
+    @Resource
+    private SceneTaskStatusCache taskStatusCache;
 
     @Value("${script.temp.path}")
     private String scriptTempPath;
@@ -671,6 +675,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         // 记录失败原因，成功则不记录报告中 报告直接完成
         cloudReportService.updateReportFeatures(reportId, ReportConstants.FINISH_STATUS,
             ReportConstants.PRESSURE_MSG, errorMsg);
+        taskStatusCache.cacheStatus(sceneId, reportId, SceneRunTaskStatusEnum.FAILED, errorMsg);
         Long taskId = recentlyReport.getTaskId();
         pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, errorMsg);
         pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.STOPPING, null);

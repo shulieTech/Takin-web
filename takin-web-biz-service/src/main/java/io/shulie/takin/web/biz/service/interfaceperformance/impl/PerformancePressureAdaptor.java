@@ -25,7 +25,7 @@ public class PerformancePressureAdaptor {
             return null;
         }
         NewSceneRequest.BasicInfo basicInfo = new NewSceneRequest.BasicInfo();
-        basicInfo.setSceneId(in.getBasicInfo().getSceneId());
+       /* basicInfo.setSceneId(in.getBasicInfo().getSceneId());*/
         basicInfo.setName(in.getBasicInfo().getName());
         basicInfo.setBusinessFlowId(in.getBasicInfo().getBusinessFlowId());
         basicInfo.setExecuteTime(null);

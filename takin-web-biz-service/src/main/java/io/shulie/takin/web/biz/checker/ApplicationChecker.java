@@ -117,7 +117,6 @@ public class ApplicationChecker implements StartConditionChecker {
         param.put(PressureStartCache.REPORT_ID, context.getReportId());
         param.put(PressureStartCache.TASK_ID, context.getTaskId());
         param.put(PressureStartCache.UNIQUE_KEY, context.getUniqueKey());
-        param.put(PressureStartCache.USER_ID, WebPluginUtils.traceUserId());
         redisClientUtil.hmset(PressureStartCache.getSceneResourceKey(context.getSceneId()), param);
     }
 

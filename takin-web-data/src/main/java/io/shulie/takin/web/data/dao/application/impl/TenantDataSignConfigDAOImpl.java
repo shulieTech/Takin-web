@@ -48,6 +48,15 @@ public class TenantDataSignConfigDAOImpl implements TenantDataSignConfigDAO, MPU
         queryWrapper.eq(TenantDataSignConfigEntity::getTenantId, tenantId);
         queryWrapper.eq(TenantDataSignConfigEntity::getEnvCode, envCode);
         TenantDataSignConfigEntity entity = tenantDataSignConfigMapper.selectOne(queryWrapper);
+        if(Objects.isNull(entity)){
+            //初始化状态
+            TenantDataSignConfigEntity insert = new TenantDataSignConfigEntity();
+            insert.setStatus(status);
+            insert.setTenantId(tenantId);
+            insert.setEnvCode(envCode);
+            tenantDataSignConfigMapper.insert(insert);
+            redisTemplate.opsForHash().put(CacheConstants.CACHE_KEY_TENANT_DATA_SIGN, envCode + tenantId, status);
+        }
         if (Objects.nonNull(entity) && entity.getStatus() != status) {
             String cacheKey = CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_" + envCode;
             if (status == 1) {

@@ -208,9 +208,10 @@ public class PressureEventCenter extends AbstractIndicators {
     private void dealCheckFail(ResourceContext context) {
         String resourceId = context.getResourceId();
         String message = context.getMessage();
-        if (redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(context.getResourceId()), message)
-            && redisClientUtil.lockExpire(PressureStartCache.getResourceCheckFailKey(resourceId),
-                String.valueOf(System.currentTimeMillis()), 1, TimeUnit.MINUTES)) {
+        if (StringUtils.isBlank(resourceId) ||
+            (redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(context.getResourceId()), message)
+                && redisClientUtil.lockExpire(PressureStartCache.getResourceCheckFailKey(resourceId),
+                String.valueOf(System.currentTimeMillis()), 1, TimeUnit.MINUTES))) {
             Long reportId = context.getReportId();
             unLockFlow(reportId, context.getTenantId());
             releaseResource(resourceId);
@@ -241,12 +242,14 @@ public class PressureEventCenter extends AbstractIndicators {
         String resourceId = context.getResourceId();
         Long taskId = context.getTaskId();
         Long sceneId = context.getSceneId();
-        redisClientUtil.del(PressureStartCache.getResourcePodSuccessKey(resourceId),
-            PressureStartCache.getPodStartFirstKey(resourceId), PressureStartCache.getPodHeartbeatKey(resourceId));
-        String resourceKey = PressureStartCache.getResourceKey(resourceId);
-        redisClientUtil.hmset(resourceKey, PressureStartCache.CHECK_STATUS, CheckStatus.FAIL.ordinal());
-        redisClientUtil.hmset(resourceKey, PressureStartCache.ERROR_MESSAGE, message);
-        redisClientUtil.expire(resourceKey, 60);
+        if (StringUtils.isBlank(resourceId)) {
+            redisClientUtil.del(PressureStartCache.getResourcePodSuccessKey(resourceId),
+                PressureStartCache.getPodStartFirstKey(resourceId), PressureStartCache.getPodHeartbeatKey(resourceId));
+            String resourceKey = PressureStartCache.getResourceKey(resourceId);
+            redisClientUtil.hmset(resourceKey, PressureStartCache.CHECK_STATUS, CheckStatus.FAIL.ordinal());
+            redisClientUtil.hmset(resourceKey, PressureStartCache.ERROR_MESSAGE, message);
+            redisClientUtil.expire(resourceKey, 60);
+        }
         PressureTaskEntity entity = new PressureTaskEntity();
         entity.setId(taskId);
         entity.setStatus(PressureTaskStateEnum.RESOURCE_LOCK_FAILED.ordinal());

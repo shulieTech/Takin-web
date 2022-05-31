@@ -114,6 +114,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
     public String simple_debug(PerformanceDebugRequest request) {
         // 1、读取数据库中的调试数据
         InterfacePerformanceConfigEntity queryEntity = PerformanceConvert.convertConfigDebugEntity(request);
+        queryEntity.setId(request.getId());
         // 2、读取文件关联的文件信息
         PerformanceParamDetailResponse detailResponse = new PerformanceParamDetailResponse();
         if (request.getId() != null) {

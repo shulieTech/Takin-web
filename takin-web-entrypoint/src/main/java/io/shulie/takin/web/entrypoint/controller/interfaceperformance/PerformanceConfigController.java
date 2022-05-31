@@ -62,9 +62,9 @@ public class PerformanceConfigController {
     }
 
     @ApiOperation("单接口压测-详情")
-    @RequestMapping(value = "/detail/{configId}", method = RequestMethod.GET)
-    public ResponseResult detail(@PathVariable(value = "configId") Long configId) {
-        return ResponseResult.success(performanceConfigService.detail(configId));
+    @RequestMapping(value = "/detail", method = RequestMethod.GET)
+    public ResponseResult detail(PerformanceConfigQueryRequest request) {
+        return ResponseResult.success(performanceConfigService.detail(request.getId()));
     }
 
     @PostMapping("/start")

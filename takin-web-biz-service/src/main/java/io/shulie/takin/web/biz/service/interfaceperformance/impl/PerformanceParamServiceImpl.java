@@ -143,7 +143,8 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         /**
          * 更新脚本和场景和业务流程
          */
-        pressureService.update(request);
+        // TODO
+        //pressureService.update(request);
     }
 
     @Override

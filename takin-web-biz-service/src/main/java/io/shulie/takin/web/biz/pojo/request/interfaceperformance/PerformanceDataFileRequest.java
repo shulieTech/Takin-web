@@ -18,8 +18,8 @@ public class PerformanceDataFileRequest implements Serializable {
     @ApiModelProperty(name = "id", value = "接口压测Id")
     private Long id;
 
-    @ApiModelProperty(name = "uploadFiles", value = "数据文件")
-    @JsonProperty("uploadFiles")
+    @ApiModelProperty(name = "relatedFiles", value = "数据文件")
+    @JsonProperty("relatedFiles")
     private List<FileManageUpdateRequest> fileManageUpdateRequests;
 
     @ApiModelProperty(name = "paramList", value = "参数信息")

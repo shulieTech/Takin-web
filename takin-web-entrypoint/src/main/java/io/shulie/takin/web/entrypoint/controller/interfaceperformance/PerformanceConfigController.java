@@ -101,6 +101,6 @@ public class PerformanceConfigController {
         if (id == null) {
             return ResponseResult.fail("查询失败.", "查询失败");
         }
-        return ResponseResult.success(performanceConfigService.bizFlowDetail(id));
+        return ResponseResult.success(performanceConfigService.querySceneId(id));
     }
 }

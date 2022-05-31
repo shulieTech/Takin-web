@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
+import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.adapter.api.model.request.file.UploadRequest;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
@@ -17,19 +18,26 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConf
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
+import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import org.apache.commons.compress.utils.Lists;
+import org.springframework.beans.BeanUtils;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -69,20 +77,23 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
         String script = scriptGenerator(id);
         String fileName = name + ".jmx";
-        File tempFile = new File(TEMP_DICTIONARY + fileName);
+        File tempFile = new File(TEMP_DICTIONARY + File.separator + fileName);
+        if (!tempFile.exists()) {
+            tempFile.createNewFile();
+        }
         try {
             FileWriter writer = new FileWriter(tempFile.getName());
             writer.write(script);
             writer.close();
             List files = Lists.newArrayList();
-            files.add(tempFile);
 
             UploadRequest uploadRequest = new UploadRequest();
             uploadRequest.setFileList(files);
-            // TODO
-            //List<UploadResponse> uploadResponse = cloudFileApi.upload(uploadRequest);
-            //return uploadResponse;
-            return null;
+            MultipartFile multipartFile = new MockMultipartFile(tempFile.getName(), tempFile.getName(), "application/json",
+                    new FileInputStream(tempFile));
+            files.add(multipartFile);
+            List<UploadResponse> uploadResponse = cloudFileApi.upload(uploadRequest);
+            return uploadResponse;
         } finally {
             tempFile.delete();
         }
@@ -137,6 +148,16 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         BusinessFlowDetailResponse flowInfo = bizFlowCreator(uploadResult);
         //自动匹配活动
         activityAutoMatcher(flowInfo.getId());
+        //设置为虚拟业务活动 businessType设置为1(因为自动匹配可能匹配不上)
+        // xpathMd5取业务流程返回的threadgroup的xpathmd5 。。。。这堆业务逻辑是真的混乱和恶心
+        String threadGroupXpathMd5 = flowInfo.getScriptJmxNodeList().get(0).getValue();
+        BusinessFlowThreadResponse response = sceneService.getThreadGroupDetail(flowInfo.getId(), threadGroupXpathMd5);
+        ScriptJmxNode scriptJmxNode = response.getThreadScriptJmxNodes().get(0).getChildren().get(0);
+        SceneLinkRelateRequest sceneLinkRelateRequest = new SceneLinkRelateRequest();
+        BeanUtils.copyProperties(scriptJmxNode, sceneLinkRelateRequest);
+        sceneLinkRelateRequest.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+        sceneService.matchActivity(sceneLinkRelateRequest);
+
         //保存业务流程id到关系映射表
         InterfacePerformanceConfigSceneRelateShipEntity entity = new InterfacePerformanceConfigSceneRelateShipEntity();
         entity.setApiId(input.getId());
@@ -184,7 +205,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         input.getPressureConfigRequest().setGoal(goal);
         //压测模式配置
         // TODO: 2022/5/26
-       // input.getPressureConfigRequest().setConfig();
+        // input.getPressureConfigRequest().setConfig();
         //置空停止条件
         input.getPressureConfigRequest().setDestroyMonitoringGoal(Collections.emptyList());
         //置空告警条件
@@ -192,30 +213,6 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
         return;
     }
-
-    void findChild(ScriptNode root
-            , List<ScriptNode> list
-            , List<ScriptNode> threadGroup
-            , List<ScriptNode> apiScriptNode) {
-        List<ScriptNode> childlist = new ArrayList<>();
-        for (ScriptNode child :
-                list) {
-            if (child.getChildren() != null)
-                childlist.addAll(child.getChildren());
-        }
-        //若子节点不存在，那么就不必再遍历子节点中的子节点了 直接返回。
-        if (childlist.size() == 0)
-            return;
-        //设置父节点的子节点列表
-        root.setChildren(childlist);
-        //若子节点存在，接着递归调用该方法，寻找子节点的子节点。
-        for (ScriptNode childs :
-                childlist) {
-            findChild(childs, list, threadGroup, apiScriptNode);
-        }
-
-    }
-
 
     @Override
     public ResponseResult<Boolean> update(PerformanceConfigCreateInput request) throws Throwable {

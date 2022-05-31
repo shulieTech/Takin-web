@@ -256,6 +256,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         req.setType(JobType.of(request.getPressureScene()));
         req.setName(String.valueOf(request.getSceneId()));
         req.setSampling(runRequest.getTraceSampling());
+        req.setBindByXpathMd5(request.getBindByXpathMd5());
         req.setThreadConfig(buildThreadGroup(request));
         completedSla(req, request);
         completedMetrics(req, request);

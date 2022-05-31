@@ -14,6 +14,11 @@ import java.util.List;
  */
 @Data
 public class PerformanceParamDetailRequest {
+    /**
+     * 配置Id
+     */
+    private Long id;
+
     private Long configId;
 
     @ApiModelProperty(name = "relatedFiles", value = "数据文件")

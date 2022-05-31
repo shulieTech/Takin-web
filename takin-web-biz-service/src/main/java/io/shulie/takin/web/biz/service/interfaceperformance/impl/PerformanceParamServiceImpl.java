@@ -152,7 +152,7 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             // 过滤掉那种未修改的，这种就在新增的文件Map里面找不到
             List<InterfacePerformanceParamEntity> insertList = paramList.stream()
                     .filter(paramRequest -> StringUtils.isNotBlank(paramRequest.getParamName())
-                            && !fileNameMap.containsKey(paramRequest.getParamValue()))
+                            && fileNameMap.containsKey(paramRequest.getParamValue()))
                     .map(paramRequest -> {
                         InterfacePerformanceParamEntity paramEntity = new InterfacePerformanceParamEntity();
 

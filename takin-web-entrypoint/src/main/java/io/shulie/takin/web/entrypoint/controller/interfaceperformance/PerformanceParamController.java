@@ -32,10 +32,8 @@ public class PerformanceParamController {
     }
 
     @ApiOperation("获取参数详情")
-    @RequestMapping(value = "/detail/{configId}", method = RequestMethod.GET)
-    public ResponseResult detail(@PathVariable(value = "configId") Long configId) {
-        PerformanceParamDetailRequest request = new PerformanceParamDetailRequest();
-        request.setConfigId(configId);
+    @RequestMapping(value = "/detail", method = RequestMethod.GET)
+    public ResponseResult detail(PerformanceParamDetailRequest request) {
         return ResponseResult.success(performanceParamService.detail(request));
     }
 

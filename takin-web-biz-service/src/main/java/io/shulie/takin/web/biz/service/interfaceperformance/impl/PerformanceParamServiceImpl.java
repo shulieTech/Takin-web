@@ -32,6 +32,7 @@ import io.shulie.takin.web.diff.api.DiffFileApi;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,7 +119,9 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
                 Map<String, List<FileManageEntity>> fileNameMap = fileEntitys.stream().collect(Collectors.groupingBy(FileManageEntity::getFileName));
                 // 把解析的参数给放到参数表里面
                 List<PerformanceParamRequest> paramList = request.getParamList();
-                List<InterfacePerformanceParamEntity> insertList = paramList.stream().map(paramRequest -> {
+                List<InterfacePerformanceParamEntity> insertList = paramList.stream()
+                        .filter(paramRequest-> StringUtils.isNotBlank(paramRequest.getParamName()))
+                        .map(paramRequest -> {
                     InterfacePerformanceParamEntity paramEntity = new InterfacePerformanceParamEntity();
 
                     paramEntity.setConfigId(configId);
@@ -140,7 +143,8 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         /**
          * 更新脚本和场景和业务流程
          */
-        pressureService.update(request);
+        // TODO
+        //pressureService.update(request);
     }
 
     @Override

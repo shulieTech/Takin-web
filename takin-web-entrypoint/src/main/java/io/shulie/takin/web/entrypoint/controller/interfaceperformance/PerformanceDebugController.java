@@ -1,9 +1,9 @@
 package io.shulie.takin.web.entrypoint.controller.interfaceperformance;
 
+import com.google.common.collect.Maps;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDebugRequest;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceResultCreateInput;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.*;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceDebugService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceResultService;
@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 /**
  * @author xingchen
@@ -65,11 +66,21 @@ public class PerformanceDebugController {
     @ApiOperation("获取调试结果")
     @RequestMapping(value = "/result", method = RequestMethod.GET)
     public ResponseResult result(PerformanceResultCreateInput input) {
-        return ResponseResult.success(performanceResultService.pageResult(input));
+        PagingList<PerformanceResultResponse> pageResult = performanceResultService.pageResult(input);
+        // 封装失败数据
+        long failCount = 0;
+        if (!pageResult.isEmpty()) {
+            failCount = pageResult.getList().stream().map(result -> !result.getStatus().equals("200")).count();
+        }
+        Map<String, Object> extData = Maps.newHashMap();
+        extData.put("failCount", failCount);
+        ResponseResult responseResult = ResponseResult.success(pageResult);
+        responseResult.setExtData(extData);
+        return responseResult;
     }
 
     @ApiOperation("清理结果")
-    @RequestMapping(value = "/flush", method = RequestMethod.POST)
+    @RequestMapping(value = "/flush", method = RequestMethod.DELETE)
     public ResponseResult flush(@RequestBody PerformanceResultCreateInput input) {
         performanceResultService.flushAll(input);
         return ResponseResult.success();

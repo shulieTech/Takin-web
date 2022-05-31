@@ -89,8 +89,14 @@ public class PerformanceResultServiceImpl implements PerformanceResultService {
         if (StringUtils.isNotBlank(param.getResultId())) {
             queryWrapper.eq("result_id", param.getResultId());
         }
-        if(param.getStatus() != null){
-            queryWrapper.eq("`status`",param.getStatus());
+        // 状态处理 0 所有 1是成功，2是失败
+        if (param.getStatus() != null) {
+            if (param.getStatus() == 1) {
+                queryWrapper.eq("`status`", 200);
+            }
+            if (param.getStatus() == 2) {
+                queryWrapper.eq(false, "`status`", 200);
+            }
         }
         return queryWrapper;
     }

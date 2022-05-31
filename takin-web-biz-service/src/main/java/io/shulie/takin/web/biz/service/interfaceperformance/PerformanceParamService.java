@@ -21,7 +21,7 @@ public interface PerformanceParamService {
     PerformanceParamDetailResponse detail(PerformanceParamDetailRequest request);
 
     /**
-     * 获取参数详情
+     * 读取文件内容详情
      */
     PerformanceParamDetailResponse fileContentDetail(PerformanceParamDetailRequest request);
 }

@@ -289,16 +289,22 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
     }
 
     private static void completedSla(PressureTaskStartReq req, ScheduleStartRequestExt request) {
+        List<SlaConfig> conditionList = new ArrayList<>();
         List<SlaConfig> stopCondition = request.getStopCondition();
+        if (!CollectionUtils.isEmpty(stopCondition)) {
+            conditionList.addAll(stopCondition);
+        }
         List<SlaConfig> waringCondition = request.getWarningCondition();
         if (!CollectionUtils.isEmpty(waringCondition)) {
-            stopCondition.addAll(waringCondition);
+            conditionList.addAll(waringCondition);
         }
-        List<SlaConfig> finalCondition = stopCondition.stream().filter(
+        List<SlaConfig> finalCondition = conditionList.stream().filter(
             condition -> Objects.nonNull(FormulaTarget.of(condition.getIndexInfo()))).collect(
             Collectors.toList());
+        List<SlaInfo> slaConfigs = new ArrayList<>(conditionList.size());
+        req.setSlaConfig(slaConfigs);
         if (!CollectionUtils.isEmpty(finalCondition)) {
-            req.setSlaConfig(
+            slaConfigs.addAll(
                 finalCondition.stream().map(ScheduleServiceImpl::convertSlaConfig).collect(Collectors.toList()));
         }
     }

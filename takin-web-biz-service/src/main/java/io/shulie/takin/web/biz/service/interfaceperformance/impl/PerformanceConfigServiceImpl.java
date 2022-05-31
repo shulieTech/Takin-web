@@ -204,7 +204,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
 
     @Override
     public Long querySceneId(Long apiId) {
-        performancePressureService.
+        performancePressureService.querySceneId(apiId);
     }
 
     @Override

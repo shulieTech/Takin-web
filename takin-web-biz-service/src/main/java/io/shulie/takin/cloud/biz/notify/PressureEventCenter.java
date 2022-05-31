@@ -242,7 +242,7 @@ public class PressureEventCenter extends AbstractIndicators {
         String resourceId = context.getResourceId();
         Long taskId = context.getTaskId();
         Long sceneId = context.getSceneId();
-        if (StringUtils.isBlank(resourceId)) {
+        if (StringUtils.isNotBlank(resourceId)) {
             redisClientUtil.del(PressureStartCache.getResourcePodSuccessKey(resourceId),
                 PressureStartCache.getPodStartFirstKey(resourceId), PressureStartCache.getPodHeartbeatKey(resourceId));
             String resourceKey = PressureStartCache.getResourceKey(resourceId);

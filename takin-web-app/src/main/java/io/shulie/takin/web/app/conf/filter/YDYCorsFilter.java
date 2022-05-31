@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 @Component
-public class CorsFilter implements Filter {
+public class YDYCorsFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {

@@ -57,6 +57,11 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         return super.add(request);
     }
 
+    @Override
+    public Long querySceneId(Long apiId) {
+        return super.querySceneId(apiId);
+    }
+
 
     /**
      * 临时文件目录

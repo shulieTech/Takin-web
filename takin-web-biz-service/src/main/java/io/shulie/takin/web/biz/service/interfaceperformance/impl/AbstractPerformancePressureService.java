@@ -98,6 +98,10 @@ public abstract class AbstractPerformancePressureService
         return performanceConfigSceneRelateShipMapper.selectOne(queryWrapper).getSceneId();
     }
 
+    @Override
+    public Long querySceneId(Long apiId) {
+        return fetchSceneId(apiId);
+    }
 
     /**
      * 删除业务流程

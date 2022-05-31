@@ -93,4 +93,14 @@ public class PerformanceConfigController {
         }
         return ResponseResult.success(performanceConfigService.bizFlowDetail(id));
     }
+
+
+    @GetMapping("/querySceneId")
+    @ApiOperation(value = "查询绑定的场景的id")
+    public ResponseResult<Long> querySceneId(@RequestParam("id") Long id) {
+        if (id == null) {
+            return ResponseResult.fail("查询失败.", "查询失败");
+        }
+        return ResponseResult.success(performanceConfigService.bizFlowDetail(id));
+    }
 }

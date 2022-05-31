@@ -45,6 +45,8 @@ public interface PerformanceConfigService {
 
     public SceneEntity bizFlowDetail(Long apiId);
 
+    Long querySceneId(Long apiId);
+
     List<RelationAppNameVO> relationName(PerformanceConfigQueryRequest param);
 
     public ResponseResult uploadDataFile(BusinessFlowDataFileRequest request);

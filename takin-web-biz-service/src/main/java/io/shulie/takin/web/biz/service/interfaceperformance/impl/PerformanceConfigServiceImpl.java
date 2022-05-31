@@ -203,6 +203,11 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
     }
 
     @Override
+    public Long querySceneId(Long apiId) {
+        performancePressureService.
+    }
+
+    @Override
     public ResponseResult<SceneActionResp> start(SceneActionParam param) {
         return performancePressureService.start(param);
     }

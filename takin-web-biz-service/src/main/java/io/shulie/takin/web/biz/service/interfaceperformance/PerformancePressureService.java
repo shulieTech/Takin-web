@@ -23,6 +23,9 @@ public interface PerformancePressureService {
      */
     ResponseResult<Long> add(PerformanceConfigCreateInput input) throws Throwable;
 
+
+    Long querySceneId(Long apiId);
+
     /**
      * 更新
      *

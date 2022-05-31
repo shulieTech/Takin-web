@@ -45,7 +45,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Api(tags = "移动云接口", value = "移动云接口")
 @RestController
@@ -216,8 +215,8 @@ public class ShiftCloudController {
     @PostMapping("/ms/task/api/service/task/sdk/log")
     public BaseResult log(@RequestBody ShiftCloudVO shiftCloudVO) {
         BaseResult baseResult = new BaseResult();
-        if (StringUtils.isNotBlank(shiftCloudVO.getTool_excute_id())) {
-            Map data = this.getData(Long.parseLong(shiftCloudVO.getTool_excute_id()));
+        if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
+            Map data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id()));
             baseResult.setData(data);
         }
 
@@ -238,7 +237,7 @@ public class ShiftCloudController {
             String testTotalTime = output.getTestTotalTime();
             List<BusinessActivitySummaryBean> businessActivity = output.getBusinessActivity();
             Long totalRequest = output.getTotalRequest();
-            data.put("tool_excute_id", id);
+            data.put("tool_execute_id", id);
             data.put("tool_task_id", sceneId);
             data.put("tool_code", "Performance");
             data.put("task_status", null != conclusion && 1 == conclusion ? 1 : 2);
@@ -293,8 +292,8 @@ public class ShiftCloudController {
     @PostMapping("/api/c/report/export")
     public BaseResult export(@RequestBody ShiftCloudVO shiftCloudVO) {
         BaseResult baseResult = new BaseResult();
-        if (StringUtils.isNotBlank(shiftCloudVO.getTool_excute_id())) {
-            ResponseResult<String> url = reportController.getExportDownLoadUrl(Long.parseLong(shiftCloudVO.getTool_excute_id()));
+        if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
+            ResponseResult<String> url = reportController.getExportDownLoadUrl(Long.parseLong(shiftCloudVO.getTool_execute_id()));
             baseResult.setData(url);
         }
 

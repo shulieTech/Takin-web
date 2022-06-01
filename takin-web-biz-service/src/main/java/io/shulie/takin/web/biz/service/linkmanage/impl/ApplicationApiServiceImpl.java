@@ -91,16 +91,16 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
                         requestMethod = requestMethod.substring(1, requestMethod.length() - 1);
                     }
                     api = str[0];
-                    if (api.contains("||")) {
-                        String[] splits = api.split("\\|\\|");
+                    if (requestMethod.contains("||")) {
+                        String[] splits = requestMethod.split("\\|\\|");
                         for (String split : splits) {
                             ApplicationApiCreateParam manage = new ApplicationApiCreateParam();
-                            manage.setApi(split.trim());
+                            manage.setApi(api);
                             manage.setApplicationName(appName);
                             manage.setIsDeleted((byte)0);
                             manage.setCreateTime(new Date());
                             manage.setUpdateTime(new Date());
-                            manage.setMethod(requestMethod);
+                            manage.setMethod(split);
                             manage.setApplicationId(applicationDetailResult.getApplicationId());
                             manage.setUserId(applicationDetailResult.getUserId());
                             manage.setIsAgentRegiste(1);

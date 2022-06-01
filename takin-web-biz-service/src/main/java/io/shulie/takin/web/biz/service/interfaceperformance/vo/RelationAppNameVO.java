@@ -26,4 +26,8 @@ public class RelationAppNameVO {
      */
     private String param;
 
+    /**
+     * header头信息
+     */
+    private String header;
 }

@@ -259,6 +259,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
                     RelationAppNameVO tmpVo = new RelationAppNameVO();
                     tmpVo.setEntranceAppName(info.getAppName() + "|" + tmpPath);
                     tmpVo.setParam(info.getRequest());
+                    // TODO 暂时设置为空，目前没有header字段
+                    tmpVo.setHeader("");
                     return tmpVo;
                 }).collect(Collectors.toList());
             }

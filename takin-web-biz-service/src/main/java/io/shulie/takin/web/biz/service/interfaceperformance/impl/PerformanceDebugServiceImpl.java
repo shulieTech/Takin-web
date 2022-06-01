@@ -232,14 +232,13 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                             configEntity.getHeaders(),
                             configEntity.getCookies(),
                             contentTypeVO);
+                    requeryEntity = new HttpEntity<>(configEntity.getBody(), headers);
                     if (HttpMethod.GET.name().equals(configEntity.getHttpMethod().toUpperCase())) {
-                        requeryEntity = new HttpEntity<>(null, headers);
                         // 设置请求信息,body和Header
                         insertResult.setRequest(JsonHelper.bean2Json(requeryEntity));
                         responseEntity = restTemplate.exchange(configEntity.getRequestUrl(),
                                 HttpMethod.GET, requeryEntity, String.class);
                     } else {
-                        requeryEntity = new HttpEntity<>(configEntity.getBody(), headers);
                         // 设置请求信息,body和Header
                         insertResult.setRequest(JsonHelper.bean2Json(requeryEntity));
                         responseEntity = restTemplate.exchange(configEntity.getRequestUrl(),

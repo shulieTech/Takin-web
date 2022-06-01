@@ -205,7 +205,14 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         Long relateFileMaxCount = request.getRelateFileMaxCount();
         try {
             // 这里处理个状态标记，确认请求是否发送完成,获取结果的时候前端不需要轮训
-            redisClientUtil.setString(performanceDebugUtil.formatResultKey(request.getResultId()), "1",5000, TimeUnit.SECONDS);
+            redisClientUtil.setString(performanceDebugUtil.formatResultKey(request.getResultId()), "1", 5000, TimeUnit.SECONDS);
+
+            ContentTypeVO contentTypeVO = JsonHelper.json2Bean(configEntity.getContentType(), ContentTypeVO.class);
+            // 构建restTemplate
+            RestTemplate restTemplate = performanceDebugUtil.createResultTemplate(
+                    configEntity.getIsRedirect(),
+                    configEntity.getTimeout(),
+                    contentTypeVO);
             for (int idx = 0; idx < requestCount; idx++) {
                 // 替换url
                 String requestUrl = configEntity.getRequestUrl();
@@ -225,12 +232,6 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                 insertResult.setConfigId(configEntity.getId());
                 insertResult.setRequestUrl(configEntity.getRequestUrl());
                 insertResult.setHttpMethod(configEntity.getHttpMethod());
-
-                ContentTypeVO contentTypeVO = JsonHelper.json2Bean(configEntity.getContentType(), ContentTypeVO.class);
-                RestTemplate restTemplate = performanceDebugUtil.createResultTemplate(
-                        configEntity.getIsRedirect(),
-                        configEntity.getTimeout(),
-                        contentTypeVO);
                 try {
                     HttpEntity<?> requeryEntity;
                     ResponseEntity responseEntity;

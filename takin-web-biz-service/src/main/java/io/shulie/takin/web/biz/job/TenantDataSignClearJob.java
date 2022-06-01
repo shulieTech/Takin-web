@@ -72,7 +72,7 @@ public class TenantDataSignClearJob implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
-        log.info("[数据重制job 开始执行]");
+        log.info("[数据重置job 开始执行]");
         if (distributedLock.tryLock(CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_lock",
                 0L, 10L, TimeUnit.MINUTES)) {
 
@@ -84,7 +84,7 @@ public class TenantDataSignClearJob implements SimpleJob {
             Set membersByProd = redisTemplate.opsForSet().members(cacheKeyByProd);
             try {
                 if (membersByTest != null && membersByTest.size() > 0) {
-                    log.info("[数据重制job 正在执行中]");
+                    log.info("[数据重置job 正在执行中]");
                     //清除数据
                     Stream<CompletableFuture<Void>> completableFutureStream = tableList.stream().map(tableName ->
                             CompletableFuture.runAsync(() -> {
@@ -94,13 +94,13 @@ public class TenantDataSignClearJob implements SimpleJob {
                             }, jobThreadPool));
                     CompletableFuture.allOf(completableFutureStream.toArray(CompletableFuture[]::new)).thenRun(() -> {
                         //从重制队列中移除
-                        log.info("[数据重制job 数据清理完成,清空队列]");
+                        log.info("[数据重置job 数据清理完成,清空队列]");
                         redisTemplate.opsForSet().remove(cacheKeyByTest, membersByTest);
                         redisTemplate.opsForSet().remove(cacheKeyByProd, membersByProd);
                     });
                 }
             } finally {
-                log.info("[数据重制job 执行结束]");
+                log.info("[数据重置job 执行结束]");
                 distributedLock.unLock(CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_lock");
             }
         }

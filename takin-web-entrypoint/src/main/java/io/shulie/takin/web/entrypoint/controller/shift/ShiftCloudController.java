@@ -1,5 +1,6 @@
 package io.shulie.takin.web.entrypoint.controller.shift;
 
+import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -246,7 +248,7 @@ public class ShiftCloudController {
             else if (null != conclusion && 0 == conclusion && 2 == taskStatus) ts = 3;
             data.put("task_status", ts);
             data.put("task_message", conclusionRemark);
-            data.put("task_progress", testTotalTime);
+            data.put("task_progress", "50%");//TODO testTotalTime is null?
             data.put("task_status",taskStatus);
             if (null != taskStatus && taskStatus == 2) {
                 Map analysis = new HashMap();
@@ -294,13 +296,13 @@ public class ShiftCloudController {
 
     //2.7
     @PostMapping("/api/c/report/export")
-    public BaseResult export(@RequestBody ShiftCloudVO shiftCloudVO) {
-        BaseResult baseResult = new BaseResult();
+    public File export(@RequestBody ShiftCloudVO shiftCloudVO) {
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
             ResponseResult<String> url = reportController.getExportDownLoadUrl(Long.parseLong(shiftCloudVO.getTool_execute_id()));
-            baseResult.setData(url);
+            String path = url.getData();
+            File file = FileUtil.file(path);
+            return file;
         }
-
-        return baseResult;
+        return null;
     }
 }

@@ -165,7 +165,7 @@ public class ShiftCloudController {
                     Long toolExecuteId = sceneActionResp.getData();
                     if (null != toolExecuteId) {
                         Map data = new HashMap(1);
-                        data.put("tool_execute_id", toolExecuteId);
+                        data.put("tool_execute_id", String.valueOf(toolExecuteId));
                         ScheduledExecutorService pool = Executors.newScheduledThreadPool(4);
                         pool.scheduleWithFixedDelay(()->{
                             boolean status = this.pushStatus(toolExecuteId);

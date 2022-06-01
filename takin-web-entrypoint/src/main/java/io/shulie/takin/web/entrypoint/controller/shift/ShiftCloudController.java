@@ -240,7 +240,11 @@ public class ShiftCloudController {
             data.put("tool_execute_id", id);
             data.put("tool_task_id", sceneId);
             data.put("tool_code", "Performance");
-            data.put("task_status", null != conclusion && 1 == conclusion ? 1 : 2);
+            int ts = 0;
+            if (null != conclusion && 1 == conclusion) ts = 1;
+            else if (null != conclusion && 0 == conclusion && 1 == taskStatus) ts = 2;
+            else if (null != conclusion && 0 == conclusion && 2 == taskStatus) ts = 3;
+            data.put("task_status", ts);
             data.put("task_message", conclusionRemark);
             data.put("task_progress", testTotalTime);
             data.put("task_status",taskStatus);

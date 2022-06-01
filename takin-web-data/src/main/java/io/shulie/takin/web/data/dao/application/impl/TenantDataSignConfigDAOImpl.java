@@ -10,6 +10,7 @@ import io.shulie.takin.web.data.mapper.mysql.TenantDataSignConfigMapper;
 import io.shulie.takin.web.data.model.mysql.TenantDataSignConfigEntity;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -94,6 +95,9 @@ public class TenantDataSignConfigDAOImpl implements TenantDataSignConfigDAO, MPU
 
     @Override
     public void clearSign(List<Long> tenantIds, String envCode) {
+        if(CollectionUtils.isEmpty(tenantIds)){
+            return;
+        }
         tenantDataSignConfigMapper.clearSign(tenantIds, envCode);
     }
 }

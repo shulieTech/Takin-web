@@ -7,6 +7,7 @@ import io.shulie.takin.web.data.model.mysql.TenantDataSignConfigEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.UpdateProvider;
 
 import java.util.List;
 
@@ -22,5 +23,7 @@ public interface TenantDataSignConfigMapper extends BaseMapper<TenantDataSignCon
 
     @InterceptorIgnore(tenantLine = "true")
     List<TenantDataSignConfigEntity> selectList(@Param(Constants.WRAPPER) Wrapper<TenantDataSignConfigEntity> queryWrapper);
+
+
 }
 

@@ -73,30 +73,35 @@ public class TenantDataSignClearJob implements SimpleJob {
     @Override
     public void execute(ShardingContext shardingContext) {
         log.info("[数据重制job 开始执行]");
-        String envCode = WebPluginUtils.traceEnvCode();
-        if (distributedLock.tryLock(CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_" + envCode + "lock",
+        if (distributedLock.tryLock(CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_lock",
                 0L, 10L, TimeUnit.MINUTES)) {
-            String cacheKey = CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_" + envCode;
-            //获取重制队列
-            Set members = redisTemplate.opsForSet().members(cacheKey);
+
+
+            //获取不同环境的重制队列
+            String cacheKeyByTest = CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_test";
+            String cacheKeyByProd = CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_prod";
+            Set membersByTest = redisTemplate.opsForSet().members(cacheKeyByTest);
+            Set membersByProd = redisTemplate.opsForSet().members(cacheKeyByProd);
             try {
-                if (members != null && members.size() > 0) {
+                if (membersByTest != null && membersByTest.size() > 0) {
                     log.info("[数据重制job 正在执行中]");
                     //清除数据
                     Stream<CompletableFuture<Void>> completableFutureStream = tableList.stream().map(tableName ->
                             CompletableFuture.runAsync(() -> {
                                 TakinWebContext.setTable(tableName);
-                                configDAO.clearSign(Lists.newArrayList(members), envCode);
+                                configDAO.clearSign(Lists.newArrayList(membersByTest), "test");
+                                configDAO.clearSign(Lists.newArrayList(membersByProd), "prod");
                             }, jobThreadPool));
                     CompletableFuture.allOf(completableFutureStream.toArray(CompletableFuture[]::new)).thenRun(() -> {
                         //从重制队列中移除
                         log.info("[数据重制job 数据清理完成,清空队列]");
-                        redisTemplate.opsForSet().remove(cacheKey, members);
+                        redisTemplate.opsForSet().remove(cacheKeyByTest, membersByTest);
+                        redisTemplate.opsForSet().remove(cacheKeyByProd, membersByProd);
                     });
                 }
             } finally {
-                log.info("[数据重制job 正在执行结束]");
-                distributedLock.unLock(CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_" + envCode + "lock");
+                log.info("[数据重制job 执行结束]");
+                distributedLock.unLock(CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_lock");
             }
         }
     }

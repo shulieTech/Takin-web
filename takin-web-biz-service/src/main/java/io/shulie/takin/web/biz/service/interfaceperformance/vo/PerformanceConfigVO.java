@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.vo;
 
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.ContentTypeVO;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import lombok.Data;
 
@@ -66,6 +67,8 @@ public class PerformanceConfigVO {
      * contentType数据
      */
     private String contentType;
+
+    private ContentTypeVO contentTypeVo;
 
     /**
      * 0：未调试，1，调试中

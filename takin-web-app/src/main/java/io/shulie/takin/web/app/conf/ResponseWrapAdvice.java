@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Set;
 import java.util.HashSet;
 
+import com.pamirs.takin.entity.domain.vo.shift.BaseResult;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import com.github.pagehelper.PageInfo;
@@ -63,7 +64,9 @@ public class ResponseWrapAdvice extends ResponseEntityExceptionHandler implement
                 || body instanceof WebResponse
                 || body instanceof File
                 || body instanceof ResponseResult
-                || body instanceof io.shulie.takin.common.beans.response.ResponseResult) {
+                || body instanceof io.shulie.takin.common.beans.response.ResponseResult
+                || body instanceof BaseResult
+        ) {
             return body;
         }
         if (body instanceof PageInfo) {

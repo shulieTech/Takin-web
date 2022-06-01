@@ -12,7 +12,7 @@ public class SceneManagerResult {
     private Long id;
 
     @ApiModelProperty(value = "场景名称")
-    private String sceneName;
+    private String name;
 
     @ApiModelProperty(value = "用户ID")
     private Long userId;

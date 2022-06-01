@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.checker;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,15 +72,8 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
             fillContextIfNecessary(context);
             initTaskAndReportIfNecessary(context);
             SceneManageWrapperOutput sceneData = context.getSceneData();
-            StrategyConfigExt config = getStrategy();
-            sceneData.setStrategy(config);
-            ResourceCheckRequest request = new ResourceCheckRequest();
-            request.setCpu(config.getCpuNum().toPlainString());
-            request.setMemory(config.getMemorySize().toPlainString());
-            request.setNumber(sceneData.getIpNum());
-            request.setLimitCpu(config.getLimitCpuNum().toPlainString());
-            request.setLimitMemory(config.getLimitMemorySize().toPlainString());
-            Boolean checkResult = cloudResourceApi.check(request);
+            sceneData.setStrategy(getStrategy(context));
+            Boolean checkResult = cloudResourceApi.check(buildCheckRequest(sceneData));
             if (!Boolean.TRUE.equals(checkResult)) {
                 return CheckResult.fail(type(), "压力机资源不足");
             }
@@ -111,15 +105,7 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
     }
 
     private String lockResource(StartConditionCheckerContext context) {
-        SceneManageWrapperOutput sceneData = context.getSceneData();
-        StrategyConfigExt strategy = sceneData.getStrategy();
-        ResourceLockRequest request = new ResourceLockRequest();
-        request.setCpu(strategy.getCpuNum());
-        request.setMemory(strategy.getMemorySize());
-        request.setNumber(sceneData.getIpNum());
-        request.setImage(strategy.getPressureEngineImage());
-        request.setCallbackUrl(appConfig.getCallbackUrl());
-        return cloudResourceApi.lock(request);
+        return cloudResourceApi.lock(buildLockRequest(context.getSceneData()));
     }
 
     private void afterLocking(StartConditionCheckerContext context) {
@@ -160,10 +146,13 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
         redisClientUtil.hmset(PressureStartCache.getSceneResourceKey(sceneData.getId()), sceneParam);
     }
 
-    private StrategyConfigExt getStrategy() {
+    private StrategyConfigExt getStrategy(StartConditionCheckerContext context) {
         StrategyConfigExt config = strategyConfigService.getCurrentStrategyConfig();
         if (config == null) {
             throw new RuntimeException("未配置策略");
+        }
+        if (context.isInspect()) {
+            return getInspectStrategy(config.getPressureEngineImage());
         }
         return config;
     }
@@ -218,5 +207,39 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
     @Override
     public int getOrder() {
         return 4;
+    }
+
+    private ResourceCheckRequest buildCheckRequest(SceneManageWrapperOutput sceneData) {
+        StrategyConfigExt strategy = sceneData.getStrategy();
+        ResourceCheckRequest request = new ResourceCheckRequest();
+        request.setCpu(strategy.getCpuNum().toPlainString());
+        request.setMemory(strategy.getMemorySize().toPlainString());
+        request.setNumber(sceneData.getIpNum());
+        request.setLimitCpu(strategy.getLimitCpuNum().toPlainString());
+        request.setLimitMemory(strategy.getLimitMemorySize().toPlainString());
+        return request;
+    }
+
+    private ResourceLockRequest buildLockRequest(SceneManageWrapperOutput sceneData) {
+        StrategyConfigExt strategy = sceneData.getStrategy();
+        ResourceLockRequest request = new ResourceLockRequest();
+        request.setCpu(strategy.getCpuNum().toPlainString());
+        request.setMemory(strategy.getMemorySize().toPlainString());
+        request.setLimitCpu(strategy.getLimitCpuNum().toPlainString());
+        request.setLimitMemory(strategy.getLimitMemorySize().toPlainString());
+        request.setNumber(sceneData.getIpNum());
+        request.setImage(strategy.getPressureEngineImage());
+        request.setCallbackUrl(appConfig.getCallbackUrl());
+        return request;
+    }
+
+    private StrategyConfigExt getInspectStrategy(String image) {
+        StrategyConfigExt strategy = new StrategyConfigExt();
+        strategy.setCpuNum(new BigDecimal("0.05"));
+        strategy.setMemorySize(new BigDecimal("200"));
+        strategy.setLimitCpuNum(new BigDecimal("0.2"));
+        strategy.setLimitMemorySize(new BigDecimal("300"));
+        strategy.setPressureEngineImage(image);
+        return strategy;
     }
 }

@@ -37,8 +37,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.File;
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -169,12 +169,12 @@ public class ShiftCloudController {
                         Map data = new HashMap(1);
                         data.put("tool_execute_id", String.valueOf(toolExecuteId));
                         ScheduledExecutorService pool = Executors.newScheduledThreadPool(4);
-                        pool.scheduleWithFixedDelay(()->{
+                        pool.scheduleWithFixedDelay(() -> {
                             boolean status = this.pushStatus(toolExecuteId);
                             if (status) {
                                 pool.shutdown();
                             }
-                        },30,30, TimeUnit.SECONDS);
+                        }, 30, 30, TimeUnit.SECONDS);
                         baseResult.setData(data);
                     }
                 }
@@ -195,6 +195,7 @@ public class ShiftCloudController {
             Map data = this.getData(reportId);
             StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
             httpPost.setEntity(stringEntity);
+            httpPost.setHeader("Content-Type", "application/json");
             response = httpClient.execute(httpPost);
             Object task_status = data.remove("task_status");
             return task_status != null && Integer.parseInt(task_status.toString()) == 2;
@@ -249,7 +250,7 @@ public class ShiftCloudController {
             data.put("task_status", ts);
             data.put("task_message", conclusionRemark);
             data.put("task_progress", "50%");//TODO testTotalTime is null?
-            data.put("task_status",taskStatus);
+            data.put("task_status", taskStatus);
             if (null != taskStatus && taskStatus == 2) {
                 Map analysis = new HashMap();
                 analysis.put("coverDemand", 0);
@@ -296,13 +297,28 @@ public class ShiftCloudController {
 
     //2.7
     @PostMapping("/api/c/report/export")
-    public File export(@RequestBody ShiftCloudVO shiftCloudVO) {
+    public void export(@RequestBody ShiftCloudVO shiftCloudVO, HttpServletResponse response) throws Exception {
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
             ResponseResult<String> url = reportController.getExportDownLoadUrl(Long.parseLong(shiftCloudVO.getTool_execute_id()));
-            String path = url.getData();
-            File file = FileUtil.file(path);
-            return file;
+            if (url.getSuccess()) {
+                String path = url.getData();
+                File file = FileUtil.file(path);
+                String filename = file.getName();
+                // 以流的形式下载文件。
+                InputStream fis = new BufferedInputStream(new FileInputStream(path));
+                byte[] buffer = new byte[fis.available()];
+                fis.read(buffer);
+                fis.close();
+                // 清空response
+                response.reset();
+                response.setContentType("application/octet-stream;charset=UTF-8");
+                String fileName = new String(filename.getBytes("gb2312"), "iso8859-1");
+                response.setHeader("Content-disposition", "attachment;filename=" + fileName);
+                OutputStream ouputStream = response.getOutputStream();
+                ouputStream.write(buffer);
+                ouputStream.flush();
+                ouputStream.close();
+            }
         }
-        return null;
     }
 }

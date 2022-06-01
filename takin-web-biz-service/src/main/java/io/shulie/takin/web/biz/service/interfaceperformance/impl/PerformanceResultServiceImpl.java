@@ -95,7 +95,7 @@ public class PerformanceResultServiceImpl implements PerformanceResultService {
                 queryWrapper.eq("`status`", 200);
             }
             if (param.getStatus() == 2) {
-                queryWrapper.eq(false, "`status`", 200);
+                queryWrapper.ne("`status`", 200);
             }
         }
         return queryWrapper;

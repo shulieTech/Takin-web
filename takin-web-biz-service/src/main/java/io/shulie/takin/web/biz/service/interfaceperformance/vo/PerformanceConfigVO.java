@@ -116,4 +116,8 @@ public class PerformanceConfigVO {
      * 压测相关配置
      */
     private SceneDetailResponse pressureConfigDetail;
+    /**
+     * 绑定的场景id
+     */
+    private Long bindSceneId;
 }

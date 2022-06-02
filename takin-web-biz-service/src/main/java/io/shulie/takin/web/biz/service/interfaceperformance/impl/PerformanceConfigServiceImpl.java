@@ -283,6 +283,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
                 SceneDetailResponse source = result.getData();
                 if (response.getClass().isAssignableFrom(PerformanceConfigVO.class)) {
                     ((PerformanceConfigVO) response).setPressureConfigDetail(source);
+                    ((PerformanceConfigVO) response).setBindSceneId(source.getId());
+
                 }
                 break;
             case select:

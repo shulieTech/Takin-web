@@ -446,6 +446,7 @@ public abstract class AbstractPerformancePressureService
         // 添加排除的应用
         List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
         copyDetailResult.getDataValidation().setExcludedApplicationIds(DataTransformUtil.list2list(excludedApplicationIds, String.class));
+        copyDetailResult.setId(sceneId);
         return ResponseResult.success(copyDetailResult);
     }
 

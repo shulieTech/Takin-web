@@ -33,6 +33,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -200,7 +201,7 @@ public class ShiftCloudController {
             httpPost.setHeader("Content-Type", "application/json");
             response = httpClient.execute(httpPost);
             Object task_status = data.remove("task_status");
-            return task_status != null && Integer.parseInt(task_status.toString()) == 2;
+            return task_status != null && (Integer.parseInt(task_status.toString()) == 1 || Integer.parseInt(task_status.toString()) == 3);
         } catch (Exception e) {
             //Ignore
             return false;
@@ -217,7 +218,7 @@ public class ShiftCloudController {
     }
 
     //2.6
-    @PostMapping("/ms/task/api/service/task/sdk/log")
+    @GetMapping("/ms/task/api/service/task/sdk/log")
     public BaseResult log(@RequestBody ShiftCloudVO shiftCloudVO) throws Exception {
         BaseResult baseResult = new BaseResult();
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {

@@ -260,7 +260,6 @@ public class ShiftCloudController {
             Double mi = Double.valueOf(ms);
             double tm = min / mi * 100 > 100 ? 100 : min / mi * 100;
             data.put("task_progress", String.valueOf(tm).substring(0, String.valueOf(tm).indexOf(".")) + "%");//TODO testTotalTime is null?
-            data.put("task_status", taskStatus);
             if (null != taskStatus && taskStatus == 2) {
                 Map analysis = new HashMap();
                 analysis.put("coverDemand", 0);

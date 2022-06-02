@@ -80,7 +80,7 @@ public class PerformanceDebugController {
         // 封装失败数据
         long failCount = 0;
         if (!pageResult.isEmpty()) {
-            failCount = pageResult.getList().stream().filter(result -> result.getStatus().equals(200)).count();
+            failCount = pageResult.getList().stream().filter(result -> !result.getStatus().equals(200)).count();
         }
         ResponseResult responseResult = ResponseResult.success(pageResult);
         Map<String, Object> extData = Maps.newHashMap();

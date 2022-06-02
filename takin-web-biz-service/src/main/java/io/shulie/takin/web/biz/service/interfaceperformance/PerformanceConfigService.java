@@ -4,6 +4,7 @@ import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.InterfacePerformanceConfigVO;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
@@ -50,6 +51,4 @@ public interface PerformanceConfigService {
     List<RelationAppNameVO> relationName(PerformanceConfigQueryRequest param);
 
     public ResponseResult uploadDataFile(BusinessFlowDataFileRequest request);
-
-
 }

@@ -59,4 +59,6 @@ public class InterfacePerformanceConfigVO extends UserCommonExt {
      * 备注
      */
     private String remark;
+
+    private Long userId;
 }

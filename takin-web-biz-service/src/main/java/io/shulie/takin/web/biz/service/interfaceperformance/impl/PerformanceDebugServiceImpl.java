@@ -262,9 +262,9 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     insertResult.setResponse(JsonHelper.bean2Json(responseEntity));
                 } catch (Exception e) {
                     log.error("调试错误 --> 错误信息: {}", e.getMessage(), e);
+                    insertResult.setStatus(400);
                     refreshDebugErrorMessage(PerformanceDebugErrorEnum.REQUEST_FAILED, insertResult, e.getLocalizedMessage());
                 }
-
                 insertResult.setResultId(request.getResultId());
                 // 保存请求结果
                 performanceResultService.add(insertResult);
@@ -297,6 +297,4 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         map.compute(errorEnum.getType(), (k, v) -> v == null ? error : (v + "," + error));
         insertResult.setErrorMessage(JsonHelper.bean2Json(map));
     }
-
-
 }

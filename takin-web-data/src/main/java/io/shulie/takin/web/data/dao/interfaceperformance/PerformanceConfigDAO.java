@@ -38,4 +38,9 @@ public interface PerformanceConfigDAO {
      * @param id
      */
     void delete(Long id);
+
+    /**
+     * 分配用户
+     */
+    void allocationUser(Long dataId, Long userId);
 }

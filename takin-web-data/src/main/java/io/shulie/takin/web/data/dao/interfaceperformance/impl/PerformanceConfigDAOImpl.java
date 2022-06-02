@@ -94,6 +94,25 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
         interfacePerformanceConfigMapper.deleteById(id);
     }
 
+    /**
+     * 分配用户
+     *
+     */
+    @Override
+    public void allocationUser(Long dataId,Long userId) {
+        if (dataId == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "参数未设置");
+        }
+        if (userId == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "参数未设置");
+        }
+        InterfacePerformanceConfigEntity updateEntity = new InterfacePerformanceConfigEntity();
+        updateEntity.setGmtModified(new Date());
+        updateEntity.setUserId(userId);
+        updateEntity.setId(dataId);
+        interfacePerformanceConfigMapper.updateById(updateEntity);
+    }
+
     public QueryWrapper<InterfacePerformanceConfigEntity> getWrapper(PerformanceConfigQueryParam param) {
         QueryWrapper<InterfacePerformanceConfigEntity> queryWrapper = new QueryWrapper<>();
         if (param == null) {

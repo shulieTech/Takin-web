@@ -8,6 +8,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
@@ -415,6 +416,39 @@ public abstract class AbstractPerformancePressureService
         }
     }
 
+
+    public NewSceneRequest convert(SceneDetailResponse in, Long apiId) {
+        NewSceneRequest result = new NewSceneRequest();
+
+
+        SceneRequest.Goal goal = in.getGoal().values().iterator().next();
+        result.setTargetGoal(goal);
+
+        NewSceneRequest.ThreadGroup threadGroup = new NewSceneRequest.ThreadGroup();
+        PtConfigExt ptConfigExt = in.getConfig();
+
+        ThreadGroupConfigExt threadGroupConfigExt =
+                ptConfigExt.getThreadGroupConfigMap().values().iterator().next();
+
+        threadGroup.setDuration(ptConfigExt.getDuration());
+        threadGroup.setThreadNum(threadGroupConfigExt.getThreadNum());
+        threadGroup.setMode(threadGroupConfigExt.getMode());
+        threadGroup.setType(threadGroupConfigExt.getType());
+        threadGroup.setPodNum(ptConfigExt.getPodNum());
+        threadGroup.setRampUp(threadGroupConfigExt.getRampUp());
+        threadGroup.setRampUpUnit(threadGroupConfigExt.getRampUpUnit());
+        threadGroup.setSteps(threadGroupConfigExt.getSteps());
+        threadGroup.setUnit(ptConfigExt.getUnit());
+        result.setThreadConfig(threadGroup);
+        //=====
+        result.setWarnMonitoringGoal(Lists.newArrayList());
+        result.setDestroyMonitoringGoal(Lists.newArrayList());
+        result.setGoal(Maps.newHashMap());
+        result.setBasicInfo(new NewSceneRequest.BasicInfo());
+        result.setConfig(new NewSceneRequest.PtConfig());
+        result.setDataValidation(new NewSceneRequest.DataValidation());
+        return result;
+    }
 
     @Override
     public ResponseResult<SceneDetailResponse> query(Long apiId) throws Throwable {

@@ -15,6 +15,7 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConf
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConvert;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
@@ -287,9 +288,9 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
                 ResponseResult<SceneDetailResponse> result = performancePressureService.query(detailIn);
                 SceneDetailResponse source = result.getData();
                 if (response.getClass().isAssignableFrom(PerformanceConfigVO.class)) {
-                    ((PerformanceConfigVO) response).setPressureConfigDetail(source);
+                    NewSceneRequest requestDetail = performancePressureService.convert(source, detailIn);
+                    ((PerformanceConfigVO) response).setPressureConfigRequest(requestDetail);
                     ((PerformanceConfigVO) response).setBindSceneId(source.getId());
-
                 }
                 break;
             case select:
@@ -304,7 +305,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
             _doAction(arg, response, action);
         } catch (Throwable t) {
             logger.error("do pressure config action error:{}", t.getMessage());
-             throw new RuntimeException(t.getMessage());
+            throw new RuntimeException(t.getMessage());
         }
     }
 

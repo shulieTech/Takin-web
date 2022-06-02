@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.vo;
 
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.ContentTypeVO;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import lombok.Data;
 
@@ -118,9 +119,11 @@ public class PerformanceConfigVO {
     /**
      * 压测相关配置
      */
-    private SceneDetailResponse pressureConfigDetail;
+    private NewSceneRequest pressureConfigRequest;
     /**
      * 绑定的场景id
      */
     private Long bindSceneId;
+
+
 }

@@ -6,6 +6,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 
@@ -52,6 +53,7 @@ public interface PerformancePressureService {
      */
     ResponseResult<SceneDetailResponse> query(Long apiId) throws Throwable;
 
+    NewSceneRequest convert(SceneDetailResponse in, Long apiId);
 
     /**
      * @param apiId apiid

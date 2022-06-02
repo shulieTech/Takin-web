@@ -274,7 +274,11 @@ public class ShiftCloudController {
                 }
                 analysis.put("executedCase", null != totalRequest ? totalRequest : 0);
                 analysis.put("performanceResult", null != conclusion && 1 == conclusion ? 1 : 2);
-                analysis.put("executeDuration", testTotalTime);
+                String a = testTotalTime.substring(0, testTotalTime.indexOf("h"));
+                String b = testTotalTime.substring(i1 + 1, i2);
+                String c = testTotalTime.substring(i2 + 1, testTotalTime.length() - 1);
+                int ti = Integer.parseInt(a) * 3600 + Integer.parseInt(b) * 60 + Integer.parseInt(c);
+                analysis.put("executeDuration", ti);
                 List list = new ArrayList();
                 if (CollectionUtils.isNotEmpty(businessActivity)) {
                     for (int i = 0; i < businessActivity.size(); i++) {

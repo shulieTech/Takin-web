@@ -218,7 +218,7 @@ public class ShiftCloudController {
     }
 
     //2.6
-    @GetMapping("/ms/task/api/service/task/sdk/log")
+    @PostMapping("/ms/task/api/service/task/sdk/log")
     public BaseResult log(@RequestBody ShiftCloudVO shiftCloudVO) throws Exception {
         BaseResult baseResult = new BaseResult();
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
@@ -310,7 +310,7 @@ public class ShiftCloudController {
     }
 
     //2.7
-    @PostMapping("/api/c/report/export")
+    @GetMapping("/api/c/report/export")
     public void export(@RequestBody ShiftCloudVO shiftCloudVO, HttpServletResponse response) throws Exception {
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
             ResponseResult<String> url = reportController.getExportDownLoadUrl(Long.parseLong(shiftCloudVO.getTool_execute_id()));

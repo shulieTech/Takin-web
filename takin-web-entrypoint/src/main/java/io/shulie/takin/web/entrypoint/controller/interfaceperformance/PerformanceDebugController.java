@@ -7,15 +7,19 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.*;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceDebugService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceResultService;
+import io.shulie.takin.web.biz.service.interfaceperformance.impl.PerformanceDebugUtil;
 import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author xingchen
@@ -35,6 +39,12 @@ public class PerformanceDebugController {
 
     @Resource
     private PerformanceResultService performanceResultService;
+
+    @Resource
+    private RedisClientUtil redisClientUtil;
+
+    @Resource
+    private PerformanceDebugUtil performanceDebugUtil;
 
     @ApiOperation("调试,如果未设置调试Id,则默认是新增以后开启调试")
     @RequestMapping(value = "/startAndSave", method = RequestMethod.POST)
@@ -70,11 +80,22 @@ public class PerformanceDebugController {
         // 封装失败数据
         long failCount = 0;
         if (!pageResult.isEmpty()) {
-            failCount = pageResult.getList().stream().map(result -> !result.getStatus().equals("200")).count();
+            failCount = pageResult.getList().stream().filter(result -> result.getStatus().equals(200)).count();
         }
-        Map<String, Object> extData = Maps.newHashMap();
-        extData.put("failCount", failCount);
         ResponseResult responseResult = ResponseResult.success(pageResult);
+        Map<String, Object> extData = Maps.newHashMap();
+        // 失败条数
+        extData.put("failCount", failCount);
+        extData.put("requestFinished", true);
+        // 轮训标记,给前端使用
+        String resultId = input.getResultId();
+        if (StringUtils.isNotBlank(resultId)) {
+            // 获取下状态标记,有值就代表没处理完成
+            Object obj = redisClientUtil.get(performanceDebugUtil.formatResultKey(resultId));
+            if (!Objects.isNull(obj)) {
+                extData.put("requestFinished", false);
+            }
+        }
         responseResult.setExtData(extData);
         return responseResult;
     }

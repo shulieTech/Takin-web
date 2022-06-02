@@ -71,7 +71,7 @@ public class PerformanceResultServiceImpl implements PerformanceResultService {
      */
     @Override
     public void flushAll(PerformanceResultCreateInput param) {
-        if (param.getConfigId() == null && StringUtils.isNotBlank(param.getResultId())) {
+        if (param.getConfigId() == null && StringUtils.isBlank(param.getResultId())) {
             throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_PARAM_ERROR, "参数未传递");
         }
         QueryWrapper<InterfacePerformanceResultEntity> queryWrapper = this.getWrapper(param);
@@ -95,7 +95,7 @@ public class PerformanceResultServiceImpl implements PerformanceResultService {
                 queryWrapper.eq("`status`", 200);
             }
             if (param.getStatus() == 2) {
-                queryWrapper.eq(false, "`status`", 200);
+                queryWrapper.ne("`status`", 200);
             }
         }
         return queryWrapper;

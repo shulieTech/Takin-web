@@ -28,11 +28,12 @@ public class PerformanceParamDAOImpl implements PerformanceParamDAO {
     /**
      * 清理掉接口压测参数
      *
-     * @param ids
+     * @param params
      */
     @Override
-    public void deleteByIds(List<Long> ids) {
-        interfacePerformanceParamMapper.deleteBatchIds(ids);
+    public void deleteByParam(PerformanceParamQueryParam params) {
+        QueryWrapper<InterfacePerformanceParamEntity> deleteWrapper = this.getWrapper(params);
+        interfacePerformanceParamMapper.delete(deleteWrapper);
     }
 
     @Override

@@ -35,4 +35,10 @@ public class PerformanceParamRequest implements Serializable {
      * 文件Id
      */
     private Long fileId;
+
+    private Long configId;
+
+    private String filePath;
+
+    private String id;
 }

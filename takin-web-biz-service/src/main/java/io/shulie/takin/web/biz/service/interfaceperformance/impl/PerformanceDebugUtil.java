@@ -285,4 +285,8 @@ public class PerformanceDebugUtil {
         }
         return regexStr;
     }
+
+    public String formatResultKey(String resultId) {
+        return String.format("debug:%s", resultId);
+    }
 }

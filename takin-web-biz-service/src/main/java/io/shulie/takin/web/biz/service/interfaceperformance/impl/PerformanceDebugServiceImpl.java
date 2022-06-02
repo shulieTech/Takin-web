@@ -12,6 +12,7 @@ import io.shulie.takin.web.common.enums.interfaceperformance.PerformanceDebugErr
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.FileUtils;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
@@ -32,6 +33,7 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +61,9 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
 
     @Resource
     private PerformanceResultService performanceResultService;
+
+    @Resource
+    private RedisClientUtil redisClientUtil;
 
     /**
      * 开启调试功能
@@ -114,6 +119,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
     public String simple_debug(PerformanceDebugRequest request) {
         // 1、读取数据库中的调试数据
         InterfacePerformanceConfigEntity queryEntity = PerformanceConvert.convertConfigDebugEntity(request);
+        queryEntity.setId(request.getId());
         // 2、读取文件关联的文件信息
         PerformanceParamDetailResponse detailResponse = new PerformanceParamDetailResponse();
         if (request.getId() != null) {
@@ -198,6 +204,15 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         Long requestCount = request.getRequestCount();
         Long relateFileMaxCount = request.getRelateFileMaxCount();
         try {
+            // 这里处理个状态标记，确认请求是否发送完成,获取结果的时候前端不需要轮训
+            redisClientUtil.setString(performanceDebugUtil.formatResultKey(request.getResultId()), "1", 5000, TimeUnit.SECONDS);
+
+            ContentTypeVO contentTypeVO = JsonHelper.json2Bean(configEntity.getContentType(), ContentTypeVO.class);
+            // 构建restTemplate
+            RestTemplate restTemplate = performanceDebugUtil.createResultTemplate(
+                    configEntity.getIsRedirect(),
+                    configEntity.getTimeout(),
+                    contentTypeVO);
             for (int idx = 0; idx < requestCount; idx++) {
                 // 替换url
                 String requestUrl = configEntity.getRequestUrl();
@@ -217,12 +232,6 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                 insertResult.setConfigId(configEntity.getId());
                 insertResult.setRequestUrl(configEntity.getRequestUrl());
                 insertResult.setHttpMethod(configEntity.getHttpMethod());
-
-                ContentTypeVO contentTypeVO = JsonHelper.json2Bean(configEntity.getContentType(), ContentTypeVO.class);
-                RestTemplate restTemplate = performanceDebugUtil.createResultTemplate(
-                        configEntity.getIsRedirect(),
-                        configEntity.getTimeout(),
-                        contentTypeVO);
                 try {
                     HttpEntity<?> requeryEntity;
                     ResponseEntity responseEntity;
@@ -231,14 +240,13 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                             configEntity.getHeaders(),
                             configEntity.getCookies(),
                             contentTypeVO);
+                    requeryEntity = new HttpEntity<>(configEntity.getBody(), headers);
                     if (HttpMethod.GET.name().equals(configEntity.getHttpMethod().toUpperCase())) {
-                        requeryEntity = new HttpEntity<>(null, headers);
                         // 设置请求信息,body和Header
                         insertResult.setRequest(JsonHelper.bean2Json(requeryEntity));
                         responseEntity = restTemplate.exchange(configEntity.getRequestUrl(),
                                 HttpMethod.GET, requeryEntity, String.class);
                     } else {
-                        requeryEntity = new HttpEntity<>(configEntity.getBody(), headers);
                         // 设置请求信息,body和Header
                         insertResult.setRequest(JsonHelper.bean2Json(requeryEntity));
                         responseEntity = restTemplate.exchange(configEntity.getRequestUrl(),
@@ -263,6 +271,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             }
         } catch (Throwable e) {
             log.error("单接口压测场景异常{}", ExceptionUtils.getStackTrace(e));
+        } finally {
+            redisClientUtil.del(performanceDebugUtil.formatResultKey(request.getResultId()));
         }
         // 非简单调试，要更新配置表数据
         if (!isSimpleDebug) {

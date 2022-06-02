@@ -7,8 +7,10 @@ import io.shulie.amdb.common.dto.trace.EntryTraceInfoDTO;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.ContentTypeVO;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConvert;
@@ -194,6 +196,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         }
         PerformanceConfigVO result = new PerformanceConfigVO();
         BeanUtils.copyProperties(queryEntity, result);
+        result.setContentTypeVo(JsonHelper.json2Bean(queryEntity.getContentType(), ContentTypeVO.class));
         doAction(configId, result, Action.ActionEnum.detail);
         return result;
     }
@@ -256,6 +259,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
                     RelationAppNameVO tmpVo = new RelationAppNameVO();
                     tmpVo.setEntranceAppName(info.getAppName() + "|" + tmpPath);
                     tmpVo.setParam(info.getRequest());
+                    // TODO 暂时设置为空，目前没有header字段
+                    tmpVo.setHeader("");
                     return tmpVo;
                 }).collect(Collectors.toList());
             }

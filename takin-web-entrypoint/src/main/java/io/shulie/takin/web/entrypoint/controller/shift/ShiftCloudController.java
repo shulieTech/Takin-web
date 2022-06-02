@@ -297,7 +297,7 @@ public class ShiftCloudController {
                     }
                 }
                 analysis.put("failedCaseInfo", list);
-                data.put("last_analysis_result_list", analysis);
+                data.put("last_analysis_result_list", JSON.toJSONString(analysis));
             } else {
                 data.put("last_analysis_result_list", null);
             }

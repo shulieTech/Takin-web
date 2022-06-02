@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -284,9 +285,9 @@ public class ShiftCloudController {
                             int failCount = 0;
                             DataBean successRate = businessActivity.get(i).getSuccessRate();
                             if (null != successRate) {
-                                Integer value = (Integer) successRate.getValue();
+                                BigDecimal value = (BigDecimal) successRate.getValue();
                                 if (null != value) {
-                                    failCount = (int) (t * (100 - value) / 100);
+                                    failCount = (int) (t * (100 - value.intValue()) / 100);
                                 }
                             }
                             failedCaseInfo.put("reason", JSON.toJSONString(businessActivity.get(i)));

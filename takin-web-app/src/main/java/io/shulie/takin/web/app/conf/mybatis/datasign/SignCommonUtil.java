@@ -288,7 +288,7 @@ public class SignCommonUtil {
                     }
 
                     if (map.get("sign") == null || Objects.equals(map.get("sign").toString(), "")) {
-                        return;
+                        continue;
                     }
 
                     String oldSign = String.valueOf(map.get("sign"));
@@ -305,6 +305,7 @@ public class SignCommonUtil {
                     if (!oldSign.equals(sign)) {
                         log.error("【数据签名异常】-【pre-update-check】 sql:{}", querySql);
                         valid = false;
+                        break;
                     }
                 }
 
@@ -334,7 +335,7 @@ public class SignCommonUtil {
                     map.put(md.getColumnLabel(i + 1).toLowerCase(), rs.getObject(md.getColumnLabel(i + 1)));
                 }
                 if (map.get("sign") == null || Objects.equals(map.get("sign").toString(), "")) {
-                    return;
+                    continue;
                 }
                 String oldSign = String.valueOf(map.get("sign"));
 
@@ -351,7 +352,7 @@ public class SignCommonUtil {
                 if (!oldSign.equals(sign)) {
                     log.error("【数据签名异常】-【select】 map:{} , sql:{}", JSON.toJSONString(map), boundSql.getSql());
                     valid = false;
-
+                    break;
                 }
             }
 

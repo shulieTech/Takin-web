@@ -66,7 +66,7 @@ public class TenantDataSignClearJob implements SimpleJob {
             "t_shadow_mq_consumer",
 //            "t_ac_account_balance",
 //            "t_ac_account_book",
-            "t_report",
+//            "t_report",
 //            "t_scene_big_file_slice",
             "t_scene_manage",
 //            "t_scene_script_ref"

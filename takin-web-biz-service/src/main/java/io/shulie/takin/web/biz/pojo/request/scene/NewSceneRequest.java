@@ -112,7 +112,7 @@ public class NewSceneRequest {
         @ApiModelProperty(value = "递增时长,施压模式为线性递增或阶梯递增时的递增时长")
         private Integer rampUp;
         @ApiModelProperty(value = "递增时长时间单位，s秒，m分，h小时")
-        private String rampUpUnit;
+        private String rampUpUnit = "m";
         @ApiModelProperty(value = "递增层次，施压模式为阶梯递增时的递增层数")
         private Integer steps;
         @ApiModelProperty(value = "预估流量")
@@ -135,6 +135,12 @@ public class NewSceneRequest {
         private Integer podNum = 1;
         @ApiModelProperty(value = "压测时间")
         private Long duration = 5l;
+        @ApiModelProperty(value = "递增时长,施压模式为线性递增或阶梯递增时的递增时长")
+        private Integer rampUp;
+        @ApiModelProperty(value = "递增时长时间单位，s秒，m分，h小时")
+        private String rampUpUnit;
+        @ApiModelProperty(value = "递增层次，施压模式为阶梯递增时的递增层数")
+        private Integer steps;
     }
 
     /**

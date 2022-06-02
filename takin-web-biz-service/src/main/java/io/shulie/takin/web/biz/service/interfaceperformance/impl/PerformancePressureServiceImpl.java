@@ -231,6 +231,9 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         threadGroupConfig.setMode(realPressureConfig.getMode());
         threadGroupConfig.setType(realPressureConfig.getType());
         threadGroupConfig.setEstimateFlow(200d);
+        threadGroupConfig.setSteps(realPressureConfig.getSteps());
+        threadGroupConfig.setRampUp(realPressureConfig.getRampUp());
+        threadGroupConfig.setRampUpUnit(realPressureConfig.getRampUpUnit());
         threadGroupConfigMap.put(keyOfThreadConfig, threadGroupConfig);
         ptConfig.setThreadGroupConfigMap(threadGroupConfigMap);
 

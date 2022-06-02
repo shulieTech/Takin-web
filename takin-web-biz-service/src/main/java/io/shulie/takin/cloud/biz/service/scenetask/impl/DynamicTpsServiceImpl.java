@@ -154,7 +154,8 @@ public class DynamicTpsServiceImpl implements DynamicTpsService {
             }
             return md5;
         }
-        throw new TakinCloudException(TakinCloudExceptionEnum.COMMON_VERIFY_ERROR, "脚本解析结果不正确");
+        // 此处为旧版本数据
+        return "all";
     }
 
     /**

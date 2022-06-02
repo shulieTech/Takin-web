@@ -435,7 +435,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     private boolean recursionMatchXpath(boolean parentMatched, String xpath, ScriptNodeTreeResp node, List<Long> result) {
         String xpathMd5 = node.getXpathMd5();
         boolean curMatched = xpath.equals(xpathMd5);
-        if (curMatched && StringUtils.isNotBlank(node.getIdentification())) {
+        // md5为空，代表旧版本数据，此时identification也为空，同时没有子节点(即：不存在父节点匹配情况)
+        if (curMatched && (StringUtils.isBlank(node.getMd5()) || StringUtils.isNotBlank(node.getIdentification()))) {
             result.add(node.getBusinessActivityId());
             return false;
         }

@@ -59,6 +59,7 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListRes
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
+import io.shulie.takin.utils.json.JsonHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -95,15 +96,17 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
 
     @Override
     public Long saveScene(SceneManageWrapperReq req) {
+        SceneManageWrapperReq request = JsonHelper.json2Bean(JsonHelper.bean2Json(req), SceneManageWrapperReq.class);
         SceneManageWrapperInput input = new SceneManageWrapperInput();
-        dataModelConvert(req, input);
+        dataModelConvert(request, input);
         return cloudSceneManageService.addSceneManage(input);
     }
 
     @Override
     public String updateScene(SceneManageWrapperReq req) {
+        SceneManageWrapperReq request = JsonHelper.json2Bean(JsonHelper.bean2Json(req), SceneManageWrapperReq.class);
         SceneManageWrapperInput input = new SceneManageWrapperInput();
-        dataModelConvert(req, input);
+        dataModelConvert(request, input);
         cloudSceneManageService.updateSceneManage(input);
         return null;
     }

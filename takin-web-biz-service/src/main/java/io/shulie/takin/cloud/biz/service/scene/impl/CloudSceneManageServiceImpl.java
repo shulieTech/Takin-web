@@ -46,6 +46,7 @@ import io.shulie.takin.adapter.api.model.common.RuleBean;
 import io.shulie.takin.adapter.api.model.common.TimeBean;
 import io.shulie.takin.adapter.api.model.common.UploadFileDTO;
 import io.shulie.takin.adapter.api.model.request.scenemanage.CloudUpdateSceneFileRequest;
+import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
 import io.shulie.takin.cloud.biz.cloudserver.SceneManageDTOConvert;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.input.scenemanage.SceneBusinessActivityRefInput;
@@ -69,11 +70,14 @@ import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
 import io.shulie.takin.cloud.common.constants.ReportConstants;
 import io.shulie.takin.cloud.common.constants.SceneManageConstant;
 import io.shulie.takin.cloud.common.enums.PressureModeEnum;
+import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.TimeUnitEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageErrorEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
+import io.shulie.takin.cloud.common.enums.scenemanage.SceneRunTaskStatusEnum;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
+import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
 import io.shulie.takin.cloud.common.utils.JsonUtil;
@@ -142,6 +146,10 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
     private EventCenterTemplate eventCenterTemplate;
     @Resource
     private RedisClientUtil redisClientUtil;
+    @Resource
+    private PressureTaskDAO pressureTaskDAO;
+    @Resource
+    private SceneTaskStatusCache taskStatusCache;
 
     @Value("${script.temp.path}")
     private String scriptTempPath;
@@ -650,10 +658,30 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
      * 至失败状态
      */
     private void toFailureState(Long sceneId, Long reportId, String errorMsg) {
-        // 记录失败原因，成功则不记录报告中 报告直接完成
-        cloudReportService.updateReportFeatures(reportId, ReportConstants.FINISH_STATUS, ReportConstants.PRESSURE_MSG,
-            errorMsg);
         ReportResult recentlyReport = reportDao.getRecentlyReport(sceneId);
+        String resourceId = recentlyReport.getResourceId();
+        String startKey = PressureStartCache.getStartFlag(resourceId);
+        if (!redisClientUtil.hasKey(startKey)) {
+            // 触发启动失败事件
+            Event event = new Event();
+            event.setEventName(PressureStartCache.START_FAILED);
+            StartFailEventSource source = new StartFailEventSource();
+            source.setContext(getResourceContext(resourceId));
+            source.setMessage(errorMsg);
+            event.setExt(source);
+            eventCenterTemplate.doEvents(event);
+            return;
+        }
+        // 记录失败原因，成功则不记录报告中 报告直接完成
+        cloudReportService.updateReportFeatures(reportId, ReportConstants.FINISH_STATUS,
+            ReportConstants.PRESSURE_MSG, errorMsg);
+        taskStatusCache.cacheStatus(sceneId, reportId, SceneRunTaskStatusEnum.FAILED, errorMsg);
+        Long taskId = recentlyReport.getTaskId();
+        pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, errorMsg);
+        pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.STOPPING, null);
+        pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.INACTIVE, null);
+        pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_GENERATING, null);
+        pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_DONE, null);
         if (!reportId.equals(recentlyReport.getId())) {
             log.error("更新压测生命周期，所更新的报告不是压测场景的最新报告,场景id:{},更新的报告id:{},当前最新的报告id:{}",
                 sceneId, reportId, recentlyReport.getId());
@@ -668,19 +696,6 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         }};
         // --->update 失败状态
         sceneManageDAO.getBaseMapper().updateById(sceneManage);
-
-        String resourceId = recentlyReport.getResourceId();
-        String startKey = PressureStartCache.getStartFlag(resourceId);
-        if (!redisClientUtil.hasKey(startKey)) {
-            // 触发启动失败事件
-            Event event = new Event();
-            event.setEventName(PressureStartCache.START_FAILED);
-            StartFailEventSource source = new StartFailEventSource();
-            source.setContext(getResourceContext(resourceId));
-            source.setMessage(errorMsg);
-            event.setExt(source);
-            eventCenterTemplate.doEvents(event);
-        }
     }
 
     @Override

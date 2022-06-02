@@ -39,10 +39,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -216,7 +217,7 @@ public class ShiftCloudController {
 
     //2.6
     @PostMapping("/ms/task/api/service/task/sdk/log")
-    public BaseResult log(@RequestBody ShiftCloudVO shiftCloudVO) {
+    public BaseResult log(@RequestBody ShiftCloudVO shiftCloudVO) throws Exception {
         BaseResult baseResult = new BaseResult();
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
             Map data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id()));
@@ -226,7 +227,7 @@ public class ShiftCloudController {
         return baseResult;
     }
 
-    private Map getData(long reportId) {
+    private Map getData(long reportId) throws ParseException {
         HashMap data = new HashMap();
         ResponseResult<ReportDetailOutput> responseResult = reportController.getReportByReportId(reportId);
         Response<ReportCountDTO> reportCount = reportLocalController.getReportCount(reportId);
@@ -240,8 +241,8 @@ public class ShiftCloudController {
             String testTotalTime = output.getTestTotalTime();
             List<BusinessActivitySummaryBean> businessActivity = output.getBusinessActivity();
             Long totalRequest = output.getTotalRequest();
-            data.put("tool_execute_id", id);
-            data.put("tool_task_id", sceneId);
+            data.put("tool_execute_id", String.valueOf(id));
+            data.put("tool_task_id", String.valueOf(sceneId));
             data.put("tool_code", "Performance");
             int ts = 0;
             if (null != conclusion && 1 == conclusion) ts = 1;
@@ -249,7 +250,15 @@ public class ShiftCloudController {
             else if (null != conclusion && 0 == conclusion && 2 == taskStatus) ts = 3;
             data.put("task_status", ts);
             data.put("task_message", conclusionRemark);
-            data.put("task_progress", "50%");//TODO testTotalTime is null?
+            String startTime = output.getStartTime();
+            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startTime);
+            long min = ChronoUnit.MINUTES.between(Instant.ofEpochMilli(date.getTime()), Instant.ofEpochMilli(System.currentTimeMillis()));
+            int i1 = testTotalTime.indexOf(" ");
+            int i2 = testTotalTime.indexOf("'");
+            String ms = testTotalTime.substring(i1 + 1, i2);
+            Double mi = Double.valueOf(ms);
+            double tm = min / mi * 100 > 100 ? 100 : min / mi * 100;
+            data.put("task_progress", String.valueOf(tm).substring(0, String.valueOf(tm).indexOf(".")) + "%");//TODO testTotalTime is null?
             data.put("task_status", taskStatus);
             if (null != taskStatus && taskStatus == 2) {
                 Map analysis = new HashMap();
@@ -289,7 +298,7 @@ public class ShiftCloudController {
                 analysis.put("failedCaseInfo", list);
                 data.put("last_analysis_result_list", analysis);
             } else {
-                data.put("last_analysis_result_list", "none");
+                data.put("last_analysis_result_list", null);
             }
         }
         return data;

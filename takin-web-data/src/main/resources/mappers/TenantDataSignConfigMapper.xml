@@ -3,13 +3,13 @@
 <mapper namespace="io.shulie.takin.web.data.mapper.mysql.TenantDataSignConfigMapper">
 
 
-    <update id="clearSign">
-            update t_tenant_data_sign_config
-            set sign = ""
-            where tenant_id  IN
-            <foreach collection="tenantIds" item="tenantId" open="(" close=")" separator=",">
-                #{tenantId}
-            </foreach>
-            AND `env_code` = #{envCode}
-    </update>
+<!--    <update id="clearSign">-->
+<!--            update t_tenant_data_sign_config-->
+<!--            set sign = ""-->
+<!--            where tenant_id  IN-->
+<!--            <foreach collection="tenantIds" item="tenantId" open="(" close=")" separator=",">-->
+<!--                #{tenantId}-->
+<!--            </foreach>-->
+<!--            AND `env_code` = #{envCode}-->
+<!--    </update>-->
 </mapper>

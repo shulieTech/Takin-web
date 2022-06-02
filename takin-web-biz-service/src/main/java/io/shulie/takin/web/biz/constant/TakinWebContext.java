@@ -19,7 +19,6 @@ public final class TakinWebContext {
 
     public static TransmittableThreadLocal<Boolean> tenantIdSignThreadLocal = new TransmittableThreadLocal<>();
 
-    private static TransmittableThreadLocal<String> tableThreadLocal = new TransmittableThreadLocal<>();
 
     private TakinWebContext() { /* no instance */ }
 
@@ -68,16 +67,5 @@ public final class TakinWebContext {
         tenantIdSignThreadLocal.remove();
         tenantIdSignThreadLocal.set(status);
 
-    }
-
-    public static void setTable(String tableName){
-        tableThreadLocal.remove();
-        tableThreadLocal.set(tableName);
-    }
-
-    public static String getTable(){
-        String tableName = tableThreadLocal.get();
-        tableThreadLocal.remove();
-        return tableName;
     }
 }

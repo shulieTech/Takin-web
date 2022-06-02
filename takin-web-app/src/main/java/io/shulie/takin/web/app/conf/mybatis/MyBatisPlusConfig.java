@@ -1,12 +1,8 @@
 package io.shulie.takin.web.app.conf.mybatis;
 
-import com.alibaba.ttl.TransmittableThreadLocal;
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.handler.TableNameHandler;
-import com.baomidou.mybatisplus.extension.plugins.inner.DynamicTableNameInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
-import io.shulie.takin.web.biz.constant.TakinWebContext;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -14,9 +10,6 @@ import net.sf.jsqlparser.expression.StringValue;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
 * @Package io.shulie.takin.web.app.conf.mybatis
@@ -77,11 +70,6 @@ public class MyBatisPlusConfig {
         // 用了分页插件必须设置 MybatisConfiguration#useDeprecatedExecutor = false
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
 
-        //动态表名插件
-        DynamicTableNameInnerInterceptor dynamicTableNameInnerInterceptor = new DynamicTableNameInnerInterceptor();
-        dynamicTableNameInnerInterceptor.setTableNameHandler(((sql, tableName) -> TakinWebContext.getTable() ==null ?
-                tableName:TakinWebContext.getTable()));
-        interceptor.addInnerInterceptor(dynamicTableNameInnerInterceptor);
         return interceptor;
     }
 

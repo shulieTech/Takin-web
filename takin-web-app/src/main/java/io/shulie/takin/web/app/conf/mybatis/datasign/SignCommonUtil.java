@@ -73,7 +73,8 @@ public class SignCommonUtil {
             return;
         }
         boolean isSign = clz.isAnnotationPresent(EnableSign.class);
-        if (isSign) {
+        boolean isCloudSign = clz.isAnnotationPresent(io.shulie.takin.cloud.data.annocation.EnableSign.class);
+        if (isSign || isCloudSign) {
 
             if (SqlCommandType.INSERT.equals(mappedStatement.getSqlCommandType())) {
                 //新增方法获取id
@@ -226,7 +227,8 @@ public class SignCommonUtil {
                 return;
             }
             boolean isSign = clz.isAnnotationPresent(EnableSign.class);
-            if (isSign) {
+            boolean isCloudSign = clz.isAnnotationPresent(io.shulie.takin.cloud.data.annocation.EnableSign.class);
+            if (isSign || isCloudSign) {
                 boolean valid = true;
                 //解析sql,拿出where条件，构建查询sql获取更新范围的数据,进行验签
                 String sql = boundSql.getSql();
@@ -320,8 +322,9 @@ public class SignCommonUtil {
             return;
         }
         Class<?> clz = mappedStatement.getResultMaps().get(0).getType();
+        boolean isCloudSign = clz.isAnnotationPresent(io.shulie.takin.cloud.data.annocation.EnableSign.class);
         boolean isSign = clz.isAnnotationPresent(EnableSign.class);
-        if (isSign) {
+        if (isSign || isCloudSign) {
             boolean valid = true;
             ResultSet rs = ps.getResultSet();
             ResultSetMetaData md = rs.getMetaData();

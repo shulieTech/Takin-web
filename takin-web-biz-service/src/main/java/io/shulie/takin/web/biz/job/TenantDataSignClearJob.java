@@ -4,11 +4,9 @@ import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.google.common.collect.Lists;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
-import io.shulie.takin.web.biz.constant.TakinWebContext;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.common.constant.CacheConstants;
 import io.shulie.takin.web.data.dao.application.TenantDataSignConfigDAO;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -65,7 +63,13 @@ public class TenantDataSignClearJob implements SimpleJob {
             "t_script_manage",
             "t_script_manage_deploy",
             "t_shadow_job_config",
-            "t_shadow_mq_consumer"
+            "t_shadow_mq_consumer",
+//            "t_ac_account_balance",
+//            "t_ac_account_book",
+            "t_report",
+//            "t_scene_big_file_slice",
+            "t_scene_manage",
+//            "t_scene_script_ref"
     };
 
     private List<String> tableList = Lists.newArrayList(tables);
@@ -88,9 +92,13 @@ public class TenantDataSignClearJob implements SimpleJob {
                     //清除数据
                     Stream<CompletableFuture<Void>> completableFutureStream = tableList.stream().map(tableName ->
                             CompletableFuture.runAsync(() -> {
-                                TakinWebContext.setTable(tableName);
-                                configDAO.clearSign(Lists.newArrayList(membersByTest), "test");
-                                configDAO.clearSign(Lists.newArrayList(membersByProd), "prod");
+                                try {
+                                    configDAO.clearSign(Lists.newArrayList(membersByTest), "test",tableName);
+                                    configDAO.clearSign(Lists.newArrayList(membersByProd), "prod",tableName);
+                                }catch (Exception e){
+                                    log.info("[数据重置job 执行异常]");
+                                    e.printStackTrace();
+                                }
                             }, jobThreadPool));
                     CompletableFuture.allOf(completableFutureStream.toArray(CompletableFuture[]::new)).thenRun(() -> {
                         //从重制队列中移除

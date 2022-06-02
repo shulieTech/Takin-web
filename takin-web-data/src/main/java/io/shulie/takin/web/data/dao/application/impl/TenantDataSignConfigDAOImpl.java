@@ -39,7 +39,7 @@ public class TenantDataSignConfigDAOImpl implements TenantDataSignConfigDAO, MPU
     public Map<String, Integer> queryTenantStatus() {
         LambdaQueryWrapper<TenantDataSignConfigEntity> queryWrapper = new LambdaQueryWrapper<>();
         List<TenantDataSignConfigEntity> list = tenantDataSignConfigMapper.selectList(queryWrapper);
-        return CollStreamUtil.toMap(list, (x -> x.getEnvCode() + "_" + x.getTenantId()), TenantDataSignConfigEntity::getStatus);
+        return CollStreamUtil.toMap(list, (x -> x.getEnvCode() + x.getTenantId()), TenantDataSignConfigEntity::getStatus);
     }
 
     @Override
@@ -94,11 +94,11 @@ public class TenantDataSignConfigDAOImpl implements TenantDataSignConfigDAO, MPU
     }
 
     @Override
-    public void clearSign(List<Long> tenantIds, String envCode) {
+    public void clearSign(List<Long> tenantIds, String envCode,String tableName) {
         if(CollectionUtils.isEmpty(tenantIds)){
             return;
         }
-        tenantDataSignConfigMapper.clearSign(tenantIds, envCode);
+        tenantDataSignConfigMapper.clearSign(tenantIds, envCode,tableName);
     }
 }
 

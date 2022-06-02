@@ -18,7 +18,7 @@ public interface TenantDataSignConfigDAO {
     Integer getStatus(Long tenantId);
 
 
-    void clearSign(List<Long> tenantId,String envCode);
+    void clearSign(List<Long> tenantId,String envCode,String tableName);
 
 }
 

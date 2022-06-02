@@ -101,7 +101,7 @@ public class ApplicationChecker implements StartConditionChecker {
         boolean flag = false;
         if (!SceneManageStatusEnum.ifFree(sceneData.getStatus())) {
             Object uniqueKey = redisClientUtil.hmget(PressureStartCache.getSceneResourceKey(sceneId), PressureStartCache.UNIQUE_KEY);
-            flag = Objects.isNull(uniqueKey) || !Objects.equals(uniqueKey, context.getUniqueKey());
+            flag = !Objects.equals(uniqueKey, context.getUniqueKey());
         }
         flag = flag || pressureRunning(context);
         if (flag) {
@@ -114,7 +114,11 @@ public class ApplicationChecker implements StartConditionChecker {
 
     private boolean pressureRunning(StartConditionCheckerContext context) {
         String sceneRunningKey = PressureStartCache.getSceneResourceLockingKey(context.getSceneId());
-        return !redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
+        boolean success = redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
+        if (success) {
+            redisClientUtil.expire(sceneRunningKey, 90);
+        }
+        return !success;
     }
 
     private void cacheAssociation(StartConditionCheckerContext context) {

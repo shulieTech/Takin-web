@@ -268,11 +268,11 @@ public class ShiftCloudController {
                     ReportCountDTO dto = reportCount.getData();
                     if (null != dto) {
                         analysis.put("totalCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() : 0);
+                        analysis.put("executedCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() : 0);
                         analysis.put("succeedCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() - (null != dto.getNotpassBusinessActivityCount() ? dto.getNotpassBusinessActivityCount() : 0) : 0);
                         analysis.put("failedCase", null != dto.getNotpassBusinessActivityCount() ? dto.getNotpassBusinessActivityCount() : 0);
                     }
                 }
-                analysis.put("executedCase", null != totalRequest ? totalRequest : 0);
                 analysis.put("performanceResult", null != conclusion && 1 == conclusion ? 1 : 2);
                 String a = testTotalTime.substring(0, testTotalTime.indexOf("h"));
                 String b = testTotalTime.substring(i1 + 1, i2);

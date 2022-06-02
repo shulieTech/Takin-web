@@ -13,6 +13,7 @@ import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -121,6 +122,9 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
         // 模糊匹配
         if (StringUtils.isNotBlank(param.getQueryName())) {
             queryWrapper.like("name", param.getQueryName());
+        }
+        if(CollectionUtils.isNotEmpty(param.getUserIdList())){
+            queryWrapper.in("user_id",param.getUserIdList());
         }
         return queryWrapper;
     }

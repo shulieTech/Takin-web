@@ -79,6 +79,7 @@ public final class BizOpConstants {
         public static final String BUSINESS_PROCESS = "businessFlow";
         public static final String APPLICATION_MANAGE = "appManage";
         public static final String SECURITY_CENTER = "securityCenter";
+        public static final String INTERFACE_TEST = "pressureTestManage_testByInterface";
         public static final String PRESSURE_TEST_MANAGE = "pressureTestManage";
         public static final String PRESSURE_TEST_SCENE = "pressureTestManage_pressureTestScene";
         public static final String PRESSURE_TEST_REPORT = "pressureTestManage_pressureTestReport";

@@ -27,6 +27,7 @@ import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
+import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -163,6 +164,10 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
     public PagingList<PerformanceConfigVO> query(PerformanceConfigQueryRequest request) {
         PerformanceConfigQueryParam param = new PerformanceConfigQueryParam();
         BeanUtils.copyProperties(request, param);
+        AuthQueryParamCommonExt ext = new AuthQueryParamCommonExt();
+        WebPluginUtils.fillQueryParam(ext);
+        // TODO 菜单配置的时候，设置权限处理
+        //param.setUserIdList(ext.getUserIdList());
         PagingList<PerformanceConfigDto> dtoPagingList = performanceConfigDAO.pageList(param);
         //转换下
         List<PerformanceConfigDto> source = dtoPagingList.getList();

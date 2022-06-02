@@ -21,6 +21,7 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceData
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
+import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
@@ -215,7 +216,25 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         input.getPressureConfigRequest().setGoal(goal);
         //压测模式配置
         // TODO: 2022/5/26
-        // input.getPressureConfigRequest().setConfig();
+        NewSceneRequest.PtConfig ptConfig = new NewSceneRequest.PtConfig();
+        NewSceneRequest.ThreadGroup realPressureConfig = input.getPressureConfigRequest().getThreadConfig();
+        ptConfig.setDuration(realPressureConfig.getDuration());
+        ptConfig.setPodNum(realPressureConfig.getPodNum());
+        ptConfig.setUnit(realPressureConfig.getUnit());
+        ptConfig.setEstimateFlow(null);
+
+        Map<String, NewSceneRequest.ThreadGroupConfig> threadGroupConfigMap = Maps.newHashMap();
+        String keyOfThreadConfig = threadGroup.get(0).getXpathMd5();
+        NewSceneRequest.ThreadGroupConfig threadGroupConfig = new NewSceneRequest.ThreadGroupConfig();
+        threadGroupConfig.setThreadNum(realPressureConfig.getThreadNum());
+        ;
+        threadGroupConfig.setMode(realPressureConfig.getMode());
+        threadGroupConfig.setType(realPressureConfig.getType());
+        threadGroupConfig.setEstimateFlow(200d);
+        threadGroupConfigMap.put(keyOfThreadConfig, threadGroupConfig);
+        ptConfig.setThreadGroupConfigMap(threadGroupConfigMap);
+
+        input.getPressureConfigRequest().setConfig(ptConfig);
         //置空停止条件
         input.getPressureConfigRequest().setDestroyMonitoringGoal(Collections.emptyList());
         //置空告警条件

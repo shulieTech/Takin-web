@@ -30,6 +30,10 @@ public class NewSceneRequest {
      */
     private Long id;
     /**
+     * 施压配置
+     */
+    private ThreadGroup threadConfig;
+    /**
      * 单接口压测目标值
      */
     private SceneRequest.Goal targetGoal;
@@ -113,6 +117,24 @@ public class NewSceneRequest {
         private Integer steps;
         @ApiModelProperty(value = "预估流量")
         private Double estimateFlow;
+    }
+
+    @Data
+    public static class ThreadGroup {
+        @ApiModelProperty(value = "压力模式：0并发、1TPS、2自定义等")
+        @NotNull(message = "压力模式不能为空")
+        private Integer type = 0;
+        @ApiModelProperty(value = "施压模式：1固定压力值，2线性递增，3阶梯递增")
+        @NotNull(message = "压力模式不能为空")
+        private Integer mode = 1;
+        @ApiModelProperty(value = "并发线程数")
+        private Integer threadNum = 1;
+        @ApiModelProperty(value = "压测时间单位")
+        private String unit = "m";
+        @ApiModelProperty(value = "pod数")
+        private Integer podNum = 1;
+        @ApiModelProperty(value = "压测时间")
+        private Long duration = 5l;
     }
 
     /**

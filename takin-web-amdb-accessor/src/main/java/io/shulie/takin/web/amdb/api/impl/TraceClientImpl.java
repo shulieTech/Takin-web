@@ -237,7 +237,7 @@ public class TraceClientImpl implements TraceClient {
             } else {
                 EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertVirtualEntrance(entrance.getEntrance());
                 return String.format("%s#%s#%s#%s", "", entranceJoinEntity.getVirtualEntrance(),
-                    entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
+                    StringUtils.defaultIfBlank(entranceJoinEntity.getMethodName(), ""), entranceJoinEntity.getRpcType());
             }
 
         }).collect(Collectors.joining(AppConstants.COMMA));

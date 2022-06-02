@@ -95,6 +95,9 @@ public class ApplicationChecker implements StartConditionChecker {
     private void checkStatus(StartConditionCheckerContext context) {
         SceneManageWrapperOutput sceneData = context.getSceneData();
         Long sceneId = context.getSceneId();
+        if (Objects.equals(SceneManageStatusEnum.RECYCLE.getValue(), sceneData.getStatus())) {
+            throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR, "当前场景已归档!");
+        }
         boolean flag = false;
         if (!SceneManageStatusEnum.ifFree(sceneData.getStatus())) {
             Object uniqueKey = redisClientUtil.hmget(PressureStartCache.getSceneResourceKey(sceneId), PressureStartCache.UNIQUE_KEY);

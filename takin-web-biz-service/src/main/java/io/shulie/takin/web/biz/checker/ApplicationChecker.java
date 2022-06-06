@@ -105,7 +105,10 @@ public class ApplicationChecker implements StartConditionChecker {
         }
         flag = flag || pressureRunning(context);
         if (flag) {
-            throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR, "当前场景不为待启动状态!");
+            String stopMessage = redisClientUtil.getString(
+                RedisClientUtil.getLockKey(PressureStartCache.getStopFlag(context.getResourceId())));
+            String message = StringUtils.defaultIfBlank(stopMessage, "当前场景不为待启动状态!");
+            throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR, message);
         }
         if (StringUtils.isBlank(context.getResourceId())) {
             cacheAssociation(context);

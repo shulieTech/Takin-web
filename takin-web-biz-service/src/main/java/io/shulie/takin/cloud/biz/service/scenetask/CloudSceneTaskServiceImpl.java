@@ -328,8 +328,8 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             || Objects.equals(SceneManageStatusEnum.RESOURCE_LOCKING.getValue(), sceneManage.getStatus())) {
             String now = String.valueOf(System.currentTimeMillis());
             String resourceKey = PressureStartCache.getSceneResourceKey(sceneId);
-            Long userId = Long.valueOf(String.valueOf(redisClientUtil.hmget(resourceKey, PressureStartCache.USER_ID)));
-            redisClientUtil.setString(PressureStartCache.getScenePreStopKey(sceneId, userId), now, 5, TimeUnit.MINUTES);
+            String uniqueKey = String.valueOf(redisClientUtil.hmget(resourceKey, PressureStartCache.UNIQUE_KEY));
+            redisClientUtil.setString(PressureStartCache.getScenePreStopKey(sceneId, uniqueKey), now, 5, TimeUnit.MINUTES);
             String resourceId = String.valueOf(redisClientUtil.hmget(resourceKey, PressureStartCache.RESOURCE_ID));
             ResourceContext context = getResourceContext(resourceId);
             context.setMessage("取消压测");

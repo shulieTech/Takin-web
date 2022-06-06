@@ -59,6 +59,7 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageListRes
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
+import io.shulie.takin.utils.json.JsonHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -96,15 +97,17 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
 
     @Override
     public Long saveScene(SceneManageWrapperReq req) {
+        SceneManageWrapperReq request = JsonHelper.json2Bean(JsonHelper.bean2Json(req), SceneManageWrapperReq.class);
         SceneManageWrapperInput input = new SceneManageWrapperInput();
-        dataModelConvert(req, input);
+        dataModelConvert(request, input);
         return cloudSceneManageService.addSceneManage(input);
     }
 
     @Override
     public String updateScene(SceneManageWrapperReq req) {
+        SceneManageWrapperReq request = JsonHelper.json2Bean(JsonHelper.bean2Json(req), SceneManageWrapperReq.class);
         SceneManageWrapperInput input = new SceneManageWrapperInput();
-        dataModelConvert(req, input);
+        dataModelConvert(request, input);
         cloudSceneManageService.updateSceneManage(input);
         return null;
     }
@@ -129,8 +132,8 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
     public List<SceneManageListResp> getSceneManageList(ContextExt req) {
         List<SceneManageListOutput> sceneManageListOutputs = cloudSceneManageService.querySceneManageList();
         return sceneManageListOutputs.stream()
-                .map(t -> BeanUtil.copyProperties(t, SceneManageListResp.class))
-                .collect(Collectors.toList());
+            .map(t -> BeanUtil.copyProperties(t, SceneManageListResp.class))
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -152,16 +155,15 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         queryVO.setSceneIds(sceneIdList);
         queryVO.setLastPtStartTime(req.getLastPtStartTime());
         queryVO.setLastPtEndTime(req.getLastPtEndTime());
-        Integer isDeleted = req.getIsDeleted();
-        queryVO.setIsDeleted(isDeleted == null ? 0 : isDeleted);
+        queryVO.setIsArchive(req.getIsArchive() == null?0:req.getIsArchive());
         PageInfo<SceneManageListOutput> pageInfo = cloudSceneManageService.queryPageList(queryVO);
         // 转换
         List<SceneManageListResp> list = pageInfo.getList().stream()
-                .map(output -> {
-                    SceneManageListResp resp = BeanUtil.copyProperties(output, SceneManageListResp.class);
-                    resp.setHasAnalysisResult(StrUtil.isNotBlank(output.getScriptAnalysisResult()));
-                    return resp;
-                }).collect(Collectors.toList());
+            .map(output -> {
+                SceneManageListResp resp = BeanUtil.copyProperties(output, SceneManageListResp.class);
+                resp.setHasAnalysisResult(StrUtil.isNotBlank(output.getScriptAnalysisResult()));
+                return resp;
+            }).collect(Collectors.toList());
         return ResponseResult.success(list, pageInfo.getTotal());
     }
 
@@ -188,8 +190,8 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
     @Override
     public ScriptCheckResp checkAndUpdateScript(ScriptCheckAndUpdateReq request) {
         ScriptVerityRespExt scriptVerityRespExt = cloudSceneManageService.checkAndUpdate(
-                request.getRequest(), request.getUploadPath(),
-                request.isAbsolutePath(), request.isUpdate(), request.getVersion());
+            request.getRequest(), request.getUploadPath(),
+            request.isAbsolutePath(), request.isUpdate(), request.getVersion());
         return SceneTaskOpenConverter.INSTANCE.ofScriptVerityRespExt(scriptVerityRespExt);
     }
 
@@ -197,7 +199,7 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
     public List<SceneManageWrapperResp> queryByIds(SceneManageQueryByIdsReq req) {
         List<SceneManageWrapperOutput> outputs = cloudSceneManageService.getByIds(req.getSceneIds());
         return outputs.stream().map(output -> BeanUtil.copyProperties(output, SceneManageWrapperResp.class))
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
     }
 
     private SceneManageWrapperResp getDetailForEdit(Long id, Long reportId) {
@@ -225,7 +227,7 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         input.setStopCondition(SceneSlaRefInputConverter.ofList(wrapperReq.getStopCondition()));
         input.setWarningCondition(SceneSlaRefInputConverter.ofList(wrapperReq.getWarningCondition()));
         input.setBusinessActivityConfig(
-                SceneBusinessActivityRefInputConvert.ofLists(wrapperReq.getBusinessActivityConfig()));
+            SceneBusinessActivityRefInputConvert.ofLists(wrapperReq.getBusinessActivityConfig()));
         input.setUploadFile(SceneScriptRefInputConvert.ofList(wrapperReq.getUploadFile()));
     }
 
@@ -238,7 +240,7 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         Map<String, Object> map = JSON.parseObject(features, new TypeReference<Map<String, Object>>(){});
         Integer configType = -1;
         if (map.containsKey(SceneManageConstant.FEATURES_CONFIG_TYPE)) {
-            configType = (Integer) map.get(SceneManageConstant.FEATURES_CONFIG_TYPE);
+            configType = (Integer)map.get(SceneManageConstant.FEATURES_CONFIG_TYPE);
             resp.setConfigType(configType);
         }
         if (map.containsKey(SceneManageConstant.FEATURES_SCRIPT_ID)) {
@@ -246,7 +248,7 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
             if (configType == 1) {
                 //业务活动
                 List<SceneManageWrapperOutput.SceneBusinessActivityRefOutput> businessActivityConfig = resp
-                        .getBusinessActivityConfig();
+                    .getBusinessActivityConfig();
                 for (SceneManageWrapperOutput.SceneBusinessActivityRefOutput data : businessActivityConfig) {
                     data.setScriptId(scriptId);
                     //业务活动的脚本id也在外面放一份
@@ -262,15 +264,15 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         // 新版本
         if (StrUtil.isNotBlank(resp.getScriptAnalysisResult())) {
             if (map.containsKey("dataValidation")) {
-                JSONObject dataValidation = (JSONObject) map.get("dataValidation");
-                Integer scheduleInterval = (Integer) dataValidation.get("timeInterval");
+                JSONObject dataValidation = (JSONObject)map.get("dataValidation");
+                Integer scheduleInterval = (Integer)dataValidation.get("timeInterval");
                 resp.setScheduleInterval(scheduleInterval);
             }
         }
         //旧版本
         else {
             if (map.containsKey(SceneManageConstant.FEATURES_SCHEDULE_INTERVAL)) {
-                Integer scheduleInterval = (Integer) map.get(SceneManageConstant.FEATURES_SCHEDULE_INTERVAL);
+                Integer scheduleInterval = (Integer)map.get(SceneManageConstant.FEATURES_SCHEDULE_INTERVAL);
                 resp.setScheduleInterval(scheduleInterval);
             }
         }
@@ -281,7 +283,7 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         SceneManageWrapperResp response = SceneManageRespConvertor.INSTANCE.of(sceneManage);
 
         response.setBusinessActivityConfig(
-                SceneBusinessActivityRefRespConvertor.INSTANCE.ofList(sceneManage.getBusinessActivityConfig()));
+            SceneBusinessActivityRefRespConvertor.INSTANCE.ofList(sceneManage.getBusinessActivityConfig()));
         response.setStopCondition(SceneSlaRefRespConvertor.INSTANCE.ofList(sceneManage.getStopCondition()));
         response.setWarningCondition(SceneSlaRefRespConvertor.INSTANCE.ofList(sceneManage.getWarningCondition()));
         response.setUploadFile(SceneScriptRefRespConvertor.INSTANCE.ofList(sceneManage.getUploadFile()));
@@ -321,7 +323,13 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         cloudSceneManageService.recovery(req.getId());
         return "恢复成功";
     }
-
+	
+	@Override
+	public String archive(SceneManageDeleteReq vo) {
+        cloudSceneManageService.archive(vo.getId());
+        return "归档成功";
+    }
+	
     @Override
     public ResponseResult<List<SceneManageListResp>> querySceneByStatus(SceneManageQueryReq req) {
         List<SceneManageListOutput> sceneManageListOutputs = cloudSceneManageService.getSceneByStatus(req.getStatus());

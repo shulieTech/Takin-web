@@ -267,12 +267,16 @@ public abstract class AbstractIndicators {
         }
     }
 
-    protected void removeSuccessKey(String resourceId, String podId, String jmeterId) {
-        redisClientUtil.removeSetValue(
+    protected void removeSuccessKey(String resourceId, String podId, String jmeterId, Date time) {
+        Long podCount = redisClientUtil.remSetValueAndReturnCount(
             PressureStartCache.getResourcePodSuccessKey(resourceId), podId);
-        if (Objects.nonNull(jmeterId)) {
-            redisClientUtil.removeSetValue(
+        Long jmeterCount = -1L;
+        if (StringUtils.isNotBlank(jmeterId)) {
+            jmeterCount = redisClientUtil.remSetValueAndReturnCount(
                 PressureStartCache.getResourceJmeterSuccessKey(resourceId), jmeterId);
+        }
+        if (podCount == 0 || jmeterCount == 0) {
+            detectEnd(resourceId, time);
         }
     }
 
@@ -283,9 +287,7 @@ public abstract class AbstractIndicators {
         Long tenantId = context.getTenantId();
         String engineName = ScheduleConstants.getEngineName(sceneId, reportId, tenantId);
         setMax(engineName + ScheduleConstants.LAST_SIGN, time.getTime());
-        if ((redisClientUtil.getSetSize(PressureStartCache.getResourcePodSuccessKey(resourceId)) == 0 ||
-            redisClientUtil.getSetSize(PressureStartCache.getResourceJmeterSuccessKey(resourceId)) == 0) &&
-            redisClientUtil.lockExpire(PressureStartCache.getFinishStopKey(resourceId),
+        if (redisClientUtil.lockExpire(PressureStartCache.getFinishStopKey(resourceId),
                 String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
             setLast(last(getPressureTaskKey(sceneId, reportId, tenantId)), ScheduleConstants.LAST_SIGN);
             // 压测停止

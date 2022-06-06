@@ -86,6 +86,13 @@ public interface SceneManageService {
      * @return
      */
     String recoveryScene(SceneManageDeleteReq deleteVO);
+		
+	/**
+     * 归档
+     * @param vo
+     * @return
+     */
+    String archive(SceneManageDeleteReq vo);
 	
 	/**
      * 下拉框的压测场景列表, 暂时只查询压测中状态的

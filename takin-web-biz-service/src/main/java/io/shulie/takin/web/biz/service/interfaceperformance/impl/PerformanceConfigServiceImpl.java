@@ -10,10 +10,7 @@ import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.ContentTypeVO;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
-import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConvert;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.*;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
@@ -30,6 +27,7 @@ import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
+import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +44,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +88,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         InterfacePerformanceConfigEntity insertConfigEntity = PerformanceConvert.convertConfigEntity(input);
         insertConfigEntity.setGmtCreate(new Date());
         insertConfigEntity.setGmtModified(new Date());
+        // 设置归属人未当前创建人
+        insertConfigEntity.setUserId(WebPluginUtils.traceUserId());
         // 新增配置信息
         Long returnObj = performanceConfigDAO.add(insertConfigEntity);
         /**
@@ -163,16 +164,17 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
     public PagingList<PerformanceConfigVO> query(PerformanceConfigQueryRequest request) {
         PerformanceConfigQueryParam param = new PerformanceConfigQueryParam();
         BeanUtils.copyProperties(request, param);
+        AuthQueryParamCommonExt ext = new AuthQueryParamCommonExt();
+        WebPluginUtils.fillQueryParam(ext);
+        // TODO 菜单配置的时候，设置权限处理
+        //param.setUserIdList(ext.getUserIdList());
         PagingList<PerformanceConfigDto> dtoPagingList = performanceConfigDAO.pageList(param);
         //转换下
         List<PerformanceConfigDto> source = dtoPagingList.getList();
         long total = dtoPagingList.getTotal();
-        List<Long> userIds = source.stream().map(dto -> dto.getCreatorId()).collect(Collectors.toList());
-        Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(userIds);
         List<PerformanceConfigVO> returnList = source.stream().map(configDto -> {
             PerformanceConfigVO vo = new PerformanceConfigVO();
             BeanUtils.copyProperties(configDto, vo);
-            vo.setCreatorName(WebPluginUtils.getUserName(configDto.getCreatorId(), userMap));
             return vo;
         }).collect(Collectors.toList());
         return PagingList.of(returnList, total);
@@ -184,7 +186,6 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      * @param configId
      * @return
      */
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public PerformanceConfigVO detail(Long configId) {
@@ -197,7 +198,10 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         }
         PerformanceConfigVO result = new PerformanceConfigVO();
         BeanUtils.copyProperties(queryEntity, result);
+        Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(Arrays.asList(queryEntity.getUserId()));
+        result.setUserName(WebPluginUtils.getUserName(queryEntity.getUserId(), userMap));
         result.setContentTypeVo(JsonHelper.json2Bean(queryEntity.getContentType(), ContentTypeVO.class));
+
         doAction(configId, result, Action.ActionEnum.detail);
         return result;
     }
@@ -209,7 +213,6 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
     @Override
     public Long querySceneId(Long apiId) {
         return performancePressureService.querySceneId(apiId);
-
     }
 
     @Override

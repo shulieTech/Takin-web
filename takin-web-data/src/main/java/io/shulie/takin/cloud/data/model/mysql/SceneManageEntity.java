@@ -59,7 +59,7 @@ public class SceneManageEntity {
     /**
      * 是否删除：0-否 1-是
      */
-//    @TableLogic
+    @TableLogic
     @TableField(value = "is_deleted")
     private Integer isDeleted;
     /**
@@ -119,6 +119,8 @@ public class SceneManageEntity {
     private Long createUid;
     @TableField(value = "customer_id")
     private Long customerId;
+    @TableField(value = "is_archive")
+    private Integer isArchive;
 
 
 }

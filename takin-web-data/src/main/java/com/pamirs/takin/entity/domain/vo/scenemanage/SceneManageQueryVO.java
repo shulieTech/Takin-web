@@ -35,5 +35,7 @@ public class SceneManageQueryVO extends PagingContextExt {
     private String lastPtEndTime;
 
     private Integer isDeleted;
+	
+	private Integer isArchive;
 
 }

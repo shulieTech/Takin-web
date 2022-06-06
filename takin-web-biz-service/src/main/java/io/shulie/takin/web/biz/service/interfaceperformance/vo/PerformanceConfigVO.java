@@ -102,9 +102,11 @@ public class PerformanceConfigVO {
     private Date gmtCreate;
 
     /**
-     * 创建人
+     * 归属人
      */
-    private String creatorName;
+    private String userName;
+
+    private Long userId;
 
     /**
      * 更新时间

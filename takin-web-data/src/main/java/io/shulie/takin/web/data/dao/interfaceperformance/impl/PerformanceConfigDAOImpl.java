@@ -13,6 +13,7 @@ import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
 import io.shulie.takin.web.data.util.MPUtil;
 import io.shulie.takin.web.ext.entity.UserExt;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -94,6 +95,25 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
         interfacePerformanceConfigMapper.deleteById(id);
     }
 
+    /**
+     * 分配用户
+     *
+     */
+    @Override
+    public void allocationUser(Long dataId,Long userId) {
+        if (dataId == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "参数未设置");
+        }
+        if (userId == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "参数未设置");
+        }
+        InterfacePerformanceConfigEntity updateEntity = new InterfacePerformanceConfigEntity();
+        updateEntity.setGmtModified(new Date());
+        updateEntity.setUserId(userId);
+        updateEntity.setId(dataId);
+        interfacePerformanceConfigMapper.updateById(updateEntity);
+    }
+
     public QueryWrapper<InterfacePerformanceConfigEntity> getWrapper(PerformanceConfigQueryParam param) {
         QueryWrapper<InterfacePerformanceConfigEntity> queryWrapper = new QueryWrapper<>();
         if (param == null) {
@@ -102,6 +122,9 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
         // 模糊匹配
         if (StringUtils.isNotBlank(param.getQueryName())) {
             queryWrapper.like("name", param.getQueryName());
+        }
+        if(CollectionUtils.isNotEmpty(param.getUserIdList())){
+            queryWrapper.in("user_id",param.getUserIdList());
         }
         return queryWrapper;
     }

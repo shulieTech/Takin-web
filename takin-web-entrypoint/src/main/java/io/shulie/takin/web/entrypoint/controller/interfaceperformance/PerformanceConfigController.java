@@ -1,7 +1,10 @@
 package io.shulie.takin.web.entrypoint.controller.interfaceperformance;
 
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.InterfacePerformanceConfigVO;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigQueryRequest;
@@ -55,6 +58,10 @@ public class PerformanceConfigController {
         return ResponseResult.success();
     }
 
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.INTERFACE_TEST,
+        needAuth = ActionTypeEnum.QUERY
+    )
     @ApiOperation("单接口压测-压测场景查询")
     @RequestMapping(value = "/query", method = RequestMethod.GET)
     public ResponseResult query(PerformanceConfigQueryRequest request) {

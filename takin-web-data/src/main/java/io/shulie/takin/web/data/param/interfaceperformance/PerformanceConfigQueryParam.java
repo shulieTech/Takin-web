@@ -3,6 +3,8 @@ package io.shulie.takin.web.data.param.interfaceperformance;
 import io.shulie.takin.web.common.pojo.dto.PageBaseDTO;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author xingchen
  * @description: TODO
@@ -11,4 +13,6 @@ import lombok.Data;
 @Data
 public class PerformanceConfigQueryParam extends PageBaseDTO {
     private String queryName;
+
+    private List<Long> userIdList;
 }

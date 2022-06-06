@@ -116,6 +116,12 @@ public class InterfacePerformanceConfigEntity extends TenantBaseEntity {
     private Long creatorId;
 
     /**
+     * 主键
+     */
+    @TableField(value = "user_id")
+    private Long userId;
+
+    /**
      * 修改人
      */
     @TableField(value = "modifier_id")

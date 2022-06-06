@@ -31,6 +31,7 @@ import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelat
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
+import jdk.nashorn.internal.runtime.regexp.joni.ast.StringNode;
 import lombok.Data;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.BeanUtils;
@@ -349,7 +350,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
                 $data.put("name", name);
                 $data.put("format", formatName(name));
                 $data.put("path", path);
-                builder.addDatas(JSON.toJSONString($data));
+                builder.addDatas($data);
             });
         }
         return builder;
@@ -393,8 +394,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         String method;
         List<Map<String, String>> headers = Lists.newArrayList();
         String body;
-        String datas[];
-        List<String> dataList = Lists.newArrayList();
+        List<Map<String, String>> datas = Lists.newArrayList();
 
 
         /**
@@ -403,8 +403,6 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
          * @return
          */
         public ReqBuilder build() {
-            this.datas = dataList.toArray(new String[dataList.size()]);
-            this.dataList = null;
             return this;
         }
 
@@ -425,8 +423,8 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         }
 
 
-        public ReqBuilder addDatas(String data) {
-            this.dataList.add(data);
+        public ReqBuilder addDatas(Map<String, String> data) {
+            this.datas.add(data);
             return this;
         }
 

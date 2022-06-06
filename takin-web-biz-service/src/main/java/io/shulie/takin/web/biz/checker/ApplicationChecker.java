@@ -114,11 +114,16 @@ public class ApplicationChecker implements StartConditionChecker {
 
     private boolean pressureRunning(StartConditionCheckerContext context) {
         String sceneRunningKey = PressureStartCache.getSceneResourceLockingKey(context.getSceneId());
-        boolean success = redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
-        if (success) {
-            redisClientUtil.expire(sceneRunningKey, 90);
+        String resourceId = context.getResourceId();
+        boolean shouldLock = StringUtils.isBlank(resourceId)
+            || !redisClientUtil.hasKey(RedisClientUtil.getLockKey(PressureStartCache.getStopFlag(resourceId)));
+        if (shouldLock) {
+            shouldLock = redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
+            if (shouldLock) {
+                redisClientUtil.expire(sceneRunningKey, 90);
+            }
         }
-        return !success;
+        return !shouldLock;
     }
 
     private void cacheAssociation(StartConditionCheckerContext context) {

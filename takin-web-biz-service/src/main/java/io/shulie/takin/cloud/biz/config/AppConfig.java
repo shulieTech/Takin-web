@@ -18,8 +18,8 @@ import org.springframework.context.annotation.Configuration;
 @Data
 public class AppConfig {
 
-    @Value("${console.url}")
-    private String console;
+    @Value("${takin.web.url}")
+    private String webUrl;
     @Value("${pressure.image.name:}")
     private String pressureEngineImage;
     /**
@@ -36,7 +36,7 @@ public class AppConfig {
     }
 
     public String getCallbackUrl() {
-        String url = DataUtils.mergeUrl(console, EntrypointUrl.CALL_BACK_PATH);
+        String url = DataUtils.mergeUrl(webUrl, EntrypointUrl.CALL_BACK_PATH);
         StringBuilder builder = new StringBuilder();
         ContextExt context = CloudPluginUtils.getContext();
         builder.append("?").append(CloudApiSenderServiceImpl.ENV_CODE).append("=").append(context.getEnvCode());

@@ -150,6 +150,10 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
         if (config == null) {
             throw new RuntimeException("未配置策略");
         }
+        String pressureEngineImage = appConfig.getPressureEngineImage();
+        if (StringUtils.isNotBlank(pressureEngineImage)) {
+            config.setPressureEngineImage(pressureEngineImage);
+        }
         if (context.isInspect()) {
             return getInspectStrategy(config.getPressureEngineImage());
         }

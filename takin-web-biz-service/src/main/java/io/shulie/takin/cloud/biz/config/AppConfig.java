@@ -20,7 +20,8 @@ public class AppConfig {
 
     @Value("${console.url}")
     private String console;
-
+    @Value("${pressure.image.name:}")
+    private String pressureEngineImage;
     /**
      * 部署方式
      */

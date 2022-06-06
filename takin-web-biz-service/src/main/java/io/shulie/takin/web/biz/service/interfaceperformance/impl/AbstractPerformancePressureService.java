@@ -60,6 +60,7 @@ import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigSceneRelateShipMapper;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceParamMapper;
+import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
@@ -137,6 +138,7 @@ public abstract class AbstractPerformancePressureService
     public Boolean update(PerformanceDataFileRequest input) {
         try {
             Long apiId = input.getId();
+
             PerformanceConfigCreateInput updateIn = new PerformanceConfigCreateInput();
             NewSceneRequest configRequest = NewSceneRequest.DEFAULT;
             ResponseResult<SceneDetailResponse> responseResponseResult = query(apiId);
@@ -152,6 +154,18 @@ public abstract class AbstractPerformancePressureService
             configRequest.setId(apiId);
             updateIn.setId(apiId);
             updateIn.setPressureConfigRequest(configRequest);
+            //填充基本字段
+            InterfacePerformanceConfigEntity configEntity = configMapper.selectById(apiId);
+            updateIn.setName(configEntity.getName());
+            updateIn.setId(configEntity.getId());
+            updateIn.setBody(configEntity.getBody());
+            updateIn.setCookies(configEntity.getCookies());
+            updateIn.setHeaders(configEntity.getHeaders());
+            updateIn.setHttpMethod(configEntity.getHttpMethod());
+            updateIn.setEntranceAppName(configEntity.getEntranceAppName());
+            updateIn.setRequestUrl(configEntity.getRequestUrl());
+
+
             this.update(updateIn);
         } catch (Throwable e) {
             throw new RuntimeException(e.getCause());

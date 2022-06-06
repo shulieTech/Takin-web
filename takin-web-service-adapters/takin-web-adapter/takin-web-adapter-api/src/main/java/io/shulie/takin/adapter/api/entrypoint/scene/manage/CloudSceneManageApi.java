@@ -127,11 +127,11 @@ public interface CloudSceneManageApi {
      */
     String recovery(SceneManageDeleteReq req);
 
-    ResponseResult<List<SceneManageListResp>> querySceneByStatus(SceneManageQueryReq req);
-	/**
+    /**
      * 归档
      * @param vo
      * @return
      */
     String archive(SceneManageDeleteReq vo);
+	ResponseResult<List<SceneManageListResp>> querySceneByStatus(SceneManageQueryReq req);
 }

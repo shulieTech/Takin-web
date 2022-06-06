@@ -338,17 +338,17 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         List<InterfacePerformanceParamEntity> paramEntityList = paramMapper.selectList(queryWrapper);
         if (!CollectionUtils.isEmpty(paramEntityList)) {
             paramEntityList.stream().forEach(entry -> {
-                String name = entry.getParamName();
-                String format = entry.getParamValue();
+                String fieldName = entry.getParamName();
+                String fileName = entry.getParamValue();
                 //查文件路径
                 Long fileId = entry.getFileId();
                 FileManageResult fileManageResult = fileManageDao.selectFileManageById(fileId);
                 Assert.isTrue(fileManageResult != null, "数据文件为空.");
                 String path = fileManageResult.getUploadPath();
                 Map<String, String> $data = Maps.newHashMap();
-                //name 文件名， format 变量名 path 文件路径
-                $data.put("name", name);
-                $data.put("format", formatName(name));
+                //fileName 文件名,数据源名， fieldName 变量名 path 文件路径
+                $data.put("name", fileName);
+                $data.put("format", formatName(fieldName));
                 $data.put("path", path);
                 builder.addDatas($data);
             });
@@ -357,7 +357,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
     }
 
     private String formatName(String name) {
-        if (StringUtil.isEmpty(name)) {
+        if (!StringUtil.isEmpty(name)) {
             return name;
         }
         return null;

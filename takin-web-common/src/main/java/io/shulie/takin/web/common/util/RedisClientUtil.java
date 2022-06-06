@@ -1,4 +1,4 @@
-package io.shulie.takin.cloud.common.redis;
+package io.shulie.takin.web.common.util;
 
 import java.util.List;
 import java.util.Map;
@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
 import com.google.common.collect.Lists;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisStringCommands;
@@ -28,13 +27,12 @@ import org.springframework.util.CollectionUtils;
  */
 @Component
 @Slf4j
-public class RedisClientUtils {
-
+public class RedisClientUtil {
     /**
      * lock 超时时间
      */
     private static final int EXPIREMSECS = 30;
-    private static final String UNLOCK_SCRIPT = "if redis.call('exists',KEYS[1]) == 1 then\n" +
+    private static final String unlockScript = "if redis.call('exists',KEYS[1]) == 1 then\n" +
         "   redis.call('del',KEYS[1])\n" +
         "else\n" +
         //                    "   return 0\n" +
@@ -43,13 +41,13 @@ public class RedisClientUtils {
     @Autowired
     private RedisTemplate redisTemplate;
     private DefaultRedisScript<Void> unlockRedisScript;
-    private final Expiration expiration = Expiration.seconds(EXPIREMSECS);
+    private Expiration expiration = Expiration.seconds(EXPIREMSECS);
 
     @PostConstruct
     public void init() {
         unlockRedisScript = new DefaultRedisScript<>();
         unlockRedisScript.setResultType(Void.class);
-        unlockRedisScript.setScriptText(UNLOCK_SCRIPT);
+        unlockRedisScript.setScriptText(unlockScript);
     }
 
     @Autowired
@@ -129,8 +127,7 @@ public class RedisClientUtils {
             }
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> expire方法执行异常，异常信息: {}",
-                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> expire方法执行异常，异常信息: {}", e);
             return false;
         }
     }
@@ -157,8 +154,7 @@ public class RedisClientUtils {
             redisTemplate.opsForValue().set(key, value);
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> set方法执行异常，异常信息: {}",
-                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> set方法执行异常，异常信息: {}", e);
             return false;
         }
 
@@ -181,8 +177,7 @@ public class RedisClientUtils {
             }
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> set with time方法执行异常，异常信息: {}",
-                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> set with time方法执行异常，异常信息: {}", e);
             return false;
         }
     }
@@ -199,8 +194,7 @@ public class RedisClientUtils {
             redisTemplate.opsForHash().putAll(key, map);
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset 方法执行异常，异常信息: {}",
-                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset 方法执行异常，异常信息: {}", e);
             return false;
         }
     }
@@ -210,8 +204,7 @@ public class RedisClientUtils {
             redisTemplate.opsForHash().put(key, field, value);
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset with time方法执行异常，异常信息: {}",
-                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset with time方法执行异常，异常信息: {}",e);
             return false;
         }
     }
@@ -232,8 +225,7 @@ public class RedisClientUtils {
             }
             return true;
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset map with time方法执行异常，异常信息: {}",
-                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset map with time方法执行异常，异常信息: {}",e);
             return false;
         }
     }
@@ -264,8 +256,7 @@ public class RedisClientUtils {
         try {
             return redisTemplate.hasKey(key);
         } catch (Exception e) {
-            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hasKey方法执行异常，异常信息: {}",
-                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+            log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hasKey方法执行异常，异常信息: {}",e);
             return false;
         }
     }

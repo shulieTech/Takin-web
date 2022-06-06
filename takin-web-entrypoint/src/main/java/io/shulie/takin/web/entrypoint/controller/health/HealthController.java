@@ -17,7 +17,6 @@ public class HealthController {
 
     @GetMapping
     public Response<String> checkHealth() {
-        log.info("健康检查OK ...");
         return Response.success("OK");
     }
 }

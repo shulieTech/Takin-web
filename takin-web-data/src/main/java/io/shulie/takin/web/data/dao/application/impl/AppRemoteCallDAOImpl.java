@@ -315,7 +315,41 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         return list.stream()
             .map(entity -> Convert.convert(AppRemoteCallResult.class, entity)).collect(Collectors.toList());
     }
-
+	
+	/**
+     * 查询全部有效的记录
+     *
+     * @return 有效记录
+     */
+    @Override
+    public List<AppRemoteCallResult> getAllRecordByPage() {
+        List<AppRemoteCallEntity> callEntityList = Lists.newArrayList();
+        LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
+                .eq(AppRemoteCallEntity::getIsDeleted, 0);
+        // 获取所有条数
+        long allCount = this.count(lambdaQueryWrapper);
+        if (allCount > 0) {
+            long current = 1;
+            long pageSize = 1000;
+            for(;;){
+                Page<AppRemoteCallEntity> page = new Page<>(current, pageSize);
+                IPage<AppRemoteCallEntity> entityPageInfo = this.page(page, lambdaQueryWrapper);
+                if (CollectionUtils.isEmpty(entityPageInfo.getRecords())) {
+                    break;
+                }
+                List<AppRemoteCallEntity> entitys = entityPageInfo.getRecords();
+                callEntityList.addAll(entitys);
+                // 换下一页
+                current++;
+            }
+        }
+        if (callEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return callEntityList.stream()
+                .map(entity -> Convert.convert(AppRemoteCallResult.class, entity)).collect(Collectors.toList());
+    }
+	
     @Override
     public List<AppRemoteCallResult> updateListSelective(Short type, List<Long> appIdList, List<Long> userIdList) {
         LambdaQueryWrapper<AppRemoteCallEntity> wrapper = this.getLambdaQueryWrapper()

@@ -162,5 +162,12 @@ public interface AppRemoteCallDAO extends IService<AppRemoteCallEntity> {
      */
     List<AppRemoteCallResult> getAllRecord();
 
+    /**
+     * 查询全部有效的记录
+     *
+     * @return
+     */
+    List<AppRemoteCallResult> getAllRecordByPage();
+
     AppRemoteCallResult queryOne(String appName, Integer interfaceType, String interfaceName);
 }

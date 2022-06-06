@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.fastjson.JSON;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportDetailDTO;
-import io.shulie.takin.cloud.common.redis.RedisClientUtils;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
@@ -69,7 +69,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private ReportClearService reportClearService;
 
     @Autowired
-    private RedisClientUtils redisClientUtils;
+    private RedisClientUtil redisClientUtil;
 
     @Autowired
     private LeakVerifyResultDAO leakVerifyResultDAO;
@@ -124,16 +124,16 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             if (!this.updateTaskEndTime(reportId, commonExt, endTime)) { return false; }
 
             // 解除 场景锁
-            redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
+            redisClientUtil.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
             try {
                 // 前置删除
                 //删除redis数据
-                redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
+                redisClientUtil.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
                 // 删除key
                 String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
                     WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
                     String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
-                redisClientUtils.del(redisKey);
+                redisClientUtil.del(redisKey);
                 long startTime = System.currentTimeMillis();
                 Boolean lockResponse = reportService.lockReport(reportId);
                 if (!lockResponse) {

@@ -150,7 +150,13 @@ public abstract class AbstractPerformancePressureService
                 NewSceneRequest.PtConfig ptConfig = buildPtConfig(pressureConfigDetail);
                 configRequest.setBasicInfo(basicInfo);
                 configRequest.setConfig(ptConfig);
+                SceneRequest.Goal targetGoal = buildTargetGoal(pressureConfigDetail);
+                configRequest.setTargetGoal(targetGoal);
+                NewSceneRequest.ThreadGroup threadConfig = buildThreadConfig(pressureConfigDetail);
+                configRequest.setThreadConfig(threadConfig);
+
             }
+
             configRequest.setId(apiId);
             updateIn.setId(apiId);
             updateIn.setPressureConfigRequest(configRequest);
@@ -168,9 +174,33 @@ public abstract class AbstractPerformancePressureService
 
             this.update(updateIn);
         } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw new RuntimeException(e.getMessage());
         }
         return true;
+    }
+
+    private NewSceneRequest.ThreadGroup buildThreadConfig(SceneDetailResponse pressureConfigDetail) {
+        NewSceneRequest.ThreadGroup threadGroup = new NewSceneRequest.ThreadGroup();
+
+        PtConfigExt ptConfigExt = pressureConfigDetail.getConfig();
+        ThreadGroupConfigExt threadGroupConfigExt =
+                ptConfigExt.getThreadGroupConfigMap().values().iterator().next();
+
+        threadGroup.setUnit(ptConfigExt.getUnit());
+        threadGroup.setSteps(threadGroupConfigExt.getSteps());
+        threadGroup.setThreadNum(threadGroupConfigExt.getThreadNum());
+        threadGroup.setType(threadGroupConfigExt.getType());
+        threadGroup.setDuration(ptConfigExt.getDuration());
+        threadGroup.setRampUpUnit(threadGroupConfigExt.getRampUpUnit());
+        threadGroup.setRampUp(threadGroupConfigExt.getRampUp());
+        threadGroup.setPodNum(ptConfigExt.getPodNum());
+        threadGroup.setMode(threadGroupConfigExt.getMode());
+        return threadGroup;
+    }
+
+    private SceneRequest.Goal buildTargetGoal(SceneDetailResponse pressureConfigDetail) {
+        SceneRequest.Goal source = pressureConfigDetail.getGoal().values().iterator().next();
+        return source;
     }
 
     @Override

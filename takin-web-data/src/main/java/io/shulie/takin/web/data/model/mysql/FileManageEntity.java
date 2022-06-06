@@ -83,4 +83,10 @@ public class FileManageEntity extends TenantBaseEntity {
 
     @TableField(value = "sign",fill = FieldFill.INSERT)
     private String sign;
+
+    /**
+     * customerId
+     */
+    @TableField(value = "customer_id")
+    private Long customerId;
 }

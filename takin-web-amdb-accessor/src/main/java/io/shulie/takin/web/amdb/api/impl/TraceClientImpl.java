@@ -168,7 +168,6 @@ public class TraceClientImpl implements TraceClient {
 
     /**
      * 企业版本使用
-     *
      * @param query
      * @return
      */
@@ -229,12 +228,15 @@ public class TraceClientImpl implements TraceClient {
         return entranceList.stream().map(entrance -> {
             if (ActivityUtil.isNormalBusiness(entrance.getBusinessType())) {
                 EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(entrance.getEntrance());
-                return String.format("%s#%s#%s#%s", entrance.getAppName(),
-                        entranceJoinEntity.getServiceName(),
-                        entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
+                return String.format("%s#%s#%s#%s",entrance.getAppName(),
+                    entranceJoinEntity.getServiceName(),
+                    entranceJoinEntity.getMethodName(), entranceJoinEntity.getRpcType());
             } else {
                 EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertVirtualEntrance(entrance.getEntrance());
+                return String.format("%s#%s#%s#%s", "", entranceJoinEntity.getVirtualEntrance(), "", entranceJoinEntity.getRpcType());
+/*
                 return String.format("%s#%s#%s#%s", "", "", entranceJoinEntity.getVirtualEntrance(), entranceJoinEntity.getRpcType());
+*/
             }
 
         }).collect(Collectors.joining(AppConstants.COMMA));

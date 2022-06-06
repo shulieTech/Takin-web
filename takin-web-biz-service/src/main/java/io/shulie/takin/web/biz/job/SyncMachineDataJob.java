@@ -76,6 +76,11 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
         }
 
         log.debug("syncMachineData 执行时间:{}", System.currentTimeMillis() - start);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

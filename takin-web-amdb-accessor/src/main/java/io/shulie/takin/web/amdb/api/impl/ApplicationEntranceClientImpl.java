@@ -60,7 +60,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     private AmdbClientProperties properties;
 
     @Override
-    public List<ServiceInfoDTO> getApplicationEntrances(String applicationName, String entranceType) {
+    public List<ServiceInfoDTO> getApplicationEntrances(String applicationName, String entranceType, int currentPage, int pageSize) {
         String url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_PATH;
         ServiceQueryParam entranceQueryParam = new ServiceQueryParam();
         // 获取rpcType
@@ -77,6 +77,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         entranceQueryParam.setAppName(applicationName);
         entranceQueryParam.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
         entranceQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
+        entranceQueryParam.setCurrentPage(currentPage);
+        entranceQueryParam.setPageSize(pageSize);
         try {
             AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
                 .param(entranceQueryParam)

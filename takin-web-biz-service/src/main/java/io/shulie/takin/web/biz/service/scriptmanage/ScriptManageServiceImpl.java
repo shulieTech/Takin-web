@@ -982,8 +982,8 @@ public class ScriptManageServiceImpl implements ScriptManageService {
             if (StringUtils.isNotBlank(uploadPath) && uploadPath.lastIndexOf(File.separator) > 0
                 && StringUtils.isNotBlank(filePath) && filePath.lastIndexOf(File.separator) > -1) {
                 // 截取倒数第一个 / 后的, 拼接上传的路径, set
-                partRequest.setFilePath(uploadPath.substring(0, uploadPath.lastIndexOf(File.separator) + 1)
-                    + filePath.substring(filePath.lastIndexOf(File.separator) + 1));
+                //partRequest.setFilePath(uploadPath.substring(0, uploadPath.lastIndexOf(File.separator) + 1)
+                //    + filePath.substring(filePath.lastIndexOf(File.separator) + 1));
             }
         }
 

@@ -15,7 +15,7 @@ import io.shulie.takin.web.amdb.bean.query.application.TempTopologyQuery2;
  */
 public interface ApplicationEntranceClient {
 
-    List<ServiceInfoDTO> getApplicationEntrances(String applicationName, String entranceType);
+    List<ServiceInfoDTO> getApplicationEntrances(String applicationName, String entranceType, int currentPage, int pageSize);
 
     LinkTopologyDTO getApplicationEntrancesTopology(boolean tempActivity, String applicationName, String linkId, String serviceName,
                                                     String method, String rpcType, String extend);

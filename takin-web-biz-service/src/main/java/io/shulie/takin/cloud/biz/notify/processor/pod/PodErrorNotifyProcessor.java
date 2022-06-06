@@ -1,5 +1,7 @@
 package io.shulie.takin.cloud.biz.notify.processor.pod;
 
+import java.util.Objects;
+
 import javax.annotation.Resource;
 
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
@@ -37,7 +39,7 @@ public class PodErrorNotifyProcessor extends AbstractIndicators implements Cloud
         if (redisClientUtil.lockNoExpire(PressureStartCache.getPodErrorFirstKey(resourceId), podId)) {
             callRunningFailedEvent(resourceId, data.getErrorMessage());
         }
-        removeSuccessKey(resourceId, podId, String.valueOf(data.getJobExampleId()));
-        detectEnd(resourceId, param.getTime());
+        Long jmeterId = data.getJobExampleId();
+        removeSuccessKey(resourceId, podId, Objects.isNull(jmeterId) ? "" : String.valueOf(jmeterId), param.getTime());
     }
 }

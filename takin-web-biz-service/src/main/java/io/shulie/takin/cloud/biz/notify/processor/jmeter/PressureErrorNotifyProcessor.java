@@ -33,8 +33,7 @@ public class PressureErrorNotifyProcessor extends AbstractIndicators
         if (redisClientUtil.lockNoExpire(PressureStartCache.getJmeterErrorFirstKey(resourceId), jmeterId)) {
             callRunningFailedEvent(String.valueOf(data.getResourceId()), data.getErrorMessage());
         }
-        removeSuccessKey(resourceId, String.valueOf(data.getResourceExampleId()), jmeterId);
-        detectEnd(resourceId, param.getTime());
+        removeSuccessKey(resourceId, String.valueOf(data.getResourceExampleId()), jmeterId, param.getTime());
     }
 
     @Override

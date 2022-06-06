@@ -133,7 +133,6 @@ public class EngineResourceChecker extends AbstractIndicators implements StartCo
         param.put(PressureStartCache.TASK_ID, context.getTaskId());
         param.put(PressureStartCache.REPORT_ID, context.getReportId());
         param.put(PressureStartCache.UNIQUE_KEY, context.getUniqueKey());
-        param.put(PressureStartCache.USER_ID, WebPluginUtils.traceUserId());
         param.put(PressureStartCache.PT_TEST_TIME, sceneData.getPressureTestSecond());
         redisClientUtil.hmset(PressureStartCache.getResourceKey(resourceId), param);
 

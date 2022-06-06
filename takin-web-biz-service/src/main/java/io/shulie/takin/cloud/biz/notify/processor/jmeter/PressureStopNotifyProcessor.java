@@ -38,8 +38,7 @@ public class PressureStopNotifyProcessor extends AbstractIndicators
         if (redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(resourceId), "jmeter停止")) {
             notifyStop(context);
         }
-        removeSuccessKey(resourceId, podId, jmeterId);
-        detectEnd(resourceId, param.getTime());
+        removeSuccessKey(resourceId, podId, jmeterId, param.getTime());
     }
 
     @Override

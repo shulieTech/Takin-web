@@ -57,8 +57,8 @@ public abstract class PressureStartCache {
     }
 
     // 场景提前取消压测标识
-    public static String getScenePreStopKey(Long sceneId, Long userId) {
-        return String.format("pressure:scene:%s:%s:pre_stop", sceneId, userId);
+    public static String getScenePreStopKey(Long sceneId, String uniqueKey) {
+        return String.format("pressure:scene:%s:%s:pre_stop", sceneId, uniqueKey);
     }
 
     // 压测启动标识

@@ -76,7 +76,9 @@ public class ApplicationChecker implements StartConditionChecker {
     private void doCheck(StartConditionCheckerContext context) {
         this.checkStatus(context);
         this.checkSwitch();
-        this.checkBusinessActivity(context);
+        if (StringUtils.isBlank(context.getResourceId())) {
+            this.checkBusinessActivity(context);
+        }
     }
 
     private void checkSwitch() {
@@ -93,10 +95,13 @@ public class ApplicationChecker implements StartConditionChecker {
     private void checkStatus(StartConditionCheckerContext context) {
         SceneManageWrapperOutput sceneData = context.getSceneData();
         Long sceneId = context.getSceneId();
+        if (Objects.equals(SceneManageStatusEnum.RECYCLE.getValue(), sceneData.getStatus())) {
+            throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR, "当前场景已归档!");
+        }
         boolean flag = false;
         if (!SceneManageStatusEnum.ifFree(sceneData.getStatus())) {
             Object uniqueKey = redisClientUtil.hmget(PressureStartCache.getSceneResourceKey(sceneId), PressureStartCache.UNIQUE_KEY);
-            flag = Objects.isNull(uniqueKey) || !Objects.equals(uniqueKey, context.getUniqueKey());
+            flag = !Objects.equals(uniqueKey, context.getUniqueKey());
         }
         flag = flag || pressureRunning(context);
         if (flag) {
@@ -109,7 +114,11 @@ public class ApplicationChecker implements StartConditionChecker {
 
     private boolean pressureRunning(StartConditionCheckerContext context) {
         String sceneRunningKey = PressureStartCache.getSceneResourceLockingKey(context.getSceneId());
-        return !redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
+        boolean success = redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
+        if (success) {
+            redisClientUtil.expire(sceneRunningKey, 90);
+        }
+        return !success;
     }
 
     private void cacheAssociation(StartConditionCheckerContext context) {
@@ -117,7 +126,6 @@ public class ApplicationChecker implements StartConditionChecker {
         param.put(PressureStartCache.REPORT_ID, context.getReportId());
         param.put(PressureStartCache.TASK_ID, context.getTaskId());
         param.put(PressureStartCache.UNIQUE_KEY, context.getUniqueKey());
-        param.put(PressureStartCache.USER_ID, WebPluginUtils.traceUserId());
         redisClientUtil.hmset(PressureStartCache.getSceneResourceKey(context.getSceneId()), param);
     }
 

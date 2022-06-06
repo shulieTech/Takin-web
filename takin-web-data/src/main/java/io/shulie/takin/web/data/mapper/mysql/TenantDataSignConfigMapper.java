@@ -20,6 +20,7 @@ import java.util.List;
 public interface TenantDataSignConfigMapper extends BaseMapper<TenantDataSignConfigEntity> {
 
     @UpdateProvider(type = TenantDataSignProvider.class,method = "clearSign")
+    @InterceptorIgnore(tenantLine = "true")
     Integer clearSign(@Param("tenantIds") List<Long> tenantIds, @Param("envCode")String envCode,@Param("tableName") String tableName);
 
     @InterceptorIgnore(tenantLine = "true")

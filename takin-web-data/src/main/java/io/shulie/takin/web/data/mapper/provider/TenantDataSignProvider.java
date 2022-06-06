@@ -18,9 +18,9 @@ public class TenantDataSignProvider {
         String sql = new SQL().UPDATE(tableName).SET("sign = ''").toString();
 
         StringBuilder sb = new StringBuilder();
-        sb.append(sql).append("where envCode =").append(envCode);
+        sb.append(sql).append(" where env_code = '").append(envCode).append("'");
         if(!CollectionUtils.isEmpty(tenantIds)){
-            sb.append("  and tenantId in (");
+            sb.append("  and tenant_id in (");
             for(int i =0;i<tenantIds.size();i++){
                 sb.append(tenantIds.get(i));
                 if(i<tenantIds.size() -1){

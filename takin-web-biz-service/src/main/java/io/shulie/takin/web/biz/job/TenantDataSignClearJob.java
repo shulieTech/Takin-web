@@ -103,8 +103,8 @@ public class TenantDataSignClearJob implements SimpleJob {
                     CompletableFuture.allOf(completableFutureStream.toArray(CompletableFuture[]::new)).thenRun(() -> {
                         //从重制队列中移除
                         log.info("[数据重置job 数据清理完成,清空队列]");
-                        redisTemplate.opsForSet().remove(cacheKeyByTest, membersByTest);
-                        redisTemplate.opsForSet().remove(cacheKeyByProd, membersByProd);
+                        redisTemplate.opsForSet().remove(cacheKeyByTest, membersByTest.toArray());
+                        redisTemplate.opsForSet().remove(cacheKeyByProd, membersByProd.toArray());
                     });
                 }
             } finally {

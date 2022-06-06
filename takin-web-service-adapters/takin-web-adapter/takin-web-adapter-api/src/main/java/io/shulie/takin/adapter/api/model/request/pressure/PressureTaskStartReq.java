@@ -65,6 +65,7 @@ public class PressureTaskStartReq extends ContextExt {
      */
     private List<SlaInfo> slaConfig;
     private List<StartRequest.MetricsInfo> metricsConfig;
+    private Boolean bindByXpathMd5; // 标识新旧数据
     /**
      * 调试模式下脚本调试配置
      */

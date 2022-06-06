@@ -31,8 +31,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SceneManageDAOImpl
-        extends ServiceImpl<SceneManageMapper, SceneManageEntity>
-        implements SceneManageDAO, MPUtil<SceneManageEntity> {
+    extends ServiceImpl<SceneManageMapper, SceneManageEntity>
+    implements SceneManageDAO, MPUtil<SceneManageEntity> {
 
     @Override
     public Long insert(SceneManageCreateOrUpdateParam createParam) {
@@ -77,19 +77,19 @@ public class SceneManageDAOImpl
                 .filter(StrUtil::isNotBlank).collect(Collectors.toList());
         // 组装查询条件
         LambdaQueryWrapper<SceneManageEntity> wrapper = Wrappers.lambdaQuery(SceneManageEntity.class)
-                .eq(!Objects.isNull(queryBean.getSceneId()), SceneManageEntity::getId, queryBean.getSceneId())
-                .in(!CollectionUtils.isEmpty(queryBean.getSceneIds()), SceneManageEntity::getId, queryBean.getSceneIds())
-                .like(!StrUtil.isBlank(queryBean.getSceneName()), SceneManageEntity::getSceneName, queryBean.getSceneName())
-                .eq(!Objects.isNull(queryBean.getStatus()), SceneManageEntity::getStatus, queryBean.getStatus())
-                .eq(!Objects.isNull(queryBean.getType()), SceneManageEntity::getType, queryBean.getType())
-                .le(!Objects.isNull(queryBean.getLastPtEndTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtEndTime())
-                .ge(!Objects.isNull(queryBean.getLastPtStartTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtStartTime())
-                .eq(Objects.nonNull(queryBean.getIsDeleted()), SceneManageEntity::getIsDeleted, queryBean.getIsDeleted())
-                .eq(SceneManageEntity::getTenantId, CloudPluginUtils.getContext().getTenantId())
-                .eq(SceneManageEntity::getEnvCode, CloudPluginUtils.getContext().getEnvCode())
-                .in(userIdList.size() > 0, SceneManageEntity::getUserId, userIdList)
-                .orderByDesc(SceneManageEntity::getLastPtTime)
-                .orderByDesc(SceneManageEntity::getId);
+            .eq(!Objects.isNull(queryBean.getSceneId()), SceneManageEntity::getId, queryBean.getSceneId())
+            .in(!CollectionUtils.isEmpty(queryBean.getSceneIds()), SceneManageEntity::getId, queryBean.getSceneIds())
+            .like(!StrUtil.isBlank(queryBean.getSceneName()), SceneManageEntity::getSceneName, queryBean.getSceneName())
+            .eq(!Objects.isNull(queryBean.getStatus()), SceneManageEntity::getStatus, queryBean.getStatus())
+            .eq(!Objects.isNull(queryBean.getType()), SceneManageEntity::getType, queryBean.getType())
+            .le(!Objects.isNull(queryBean.getLastPtEndTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtEndTime())
+            .ge(!Objects.isNull(queryBean.getLastPtStartTime()), SceneManageEntity::getLastPtTime, queryBean.getLastPtStartTime())
+            .eq(Objects.nonNull(queryBean.getIsArchive()), SceneManageEntity::getIsArchive, queryBean.getIsArchive())
+            .eq(SceneManageEntity::getTenantId, CloudPluginUtils.getContext().getTenantId())
+            .eq(SceneManageEntity::getEnvCode, CloudPluginUtils.getContext().getEnvCode())
+            .in(userIdList.size() > 0, SceneManageEntity::getUserId, userIdList)
+            .orderByDesc(SceneManageEntity::getLastPtTime)
+            .orderByDesc(SceneManageEntity::getId);
         return this.baseMapper.selectList(wrapper);
     }
 
@@ -97,7 +97,6 @@ public class SceneManageDAOImpl
     public SceneManageListResult queryBySceneName(String pressureTestSceneName) {
         LambdaQueryWrapper<SceneManageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SceneManageEntity::getSceneName, pressureTestSceneName);
-        wrapper.eq(SceneManageEntity::getIsDeleted, 0);
         SceneManageEntity sceneManageEntity = this.getBaseMapper().selectOne(wrapper);
         return SceneManageEntityConverter.INSTANCE.ofSceneManageEntity(sceneManageEntity);
     }
@@ -105,12 +104,11 @@ public class SceneManageDAOImpl
     @Override
     public List<SceneManageEntity> listFromUpdateScript(ContextExt contextExt) {
         return this.getBaseMapper()
-                .selectList(new LambdaQueryWrapper<SceneManageEntity>()
-                        .eq(SceneManageEntity::getEnvCode, contextExt.getEnvCode())
-                        .eq(SceneManageEntity::getTenantId, contextExt.getTenantId())
-                        .eq(SceneManageEntity::getIsDeleted, 0)
-                        .select(SceneManageEntity::getId, SceneManageEntity::getTenantId, SceneManageEntity::getFeatures)
-                );
+            .selectList(new LambdaQueryWrapper<SceneManageEntity>()
+                .eq(SceneManageEntity::getEnvCode, contextExt.getEnvCode())
+                .eq(SceneManageEntity::getTenantId, contextExt.getTenantId())
+                .select(SceneManageEntity::getId, SceneManageEntity::getTenantId, SceneManageEntity::getFeatures)
+            );
     }
 
     @Override

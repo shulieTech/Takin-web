@@ -1,5 +1,7 @@
 package io.shulie.takin.cloud.biz.notify.processor.pod;
 
+import java.util.Objects;
+
 import javax.annotation.Resource;
 
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
@@ -41,7 +43,8 @@ public class PodStopNotifyProcessor extends AbstractIndicators implements CloudN
         if (redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(resourceId), "pod停止")) {
             notifyStop(context);
         }
-        removeSuccessKey(resourceId, String.valueOf(data.getResourceExampleId()), String.valueOf(data.getJobExampleId()));
-        detectEnd(resourceId, param.getTime());
+        Long jmeterId = data.getJobExampleId();
+        removeSuccessKey(resourceId, String.valueOf(data.getResourceExampleId()),
+            Objects.isNull(jmeterId) ? "" : String.valueOf(jmeterId), param.getTime());
     }
 }

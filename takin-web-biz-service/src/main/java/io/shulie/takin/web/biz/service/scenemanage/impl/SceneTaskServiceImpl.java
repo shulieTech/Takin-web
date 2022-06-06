@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.bean.BeanUtil;
 import com.google.common.collect.Lists;
@@ -753,8 +754,7 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         Long sceneId = param.getSceneId();
         String resourceId = param.getResourceId();
         StartConditionCheckerContext context = new StartConditionCheckerContext();
-        // 使用用户标识无法避免同一用户的操作且导致只能有发起压测的用户进行取消
-        context.setUniqueKey(String.valueOf(WebPluginUtils.traceUserId()));
+        context.setUniqueKey(IdUtil.fastSimpleUUID());
         context.setSceneId(sceneId);
         context.setResourceId(resourceId);
         context.setTenantId(WebPluginUtils.traceTenantId());

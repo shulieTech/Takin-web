@@ -108,9 +108,10 @@ public class SceneTaskEventService {
                 warningCondition.stream().map(this::convertSla).flatMap(Collection::stream).collect(Collectors.toList()));
         }
         List<SceneSlaRefOutput> stopCondition = scene.getStopCondition();
-        scheduleStartRequest.setStopCondition(
-            stopCondition.stream().map(this::convertSla).flatMap(Collection::stream).collect(Collectors.toList()));
-
+        if (CollectionUtils.isNotEmpty(stopCondition)) {
+            scheduleStartRequest.setStopCondition(
+                stopCondition.stream().map(this::convertSla).flatMap(Collection::stream).collect(Collectors.toList()));
+        }
         Map<String, BusinessActivityExt> businessData = Maps.newHashMap();
         Integer tps = CommonUtil.sum(scene.getBusinessActivityConfig(), SceneManageWrapperOutput.SceneBusinessActivityRefOutput::getTargetTPS);
         List<BusinessActivityExt> activities = CommonUtil.getList(scene.getBusinessActivityConfig(), SceneManageDTOConvert.INSTANCE::of);

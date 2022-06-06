@@ -71,7 +71,7 @@ public class CompositeStartConditionChecker implements InitializingBean {
     }
 
     private CheckResult doCheck(StartConditionCheckerContext context, StartConditionChecker checker) {
-        String preStopKey = PressureStartCache.getScenePreStopKey(context.getSceneId(), WebPluginUtils.traceUserId());
+        String preStopKey = PressureStartCache.getScenePreStopKey(context.getSceneId(), context.getUniqueKey());
         String preStopTime = redisClientUtil.getString(preStopKey);
         if (StringUtils.isNotBlank(preStopTime)) {
             if (Long.parseLong(preStopTime) > context.getTime()) {
@@ -128,7 +128,7 @@ public class CompositeStartConditionChecker implements InitializingBean {
             context.setReportId(Long.valueOf(String.valueOf(reportId)));
         }
         Object uniqueKey = redisClientUtil.hmget(PressureStartCache.getResourceKey(resourceId), PressureStartCache.UNIQUE_KEY);
-        if (Objects.nonNull(reportId)) {
+        if (Objects.nonNull(uniqueKey)) {
             context.setUniqueKey(String.valueOf(uniqueKey));
         }
     }

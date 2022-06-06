@@ -320,10 +320,10 @@ public abstract class AbstractPerformancePressureService
     @Autowired
     private VerifyTaskService verifyTaskService;
 
-    InterfacePerformanceParamEntity fetchParamEntryByApiId(Long apiId) {
+    List<InterfacePerformanceParamEntity> fetchParamEntryByApiId(Long apiId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("config_id", apiId);
-        return paramMapper.selectOne(queryWrapper);
+        return paramMapper.selectList(queryWrapper);
     }
 
     private boolean doStartCheck() {

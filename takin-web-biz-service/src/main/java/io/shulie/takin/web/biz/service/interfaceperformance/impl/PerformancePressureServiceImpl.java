@@ -345,6 +345,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
                 Assert.isTrue(fileManageResult != null, "数据文件为空.");
                 String path = fileManageResult.getUploadPath();
                 Map<String, String> $data = Maps.newHashMap();
+                //name 文件名， format 变量名 path 文件路径
                 $data.put("name", name);
                 $data.put("format", formatName(name));
                 $data.put("path", path);
@@ -358,7 +359,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         if (StringUtil.isEmpty(name)) {
             return name;
         }
-        return "${" + name + "}";
+        return null;
     }
 
     private ReqBuilder buildReq(Long id) {
@@ -375,11 +376,11 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
 
         //获取param表的id
-        InterfacePerformanceParamEntity paramEntity = fetchParamEntryByApiId(id);
-        if (!Objects.isNull(paramEntity)) {
-            //放data
-            buildData(id, builder);
-        }
+        //   List<InterfacePerformanceParamEntity> paramEntityList = fetchParamEntryByApiId(id);
+        //       if (!CollectionUtils.isEmpty(paramEntityList)) {
+        //放data
+        buildData(id, builder);
+        //    }
 
 
         return builder.build();

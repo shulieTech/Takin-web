@@ -50,7 +50,6 @@ public class TenantDataSignClearJob implements SimpleJob {
             "t_application_ds_manage",
             "t_application_node_probe",
             "t_application_plugin_download_path",
-            "t_application_plugin_upgrade",
             "t_application_plugin_upgrade_ref",
             "t_application_plugins_config",
             "t_black_list",

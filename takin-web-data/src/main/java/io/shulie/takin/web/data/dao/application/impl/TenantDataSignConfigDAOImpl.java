@@ -49,6 +49,7 @@ public class TenantDataSignConfigDAOImpl implements TenantDataSignConfigDAO, MPU
         queryWrapper.eq(TenantDataSignConfigEntity::getTenantId, tenantId);
         queryWrapper.eq(TenantDataSignConfigEntity::getEnvCode, envCode);
         TenantDataSignConfigEntity entity = tenantDataSignConfigMapper.selectOne(queryWrapper);
+        String cacheKey = CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_" + envCode;
         if(Objects.isNull(entity)){
             //初始化状态
             TenantDataSignConfigEntity insert = new TenantDataSignConfigEntity();
@@ -57,9 +58,11 @@ public class TenantDataSignConfigDAOImpl implements TenantDataSignConfigDAO, MPU
             insert.setEnvCode(envCode);
             tenantDataSignConfigMapper.insert(insert);
             redisTemplate.opsForHash().put(CacheConstants.CACHE_KEY_TENANT_DATA_SIGN, envCode + tenantId, status);
+            if(status == 0){
+                redisTemplate.opsForSet().add(cacheKey, tenantId);
+            }
         }
         if (Objects.nonNull(entity) && entity.getStatus() != status) {
-            String cacheKey = CacheConstants.CACHE_KEY_TENANT_DATA_SIGN_CLEAN_STATUS + "_" + envCode;
             if (status == 1) {
                 //开启签名
                 Set members = redisTemplate.opsForSet().members(cacheKey);

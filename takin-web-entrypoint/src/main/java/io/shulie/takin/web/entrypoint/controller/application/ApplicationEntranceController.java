@@ -76,7 +76,7 @@ public class ApplicationEntranceController {
     public List<ApplicationEntrancesResponse> getApplicationEntrances(@Validated
         ApplicationEntrancesQueryRequest request) {
         List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-            request.getApplicationName(), request.getType().getType());
+            request.getApplicationName(), request.getType().getType(), 1, 500);
         if (CollectionUtils.isEmpty(applicationEntrances)) {
             return Lists.newArrayList();
         }
@@ -102,7 +102,7 @@ public class ApplicationEntranceController {
     @ApiOperation("获得入口服务列表")
     public List<ApplicationEntrancesResponse> getApplicationEntrances(@Validated ApplicationEntrancesSampleTypeQueryRequest request) {
         List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                request.getApplicationName(), EntranceTypeEnum.getEnumByType(request.getSamplerType().getType()).getType());
+                request.getApplicationName(), EntranceTypeEnum.getEnumByType(request.getSamplerType().getType()).getType(), 0, 500);
         if (CollectionUtils.isEmpty(applicationEntrances)) {
             return Lists.newArrayList();
         }
@@ -156,7 +156,7 @@ public class ApplicationEntranceController {
             return Collections.emptyList();
         }
         List<ServiceInfoDTO> applicationEntrances = applicationEntranceClient.getApplicationEntrances(
-                appName, "");
+                appName, "", 0, 500);
         if (CollectionUtils.isEmpty(applicationEntrances)) {
             return Lists.newArrayList();
         }

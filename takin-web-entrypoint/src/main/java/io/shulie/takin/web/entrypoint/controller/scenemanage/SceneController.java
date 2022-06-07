@@ -308,6 +308,10 @@ public class SceneController {
      */
     @GetMapping("business_activity_flow")
     @ApiOperation("获取业务流程列表 - 压测场景用")
+    @AuthVerification(
+        moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+        needAuth = ActionTypeEnum.QUERY
+    )
     public ResponseResult<List<SceneEntity>> listBusinessActivityFlow() {
         return ResponseResult.success(sceneService.businessActivityFlowList());
     }

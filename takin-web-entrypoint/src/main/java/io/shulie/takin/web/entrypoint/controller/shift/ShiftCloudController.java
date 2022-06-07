@@ -273,7 +273,7 @@ public class ShiftCloudController {
                         analysis.put("failedCase", null != dto.getNotpassBusinessActivityCount() ? dto.getNotpassBusinessActivityCount() : 0);
                     }
                 }
-                analysis.put("performanceResult", null != conclusion && 1 == conclusion ? 1 : 2);
+                analysis.put("performanceResult", null != conclusion && 1 == conclusion ? true : false);
                 String a = testTotalTime.substring(0, testTotalTime.indexOf("h"));
                 String b = testTotalTime.substring(i1 + 1, i2);
                 String c = testTotalTime.substring(i2 + 1, testTotalTime.length() - 1);

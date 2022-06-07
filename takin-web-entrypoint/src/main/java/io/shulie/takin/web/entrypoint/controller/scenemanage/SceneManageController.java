@@ -20,6 +20,7 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageDeleteReq;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
+import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
@@ -357,13 +358,18 @@ public class SceneManageController {
             needAuth = ActionTypeEnum.DELETE
     )
     public WebResponse<String> archive(@RequestBody @Valid SceneManageDeleteReq deleteVO) {
-        ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(deleteVO.getId());
-        if (Objects.isNull(webResponse.getData())) {
+            ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(deleteVO.getId());
+        SceneManageWrapperResp data = webResponse.getData();
+        if (Objects.isNull(data)) {
             OperationLogContextHolder.ignoreLog();
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景不存在");
         }
+        if (!SceneManageStatusEnum.ifFree(data.getStatus())) {
+            OperationLogContextHolder.ignoreLog();
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景状态不允许归档");
+        }
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.DELETE);
-        SceneManageWrapperDTO sceneData = JSON.parseObject(JSON.toJSONString(webResponse.getData()),
+        SceneManageWrapperDTO sceneData = JSON.parseObject(JSON.toJSONString(data),
                 SceneManageWrapperDTO.class);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_ID, String.valueOf(sceneData.getId()));
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneData.getPressureTestSceneName());

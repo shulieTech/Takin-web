@@ -101,11 +101,14 @@ public class ApplicationChecker implements StartConditionChecker {
         boolean flag = false;
         if (!SceneManageStatusEnum.ifFree(sceneData.getStatus())) {
             Object uniqueKey = redisClientUtil.hmget(PressureStartCache.getSceneResourceKey(sceneId), PressureStartCache.UNIQUE_KEY);
-            flag = Objects.isNull(uniqueKey) || !Objects.equals(uniqueKey, context.getUniqueKey());
+            flag = !Objects.equals(uniqueKey, context.getUniqueKey());
         }
         flag = flag || pressureRunning(context);
         if (flag) {
-            throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR, "当前场景不为待启动状态!");
+            String stopMessage = redisClientUtil.getString(
+                RedisClientUtil.getLockKey(PressureStartCache.getStopFlag(context.getResourceId())));
+            String message = StringUtils.defaultIfBlank(stopMessage, "当前场景不为待启动状态!");
+            throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR, message);
         }
         if (StringUtils.isBlank(context.getResourceId())) {
             cacheAssociation(context);
@@ -114,7 +117,16 @@ public class ApplicationChecker implements StartConditionChecker {
 
     private boolean pressureRunning(StartConditionCheckerContext context) {
         String sceneRunningKey = PressureStartCache.getSceneResourceLockingKey(context.getSceneId());
-        return !redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
+        String resourceId = context.getResourceId();
+        boolean shouldLock = StringUtils.isBlank(resourceId)
+            || !redisClientUtil.hasKey(RedisClientUtil.getLockKey(PressureStartCache.getStopFlag(resourceId)));
+        if (shouldLock) {
+            shouldLock = redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
+            if (shouldLock) {
+                redisClientUtil.expire(sceneRunningKey, 90);
+            }
+        }
+        return !shouldLock;
     }
 
     private void cacheAssociation(StartConditionCheckerContext context) {

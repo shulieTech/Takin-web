@@ -26,6 +26,7 @@ import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigSceneRelateShipMapper;
 import io.shulie.takin.web.data.model.mysql.FileManageEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
+import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.param.filemanage.FileManageCreateParam;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceParamQueryParam;
@@ -192,7 +193,12 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("api_id", apiId);
         queryWrapper.eq("is_deleted", 0);
-        Long flowId = performanceConfigSceneRelateShipMapper.selectOne(queryWrapper).getFlowId();
+        InterfacePerformanceConfigSceneRelateShipEntity entity =
+                performanceConfigSceneRelateShipMapper.selectOne(queryWrapper);
+        if (Objects.isNull(entity)) {
+            throw new RuntimeException("请先保存场景,再上传文件.");
+        }
+        Long flowId = entity.getFlowId();
         flowDataFileRequest.setId(flowId);
         pressureService.uploadDataFile(flowDataFileRequest);
     }

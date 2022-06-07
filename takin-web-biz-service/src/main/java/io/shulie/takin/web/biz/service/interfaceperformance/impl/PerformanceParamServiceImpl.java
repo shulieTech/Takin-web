@@ -176,18 +176,21 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             performanceParamDAO.add(insertList);
         }
         /**
-         * 先更新脚本和场景和业务流程,再绑定数据文件
+         * 更新脚本和场景和业务流程
          */
         // TODO
         pressureService.update(request);
+        /**
+         * 绑定数据文件
+         */
         this.bindDataFile(request);
     }
 
+    @Resource
     InterfacePerformanceConfigSceneRelateShipMapper performanceConfigSceneRelateShipMapper;
 
     private void bindDataFile(PerformanceDataFileRequest request) {
         BusinessFlowDataFileRequest flowDataFileRequest = new BusinessFlowDataFileRequest();
-        flowDataFileRequest.setFileManageUpdateRequests(request.getFileManageUpdateRequests());
         //查询业务流程Id
         Long apiId = request.getId();
         QueryWrapper queryWrapper = new QueryWrapper();
@@ -200,6 +203,8 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         }
         Long flowId = entity.getFlowId();
         flowDataFileRequest.setId(flowId);
+        //绑定文件
+        flowDataFileRequest.setFileManageUpdateRequests(request.getFileManageUpdateRequests());
         pressureService.uploadDataFile(flowDataFileRequest);
     }
 

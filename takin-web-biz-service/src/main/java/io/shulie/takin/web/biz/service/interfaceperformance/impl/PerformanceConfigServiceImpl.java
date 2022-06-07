@@ -219,6 +219,12 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         result.setContentTypeVo(JsonHelper.json2Bean(queryEntity.getContentType(), ContentTypeVO.class));
 
         doAction(configId, result, Action.ActionEnum.detail);
+
+        Long sceneId = result.getBindSceneId();
+        ResponseResult<SceneManageWrapperResp> responseResult = sceneManageService.detailScene(sceneId);
+        if (Objects.nonNull(responseResult.getData())) {
+            result.setPressureStatus(responseResult.getData().getStatus());
+        }
         return result;
     }
 

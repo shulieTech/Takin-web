@@ -56,7 +56,9 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     @Override
     public int update(Statement statement) throws SQLException {
         PreparedStatement ps = (PreparedStatement) statement;
-        SignCommonUtil.getInstance().preCheckData(mappedStatement, boundSql.getParameterObject(), statement, boundSql);
+        if(TakinWebContext.getTenantStatus()){
+            SignCommonUtil.getInstance().preCheckData(mappedStatement, boundSql.getParameterObject(), statement, boundSql);
+        }
         ps.execute();
         int rows = ps.getUpdateCount();
         Object parameterObject = boundSql.getParameterObject();

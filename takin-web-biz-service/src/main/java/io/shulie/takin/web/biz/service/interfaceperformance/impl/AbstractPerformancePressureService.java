@@ -41,6 +41,7 @@ import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreate
 import io.shulie.takin.web.biz.pojo.response.scenemanage.SceneSchedulerTaskResponse;
 import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
+import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceParamService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
@@ -316,6 +317,8 @@ public abstract class AbstractPerformancePressureService
     SceneExcludedApplicationDAO sceneExcludedApplicationDAO;
     @Resource
     SceneService sceneService;
+    @Resource
+    PerformanceParamService performanceParamService;
     @Resource
     FileManageDAO fileManageDao;
     @Resource

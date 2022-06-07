@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
 import cn.hutool.core.io.FileUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Sets;
 import io.shulie.takin.adapter.api.model.request.filemanager.FileCopyParamReq;
 import io.shulie.takin.adapter.api.model.request.filemanager.FileDeleteParamReq;
@@ -10,6 +11,7 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceData
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamDetailRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceParamService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
@@ -21,6 +23,7 @@ import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceParamDto;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceParamDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
+import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigSceneRelateShipMapper;
 import io.shulie.takin.web.data.model.mysql.FileManageEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
@@ -172,10 +175,26 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             performanceParamDAO.add(insertList);
         }
         /**
-         * 更新脚本和场景和业务流程
+         * 先更新脚本和场景和业务流程,再绑定数据文件
          */
         // TODO
         pressureService.update(request);
+        this.bindDataFile(request);
+    }
+
+    InterfacePerformanceConfigSceneRelateShipMapper performanceConfigSceneRelateShipMapper;
+
+    private void bindDataFile(PerformanceDataFileRequest request) {
+        BusinessFlowDataFileRequest flowDataFileRequest = new BusinessFlowDataFileRequest();
+        flowDataFileRequest.setFileManageUpdateRequests(request.getFileManageUpdateRequests());
+        //查询业务流程Id
+        Long apiId = request.getId();
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("api_id", apiId);
+        queryWrapper.eq("is_deleted", 0);
+        Long flowId = performanceConfigSceneRelateShipMapper.selectOne(queryWrapper).getFlowId();
+        flowDataFileRequest.setId(flowId);
+        pressureService.uploadDataFile(flowDataFileRequest);
     }
 
     @Override

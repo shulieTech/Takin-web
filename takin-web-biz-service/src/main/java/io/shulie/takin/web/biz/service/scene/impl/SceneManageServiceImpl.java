@@ -544,22 +544,6 @@ public class SceneManageServiceImpl implements SceneManageService {
             data.setIsScheduler(false);
         }
         sceneDetail.setData(data);
-
-
-        //查询是否关联单接口压测
-        QueryWrapper queryWrapper = new QueryWrapper();
-        Long sceneId = id;
-        queryWrapper.eq("scene_id", sceneId);
-        queryWrapper.eq("is_deleted", 0);
-        InterfacePerformanceConfigSceneRelateShipEntity entity =
-                performanceConfigSceneRelateShipMapper.selectOne(queryWrapper);
-        if (Objects.nonNull(entity)) {
-            sceneDetail.getData().setConfigId(entity.getApiId());
-
-        } else {
-            // nothing
-        }
-
         return sceneDetail;
     }
 

@@ -26,6 +26,9 @@ public class SceneManageWrapperResp extends ContextExt {
     @ApiModelProperty(value = "压测场景ID")
     private Long id;
 
+    @ApiModelProperty(value = "关联单接口压测ID")
+    private Long configId;
+
     @ApiModelProperty(value = "压测场景名称")
     private String pressureTestSceneName;
 

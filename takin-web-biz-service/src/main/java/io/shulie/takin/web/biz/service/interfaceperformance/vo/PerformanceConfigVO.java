@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.interfaceperformance.vo;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.ContentTypeVO;
 import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -75,6 +76,12 @@ public class PerformanceConfigVO {
      * 0：未调试，1，调试中
      */
     private Integer status;
+
+    /**
+     * 压测状态
+     */
+    @ApiModelProperty(value = "压测状态")
+    private Integer pressureStatus;
 
     /**
      * 关联入口应用

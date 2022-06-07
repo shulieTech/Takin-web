@@ -150,7 +150,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
      * * 返回业务流程的id
      */
     public void doBefore(PerformanceConfigCreateInput input) throws IOException {
-        //上传文件到服务器
+        //上传jmx文件到服务器
         List<UploadResponse> uploadResult = upload(input.getId(), input.getName());
         //创建业务流程
         BusinessFlowDetailResponse flowInfo = bizFlowCreator(uploadResult);

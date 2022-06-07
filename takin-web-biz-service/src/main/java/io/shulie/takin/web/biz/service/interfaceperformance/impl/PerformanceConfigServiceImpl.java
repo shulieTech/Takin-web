@@ -1,9 +1,11 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
 import cn.hutool.core.util.URLUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.amdb.common.dto.trace.EntryTraceInfoDTO;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -17,6 +19,7 @@ import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
 import io.shulie.takin.web.biz.service.interfaceperformance.aspect.Action;
+import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.biz.service.interfaceperformance.vo.PerformanceConfigVO;
@@ -44,10 +47,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -154,6 +154,9 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         doAction(configId, null, Action.ActionEnum.delete);
     }
 
+    @Resource
+    private SceneManageService sceneManageService;
+
     /**
      * 查询单接口压测场景数据
      *
@@ -175,6 +178,19 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         List<PerformanceConfigVO> returnList = source.stream().map(configDto -> {
             PerformanceConfigVO vo = new PerformanceConfigVO();
             BeanUtils.copyProperties(configDto, vo);
+            try {
+                //查绑定的场景id
+                Long configId = vo.getId();
+                Long sceneId = performancePressureService.querySceneId(configId);
+                vo.setBindSceneId(sceneId);
+                //查压测状态
+                ResponseResult<SceneManageWrapperResp> result = sceneManageService.detailScene(sceneId);
+                if (Objects.nonNull(result.getData())) {
+                    vo.setPressureStatus(result.getData().getStatus());
+                }
+            } catch (Throwable t) {
+                logger.error("数据异常:{}", t.getMessage());
+            }
             return vo;
         }).collect(Collectors.toList());
         return PagingList.of(returnList, total);

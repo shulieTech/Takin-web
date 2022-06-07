@@ -782,7 +782,7 @@ public class SceneServiceImpl implements SceneService {
         }
         //更新脚本
         Long scriptDeployId = scriptManageService.updateScriptManage(updateRequest);
-        SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
+         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
         if (CollectionUtils.isNotEmpty(data)) {
             sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
             List<ScriptNode> samplerNodes = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);

@@ -16,7 +16,6 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_scene_big_file_slice")
-@EnableSign
 public class SceneBigFileSliceEntity {
     /**
      * 主键ID

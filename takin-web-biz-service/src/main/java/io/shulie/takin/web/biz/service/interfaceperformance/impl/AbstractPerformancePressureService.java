@@ -667,8 +667,6 @@ public abstract class AbstractPerformancePressureService
      * @return
      */
     public ResponseResult uploadDataFile(BusinessFlowDataFileRequest request) {
-        Long bizFlowId = fetBizFlowId(request.getId());
-        request.setId(bizFlowId);
         sceneService.uploadDataFile(request);
         return ResponseResult.success();
 

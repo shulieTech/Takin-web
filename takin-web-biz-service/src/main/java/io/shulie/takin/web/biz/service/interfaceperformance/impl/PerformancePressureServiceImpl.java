@@ -44,6 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * @Author: vernon
@@ -170,6 +171,58 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         sceneLinkRelateRequest.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
         sceneLinkRelateRequest.setBusinessFlowId(flowInfo.getId());
         sceneService.matchActivity(sceneLinkRelateRequest);
+
+
+        //如果有历史数据文件，则绑定数据文件
+        Long configId = input.getId();
+        QueryWrapper bindFileIdsQuery = new QueryWrapper();
+        bindFileIdsQuery.eq("config_id", configId);
+        List<InterfacePerformanceParamEntity> paramEntityList = paramMapper.selectList(bindFileIdsQuery);
+        if (!CollectionUtils.isEmpty(paramEntityList)) {
+            Set<Long> fileIds = paramEntityList.stream().map(o -> o.getFileId()).collect(Collectors.toSet());
+            if (!CollectionUtils.isEmpty(fileIds)) {
+                List IdsIn = Lists.newArrayList();
+                IdsIn.addAll(fileIds);
+                //查filemanage表
+                List<FileManageResult> fileManageResultList = fileManageDao.selectFileManageByIds(IdsIn);
+                if (!CollectionUtils.isEmpty(fileManageResultList)) {
+
+                    //过滤掉只有脚本文件的场景
+                    boolean onlyJmx = false;
+                    onlyJmx = fileManageResultList.size() == 1 && 0 == fileManageResultList.get(0).getFileType();
+                    if (!onlyJmx) {
+                        List<FileManageUpdateRequest> updateRequestArrayList = Lists.newArrayList();
+                        BusinessFlowDataFileRequest dataFileRequest = new BusinessFlowDataFileRequest();
+                        fileManageResultList.stream().forEach(
+                                one -> {
+                                    Integer fileType = one.getFileType();
+                                    //过掉脚本文件
+                                    if (0 != fileType) {
+                                        FileManageUpdateRequest request = new FileManageUpdateRequest();
+                                        request.setUploadTime(one.getUploadTime());
+                                        request.setId(one.getId());
+                                        request.setFileType(one.getFileType());
+                                        request.setFileName(one.getFileName());
+                                        request.setFileSize(one.getFileSize());
+                                        request.setIsDeleted(one.getIsDeleted());
+                                        request.setDownloadUrl(one.getUploadPath());
+                                        updateRequestArrayList.add(request);
+
+                                    }
+                                }
+                        );
+
+                        dataFileRequest.setId(flowInfo.getId());
+                        dataFileRequest.setFileManageUpdateRequests(updateRequestArrayList);
+                        uploadDataFile(dataFileRequest);
+                    }
+
+                }
+            }
+        }
+        BusinessFlowDataFileRequest dataFileRequest = new BusinessFlowDataFileRequest();
+        dataFileRequest.setId(flowInfo.getId());
+
 
         //保存业务流程id到关系映射表
         InterfacePerformanceConfigSceneRelateShipEntity entity = new InterfacePerformanceConfigSceneRelateShipEntity();

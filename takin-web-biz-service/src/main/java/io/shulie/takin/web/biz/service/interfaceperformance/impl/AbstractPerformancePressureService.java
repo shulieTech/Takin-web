@@ -206,28 +206,6 @@ public abstract class AbstractPerformancePressureService
 
     @Override
     public ResponseResult<Boolean> update(PerformanceConfigCreateInput in) throws Throwable {
-      /*  PressureConfigRequest request = in.getPressureConfigRequest();
-        request.getBasicInfo().setSceneId(fetchSceneId(in.getId()));
-        if (null == request.getBasicInfo().getSceneId()) {
-            return ResponseResult.fail(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR.getErrorCode(), "压测场景ID不能为空");
-        }
-        SceneRequest sceneRequest = buildSceneRequest(request);
-        WebPluginUtils.fillCloudUserData(sceneRequest);
-        Boolean updateResult = multipleSceneApi.update(sceneRequest);
-        sceneSchedulerTaskService.deleteBySceneId(request.getBasicInfo().getSceneId());
-        if (Boolean.TRUE.equals(request.getBasicInfo().getIsScheduler())) {
-            sceneSchedulerTaskService.insert(new SceneSchedulerTaskCreateRequest() {{
-                setSceneId(request.getBasicInfo().getSceneId());
-                setExecuteTime(request.getBasicInfo().getExecuteTime());
-            }});
-        }
-
-        // 先删除
-        sceneExcludedApplicationDAO.removeBySceneId(request.getBasicInfo().getSceneId());
-
-        // 忽略检测的应用
-        sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation().getExcludedApplicationIds());
-*/
         /**
          * 逻辑太复杂了,直接删了重建吧
          */

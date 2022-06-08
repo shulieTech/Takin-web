@@ -40,6 +40,7 @@ import io.shulie.takin.cloud.biz.service.schedule.ScheduleService;
 import io.shulie.takin.cloud.biz.service.strategy.StrategyConfigService;
 import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
 import io.shulie.takin.cloud.common.constants.FileSplitConstants;
+import io.shulie.takin.cloud.common.constants.ReportConstants;
 import io.shulie.takin.cloud.common.constants.ScheduleConstants;
 import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
@@ -63,6 +64,7 @@ import io.shulie.takin.cloud.model.request.StartRequest.FileInfo;
 import io.shulie.takin.cloud.model.request.StartRequest.FileInfo.SplitInfo;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -177,15 +179,23 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
         log.info("停止调度, 请求数据：{}", request);
         Long sceneId = request.getSceneId();
         String resourceId = request.getResourceId();
-        String stopTaskMessageKey = PressureStartCache.getStopTaskMessageKey(sceneId);
-        String stopTaskMessage = redisClientUtil.getString(stopTaskMessageKey);
-        if (Objects.isNull(stopTaskMessage)) {
-            stopTaskMessage = "停止调度";
-        }
-        if (!redisClientUtil.hasLockKey(PressureStartCache.getStartFlag(resourceId))) {
-            callStartFailedEvent(resourceId, stopTaskMessage); // 取消压测触发
+        if (StringUtils.isNotBlank(resourceId)) {
+            String stopTaskMessageKey = PressureStartCache.getStopTaskMessageKey(sceneId);
+            String stopTaskMessage = redisClientUtil.getString(stopTaskMessageKey);
+            if (Objects.isNull(stopTaskMessage)) {
+                stopTaskMessage = "停止调度";
+            }
+            if (!redisClientUtil.hasLockKey(PressureStartCache.getStartFlag(resourceId))) {
+                callStartFailedEvent(resourceId, stopTaskMessage); // 取消压测触发
+            } else {
+                callRunningFailedEvent(resourceId, stopTaskMessage);
+            }
         } else {
-            callRunningFailedEvent(resourceId, stopTaskMessage);
+            // 直接标记场景为停止状态,报告为完成状态
+            Long reportId = request.getTaskId();
+            cloudReportService.updateReportFeatures(reportId, ReportConstants.FINISH_STATUS, null, null);
+            cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(sceneId, reportId, request.getTenantId())
+                .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.WAIT).build());
         }
     }
 

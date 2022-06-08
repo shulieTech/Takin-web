@@ -33,7 +33,9 @@ import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import jdk.nashorn.internal.runtime.regexp.joni.ast.StringNode;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
@@ -51,6 +53,7 @@ import java.util.stream.Collectors;
  * @Date: 2022/5/20 10:37
  * @Description:
  */
+@Slf4j
 @Component
 public class PerformancePressureServiceImpl extends AbstractPerformancePressureService {
 
@@ -83,7 +86,6 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
     }
 
     public List<UploadResponse> upload(Long id, String name) throws IOException {
-
         String script = scriptGenerator(id);
         String fileName = name + ".jmx";
         File tempFile = new File(TEMP_DICTIONARY + File.separator + fileName);
@@ -103,9 +105,12 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
             files.add(multipartFile);
             List<UploadResponse> uploadResponse = cloudFileApi.upload(uploadRequest);
             return uploadResponse;
+        } catch (Throwable e) {
+            log.error("处理文件失败,{}", ExceptionUtils.getStackTrace(e));
         } finally {
             tempFile.delete();
         }
+        return null;
     }
 
 
@@ -331,7 +336,6 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
     @Override
     public String scriptGenerator(Long id) {
-
         // TODO: 2022/5/20 调用cloud sdk 生成脚本
         ReqBuilder reqParam = buildReq(id);
 
@@ -339,7 +343,6 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         header.put("Content-Type", "application/json");
         ResponseWrapper responseWrapper = null;
         try {
-
             responseWrapper = HttpSupport.get().get("post").to
                     (urlOfCloud + uriOfScriptGenerator, JSON.toJSONString(reqParam), header);
         } catch (ExecutionException e) {
@@ -349,7 +352,12 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         if (Objects.isNull(responseWrapper) || Objects.isNull(responseWrapper.getData())) {
             throw new RuntimeException("生成脚本异常.");
         }
-        return JSON.parseObject(responseWrapper.getData()).getString("data");
+        String result = JSON.parseObject(responseWrapper.getData()).getString("data");
+        if (StringUtil.isBlank(result)) {
+            log.error("生成脚本为空,{}" + JSON.toJSONString(reqParam));
+            throw new RuntimeException("生成脚本为空");
+        }
+        return result;
     }
 
 

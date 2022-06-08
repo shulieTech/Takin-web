@@ -658,9 +658,10 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
      * 至失败状态
      */
     private void toFailureState(Long sceneId, Long reportId, String errorMsg) {
-        ReportResult recentlyReport = reportDao.getRecentlyReport(sceneId);
+        ReportResult recentlyReport = reportDao.getById(reportId);
         String resourceId = recentlyReport.getResourceId();
         String startKey = PressureStartCache.getStartFlag(resourceId);
+        reportDao.updateReportEndTime(reportId, new Date());
         if (!redisClientUtil.hasKey(startKey)) {
             // 触发启动失败事件
             Event event = new Event();
@@ -682,11 +683,6 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.INACTIVE, null);
         pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_GENERATING, null);
         pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_DONE, null);
-        if (!reportId.equals(recentlyReport.getId())) {
-            log.error("更新压测生命周期，所更新的报告不是压测场景的最新报告,场景id:{},更新的报告id:{},当前最新的报告id:{}",
-                sceneId, reportId, recentlyReport.getId());
-            return;
-        }
         // 状态 更新 失败状态
         SceneManageEntity sceneManage = new SceneManageEntity() {{
             setId(sceneId);

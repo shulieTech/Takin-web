@@ -24,7 +24,12 @@ public class EngineEnvChecker implements StartConditionChecker {
     @Override
     public CheckResult check(StartConditionCheckerContext context) throws TakinCloudException {
         try {
-            WatchmanStatusResponse status = cloudWatchmanApi.status(new WatchmanStatusRequest());
+            WatchmanStatusResponse status;
+            try {
+                status = cloudWatchmanApi.status(new WatchmanStatusRequest());
+            } catch (Exception e) {
+                return CheckResult.fail(type(), "cloud环境异常");
+            }
             log.info("调度器环境检测:{}", JsonHelper.bean2Json(status));
             if (Objects.isNull(status)) {
                 return CheckResult.fail(type(), "调度器异常");

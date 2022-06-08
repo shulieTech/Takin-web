@@ -147,9 +147,8 @@ public class PressureEventCenter extends AbstractIndicators {
         if (!exception && redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(resourceId), message)) {
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, message);
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.STOPPING, null);
-            // 等待回调触发 finished
+            endDefaultPressureIfNecessary(context);
         }
-        endDefaultPressureIfNecessary(context);
     }
 
     @IntrestFor(event = PressureStartCache.PRE_STOP_EVENT)

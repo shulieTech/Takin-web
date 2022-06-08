@@ -105,10 +105,7 @@ public class ApplicationChecker implements StartConditionChecker {
         }
         flag = flag || pressureRunning(context);
         if (flag) {
-            String stopMessage = redisClientUtil.getString(
-                RedisClientUtil.getLockKey(PressureStartCache.getStopFlag(context.getResourceId())));
-            String message = StringUtils.defaultIfBlank(stopMessage, "当前场景不为待启动状态!");
-            throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR, message);
+            throw new TakinCloudException(TakinCloudExceptionEnum.TASK_START_VERIFY_ERROR, "当前场景不为待启动状态!");
         }
         if (StringUtils.isBlank(context.getResourceId())) {
             cacheAssociation(context);
@@ -118,15 +115,16 @@ public class ApplicationChecker implements StartConditionChecker {
     private boolean pressureRunning(StartConditionCheckerContext context) {
         String sceneRunningKey = PressureStartCache.getSceneResourceLockingKey(context.getSceneId());
         String resourceId = context.getResourceId();
-        boolean shouldLock = StringUtils.isBlank(resourceId)
-            || !redisClientUtil.hasKey(RedisClientUtil.getLockKey(PressureStartCache.getStopFlag(resourceId)));
-        if (shouldLock) {
-            shouldLock = redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
-            if (shouldLock) {
-                redisClientUtil.expire(sceneRunningKey, 90);
-            }
+        if (StringUtils.isNotBlank(resourceId)
+            && redisClientUtil.hasKey(RedisClientUtil.getLockKey(PressureStartCache.getStopFlag(resourceId)))) {
+            // 有其他错误，直接返回
+            return false;
         }
-        return !shouldLock;
+        boolean lockSuccess = redisClientUtil.reentryLockNoExpire(sceneRunningKey, context.getUniqueKey());
+        if (lockSuccess) {
+            redisClientUtil.expire(sceneRunningKey, 90);
+        }
+        return !lockSuccess;
     }
 
     private void cacheAssociation(StartConditionCheckerContext context) {

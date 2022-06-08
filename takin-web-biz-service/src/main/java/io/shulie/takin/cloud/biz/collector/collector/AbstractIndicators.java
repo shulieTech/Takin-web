@@ -29,6 +29,7 @@ import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.eventcenter.Event;
 import io.shulie.takin.eventcenter.EventCenterTemplate;
+import io.shulie.takin.web.biz.checker.StartConditionChecker.CheckStatus;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.Data;
@@ -245,15 +246,20 @@ public abstract class AbstractIndicators {
     protected void callStartFailedEvent(String resourceId, String message) {
         ResourceContext context = getResourceContext(resourceId);
         if (context != null) {
-            String stopTaskMessageKey = PressureStartCache.getStopTaskMessageKey(context.getSceneId());
-            String stopMessage = redisClientUtil.getString(stopTaskMessageKey);
-            if (StringUtils.isNotBlank(stopMessage)) {
-                redisClientUtil.del(stopTaskMessageKey);
-                message = stopMessage;
-            }
             Event event = new Event();
-            event.setEventName(PressureStartCache.START_FAILED);
-            event.setExt(new StartFailEventSource(context, message));
+            if (Objects.equals(context.getCheckStatus(), String.valueOf(CheckStatus.SUCCESS.ordinal()))) {
+                String stopTaskMessageKey = PressureStartCache.getStopTaskMessageKey(context.getSceneId());
+                String stopMessage = redisClientUtil.getString(stopTaskMessageKey);
+                if (StringUtils.isNotBlank(stopMessage)) {
+                    redisClientUtil.del(stopTaskMessageKey);
+                    message = stopMessage;
+                }
+                event.setEventName(PressureStartCache.START_FAILED);
+                event.setExt(new StartFailEventSource(context, message));
+            } else {
+                event.setEventName(PressureStartCache.CHECK_FAIL_EVENT);
+                event.setExt(context);
+            }
             eventCenterTemplate.doEvents(event);
         }
     }
@@ -263,8 +269,13 @@ public abstract class AbstractIndicators {
         ResourceContext context = getResourceContext(resourceId);
         if (context != null) {
             Event event = new Event();
-            event.setEventName(PressureStartCache.RUNNING_FAILED);
-            event.setExt(new StopEventSource(context, message));
+            if (Objects.equals(context.getCheckStatus(), String.valueOf(CheckStatus.SUCCESS.ordinal()))) {
+                event.setEventName(PressureStartCache.RUNNING_FAILED);
+                event.setExt(new StopEventSource(context, message));
+            } else {
+                event.setEventName(PressureStartCache.CHECK_FAIL_EVENT);
+                event.setExt(context);
+            }
             eventCenterTemplate.doEvents(event);
         }
     }
@@ -289,8 +300,9 @@ public abstract class AbstractIndicators {
         Long tenantId = context.getTenantId();
         String engineName = ScheduleConstants.getEngineName(sceneId, reportId, tenantId);
         setMax(engineName + ScheduleConstants.LAST_SIGN, time.getTime());
-        if (redisClientUtil.lockExpire(PressureStartCache.getFinishStopKey(resourceId),
-                String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
+        if (Objects.equals(context.getCheckStatus(), String.valueOf(CheckStatus.SUCCESS.ordinal()))
+            && redisClientUtil.lockExpire(PressureStartCache.getFinishStopKey(resourceId),
+            String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
             setLast(last(getPressureTaskKey(sceneId, reportId, tenantId)), ScheduleConstants.LAST_SIGN);
             // 压测停止
             notifyEnd(context, time);
@@ -322,8 +334,10 @@ public abstract class AbstractIndicators {
             log.info("场景[{}-{}]压测任务已完成,更新结束时间{}", sceneId, reportId, System.currentTimeMillis());
             // 更新压测场景状态  压测引擎运行中,压测引擎停止压测 ---->压测引擎停止压测
             cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(sceneId, reportId, tenantId)
-                .checkEnum(SceneManageStatusEnum.PRESSURE_NODE_RUNNING, SceneManageStatusEnum.ENGINE_RUNNING,
-                    SceneManageStatusEnum.STOP).updateEnum(SceneManageStatusEnum.STOP).build());
+                .checkEnum(SceneManageStatusEnum.STARTING,
+                    SceneManageStatusEnum.JOB_CREATING, SceneManageStatusEnum.PRESSURE_NODE_RUNNING,
+                    SceneManageStatusEnum.ENGINE_RUNNING, SceneManageStatusEnum.STOP)
+                .updateEnum(SceneManageStatusEnum.STOP).build());
             updateReportEndTime(context, time);
             pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.INACTIVE, null);
             notifyFinish(context);

@@ -34,5 +34,5 @@ public interface ApplicationApiManageMapper extends BaseMapper<ApplicationApiMan
 
     void deleteByAppName(@Param("appName") String appName);
 
-    ApplicationApiManageEntity queryManage(@Param("applicationName") String applicationName,@Param("method")  String method, @Param("api") String api);
+    int queryManage(@Param("applicationName") String applicationName,@Param("method")  String method, @Param("api") String api);
 }

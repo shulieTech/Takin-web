@@ -158,6 +158,6 @@ public class ApplicationApiDAOImpl implements ApplicationApiDAO {
 
     @Override
     public boolean check(String applicationName, String method, String api) {
-        return null == apiManageMapper.queryManage(applicationName,method,api);
+        return apiManageMapper.queryManage(applicationName,method,api) > 0;
     }
 }

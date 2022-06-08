@@ -286,8 +286,8 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
         createParam.setIsDeleted((byte)0);
         createParam.setEnvCode(WebPluginUtils.traceEnvCode());
         createParam.setTenantId(WebPluginUtils.traceTenantId());
-        boolean status = applicationApiDAO.check(vo.getApplicationName(), vo.getMethod(), vo.getApi());
-        if (!status) return Response.fail("重复添加");
+        boolean status = applicationApiDAO.check(vo.getApplicationName(), DictionaryCache.getObjectByParam(HTTP_METHOD_TYPE, Integer.parseInt(vo.getMethod())).getLabel(), vo.getApi());
+        if (status) return Response.fail("重复添加");
         // 把旧的记录删除了，新的再添加
 //        applicationApiDAO.deleteByAppName(vo.getApplicationName());
         applicationApiDAO.insert(createParam);

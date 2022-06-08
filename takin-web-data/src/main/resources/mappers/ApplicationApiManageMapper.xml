@@ -207,9 +207,9 @@
           and is_agent_registe = 1
     </select>
 
-    <select id="queryManage" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    <select id="queryManage" resultType="java.lang.Integer">
         select
-        <include refid="Base_Column_List"/>
+        count(*)
         from t_application_api_manage
         where APPLICATION_NAME = #{applicationName} and api = #{api} and method = #{method}
     </select>

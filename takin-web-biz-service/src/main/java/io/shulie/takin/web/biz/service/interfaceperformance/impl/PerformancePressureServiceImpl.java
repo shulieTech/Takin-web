@@ -220,9 +220,6 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
                 }
             }
         }
-        BusinessFlowDataFileRequest dataFileRequest = new BusinessFlowDataFileRequest();
-        dataFileRequest.setId(flowInfo.getId());
-
 
         //保存业务流程id到关系映射表
         InterfacePerformanceConfigSceneRelateShipEntity entity = new InterfacePerformanceConfigSceneRelateShipEntity();

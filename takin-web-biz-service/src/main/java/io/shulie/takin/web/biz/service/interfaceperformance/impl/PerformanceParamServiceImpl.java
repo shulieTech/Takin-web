@@ -144,11 +144,9 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         this.bindDataFile(request);
 
         // 将原有数据清理掉,流程处理的时候,文件已经更改了。直接只能清理掉
-        List<Long> deleteIdList = fileManageResponses.stream().map(file -> file.getId()).collect(Collectors.toList());
         // 清理掉这部分数据
         PerformanceParamQueryParam deleteParams = new PerformanceParamQueryParam();
         deleteParams.setConfigId(configId);
-        deleteParams.setFileIds(deleteIdList);
         performanceParamDAO.deleteByParam(deleteParams);
 
         // b、最新的插入

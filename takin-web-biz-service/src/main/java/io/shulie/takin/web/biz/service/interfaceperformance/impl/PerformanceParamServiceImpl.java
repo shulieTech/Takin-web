@@ -12,8 +12,10 @@ import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformancePara
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceParamService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformancePressureService;
+import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -22,6 +24,7 @@ import io.shulie.takin.web.biz.service.interfaceperformance.vo.PerformanceParamV
 import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceParamDto;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceParamDAO;
+import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceRelateshipDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigSceneRelateShipMapper;
 import io.shulie.takin.web.data.model.mysql.FileManageEntity;
@@ -60,6 +63,9 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
     private InterfacePerformanceConfigMapper interfacePerformanceConfigMapper;
 
     @Autowired
+    private PerformanceRelateshipDAO performanceRelateshipDAO;
+
+    @Autowired
     private PerformanceParamDAO performanceParamDAO;
 
     @Resource
@@ -71,6 +77,8 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
     @Resource
     PerformancePressureService pressureService;
 
+    @Autowired
+    private SceneService sceneService;
 
     /**
      * 更新接口压测数据文件
@@ -95,45 +103,54 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         PerformanceParamDetailResponse fileResponse = this.detail(allRequest);
         List<FileManageResponse> fileManageResponses = fileResponse.getFileManageResponseList();
 
-        // 2、获取最新的文件处理
+        // 2、获取最新的文件处理,客户端每次都是最新的
         List<FileManageUpdateRequest> fileLists = request.getFileManageUpdateRequests();
 
         // a、找到未删除的文件信息
-        List<Long> idList = fileLists.stream()
-                .filter(file -> file.getId() != null)
-                .map(file -> file.getId()).collect(Collectors.toList());
+        Map<String, List<FileManageUpdateRequest>> un_delete_files = fileLists.stream().
+                collect(Collectors.groupingBy(f -> {
+                    return String.valueOf(f.getId());
+                }));
 
-        // 遍历最新的文件操作
-        List<PerformanceParamRequest> deleteParam = Lists.newArrayList();
+        // 遍历文件操作,找到删除的文件信息
+        List<FileManageResponse> delete_file_Param = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(fileManageResponses)) {
             for (int i = 0; i < fileManageResponses.size(); i++) {
                 FileManageResponse tmpResponse = fileManageResponses.get(i);
-                if (!idList.contains(tmpResponse.getId())) {
-                    PerformanceParamRequest tmp = new PerformanceParamRequest();
-                    tmp.setFileId(tmpResponse.getId());
-                    tmp.setConfigId(configId);
-                    tmp.setFilePath(tmpResponse.getUploadPath());
-                    // 需要删除的数据
-                    deleteParam.add(tmp);
+                if (!un_delete_files.containsKey(String.valueOf(tmpResponse.getId()))) {
+                    delete_file_Param.add(tmpResponse);
                 }
             }
         }
 
-        if (CollectionUtils.isNotEmpty(deleteParam)) {
+        /**
+         * 更新脚本和场景和业务流程
+         */
+        pressureService.update(request);
+
+        // 够造删除的数据文件到流程接口里面
+        if (CollectionUtils.isNotEmpty(delete_file_Param)) {
+            List<FileManageUpdateRequest> delete_flag_files = delete_file_Param.stream().map(delete_file -> {
+                FileManageUpdateRequest updateFile = new FileManageUpdateRequest();
+                BeanUtils.copyProperties(delete_file, updateFile);
+                updateFile.setIsDeleted(1);
+                return updateFile;
+            }).collect(Collectors.toList());
+            request.getFileManageUpdateRequests().addAll(delete_flag_files);
+        }
+        /**
+         * 绑定数据文件
+         */
+        this.bindDataFile(request);
+
+        if (CollectionUtils.isNotEmpty(delete_file_Param)) {
             // 清理数据
-            List<Long> deleteIdList = deleteParam.stream().map(file -> file.getFileId()).collect(Collectors.toList());
+            List<Long> deleteIdList = delete_file_Param.stream().map(file -> file.getId()).collect(Collectors.toList());
             // 清理掉这部分数据
             PerformanceParamQueryParam deleteParams = new PerformanceParamQueryParam();
             deleteParams.setConfigId(configId);
             deleteParams.setFileIds(deleteIdList);
             performanceParamDAO.deleteByParam(deleteParams);
-            // 删除对应路径文件
-            List<String> filePaths = deleteParam.stream().map(file -> file.getFilePath()).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(filePaths)) {
-                FileDeleteParamReq fileDeleteParamReq = new FileDeleteParamReq();
-                fileDeleteParamReq.setPaths(filePaths);
-                fileApi.deleteFile(fileDeleteParamReq);
-            }
         }
 
         // b、新增的
@@ -141,14 +158,15 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
                 filter(file -> file.getUploadId() != null && file.getId() == null).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(insertFileList)) {
             // 目录 + 配置Id
-            String targetFilePath = String.format("%s/%s/%s/", ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH), "interfacePerformance", configId);
+            /*String targetFilePath = String.format("%s/%s/%s/", ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH), "interfacePerformance", configId);
             copyFile(insertFileList, targetFilePath);
 
             // 插入文件记录所需参数
             List<FileManageCreateParam> fileManageCreateParams = getFileManageCreateParamsByUpdateReq(
-                    insertFileList, targetFilePath);
+                    insertFileList, targetFilePath);*/
+            // 获取流程绑定的最新文件信息
             // 创建文件记录, 获得文件ids
-            List<FileManageEntity> fileEntitys = fileManageDAO.createFileManageList_ext(fileManageCreateParams);
+            List<FileManageEntity> fileEntitys = getNewFileManage(request.getId());
             // 按文件名分组,后续这里用文件名去匹配字段
             Map<String, List<FileManageEntity>> fileNameMap = fileEntitys.stream().collect(Collectors.groupingBy(FileManageEntity::getFileName));
             // 把解析的参数给放到参数表里面
@@ -175,15 +193,22 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             // 新增参数
             performanceParamDAO.add(insertList);
         }
-        /**
-         * 更新脚本和场景和业务流程
-         */
-        // TODO
-        pressureService.update(request);
-        /**
-         * 绑定数据文件
-         */
-        this.bindDataFile(request);
+    }
+
+    private List<FileManageEntity> getNewFileManage(Long configId) {
+        InterfacePerformanceConfigSceneRelateShipEntity entity =
+                performanceRelateshipDAO.relationShipEntityById(configId);
+        // 获取流程Id
+        Long flowId = entity.getFlowId();
+        // 读取流程关联文件表
+        BusinessFlowDetailResponse detail = sceneService.getBusinessFlowDetail(flowId);
+        List<io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse> fileManageResponseList = detail.getFileManageResponseList();
+        List<FileManageEntity> fileManageEntityList = fileManageResponseList.stream().map(newFile -> {
+            FileManageEntity fileManageEntity = new FileManageEntity();
+            BeanUtils.copyProperties(newFile, fileManageEntity);
+            return fileManageEntity;
+        }).collect(Collectors.toList());
+        return fileManageEntityList;
     }
 
     @Resource

@@ -28,7 +28,7 @@ public class PerformanceRelateshipDAOImpl implements PerformanceRelateshipDAO {
     public InterfacePerformanceConfigSceneRelateShipEntity relationShipEntityById(Long apiId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("api_id", apiId);
-        queryWrapper.eq("is_delete", 0);
+        queryWrapper.eq("is_deleted", 0);
         queryWrapper.last("limit 1");
         InterfacePerformanceConfigSceneRelateShipEntity entity = interfacePerformanceConfigSceneRelateShipMapper.selectOne(queryWrapper);
         return entity;

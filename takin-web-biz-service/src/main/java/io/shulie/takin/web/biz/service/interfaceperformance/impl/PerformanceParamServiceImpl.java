@@ -108,11 +108,11 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
 
         // a、找到未删除的文件信息
         Map<String, List<FileManageUpdateRequest>> un_delete_files = fileLists.stream().
-                collect(Collectors.groupingBy(f -> {
-                    return String.valueOf(f.getId());
-                }));
+                filter(s -> s.getId() != null).collect(Collectors.groupingBy(f -> {
+            return String.valueOf(f.getId());
+        }));
 
-        // 遍历文件操作,找到删除的文件信息
+        // 遍历文件操作,找到已删除的文件信息
         List<FileManageResponse> delete_file_Param = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(fileManageResponses)) {
             for (int i = 0; i < fileManageResponses.size(); i++) {
@@ -143,29 +143,17 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
          */
         this.bindDataFile(request);
 
-        if (CollectionUtils.isNotEmpty(delete_file_Param)) {
-            // 清理数据
-            List<Long> deleteIdList = delete_file_Param.stream().map(file -> file.getId()).collect(Collectors.toList());
-            // 清理掉这部分数据
-            PerformanceParamQueryParam deleteParams = new PerformanceParamQueryParam();
-            deleteParams.setConfigId(configId);
-            deleteParams.setFileIds(deleteIdList);
-            performanceParamDAO.deleteByParam(deleteParams);
-        }
+        // 将原有数据清理掉,流程处理的时候,文件已经更改了。直接只能清理掉
+        List<Long> deleteIdList = fileManageResponses.stream().map(file -> file.getId()).collect(Collectors.toList());
+        // 清理掉这部分数据
+        PerformanceParamQueryParam deleteParams = new PerformanceParamQueryParam();
+        deleteParams.setConfigId(configId);
+        deleteParams.setFileIds(deleteIdList);
+        performanceParamDAO.deleteByParam(deleteParams);
 
-        // b、新增的
-        List<FileManageUpdateRequest> insertFileList = fileLists.stream().
-                filter(file -> file.getUploadId() != null && file.getId() == null).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(insertFileList)) {
-            // 目录 + 配置Id
-            /*String targetFilePath = String.format("%s/%s/%s/", ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH), "interfacePerformance", configId);
-            copyFile(insertFileList, targetFilePath);
-
-            // 插入文件记录所需参数
-            List<FileManageCreateParam> fileManageCreateParams = getFileManageCreateParamsByUpdateReq(
-                    insertFileList, targetFilePath);*/
+        // b、最新的插入
+        if (CollectionUtils.isNotEmpty(fileLists)) {
             // 获取流程绑定的最新文件信息
-            // 创建文件记录, 获得文件ids
             List<FileManageEntity> fileEntitys = getNewFileManage(request.getId());
             // 按文件名分组,后续这里用文件名去匹配字段
             Map<String, List<FileManageEntity>> fileNameMap = fileEntitys.stream().collect(Collectors.groupingBy(FileManageEntity::getFileName));

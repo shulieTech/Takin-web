@@ -22,6 +22,7 @@ public abstract class PressureStartCache {
     public static final String USER_ID = "user_id";
     public static final String ERROR_MESSAGE = "error_message";
     public static final String PT_TEST_TIME = "pt_test_time";
+    public static final String PRESSURE_TYPE = "pressure_type";
 
     // 事件
     public static final String CHECK_FAIL_EVENT = "check_failed";

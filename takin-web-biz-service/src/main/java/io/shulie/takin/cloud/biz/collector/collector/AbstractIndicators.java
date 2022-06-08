@@ -20,6 +20,7 @@ import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
 import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
 import io.shulie.takin.cloud.common.bean.task.TaskResult;
 import io.shulie.takin.cloud.common.constants.ScheduleConstants;
+import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
@@ -233,6 +234,7 @@ public abstract class AbstractIndicators {
         context.setTaskId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.TASK_ID))));
         context.setUniqueKey(String.valueOf(resource.get(PressureStartCache.UNIQUE_KEY)));
         context.setPtTestTime(Long.valueOf(String.valueOf(resource.get(PressureStartCache.PT_TEST_TIME))));
+        context.setPressureType(Integer.valueOf(String.valueOf(resource.get(PressureStartCache.PRESSURE_TYPE))));
         Object jobId = resource.get(PressureStartCache.JOB_ID);
         if (Objects.nonNull(jobId)) {
             context.setJobId(Long.valueOf(String.valueOf(jobId)));
@@ -298,7 +300,8 @@ public abstract class AbstractIndicators {
     protected void notifyFinish(ResourceContext context) {
         String resourceId = context.getResourceId();
         // 清除 SLA配置  生成报告拦截 状态拦截
-        if (redisClientUtil.lockExpire(PressureStartCache.getResourceFinishEventKey(resourceId),
+        if (!Objects.equals(context.getPressureType(), PressureSceneEnum.INSPECTION_MODE.getCode())
+            && redisClientUtil.lockExpire(PressureStartCache.getResourceFinishEventKey(resourceId),
             String.valueOf(System.currentTimeMillis()), 10, TimeUnit.MINUTES)) {
             Event event = new Event();
             event.setEventName("finished");
@@ -438,6 +441,7 @@ public abstract class AbstractIndicators {
         private String checkStatus;
         private String uniqueKey;
         private Long ptTestTime;
+        private Integer pressureType;
 
         private String message;
     }

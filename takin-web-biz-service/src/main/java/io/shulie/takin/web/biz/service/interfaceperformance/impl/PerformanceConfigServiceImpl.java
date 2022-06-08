@@ -261,7 +261,13 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
             try {
                 path = URLUtil.getPath(requestUrl);
             } catch (Throwable e) {
-                log.error("格式化URL错误,{}}", requestUrl);
+                // http://{ip}/path
+                log.error("格式化URL错误,{}", requestUrl);
+                try {
+                    path = requestUrl.substring(requestUrl.lastIndexOf("/") + 1);
+                } catch (Throwable e1) {
+                    log.error("格式化URL错误,{}", requestUrl);
+                }
             }
         }
         if (StringUtils.isNotBlank(path)) {

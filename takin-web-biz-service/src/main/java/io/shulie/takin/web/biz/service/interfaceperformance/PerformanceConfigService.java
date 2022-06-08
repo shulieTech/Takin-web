@@ -41,14 +41,14 @@ public interface PerformanceConfigService {
     PagingList<PerformanceConfigVO> query(PerformanceConfigQueryRequest input);
 
     PerformanceConfigVO detail(Long configId);
-	
-	ResponseResult<SceneActionResp> start(SceneActionParam param);
 
-    public SceneEntity bizFlowDetail(Long apiId);
+    ResponseResult<SceneActionResp> start(SceneActionParam param);
+
+    SceneEntity bizFlowDetail(Long apiId);
 
     Long querySceneId(Long apiId);
 
     List<RelationAppNameVO> relationName(PerformanceConfigQueryRequest param);
 
-    public ResponseResult uploadDataFile(BusinessFlowDataFileRequest request);
+    ResponseResult uploadDataFile(BusinessFlowDataFileRequest request);
 }

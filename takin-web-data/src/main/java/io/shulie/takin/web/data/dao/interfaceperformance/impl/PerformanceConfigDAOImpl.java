@@ -52,8 +52,8 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
      */
     @Override
     public void updateById(InterfacePerformanceConfigEntity entity) {
-        if(entity.getId() == null){
-            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR,"参数未设置");
+        if (entity.getId() == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "参数未设置");
         }
         interfacePerformanceConfigMapper.updateById(entity);
     }
@@ -97,10 +97,9 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
 
     /**
      * 分配用户
-     *
      */
     @Override
-    public void allocationUser(Long dataId,Long userId) {
+    public void allocationUser(Long dataId, Long userId) {
         if (dataId == null) {
             throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "参数未设置");
         }
@@ -112,6 +111,8 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
         updateEntity.setUserId(userId);
         updateEntity.setId(dataId);
         interfacePerformanceConfigMapper.updateById(updateEntity);
+
+        // 同步更改流程和场景的归属人
     }
 
     public QueryWrapper<InterfacePerformanceConfigEntity> getWrapper(PerformanceConfigQueryParam param) {
@@ -123,8 +124,8 @@ public class PerformanceConfigDAOImpl implements PerformanceConfigDAO,
         if (StringUtils.isNotBlank(param.getQueryName())) {
             queryWrapper.like("name", param.getQueryName());
         }
-        if(CollectionUtils.isNotEmpty(param.getUserIdList())){
-            queryWrapper.in("user_id",param.getUserIdList());
+        if (CollectionUtils.isNotEmpty(param.getUserIdList())) {
+            queryWrapper.in("user_id", param.getUserIdList());
         }
         return queryWrapper;
     }

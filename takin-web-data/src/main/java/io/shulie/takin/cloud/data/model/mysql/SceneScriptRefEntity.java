@@ -16,7 +16,6 @@ import lombok.Data;
  */
 @Data
 @TableName(value = "t_scene_script_ref")
-@EnableSign
 public class SceneScriptRefEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;

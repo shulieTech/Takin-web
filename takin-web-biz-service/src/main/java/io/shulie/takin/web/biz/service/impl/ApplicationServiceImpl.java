@@ -2667,4 +2667,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return appSwitchEnum.getCode().equals(status);
     }
 
+    @Override
+    public boolean existsApplication(Long tenantId, String envCode) {
+        return applicationDAO.existsApplication(tenantId, envCode);
+    }
 }

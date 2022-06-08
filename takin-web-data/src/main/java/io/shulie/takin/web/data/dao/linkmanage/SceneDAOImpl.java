@@ -10,7 +10,9 @@ import com.alibaba.excel.util.StringUtils;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.google.common.collect.Lists;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.data.convert.linkmanage.BusinessLinkManageConvert;
@@ -158,5 +160,14 @@ public class SceneDAOImpl implements SceneDAO {
         List<SceneResult> sceneResultList = BusinessLinkManageConvert.INSTANCE.ofSceneEntityList(
             sceneEntityPage.getRecords());
         return PagingList.of(sceneResultList, sceneEntityPage.getTotal());
+    }
+
+    @Override
+    public boolean existsScene(Long tenantId, String envCode) {
+        LambdaQueryWrapper<SceneEntity> wrapper = Wrappers.lambdaQuery(SceneEntity.class)
+            .eq(SceneEntity::getTenantId, tenantId)
+            .eq(SceneEntity::getEnvCode, envCode)
+            .eq(SceneEntity::getIsDeleted, 0);
+        return SqlHelper.retBool(sceneMapper.selectCount(wrapper));
     }
 }

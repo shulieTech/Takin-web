@@ -12,9 +12,12 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
+import io.shulie.takin.cloud.biz.service.report.CloudReportService;
+import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
 import io.shulie.takin.cloud.common.bean.task.TaskResult;
 import io.shulie.takin.cloud.common.constants.ReportConstants;
 import io.shulie.takin.cloud.common.constants.SceneTaskRedisConstants;
+import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneRunTaskStatusEnum;
@@ -57,7 +60,8 @@ public class PressureEventCenter extends AbstractIndicators {
     private SceneManageDAO sceneManageDAO;
     @Resource
     private SceneTaskStatusCache taskStatusCache;
-
+    @Resource
+    private CloudReportService cloudReportService;
     @Resource
     private RedisClientUtil redisClientUtil;
     @Resource
@@ -145,6 +149,7 @@ public class PressureEventCenter extends AbstractIndicators {
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.STOPPING, null);
             // 等待回调触发 finished
         }
+        endDefaultPressureIfNecessary(context);
     }
 
     @IntrestFor(event = PressureStartCache.PRE_STOP_EVENT)
@@ -202,6 +207,7 @@ public class PressureEventCenter extends AbstractIndicators {
             } catch (Exception ignore) {}
             updateSceneFailed(context.getSceneId(), SceneManageStatusEnum.STOP);
             notifyFinish(context);
+            endDefaultPressureIfNecessary(context);
         }
     }
 
@@ -399,6 +405,22 @@ public class PressureEventCenter extends AbstractIndicators {
     public static class CloudCalibrationException extends RuntimeException {
         public CloudCalibrationException(String message) {
             super(message);
+        }
+    }
+
+    private void endDefaultPressureIfNecessary(ResourceContext context) {
+        // 巡检压测，停止场景
+        if (Objects.equals(context.getPressureType(), PressureSceneEnum.INSPECTION_MODE.getCode())) {
+            Long reportId = context.getReportId();
+            Long sceneId = context.getSceneId();
+            Long tenantId = context.getTenantId();
+            cloudReportService.updateReportFeatures(reportId, ReportConstants.FINISH_STATUS, null, null);
+            cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(sceneId, reportId, tenantId)
+                .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.WAIT).build());
+            pressureTaskDAO.updateStatus(context.getTaskId(), PressureTaskStateEnum.INACTIVE, null);
+            Event event = new Event();
+            event.setExt(context);
+            pressureEnd(event);
         }
     }
 }

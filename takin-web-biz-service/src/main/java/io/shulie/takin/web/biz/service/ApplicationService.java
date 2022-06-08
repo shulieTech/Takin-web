@@ -300,4 +300,5 @@ public interface ApplicationService {
 
     PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest request);
 
+    boolean existsApplication(Long tenantId, String envCode);
 }

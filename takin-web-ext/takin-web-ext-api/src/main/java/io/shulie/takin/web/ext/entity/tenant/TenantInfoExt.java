@@ -2,6 +2,7 @@ package io.shulie.takin.web.ext.entity.tenant;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -48,6 +49,9 @@ public class TenantInfoExt {
     @Data
     @NoArgsConstructor
     public static class TenantEnv {
+        @JsonIgnore
+        private Long id;
+
         /**
          * 租户ID
          */
@@ -75,5 +79,7 @@ public class TenantInfoExt {
          * 安全中心地址
          */
         private String securityCenterDomain;
+
+        private Integer source;
     }
 }

@@ -73,7 +73,8 @@ public class SignCommonUtil {
             return;
         }
         boolean isSign = clz.isAnnotationPresent(EnableSign.class);
-        if (isSign) {
+        boolean isCloudSign = clz.isAnnotationPresent(io.shulie.takin.cloud.data.annocation.EnableSign.class);
+        if (isSign || isCloudSign) {
 
             if (SqlCommandType.INSERT.equals(mappedStatement.getSqlCommandType())) {
                 //新增方法获取id
@@ -108,6 +109,7 @@ public class SignCommonUtil {
                 map.remove("CREATE_TIME");
                 map.remove("update_time");
                 map.remove("upload_time");
+                map.remove("last_pt_time");
                 String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                 String updateSql = "update " + tableName + "  SET sign = " + "\'" + sign + "\'" + " where " + idField.getAnnotation(TableId.class).value() + " = " + id;
                 Connection connection = statement.getConnection();
@@ -188,6 +190,7 @@ public class SignCommonUtil {
                     map.remove("CREATE_TIME");
                     map.remove("update_time");
                     map.remove("upload_time");
+                    map.remove("last_pt_time");
                     String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                     String id;
                     String updateSql = "";
@@ -226,7 +229,8 @@ public class SignCommonUtil {
                 return;
             }
             boolean isSign = clz.isAnnotationPresent(EnableSign.class);
-            if (isSign) {
+            boolean isCloudSign = clz.isAnnotationPresent(io.shulie.takin.cloud.data.annocation.EnableSign.class);
+            if (isSign || isCloudSign) {
                 boolean valid = true;
                 //解析sql,拿出where条件，构建查询sql获取更新范围的数据,进行验签
                 String sql = boundSql.getSql();
@@ -286,7 +290,7 @@ public class SignCommonUtil {
                     }
 
                     if (map.get("sign") == null || Objects.equals(map.get("sign").toString(), "")) {
-                        return;
+                        continue;
                     }
 
                     String oldSign = String.valueOf(map.get("sign"));
@@ -299,10 +303,12 @@ public class SignCommonUtil {
                     map.remove("UPDATE_TIME");
                     map.remove("CREATE_TIME");
                     map.remove("upload_time");
+                    map.remove("last_pt_time");
                     String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                     if (!oldSign.equals(sign)) {
                         log.error("【数据签名异常】-【pre-update-check】 sql:{}", querySql);
                         valid = false;
+                        break;
                     }
                 }
 
@@ -320,8 +326,9 @@ public class SignCommonUtil {
             return;
         }
         Class<?> clz = mappedStatement.getResultMaps().get(0).getType();
+        boolean isCloudSign = clz.isAnnotationPresent(io.shulie.takin.cloud.data.annocation.EnableSign.class);
         boolean isSign = clz.isAnnotationPresent(EnableSign.class);
-        if (isSign) {
+        if (isSign || isCloudSign) {
             boolean valid = true;
             ResultSet rs = ps.getResultSet();
             ResultSetMetaData md = rs.getMetaData();
@@ -331,7 +338,7 @@ public class SignCommonUtil {
                     map.put(md.getColumnLabel(i + 1).toLowerCase(), rs.getObject(md.getColumnLabel(i + 1)));
                 }
                 if (map.get("sign") == null || Objects.equals(map.get("sign").toString(), "")) {
-                    return;
+                    continue;
                 }
                 String oldSign = String.valueOf(map.get("sign"));
 
@@ -344,11 +351,12 @@ public class SignCommonUtil {
                 map.remove("UPDATE_TIME");
                 map.remove("CREATE_TIME");
                 map.remove("upload_time");
+                map.remove("last_pt_time");
                 String sign = MD5Utils.getInstance().getMD5(MapUtil.sort(map).toString());
                 if (!oldSign.equals(sign)) {
                     log.error("【数据签名异常】-【select】 map:{} , sql:{}", JSON.toJSONString(map), boundSql.getSql());
                     valid = false;
-
+                    break;
                 }
             }
 

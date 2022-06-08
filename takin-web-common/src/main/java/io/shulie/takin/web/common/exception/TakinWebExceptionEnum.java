@@ -180,6 +180,8 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 数据签名
      */
     DATA_SIGN_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据签名异常"),
+	
+	DATA_SIGN_CLEAR_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据正在清理中,暂时无法开启"),
 
 	/**
      * 接口压测

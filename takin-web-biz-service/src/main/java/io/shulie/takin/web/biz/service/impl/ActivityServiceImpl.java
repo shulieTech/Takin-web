@@ -1079,5 +1079,9 @@ public class ActivityServiceImpl implements ActivityService {
         return false;
     }
 
+    @Override
+    public boolean existsActivity(Long tenantId, String envCode) {
+        return activityDAO.existsActivity(tenantId, envCode);
+    }
 }
 

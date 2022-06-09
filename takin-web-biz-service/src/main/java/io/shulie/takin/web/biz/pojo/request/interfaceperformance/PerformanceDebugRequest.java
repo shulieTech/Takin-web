@@ -12,5 +12,5 @@ public class PerformanceDebugRequest extends PerformanceConfigDebugInput {
     /**
      * 关联文件的最大条数
      */
-    private Long relateFileMaxCount;
+    private Long relateFileMaxCount = 0L;
 }

@@ -304,7 +304,13 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
                 relationAppNameVOList = infos.stream().map(info -> {
                     RelationAppNameVO tmpVo = new RelationAppNameVO();
                     tmpVo.setEntranceAppName(info.getAppName() + "|" + tmpPath);
-                    tmpVo.setParam(info.getRequest());
+                    String request = info.getRequest();
+                    // {{}}请求参数是这样的话，直接去掉一个{}
+                    if (request.startsWith("{{") && request.endsWith("}}")) {
+                        request = request.substring(1);
+                        request = request.substring(0, request.length() - 1);
+                    }
+                    tmpVo.setParam(request);
                     // TODO 暂时设置为空，目前没有header字段
                     tmpVo.setHeader("");
                     return tmpVo;

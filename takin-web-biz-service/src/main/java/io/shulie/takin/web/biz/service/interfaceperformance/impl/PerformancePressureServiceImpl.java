@@ -11,10 +11,12 @@ import io.shulie.takin.adapter.api.model.request.file.UploadRequest;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.ext.content.enums.SamplerTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
@@ -23,8 +25,10 @@ import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.NewSceneRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.SceneDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
+import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
@@ -37,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -56,6 +61,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class PerformancePressureServiceImpl extends AbstractPerformancePressureService {
+    @Autowired
+    private ActivityService activityService;
 
     @Override
     public ResponseResult<Long> add(PerformanceConfigCreateInput request) throws Throwable {
@@ -171,11 +178,39 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
         BusinessFlowThreadResponse response = sceneService.getThreadGroupDetail(flowInfo.getId(), rootXpathMd5);
         ScriptJmxNode scriptJmxNode = response.getThreadScriptJmxNodes().get(0).getChildren().get(0);
-        SceneLinkRelateRequest sceneLinkRelateRequest = new SceneLinkRelateRequest();
-        BeanUtils.copyProperties(scriptJmxNode, sceneLinkRelateRequest);
-        sceneLinkRelateRequest.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
-        sceneLinkRelateRequest.setBusinessFlowId(flowInfo.getId());
-        sceneService.matchActivity(sceneLinkRelateRequest);
+
+        // 如果有找到入口的话,新增业务活动
+        if (StringUtil.isNotBlank(input.getEntranceAppName())) {
+            ActivityResultQueryRequest activityRequest = new ActivityResultQueryRequest();
+            // appName|path
+            String entranceAppName = input.getEntranceAppName();
+            String appName = entranceAppName.substring(0, input.getEntranceAppName().indexOf("|"));
+            String entrancePath = entranceAppName.replace(appName, input.getHttpMethod());
+            activityRequest.setApplicationName(appName);
+            activityRequest.setEntrancePath(entrancePath);
+            List<ActivityListResponse> list = activityService.queryNormalActivities(activityRequest);
+            Long businessActivityId = null;
+            if (!CollectionUtils.isEmpty(list)) {
+                businessActivityId = list.stream().findFirst().orElse(new ActivityListResponse()).getActivityId();
+            }
+            SceneLinkRelateRequest sceneLinkRelateRequest = new SceneLinkRelateRequest();
+            BeanUtils.copyProperties(scriptJmxNode, sceneLinkRelateRequest);
+            sceneLinkRelateRequest.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+            sceneLinkRelateRequest.setBusinessFlowId(flowInfo.getId());
+            sceneLinkRelateRequest.setBusinessActivityId(businessActivityId);
+            sceneLinkRelateRequest.setSamplerType(SamplerTypeEnum.HTTP);
+            // 拼接一个RpcType
+            sceneLinkRelateRequest.setEntrance(entrancePath + "|0");
+            sceneLinkRelateRequest.setActivityName(input.getName());
+
+            sceneService.matchActivity(sceneLinkRelateRequest);
+        } else {
+            SceneLinkRelateRequest sceneLinkRelateRequest = new SceneLinkRelateRequest();
+            BeanUtils.copyProperties(scriptJmxNode, sceneLinkRelateRequest);
+            sceneLinkRelateRequest.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
+            sceneLinkRelateRequest.setBusinessFlowId(flowInfo.getId());
+            sceneService.matchActivity(sceneLinkRelateRequest);
+        }
 
 
         //如果有历史数据文件，则绑定数据文件

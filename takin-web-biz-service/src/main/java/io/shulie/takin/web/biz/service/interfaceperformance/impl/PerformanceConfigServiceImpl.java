@@ -128,6 +128,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         }
         // 更新数据
         InterfacePerformanceConfigEntity updateEntity = PerformanceConvert.convertConfigEntity(input);
+        // 单独处理下入口应用
+        updateEntity.setEntranceAppName(StringUtils.isBlank(updateEntity.getEntranceAppName()) ? "" : updateEntity.getEntranceAppName());
         updateEntity.setName(input.getName());
         updateEntity.setGmtModified(new Date());
         updateEntity.setId(input.getId());
@@ -203,7 +205,6 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      * @param configId
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public PerformanceConfigVO detail(Long configId) {
         if (configId == null) {
@@ -215,6 +216,8 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         }
         PerformanceConfigVO result = new PerformanceConfigVO();
         BeanUtils.copyProperties(queryEntity, result);
+        // 单独处理下关联入口应用
+        result.setEntranceAppName(StringUtils.isBlank(result.getEntranceAppName()) ? null : result.getEntranceAppName());
         Map<Long, UserExt> userMap = WebPluginUtils.getUserMapByIds(Arrays.asList(queryEntity.getUserId()));
         result.setUserName(WebPluginUtils.getUserName(queryEntity.getUserId(), userMap));
         result.setContentTypeVo(JsonHelper.json2Bean(queryEntity.getContentType(), ContentTypeVO.class));

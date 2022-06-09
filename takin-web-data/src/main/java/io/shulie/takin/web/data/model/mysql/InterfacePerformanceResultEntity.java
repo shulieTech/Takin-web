@@ -19,7 +19,7 @@ import java.util.Date;
 @Data
 @TableName(value = "t_interface_performance_result")
 @ToString(callSuper = true)
-public class InterfacePerformanceResultEntity extends TenantBaseEntity {
+public class InterfacePerformanceResultEntity {
     /**
      * 主键
      */

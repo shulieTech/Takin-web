@@ -204,7 +204,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         Long requestCount = request.getRequestCount();
         Long relateFileMaxCount = request.getRelateFileMaxCount();
         // 请求条数大于文件条数,则用请求条数
-        requestCount = requestCount > relateFileMaxCount ? requestCount : relateFileMaxCount;
+        requestCount = requestCount > relateFileMaxCount ? relateFileMaxCount : requestCount;
         try {
             // 这里处理个状态标记，确认请求是否发送完成,获取结果的时候前端不需要轮训
             redisClientUtil.setString(performanceDebugUtil.formatResultKey(request.getResultId()), "1", 5000, TimeUnit.SECONDS);

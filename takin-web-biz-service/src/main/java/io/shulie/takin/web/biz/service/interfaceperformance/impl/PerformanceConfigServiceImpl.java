@@ -26,10 +26,12 @@ import io.shulie.takin.web.biz.service.interfaceperformance.vo.PerformanceConfig
 import io.shulie.takin.web.biz.service.interfaceperformance.vo.RelationAppNameVO;
 import io.shulie.takin.web.common.vo.interfaceperformance.PerformanceConfigDto;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
+import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceParamDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
 import io.shulie.takin.web.data.param.interfaceperformance.PerformanceConfigQueryParam;
+import io.shulie.takin.web.data.param.interfaceperformance.PerformanceParamQueryParam;
 import io.shulie.takin.web.ext.entity.AuthQueryParamCommonExt;
 import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -65,11 +67,17 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
     @Resource
     private InterfacePerformanceConfigMapper interfacePerformanceConfigMapper;
 
-    @Autowired
+    @Resource
     PerformancePressureService performancePressureService;
 
-    @Autowired
+    @Resource
     private AmdbClientProperties properties;
+
+    @Resource
+    private PerformanceParamDAO performanceParamDAO;
+
+    @Resource
+    private SceneManageService sceneManageService;
 
     private String APP_REQ_URL = "/amdb/trace/getAppAndReqByUrl";
 
@@ -153,12 +161,15 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         if (entity == null) {
             throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "数据不存在!");
         }
+        // 配置表直接删除
         performanceConfigDAO.delete(configId);
+        // 关联参数表也清理掉
+        PerformanceParamQueryParam deleteParams = new PerformanceParamQueryParam();
+        deleteParams.setConfigId(configId);
+        performanceParamDAO.deleteByParam(deleteParams);
+
         doAction(configId, null, Action.ActionEnum.delete);
     }
-
-    @Resource
-    private SceneManageService sceneManageService;
 
     /**
      * 查询单接口压测场景数据
@@ -172,8 +183,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         BeanUtils.copyProperties(request, param);
         AuthQueryParamCommonExt ext = new AuthQueryParamCommonExt();
         WebPluginUtils.fillQueryParam(ext);
-        // TODO 菜单配置的时候，设置权限处理
-        //param.setUserIdList(ext.getUserIdList());
+        param.setUserIdList(ext.getUserIdList());
         PagingList<PerformanceConfigDto> dtoPagingList = performanceConfigDAO.pageList(param);
         //转换下
         List<PerformanceConfigDto> source = dtoPagingList.getList();
@@ -285,7 +295,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
             AmdbResult<List<EntryTraceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
                     .httpMethod(HttpMethod.GET)
                     .param(queryMap)
-                    .eventName("查询入口请求参数")
+                    .eventName("根据URL反查应用和参数")
                     .exception(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_PARAM_ERROR)
                     .list(EntryTraceInfoDTO.class);
             List<EntryTraceInfoDTO> infos = amdbResponse.getData();

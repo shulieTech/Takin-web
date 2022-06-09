@@ -199,6 +199,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
             sceneLinkRelateRequest.setBusinessFlowId(flowInfo.getId());
             sceneLinkRelateRequest.setBusinessActivityId(businessActivityId);
             sceneLinkRelateRequest.setSamplerType(SamplerTypeEnum.HTTP);
+            sceneLinkRelateRequest.setApplicationName(appName);
             // 拼接一个RpcType
             sceneLinkRelateRequest.setEntrance(entrancePath + "|0");
             sceneLinkRelateRequest.setActivityName(input.getName());

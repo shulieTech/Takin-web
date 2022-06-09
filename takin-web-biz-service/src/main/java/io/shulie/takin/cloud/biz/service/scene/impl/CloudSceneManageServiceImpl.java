@@ -25,6 +25,9 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -75,17 +78,18 @@ import io.shulie.takin.cloud.common.enums.TimeUnitEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageErrorEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneQueryStatusEnum;
+import io.shulie.takin.cloud.common.enums.scenemanage.SceneRunTaskStatusEnum;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
-import io.shulie.takin.cloud.common.enums.scenemanage.SceneRunTaskStatusEnum;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
 import io.shulie.takin.cloud.common.utils.JsonUtil;
 import io.shulie.takin.cloud.common.utils.LinuxUtil;
 import io.shulie.takin.cloud.common.utils.UrlUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
+import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.cloud.data.param.scenemanage.SceneManageCreateOrUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
@@ -105,6 +109,7 @@ import io.shulie.takin.utils.PathFormatForTest;
 import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -113,6 +118,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -168,7 +182,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
     @Transactional(rollbackFor = Exception.class)
     public Long addSceneManage(SceneManageWrapperInput wrapperRequest) {
         /*
-         * 0、校验业CloudSceneManageApiImpl务活动和脚本文件是否匹配
+         * 0、校验业务活动和脚本文件是否匹配
          *    1、是否有脚本脚本文件
          *    2、Jmeter脚本文件是否唯一
          *    3、业务活动必须存在于脚本文件
@@ -659,9 +673,10 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
      * 至失败状态
      */
     private void toFailureState(Long sceneId, Long reportId, String errorMsg) {
-        ReportResult recentlyReport = reportDao.getRecentlyReport(sceneId);
+        ReportResult recentlyReport = reportDao.getById(reportId);
         String resourceId = recentlyReport.getResourceId();
         String startKey = PressureStartCache.getStartFlag(resourceId);
+        reportDao.updateReportEndTime(reportId, new Date());
         if (!redisClientUtil.hasKey(startKey)) {
             // 触发启动失败事件
             Event event = new Event();
@@ -683,11 +698,6 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.INACTIVE, null);
         pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_GENERATING, null);
         pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.REPORT_DONE, null);
-        if (!reportId.equals(recentlyReport.getId())) {
-            log.error("更新压测生命周期，所更新的报告不是压测场景的最新报告,场景id:{},更新的报告id:{},当前最新的报告id:{}",
-                sceneId, reportId, recentlyReport.getId());
-            return;
-        }
         // 状态 更新 失败状态
         SceneManageEntity sceneManage = new SceneManageEntity() {{
             setId(sceneId);

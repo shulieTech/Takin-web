@@ -16,24 +16,55 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.*;
 import org.apache.commons.collections4.CollectionUtils;
-
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.constant.ApiUrls;
 import io.shulie.takin.cloud.common.utils.JsonUtil;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
+import io.shulie.takin.common.beans.annotation.AuthVerification;
+import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.biz.constant.BizOpConstants;
+import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
+import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.common.constant.ApiUrls;
+import io.shulie.takin.web.common.context.OperationLogContextHolder;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author 赵勇
@@ -149,6 +180,9 @@ public class BusinessFlowController {
         needAuth = ActionTypeEnum.UPDATE
     )
     public ResponseResult<Boolean> matchActivity(@RequestBody @Valid SceneLinkRelateRequest sceneLinkRelateRequest) {
+        if (!checkPath(sceneLinkRelateRequest.getPath(),sceneLinkRelateRequest.getEntracePath())){
+            return ResponseResult.fail("入口不匹配","");
+        }
         sceneService.matchActivity(sceneLinkRelateRequest);
         // 操作日志
         if (null != sceneLinkRelateRequest) {
@@ -156,6 +190,19 @@ public class BusinessFlowController {
             OperationLogContextHolder.addVars("data", JsonUtil.toJson(sceneLinkRelateRequest));
         }
         return ResponseResult.success(Boolean.TRUE);
+    }
+
+    private boolean checkPath(String path, String entracePath) {
+        if (StringUtils.isNotBlank(path) && StringUtils.isNotBlank(entracePath)) {
+            String[] s1 = path.split("\\|");
+            String[] s2 = entracePath.split("\\|");
+            if (s1.length == 2 && s2.length == 2) {
+                if (!StringUtils.equals(s1[0], s2[0]) || StringUtils.equals(s1[1], s2[1])) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @GetMapping("/scene/detail")

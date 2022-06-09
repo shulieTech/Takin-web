@@ -80,6 +80,9 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
     @Autowired
     private SceneService sceneService;
 
+    @Resource
+    InterfacePerformanceConfigSceneRelateShipMapper performanceConfigSceneRelateShipMapper;
+
     /**
      * 更新接口压测数据文件
      *
@@ -196,9 +199,6 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         }).collect(Collectors.toList());
         return fileManageEntityList;
     }
-
-    @Resource
-    InterfacePerformanceConfigSceneRelateShipMapper performanceConfigSceneRelateShipMapper;
 
     private void bindDataFile(PerformanceDataFileRequest request) {
         BusinessFlowDataFileRequest flowDataFileRequest = new BusinessFlowDataFileRequest();

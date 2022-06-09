@@ -98,7 +98,11 @@ public abstract class AbstractPerformancePressureService
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("api_id", apiId);
         queryWrapper.eq("is_deleted", 0);
-        return performanceConfigSceneRelateShipMapper.selectOne(queryWrapper).getSceneId();
+        InterfacePerformanceConfigSceneRelateShipEntity entity = performanceConfigSceneRelateShipMapper.selectOne(queryWrapper);
+        if (entity == null) {
+            return null;
+        }
+        return entity.getSceneId();
     }
 
     @Override
@@ -127,9 +131,11 @@ public abstract class AbstractPerformancePressureService
     @Override
     public ResponseResult delete(Long apiId) {
         Long sceneId = fetchSceneId(apiId);
-        SceneManageDeleteReq deleteReq = new SceneManageDeleteReq();
-        deleteReq.setId(sceneId);
-        sceneManageService.deleteScene(deleteReq);
+        if (!Objects.isNull(sceneId)) {
+            SceneManageDeleteReq deleteReq = new SceneManageDeleteReq();
+            deleteReq.setId(sceneId);
+            sceneManageService.deleteScene(deleteReq);
+        }
         doAfterDelete(apiId);
         return ResponseResult.success();
     }

@@ -784,8 +784,10 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         Object resource = redisClientUtil.hmget(PressureStartCache.getSceneResourceKey(sceneId),
             PressureStartCache.RESOURCE_ID);
         if (redisClientUtil.hasKey(PressureStartCache.getResourceKey(String.valueOf(resource)))) {
+            state.setState(SceneManageConstant.SCENE_TASK_JOB_STATUS_RUNNING);
             state.setMsg("任务执行中");
         } else {
+            state.setState(SceneManageConstant.SCENE_TASK_JOB_STATUS_NONE);
             state.setMsg("任务已停止");
         }
         return state;

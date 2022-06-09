@@ -24,4 +24,7 @@ public class ApplicationEntrancesQueryRequest {
     @ApiModelProperty("入口服务类型")
     private EntranceTypeEnum type;
 
+    @ApiModelProperty("服务名称")
+    private String serviceName;
+
 }

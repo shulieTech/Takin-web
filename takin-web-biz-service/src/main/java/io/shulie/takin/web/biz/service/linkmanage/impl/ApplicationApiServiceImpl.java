@@ -290,6 +290,8 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
         createParam.setIsDeleted((byte) 0);
         createParam.setEnvCode(WebPluginUtils.traceEnvCode());
         createParam.setTenantId(WebPluginUtils.traceTenantId());
+        // 把旧的记录删除了，新的再添加
+        applicationApiDAO.deleteByAppName(vo.getApplicationName());
         applicationApiDAO.insert(createParam);
         this.reseting(vo.getApplicationName());
         return Response.success();

@@ -128,7 +128,7 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
          */
         pressureService.update(request);
 
-        // 够造删除的数据文件到流程接口里面
+        // 构造删除的数据文件到流程接口里面
         if (CollectionUtils.isNotEmpty(delete_file_Param)) {
             List<FileManageUpdateRequest> delete_flag_files = delete_file_Param.stream().map(delete_file -> {
                 FileManageUpdateRequest updateFile = new FileManageUpdateRequest();

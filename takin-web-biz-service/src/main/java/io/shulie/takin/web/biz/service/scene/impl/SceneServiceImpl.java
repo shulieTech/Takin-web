@@ -653,10 +653,8 @@ public class SceneServiceImpl implements SceneService {
      */
     @Override
     public List<SceneEntity> businessActivityFlowList() {
-        // 查询所有业务流程
         ScenePageQueryParam queryParam = new ScenePageQueryParam();
         WebPluginUtils.fillQueryParam(queryParam);
-        // TODO 租户隔离
         LambdaQueryWrapper<SceneEntity> wrapper = Wrappers.lambdaQuery(SceneEntity.class)
                 // 只返回主键和名称
                 .select(SceneEntity::getId, SceneEntity::getSceneName)
@@ -782,7 +780,7 @@ public class SceneServiceImpl implements SceneService {
         }
         //更新脚本
         Long scriptDeployId = scriptManageService.updateScriptManage(updateRequest);
-         SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
+        SceneUpdateParam sceneUpdateParam = new SceneUpdateParam();
         if (CollectionUtils.isNotEmpty(data)) {
             sceneUpdateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
             List<ScriptNode> samplerNodes = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, data);

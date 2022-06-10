@@ -1,14 +1,13 @@
 package io.shulie.takin.web.biz.pojo.request.agentupgradeonline;
 
-import java.util.List;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import io.shulie.takin.web.biz.pojo.bo.agentupgradeonline.AgentCommandReqBO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @Description agent命令请求
@@ -63,6 +62,9 @@ public class AgentHeartbeatRequest {
     @ApiModelProperty(value = "agent版本", required = true)
     @NotBlank(message = "agent版本不能为空")
     private String agentVersion;
+
+    @ApiModelProperty(value = "simulator版本")
+    private String simulatorVersion;
 
     @ApiModelProperty(value = "agent依赖的版本信息")
     private String dependencyInfo;

@@ -111,12 +111,14 @@ public class ShiftCloudController {
         BaseResult result = new BaseResult<>();
         try {
             SceneManageQueryVO queryVO = new SceneManageQueryVO();
+            queryVO.setTenantId(4l);
             queryVO.setPageNumber(shiftCloudVO.getPage_index());
             queryVO.setPageSize(shiftCloudVO.getPage_size());
             if (StringUtils.isNoneBlank(shiftCloudVO.getTask_name())) {
                 queryVO.setSceneName(shiftCloudVO.getTask_name());
             }
             if (StringUtils.isNotBlank(shiftCloudVO.getProject_id())) {
+                queryVO.setEnvCode(shiftCloudVO.getProject_id());
                 Long id = tagService.getIdByName(shiftCloudVO.getProject_id());
                 if (null != id) {
                     queryVO.setTagId(id);
@@ -128,6 +130,7 @@ public class ShiftCloudController {
                 Long id = userService.getIdByName(userName);
                 if (null != id) {
                     queryVO.setFilterSql("(" + id + ")");
+                    queryVO.setUserId(id);
                 }
             }
             ResponseResult<List<SceneManageListOutput>> responseResult = sceneManageService.getPageList(queryVO);
@@ -136,8 +139,8 @@ public class ShiftCloudController {
             map.put("task_list", list);
             if (null != responseResult && CollectionUtils.isNotEmpty(responseResult.getData())) {
                 responseResult.getData().forEach(r -> list.add(new SceneManagerResult(r.getId(), r.getSceneName(), r.getUserId(), r.getUserName())));
-                result.setData(map);
             }
+            result.setData(map);
             return result;
         } catch (Exception e) {
             result.fail(e.getMessage());

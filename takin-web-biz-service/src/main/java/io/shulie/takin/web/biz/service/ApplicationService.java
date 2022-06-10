@@ -300,4 +300,13 @@ public interface ApplicationService {
 
     PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest request);
 
+    String operateCheck(List<String> appIds, String operate);
+
+    /**
+     * 过滤不符合操作条件的appId
+     * @param appIds
+     * @param operate
+     * @return
+     */
+    List<String> filterAppIds(List<String> appIds, String operate);
 }

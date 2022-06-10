@@ -114,6 +114,7 @@ public class ShiftCloudController {
             queryVO.setTenantId(4l);
             queryVO.setPageNumber(shiftCloudVO.getPage_index());
             queryVO.setPageSize(shiftCloudVO.getPage_size());
+            queryVO.setTenantCode("yidongyun");
             if (StringUtils.isNoneBlank(shiftCloudVO.getTask_name())) {
                 queryVO.setSceneName(shiftCloudVO.getTask_name());
             }

@@ -237,6 +237,8 @@ public abstract class AbstractPerformancePressureService
             }});
         }
 
+        // 重置场景Id
+        request.getBasicInfo().setSceneId(sceneId);
         // 如果找到应用了，需要去查应用的相关信息，但这里压测的时候，
         // 应用可能是异常的，又不能开启压测,默认将应用给排除掉
         if (StringUtils.isNotBlank(in.getEntranceAppName())) {

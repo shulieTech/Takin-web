@@ -16,6 +16,7 @@ import javax.validation.constraints.NotNull;
 
 import com.github.pagehelper.util.StringUtil;
 
+import com.pamirs.takin.entity.domain.vo.AppOperateAgentCheckVO;
 import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
@@ -246,6 +247,17 @@ public class ApplicationController {
     )
     public void resumeAllAgent(@RequestBody AppUninstallAgentVO vo) {
         applicationService.resumeAllAgent(vo.getAppIds());
+    }
+
+    @PostMapping("/application/center/operateCheck")
+    @ApiOperation("操作检查")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public Response operateCheck(@RequestBody AppOperateAgentCheckVO vo) {
+       String result =  applicationService.operateCheck(vo.getAppIds(),vo.getOperate());
+       return Response.success(result);
     }
 
     @ApiOperation("编辑静默开关接口")

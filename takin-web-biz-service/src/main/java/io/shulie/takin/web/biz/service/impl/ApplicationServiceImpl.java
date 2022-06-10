@@ -59,6 +59,7 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
+import io.shulie.takin.web.biz.constant.AgentConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
@@ -156,15 +157,7 @@ import io.shulie.takin.web.data.param.application.QueryApplicationParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
-import io.shulie.takin.web.data.result.application.AppAgentConfigReportDetailResult;
-import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
-import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
-import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.data.result.application.*;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
@@ -1216,6 +1209,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void uninstallAllAgent(List<String> appIds) {
         try {
+            appIds = this.filterAppIds(appIds,AgentConstants.UNINSTALL);
+            if (CollectionUtils.isEmpty(appIds)){
+                log.info("所有需要卸载的应用都被过滤掉了");
+                return;
+            }
             // 查询所有应用
             ApplicationQueryParam queryParam = new ApplicationQueryParam();
             queryParam.setPageSize(-1);
@@ -1359,6 +1357,74 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return response;
         }).collect(Collectors.toList());
         return PagingList.of(responseList, applicationList.getTotal());
+    }
+
+    @Override
+    public String operateCheck(List<String> appIds, String operate) {
+        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)){
+            return "参数异常";
+        }
+
+        ApplicationQueryParam queryParam = new ApplicationQueryParam();
+        queryParam.setPageSize(-1);
+        queryParam.setCurrentPage(-1);
+        queryParam.setApplicationIds(appIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+        PagingList<ApplicationDetailResult> pagingList = applicationDAO.queryApplicationList(queryParam);
+        if (CollectionUtil.isEmpty(pagingList.getList())) {
+            return "没有找到选中的应用，请刷新页面重新操作";
+        }
+        List<ApplicationDetailResult> applicationList = pagingList.getList();
+        List<String> appNames = applicationList.stream().map(ApplicationDetailResult::getApplicationName).collect(
+                Collectors.toList());
+        List<ApplicationNodeProbeResult> applicationNodeProbeResults = applicationNodeProbeDAO.listByAppNameAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
+        long count = applicationNodeProbeResults == null ?  0 : applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().count();
+        if (AgentConstants.UNINSTALL.equals(operate)){
+            if (count > 0){
+                return String.format("已选择%d个应用,%d个应用已处于卸载状态",appIds.size(),count);
+            }else {
+                return String.format("已选择%d个应用,点击继续卸载",appIds.size());
+            }
+        }
+        if (AgentConstants.RESUME.equals(operate)){
+            if (appIds.size() > count){
+                return String.format("已选择%d个应用,%d个应用处于非卸载状态",appIds.size(), appIds.size() - count);
+            }else {
+                return String.format("已选择%d个应用,点击继续",appIds.size());
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public List<String> filterAppIds(List<String> appIds, String operate) {
+        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)){
+            return null;
+        }
+
+        ApplicationQueryParam queryParam = new ApplicationQueryParam();
+        queryParam.setPageSize(-1);
+        queryParam.setCurrentPage(-1);
+        queryParam.setApplicationIds(appIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+        PagingList<ApplicationDetailResult> pagingList = applicationDAO.queryApplicationList(queryParam);
+        if (CollectionUtil.isEmpty(pagingList.getList())) {
+            return null;
+        }
+        List<ApplicationDetailResult> applicationList = pagingList.getList();
+        List<String> appNames = applicationList.stream().map(ApplicationDetailResult::getApplicationName).collect(
+                Collectors.toList());
+        List<ApplicationNodeProbeResult> applicationNodeProbeResults = applicationNodeProbeDAO.
+                listByAppNameAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
+        List<String> uninstallAppNames = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName)
+                .collect(Collectors.toList());
+        if (AgentConstants.UNINSTALL.equals(operate)){
+            return applicationList.stream().filter(o -> uninstallAppNames.contains(o.getApplicationName())).map(o ->
+                    o.getApplicationId().toString()).collect(Collectors.toList());
+        }
+        if (AgentConstants.RESUME.equals(operate)){
+            return applicationList.stream().filter(o -> !uninstallAppNames.contains(o.getApplicationName())).map(o ->
+                    o.getApplicationId().toString()).collect(Collectors.toList());
+        }
+        return null;
     }
 
     /**
@@ -2385,6 +2451,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void resumeAllAgent(List<String> appIds) {
         try {
+            appIds = this.filterAppIds(appIds,AgentConstants.RESUME);
+            if (CollectionUtils.isEmpty(appIds)){
+                log.info("所有需要恢复的应用都被过滤掉了");
+                return;
+            }
             // 查询所有应用
             ApplicationQueryParam queryParam = new ApplicationQueryParam();
             queryParam.setPageSize(-1);

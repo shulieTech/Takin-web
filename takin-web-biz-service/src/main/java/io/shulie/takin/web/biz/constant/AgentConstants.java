@@ -13,4 +13,14 @@ public interface AgentConstants {
      */
     String SIGN_WHITELIST_FILE_NOT_EXISTS = "noFile";
 
+    /**
+     * 卸载
+     */
+    String UNINSTALL = "uninstall";
+
+    /**
+     * 恢复
+     */
+    String RESUME = "resume";
+
 }

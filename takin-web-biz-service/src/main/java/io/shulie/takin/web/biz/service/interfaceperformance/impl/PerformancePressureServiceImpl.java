@@ -187,7 +187,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
             String appName = entranceAppName.substring(0, input.getEntranceAppName().indexOf("|"));
             String entrancePath = entranceAppName.replace(appName, input.getHttpMethod());
             activityRequest.setApplicationName(appName);
-            activityRequest.setEntrancePath(entrancePath);
+            activityRequest.setEntrancePath(entrancePath+"|0");
             List<ActivityListResponse> list = activityService.queryNormalActivities(activityRequest);
             Long businessActivityId = null;
             if (!CollectionUtils.isEmpty(list)) {

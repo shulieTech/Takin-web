@@ -42,6 +42,7 @@ import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneTaskStartReq;
 import io.shulie.takin.adapter.api.model.request.scenetask.SceneTaskQueryTpsReq;
 import io.shulie.takin.adapter.api.model.request.scenetask.SceneTaskUpdateTpsReq;
+import io.shulie.takin.adapter.api.model.request.scenetask.TaskStopReq;
 import io.shulie.takin.adapter.api.model.response.report.ReportDetailResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp.SceneBusinessActivityRefResp;
@@ -52,7 +53,10 @@ import io.shulie.takin.adapter.api.model.response.scenetask.SceneTaskAdjustTpsRe
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
 import io.shulie.takin.cloud.common.bean.scenemanage.SceneManageQueryOptions;
+import io.shulie.takin.cloud.common.constants.ReportConstants;
+import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
+import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -175,6 +179,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
 
     @Resource
     private CloudSceneManageService cloudSceneManageService;
+    @Resource
+    private PressureTaskDAO pressureTaskDAO;
 
     /**
      * 是否是预发环境
@@ -805,5 +811,20 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
         redisTemplate.opsForList().leftPush(reportKeyName, reportKey);
         redisTemplate.opsForValue().set(reportKey, JSON.toJSONString(taskDto));
+    }
+
+    @Override
+    public void forceStop(String resourceId) {
+        ReportDetailResp report = cloudReportApi.getReportByResourceId(resourceId);
+        if (Objects.nonNull(report)) {
+            if (report.getTaskStatus() == ReportConstants.FINISH_STATUS) {
+                pressureTaskDAO.updateStatus(report.getTaskId(), PressureTaskStateEnum.REPORT_DONE, "强制停止");
+                return;
+            }
+            TaskStopReq req = new TaskStopReq();
+            req.setReportId(report.getId());
+            req.setFinishReport(false);
+            cloudTaskApi.forceStopInspectTask(req);
+        }
     }
 }

@@ -257,6 +257,7 @@ public abstract class AbstractIndicators {
                 event.setEventName(PressureStartCache.START_FAILED);
                 event.setExt(new StartFailEventSource(context, message));
             } else {
+                context.setMessage(message);
                 event.setEventName(PressureStartCache.CHECK_FAIL_EVENT);
                 event.setExt(context);
             }
@@ -273,6 +274,7 @@ public abstract class AbstractIndicators {
                 event.setEventName(PressureStartCache.RUNNING_FAILED);
                 event.setExt(new StopEventSource(context, message));
             } else {
+                context.setMessage(message);
                 event.setEventName(PressureStartCache.CHECK_FAIL_EVENT);
                 event.setExt(context);
             }

@@ -321,4 +321,13 @@ public class CloudReportApiImpl implements CloudReportApi {
         return cloudReportService.getReportStatusById(req.getReportId());
 
     }
+
+    @Override
+    public ReportDetailResp getReportByResourceId(String resourceId) {
+        ReportDetailOutput output = cloudReportService.getByResourceId(resourceId);
+        if (Objects.isNull(output)) {
+            return null;
+        }
+        return BeanUtil.copyProperties(output, ReportDetailResp.class);
+    }
 }

@@ -1,6 +1,8 @@
 package io.shulie.takin.cloud.biz.notify;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -37,6 +39,7 @@ import io.shulie.takin.eventcenter.Event;
 import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.biz.checker.StartConditionChecker.CheckStatus;
+import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -185,6 +188,7 @@ public class PressureEventCenter extends AbstractIndicators {
         taskStatusCache.cacheStatus(sceneId, reportId, SceneRunTaskStatusEnum.ENDED);
         redisClientUtil.del(RedisClientUtil.getLockKey(PressureStartCache.getLockFlowKey(reportId)),
             RedisClientUtil.getLockKey(PressureStartCache.getReleaseFlowKey(reportId)));
+        removeReportKey(reportId);
     }
 
     @IntrestFor(event = PressureStartCache.UNLOCK_FLOW)
@@ -251,8 +255,10 @@ public class PressureEventCenter extends AbstractIndicators {
             redisClientUtil.del(PressureStartCache.getResourcePodSuccessKey(resourceId),
                 PressureStartCache.getPodStartFirstKey(resourceId), PressureStartCache.getPodHeartbeatKey(resourceId));
             String resourceKey = PressureStartCache.getResourceKey(resourceId);
-            redisClientUtil.hmset(resourceKey, PressureStartCache.CHECK_STATUS, CheckStatus.FAIL.ordinal());
-            redisClientUtil.hmset(resourceKey, PressureStartCache.ERROR_MESSAGE, message);
+            Map<String, Object> param = new HashMap<>(4);
+            param.put(PressureStartCache.ERROR_MESSAGE, message);
+            param.put(PressureStartCache.CHECK_STATUS, CheckStatus.FAIL.ordinal());
+            redisClientUtil.hmset(resourceKey, param);
             redisClientUtil.expire(resourceKey, 60);
         }
         PressureTaskEntity entity = new PressureTaskEntity();
@@ -421,5 +427,11 @@ public class PressureEventCenter extends AbstractIndicators {
             event.setExt(context);
             pressureEnd(event);
         }
+    }
+
+    private void removeReportKey(Long reportId) {
+        final String reportKey = WebRedisKeyConstant.getReportKey(reportId);
+        redisTemplate.opsForList().remove(WebRedisKeyConstant.getTaskList(), 0, reportKey);
+        redisTemplate.opsForValue().getOperations().delete(reportKey);
     }
 }

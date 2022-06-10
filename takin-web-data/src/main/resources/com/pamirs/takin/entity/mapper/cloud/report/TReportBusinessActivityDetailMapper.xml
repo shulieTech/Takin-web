@@ -209,7 +209,7 @@
                sum(pass_flag) as `passSum`
         from t_report_business_activity_detail
         where report_id = #{reportId,jdbcType=BIGINT}
-          and business_activity_id > -1
+          and business_activity_id > 0
 
     </select>
 

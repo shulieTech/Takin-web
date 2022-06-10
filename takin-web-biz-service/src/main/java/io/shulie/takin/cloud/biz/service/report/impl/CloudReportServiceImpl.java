@@ -266,7 +266,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
             return;
         }
         for (ScriptNodeSummaryBean bean : reportNodeDetail) {
-            if (bean.getActivityId() > -1) {
+            if (bean.getActivityId() > 0) {
                 BusinessActivitySummaryBean summaryBean = new BusinessActivitySummaryBean();
                 summaryBean.setBusinessActivityId(bean.getActivityId());
                 summaryBean.setBusinessActivityName(bean.getTestName());
@@ -1558,6 +1558,15 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
     @Override
     public void updateReportById(ReportUpdateParam report) {
         reportDao.updateReport(report);
+    }
+
+    @Override
+    public ReportDetailOutput getByResourceId(String resourceId) {
+        ReportResult report = reportDao.selectByResourceId(resourceId);
+        if (Objects.isNull(report)) {
+            return null;
+        }
+        return ReportConverter.INSTANCE.ofReportDetail(report);
     }
 
     // 此处判断状态已cloud的，amdb的压测流量明细不关心

@@ -114,6 +114,7 @@ public class ReportDetailResp extends ContextExt {
      * 压测引擎任务Id
      */
     private Long jobId;
+    private Long taskId;
     private Integer calibration;
     private Integer calibrationStatus;
     private String calibrationMessage;

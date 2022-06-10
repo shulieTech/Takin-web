@@ -260,4 +260,6 @@ public interface CloudReportService {
     StatReportDTO statReport(Long jobId, Long sceneId, Long reportId, Long customerId, String transaction);
 
     boolean updateReportBusinessActivity(Long jobId, Long sceneId, Long reportId, Long tenantId);
+
+    ReportDetailOutput getByResourceId(String resourceId);
 }

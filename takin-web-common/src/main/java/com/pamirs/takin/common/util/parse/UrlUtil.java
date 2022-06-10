@@ -15,7 +15,9 @@
 
 package com.pamirs.takin.common.util.parse;
 
+import cn.hutool.core.util.URLUtil;
 import io.shulie.amdb.common.enums.RpcType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.exception.TakinWebException;
@@ -26,6 +28,7 @@ import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
  * @author qianshui
  * @date 2020/4/20 下午2:56
  */
+@Slf4j
 public class UrlUtil {
     public static String convertUrl(ActivityUtil.EntranceJoinEntity entranceJoinEntity) {
         // 虚拟入口
@@ -98,6 +101,22 @@ public class UrlUtil {
         }
         index = str.indexOf("/");
         return str.substring(index + 1);
+    }
+
+    public static String parseUrl(String requestUrl) {
+        String path = "";
+        try {
+            path = URLUtil.getPath(requestUrl);
+        } catch (Throwable e) {
+            // http://{ip}/path
+            log.error("格式化URL错误,{}", requestUrl);
+            try {
+                path = requestUrl.substring(requestUrl.lastIndexOf("/") + 1);
+            } catch (Throwable e1) {
+                log.error("格式化URL错误,{}", requestUrl);
+            }
+        }
+        return path;
     }
 
     @SuppressWarnings("SpellCheckingInspection")

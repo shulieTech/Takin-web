@@ -6,6 +6,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.util.HttpSupport;
 import com.pamirs.takin.common.util.ResponseWrapper;
+import com.pamirs.takin.common.util.parse.UrlUtil;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.adapter.api.model.request.file.UploadRequest;
 import io.shulie.takin.adapter.api.model.response.file.UploadResponse;
@@ -187,7 +188,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
             String appName = entranceAppName.substring(0, input.getEntranceAppName().indexOf("|"));
             String entrancePath = entranceAppName.replace(appName, input.getHttpMethod());
             activityRequest.setApplicationName(appName);
-            activityRequest.setEntrancePath(entrancePath+"|0");
+            activityRequest.setEntrancePath(entrancePath + "|0");
             List<ActivityListResponse> list = activityService.queryNormalActivities(activityRequest);
             Long businessActivityId = null;
             if (!CollectionUtils.isEmpty(list)) {
@@ -210,9 +211,12 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
             BeanUtils.copyProperties(scriptJmxNode, sceneLinkRelateRequest);
             sceneLinkRelateRequest.setBusinessType(BusinessTypeEnum.VIRTUAL_BUSINESS.getType());
             sceneLinkRelateRequest.setBusinessFlowId(flowInfo.getId());
+            // 拼接ServerName
+            String urlPath = UrlUtil.parseUrl(input.getRequestUrl());
+            String entrance = input.getHttpMethod() + "|" + urlPath + "|0";
+            sceneLinkRelateRequest.setEntrance(entrance);
             sceneService.matchActivity(sceneLinkRelateRequest);
         }
-
 
         //如果有历史数据文件，则绑定数据文件
         Long configId = input.getId();

@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 import cn.hutool.core.util.URLUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
+import com.pamirs.takin.common.util.parse.UrlUtil;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.amdb.common.dto.trace.EntryTraceInfoDTO;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
@@ -272,17 +273,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         String requestUrl = param.getRequestUrl();
         String path = "";
         if (StringUtils.isNotBlank(requestUrl)) {
-            try {
-                path = URLUtil.getPath(requestUrl);
-            } catch (Throwable e) {
-                // http://{ip}/path
-                log.error("格式化URL错误,{}", requestUrl);
-                try {
-                    path = requestUrl.substring(requestUrl.lastIndexOf("/") + 1);
-                } catch (Throwable e1) {
-                    log.error("格式化URL错误,{}", requestUrl);
-                }
-            }
+            path = UrlUtil.parseUrl(requestUrl);
         }
         if (StringUtils.isNotBlank(path)) {
             String url = properties.getUrl().getAmdb() + APP_REQ_URL;

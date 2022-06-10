@@ -55,6 +55,7 @@ import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
@@ -65,6 +66,7 @@ import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceParamEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
@@ -87,7 +89,8 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractPerformancePressureService
         extends PerformancePressureAdaptor implements PerformancePressureService {
-
+    @Autowired
+    private ApplicationDAO applicationDAO;
 
     @Value("${takin.cloud.backend.url}")
     protected String urlOfCloud;
@@ -234,6 +237,15 @@ public abstract class AbstractPerformancePressureService
             }});
         }
 
+        // 如果找到应用了，需要去查应用的相关信息，但这里压测的时候，
+        // 应用可能是异常的，又不能开启压测,默认将应用给排除掉
+        if (StringUtils.isNotBlank(in.getEntranceAppName())) {
+            String appName = in.getEntranceAppName().substring(0, in.getEntranceAppName().indexOf("|"));
+            ApplicationDetailResult app = applicationDAO.getByName(appName);
+            if (app != null && app.getApplicationId() != null) {
+                request.getDataValidation().setExcludedApplicationIds(Arrays.asList(app.getApplicationId()));
+            }
+        }
         // 忽略检测的应用
         sceneManageService.createSceneExcludedApplication(request.getBasicInfo().getSceneId(), request.getDataValidation().getExcludedApplicationIds());
 

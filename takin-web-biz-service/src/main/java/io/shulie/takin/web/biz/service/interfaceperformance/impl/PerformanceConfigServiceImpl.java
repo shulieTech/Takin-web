@@ -115,7 +115,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      *
      * @param input
      */
-    @Transactional(rollbackFor = Exception.class)
+    //  @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(PerformanceConfigCreateInput input) {
         // 校验数据是否存在
@@ -151,7 +151,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
      *
      * @param configId
      */
-    @Transactional(rollbackFor = Exception.class)
+    //  @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(Long configId) {
         if (configId == null) {

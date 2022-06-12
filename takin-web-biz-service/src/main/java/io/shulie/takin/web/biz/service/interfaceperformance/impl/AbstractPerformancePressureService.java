@@ -135,6 +135,11 @@ public abstract class AbstractPerformancePressureService
     public ResponseResult delete(Long apiId) {
         Long sceneId = fetchSceneId(apiId);
         if (!Objects.isNull(sceneId)) {
+            ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(sceneId);
+            if (Objects.isNull(webResponse.getData())) {
+                OperationLogContextHolder.ignoreLog();
+                throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景不存在");
+            }
             SceneManageDeleteReq deleteReq = new SceneManageDeleteReq();
             deleteReq.setId(sceneId);
             sceneManageService.deleteScene(deleteReq);

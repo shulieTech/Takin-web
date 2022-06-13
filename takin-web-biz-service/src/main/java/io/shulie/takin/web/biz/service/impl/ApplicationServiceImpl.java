@@ -1,33 +1,11 @@
 package io.shulie.takin.web.biz.service.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import cn.hutool.core.collection.ListUtil;
-import com.alibaba.fastjson.JSONObject;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.NumberUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -59,12 +37,9 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.amdb.bean.common.AmdbResult;
 import io.shulie.takin.web.amdb.util.AmdbHelper;
 import io.shulie.takin.web.biz.cache.AgentConfigCacheManager;
+import io.shulie.takin.web.biz.constant.AgentConstants;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
-import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsCreateInput;
-import io.shulie.takin.web.biz.pojo.input.application.ApplicationDsUpdateInput;
-import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerCreateInput;
-import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerQueryInput;
-import io.shulie.takin.web.biz.pojo.input.application.ShadowConsumerUpdateInput;
+import io.shulie.takin.web.biz.pojo.input.application.*;
 import io.shulie.takin.web.biz.pojo.input.whitelist.WhitelistImportFromExcelInput;
 import io.shulie.takin.web.biz.pojo.openapi.response.application.ApplicationListResponse;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
@@ -78,13 +53,7 @@ import io.shulie.takin.web.biz.pojo.response.application.ApplicationListResponse
 import io.shulie.takin.web.biz.pojo.response.application.ApplicationVisualInfoResponse;
 import io.shulie.takin.web.biz.pojo.response.application.ShadowServerConfigurationResponse;
 import io.shulie.takin.web.biz.pojo.vo.application.ApplicationDsManageExportVO;
-import io.shulie.takin.web.biz.service.ActivityService;
-import io.shulie.takin.web.biz.service.AppConfigEntityConvertService;
-import io.shulie.takin.web.biz.service.ApplicationPluginsConfigService;
-import io.shulie.takin.web.biz.service.ApplicationService;
-import io.shulie.takin.web.biz.service.ConfCenterService;
-import io.shulie.takin.web.biz.service.LinkTopologyService;
-import io.shulie.takin.web.biz.service.ShadowConsumerService;
+import io.shulie.takin.web.biz.service.*;
 import io.shulie.takin.web.biz.service.application.ApplicationNodeService;
 import io.shulie.takin.web.biz.service.dsManage.DsService;
 import io.shulie.takin.web.biz.service.linkmanage.LinkGuardService;
@@ -113,58 +82,17 @@ import io.shulie.takin.web.common.util.CommonUtil;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.common.util.whitelist.WhitelistUtil;
-import io.shulie.takin.web.common.vo.excel.ApplicationPluginsConfigExcelVO;
-import io.shulie.takin.web.common.vo.excel.ApplicationRemoteCallConfigExcelVO;
-import io.shulie.takin.web.common.vo.excel.BlacklistExcelVO;
-import io.shulie.takin.web.common.vo.excel.ExcelSheetVO;
-import io.shulie.takin.web.common.vo.excel.LinkGuardExcelVO;
-import io.shulie.takin.web.common.vo.excel.ShadowConsumerExcelVO;
-import io.shulie.takin.web.common.vo.excel.ShadowJobExcelVO;
-import io.shulie.takin.web.common.vo.excel.WhiteListExcelVO;
+import io.shulie.takin.web.common.vo.excel.*;
 import io.shulie.takin.web.data.dao.ApplicationNodeProbeDAO;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
-import io.shulie.takin.web.data.dao.application.AppAgentConfigReportDAO;
-import io.shulie.takin.web.data.dao.application.AppRemoteCallDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationDsCacheManageDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationDsDbManageDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationDsManageDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationNodeDAO;
-import io.shulie.takin.web.data.dao.application.ApplicationPluginsConfigDAO;
-import io.shulie.takin.web.data.dao.application.LinkGuardDAO;
-import io.shulie.takin.web.data.dao.application.ShadowJobConfigDAO;
-import io.shulie.takin.web.data.dao.application.ShadowMqConsumerDAO;
-import io.shulie.takin.web.data.dao.application.WhiteListDAO;
-import io.shulie.takin.web.data.dao.application.WhitelistEffectiveAppDao;
+import io.shulie.takin.web.data.dao.application.*;
 import io.shulie.takin.web.data.dao.blacklist.BlackListDAO;
-import io.shulie.takin.web.data.model.mysql.ApplicationAttentionListEntity;
-import io.shulie.takin.web.data.model.mysql.ApplicationDsManageEntity;
-import io.shulie.takin.web.data.model.mysql.ApplicationPluginsConfigEntity;
-import io.shulie.takin.web.data.model.mysql.LinkGuardEntity;
-import io.shulie.takin.web.data.model.mysql.ShadowJobConfigEntity;
-import io.shulie.takin.web.data.model.mysql.ShadowMqConsumerEntity;
-import io.shulie.takin.web.data.param.application.AppRemoteCallQueryParam;
-import io.shulie.takin.web.data.param.application.AppRemoteCallUpdateParam;
-import io.shulie.takin.web.data.param.application.ApplicationAttentionParam;
-import io.shulie.takin.web.data.param.application.ApplicationCreateParam;
-import io.shulie.takin.web.data.param.application.ApplicationDsQueryParam;
-import io.shulie.takin.web.data.param.application.ApplicationNodeQueryParam;
-import io.shulie.takin.web.data.param.application.ApplicationPluginsConfigParam;
-import io.shulie.takin.web.data.param.application.ApplicationQueryParam;
-import io.shulie.takin.web.data.param.application.QueryApplicationByUpgradeParam;
-import io.shulie.takin.web.data.param.application.QueryApplicationParam;
+import io.shulie.takin.web.data.model.mysql.*;
+import io.shulie.takin.web.data.param.application.*;
 import io.shulie.takin.web.data.param.blacklist.BlacklistCreateNewParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistSearchParam;
 import io.shulie.takin.web.data.param.blacklist.BlacklistUpdateParam;
-import io.shulie.takin.web.data.result.application.AppAgentConfigReportDetailResult;
-import io.shulie.takin.web.data.result.application.AppRemoteCallResult;
-import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationDsCacheManageDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationDsDbManageDetailResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResult;
-import io.shulie.takin.web.data.result.application.ApplicationListResultByUpgrade;
-import io.shulie.takin.web.data.result.application.ApplicationNodeResult;
-import io.shulie.takin.web.data.result.application.ApplicationResult;
+import io.shulie.takin.web.data.result.application.*;
 import io.shulie.takin.web.data.result.blacklist.BlacklistResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistEffectiveAppResult;
 import io.shulie.takin.web.data.result.whitelist.WhitelistResult;
@@ -188,6 +116,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author mubai<chengjiacai.shulie.io>
@@ -806,7 +745,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                         AppAccessStatusEnum.EXCEPTION.getCode());
                 applicationDAO.updateStatusByApplicationIds(normalApplicationIdSet,
                         AppAccessStatusEnum.NORMAL.getCode());
-
+                this.syncApplicationAccessStatus(appNames);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
@@ -815,6 +754,19 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         }
 
         log.debug("定时同步应用状态完成!");
+    }
+
+    private void syncApplicationAccessStatus(List<String> appNames) {
+        if (CollectionUtils.isNotEmpty(appNames)) {
+            appNames.forEach(name -> {
+                Map result = applicationDAO.getStatus(name);
+                long n = (long) result.get("n");
+                if (n != 0) {
+                    String e = (String)result.get("e");
+                    applicationDAO.updateStatus(name,e);
+                }
+            });
+        }
     }
 
     /**
@@ -1216,6 +1168,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void uninstallAllAgent(List<String> appIds) {
         try {
+            appIds = this.filterAppIds(appIds,AgentConstants.UNINSTALL);
+            if (CollectionUtils.isEmpty(appIds)){
+                log.info("所有需要卸载的应用都被过滤掉了");
+                return;
+            }
             // 查询所有应用
             ApplicationQueryParam queryParam = new ApplicationQueryParam();
             queryParam.setPageSize(-1);
@@ -1361,6 +1318,92 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             return response;
         }).collect(Collectors.toList());
         return PagingList.of(responseList, applicationList.getTotal());
+    }
+
+    @Override
+    public Response<String> operateCheck(List<String> appIds, String operate) {
+        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)){
+            return Response.fail("参数异常");
+        }
+
+        ApplicationQueryParam queryParam = new ApplicationQueryParam();
+        queryParam.setPageSize(-1);
+        queryParam.setCurrentPage(-1);
+        queryParam.setApplicationIds(appIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+        PagingList<ApplicationDetailResult> pagingList = applicationDAO.queryApplicationList(queryParam);
+        if (CollectionUtil.isEmpty(pagingList.getList())) {
+            return Response.fail("没有找到选中的应用，请刷新页面重新操作");
+        }
+        List<ApplicationDetailResult> applicationList = pagingList.getList();
+        List<String> appNames = applicationList.stream().map(ApplicationDetailResult::getApplicationName).collect(
+                Collectors.toList());
+        List<ApplicationNodeProbeResult> applicationNodeProbeResults = applicationNodeProbeDAO.listByAppNameAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
+        long count = applicationNodeProbeResults == null ?  0 : applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().count();
+        if (AgentConstants.UNINSTALL.equals(operate)){
+            if (count > 0){
+                //构建返回数据
+                List<String> distinct = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().collect(Collectors.toList());
+                StringBuilder sb = new StringBuilder();
+                distinct.forEach(s -> {
+                    sb.append(s).append("\n");
+                });
+                return Response.success(String.format("已选择%d个应用,%d个应用已处于卸载状态\n应用名称为:",appIds.size(),count) + sb);
+            }else {
+                return Response.success(String.format("已选择%d个应用,点击继续卸载",appIds.size()));
+            }
+        }
+        if (AgentConstants.RESUME.equals(operate)){
+            if (appIds.size() > count){
+                //构建返回数据
+                List<String> result = appNames;
+                if (count != 0){
+                    List<String> distinct = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().collect(Collectors.toList());
+                    result = result.stream().filter(o -> !distinct.contains(o)).collect(Collectors.toList());
+                }
+                StringBuilder sb = new StringBuilder();
+                result.forEach(s -> {
+                    sb.append(s).append("\n");
+                });
+                return Response.success(String.format("已选择%d个应用,%d个应用处于非卸载状态\n应用名称为:",appIds.size(), appIds.size() - count) + sb);
+            }else {
+                return Response.success(String.format("已选择%d个应用,点击继续",appIds.size()));
+            }
+        }
+        return Response.fail("上传的状态当前不支持校验");
+    }
+
+    @Override
+    public List<String> filterAppIds(List<String> appIds, String operate) {
+        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)){
+            return null;
+        }
+
+        ApplicationQueryParam queryParam = new ApplicationQueryParam();
+        queryParam.setPageSize(-1);
+        queryParam.setCurrentPage(-1);
+        queryParam.setApplicationIds(appIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+        PagingList<ApplicationDetailResult> pagingList = applicationDAO.queryApplicationList(queryParam);
+        if (CollectionUtil.isEmpty(pagingList.getList())) {
+            return null;
+        }
+        List<ApplicationDetailResult> applicationList = pagingList.getList();
+        List<String> appNames = applicationList.stream().map(ApplicationDetailResult::getApplicationName).collect(
+                Collectors.toList());
+        List<ApplicationNodeProbeResult> applicationNodeProbeResults = applicationNodeProbeDAO.
+                listByAppNameAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
+        List<String> uninstallAppNames = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName)
+                .collect(Collectors.toList());
+        //需要卸载的数据，需要不存在卸载的数据
+        if (AgentConstants.UNINSTALL.equals(operate)){
+            return applicationList.stream().filter(o -> !uninstallAppNames.contains(o.getApplicationName())).map(o ->
+                    o.getApplicationId().toString()).collect(Collectors.toList());
+        }
+        //需要恢复的数据，需要是已经卸载的数据
+        if (AgentConstants.RESUME.equals(operate)){
+            return applicationList.stream().filter(o -> uninstallAppNames.contains(o.getApplicationName())).map(o ->
+                    o.getApplicationId().toString()).collect(Collectors.toList());
+        }
+        return null;
     }
 
     /**
@@ -2387,6 +2430,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void resumeAllAgent(List<String> appIds) {
         try {
+            appIds = this.filterAppIds(appIds,AgentConstants.RESUME);
+            if (CollectionUtils.isEmpty(appIds)){
+                log.info("所有需要恢复的应用都被过滤掉了");
+                return;
+            }
             // 查询所有应用
             ApplicationQueryParam queryParam = new ApplicationQueryParam();
             queryParam.setPageSize(-1);

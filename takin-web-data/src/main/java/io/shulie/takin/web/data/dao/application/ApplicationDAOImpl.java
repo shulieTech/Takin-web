@@ -719,4 +719,19 @@ public class ApplicationDAOImpl
             page.getTotal());
     }
 
+    @Override
+    public Map getStatus(String name) {
+        return applicationMntMapper.getStatus(name);
+    }
+
+    @Override
+    public void updateStatus(String name, String e) {
+        LambdaUpdateWrapper<ApplicationMntEntity> wrapper = this.getLambdaUpdateWrapper();
+
+        wrapper.set(ApplicationMntEntity::getAccessStatus, 3)
+                .set(ApplicationMntEntity::getExceptionInfo,e)
+                .eq(ApplicationMntEntity::getApplicationName, name);
+        applicationMntMapper.update(null, wrapper);
+    }
+
 }

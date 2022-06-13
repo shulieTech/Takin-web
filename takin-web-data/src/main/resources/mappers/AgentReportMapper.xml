@@ -4,10 +4,10 @@
 
     <insert id="insertOrUpdate" parameterType="io.shulie.takin.web.data.model.mysql.AgentReportEntity">
         INSERT INTO t_agent_report (application_id, application_name, agent_id, ip_address, progress_id, agent_version,
-                                    cur_upgrade_batch, status, agent_error_info, simulator_error_info, env_code,
+                                    simulator_version, cur_upgrade_batch, status, agent_error_info, simulator_error_info, env_code,
                                     tenant_id)
             VALUE (#{applicationId}, #{applicationName}, #{agentId}, #{ipAddress}, #{progressId},
-            #{agentVersion}, #{curUpgradeBatch}, #{status}, #{agentErrorInfo},
+            #{agentVersion}, #{simulatorVersion}, #{curUpgradeBatch}, #{status}, #{agentErrorInfo},
             #{simulatorErrorInfo},#{envCode},#{tenantId})
         ON DUPLICATE KEY
         UPDATE cur_upgrade_batch = #{curUpgradeBatch},

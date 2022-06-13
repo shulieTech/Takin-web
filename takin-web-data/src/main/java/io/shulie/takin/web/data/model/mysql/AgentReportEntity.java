@@ -1,7 +1,5 @@
 package io.shulie.takin.web.data.model.mysql;
 
-import java.io.Serializable;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -9,6 +7,8 @@ import io.shulie.takin.web.data.model.mysql.base.NewBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.io.Serializable;
 
 /**
  * 探针心跳数据(AgentReport)实体类
@@ -52,6 +52,11 @@ public class AgentReportEntity extends NewBaseEntity implements Serializable {
      * agent版本
      */
     private String agentVersion;
+
+    /**
+     * simulator版本
+     */
+    private String simulatorVersion;
 
     /**
      * 升级批次 根据升级内容生成MD5

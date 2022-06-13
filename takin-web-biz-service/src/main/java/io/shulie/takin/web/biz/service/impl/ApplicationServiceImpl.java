@@ -16,6 +16,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -1380,14 +1381,30 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         long count = applicationNodeProbeResults == null ?  0 : applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().count();
         if (AgentConstants.UNINSTALL.equals(operate)){
             if (count > 0){
-                return Response.success(String.format("已选择%d个应用,%d个应用已处于卸载状态",appIds.size(),count));
+                //构建返回数据
+                List<String> distinct = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().collect(Collectors.toList());
+                StringBuilder sb = new StringBuilder();
+                distinct.forEach(s -> {
+                    sb.append(s).append("\n");
+                });
+                return Response.success(String.format("已选择%d个应用,%d个应用已处于卸载状态\n名称为:",appIds.size(),count) + sb);
             }else {
                 return Response.success(String.format("已选择%d个应用,点击继续卸载",appIds.size()));
             }
         }
         if (AgentConstants.RESUME.equals(operate)){
             if (appIds.size() > count){
-                return Response.success(String.format("已选择%d个应用,%d个应用处于非卸载状态",appIds.size(), appIds.size() - count));
+                //构建返回数据
+                List<String> result = appNames;
+                if (count != 0){
+                    List<String> distinct = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().collect(Collectors.toList());
+                    result = result.stream().filter(o -> !distinct.contains(o)).collect(Collectors.toList());
+                }
+                StringBuilder sb = new StringBuilder();
+                result.forEach(s -> {
+                    sb.append(s).append("\n");
+                });
+                return Response.success(String.format("已选择%d个应用,%d个应用处于非卸载状态\n名称为:",appIds.size(), appIds.size() - count) + sb);
             }else {
                 return Response.success(String.format("已选择%d个应用,点击继续",appIds.size()));
             }

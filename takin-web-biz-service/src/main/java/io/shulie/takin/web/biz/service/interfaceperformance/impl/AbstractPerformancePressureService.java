@@ -123,7 +123,7 @@ public abstract class AbstractPerformancePressureService
         //删业务流程
         Long flowId = fetBizFlowId(apiId);
         if (Objects.nonNull(flowId)) {
-            //   linkManageService.deleteScene(flowId.toString());
+            linkManageService.deleteScene(flowId.toString());
         }
         //最后删映射表
         QueryWrapper deleteWrapper = new QueryWrapper();

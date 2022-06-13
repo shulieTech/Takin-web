@@ -126,11 +126,6 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             }
         }
 
-        /**
-         * 更新脚本和场景和业务流程
-         */
-        pressureService.update(request);
-
         // 构造删除的数据文件到流程接口里面
         if (CollectionUtils.isNotEmpty(delete_file_Param)) {
             List<FileManageUpdateRequest> delete_flag_files = delete_file_Param.stream().map(delete_file -> {
@@ -182,6 +177,10 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
             // 新增参数
             performanceParamDAO.add(insertList);
         }
+        /**
+         * 更新脚本和场景和业务流程
+         */
+        pressureService.update(request);
     }
 
     private List<FileManageEntity> getNewFileManage(Long configId) {

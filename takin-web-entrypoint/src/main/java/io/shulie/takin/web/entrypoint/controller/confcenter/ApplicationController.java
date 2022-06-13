@@ -255,9 +255,9 @@ public class ApplicationController {
             moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
             needAuth = ActionTypeEnum.QUERY
     )
-    public Response operateCheck(@RequestBody AppOperateAgentCheckVO vo) {
-       String result =  applicationService.operateCheck(vo.getAppIds(),vo.getOperate());
-       return Response.success(result);
+    public Response<String> operateCheck(@RequestBody AppOperateAgentCheckVO vo) {
+       return applicationService.operateCheck(vo.getAppIds(),vo.getOperate());
+
     }
 
     @ApiOperation("编辑静默开关接口")

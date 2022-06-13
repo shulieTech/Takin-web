@@ -300,7 +300,7 @@ public interface ApplicationService {
 
     PagingList<ApplicationListByUpgradeResponse> listApplicationByUpgrade(ApplicationListByUpgradeRequest request);
 
-    String operateCheck(List<String> appIds, String operate);
+    Response<String> operateCheck(List<String> appIds, String operate);
 
     /**
      * 过滤不符合操作条件的appId

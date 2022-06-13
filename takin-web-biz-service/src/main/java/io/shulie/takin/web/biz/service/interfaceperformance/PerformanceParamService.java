@@ -16,6 +16,11 @@ public interface PerformanceParamService {
     void updatePerformanceData(PerformanceDataFileRequest request);
 
     /**
+     * 更新数据文件
+     */
+    void updatePerformanceData_ext(PerformanceDataFileRequest request);
+
+    /**
      * 获取参数详情
      */
     PerformanceParamDetailResponse detail(PerformanceParamDetailRequest request);

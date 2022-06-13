@@ -27,7 +27,7 @@ public class PerformanceParamController {
     @ApiOperation("保存接口压测参数")
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     public ResponseResult save(@RequestBody PerformanceDataFileRequest request) {
-        performanceParamService.updatePerformanceData(request);
+        performanceParamService.updatePerformanceData_ext(request);
         return ResponseResult.success();
     }
 

@@ -180,7 +180,109 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         /**
          * 更新脚本和场景和业务流程
          */
-        //pressureService.update(request);
+        pressureService.update(request);
+    }
+
+    @Override
+    public void updatePerformanceData_ext(PerformanceDataFileRequest request) {
+        // 1、查看当前接口压测场景是否存在
+        Long configId = request.getId();
+        if (configId == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_PARAM_ERROR, "参数Id未传递");
+        }
+        InterfacePerformanceConfigEntity configEntity = interfacePerformanceConfigMapper.selectById(configId);
+        if (configEntity == null || configEntity.getId() == null) {
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_QUERY_ERROR, "配置未找到");
+        }
+        // 1、获取原来对应的文件信息
+        PerformanceParamDetailRequest allRequest = new PerformanceParamDetailRequest();
+        allRequest.setConfigId(configId);
+        PerformanceParamDetailResponse fileResponse = this.detail(allRequest);
+        List<FileManageResponse> fileManageResponses = fileResponse.getFileManageResponseList();
+
+        // 2、获取最新的文件处理
+        List<FileManageUpdateRequest> fileLists = request.getFileManageUpdateRequests();
+        // a、找到未删除的文件信息Id集合
+        List<Long> idList = fileLists.stream()
+                .filter(file -> file.getId() != null)
+                .map(file -> file.getId()).collect(Collectors.toList());
+        // 遍历最新的文件操作
+        List<PerformanceParamRequest> deleteParam = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(fileManageResponses)) {
+            for (int i = 0; i < fileManageResponses.size(); i++) {
+                FileManageResponse tmpResponse = fileManageResponses.get(i);
+                if (!idList.contains(tmpResponse.getId())) {
+                    PerformanceParamRequest tmp = new PerformanceParamRequest();
+                    tmp.setFileId(tmpResponse.getId());
+                    tmp.setConfigId(configId);
+                    tmp.setFilePath(tmpResponse.getUploadPath());
+                    // 需要删除的数据
+                    deleteParam.add(tmp);
+                }
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(deleteParam)) {
+            // 清理数据
+            List<Long> deleteIdList = deleteParam.stream().map(file -> file.getFileId()).collect(Collectors.toList());
+            // 清理掉这部分数据
+            PerformanceParamQueryParam deleteParams = new PerformanceParamQueryParam();
+            deleteParams.setConfigId(configId);
+            deleteParams.setFileIds(deleteIdList);
+            performanceParamDAO.deleteByParam(deleteParams);
+            // 删除对应路径文件
+            List<String> filePaths = deleteParam.stream().map(file -> file.getFilePath()).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(filePaths)) {
+                FileDeleteParamReq fileDeleteParamReq = new FileDeleteParamReq();
+                fileDeleteParamReq.setPaths(filePaths);
+                fileApi.deleteFile(fileDeleteParamReq);
+            }
+        }
+
+        // b、新增的
+        List<FileManageUpdateRequest> insertFileList = fileLists.stream().
+                filter(file -> file.getUploadId() != null && file.getId() == null).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(insertFileList)) {
+            // 目录 + 配置Id
+            String targetFilePath = String.format("%s/%s/%s/", ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_FILE_UPLOAD_SCRIPT_PATH), "interfacePerformance", configId);
+            copyFile(insertFileList, targetFilePath);
+
+            // 插入文件记录所需参数
+            List<FileManageCreateParam> fileManageCreateParams = getFileManageCreateParamsByUpdateReq(
+                    insertFileList, targetFilePath);
+            // 创建文件记录, 获得文件ids
+            List<FileManageEntity> fileEntitys = fileManageDAO.createFileManageList_ext(fileManageCreateParams);
+            // 按文件名分组,后续这里用文件名去匹配字段
+            Map<String, List<FileManageEntity>> fileNameMap = fileEntitys.stream().collect(Collectors.groupingBy(FileManageEntity::getFileName));
+            // 把解析的参数给放到参数表里面
+            List<PerformanceParamRequest> paramList = request.getParamList();
+            // 过滤掉那种未修改的，这种就在新增的文件Map里面找不到
+            List<InterfacePerformanceParamEntity> insertList = paramList.stream()
+                    .filter(paramRequest -> StringUtils.isNotBlank(paramRequest.getParamName())
+                            && fileNameMap.containsKey(paramRequest.getParamValue()))
+                    .map(paramRequest -> {
+                        InterfacePerformanceParamEntity paramEntity = new InterfacePerformanceParamEntity();
+
+                        paramEntity.setConfigId(configId);
+                        paramEntity.setParamName(paramRequest.getParamName());
+                        paramEntity.setFileColumnIndex(paramRequest.getFileColumnIndex());
+                        paramEntity.setType(2);
+                        // 参数值放文件名称
+                        paramEntity.setParamValue(paramRequest.getParamValue());
+                        // 根据名称获取存入的文件Id
+                        Optional<FileManageEntity> entity = fileNameMap.get(paramRequest.getParamValue()).stream().findFirst();
+                        paramEntity.setFileId(Optional.ofNullable(entity.get()).orElse(new FileManageEntity()).getId());
+                        paramEntity.setGmtCreate(new Date());
+                        return paramEntity;
+                    }).collect(Collectors.toList());
+            // 新增参数
+            performanceParamDAO.add(insertList);
+        }
+
+        /**
+         * 更新脚本和场景和业务流程
+         */
+        pressureService.update(request);
     }
 
     private List<FileManageEntity> getNewFileManage(Long configId) {

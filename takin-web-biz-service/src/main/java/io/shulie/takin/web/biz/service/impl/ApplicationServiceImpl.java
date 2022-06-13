@@ -1360,9 +1360,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public String operateCheck(List<String> appIds, String operate) {
+    public Response<String> operateCheck(List<String> appIds, String operate) {
         if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)){
-            return "参数异常";
+            return Response.fail("参数异常");
         }
 
         ApplicationQueryParam queryParam = new ApplicationQueryParam();
@@ -1371,7 +1371,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         queryParam.setApplicationIds(appIds.stream().map(Long::valueOf).collect(Collectors.toList()));
         PagingList<ApplicationDetailResult> pagingList = applicationDAO.queryApplicationList(queryParam);
         if (CollectionUtil.isEmpty(pagingList.getList())) {
-            return "没有找到选中的应用，请刷新页面重新操作";
+            return Response.fail("没有找到选中的应用，请刷新页面重新操作");
         }
         List<ApplicationDetailResult> applicationList = pagingList.getList();
         List<String> appNames = applicationList.stream().map(ApplicationDetailResult::getApplicationName).collect(
@@ -1380,19 +1380,19 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         long count = applicationNodeProbeResults == null ?  0 : applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().count();
         if (AgentConstants.UNINSTALL.equals(operate)){
             if (count > 0){
-                return String.format("已选择%d个应用,%d个应用已处于卸载状态",appIds.size(),count);
+                return Response.success(String.format("已选择%d个应用,%d个应用已处于卸载状态",appIds.size(),count));
             }else {
-                return String.format("已选择%d个应用,点击继续卸载",appIds.size());
+                return Response.success(String.format("已选择%d个应用,点击继续卸载",appIds.size()));
             }
         }
         if (AgentConstants.RESUME.equals(operate)){
             if (appIds.size() > count){
-                return String.format("已选择%d个应用,%d个应用处于非卸载状态",appIds.size(), appIds.size() - count);
+                return Response.success(String.format("已选择%d个应用,%d个应用处于非卸载状态",appIds.size(), appIds.size() - count));
             }else {
-                return String.format("已选择%d个应用,点击继续",appIds.size());
+                return Response.success(String.format("已选择%d个应用,点击继续",appIds.size()));
             }
         }
-        return null;
+        return Response.fail("上传的状态当前不支持校验");
     }
 
     @Override

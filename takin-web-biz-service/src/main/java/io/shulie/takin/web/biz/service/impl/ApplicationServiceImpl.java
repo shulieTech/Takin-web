@@ -1416,12 +1416,14 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 listByAppNameAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
         List<String> uninstallAppNames = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName)
                 .collect(Collectors.toList());
+        //需要卸载的数据，需要不存在卸载的数据
         if (AgentConstants.UNINSTALL.equals(operate)){
-            return applicationList.stream().filter(o -> uninstallAppNames.contains(o.getApplicationName())).map(o ->
+            return applicationList.stream().filter(o -> !uninstallAppNames.contains(o.getApplicationName())).map(o ->
                     o.getApplicationId().toString()).collect(Collectors.toList());
         }
+        //需要恢复的数据，需要是已经卸载的数据
         if (AgentConstants.RESUME.equals(operate)){
-            return applicationList.stream().filter(o -> !uninstallAppNames.contains(o.getApplicationName())).map(o ->
+            return applicationList.stream().filter(o -> uninstallAppNames.contains(o.getApplicationName())).map(o ->
                     o.getApplicationId().toString()).collect(Collectors.toList());
         }
         return null;

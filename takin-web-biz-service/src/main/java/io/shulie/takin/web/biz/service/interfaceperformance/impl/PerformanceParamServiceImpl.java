@@ -112,8 +112,8 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         // a、找到未删除的文件信息
         Map<String, List<FileManageUpdateRequest>> un_delete_files = fileLists.stream().
                 filter(s -> s.getId() != null).collect(Collectors.groupingBy(f -> {
-                    return String.valueOf(f.getId());
-                }));
+            return String.valueOf(f.getId());
+        }));
 
         // 遍历文件操作,找到已删除的文件信息
         List<FileManageResponse> delete_file_Param = Lists.newArrayList();
@@ -183,6 +183,7 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         pressureService.update(request);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updatePerformanceData_ext(PerformanceDataFileRequest request) {
         // 1、查看当前接口压测场景是否存在

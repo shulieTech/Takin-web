@@ -114,7 +114,7 @@ public class FileUtils {
      * @return
      */
     public static Map<String, String> readCsvFirstRow(String path) {
-        Map<String, String> dataMap = Maps.newHashMap();
+        Map<String, String> dataMap = Maps.newLinkedHashMap();
         CsvData csvData = csvReaderThreadLocal.get().read(FileUtil.file(path));
         // 获取第一行
         CsvRow csvRow = csvData.getRow(0);
@@ -141,7 +141,7 @@ public class FileUtils {
      * @return
      */
     public static Map<String, String> readExcelFirstRow(String path) {
-        Map<String, String> dataMap = Maps.newHashMap();
+        Map<String, String> dataMap = Maps.newLinkedHashMap();
         ExcelReader excelReader = ExcelUtil.getReader(path);
         List<Object> objs = excelReader.readRow(0);
         objs.stream().forEach(obj -> dataMap.put(Objects.toString(obj), ""));

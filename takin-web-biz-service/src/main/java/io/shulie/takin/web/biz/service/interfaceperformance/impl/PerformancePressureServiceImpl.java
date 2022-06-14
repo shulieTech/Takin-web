@@ -435,6 +435,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
     private ReqBuilder buildData(Long id, ReqBuilder builder) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("config_id", id);
+        queryWrapper.orderByAsc("file_column_index");
         List<InterfacePerformanceParamEntity> paramEntityList = paramMapper.selectList(queryWrapper);
         if (!CollectionUtils.isEmpty(paramEntityList)) {
             paramEntityList.stream().forEach(entry -> {

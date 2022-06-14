@@ -202,7 +202,7 @@ public class PerformanceDebugUtil {
         }
     }
 
-    private String getContentType(ContentTypeVO vo) {
+    public String getContentType(ContentTypeVO vo) {
         if (ContentTypeVO.X_WWW_FORM_URLENCODED.equals(vo.getRadio())) {
             return MediaType.APPLICATION_FORM_URLENCODED_VALUE;
         } else {

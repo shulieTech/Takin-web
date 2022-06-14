@@ -162,7 +162,7 @@ public class CloudFileApiImpl implements CloudFileApi {
     private void setDataCount(File file, UploadResponse dto) {
         String topic = SceneManageConstant.SCENE_TOPIC_PREFIX + System.currentTimeMillis();
         if (file.getName().endsWith("xlsx") || file.getName().endsWith("xls")) {
-            dto.setUploadedData(FileUtils.getFileCount(file.getAbsolutePath()));
+            //dto.setUploadedData(FileUtils.getFileCount(file.getAbsolutePath()));
             dto.setTopic(topic);
             return;
         }

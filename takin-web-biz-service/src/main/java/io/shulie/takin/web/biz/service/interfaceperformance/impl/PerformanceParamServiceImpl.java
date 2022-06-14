@@ -183,7 +183,6 @@ public class PerformanceParamServiceImpl implements PerformanceParamService {
         pressureService.update(request);
     }
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updatePerformanceData_ext(PerformanceDataFileRequest request) {
         // 1、查看当前接口压测场景是否存在

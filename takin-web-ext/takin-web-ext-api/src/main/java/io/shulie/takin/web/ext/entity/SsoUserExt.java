@@ -28,6 +28,7 @@ public class SsoUserExt {
     @JsonProperty("xToken")
     private String xToken;
 
+    private String securityCenterDomain;
     /**
      * 环境code
      */

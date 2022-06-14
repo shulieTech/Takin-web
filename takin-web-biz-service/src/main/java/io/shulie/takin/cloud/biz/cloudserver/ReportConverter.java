@@ -36,7 +36,10 @@ public interface ReportConverter {
      * @param report -
      * @return -
      */
-    @Mapping(target = "startTime", expression = "java(DateUtil.formatDateTime(report.getStartTime()))")
+    @Mappings({
+        @Mapping(target = "startTime", expression = "java(DateUtil.formatDateTime(report.getStartTime()))"),
+        @Mapping(target = "taskStatus", source = "status")
+    })
     ReportDetailOutput ofReportDetail(ReportResult report);
 
     /**

@@ -21,7 +21,7 @@ import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
-import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators.ResourceContext;
+import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.notify.StartFailEventSource;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneContactFileOutput;
 import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
@@ -73,7 +73,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(ApiUrls.TAKIN_API_URL + "scene/task/")
 @Api(tags = "场景任务", value = "场景任务")
-public class SceneTaskController {
+public class SceneTaskController extends AbstractIndicators {
     @Autowired
     private SceneTaskApi sceneTaskApi;
     @Autowired
@@ -287,6 +287,16 @@ public class SceneTaskController {
         }
     }
 
+    @PutMapping("forceStop")
+    public ResponseResult<String> forceStop(String resourceId) {
+        try {
+            sceneTaskService.forceStop(resourceId);
+            return ResponseResult.success("强制停止成功");
+        } catch (Exception e) {
+            return ResponseResult.fail(e.getMessage(), null);
+        }
+    }
+
     private void notifyStartFail(Long sceneId, String message) {
         Object resource = redisClientUtil.hmget(PressureStartCache.getSceneResourceKey(sceneId),
             PressureStartCache.RESOURCE_ID);
@@ -307,26 +317,5 @@ public class SceneTaskController {
                 eventCenterTemplate.doEvents(event);
             }
         }
-    }
-
-    protected ResourceContext getResourceContext(String resourceId) {
-        String resourceKey = PressureStartCache.getResourceKey(resourceId);
-        Map<Object, Object> resource = redisClientUtil.hmget(resourceKey);
-        if (org.springframework.util.CollectionUtils.isEmpty(resource)) {
-            return null;
-        }
-        ResourceContext context = new ResourceContext();
-        context.setResourceId(resourceId);
-        context.setSceneId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.SCENE_ID))));
-        context.setReportId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.REPORT_ID))));
-        context.setTenantId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.TENANT_ID))));
-        context.setCheckStatus(String.valueOf(resource.get(PressureStartCache.CHECK_STATUS)));
-        context.setTaskId(Long.valueOf(String.valueOf(resource.get(PressureStartCache.TASK_ID))));
-        context.setUniqueKey(String.valueOf(resource.get(PressureStartCache.UNIQUE_KEY)));
-        Object jobId = resource.get(PressureStartCache.JOB_ID);
-        if (Objects.nonNull(jobId)) {
-            context.setJobId(Long.valueOf(String.valueOf(jobId)));
-        }
-        return context;
     }
 }

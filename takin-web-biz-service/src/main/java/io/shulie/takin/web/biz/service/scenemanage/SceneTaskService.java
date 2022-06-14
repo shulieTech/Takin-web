@@ -85,4 +85,6 @@ public interface SceneTaskService {
     CheckResultVo preCheck(SceneActionParam param);
 
     void cacheReportKey(Long reportId);
+
+    void forceStop(String resourceId);
 }

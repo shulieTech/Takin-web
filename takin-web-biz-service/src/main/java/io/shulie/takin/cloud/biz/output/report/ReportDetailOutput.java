@@ -111,6 +111,7 @@ public class ReportDetailOutput extends ContextExt {
      * 压测引擎任务Id
      */
     private Long jobId;
+    private Long taskId;
     /**
      * 0-未校准
      * 1-校准中

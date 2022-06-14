@@ -436,12 +436,17 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         String xpathMd5 = node.getXpathMd5();
         boolean curMatched = xpath.equals(xpathMd5);
         // md5为空，代表旧版本数据，此时identification也为空，同时没有子节点(即：不存在父节点匹配情况)
+        Long businessActivityId = node.getBusinessActivityId();
         if (curMatched && (StringUtils.isBlank(node.getMd5()) || StringUtils.isNotBlank(node.getIdentification()))) {
-            result.add(node.getBusinessActivityId());
+            if (Objects.nonNull(businessActivityId)) {
+                result.add(businessActivityId);
+            }
             return false;
         }
         if (parentMatched && StringUtils.isNotBlank(node.getIdentification())) {
-            result.add(node.getBusinessActivityId());
+            if (Objects.nonNull(businessActivityId)) {
+                result.add(businessActivityId);
+            }
         }
         boolean matched = parentMatched || curMatched;
         List<ScriptNodeTreeResp> children = node.getChildren();

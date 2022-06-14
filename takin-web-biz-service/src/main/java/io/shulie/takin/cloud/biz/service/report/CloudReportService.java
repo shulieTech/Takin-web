@@ -263,4 +263,6 @@ public interface CloudReportService {
     boolean updateReportBusinessActivity(Long jobId, Long sceneId, Long reportId, Long tenantId);
 
     List<ReportActivityResp> getActivities(List<Long> sceneIds);
+	
+	ReportDetailOutput getByResourceId(String resourceId);
 }

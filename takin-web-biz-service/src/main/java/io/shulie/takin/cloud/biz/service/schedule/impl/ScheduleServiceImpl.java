@@ -27,6 +27,7 @@ import io.shulie.takin.adapter.api.model.common.TimeBean;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStartReq;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStartReq.SlaInfo;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStartReq.ThreadConfigInfo;
+import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.config.AppConfig;
 import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
@@ -44,6 +45,7 @@ import io.shulie.takin.cloud.common.constants.ReportConstants;
 import io.shulie.takin.cloud.common.constants.ScheduleConstants;
 import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
+import io.shulie.takin.cloud.common.enums.scenemanage.SceneRunTaskStatusEnum;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.common.utils.CommonUtil;
 import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
@@ -62,6 +64,7 @@ import io.shulie.takin.cloud.ext.content.enginecall.ThreadGroupConfigExt;
 import io.shulie.takin.cloud.model.request.StartRequest;
 import io.shulie.takin.cloud.model.request.StartRequest.FileInfo;
 import io.shulie.takin.cloud.model.request.StartRequest.FileInfo.SplitInfo;
+import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -106,6 +109,8 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
     private RedisClientUtil redisClientUtil;
     @Resource
     private CloudSceneTaskService cloudSceneTaskService;
+    @Resource
+    private SceneTaskStatusCache taskStatusCache;
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
@@ -196,6 +201,10 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
             cloudReportService.updateReportFeatures(reportId, ReportConstants.FINISH_STATUS, null, null);
             cloudSceneManageService.updateSceneLifeCycle(UpdateStatusBean.build(sceneId, reportId, request.getTenantId())
                 .checkEnum(SceneManageStatusEnum.getAll()).updateEnum(SceneManageStatusEnum.WAIT).build());
+            taskStatusCache.cacheStatus(sceneId, reportId, SceneRunTaskStatusEnum.ENDED);
+            String reportKey = WebRedisKeyConstant.getReportKey(reportId);
+            redisTemplate.opsForList().remove(WebRedisKeyConstant.getTaskList(), 0, reportKey);
+            redisTemplate.delete(reportKey);
         }
     }
 

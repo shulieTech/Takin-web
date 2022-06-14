@@ -210,6 +210,8 @@ public interface CloudReportApi {
      * @return -
      */
     Integer getReportStatusById(ReportDetailByIdReq req);
-
+	
+	ReportDetailResp getReportByResourceId(String resourceId);
+	
     ResponseResult<List<ReportActivityResp>> getActivities(ReportDetailByIdsReq req);
 }

@@ -501,6 +501,8 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         Map<String, String> toHeader = Maps.newHashMap();
         toHeader.put("key", "Content-Type");
         toHeader.put("value", type);
+        builder.addHeaders(toHeader);
+
         //放data
         buildData(id, builder);
         return builder.build();

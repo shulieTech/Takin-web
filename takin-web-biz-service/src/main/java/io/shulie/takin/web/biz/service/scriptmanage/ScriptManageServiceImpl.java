@@ -303,8 +303,9 @@ public class ScriptManageServiceImpl implements ScriptManageService {
                 scriptManageDeployCreateParam);
             String targetScriptPath = getTargetScriptPath(scriptManageDeployResult);
             List<String> tmpFilePaths = scriptManageDeployCreateRequest.getFileManageCreateRequests().stream().map(
-                o -> tmpFilePath + "/" + o.getUploadId() + "/" + o.getFileName()).collect(Collectors.toList());
-
+                o -> (tmpFilePath + "/" + o.getUploadId() + "/" + o.getFileName())
+                        .replaceAll("//","/")
+                        .replaceAll("\\/\\/","/")).collect(Collectors.toList());
             FileCopyParamReq fileCopyParamReq = new FileCopyParamReq();
             fileCopyParamReq.setTargetPath(targetScriptPath);
             fileCopyParamReq.setSourcePaths(tmpFilePaths);

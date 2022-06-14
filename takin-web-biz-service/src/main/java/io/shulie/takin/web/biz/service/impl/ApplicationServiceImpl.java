@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.NumberUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -121,6 +122,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -664,8 +666,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public void syncApplicationAccessStatus() {
+    public synchronized void syncApplicationAccessStatus() {
+        int count = 0;
         try {
+            log.info("------开始执行应用同步------执行线程:" + Thread.currentThread().getName());
             // 应用分页大小
             int pageSize = 20;
             // 查出的应用数量, 如果小于pageSize, 则无需下一页
@@ -741,31 +745,58 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 }
 
                 // 更新应用状态
-                applicationDAO.updateStatusByApplicationIds(errorApplicationIdSet,
-                        AppAccessStatusEnum.EXCEPTION.getCode());
-                applicationDAO.updateStatusByApplicationIds(normalApplicationIdSet,
-                        AppAccessStatusEnum.NORMAL.getCode());
-                this.syncApplicationAccessStatus(appNames);
+//                applicationDAO.updateStatusByApplicationIds(errorApplicationIdSet,
+//                        AppAccessStatusEnum.EXCEPTION.getCode());
+//                applicationDAO.updateStatusByApplicationIds(normalApplicationIdSet,
+//                        AppAccessStatusEnum.NORMAL.getCode());
+                count += applicationList.size();
+                this.syncApplicationAccessStatus(applicationList,errorApplicationIdSet);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
         } catch (Exception e) {
             log.error("定时同步应用状态错误, 错误信息: {}", e.getMessage(), e);
         }
-
+        log.info("------开始执行应用同步------执行线程:" + Thread.currentThread().getName() + "共执行了:" + count);
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<String> appNames) {
-        if (CollectionUtils.isNotEmpty(appNames)) {
-            appNames.forEach(name -> {
-                Map result = applicationDAO.getStatus(name);
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList,Set<Long> errorApplicationIdSet) {
+        log.info("开始同步应用状态:" + applicationList);
+        if (CollectionUtils.isNotEmpty(applicationList)) {
+            applicationList.forEach(app -> {
+                Map result = applicationDAO.getStatus(app.getApplicationName());
+                log.info("应用:" + app.getApplicationName() + "状态为:" + result);
                 long n = (long) result.get("n");
-                if (n != 0) {
-                    String e = (String)result.get("e");
-                    applicationDAO.updateStatus(name,e);
-                }
+                if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
+                    log.info("应用:"+app.getApplicationName()+"异常");
+                    String e = (String) result.get("e");
+                    if (StringUtils.isBlank(e)) {
+                        String a = (String)result.get("a");
+                        e = "探针接入异常";
+                        if (StringUtils.isNotEmpty(a)) {
+                            e += "，agentId为"+a;
+                        }
+                    }
+                    applicationDAO.updateStatus(app.getApplicationId(), e);
+                    NodeUploadDataDTO param = new NodeUploadDataDTO();
+                    param.setApplicationName(app.getApplicationName());
+                    param.setAgentId((String) result.get("a"));
+                    param.setNodeKey(UUID.randomUUID().toString().replace("_", ""));
+                    param.setExceptionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                    HashMap map = new HashMap(1);
+                    ExceptionInfo exceptionInfo = new ExceptionInfo();
+                    exceptionInfo.setErrorCode("—");
+                    exceptionInfo.setMessage(e);
+                    exceptionInfo.setDetail(e);
+                    map.put("Agent异常:" + this.toString().hashCode(), JSON.toJSONString(exceptionInfo));
+                    param.setSwitchErrorMap(map);
+                    uploadAccessStatus(param);
+                } else {
+                    log.info("应用:"+app.getApplicationName()+"正常");
+                    applicationDAO.updateStatus(app.getApplicationId());}
             });
+            log.info("结束同步应用状态!");
         }
     }
 

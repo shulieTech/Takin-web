@@ -725,12 +725,22 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    public void updateStatus(String name, String e) {
+    public void updateStatus(Long applicationId, String e) {
         LambdaUpdateWrapper<ApplicationMntEntity> wrapper = this.getLambdaUpdateWrapper();
 
         wrapper.set(ApplicationMntEntity::getAccessStatus, 3)
                 .set(ApplicationMntEntity::getExceptionInfo,e)
-                .eq(ApplicationMntEntity::getApplicationName, name);
+                .eq(ApplicationMntEntity::getApplicationId, applicationId);
+        applicationMntMapper.update(null, wrapper);
+    }
+
+    @Override
+    public void updateStatus(Long applicationId) {
+        LambdaUpdateWrapper<ApplicationMntEntity> wrapper = this.getLambdaUpdateWrapper();
+
+        wrapper.set(ApplicationMntEntity::getAccessStatus, 0)
+                .set(ApplicationMntEntity::getExceptionInfo,"")
+                .eq(ApplicationMntEntity::getApplicationId, applicationId);
         applicationMntMapper.update(null, wrapper);
     }
 

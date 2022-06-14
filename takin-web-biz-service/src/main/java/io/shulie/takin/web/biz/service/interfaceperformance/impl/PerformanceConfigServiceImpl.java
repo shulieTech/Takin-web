@@ -203,7 +203,7 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
                     vo.setPressureStatus(result.getData().getStatus());
                 }
             } catch (Throwable t) {
-                logger.error("数据异常:{}", t.getMessage());
+                log.error("数据异常:{}", ExceptionUtils.getStackTrace(t));
             }
             return vo;
         }).collect(Collectors.toList());
@@ -340,14 +340,12 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         }
     }
 
-    Logger logger = LoggerFactory.getLogger(getClass());
-
     private void doAction(Object arg, Object response, Action.ActionEnum action) {
         try {
             _doAction(arg, response, action);
         } catch (Throwable t) {
-            logger.error("do pressure config action error:{}", ExceptionUtils.getStackTrace(t));
-            throw new RuntimeException(t.getMessage());
+            log.error("do pressure config action error:{}", ExceptionUtils.getStackTrace(t));
+            throw new TakinWebException(TakinWebExceptionEnum.INTERFACE_PERFORMANCE_SCENE_OP_ERROR, "场景操作异常");
         }
     }
 

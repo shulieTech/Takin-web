@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.util.HttpSupport;
@@ -451,6 +452,25 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
                 $data.put("path", path);
                 builder.addDatas($data);
             });
+        }
+        //合并文件名相同的format
+        List<Map<String, String>> datas = builder.datas;
+        Map<String, Map<String, String>> combineFormatMap = Maps.newHashMap();
+        if (!CollectionUtils.isEmpty(datas)) {
+            for (Map<String, String> one : datas) {
+                String path = one.get("path");
+                if (combineFormatMap.get(path) == null) {
+                    combineFormatMap.put(path, one);
+                } else {
+                    Map<String, String> inner = combineFormatMap.get(path);
+                    String needAddFormat = one.get("format");
+                    String oldFormat = inner.get("format");
+                    String newFormat = Joiner.on(",").join(oldFormat, needAddFormat);
+                    inner.put("format", newFormat);
+                    combineFormatMap.put(path, inner);
+                }
+            }
+            builder.datas = Lists.newArrayList(combineFormatMap.values().iterator());
         }
         return builder;
     }

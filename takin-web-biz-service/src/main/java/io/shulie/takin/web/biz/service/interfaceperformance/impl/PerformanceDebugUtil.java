@@ -181,7 +181,7 @@ public class PerformanceDebugUtil {
         return header;
     }
 
-    private void addHeader(String data, HttpHeaders header) {
+    public void addHeader(String data, HttpHeaders header) {
         //读取行
         BufferedReader bf = new BufferedReader(new StringReader(StringUtils.isBlank(data) ? "" : data));
         String line = "";

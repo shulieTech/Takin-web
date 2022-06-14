@@ -494,12 +494,13 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         builder.setMethod(record.getHttpMethod());
         // 放header
         buildHeader(record.getHeaders(), builder);
+
         // 处理Content-Type
         ContentTypeVO contentTypeVO = JsonHelper.json2Bean(record.getContentType(), ContentTypeVO.class);
         String type = performanceDebugUtil.getContentType(contentTypeVO);
-        Map<String, String> contentTypeMap = Maps.newHashMap();
-        contentTypeMap.put("Content-Type", type);
-        builder.addHeaders(contentTypeMap);
+        Map<String, String> toHeader = Maps.newHashMap();
+        toHeader.put("key", "Content-Type");
+        toHeader.put("value", type);
         //放data
         buildData(id, builder);
         return builder.build();

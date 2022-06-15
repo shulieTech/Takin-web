@@ -38,7 +38,7 @@ public class FileUtils {
      */
     public static Map<String, List<Object>> readAll(String filePathName) {
         if (StringUtils.isBlank(filePathName)) {
-            return Maps.newHashMap();
+            return Maps.newLinkedHashMap();
         }
         if (filePathName.endsWith("csv")) {
             return readCsvAll(filePathName);
@@ -46,7 +46,7 @@ public class FileUtils {
         if (filePathName.endsWith("xlsx") || filePathName.endsWith("xls")) {
             return readExcelAll(filePathName);
         }
-        return Maps.newHashMap();
+        return Maps.newLinkedHashMap();
     }
 
     public static Map<String, String> readFirstRow(String filePathName) {
@@ -69,12 +69,12 @@ public class FileUtils {
      * @return
      */
     public static Map<String, List<Object>> readCsvAll(String path) {
-        Map<String, List<Object>> dataMap = Maps.newHashMap();
+        Map<String, List<Object>> dataMap = Maps.newLinkedHashMap();
         CsvData csvData = csvReaderThreadLocal.get().read(FileUtil.file(path));
         // 获取第一行
         List<CsvRow> csvRows = csvData.getRows();
         // 将column和rows做一个映射
-        Map<String, String> columnRowMap = Maps.newHashMap();
+        Map<String, String> columnRowMap = Maps.newLinkedHashMap();
         boolean isFirstColumn = true;
         for (int i = 0; i < csvRows.size(); i++) {
             int index = 1;
@@ -114,7 +114,7 @@ public class FileUtils {
      * @return
      */
     public static Map<String, String> readCsvFirstRow(String path) {
-        Map<String, String> dataMap = Maps.newHashMap();
+        Map<String, String> dataMap = Maps.newLinkedHashMap();
         CsvData csvData = csvReaderThreadLocal.get().read(FileUtil.file(path));
         // 获取第一行
         CsvRow csvRow = csvData.getRow(0);
@@ -141,7 +141,7 @@ public class FileUtils {
      * @return
      */
     public static Map<String, String> readExcelFirstRow(String path) {
-        Map<String, String> dataMap = Maps.newHashMap();
+        Map<String, String> dataMap = Maps.newLinkedHashMap();
         ExcelReader excelReader = ExcelUtil.getReader(path);
         List<Object> objs = excelReader.readRow(0);
         objs.stream().forEach(obj -> dataMap.put(Objects.toString(obj), ""));
@@ -155,12 +155,12 @@ public class FileUtils {
      * @return
      */
     public static Map<String, List<Object>> readExcelAll(String path) {
-        Map<String, List<Object>> dataMap = Maps.newHashMap();
+        Map<String, List<Object>> dataMap = Maps.newLinkedHashMap();
         ExcelReader excelReader = ExcelUtil.getReader(path);
         // 获取第一行
         List<List<Object>> list = excelReader.read();
         // 将column和rows做一个映射
-        Map<String, String> columnRowMap = Maps.newHashMap();
+        Map<String, String> columnRowMap = Maps.newLinkedHashMap();
         for (int i = 0; i < list.size(); i++) {
             int index = 1;
             // 获取第一行

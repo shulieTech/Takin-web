@@ -193,7 +193,8 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
     INTERFACE_PERFORMANCE_DEBUG_ERROR("1904-" + ErrorConstant.STATUS_ERROR, "当前场景已在调试中"),
     INTERFACE_PERFORMANCE_FILE_PARAM_ERROR("1905-" + ErrorConstant.VALIDATE_ERROR, "参数存在重复"),
     INTERFACE_PERFORMANCE_QUERY_PARAM_ERROR("1906-" + ErrorConstant.QUERY_ERROR, "获取入口参数异常"),
-    INTERFACE_PERFORMANCE_SCRIPT_CREATE_ERROR("1906-" + ErrorConstant.ADD_ERROR, "生成脚本异常"),
+    INTERFACE_PERFORMANCE_SCRIPT_CREATE_ERROR("1907-" + ErrorConstant.ADD_ERROR, "生成脚本异常"),
+    INTERFACE_PERFORMANCE_SCENE_OP_ERROR("1908-" + ErrorConstant.ADD_ERROR, "场景操作异常"),
 
     ;
     private final String errorCode;

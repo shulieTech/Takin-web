@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
+import com.google.common.collect.Maps;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.ContentTypeVO;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamRequest;
@@ -181,7 +182,7 @@ public class PerformanceDebugUtil {
         return header;
     }
 
-    private void addHeader(String data, HttpHeaders header) {
+    public void addHeader(String data, HttpHeaders header) {
         //读取行
         BufferedReader bf = new BufferedReader(new StringReader(StringUtils.isBlank(data) ? "" : data));
         String line = "";
@@ -202,7 +203,31 @@ public class PerformanceDebugUtil {
         }
     }
 
-    private String getContentType(ContentTypeVO vo) {
+    public List<Map<String, String>> buildHeader(String data) {
+        List<Map<String, String>> headerList = Lists.newArrayList();
+        //读取行
+        BufferedReader bf = new BufferedReader(new StringReader(StringUtils.isBlank(data) ? "" : data));
+        String line = "";
+        try {
+            while ((line = bf.readLine()) != null) {
+                if (StringUtils.isNotBlank(line) && line.contains(":")) {
+                    String[] temp = line.split(":");
+                    if (temp.length > 1) {
+                        Map<String, String> header = Maps.newHashMap();
+                        header.put("key", temp[0].trim());
+                        header.put("value", temp[1].trim());
+                        headerList.add(header);
+                    }
+                }
+            }
+            bf.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return headerList;
+    }
+
+    public String getContentType(ContentTypeVO vo) {
         if (ContentTypeVO.X_WWW_FORM_URLENCODED.equals(vo.getRadio())) {
             return MediaType.APPLICATION_FORM_URLENCODED_VALUE;
         } else {

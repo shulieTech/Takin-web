@@ -20,6 +20,7 @@ import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.interfaceperformance.ContentTypeVO;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceConfigCreateInput;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceDataFileRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowDataFileRequest;
@@ -66,6 +67,9 @@ import java.util.stream.Collectors;
 public class PerformancePressureServiceImpl extends AbstractPerformancePressureService {
     @Autowired
     private ActivityService activityService;
+
+    @Autowired
+    private PerformanceDebugUtil performanceDebugUtil;
 
     @Override
     public ResponseResult<Long> add(PerformanceConfigCreateInput request) throws Throwable {
@@ -378,9 +382,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
 
     @Override
     public String scriptGenerator(Long id) {
-        // TODO: 2022/5/20 调用cloud sdk 生成脚本
         ReqBuilder reqParam = buildReq(id);
-
         Map<String, Object> header = Maps.newHashMap();
         header.put("Content-Type", "application/json");
         ResponseWrapper responseWrapper = null;
@@ -435,6 +437,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
     private ReqBuilder buildData(Long id, ReqBuilder builder) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("config_id", id);
+        queryWrapper.orderByAsc("file_column_index");
         List<InterfacePerformanceParamEntity> paramEntityList = paramMapper.selectList(queryWrapper);
         if (!CollectionUtils.isEmpty(paramEntityList)) {
             paramEntityList.stream().forEach(entry -> {
@@ -484,26 +487,25 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
     }
 
     private ReqBuilder buildReq(Long id) {
-        // TODO: 2022/5/20 查询基本信息
         InterfacePerformanceConfigEntity record = configMapper.selectById(id);
-
         ReqBuilder builder = new ReqBuilder();
         builder.setName(record.getName());
         builder.setUrl(record.getRequestUrl());
         builder.setBody(record.getBody());
         builder.setMethod(record.getHttpMethod());
-        //放header
+        // 放header
         buildHeader(record.getHeaders(), builder);
 
+        // 处理Content-Type
+        ContentTypeVO contentTypeVO = JsonHelper.json2Bean(record.getContentType(), ContentTypeVO.class);
+        String type = performanceDebugUtil.getContentType(contentTypeVO);
+        Map<String, String> toHeader = Maps.newHashMap();
+        toHeader.put("key", "Content-Type");
+        toHeader.put("value", type);
+        builder.addHeaders(toHeader);
 
-        //获取param表的id
-        //   List<InterfacePerformanceParamEntity> paramEntityList = fetchParamEntryByApiId(id);
-        //       if (!CollectionUtils.isEmpty(paramEntityList)) {
         //放data
         buildData(id, builder);
-        //    }
-
-
         return builder.build();
     }
 

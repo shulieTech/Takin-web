@@ -92,7 +92,7 @@ public abstract class AbstractPerformancePressureService
     @Autowired
     private ApplicationDAO applicationDAO;
 
-    @Value("${takin.cloud.backend.url}")
+    @Value("${takin.cloud.url}")
     protected String urlOfCloud;
 
     protected String uriOfScriptGenerator = "/script/build";

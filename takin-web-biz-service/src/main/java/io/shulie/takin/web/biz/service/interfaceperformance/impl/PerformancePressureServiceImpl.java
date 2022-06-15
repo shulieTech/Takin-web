@@ -445,26 +445,27 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
                 FileManageResult fileManageResult = fileManageDao.selectFileManageById(fileId);
                 Assert.isTrue(fileManageResult != null, "数据文件为空.");
                 String path = fileManageResult.getUploadPath();
-                Map<String, String> $data = Maps.newHashMap();
+                Map<String, Object> $data = Maps.newHashMap();
                 //fileName 文件名,数据源名， fieldName 变量名 path 文件路径
                 $data.put("name", fileName);
                 $data.put("format", formatName(fieldName));
                 $data.put("path", path);
+                $data.put("ignoreFirstLine", true);
                 builder.addDatas($data);
             });
         }
         //合并文件名相同的format
-        List<Map<String, String>> datas = builder.datas;
-        Map<String, Map<String, String>> combineFormatMap = Maps.newHashMap();
+        List<Map<String, Object>> datas = builder.datas;
+        Map<String, Map<String, Object>> combineFormatMap = Maps.newHashMap();
         if (!CollectionUtils.isEmpty(datas)) {
-            for (Map<String, String> one : datas) {
-                String path = one.get("path");
+            for (Map<String, Object> one : datas) {
+                String path = (String) one.get("path");
                 if (combineFormatMap.get(path) == null) {
                     combineFormatMap.put(path, one);
                 } else {
-                    Map<String, String> inner = combineFormatMap.get(path);
-                    String needAddFormat = one.get("format");
-                    String oldFormat = inner.get("format");
+                    Map<String, Object> inner = combineFormatMap.get(path);
+                    String needAddFormat = (String) one.get("format");
+                    String oldFormat = (String) inner.get("format");
                     String newFormat = Joiner.on(",").join(oldFormat, needAddFormat);
                     inner.put("format", newFormat);
                     combineFormatMap.put(path, inner);
@@ -513,7 +514,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         String method;
         List<Map<String, String>> headers = Lists.newArrayList();
         String body;
-        List<Map<String, String>> datas = Lists.newArrayList();
+        List<Map<String, Object>> datas = Lists.newArrayList();
 
 
         /**
@@ -542,7 +543,7 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         }
 
 
-        public ReqBuilder addDatas(Map<String, String> data) {
+        public ReqBuilder addDatas(Map<String, Object> data) {
             this.datas.add(data);
             return this;
         }

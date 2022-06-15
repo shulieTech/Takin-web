@@ -469,6 +469,9 @@ public class DsServiceImpl implements DsService {
         });
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName());
         return response;
     }
 
@@ -625,6 +628,9 @@ public class DsServiceImpl implements DsService {
 
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName());
         return Response.success();
     }
 
@@ -666,6 +672,9 @@ public class DsServiceImpl implements DsService {
         ApplicationDetailResult detailResult = applicationDAO.getApplicationById(applicationId);
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName());
         if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
             //删除老数据
             ApplicationDsDeleteParam deleteParam = new ApplicationDsDeleteParam();
@@ -690,6 +699,9 @@ public class DsServiceImpl implements DsService {
 
         agentConfigCacheManager.evictShadowDb(detailResult.getApplicationName());
         agentConfigCacheManager.evictShadowServer(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowEsServers(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowHbase(detailResult.getApplicationName());
+        agentConfigCacheManager.evictShadowKafkaCluster(detailResult.getApplicationName());
         return Response.success();
     }
 
@@ -960,6 +972,9 @@ public class DsServiceImpl implements DsService {
         ApplicationDetailResult result = applicationDAO.getApplicationById(applicationId);
         agentConfigCacheManager.evictShadowDb(result.getApplicationName());
         agentConfigCacheManager.evictShadowServer(result.getApplicationName());
+        agentConfigCacheManager.evictShadowEsServers(result.getApplicationName());
+        agentConfigCacheManager.evictShadowHbase(result.getApplicationName());
+        agentConfigCacheManager.evictShadowKafkaCluster(result.getApplicationName());
         if (Objects.nonNull(isNewData) && BooleanUtil.isFalse(isNewData)) {
             //更新老数据
             ApplicationDsEnableParam enableParam = new ApplicationDsEnableParam();

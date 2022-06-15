@@ -171,7 +171,7 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
                 }
             }
             try {
-                TimeUnit.SECONDS.sleep(checkTime);
+                TimeUnit.MILLISECONDS.sleep(checkTime);
             } catch (InterruptedException ignore) {
             }
         }
@@ -196,7 +196,7 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
                 }
             }
             try {
-                TimeUnit.SECONDS.sleep(checkTime);
+                TimeUnit.MILLISECONDS.sleep(checkTime);
             } catch (InterruptedException ignore) {
             }
         }

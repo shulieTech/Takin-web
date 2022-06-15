@@ -332,6 +332,10 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             redisClientUtil.setString(PressureStartCache.getScenePreStopKey(sceneId, uniqueKey), now, 5, TimeUnit.MINUTES);
             String resourceId = String.valueOf(redisClientUtil.hmget(resourceKey, PressureStartCache.RESOURCE_ID));
             ResourceContext context = getResourceContext(resourceId);
+            if (Objects.isNull(context)) {
+                // 几乎不太会出现此场景
+                return 1;
+            }
             context.setMessage("取消压测");
             Event event = new Event();
             event.setEventName(PressureStartCache.PRE_STOP_EVENT);

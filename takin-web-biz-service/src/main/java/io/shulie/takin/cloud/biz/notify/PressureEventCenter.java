@@ -40,6 +40,7 @@ import io.shulie.takin.eventcenter.annotation.IntrestFor;
 import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.web.biz.checker.StartConditionChecker.CheckStatus;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +72,8 @@ public class PressureEventCenter extends AbstractIndicators {
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private PluginManager pluginManager;
+    @Resource
+    private SceneTaskService sceneTaskService;
 
     /**
      * 校验成功事件
@@ -201,14 +204,18 @@ public class PressureEventCenter extends AbstractIndicators {
         String stopFlag = PressureStartCache.getStopFlag(context.getResourceId());
         if (redisClientUtil.lockStopFlagExpire(stopFlag, message)) {
             Long taskId = context.getTaskId();
-            setTryRunTaskFailInfo(context.getSceneId(), context.getReportId(), context.getTenantId(), message);
+            Long reportId = context.getReportId();
+            setTryRunTaskFailInfo(context.getSceneId(), reportId, context.getTenantId(), message);
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, message);
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.STOPPING, null);
-            unLockFlow(context.getReportId(), context.getTenantId());
+            unLockFlow(reportId, context.getTenantId());
             try {
                 stopJob(context.getResourceId(), context.getJobId());
             } catch (Exception ignore) {}
             updateSceneFailed(context.getSceneId(), SceneManageStatusEnum.STOP);
+            if (!redisClientUtil.hasKey(PressureStartCache.getReportCachedKey(reportId))) {
+                sceneTaskService.cacheReportKey(reportId);
+            }
             notifyFinish(context);
             endDefaultPressureIfNecessary(context);
         }

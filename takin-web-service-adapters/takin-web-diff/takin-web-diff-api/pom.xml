@@ -20,7 +20,7 @@
     <parent>
         <artifactId>takin-web-diff</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.7.0</version>
+        <version>takin-web-5.7.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

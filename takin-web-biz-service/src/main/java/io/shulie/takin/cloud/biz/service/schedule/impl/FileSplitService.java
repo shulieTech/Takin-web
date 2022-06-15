@@ -297,7 +297,7 @@ public class FileSplitService extends AbstractIndicators {
         }
     }
 
-    private static String reWriteAttachmentPath(String attachmentPath) {
+    public static String reWriteAttachmentPath(String attachmentPath) {
         String[] pathArr = attachmentPath.split(FILE_SPLIT);
         return pathArr[0] + FILE_SPLIT + "attachments" + FILE_SPLIT + pathArr[1];
     }

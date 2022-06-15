@@ -517,7 +517,7 @@ public class CloudSceneServiceImpl implements CloudSceneService {
                 case 1:
                     break;
                 case 2:
-                    destPath = destPath + SceneManageConstant.FILE_SPLIT + "attachments";
+                    destPath = destPath + SceneManageConstant.FILE_SPLIT + "attachments" + SceneManageConstant.FILE_SPLIT;
                     break;
                 default:
                     log.info("遇到{}类型的文件:[{}]", t.getType(), t.getPath());

@@ -44,6 +44,7 @@ import io.shulie.takin.adapter.api.model.request.scenetask.SceneTryRunTaskStartR
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneTryRunTaskStartResp;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneTryRunTaskStatusResp;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
+import io.shulie.takin.cloud.common.constants.SceneManageConstant;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
@@ -530,7 +531,7 @@ public class ScriptDebugServiceImpl extends AbstractIndicators implements Script
     private List<String> checkScriptCorrelationAndGetError(SceneTryRunTaskStartReq debugCloudRequest) {
         SceneManageWrapperDTO sceneData = new SceneManageWrapperDTO();
         sceneData.setScriptType(debugCloudRequest.getScriptType());
-
+        sceneData.setScriptId(debugCloudRequest.getScriptDeployId());
         // 上传路径
         List<SceneScriptRefOpen> uploadFileList = debugCloudRequest.getUploadFile();
         if (CollectionUtil.isNotEmpty(uploadFileList)) {
@@ -555,6 +556,7 @@ public class ScriptDebugServiceImpl extends AbstractIndicators implements Script
 
         sceneData.setBusinessActivityConfig(businessActivityConfigDTOList);
         sceneData.setIsAbsoluteScriptPath(FileUtils.isAbsoluteUploadPath(sceneData.getUploadFile(), scriptFilePath));
+        sceneData.setPressureTestSceneName(SceneManageConstant.getTryRunSceneName(debugCloudRequest.getScriptDeployId()));
         String result = sceneTaskService.checkScriptCorrelation(sceneData);
         return Arrays.asList(StrUtil.split(result, Constants.SPLIT));
     }

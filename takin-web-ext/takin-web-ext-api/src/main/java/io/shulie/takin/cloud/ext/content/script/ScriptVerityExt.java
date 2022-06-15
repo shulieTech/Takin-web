@@ -25,4 +25,14 @@ public class ScriptVerityExt {
      * <p>混合压测后是1</p>
      */
     private Integer version;
+
+    private boolean useNewVerify;
+    // 脚本文件路径, 此处是单个
+    private String scriptPaths;
+    // 插件路径，多个按逗号分隔
+    private String pluginPaths;
+    // 数据文件路径，多个按逗号分隔
+    private String csvPaths;
+    // 附件文件路径，多个按逗号分隔
+    private String attachments;
 }

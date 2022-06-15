@@ -52,7 +52,7 @@ public class PodStartNotifyProcessor extends AbstractIndicators implements Cloud
         redisClientUtil.setSetValue(PressureStartCache.getResourcePodSuccessKey(resourceId), podId);
         if (Boolean.TRUE.equals(
             redisTemplate.opsForValue().setIfAbsent(PressureStartCache.getPodStartFirstKey(resourceId), podId))) {
-            cloudAsyncService.checkPodHeartbeatTask(resourceContext);
+            // cloudAsyncService.checkPodHeartbeatTask(resourceContext);
         }
     }
 }

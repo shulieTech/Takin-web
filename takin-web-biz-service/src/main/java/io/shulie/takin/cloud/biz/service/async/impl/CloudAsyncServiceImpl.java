@@ -177,7 +177,7 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
         }
     }
 
-    @Async("checkPodHeartbeatPool")
+    // @Async("checkPodHeartbeatPool")
     @Override
     public void checkPodHeartbeatTask(ResourceContext context) {
         log.info("启动后台检查pod心跳状态线程.....");

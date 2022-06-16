@@ -664,7 +664,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public void syncApplicationAccessStatus() {
+    public synchronized void syncApplicationAccessStatus() {
         try {
             // 应用分页大小
             int pageSize = 20;
@@ -685,67 +685,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 pageBaseDTO.setCurrent(pageBaseDTO.getCurrent() + 1);
                 // 赋值查询出的应用数量
                 applicationNumber = applicationList.size();
-
-                // 收集应用名称
-                List<String> appNames = applicationList.stream()
-                        .map(ApplicationListResult::getApplicationName)
-                        .collect(Collectors.toList());
-
-                // 大数据应用的map, key 应用名称, value amdb应用实例
-                Map<String, ApplicationResult> amdbApplicationMap = this.getAmdbApplicationMap(appNames);
-
-                // 大数据应用节点的map, key 应用名称, value amdb节点列表
-                Map<String, List<ApplicationNodeResult>> amdbApplicationNodeMap = this.getAmdbApplicationNodeMap(
-                        appNames);
-
-                // 异常的应用
-                Set<Long> errorApplicationIdSet = new HashSet<>(20);
-                // 正常的应用
-                Set<Long> normalApplicationIdSet = new HashSet<>(20);
-
-                // 遍历比对
-                for (ApplicationListResult application : applicationList) {
-                    String applicationName = application.getApplicationName();
-                    Long applicationId = application.getApplicationId();
-                    Integer nodeNum = application.getNodeNum();
-
-                    // 该应用对应的大数据应用实例
-                    ApplicationResult amdbApplication;
-                    // 该应用对应的大数据节点列表
-                    List<ApplicationNodeResult> amdbApplicationNodeList;
-
-                    if (amdbApplicationMap.isEmpty()
-                            || (amdbApplication = amdbApplicationMap.get(applicationName)) == null
-                            || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
-                        // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
-                        errorApplicationIdSet.add(applicationId);
-
-                    } else if (!amdbApplicationMap.isEmpty()
-                            && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
-                            && amdbApplication.getAppIsException()) {
-                        // map 存在, map.get 存在, amdb应用为异常
-                        errorApplicationIdSet.add(applicationId);
-
-                    } else if (!amdbApplicationNodeMap.isEmpty()
-                            && CollectionUtil.isNotEmpty(
-                            amdbApplicationNodeList = amdbApplicationNodeMap.get(applicationName))
-                            && amdbApplicationNodeList.stream().map(ApplicationNodeResult::getAgentVersion).distinct()
-                            .count()
-                            > 1) {
-                        // 判断agent版本号是否一致
-                        errorApplicationIdSet.add(applicationId);
-
-                    } else {
-                        normalApplicationIdSet.add(applicationId);
-                    }
-                }
-
-                // 更新应用状态
-                applicationDAO.updateStatusByApplicationIds(errorApplicationIdSet,
-                        AppAccessStatusEnum.EXCEPTION.getCode());
-                applicationDAO.updateStatusByApplicationIds(normalApplicationIdSet,
-                        AppAccessStatusEnum.NORMAL.getCode());
-                this.syncApplicationAccessStatus(appNames);
+                this.syncApplicationAccessStatus(applicationList);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
@@ -756,16 +696,17 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<String> appNames) {
-        if (CollectionUtils.isNotEmpty(appNames)) {
-            appNames.forEach(name -> {
-                Map result = applicationDAO.getStatus(name);
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList) {
+        log.info("开始同步应用状态:" + applicationList);
+        if (CollectionUtils.isNotEmpty(applicationList)) {
+            applicationList.forEach(app -> {
+                Map result = applicationDAO.getStatus(app.getApplicationName());
+                log.info("应用:" + app.getApplicationName() + "状态为:" + result);
                 long n = (long) result.get("n");
-                if (n != 0) {
-                    String e = (String)result.get("e");
-                    applicationDAO.updateStatus(name,e);
-                }
+                if (n != 0) applicationDAO.updateStatus(app.getApplicationId(), (String) result.get("e"));
+                else applicationDAO.updateStatus(app.getApplicationId());
             });
+            log.info("结束同步应用状态!");
         }
     }
 

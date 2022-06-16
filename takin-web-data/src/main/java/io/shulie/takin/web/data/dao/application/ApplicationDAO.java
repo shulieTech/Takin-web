@@ -430,5 +430,7 @@ public interface ApplicationDAO {
 
     Map getStatus(String name);
 
-    void updateStatus(String name, String e);
+    void updateStatus(Long applicationId, String e);
+
+    void updateStatus(Long applicationId);
 }

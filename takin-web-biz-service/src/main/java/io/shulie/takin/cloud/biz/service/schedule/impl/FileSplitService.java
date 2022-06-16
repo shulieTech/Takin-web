@@ -19,9 +19,11 @@ import com.pamirs.takin.cloud.entity.domain.vo.file.FileSliceRequest;
 import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.notify.StartFailEventSource;
+import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput.SceneScriptRefOutput;
 import io.shulie.takin.cloud.biz.service.engine.EngineConfigService;
 import io.shulie.takin.cloud.biz.service.schedule.FileSliceService;
 import io.shulie.takin.cloud.biz.service.schedule.ScheduleService;
+import io.shulie.takin.cloud.biz.utils.FileTypeBusinessUtil;
 import io.shulie.takin.cloud.common.constants.FileSplitConstants;
 import io.shulie.takin.cloud.common.constants.SceneStartCheckConstants;
 import io.shulie.takin.cloud.common.constants.ScheduleEventConstant;
@@ -42,9 +44,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import static io.shulie.takin.cloud.common.constants.SceneManageConstant.FILE_SPLIT;
 
 /**
  * @author 莫问
@@ -286,5 +289,16 @@ public class FileSplitService extends AbstractIndicators {
             return resultMap;
         }
         return null;
+    }
+
+    public static void reWriteAttachmentSceneScriptRefOutput(SceneScriptRefOutput refOutput) {
+        if (FileTypeBusinessUtil.isAttachment(refOutput.getFileType())) {
+            refOutput.setUploadPath(reWriteAttachmentPath(refOutput.getUploadPath()));
+        }
+    }
+
+    private static String reWriteAttachmentPath(String attachmentPath) {
+        String[] pathArr = attachmentPath.split(FILE_SPLIT);
+        return pathArr[0] + FILE_SPLIT + "attachments" + FILE_SPLIT + pathArr[1];
     }
 }

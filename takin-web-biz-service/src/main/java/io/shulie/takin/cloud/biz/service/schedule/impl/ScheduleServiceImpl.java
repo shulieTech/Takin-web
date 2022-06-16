@@ -357,7 +357,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
                 }
                 List<DataFile> attachmentFiles = fileTypeMap.get(FileSplitConstants.FILE_TYPE_EXTRA_FILE);
                 if (!CollectionUtils.isEmpty(attachmentFiles)) {
-                    List<FileInfo> dependencies = dataFiles.stream()
+                    List<FileInfo> dependencies = attachmentFiles.stream()
                         .map(ScheduleServiceImpl::convertFile).collect(Collectors.toList());
                     List<FileInfo> dependencyFile = req.getDependencyFile();
                     if (dependencyFile == null) {

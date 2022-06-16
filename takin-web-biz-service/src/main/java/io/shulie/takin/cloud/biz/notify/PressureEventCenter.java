@@ -149,9 +149,14 @@ public class PressureEventCenter extends AbstractIndicators {
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, message + " | " + e.getMessage());
             exception = true;
         }
-        setTryRunTaskFailInfo(context.getSceneId(), context.getReportId(), context.getTenantId(), message);
+        boolean noInterrupt = !source.isInterrupt();
+        if (noInterrupt) {
+            setTryRunTaskFailInfo(context.getSceneId(), context.getReportId(), context.getTenantId(), message);
+        }
         if (!exception && redisClientUtil.lockStopFlagExpire(PressureStartCache.getStopFlag(resourceId), message)) {
-            pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, message);
+            if (noInterrupt) {
+                pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.UNUSUAL, message);
+            }
             pressureTaskDAO.updateStatus(taskId, PressureTaskStateEnum.STOPPING, null);
             endDefaultPressureIfNecessary(context);
         }

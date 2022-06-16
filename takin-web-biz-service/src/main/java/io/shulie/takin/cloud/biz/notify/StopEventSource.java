@@ -12,4 +12,5 @@ public class StopEventSource {
 
     private ResourceContext context;
     private String message;
+    private boolean interrupt; // 正常中断不触发异常信息记录
 }

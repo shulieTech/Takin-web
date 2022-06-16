@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import io.shulie.takin.cloud.biz.notify.processor.calibration.DataCalibrationNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.jmeter.PressureErrorNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.jmeter.PressureHeartbeatNotifyParam;
+import io.shulie.takin.cloud.biz.notify.processor.jmeter.PressureInterruptNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.jmeter.PressureStartNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.jmeter.PressureStopNotifyParam;
 import io.shulie.takin.cloud.biz.notify.processor.pod.FilePositionParam;
@@ -31,6 +32,7 @@ import lombok.Data;
     @JsonSubTypes.Type(value = PressureStartNotifyParam.class, name = "201"),
     @JsonSubTypes.Type(value = PressureStopNotifyParam.class, name = "202"),
     @JsonSubTypes.Type(value = PressureErrorNotifyParam.class, name = "203"),
+    @JsonSubTypes.Type(value = PressureInterruptNotifyParam.class, name = "204"),
     @JsonSubTypes.Type(value = SlaNotifyParam.class, name = "301"),
     @JsonSubTypes.Type(value = DataCalibrationNotifyParam.class, name = "302"),
     @JsonSubTypes.Type(value = FilePositionParam.class, name = "303"),

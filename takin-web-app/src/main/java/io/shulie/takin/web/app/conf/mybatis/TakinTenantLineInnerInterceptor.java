@@ -80,6 +80,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_tro_version",
         "t_user_config",
         // cloud迁移
+        "t_ac_account",
         "t_ac_account_balance",
         "t_ac_account_book",
         "t_engine_plugin_files_ref",
@@ -132,6 +133,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_tro_version",
         "t_user_config",
         // cloud迁移
+        "t_ac_account",
         "t_ac_account_balance",
         "t_ac_account_book",
         "t_engine_plugin_files_ref",
@@ -184,6 +186,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_tro_version",
         "t_user_config",
         // cloud迁移
+        "t_ac_account",
         "t_ac_account_balance",
         "t_ac_account_book",
         "t_engine_plugin_files_ref",

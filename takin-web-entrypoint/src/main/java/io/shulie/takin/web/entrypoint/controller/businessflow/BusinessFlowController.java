@@ -164,9 +164,7 @@ public class BusinessFlowController {
             String[] s1 = path.split("\\|");
             String[] s2 = entracePath.split("\\|");
             if (s1.length == 2 && s2.length == 2) {
-                if (!StringUtils.equals(s1[0], s2[0]) || StringUtils.equals(s1[1], s2[1])) {
-                    return false;
-                }
+                return StringUtils.equals(s1[0], s2[0]) && StringUtils.equals(s1[1], s2[1]);
             }
         }
         return true;

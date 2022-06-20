@@ -77,6 +77,11 @@ public class AgentHeartbeatBO {
     private String agentVersion;
 
     /**
+     * simulator版本
+     */
+    private String simulatorVersion;
+
+    /**
      * agent依赖的模块版本信息
      */
     private String dependencyInfo;

@@ -207,5 +207,12 @@
           and is_agent_registe = 1
     </select>
 
+    <select id="queryManage" resultType="java.lang.Integer">
+        select
+        count(*)
+        from t_application_api_manage
+        where APPLICATION_NAME = #{applicationName} and api = #{api} and method = #{method}
+    </select>
+
 
 </mapper>

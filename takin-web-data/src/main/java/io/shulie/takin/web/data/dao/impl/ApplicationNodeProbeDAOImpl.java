@@ -92,4 +92,14 @@ public class ApplicationNodeProbeDAOImpl implements ApplicationNodeProbeDAO,
         return DataTransformUtil.copyBeanPropertiesWithNull(entity, ApplicationNodeProbeResult.class);
     }
 
+    @Override
+    public List<ApplicationNodeProbeResult> listByAppNameAndOperate(Integer code, List<String> appNames) {
+        List<ApplicationNodeProbeEntity> applicationNodeProbeEntities = applicationNodeProbeMapper.selectList(this.getCustomerLambdaQueryWrapper()
+                .select(ApplicationNodeProbeEntity::getId, ApplicationNodeProbeEntity::getOperate,
+                        ApplicationNodeProbeEntity::getApplicationName, ApplicationNodeProbeEntity::getOperateResult)
+                .eq(ApplicationNodeProbeEntity::getOperate, code)
+                .in(ApplicationNodeProbeEntity::getApplicationName, appNames));
+        return DataTransformUtil.list2list(applicationNodeProbeEntities, ApplicationNodeProbeResult.class);
+    }
+
 }

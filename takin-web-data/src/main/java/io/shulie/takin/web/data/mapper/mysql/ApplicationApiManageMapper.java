@@ -33,4 +33,6 @@ public interface ApplicationApiManageMapper extends BaseMapper<ApplicationApiMan
     int insertBatch(@Param("list") List<ApplicationApiManageEntity> list);
 
     void deleteByAppName(@Param("appName") String appName);
+
+    int queryManage(@Param("applicationName") String applicationName,@Param("method")  String method, @Param("api") String api);
 }

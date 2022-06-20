@@ -69,5 +69,7 @@ public interface ApplicationNodeProbeDAO {
     ApplicationNodeProbeResult getByApplicationNameAndAgentIdAndMaxTenantId(String applicationName, String agentId,
         Long tenantId);
 
+
+    List<ApplicationNodeProbeResult> listByAppNameAndOperate(Integer code, List<String> appNames);
 }
 

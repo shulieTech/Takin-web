@@ -17,7 +17,6 @@ import lombok.Data;
 public class ActivityQueryRequest extends PagingDevice {
 
     @ApiModelProperty("业务活动名称")
-    @Trimmed(value = TrimmerType.SIMPLE)
     private String activityName;
 
     @ApiModelProperty("业务域")

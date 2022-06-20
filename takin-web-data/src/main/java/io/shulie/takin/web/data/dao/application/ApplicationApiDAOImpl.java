@@ -155,4 +155,9 @@ public class ApplicationApiDAOImpl implements ApplicationApiDAO {
     public void deleteByAppName(String appName) {
         apiManageMapper.deleteByAppName(appName);
     }
+
+    @Override
+    public boolean check(String applicationName, String method, String api) {
+        return apiManageMapper.queryManage(applicationName,method,api) > 0;
+    }
 }

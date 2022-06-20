@@ -118,4 +118,5 @@ public interface ApplicationApiDAO {
      */
     void deleteByAppName(String appName);
 
+    boolean check(String applicationName, String method, String api);
 }

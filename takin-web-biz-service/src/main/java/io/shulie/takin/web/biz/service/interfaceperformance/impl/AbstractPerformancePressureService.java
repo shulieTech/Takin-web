@@ -72,6 +72,7 @@ import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
 import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -503,6 +504,9 @@ public abstract class AbstractPerformancePressureService
     @Override
     public ResponseResult<SceneDetailResponse> query(Long apiId) throws Throwable {
         Long sceneId = fetchSceneId(apiId);
+        if(sceneId == null){
+            return null;
+        }
         SceneManageQueryReq request = new SceneManageQueryReq() {
             {
                 setSceneId(sceneId);

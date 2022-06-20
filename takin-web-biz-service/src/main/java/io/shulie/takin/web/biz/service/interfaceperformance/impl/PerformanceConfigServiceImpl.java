@@ -328,11 +328,13 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
             case detail:
                 Long detailIn = (Long) arg;
                 ResponseResult<SceneDetailResponse> result = performancePressureService.query(detailIn);
-                SceneDetailResponse source = result.getData();
-                if (response.getClass().isAssignableFrom(PerformanceConfigVO.class)) {
-                    NewSceneRequest requestDetail = performancePressureService.convert(source, detailIn);
-                    ((PerformanceConfigVO) response).setPressureConfigRequest(requestDetail);
-                    ((PerformanceConfigVO) response).setBindSceneId(source.getId());
+                if (result != null) {
+                    SceneDetailResponse source = result.getData();
+                    if (response.getClass().isAssignableFrom(PerformanceConfigVO.class)) {
+                        NewSceneRequest requestDetail = performancePressureService.convert(source, detailIn);
+                        ((PerformanceConfigVO) response).setPressureConfigRequest(requestDetail);
+                        ((PerformanceConfigVO) response).setBindSceneId(source.getId());
+                    }
                 }
                 break;
             case select:

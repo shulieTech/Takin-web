@@ -135,7 +135,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         }
 
         SceneDetailResponse sceneDetailResponse = DataTransformUtil.copyBeanPropertiesWithNull(sceneResult.getData(),
-                SceneDetailResponse.class);
+            SceneDetailResponse.class);
         if (sceneDetailResponse == null) {
             return null;
         }
@@ -165,7 +165,7 @@ public class SceneManageServiceImpl implements SceneManageService {
          */
         if (!Objects.isNull(vo.getScheduleInterval())) {
             Long scheduleInterval = convertTime(Long.parseLong(String.valueOf(vo.getScheduleInterval())),
-                    TimeUnitEnum.MINUTE.getValue());
+                TimeUnitEnum.MINUTE.getValue());
             TimeVO timeVo = vo.getPressureTestTime();
             Long pressureTestSecond = convertTime(timeVo.getTime(), timeVo.getUnit());
             if (scheduleInterval > pressureTestSecond) {
@@ -178,7 +178,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         try {
             ResponseResult<Long> result = sceneManageApi.saveScene(req);
             if (vo.getIsScheduler() != null && vo.getIsScheduler() && result != null
-                    && result.getSuccess() && vo.getExecuteTime() != null) {
+                && result.getSuccess() && vo.getExecuteTime() != null) {
                 //保存场景定时信息
                 Long sceneId = JSON.parseObject(JSON.toJSONString(result.getData()), Long.class);
                 SceneSchedulerTaskCreateRequest createRequest = new SceneSchedulerTaskCreateRequest();
@@ -212,9 +212,7 @@ public class SceneManageServiceImpl implements SceneManageService {
     private WebResponse<List<SceneScriptRefOpen>> sceneManageVo2Req(SceneManageWrapperVO dto, SceneManageWrapperReq req) {
         WebResponse<List<SceneScriptRefOpen>> webResponse = this.buildSceneManageRef(dto);
         List<SceneScriptRefOpen> data = webResponse.getData();
-        if (!webResponse.getSuccess()) {
-            return webResponse;
-        }
+        if (!webResponse.getSuccess()) {return webResponse;}
         BeanUtils.copyProperties(dto, req);
         if (data != null) {
             req.setUploadFile(data);
@@ -325,7 +323,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             List<Long> sceneIds = data.stream().map(SceneManageListResp::getId).collect(Collectors.toList());
             List<SceneTagRefResponse> sceneTagRefList = sceneTagService.getSceneTagRefBySceneIds(sceneIds);
             Map<Long, List<SceneTagRefResponse>> sceneMap = sceneTagRefList.stream().collect(
-                    Collectors.groupingBy(SceneTagRefResponse::getSceneId));
+                Collectors.groupingBy(SceneTagRefResponse::getSceneId));
 
             return data.stream().map(resp -> {
                 SceneManageListOutput output = new SceneManageListOutput();
@@ -386,7 +384,7 @@ public class SceneManageServiceImpl implements SceneManageService {
 
         // 根据scriptId获取脚本信息
         ScriptManageDeployDetailResponse scriptManageDeployDetail = scriptManageService.getScriptManageDeployDetail(
-                scriptId);
+            scriptId);
         if (scriptManageDeployDetail == null) {
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "脚本实例不存在!");
         }
@@ -411,12 +409,12 @@ public class SceneManageServiceImpl implements SceneManageService {
         List<SceneScriptRefOpen> execList = response.getData();
 
         List<SceneBusinessActivityRef> businessActivityList =
-                this.buildSceneBusinessActivityRef(dto.getBusinessActivityConfig());
+            this.buildSceneBusinessActivityRef(dto.getBusinessActivityConfig());
 
         // 在上传文件时已经校验脚本和业务活动的关联关系，此处不再校验
         if (ScriptTypeEnum.JMETER.getCode().equals(dto.getScriptType())) {
             ScriptCheckDTO checkDTO = this.checkScriptAndActivity(dto.getScriptType(), true, businessActivityList,
-                    execList, scriptManageDeployDetail.getScriptVersion());
+                execList, scriptManageDeployDetail.getScriptVersion());
             if (StringUtils.isNoneBlank(checkDTO.getErrmsg())) {
                 throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, checkDTO.getErrmsg());
             }
@@ -424,7 +422,7 @@ public class SceneManageServiceImpl implements SceneManageService {
 
         //填充绑定关系
         Map<Long, SceneBusinessActivityRef> dataMap = ListHelper.transferToMap(businessActivityList,
-                SceneBusinessActivityRef::getBusinessActivityId, data -> data);
+            SceneBusinessActivityRef::getBusinessActivityId, data -> data);
         dto.getBusinessActivityConfig().forEach(vo -> {
             SceneBusinessActivityRef ref = dataMap.get(vo.getBusinessActivityId());
             if (ref != null) {
@@ -443,7 +441,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         if (Objects.nonNull(dto.getScheduleInterval())) {
             // 间隔转换为分钟
             Long scheduleInterval = this.convertTime(dto.getScheduleInterval().longValue(),
-                    TimeUnitEnum.MINUTE.getValue());
+                TimeUnitEnum.MINUTE.getValue());
             TimeVO timeVo = dto.getPressureTestTime();
             Long pressureTestSecond = this.convertTime(timeVo.getTime(), timeVo.getUnit());
             if (scheduleInterval > pressureTestSecond) {
@@ -520,7 +518,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         ResponseResult<SceneManageWrapperResp> sceneDetail = sceneManageApi.getSceneDetail(req);
 
         if (Objects.isNull(sceneDetail) || Objects.isNull(sceneDetail.getData())) {
-            if (sceneDetail.getError().getMsg().contains("19800-T0103")) {
+            if(sceneDetail.getError().getMsg().contains("19800-T0103")){
                 throw new TakinWebException(TakinWebExceptionEnum.DATA_SIGN_ERROR, "数据签名异常,请联系管理员!");
             }
             throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR, "该压测场景不存在!");
@@ -544,6 +542,7 @@ public class SceneManageServiceImpl implements SceneManageService {
             data.setIsScheduler(false);
         }
         sceneDetail.setData(data);
+
         return sceneDetail;
     }
 
@@ -564,10 +563,10 @@ public class SceneManageServiceImpl implements SceneManageService {
             List<SceneScriptRefOpen> execList = response.getData();
             List<SceneBusinessActivityRef> businessActivityList = Lists.newArrayList();
             sceneData.getBusinessActivityConfig().forEach(
-                    data -> businessActivityList.add(buildSceneBusinessActivityRef(data)));
+                data -> businessActivityList.add(buildSceneBusinessActivityRef(data)));
             if (0 == scriptType) {
                 dto = checkScriptAndActivity(scriptType, sceneData.getIsAbsoluteScriptPath(),
-                        businessActivityList, execList, null);
+                    businessActivityList, execList, null);
             }
         } catch (ApiException apiException) {
             dto.setMatchActivity(false);
@@ -642,7 +641,7 @@ public class SceneManageServiceImpl implements SceneManageService {
      * @return dto
      */
     private ScriptCheckDTO checkScriptAndActivity(Integer scriptType, boolean absolutePath,
-                                                  List<SceneBusinessActivityRef> businessActivityList, List<SceneScriptRefOpen> scriptList, Integer version) {
+        List<SceneBusinessActivityRef> businessActivityList, List<SceneScriptRefOpen> scriptList, Integer version) {
         ScriptCheckDTO dto = new ScriptCheckDTO();
         if (scriptType == null) {
             return new ScriptCheckDTO(false, false, "无脚本文件");
@@ -662,12 +661,10 @@ public class SceneManageServiceImpl implements SceneManageService {
         scriptCheckAndUpdateReq.setAbsolutePath(absolutePath);
         scriptCheckAndUpdateReq.setRequest(requestUrl);
         scriptCheckAndUpdateReq.setUploadPath(sceneScriptRef.getUploadPath());
-        if (version != null) {
-            scriptCheckAndUpdateReq.setVersion(version);
-        }
+        if (version != null) {scriptCheckAndUpdateReq.setVersion(version);}
 
         List<Long> businessActivityIds = businessActivityList.stream().map(SceneBusinessActivityRef::getBusinessActivityId).distinct().collect(
-                Collectors.toList());
+            Collectors.toList());
 
         // 用户获取业务活动类型
         List<BusinessLinkResult> results = businessLinkManageDAO.getListByIds(businessActivityIds);
@@ -853,7 +850,7 @@ public class SceneManageServiceImpl implements SceneManageService {
      * 创建场对应的排除应用
      *
      * @param excludedApplicationIds 排除的应用ids
-     * @param sceneId                场景id
+     * @param sceneId 场景id
      */
     @Override
     public void createSceneExcludedApplication(Long sceneId, List<Long> excludedApplicationIds) {
@@ -862,15 +859,15 @@ public class SceneManageServiceImpl implements SceneManageService {
         }
 
         List<CreateSceneExcludedApplicationParam> createSceneExcludedApplicationParams =
-                excludedApplicationIds.stream().map(excludedApplicationId -> {
-                    CreateSceneExcludedApplicationParam createSceneExcludedApplicationParam
-                            = new CreateSceneExcludedApplicationParam();
-                    createSceneExcludedApplicationParam.setSceneId(sceneId);
-                    createSceneExcludedApplicationParam.setApplicationId(excludedApplicationId);
-                    createSceneExcludedApplicationParam.setTenantId(WebPluginUtils.traceTenantId());
-                    createSceneExcludedApplicationParam.setEnvCode(WebPluginUtils.traceEnvCode());
-                    return createSceneExcludedApplicationParam;
-                }).collect(Collectors.toList());
+            excludedApplicationIds.stream().map(excludedApplicationId -> {
+                CreateSceneExcludedApplicationParam createSceneExcludedApplicationParam
+                    = new CreateSceneExcludedApplicationParam();
+                createSceneExcludedApplicationParam.setSceneId(sceneId);
+                createSceneExcludedApplicationParam.setApplicationId(excludedApplicationId);
+                createSceneExcludedApplicationParam.setTenantId(WebPluginUtils.traceTenantId());
+                createSceneExcludedApplicationParam.setEnvCode(WebPluginUtils.traceEnvCode());
+                return createSceneExcludedApplicationParam;
+            }).collect(Collectors.toList());
 
         // 再插入
         if (!sceneExcludedApplicationDAO.saveBatch(createSceneExcludedApplicationParams)) {

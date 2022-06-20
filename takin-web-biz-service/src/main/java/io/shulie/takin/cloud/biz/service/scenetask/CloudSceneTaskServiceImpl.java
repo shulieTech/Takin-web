@@ -332,6 +332,10 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             redisClientUtil.setString(PressureStartCache.getScenePreStopKey(sceneId, uniqueKey), now, 5, TimeUnit.MINUTES);
             String resourceId = String.valueOf(redisClientUtil.hmget(resourceKey, PressureStartCache.RESOURCE_ID));
             ResourceContext context = getResourceContext(resourceId);
+            if (Objects.isNull(context)) {
+                // 几乎不太会出现此场景
+                return 1;
+            }
             context.setMessage("取消压测");
             Event event = new Event();
             event.setEventName(PressureStartCache.PRE_STOP_EVENT);
@@ -450,7 +454,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         CloudPluginUtils.fillUserData(input);
         //首先根据脚本实例id构建压测场景名称
         String pressureTestSceneName = SceneManageConstant.SCENE_MANAGER_FLOW_DEBUG + input.getTenantId() + "_"
-            + input.getScriptDeployId();
+            + input.getScriptId();
 
         //根据场景名称查询是否已经存在场景
         SceneManageListResult sceneManageResult = sceneManageDAO.queryBySceneName(pressureTestSceneName);

@@ -14,6 +14,7 @@ import com.alibaba.fastjson.TypeReference;
 
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput.SceneScriptRefOutput;
+import io.shulie.takin.cloud.biz.service.schedule.impl.FileSplitService;
 import io.shulie.takin.cloud.biz.utils.FileTypeBusinessUtil;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
@@ -70,8 +71,13 @@ public class ScriptChecker implements StartConditionChecker {
         List<FileInfo> fileInfos = sceneData.getUploadFile().stream()
             .filter(file -> FileTypeBusinessUtil.isScriptOrData(file.getFileType())
                 || FileTypeBusinessUtil.isAttachment(file.getFileType()))
-            .map(file -> new FileInfo(deduceFileType(file), pathPrefix + file.getUploadPath())).collect(Collectors.toList());
+            .map(this::getFilePath).collect(Collectors.toList());
         checkExists(fileInfos);
+    }
+
+    private FileInfo getFilePath(SceneScriptRefOutput file) {
+        FileSplitService.reWriteAttachmentSceneScriptRefOutput(file);
+        return new FileInfo(deduceFileType(file), pathPrefix + file.getUploadPath());
     }
 
     private void checkExists(List<FileInfo> fileInfos) {

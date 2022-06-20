@@ -77,6 +77,9 @@ public class SlaServiceImpl extends AbstractIndicators implements SlaService {
                 String id = info.getAttach();
                 String bindRef = info.getRef();
                 SceneBusinessActivityRef activityRef = tSceneBusinessActivityRefMapper.selectByBindRef(bindRef, report.getSceneId());
+                if (Objects.isNull(activityRef)) {
+                    continue;
+                }
                 SceneSlaRefEntity slaRef = sceneSlaRefMapper.selectById(id);
                 SceneSlaRef sceneSlaRef = new SceneSlaRef();
                 BeanUtils.copyProperties(slaRef, sceneSlaRef);

@@ -652,6 +652,10 @@ public class PushWindowDataScheduled extends AbstractIndicators {
                 int podNum = scene.getIpNum();
                 long nowTimeWindow = CollectorUtil.getNowTimeWindow();
                 long breakTime = Math.min(endTime, nowTimeWindow);
+                if (dataCalibration) {
+                    // 数据校准时需要增加一个时间窗口，避免因为校准回调太快(与endTime正好处于一个时间窗口)数据缺失
+                    breakTime = CollectorUtil.getNextTimeWindow(Math.min(endTime, nowTimeWindow));
+                }
                 Long timeWindow = null;
                 do {
                     //不用递归，而是采用do...while...的方式是防止需要处理的时间段太长引起stackOverFlow错误

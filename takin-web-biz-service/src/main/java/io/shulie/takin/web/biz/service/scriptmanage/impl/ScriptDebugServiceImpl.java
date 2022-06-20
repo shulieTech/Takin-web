@@ -954,7 +954,7 @@ public class ScriptDebugServiceImpl extends AbstractIndicators implements Script
                 dto.setEndTime(System.currentTimeMillis());
                 entryTracePage = traceClient.listEntryTraceByTaskIdV2(dto);
                 TimeUnit.SECONDS.sleep(5);
-            } while (entryTracePage.getTotal() != newScriptDebug.getRequestNum() && System.currentTimeMillis() - startTime <= 60 * 1000);
+            } while (entryTracePage.getTotal() <= 0 && System.currentTimeMillis() - startTime <= 60 * 1000);
             // 重新再查一次
             dto.setResultTypeInt(LinkRequestResultTypeEnum.FAILED.getCode());
             dto.setEndTime(System.currentTimeMillis());

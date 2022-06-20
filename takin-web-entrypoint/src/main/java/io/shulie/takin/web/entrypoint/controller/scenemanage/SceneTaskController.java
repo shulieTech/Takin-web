@@ -2,7 +2,6 @@ package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -22,17 +21,14 @@ import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
-import io.shulie.takin.cloud.biz.notify.StartFailEventSource;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneContactFileOutput;
 import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
 import io.shulie.takin.cloud.biz.service.schedule.FileSliceService;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
-import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.data.param.scenemanage.SceneBigFileSliceParam;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.eventcenter.Event;
 import io.shulie.takin.eventcenter.EventCenterTemplate;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
@@ -48,6 +44,7 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -301,21 +298,7 @@ public class SceneTaskController extends AbstractIndicators {
         Object resource = redisClientUtil.hmget(PressureStartCache.getSceneResourceKey(sceneId),
             PressureStartCache.RESOURCE_ID);
         if (Objects.nonNull(resource)) {
-            String resourceId = String.valueOf(resource);
-            ResourceContext context = getResourceContext(resourceId);
-            if (Objects.nonNull(context)) {
-                Long reportId = context.getReportId();
-                if (!redisClientUtil.hasKey(PressureStartCache.getReportCachedKey(reportId))) {
-                    sceneTaskService.cacheReportKey(reportId);
-                }
-                Event event = new Event();
-                event.setEventName(PressureStartCache.START_FAILED);
-                StartFailEventSource source = new StartFailEventSource();
-                source.setMessage(message);
-                source.setContext(context);
-                event.setExt(source);
-                eventCenterTemplate.doEvents(event);
-            }
+            callStartFailedEvent(String.valueOf(resource), message);
         }
     }
 }

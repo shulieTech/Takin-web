@@ -15,8 +15,10 @@ import com.pamirs.takin.cloud.entity.domain.vo.report.SceneTaskNotifyParam;
 import io.shulie.takin.adapter.api.model.common.RuleBean;
 import io.shulie.takin.cloud.biz.cloudserver.SceneManageDTOConvert;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput;
+import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput.SceneScriptRefOutput;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageWrapperOutput.SceneSlaRefOutput;
 import io.shulie.takin.cloud.biz.service.engine.EnginePluginFilesService;
+import io.shulie.takin.cloud.biz.service.schedule.impl.FileSplitService;
 import io.shulie.takin.cloud.common.bean.scenemanage.SceneManageQueryOptions;
 import io.shulie.takin.cloud.common.bean.task.TaskResult;
 import io.shulie.takin.cloud.common.constants.ScheduleConstants;
@@ -143,11 +145,11 @@ public class SceneTaskEventService {
         List<ScheduleStartRequestExt.DataFile> dataFileList = new ArrayList<>();
         scene.getUploadFile().forEach(file -> {
             if (file.getFileType() == 0) {
-                scheduleStartRequest.setScriptPath(reWritePathIfNecessary(file.getUploadPath()));
+                scheduleStartRequest.setScriptPath(reWritePathIfNecessary(file));
             } else {
                 ScheduleStartRequestExt.DataFile dataFile = new ScheduleStartRequestExt.DataFile();
                 dataFile.setName(file.getFileName());
-                dataFile.setPath(reWritePathIfNecessary(file.getUploadPath()));
+                dataFile.setPath(reWritePathIfNecessary(file));
                 dataFile.setSplit(file.getIsSplit() != null && file.getIsSplit() == 1);
                 dataFile.setOrdered(file.getIsOrderSplit() != null && file.getIsOrderSplit() == 1);
                 dataFile.setRefId(file.getId());
@@ -268,10 +270,11 @@ public class SceneTaskEventService {
 
     private static final List<String> NO_EXE_NODE_REF = Arrays.asList("0f1a197a2040e645dcdb4dfff8a3f960", "all");
 
-    private String reWritePathIfNecessary(String filePath) {
+    private String reWritePathIfNecessary(SceneScriptRefOutput refOutput) {
+        FileSplitService.reWriteAttachmentSceneScriptRefOutput(refOutput);
         String prefix = scriptPath.replaceAll(nfsDir, "");
         if (StringUtils.isBlank(prefix)) {
-            return filePath;
+            return refOutput.getUploadPath();
         }
         if (prefix.startsWith("/")) {
             prefix = prefix.substring(1);
@@ -279,6 +282,6 @@ public class SceneTaskEventService {
         if (!prefix.endsWith("/")) {
             prefix += "/";
         }
-        return prefix + filePath;
+        return prefix + refOutput.getUploadPath();
     }
 }

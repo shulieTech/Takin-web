@@ -267,12 +267,17 @@ public abstract class AbstractIndicators {
 
     // 心跳超时不知道是否能够正常回调其他事件
     protected void callRunningFailedEvent(String resourceId, String message) {
+        callRunningFailedEvent(resourceId, message, false);
+    }
+
+    // 心跳超时不知道是否能够正常回调其他事件
+    protected void callRunningFailedEvent(String resourceId, String message, boolean interrupt) {
         ResourceContext context = getResourceContext(resourceId);
         if (context != null) {
             Event event = new Event();
             if (Objects.equals(context.getCheckStatus(), String.valueOf(CheckStatus.SUCCESS.ordinal()))) {
                 event.setEventName(PressureStartCache.RUNNING_FAILED);
-                event.setExt(new StopEventSource(context, message));
+                event.setExt(new StopEventSource(context, message, interrupt));
             } else {
                 context.setMessage(message);
                 event.setEventName(PressureStartCache.CHECK_FAIL_EVENT);

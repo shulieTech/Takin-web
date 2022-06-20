@@ -168,8 +168,11 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         PerformanceParamQueryParam deleteParams = new PerformanceParamQueryParam();
         deleteParams.setConfigId(configId);
         performanceParamDAO.deleteByParam(deleteParams);
-
-        doAction(configId, null, Action.ActionEnum.delete);
+        try {
+            doAction(configId, null, Action.ActionEnum.delete);
+        } catch (Throwable e) {
+            // 主配置删除即可
+        }
     }
 
     /**

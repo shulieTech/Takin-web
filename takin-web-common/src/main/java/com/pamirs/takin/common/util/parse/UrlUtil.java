@@ -24,6 +24,8 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 
+import java.net.URL;
+
 /**
  * @author qianshui
  * @date 2020/4/20 下午2:56
@@ -104,19 +106,16 @@ public class UrlUtil {
     }
 
     public static String parseUrl(String requestUrl) {
-        String path = "";
-        try {
-            path = URLUtil.getPath(requestUrl);
-        } catch (Throwable e) {
-            // http://{ip}/path
-            log.error("格式化URL错误,{}", requestUrl);
+        if (StringUtils.isBlank(requestUrl)) {
+            return requestUrl;
+        } else {
             try {
-                path = requestUrl.substring(requestUrl.lastIndexOf("/") + 1);
-            } catch (Throwable e1) {
-                log.error("格式化URL错误,{}", requestUrl);
+                URL u = new URL(requestUrl);
+                requestUrl = u.getPath();
+            } catch (Exception e) {
             }
         }
-        return path;
+        return requestUrl;
     }
 
     @SuppressWarnings("SpellCheckingInspection")

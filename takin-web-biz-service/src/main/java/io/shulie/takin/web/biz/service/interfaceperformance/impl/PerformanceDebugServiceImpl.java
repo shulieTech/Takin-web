@@ -185,6 +185,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     Long maxCount = request.getRelateFileMaxCount() == null ? 0 : request.getRelateFileMaxCount();
                     // 文件中的条数
                     Long fileCount = 0L;
+                    // 找当前文件中的最大条数
                     for (Map.Entry<String, List<Object>> entry : fileData.entrySet()) {
                         fileCount = fileCount > entry.getValue().size() ? fileCount : fileCount;
                     }

@@ -183,9 +183,13 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     fileIdDataMap.put(String.valueOf(fileId), fileData);
                     // 设置一个文件最大条数
                     Long maxCount = request.getRelateFileMaxCount() == null ? 0 : request.getRelateFileMaxCount();
-
+                    // 文件中的条数
+                    Long fileCount = 0L;
+                    for (Map.Entry<String, List<Object>> entry : fileData.entrySet()) {
+                        fileCount = fileCount > entry.getValue().size() ? fileCount : fileCount;
+                    }
                     // 设置一个文件的最大条数
-                    request.setRelateFileMaxCount(maxCount > fileData.values().size() ? maxCount : fileData.values().size());
+                    request.setRelateFileMaxCount(maxCount > fileCount ? maxCount : fileCount);
                 }
             }
         }

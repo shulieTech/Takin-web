@@ -827,12 +827,12 @@ public class SceneManageServiceImpl implements SceneManageService {
             if (result.getSuccess()) {
                 SceneStartCheckResp resultData = result.getData();
                 if (resultData != null) {
-                    ScenePositionPointResponse response = new ScenePositionPointResponse();
                     //false = 没有csv文件或位点均为0
                     //  Boolean hasUnread = resultData.getHasUnread();
                     List<SceneStartCheckResp.FileReadInfo> infos = resultData.getFileReadInfos();
                     if (Objects.nonNull(infos)) {
                         infos.forEach(t -> {
+                            ScenePositionPointResponse response = new ScenePositionPointResponse();
                             response.setScriptName(t.getFileName());
                             response.setScriptSize(t.getFileSize());
                             response.setPressedSize(t.getReadSize());

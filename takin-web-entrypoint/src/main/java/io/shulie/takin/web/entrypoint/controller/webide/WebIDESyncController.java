@@ -1,6 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.webide;
 
 import io.shulie.takin.web.biz.pojo.request.webide.WebIDESyncScriptListRequest;
+import io.shulie.takin.web.biz.pojo.request.webide.WebIDESyncScriptRequest;
 import io.shulie.takin.web.biz.service.webide.WebIDESyncService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,9 +27,9 @@ public class WebIDESyncController {
 
     @ApiOperation("同步业务流程并启动调试")
     @GetMapping("/script/businessFlow/sync")
-    public void syncScriptBusinessFlow(@RequestBody  WebIDESyncScriptListRequest request){
-        if(Objects.nonNull(request) && request.getScripts().size()>0){
-            webIDESyncService.syncScript(request.getScripts());
+    public void syncScriptBusinessFlow(@RequestBody WebIDESyncScriptRequest request){
+        if(Objects.nonNull(request)){
+            webIDESyncService.syncScript(request);
         }
     }
 }

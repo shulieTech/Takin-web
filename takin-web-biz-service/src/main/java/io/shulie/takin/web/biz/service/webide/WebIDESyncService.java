@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface WebIDESyncService {
 
-    void syncScript(List<WebIDESyncScriptRequest> list);
+    void syncScript(WebIDESyncScriptRequest request);
 }

@@ -46,101 +46,99 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void syncScript(List<WebIDESyncScriptRequest> list) {
+    public void syncScript(WebIDESyncScriptRequest request) {
         List<ScriptDebugDoDebugRequest> scriptDeploys = new ArrayList<>();
 
-        String url = list.get(0).getCallbackUrl();
-        Integer workRecordId = list.get(0).getWorkRecordId();
+        String url = request.getCallbackUrl();
+        Integer workRecordId = request.getWorkRecordId();
         Boolean initData = true;
         try {
-            list.forEach(item -> {
-                List<WebIDESyncScriptRequest.ActivityFIle> flies = item.getFile();
-                if (flies.size() > 0) {
-                    //todo 目前webIDE只会传jmx文件
-                    List<WebIDESyncScriptRequest.ActivityFIle> jmxs = flies.stream().
-                            filter(t -> t.getType().equals(0))
-                            .collect(Collectors.toList());
+            List<WebIDESyncScriptRequest.ActivityFIle> flies = request.getFile();
+            if (flies.size() > 0) {
+                //todo 目前webIDE只会传jmx文件
+                List<WebIDESyncScriptRequest.ActivityFIle> jmxs = flies.stream().
+                        filter(t -> t.getType().equals(0))
+                        .collect(Collectors.toList());
 
-                    jmxs.forEach(jmx -> {
-                        BusinessFlowParseRequest bus = new BusinessFlowParseRequest();
-                        FileManageUpdateRequest file = new FileManageUpdateRequest();
-                        file.setFileName(jmx.getName());
-                        file.setFileType(jmx.getType());
-                        file.setDownloadUrl(jmx.getPath());
-                        bus.setScriptFile(new FileManageUpdateRequest());
-                        //解析脚本
-                        BusinessFlowDetailResponse parseScriptAndSave = sceneService.parseScriptAndSave(bus);
-                        BusinessFlowDetailResponse detail = sceneService.getBusinessFlowDetail(parseScriptAndSave.getId());
-                        if (Objects.nonNull(detail)) {
-                            ScriptDebugDoDebugRequest scriptDebugDoDebug = new ScriptDebugDoDebugRequest();
-                            scriptDebugDoDebug.setScriptDeployId(detail.getScriptDeployId());
-                            scriptDebugDoDebug.setConcurrencyNum(item.getConcurrencyNum());
-                            scriptDebugDoDebug.setRequestNum(item.getRequestNum());
-                            scriptDeploys.add(scriptDebugDoDebug);
+                jmxs.forEach(jmx -> {
+                    BusinessFlowParseRequest bus = new BusinessFlowParseRequest();
+                    FileManageUpdateRequest file = new FileManageUpdateRequest();
+                    file.setFileName(jmx.getName());
+                    file.setFileType(jmx.getType());
+                    file.setDownloadUrl(jmx.getPath());
+                    bus.setScriptFile(new FileManageUpdateRequest());
+                    //解析脚本
+                    BusinessFlowDetailResponse parseScriptAndSave = sceneService.parseScriptAndSave(bus);
+                    BusinessFlowDetailResponse detail = sceneService.getBusinessFlowDetail(parseScriptAndSave.getId());
+                    if (Objects.nonNull(detail)) {
+                        ScriptDebugDoDebugRequest scriptDebugDoDebug = new ScriptDebugDoDebugRequest();
+                        scriptDebugDoDebug.setScriptDeployId(detail.getScriptDeployId());
+                        scriptDebugDoDebug.setConcurrencyNum(request.getConcurrencyNum());
+                        scriptDebugDoDebug.setRequestNum(request.getRequestNum());
+                        scriptDeploys.add(scriptDebugDoDebug);
 
-                            //todo 目前webIDE只会有一个脚本节点，后面多个脚本节点需要加入匹配逻辑
-                            String xpathMd5 = detail.getScriptJmxNodeList().get(0).getValue();
-                            BusinessFlowThreadResponse groupDetail = sceneService.getThreadGroupDetail(parseScriptAndSave.getId(),
-                                    xpathMd5);
-                            if (Objects.nonNull(groupDetail)) {
-                                List<ScriptJmxNode> threadScriptJmxNodes = groupDetail.getThreadScriptJmxNodes();
-                                List<ScriptJmxNode> parseNodes = new ArrayList<>();
-                                //递归解析出所有需要匹配的节点
-                                parse(threadScriptJmxNodes, parseNodes);
-                                if (parseNodes.size() > 0) {
-                                    //给节点匹配应用入口
-                                    List<WebIDESyncScriptRequest.ApplicationActivity> application = item.getApplication();
-                                    if (application.size() > 0) {
-                                        //匹配
-                                        List<SceneLinkRelateRequest> matchList = matchBuild(application, parseNodes,
-                                                parseScriptAndSave.getId());
+                        //todo 目前webIDE只会有一个脚本节点，后面多个脚本节点需要加入匹配逻辑
+                        String xpathMd5 = detail.getScriptJmxNodeList().get(0).getValue();
+                        BusinessFlowThreadResponse groupDetail = sceneService.getThreadGroupDetail(parseScriptAndSave.getId(),
+                                xpathMd5);
+                        if (Objects.nonNull(groupDetail)) {
+                            List<ScriptJmxNode> threadScriptJmxNodes = groupDetail.getThreadScriptJmxNodes();
+                            List<ScriptJmxNode> parseNodes = new ArrayList<>();
+                            //递归解析出所有需要匹配的节点
+                            parse(threadScriptJmxNodes, parseNodes);
+                            if (parseNodes.size() > 0) {
+                                //给节点匹配应用入口
+                                List<WebIDESyncScriptRequest.ApplicationActivity> application = request.getApplication();
+                                if (application.size() > 0) {
+                                    //匹配
+                                    List<SceneLinkRelateRequest> matchList = matchBuild(application, parseNodes,
+                                            parseScriptAndSave.getId());
 
-                                        if (matchList.size() > 0) {
-                                            matchList.forEach(t -> sceneService.matchActivity(t));
-                                        }
+                                    if (matchList.size() > 0) {
+                                        matchList.forEach(t -> sceneService.matchActivity(t));
                                     }
                                 }
                             }
                         }
-                    });
-                }
-            });
-        }catch (Exception e){
-            log.error("[创建业务场景失败] e",e);
+                    }
+                });
+            }
+
+        } catch (Exception e) {
+            log.error("[创建业务场景失败] e", e);
             initData = false;
-        }finally {
-            String msg = initData?"创建业务场景成功":"创建业务场景失败";
-            callback(url,msg,workRecordId);
+        } finally {
+            String msg = initData ? "创建业务场景成功" : "创建业务场景失败";
+            callback(url, msg, workRecordId);
         }
 
 
         //启动调试
-        if(scriptDeploys.size()>0){
+        if (scriptDeploys.size() > 0) {
             List<Long> debugIds = new ArrayList<>();
-            scriptDeploys.forEach(item ->{
+            scriptDeploys.forEach(item -> {
                 ScriptDebugResponse debug = scriptDebugService.debug(item);
                 debugIds.add(debug.getScriptDebugId());
             });
 
 
-            debugIds.forEach(debugId ->{
-                webIDESyncThreadPool.execute(() ->{
+            debugIds.forEach(debugId -> {
+                webIDESyncThreadPool.execute(() -> {
                     boolean loop = true;
                     do {
                         ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
 
-                        callback(url, JSON.toJSONString(debugDetail),workRecordId);
-                        if(Objects.isNull(debugDetail)){
-                           break;
+                        callback(url, JSON.toJSONString(debugDetail), workRecordId);
+                        if (Objects.isNull(debugDetail)) {
+                            break;
                         }
-                        if(debugDetail.getStatus() ==4 || debugDetail.getStatus() ==5){
+                        if (debugDetail.getStatus() == 4 || debugDetail.getStatus() == 5) {
                             loop = false;
                         }
-                    }while (loop);
+                    } while (loop);
                 });
             });
         }
-
 
 
     }
@@ -183,8 +181,8 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     }
 
 
-    private void callback(String url,String msg,Integer workRecordId){
-         url = url +"?source=kzt&level=INFO&work_record_id="+workRecordId;
-        HttpUtil.post(url,msg);
+    private void callback(String url, String msg, Integer workRecordId) {
+        url = url + "?source=kzt&level=INFO&work_record_id=" + workRecordId;
+        HttpUtil.post(url, msg);
     }
 }

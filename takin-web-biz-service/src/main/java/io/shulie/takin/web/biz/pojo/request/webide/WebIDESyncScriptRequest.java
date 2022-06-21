@@ -19,7 +19,7 @@ public class WebIDESyncScriptRequest {
 
     private Integer concurrencyNum;
 
-    private String callbackUrl;
+    private String callbackAddr;
 
     private Integer workRecordId;
 

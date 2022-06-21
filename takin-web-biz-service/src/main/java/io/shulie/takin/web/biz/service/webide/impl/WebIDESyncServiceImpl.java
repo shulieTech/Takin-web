@@ -49,7 +49,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     public void syncScript(WebIDESyncScriptRequest request) {
         List<ScriptDebugDoDebugRequest> scriptDeploys = new ArrayList<>();
 
-        String url = request.getCallbackUrl();
+        String url = request.getCallbackAddr();
         Integer workRecordId = request.getWorkRecordId();
         Boolean initData = true;
         try {

@@ -25,12 +25,12 @@ import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.cloud.entrypoint.scenetask.CloudTaskApi;
+import io.shulie.takin.adapter.api.entrypoint.scenetask.CloudTaskApi;
 import io.shulie.takin.cloud.ext.content.enums.RpcTypeEnum;
-import io.shulie.takin.cloud.sdk.model.request.engine.EnginePluginsRefOpen;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneBusinessActivityRefOpen;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
-import io.shulie.takin.cloud.sdk.model.request.scenetask.TaskFlowDebugStartReq;
+import io.shulie.takin.adapter.api.model.request.engine.EnginePluginsRefOpen;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneBusinessActivityRefOpen;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageWrapperReq;
+import io.shulie.takin.adapter.api.model.request.scenetask.TaskFlowDebugStartReq;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.api.ApplicationEntranceClient;
@@ -1079,5 +1079,9 @@ public class ActivityServiceImpl implements ActivityService {
         return false;
     }
 
+    @Override
+    public boolean existsActivity(Long tenantId, String envCode) {
+        return activityDAO.existsActivity(tenantId, envCode);
+    }
 }
 

@@ -21,7 +21,7 @@
     <parent>
         <groupId>io.shulie.takin</groupId>
         <artifactId>takin-web</artifactId>
-        <version>takin-web-5.5.2</version>
+        <version>takin-web-5.6.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>takin-web-data</artifactId>
@@ -53,6 +53,10 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-jdk8</artifactId>
         </dependency>
         <dependency>
             <groupId>com.baomidou</groupId>
@@ -108,9 +112,8 @@
         </dependency>
         <dependency>
             <groupId>io.shulie.takin</groupId>
-            <artifactId>takin-web-common</artifactId>
+            <artifactId>takin-web-adapter-api</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>

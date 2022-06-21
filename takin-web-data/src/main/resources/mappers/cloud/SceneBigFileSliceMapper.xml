@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.shulie.takin.cloud.data.mapper.mysql.SceneBigFileSliceMapper">
+    <resultMap id="BaseResultMap" type="io.shulie.takin.cloud.data.model.mysql.SceneBigFileSliceEntity">
+        <!--@mbg.generated-->
+        <!--@Table t_scene_big_file_slice-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="scene_id" jdbcType="BIGINT" property="sceneId"/>
+        <result column="script_ref_id" jdbcType="BIGINT" property="scriptRefId"/>
+        <result column="file_path" jdbcType="VARCHAR" property="filePath"/>
+        <result column="file_name" jdbcType="VARCHAR" property="fileName"/>
+        <result column="slice_count" jdbcType="INTEGER" property="sliceCount"/>
+        <result column="slice_info" jdbcType="LONGVARCHAR" property="sliceInfo"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="file_update_time" jdbcType="TIMESTAMP" property="fileUpdateTime"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id, scene_id, script_ref_id, file_path, file_name, slice_count, slice_info, `status`,
+        file_update_time, create_time, update_time
+    </sql>
+    <update id="updateBatch" parameterType="java.util.List">
+        <!--@mbg.generated-->
+        update t_scene_big_file_slice
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="scene_id = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.sceneId,jdbcType=BIGINT}
+                </foreach>
+            </trim>
+            <trim prefix="script_ref_id = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.scriptRefId,jdbcType=BIGINT}
+                </foreach>
+            </trim>
+            <trim prefix="file_path = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.filePath,jdbcType=VARCHAR}
+                </foreach>
+            </trim>
+            <trim prefix="file_name = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.fileName,jdbcType=VARCHAR}
+                </foreach>
+            </trim>
+            <trim prefix="slice_count = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.sliceCount,jdbcType=INTEGER}
+                </foreach>
+            </trim>
+            <trim prefix="slice_info = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.sliceInfo,jdbcType=LONGVARCHAR}
+                </foreach>
+            </trim>
+            <trim prefix="`status` = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.status,jdbcType=INTEGER}
+                </foreach>
+            </trim>
+            <trim prefix="file_update_time = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.fileUpdateTime,jdbcType=TIMESTAMP}
+                </foreach>
+            </trim>
+            <trim prefix="create_time = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.createTime,jdbcType=TIMESTAMP}
+                </foreach>
+            </trim>
+            <trim prefix="update_time = case" suffix="end,">
+                <foreach collection="list" index="index" item="item">
+                    when id = #{item.id,jdbcType=BIGINT} then #{item.updateTime,jdbcType=TIMESTAMP}
+                </foreach>
+            </trim>
+        </trim>
+        where id in
+        <foreach close=")" collection="list" item="item" open="(" separator=", ">
+            #{item.id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+</mapper>

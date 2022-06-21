@@ -227,6 +227,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
         queryDTO.setResultType(LinkRequestResultTypeEnum.FAILED.getCode());
         PageInfo<ReportTraceDTO> failed = reportRealTimeService.getReportLinkListByReportId(queryDTO);
         queryDTO.setResultType(LinkRequestResultTypeEnum.FAILED_ASSERT.getCode());
+        queryDTO.setReportId(reportId);
         PageInfo<ReportTraceDTO> failedAssert = reportRealTimeService.getReportLinkListByReportId(queryDTO);
 
         long failedTotal = 0;

@@ -20,7 +20,7 @@
     <parent>
         <artifactId>takin-web</artifactId>
         <groupId>io.shulie.takin</groupId>
-        <version>takin-web-5.5.2</version>
+        <version>takin-web-5.6.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -30,5 +30,6 @@
     <modules>
         <module>takin-web-config</module>
         <module>takin-web-diff</module>
+        <module>takin-web-adapter</module>
     </modules>
 </project>

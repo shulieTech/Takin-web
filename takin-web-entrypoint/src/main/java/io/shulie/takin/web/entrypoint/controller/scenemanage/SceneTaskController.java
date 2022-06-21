@@ -5,21 +5,31 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.google.common.collect.Lists;
+import com.pamirs.takin.cloud.entity.domain.vo.scenemanage.FileSplitResultVO;
 import com.pamirs.takin.common.constant.Constants;
 import com.pamirs.takin.common.constant.VerifyTypeEnum;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
-import io.shulie.takin.web.common.util.RedisClientUtil;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
+import io.shulie.takin.cloud.biz.output.scene.manage.SceneContactFileOutput;
+import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
+import io.shulie.takin.cloud.biz.service.schedule.FileSliceService;
+import io.shulie.takin.cloud.common.exception.TakinCloudException;
+import io.shulie.takin.cloud.data.param.scenemanage.SceneBigFileSliceParam;
+import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.eventcenter.EventCenterTemplate;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
@@ -34,10 +44,12 @@ import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.common.util.SceneTaskUtils;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +70,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(ApiUrls.TAKIN_API_URL + "scene/task/")
 @Api(tags = "场景任务", value = "场景任务")
-public class SceneTaskController {
+public class SceneTaskController extends AbstractIndicators {
     @Autowired
     private SceneTaskApi sceneTaskApi;
     @Autowired
@@ -69,6 +81,12 @@ public class SceneTaskController {
     private SceneManageService sceneManageService;
     @Autowired
     private RedisClientUtil redisClientUtil;
+    @Resource
+    private FileSliceService fileSliceService;
+    @Resource
+    private EventCenterTemplate eventCenterTemplate;
+    @Resource
+    private CloudAsyncService cloudAsyncService;
 
     @ApiOperation("|_ 启动时停止")
     @PutMapping("/preStop")
@@ -95,8 +113,12 @@ public class SceneTaskController {
         logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_START
     )
     public WebResponse<SceneActionResp> start(@RequestBody SceneActionParam param) {
+        Long sceneId = param.getSceneId();
         try {
-            ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(param.getSceneId());
+            // 标记压测启动
+            redisClientUtil.hmset(PressureStartCache.getSceneResourceKey(sceneId), PressureStartCache.START_FLAG, "1");
+            cloudAsyncService.checkStartTimeout(sceneId);
+            ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(sceneId);
             OperationLogContextHolder.operationType(BizOpConstants.OpTypes.START);
 
             SceneManageWrapperDTO sceneData = BeanUtil.copyProperties(webResponse.getData(), SceneManageWrapperDTO.class);
@@ -111,10 +133,12 @@ public class SceneTaskController {
             SceneActionResp startTaskResponse = sceneTaskService.startTask(param);
             // 开启漏数
             startCheckLeakTask(param, sceneData);
+            sceneTaskService.checkStatus(sceneData.getId(), startTaskResponse.getData());
             return WebResponse.success(startTaskResponse);
         } catch (TakinWebException ex) {
             // 解除 场景锁
-            redisClientUtil.delete(SceneTaskUtils.getSceneTaskKey(param.getSceneId()));
+            notifyStartFail(sceneId, ex.getMessage());
+            redisClientUtil.delete(SceneTaskUtils.getSceneTaskKey(sceneId));
             SceneActionResp sceneStart = new SceneActionResp();
             //sceneStart.setMsg(Arrays.asList(StringUtils.split(ex.getMessage(), Constants.SPLIT)));
             List<String> message = Lists.newArrayList();
@@ -236,5 +260,45 @@ public class SceneTaskController {
         }
 
         return null;
+    }
+
+    @GetMapping("preCheck")
+    @ApiOperation("前置校验")
+    public ResponseResult<Object> preCheck(SceneActionParam param) {
+        return ResponseResult.success(sceneTaskService.preCheck(param));
+    }
+
+    @PostMapping("script/contactScene")
+    @ApiModelProperty(value = "大文件关联场景")
+    public ResponseResult<?> preSplitFile(@RequestBody FileSplitResultVO resultVO) {
+        try {
+            SceneContactFileOutput output = fileSliceService.contactScene(new SceneBigFileSliceParam() {{
+                setFileName(resultVO.getFileName());
+                setSceneId(resultVO.getSceneId());
+                setIsSplit(resultVO.getIsSplit());
+                setIsOrderSplit(resultVO.getIsOrderSplit());
+            }});
+            return ResponseResult.success(output);
+        } catch (TakinCloudException e) {
+            return ResponseResult.fail("关联文件与脚本、场景异常", e.getMessage());
+        }
+    }
+
+    @PutMapping("forceStop")
+    public ResponseResult<String> forceStop(String resourceId) {
+        try {
+            sceneTaskService.forceStop(resourceId);
+            return ResponseResult.success("强制停止成功");
+        } catch (Exception e) {
+            return ResponseResult.fail(e.getMessage(), null);
+        }
+    }
+
+    private void notifyStartFail(Long sceneId, String message) {
+        Object resource = redisClientUtil.hmget(PressureStartCache.getSceneResourceKey(sceneId),
+            PressureStartCache.RESOURCE_ID);
+        if (Objects.nonNull(resource)) {
+            callStartFailedEvent(String.valueOf(resource), message);
+        }
     }
 }

@@ -77,7 +77,26 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_interface_type_config",
         "t_remote_call_config",
         "t_middleware_type",
-        "t_tro_version"
+        "t_tro_version",
+        "t_user_config",
+        // cloud迁移
+        "t_ac_account",
+        "t_ac_account_balance",
+        "t_ac_account_book",
+        "t_engine_plugin_files_ref",
+        "t_engine_plugin_info",
+        "t_engine_plugin_supported_versions",
+        "t_report_business_activity_detail",
+        "t_scene_big_file_slice",
+        "t_scene_business_activity_ref",
+        "t_scene_script_ref",
+        "t_scene_sla_ref",
+        "t_schedule_record",
+        "t_schedule_record_engine_plugins_ref",
+        "t_strategy_config",
+        "t_warn_detail",
+        "t_pressure_task_variety",
+        "t_pressure_task_callback",
     };
 
     private String[] tableArrWithoutEnvCode = new String[] {
@@ -111,7 +130,26 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_remote_call_config",
         "t_interface_type_config",
         "t_middleware_type",
-        "t_tro_version"
+        "t_tro_version",
+        "t_user_config",
+        // cloud迁移
+        "t_ac_account",
+        "t_ac_account_balance",
+        "t_ac_account_book",
+        "t_engine_plugin_files_ref",
+        "t_engine_plugin_info",
+        "t_engine_plugin_supported_versions",
+        "t_report_business_activity_detail",
+        "t_scene_big_file_slice",
+        "t_scene_business_activity_ref",
+        "t_scene_script_ref",
+        "t_scene_sla_ref",
+        "t_schedule_record",
+        "t_schedule_record_engine_plugins_ref",
+        "t_strategy_config",
+        "t_warn_detail",
+        "t_pressure_task_variety",
+        "t_pressure_task_callback",
     };
 
     private String[] tableArrWithoutUserId = new String[] {
@@ -145,7 +183,26 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         "t_interface_type_config",
         "t_remote_call_config",
         "t_middleware_type",
-        "t_tro_version"
+        "t_tro_version",
+        "t_user_config",
+        // cloud迁移
+        "t_ac_account",
+        "t_ac_account_balance",
+        "t_ac_account_book",
+        "t_engine_plugin_files_ref",
+        "t_engine_plugin_info",
+        "t_engine_plugin_supported_versions",
+        "t_report_business_activity_detail",
+        "t_scene_big_file_slice",
+        "t_scene_business_activity_ref",
+        "t_scene_script_ref",
+        "t_scene_sla_ref",
+        "t_schedule_record",
+        "t_schedule_record_engine_plugins_ref",
+        "t_strategy_config",
+        "t_warn_detail",
+        "t_pressure_task_variety",
+        "t_pressure_task_callback",
     };
 
     /**

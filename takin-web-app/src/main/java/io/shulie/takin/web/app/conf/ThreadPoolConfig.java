@@ -337,4 +337,16 @@ public class ThreadPoolConfig {
         return springSessionRedisTaskExecutor;
     }
 
+    /**
+     * webIDE数据入库处理线程池
+     *
+     * @return
+     */
+    @Bean(name = "webIDESyncThreadPool")
+    public ThreadPoolExecutor webIDESyncThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("web-ide-sync-%d").build();
+        return new ThreadPoolExecutor(5, 10, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
 }

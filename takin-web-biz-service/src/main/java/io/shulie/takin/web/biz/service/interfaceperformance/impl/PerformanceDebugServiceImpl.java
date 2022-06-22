@@ -216,7 +216,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             // 这里处理个状态标记，确认请求是否发送完成,获取结果的时候前端不需要轮训
             redisClientUtil.setString(performanceDebugUtil.formatResultKey(request.getResultId()), "1", 60, TimeUnit.SECONDS);
 
-            ContentTypeVO contentTypeVO = JsonHelper.json2Bean(configEntity.getContentType(), ContentTypeVO.class);
+            ContentTypeVO contentTypeVO = Optional.ofNullable(JsonHelper.json2Bean(
+                    configEntity.getContentType(), ContentTypeVO.class)).orElse(new ContentTypeVO());
             // 构建restTemplate
             RestTemplate restTemplate = performanceDebugUtil.createResultTemplate(
                     configEntity.getIsRedirect(),

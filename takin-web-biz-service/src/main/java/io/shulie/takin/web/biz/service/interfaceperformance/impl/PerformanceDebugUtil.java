@@ -176,7 +176,10 @@ public class PerformanceDebugUtil {
     public HttpHeaders buildHeader(String headers, String cookies, ContentTypeVO contentTypeVO) {
         HttpHeaders header = new HttpHeaders();
         // 请求头
-        header.set("Content-Type", getContentType(contentTypeVO));
+        String type = getContentType(contentTypeVO);
+        if (StringUtils.isNotBlank(type)) {
+            header.set("Content-Type", type);
+        }
         addHeader(headers, header);
         addHeader(cookies, header);
         return header;
@@ -228,6 +231,12 @@ public class PerformanceDebugUtil {
     }
 
     public String getContentType(ContentTypeVO vo) {
+        if (vo == null) {
+            return "";
+        }
+        if (vo.getRadio() == null) {
+            return "";
+        }
         if (ContentTypeVO.X_WWW_FORM_URLENCODED.equals(vo.getRadio())) {
             return MediaType.APPLICATION_FORM_URLENCODED_VALUE;
         } else {

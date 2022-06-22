@@ -128,7 +128,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     boolean loop = true;
                     do {
                         ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
-                        log.info("[debug状态] 回调");
+                        log.info("[debug状态] 回调,debugId:{},debugDetail:{}",debugId, JSON.toJSONString(debugDetail));
                         callback(url, JSON.toJSONString(debugDetail), workRecordId);
                         if (Objects.isNull(debugDetail)) {
                             break;

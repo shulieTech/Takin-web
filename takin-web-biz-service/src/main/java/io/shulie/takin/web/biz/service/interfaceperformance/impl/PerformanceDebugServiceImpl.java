@@ -102,7 +102,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         performanceConfigDAO.updateById(updateEntity);
 
         // 生成一个临时的配置ID,给前端查询使用,config表Id
-        String uuId = Md5Util.md5(WebPluginUtils.traceUserId() + request.getName());
+        String uuId = UUID.randomUUID().toString();
         request.setResultId(uuId);
         // 5、发起请求
         CompletableFuture.runAsync(() -> processRequest(
@@ -132,7 +132,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             detailResponse = performanceParamService.detail(detailRequest);
         }
         // 生成一个临时的配置ID,给前端查询使用,config表Id
-        String uuId = Md5Util.md5(WebPluginUtils.traceUserId() + request.getName());
+        String uuId = UUID.randomUUID().toString();
         request.setResultId(uuId);
 
         // 3、处理请求参数
@@ -217,7 +217,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         }
         try {
             // 这里处理个状态标记，确认请求是否发送完成,获取结果的时候前端不需要轮训
-            redisClientUtil.setString(performanceDebugUtil.formatResultKey(request.getResultId()), "1", 60, TimeUnit.SECONDS);
+            redisClientUtil.setString(performanceDebugUtil.formatResultKey(request.getResultId()), "1", 120, TimeUnit.SECONDS);
 
             ContentTypeVO contentTypeVO = Optional.ofNullable(JsonHelper.json2Bean(
                     configEntity.getContentType(), ContentTypeVO.class)).orElse(new ContentTypeVO());

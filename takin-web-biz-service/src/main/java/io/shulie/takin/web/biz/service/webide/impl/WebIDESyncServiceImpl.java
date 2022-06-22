@@ -108,6 +108,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             log.error("[创建业务场景失败] e", e);
             initData = false;
         } finally {
+            log.info("[创建业务场景] 回调");
             String msg = initData ? "创建业务场景成功" : "创建业务场景失败";
             callback(url, msg, workRecordId);
         }
@@ -127,7 +128,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     boolean loop = true;
                     do {
                         ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
-
+                        log.info("[debug状态] 回调");
                         callback(url, JSON.toJSONString(debugDetail), workRecordId);
                         if (Objects.isNull(debugDetail)) {
                             break;

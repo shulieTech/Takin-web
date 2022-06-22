@@ -42,6 +42,7 @@ import jdk.nashorn.internal.runtime.regexp.joni.ast.StringNode;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -499,10 +500,12 @@ public class PerformancePressureServiceImpl extends AbstractPerformancePressureS
         // 处理Content-Type
         ContentTypeVO contentTypeVO = JsonHelper.json2Bean(record.getContentType(), ContentTypeVO.class);
         String type = performanceDebugUtil.getContentType(contentTypeVO);
-        Map<String, String> toHeader = Maps.newHashMap();
-        toHeader.put("key", "Content-Type");
-        toHeader.put("value", type);
-        builder.addHeaders(toHeader);
+        if (StringUtils.isNotBlank(type)) {
+            Map<String, String> toHeader = Maps.newHashMap();
+            toHeader.put("key", "Content-Type");
+            toHeader.put("value", type);
+            builder.addHeaders(toHeader);
+        }
 
         //放data
         buildData(id, builder);

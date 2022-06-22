@@ -176,8 +176,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
         List<SceneLinkRelateRequest> list = new ArrayList<>();
         for (WebIDESyncScriptRequest.ApplicationActivity activity : activityInfo) {
             for (ScriptJmxNode node : parseNodes) {
-                if (activity.getActivityName().equals(node.getBusinessActivityName())
-                        && node.getEntracePath().equals((activity.getMethod() + "|" + activity.getServiceName()))) {
+                if (node.getRequestPath().equals((activity.getMethod() + "|" + activity.getServiceName()))) {
                     SceneLinkRelateRequest request = new SceneLinkRelateRequest();
                     request.setBusinessFlowId(id);
                     request.setIdentification(node.getIdentification());

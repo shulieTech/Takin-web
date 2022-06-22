@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.service.webide.impl;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
@@ -17,6 +18,7 @@ import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.webide.WebIDESyncService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
@@ -44,6 +47,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     @Autowired
     private ScriptDebugService scriptDebugService;
 
+    @Value("${file.upload.tmp.path:/tmp/takin/}")
+    private String tmpFilePath;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void syncScript(WebIDESyncScriptRequest request) {
@@ -61,11 +67,18 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                         .collect(Collectors.toList());
 
                 jmxs.forEach(jmx -> {
+                    //处理文件路径,改成控制台可用的路径
+                    String path = jmx.getPath();
+                    String uid = UUID.randomUUID().toString();
+                    String sourcePath = tmpFilePath + "/" + uid + "/" + jmx.getName();
+                    FileUtil.copy(path,sourcePath,false);
+
                     BusinessFlowParseRequest bus = new BusinessFlowParseRequest();
                     FileManageUpdateRequest file = new FileManageUpdateRequest();
                     file.setFileName(jmx.getName());
                     file.setFileType(jmx.getType());
-                    file.setDownloadUrl(jmx.getPath());
+                    file.setDownloadUrl(sourcePath);
+                    file.setUploadId(uid);
                     bus.setScriptFile(file);
                     //解析脚本
                     BusinessFlowDetailResponse parseScriptAndSave = sceneService.parseScriptAndSave(bus);

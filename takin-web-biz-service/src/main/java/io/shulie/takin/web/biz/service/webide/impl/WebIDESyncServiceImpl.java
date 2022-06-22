@@ -1,9 +1,14 @@
 package io.shulie.takin.web.biz.service.webide.impl;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.http.HttpGlobalConfig;
+import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.http.Method;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
+import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.enums.fastdebug.RequestTypeEnum;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
@@ -13,6 +18,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailRespon
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
+import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.webide.WebIDESyncService;
@@ -50,6 +56,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
     @Value("${file.upload.tmp.path:/tmp/takin/}")
     private String tmpFilePath;
+
+    @Autowired
+    private ReportService reportService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -125,7 +134,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
         } finally {
             log.info("[创建业务场景] 回调");
             String msg = initData ? "创建业务场景成功" : "创建业务场景失败";
-            callback(url, msg, workRecordId);
+            callback(url, msg, workRecordId,"FATAL");
         }
 
 
@@ -144,11 +153,27 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     do {
                         ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
                         log.info("[debug状态] 回调,debugId:{},debugDetail:{}",debugId, JSON.toJSONString(debugDetail));
-                        callback(url, JSON.toJSONString(debugDetail), workRecordId);
+                        callback(url, JSON.toJSONString(debugDetail), workRecordId,"");
                         if (Objects.isNull(debugDetail)) {
                             break;
                         }
-                        if (debugDetail.getStatus() == 4 || debugDetail.getStatus() == 5) {
+                        if ( debugDetail.getStatus() == 5) {
+                            //发送报告错误日志
+                            Long cloudReportId = debugDetail.getCloudReportId();
+                            ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
+                            if(Objects.nonNull(report)){
+                                String resourceId = report.getResourceId();
+                                Long jobId = report.getJobId();
+                                String errorFilePath = tmpFilePath+"/ptl/"+resourceId+"/"+jobId;
+                                if(FileUtil.exist(errorFilePath)){
+                                    String errorContext = FileUtil.readUtf8String(errorFilePath);
+                                    log.info("[发送报告错误日志] resourceId:{},jobId:{}",resourceId,jobId);
+                                    callback(url, errorContext, workRecordId,"ERROR");
+                                }
+                            }
+                            loop = false;
+                        }
+                        if(debugDetail.getStatus() == 4 ){
                             loop = false;
                         }
                     } while (loop);
@@ -196,8 +221,14 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     }
 
 
-    private void callback(String url, String msg, Integer workRecordId) {
-        url = url + "?source=kzt&level=INFO&work_record_id=" + workRecordId;
-        HttpUtil.post(url, msg);
+    private void callback(String url, String msg, Integer workRecordId,String level) {
+        url = url + "?source=kzt&level="+level+"&work_record_id=" + workRecordId;
+        new HttpRequest(url)
+                .method(Method.POST)
+                .contentType(RequestTypeEnum.TEXT.getDesc())
+                .timeout(HttpGlobalConfig.getTimeout()).
+                body(msg)
+                .execute()
+                .body();
     }
 }

@@ -25,7 +25,7 @@ public class WebIDESyncScriptRequest {
 
 
     @Data
-    public class ApplicationActivity {
+    public static class ApplicationActivity {
 
         private String activityName;
 
@@ -39,7 +39,7 @@ public class WebIDESyncScriptRequest {
     }
 
     @Data
-    public class ActivityFIle {
+    public static class ActivityFIle {
 
         private String name;
 

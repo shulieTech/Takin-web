@@ -102,7 +102,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         performanceConfigDAO.updateById(updateEntity);
 
         // 生成一个临时的配置ID,给前端查询使用,config表Id
-        String uuId = Md5Util.md5(WebPluginUtils.traceUserId()+request.getName());
+        String uuId = Md5Util.md5(WebPluginUtils.traceUserId() + request.getName());
         request.setResultId(uuId);
         // 5、发起请求
         CompletableFuture.runAsync(() -> processRequest(
@@ -132,7 +132,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             detailResponse = performanceParamService.detail(detailRequest);
         }
         // 生成一个临时的配置ID,给前端查询使用,config表Id
-        String uuId = Md5Util.md5(WebPluginUtils.traceUserId()+request.getName());
+        String uuId = Md5Util.md5(WebPluginUtils.traceUserId() + request.getName());
         request.setResultId(uuId);
 
         // 3、处理请求参数

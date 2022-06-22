@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--suppress ALL -->
+<mapper namespace="com.pamirs.takin.cloud.entity.dao.report.TReportMapper">
+    <resultMap id="BaseResultMap" type="com.pamirs.takin.cloud.entity.domain.entity.report.Report">
+        <!--@mbg.generated-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="scene_id" jdbcType="BIGINT" property="sceneId"/>
+        <result column="customer_id" property="tenantId" jdbcType="BIGINT"/>
+        <result column="amount" jdbcType="DECIMAL" property="amount"/>
+        <result column="scene_name" jdbcType="VARCHAR" property="sceneName"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="conclusion" jdbcType="INTEGER" property="conclusion"/>
+        <result column="total_request" jdbcType="BIGINT" property="totalRequest"/>
+        <result column="pressure_type" jdbcType="INTEGER" property="pressureType"/>
+        <result column="avg_concurrent" jdbcType="DECIMAL" property="avgConcurrent"/>
+        <result column="tps" jdbcType="INTEGER" property="tps"/>
+        <result column="avg_tps" jdbcType="DECIMAL" property="avgTps"/>
+        <result column="avg_rt" jdbcType="DECIMAL" property="avgRt"/>
+        <result column="concurrent" jdbcType="INTEGER" property="concurrent"/>
+        <result column="success_rate" jdbcType="DECIMAL" property="successRate"/>
+        <result column="sa" jdbcType="DECIMAL" property="sa"/>
+        <result column="operate_id" jdbcType="BIGINT" property="operateId"/>
+        <result column="features" jdbcType="VARCHAR" property="features"/>
+        <result column="is_deleted" jdbcType="INTEGER" property="isDeleted"/>
+        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="gmt_update" jdbcType="TIMESTAMP" property="gmtUpdate"/>
+        <result column="dept_id" jdbcType="BIGINT" property="deptId"/>
+        <result column="user_id" jdbcType="BIGINT" property="userId"/>
+        <result column="script_id" jdbcType="BIGINT" property="scriptId"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id, scene_id, scene_name, start_time, end_time, `status`,`type`, conclusion, total_request,pressure_type,avg_concurrent,
+        tps,avg_tps, avg_rt, concurrent, success_rate, sa, operate_id,features, is_deleted, gmt_create,
+        gmt_update,customer_id,amount,dept_id,user_id,script_id
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        <!--@mbg.generated-->
+        select
+        <include refid="Base_Column_List"/>
+        from t_report
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="selectOneRunningReport" resultMap="BaseResultMap" parameterType="io.shulie.takin.cloud.ext.content.trace.ContextExt">
+        select id
+        from t_report
+        <where>
+            `lock` = 1
+            and `status` = 1
+            <if test="tenantId != null">
+                and `tenant_id` = #{tenantId}
+            </if>
+            <if test="envCode != null">
+                and `env_code` = #{envCode}
+            </if>
+        </where>
+        order by id
+        limit 1
+    </select>
+    <select id="selectListRunningReport" resultMap="BaseResultMap" parameterType="io.shulie.takin.cloud.ext.content.trace.ContextExt">
+        select id
+        from t_report
+        <where>
+            `status`=1 and is_deleted=0
+            -- where `lock` = 1 and ((start_time is not null and `status` = 0) or `status` = 1)
+            <if test="tenantId != null">
+                and `tenant_id` = #{tenantId}
+            </if>
+            <if test="envCode != null">
+                and `env_code` = #{envCode}
+            </if>
+        </where>
+        order by id desc
+        limit 10
+    </select>
+    <select id="selectListPressuringReport" resultMap="BaseResultMap">
+        select id
+        from t_report
+        <where>
+            `status` = 0 and is_deleted = 0 and type = 0
+            <if test="tenantId != null">
+                and `tenant_id` = #{tenantId}
+            </if>
+            <if test="envCode != null">
+                and `env_code` = #{envCode}
+            </if>
+        </where>
+        order by id desc
+        limit 100
+    </select>
+    <select id="listReport" resultMap="BaseResultMap"
+            parameterType="io.shulie.takin.adapter.api.model.request.report.ReportQueryReq">
+        select id, scene_id,scene_name,start_time,end_time,`status`,`type`,conclusion,concurrent,amount,customer_id,features,dept_id,user_id
+        from t_report
+        <where>
+            <if test="param.reportId != null">
+                and `id` = #{param.reportId}
+            </if>
+            <if test="param.sceneId != null">
+                and `scene_id` = #{param.sceneId}
+            </if>
+            <if test="param.sceneName != null">
+                and scene_name like concat('%',#{param.sceneName,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="param.startTime != null">
+                and start_time  <![CDATA[ >= ]]>  #{param.startTime}
+            </if>
+            <if test="param.endTime != null">
+                and start_time  <![CDATA[ <= ]]> #{param.endTime}
+            </if>
+            <if test="param.type != null">
+                and `type` = #{param.type}
+            </if>
+            and status > 0 and is_deleted = 0
+            <if test="param.filterSql != null">
+                and `user_id` in (${param.filterSql})
+            </if>
+            <if test="param.tenantId != null">
+                and `tenant_id` = #{param.tenantId}
+            </if>
+            <if test="param.envCode != null">
+                and `env_code` = #{param.envCode}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="listReportSceneIds" resultMap="BaseResultMap">
+        select scene_id
+        from t_report
+        where scene_id in
+        <foreach collection="sceneIds" open="(" close=")" separator="," item="sceneId">
+            #{sceneId}
+        </foreach>
+        and `status` = 2 and is_deleted = 0
+        group by scene_id
+    </select>
+
+    <select id="getReportBySceneId" resultType="com.pamirs.takin.cloud.entity.domain.entity.report.Report">
+        select id,
+               scene_id,
+               scene_name,
+               start_time,
+               end_time,
+               `status`,
+               operate_id,
+               features,
+               amount,
+               customer_id
+        from t_report
+        where scene_id = #{sceneId,jdbcType=BIGINT}
+          and `status` = 0
+        order by id desc
+        limit 1
+    </select>
+
+    <select id="getReportByTaskId" resultType="com.pamirs.takin.cloud.entity.domain.entity.report.Report">
+        select id,
+        scene_id,
+        scene_name,
+        start_time,
+        end_time,
+        `status`,
+        operate_id,
+        features,
+        amount,
+        customer_id
+        from t_report
+        where job_id = #{sceneId,jdbcType=BIGINT}
+        order by id desc
+        limit 1
+    </select>
+
+    <select id="getTempReportBySceneId" resultType="com.pamirs.takin.cloud.entity.domain.entity.report.Report">
+        select id,
+               scene_id,
+               scene_name,
+               start_time,
+               end_time,
+               pressure_type,
+               avg_concurrent,
+               tps,
+               `status`,
+               operate_id,
+               amount,
+               customer_id,
+               resource_id,
+               job_id
+        from t_report
+        where scene_id = #{sceneId,jdbcType=BIGINT}
+          and is_deleted = 0
+        order by id desc
+        limit 1
+    </select>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.pamirs.takin.cloud.entity.domain.entity.report.Report">
+        <!--@mbg.generated-->
+        update t_report
+        <set>
+            <if test="sceneId != null">
+                scene_id = #{sceneId,jdbcType=BIGINT},
+            </if>
+            <if test="sceneName != null">
+                scene_name = #{sceneName,jdbcType=VARCHAR},
+            </if>
+            <if test="startTime != null">
+                start_time = #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null">
+                end_time = #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="status != null">
+                `status` = #{status,jdbcType=INTEGER},
+            </if>
+            <if test="type != null">
+                `type` = #{type,jdbcType=INTEGER},
+            </if>
+            <if test="conclusion != null">
+                conclusion = #{conclusion,jdbcType=INTEGER},
+            </if>
+            <if test="totalRequest != null">
+                total_request = #{totalRequest,jdbcType=BIGINT},
+            </if>
+            <if test="pressureType != null">
+                pressure_type = #{pressureType,jdbcType=DECIMAL},
+            </if>
+            <if test="avgConcurrent != null">
+                avg_concurrent = #{avgConcurrent,jdbcType=DECIMAL},
+            </if>
+            <if test="tps != null">
+                tps = #{tps,jdbcType=DECIMAL},
+            </if>
+            <if test="avgTps != null">
+                avg_tps = #{avgTps,jdbcType=DECIMAL},
+            </if>
+            <if test="avgRt != null">
+                avg_rt = #{avgRt,jdbcType=DECIMAL},
+            </if>
+            <if test="concurrent != null">
+                concurrent = #{concurrent,jdbcType=INTEGER},
+            </if>
+            <if test="successRate != null">
+                success_rate = #{successRate,jdbcType=DECIMAL},
+            </if>
+            <if test="sa != null">
+                sa = #{sa,jdbcType=DECIMAL},
+            </if>
+            <if test="features != null">
+                features = #{features,jdbcType=VARCHAR},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted,jdbcType=INTEGER},
+            </if>
+            <if test="gmtCreate != null">
+                gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="gmtUpdate != null">
+                gmt_update = #{gmtUpdate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="amount != null">
+                amount = #{amount,jdbcType=DECIMAL},
+            </if>
+            <if test="scriptId != null">
+                script_id = #{scriptId,jdbcType=DECIMAL},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateReportStatus">
+        update t_report
+        set status = #{afterStatus,jdbcType=INTEGER}
+        where id = #{resultId,jdbcType=BIGINT}
+        <if test="preStatus != null">
+            and status = #{preStatus,jdbcType=INTEGER}
+        </if>
+    </update>
+
+    <update id="updateReportLock">
+        update t_report
+        set `lock` = #{afterStatus,jdbcType=INTEGER}
+        where id = #{resultId,jdbcType=BIGINT}
+          and `lock` = #{preStatus,jdbcType=INTEGER}
+    </update>
+
+
+    <update id="resumeStatus">
+        update t_report
+        set status = 2
+        where scene_id = #{sceneId,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateStartTime">
+        update t_report
+        set start_time = #{startTime}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateReportUserById">
+        update t_report
+        set user_id = #{userId}
+        where id = #{id}
+    </update>
+</mapper>

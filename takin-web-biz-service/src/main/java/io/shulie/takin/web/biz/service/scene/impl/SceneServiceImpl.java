@@ -13,12 +13,12 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.cloud.common.utils.CommonUtil;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
-import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
+import io.shulie.takin.adapter.api.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
-import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringParamReq;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptAnalyzeRequest;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SynchronizeRequest;
+import io.shulie.takin.adapter.api.model.request.filemanager.FileCreateByStringParamReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptAnalyzeRequest;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SynchronizeRequest;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.amdb.bean.common.EntranceTypeEnum;
@@ -890,5 +890,10 @@ public class SceneServiceImpl implements SceneService {
         // 根据应用名称, 用户id, 获得应用列表
         List<ApplicationDetailResult> applicationPage = applicationDAO.getApplicationList(new ArrayList<>(applicationNames));
         return applicationPage;
+    }
+
+    @Override
+    public boolean existsScene(Long tenantId, String envCode) {
+        return sceneDao.existsScene(tenantId, envCode);
     }
 }

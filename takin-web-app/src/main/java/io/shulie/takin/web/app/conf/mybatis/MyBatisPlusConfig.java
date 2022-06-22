@@ -69,6 +69,7 @@ public class MyBatisPlusConfig {
         // 如果用了分页插件注意先 add TenantLineInnerInterceptor 再 add PaginationInnerInterceptor
         // 用了分页插件必须设置 MybatisConfiguration#useDeprecatedExecutor = false
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
+
         return interceptor;
     }
 
@@ -94,6 +95,7 @@ public class MyBatisPlusConfig {
 //    public MetaUpdateSignInterceptor updateSignInterceptor() {
 //        return new MetaUpdateSignInterceptor();
 //    }
+
 
 
 }

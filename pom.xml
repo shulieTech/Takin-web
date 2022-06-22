@@ -4,7 +4,7 @@
     <groupId>io.shulie.takin</groupId>
     <artifactId>takin-web</artifactId>
 
-    <version>takin-web-5.5.2</version>
+    <version>takin-web-5.6.1</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/shulieTech/Takin-web.git</url>
@@ -41,9 +41,7 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
-        <takin.web.version>takin-web-5.5.2</takin.web.version>
-        <takin.cloud.sdk.version>5.5.1.1</takin.cloud.sdk.version>
-        <takin.cloud.version>5.5.1.1</takin.cloud.version>
+        <takin.web.version>takin-web-5.6.1</takin.web.version>
         <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
         <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.6.2</pardar.log.protocol.version>
@@ -78,6 +76,7 @@
         <easypoi-base.version>4.4.0</easypoi-base.version>
         <easypoi-annotation.version>4.3.0</easypoi-annotation.version>
         <openpdf.version>9.1.22</openpdf.version>
+        <transmittable-thread-local>2.12.4</transmittable-thread-local>
         <!-- 升级文档 -->
         <upgrade.doc>https://shulietech.feishu.cn/docs/doccnvTvNxzVrH29Xvm60l7kgHc</upgrade.doc>
     </properties>
@@ -92,6 +91,7 @@
         <module>takin-web-ext</module>
         <module>takin-web-entrypoint</module>
         <module>takin-web-biz-service</module>
+        <module>takin-web-eventcenter</module>
     </modules>
     <dependencyManagement>
         <dependencies>
@@ -109,6 +109,12 @@
                 <groupId>io.springfox</groupId>
                 <artifactId>springfox-spring-webmvc</artifactId>
                 <version>2.10.5</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.github.classgraph</groupId>
+                        <artifactId>classgraph</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.springfox</groupId>
@@ -188,21 +194,6 @@
                 <type>pom</type>
             </dependency>
 
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-sdk</artifactId>
-                <version>${takin.cloud.sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-ext</artifactId>
-                <version>${takin.cloud.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.shulie.takin</groupId>
-                <artifactId>takin-cloud-common</artifactId>
-                <version>${takin.cloud.version}</version>
-            </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-common-bom</artifactId>
@@ -446,6 +437,12 @@
                 <groupId>org.freemarker</groupId>
                 <artifactId>freemarker</artifactId>
                 <version>${freemarker.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>transmittable-thread-local</artifactId>
+                <version>${transmittable-thread-local}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

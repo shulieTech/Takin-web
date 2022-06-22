@@ -309,4 +309,6 @@ public interface ApplicationService {
      * @return
      */
     List<String> filterAppIds(List<String> appIds, String operate);
+
+    boolean existsApplication(Long tenantId, String envCode);
 }

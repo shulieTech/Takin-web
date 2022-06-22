@@ -4,6 +4,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -11,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.ttl.threadpool.TtlExecutors;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -337,6 +340,59 @@ public class ThreadPoolConfig {
         return springSessionRedisTaskExecutor;
     }
 
+    /**
+     * 采用丢弃队列中最老的任务
+     *
+     * @return -
+     */
+    @Bean(name = "stopThreadPool")
+    public ThreadPoolExecutor stopTaskExecutor() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("stop-thread-%d").build();
+        return new ThreadPoolExecutor(10, 20, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), nameThreadFactory,
+            new ThreadPoolExecutor.DiscardOldestPolicy());
+    }
+
+    /**
+     * 大文件上传线程池
+     * 任务有异常会导致文件不完整 直接抛出异常
+     *
+     * @return
+     */
+    @Bean(name = "bigFileThreadPool")
+    public ThreadPoolExecutor bigFileThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("big-file-thread-%d").build();
+        return new ThreadPoolExecutor(10, 20, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+            new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * cloud回调命令处理线程池
+     */
+    @Bean(name = "cloudCallbackThreadPool")
+    public ExecutorService cloudCallbackThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("cloud-callback-%d").build();
+        return TtlExecutors.getTtlExecutorService(
+            new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS,
+                new SynchronousQueue<>(), nameThreadFactory));
+    }
+
+    @Bean(name = "dataCalibration")
+    public ExecutorService dataCalibrationExecutor() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("data-calibration-%d").build();
+        return TtlExecutors.getTtlExecutorService(new ThreadPoolExecutor(10, 20, 60L, TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(1000), nameThreadFactory, new WaitingRejectedExecutionHandler()));
+    }
+
+    private static class WaitingRejectedExecutionHandler implements RejectedExecutionHandler {
+
+        @SneakyThrows
+        @Override
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            if (!executor.isShutdown()) {
+                executor.getQueue().put(r);
+            }
+        }
+    }
     /**
      * webIDE数据入库处理线程池
      *

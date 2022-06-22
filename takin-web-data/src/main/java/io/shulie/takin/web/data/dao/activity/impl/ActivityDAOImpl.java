@@ -14,6 +14,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -26,6 +27,7 @@ import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.common.util.JsonUtil;
 import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.mapper.mysql.ActivityNodeStateTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.BusinessLinkManageTableMapper;
 import io.shulie.takin.web.data.mapper.mysql.LinkManageTableMapper;
@@ -44,6 +46,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -62,6 +65,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
 
     @Resource
     private ActivityNodeStateTableMapper activityNodeStateTableMapper;
+
+    @Autowired
+    private ApplicationDAO applicationDAO;
 
     @Override
     public List<String> exists(ActivityExistsQueryParam param) {
@@ -226,8 +232,11 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     @Override
     public int updateActivity(ActivityUpdateParam updateParam) {
         LinkManageTableEntity linkManageTableEntity = linkManageTableMapper.selectById(updateParam.getLinkId());
-        if (StringUtils.isNotBlank(updateParam.getApplicationName())) {
-            linkManageTableEntity.setApplicationName(updateParam.getApplicationName());
+        String applicationName = updateParam.getApplicationName();
+        if (StringUtils.isNotBlank(applicationName)) {
+            linkManageTableEntity.setApplicationName(applicationName);
+            updateParam.setApplicationId(applicationDAO.queryIdByApplicationName(applicationName));
+            linkManageTableEntity.setApplicationId(updateParam.getApplicationId());
         }
         if (updateParam.getActivityName() != null) {
             linkManageTableEntity.setLinkName(updateParam.getActivityName());
@@ -277,8 +286,9 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         if (middlewareType != null) {
             businessLinkManageTableEntity.setServerMiddlewareType(middlewareType.getType());
         }
-        if(StringUtils.isNotBlank(updateParam.getActivityName())) {
+        if(StringUtils.isNotBlank(updateParam.getApplicationName())) {
             businessLinkManageTableEntity.setApplicationName(updateParam.getApplicationName());
+            businessLinkManageTableEntity.setApplicationId(updateParam.getApplicationId());
         }
         return businessLinkManageTableMapper.updateById(businessLinkManageTableEntity);
     }
@@ -495,5 +505,14 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     @Override
     public List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace) {
         return businessLinkManageTableMapper.findActivityAppName(appName, entrace);
+    }
+
+    @Override
+    public boolean existsActivity(Long tenantId, String envCode) {
+        LambdaQueryWrapper<BusinessLinkManageTableEntity> wrapper = this.getLambdaQueryWrapper()
+            .eq(BusinessLinkManageTableEntity::getTenantId, tenantId)
+            .eq(BusinessLinkManageTableEntity::getEnvCode, envCode)
+            .eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
+        return SqlHelper.retBool(businessLinkManageTableMapper.selectCount(wrapper));
     }
 }

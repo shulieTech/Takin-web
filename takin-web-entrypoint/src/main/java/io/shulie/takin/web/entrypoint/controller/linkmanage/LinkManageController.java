@@ -19,7 +19,7 @@ import com.pamirs.takin.entity.domain.entity.linkmanage.statistics.StatisticsQue
 import com.pamirs.takin.entity.domain.vo.linkmanage.BusinessFlowVo;
 import com.pamirs.takin.entity.domain.vo.linkmanage.MiddleWareEntity;
 import com.pamirs.takin.entity.domain.vo.linkmanage.queryparam.SceneQueryVo;
-import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageDeleteReq;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;

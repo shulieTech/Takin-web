@@ -75,4 +75,6 @@ public interface SceneService {
     void updateBusinessFlow(BusinessFlowUpdateRequest businessFlowUpdateRequest);
 
     List<ApplicationDetailResult> getAppsByFlowId(Long flowId);
+
+    boolean existsScene(Long tenantId, String envCode);
 }

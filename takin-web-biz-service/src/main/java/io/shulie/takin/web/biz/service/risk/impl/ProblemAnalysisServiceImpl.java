@@ -302,7 +302,7 @@ public class ProblemAnalysisServiceImpl implements ProblemAnalysisService {
         long endTime = System.currentTimeMillis();
         ReportDetailDTO dto = reportDataCache.getReportDetailDTO(reportId);
         // 业务活动链路概览
-        if (CollectionUtils.isEmpty(dto.getBusinessActivity())) {
+        if (Objects.isNull(dto) || CollectionUtils.isEmpty(dto.getBusinessActivity())) {
             return;
         }
         if (StringUtils.isNotBlank(dto.getStartTime())) {

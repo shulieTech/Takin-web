@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
+import io.shulie.takin.adapter.api.model.response.scenemanage.SceneRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;

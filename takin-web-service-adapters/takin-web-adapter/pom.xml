@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>takin-web-service-adapters</artifactId>
+        <groupId>io.shulie.takin</groupId>
+        <version>takin-web-5.6.1</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>takin-web-adapter</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>takin-web-adapter-api</module>
+        <module>takin-web-adapter-cloud</module>
+    </modules>
+</project>

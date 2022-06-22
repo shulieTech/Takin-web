@@ -66,7 +66,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     file.setFileName(jmx.getName());
                     file.setFileType(jmx.getType());
                     file.setDownloadUrl(jmx.getPath());
-                    bus.setScriptFile(new FileManageUpdateRequest());
+                    bus.setScriptFile(file);
                     //解析脚本
                     BusinessFlowDetailResponse parseScriptAndSave = sceneService.parseScriptAndSave(bus);
                     BusinessFlowDetailResponse detail = sceneService.getBusinessFlowDetail(parseScriptAndSave.getId());

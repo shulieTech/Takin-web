@@ -16,6 +16,7 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.webide.WebIDESyncService;
+import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -186,7 +187,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     request.setEntrance(activity.getMethod() + "|" + activity.getServiceName());
                     request.setActivityName(activity.getActivityName());
                     request.setSamplerType(node.getSamplerType());
-                    request.setBusinessType(node.getBusinessType());
+                    request.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
                     list.add(request);
                 }
             }

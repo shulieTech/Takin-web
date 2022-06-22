@@ -1,6 +1,5 @@
 package io.shulie.takin.web.entrypoint.controller.webide;
 
-import io.shulie.takin.web.biz.pojo.request.webide.WebIDESyncScriptListRequest;
 import io.shulie.takin.web.biz.pojo.request.webide.WebIDESyncScriptRequest;
 import io.shulie.takin.web.biz.service.webide.WebIDESyncService;
 import io.swagger.annotations.Api;

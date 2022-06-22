@@ -8,6 +8,7 @@
     <result column="customer_id" jdbcType="BIGINT" property="customerId" />
     <result column="amount" jdbcType="DECIMAL" property="amount" />
     <result column="scene_id" jdbcType="BIGINT" property="sceneId" />
+    <result column="job_id" jdbcType="BIGINT" property="jobId" />
     <result column="scene_name" jdbcType="VARCHAR" property="sceneName" />
     <result column="start_time" jdbcType="TIMESTAMP" property="startTime" />
     <result column="end_time" jdbcType="TIMESTAMP" property="endTime" />
@@ -28,13 +29,13 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, customer_id, amount, scene_id, scene_name, start_time, end_time, `status`, conclusion,
+    id, customer_id, amount, scene_id,job_id, scene_name, start_time, end_time, `status`, conclusion,
     total_request, avg_tps, avg_rt, concurrent, success_rate, sa, operate_id, features, script_node_tree,
     is_deleted, gmt_create, gmt_update
   </sql>
 
   <select id="queryBySceneIds" parameterType="list" resultMap="BaseResultMap">
-    select t.id,t.scene_id,t.scene_name,t.status, t.gmt_create
+    select t.id,t.scene_id,t.job_id,t.scene_name,t.status, t.gmt_create
     from (
         select distinct(a.id) tid, a.* from t_report a
         where a.scene_id in

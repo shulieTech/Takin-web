@@ -16,6 +16,8 @@ public class ReportActivityResp extends ContextExt {
 
     private Long reportId;
 
+    private Long jobId;
+
     private List<BusinessActivity> businessActivityList;
 
     @Data

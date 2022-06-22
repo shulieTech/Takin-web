@@ -1241,6 +1241,7 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                             ReportActivityResp resp = new ReportActivityResp();
                             resp.setSceneId(entity.getSceneId());
                             resp.setReportId(entity.getId());
+                            resp.setJobId(entity.getJobId());
                             resp.setSceneName(entity.getSceneName());
                             List<ReportBusinessActivityDetailEntity> details = activityMap.get(entity.getId());
                             if (CollectionUtils.isNotEmpty(details)) {

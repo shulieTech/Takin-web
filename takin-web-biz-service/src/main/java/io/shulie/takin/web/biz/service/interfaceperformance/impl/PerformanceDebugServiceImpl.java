@@ -3,6 +3,7 @@ package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
+import io.shulie.takin.cloud.common.utils.Md5Util;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.*;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceDebugService;
@@ -12,11 +13,13 @@ import io.shulie.takin.web.common.enums.interfaceperformance.PerformanceDebugErr
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.FileUtils;
+import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResponse;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -99,7 +102,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         performanceConfigDAO.updateById(updateEntity);
 
         // 生成一个临时的配置ID,给前端查询使用,config表Id
-        String uuId = UUID.randomUUID().toString();
+        String uuId = Md5Util.md5(WebPluginUtils.traceUserId()+request.getName());
         request.setResultId(uuId);
         // 5、发起请求
         CompletableFuture.runAsync(() -> processRequest(
@@ -129,7 +132,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             detailResponse = performanceParamService.detail(detailRequest);
         }
         // 生成一个临时的配置ID,给前端查询使用,config表Id
-        String uuId = UUID.randomUUID().toString();
+        String uuId = Md5Util.md5(WebPluginUtils.traceUserId()+request.getName());
         request.setResultId(uuId);
 
         // 3、处理请求参数
@@ -208,7 +211,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         // 获取请求文件最大条数,把所有文件数据跑完
         Long requestCount = request.getRequestCount();
         Long relateFileMaxCount = request.getRelateFileMaxCount();
-        if(relateFileMaxCount > 0){
+        if (relateFileMaxCount > 0) {
             // 请求条数大于文件条数,则用请求条数
             requestCount = requestCount > relateFileMaxCount ? relateFileMaxCount : requestCount;
         }

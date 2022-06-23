@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.service.webide.impl;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpGlobalConfig;
 import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
@@ -23,6 +22,7 @@ import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.webide.WebIDESyncService;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
+import io.shulie.takin.web.common.enums.script.ScriptDebugStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,7 +78,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
                 jmxs.forEach(jmx -> {
                     //处理文件路径,改成控制台可用的路径
-                    String path = jmx.getPath();
+                    String path = tmpFilePath+"/"+jmx.getPath();
                     String uid = UUID.randomUUID().toString();
                     String sourcePath = tmpFilePath + "/" + uid + "/" + jmx.getName();
                     FileUtil.copy(path,sourcePath,false);
@@ -169,10 +169,10 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                         }
                         ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
                         log.info("[debug状态] 回调,debugId:{},debugDetail:{}",debugId, JSON.toJSONString(debugDetail));
-                        callback(url, JSON.toJSONString(debugDetail), workRecordId,"");
                         if (Objects.isNull(debugDetail)) {
                             break;
                         }
+                        callback(url, ScriptDebugStatusEnum.getDesc(debugDetail.getStatus()), workRecordId,"");
                         if ( debugDetail.getStatus() == 5) {
                             //发送报告错误日志
                             Long cloudReportId = debugDetail.getCloudReportId();

@@ -209,7 +209,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     request.setXpathMd5(node.getXpathMd5());
                     request.setTestName(node.getTestName());
                     request.setApplicationName(activity.getApplicationName());
-                    request.setEntrance(activity.getServiceName() + "|" + activity.getMethod());
+                    request.setEntrance(activity.getMethod()+"|"+activity.getServiceName() + "|" +activity.getRpcType());
                     request.setActivityName(activity.getActivityName());
                     request.setSamplerType(node.getSamplerType());
                     request.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());

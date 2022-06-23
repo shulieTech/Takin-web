@@ -140,10 +140,21 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
         //启动调试
         if (scriptDeploys.size() > 0) {
+
             List<Long> debugIds = new ArrayList<>();
             scriptDeploys.forEach(item -> {
-                ScriptDebugResponse debug = scriptDebugService.debug(item);
-                debugIds.add(debug.getScriptDebugId());
+                Boolean debugFlag = true;
+                try {
+                    ScriptDebugResponse debug = scriptDebugService.debug(item);
+                    debugIds.add(debug.getScriptDebugId());
+                }catch (Exception e){
+                    log.error("[启动调试失败] e", e);
+                    debugFlag = false;
+                }finally {
+                    log.info("[启动调试失败] 回调");
+                    String msg = debugFlag ? "启动调试成功" : "启动调试失败";
+                    callback(url, msg, workRecordId,"FATAL");
+                }
             });
 
 
@@ -151,6 +162,11 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                 webIDESyncThreadPool.execute(() -> {
                     boolean loop = true;
                     do {
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
                         log.info("[debug状态] 回调,debugId:{},debugDetail:{}",debugId, JSON.toJSONString(debugDetail));
                         callback(url, JSON.toJSONString(debugDetail), workRecordId,"");

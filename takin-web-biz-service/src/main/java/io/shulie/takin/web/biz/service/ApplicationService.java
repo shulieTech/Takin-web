@@ -77,7 +77,7 @@ public interface ApplicationService {
      *
      * @return -
      */
-    Response getApplicationList();
+    Response getApplicationList(ApplicationQueryRequestV2 request);
 
     /**
      * 获取应用信息

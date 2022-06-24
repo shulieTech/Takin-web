@@ -189,6 +189,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
+import static io.shulie.takin.web.common.common.Response.PAGE_TOTAL_HEADER;
+
 /**
  * @author mubai<chengjiacai.shulie.io>
  * @date 2020-03-16 15:25
@@ -521,20 +523,23 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public Response<List<ApplicationVo>> getApplicationList() {
-        List<ApplicationVo> applicationVoList = Lists.newArrayList();
-        List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
-        List<ApplicationDetailResult> applicationDetailResultList = applicationDAO.getApplicationListByUserIds(
-                userIdList);
-        if (CollectionUtils.isNotEmpty(applicationDetailResultList)) {
-            applicationVoList = applicationDetailResultList.stream().map(applicationDetailResult -> {
-                ApplicationVo applicationVo = new ApplicationVo();
-                applicationVo.setId(String.valueOf(applicationDetailResult.getApplicationId()));
-                applicationVo.setApplicationName(applicationDetailResult.getApplicationName());
-                return applicationVo;
+    public Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequestV2 request) {
+        PagingList<ApplicationListResponseV2> paging = pageApplication(request);
+        List<ApplicationListResponseV2> applications = paging.getList();
+        List<ApplicationVo> resultList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(applications)) {
+            resultList = applications.stream().map(application -> {
+                ApplicationVo vo = new ApplicationVo();
+                vo.setId(application.getId());
+                vo.setApplicationName(application.getApplicationName());
+                return vo;
             }).collect(Collectors.toList());
         }
-        return Response.success(applicationVoList);
+        Response.setHeaders(
+            new HashMap<String, String>(1) {{
+                put(PAGE_TOTAL_HEADER, String.valueOf(paging.getTotal()));
+            }});
+        return Response.success(resultList);
     }
 
     @Override

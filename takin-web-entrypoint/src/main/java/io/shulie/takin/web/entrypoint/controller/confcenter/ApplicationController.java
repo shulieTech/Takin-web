@@ -94,9 +94,8 @@ public class ApplicationController {
         moduleCode = BizOpConstants.ModuleCode.APPLICATION_MANAGE,
         needAuth = ActionTypeEnum.QUERY
     )
-    public Response<List<ApplicationVo>> getApplicationListNoAuth(
-    ) {
-        return applicationService.getApplicationList();
+    public Response<List<ApplicationVo>> getApplicationListNoAuth(ApplicationQueryRequestV2 request) {
+        return applicationService.getApplicationList(request);
     }
 
     @GetMapping("/console/application/center/app/info")

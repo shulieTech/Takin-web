@@ -60,6 +60,10 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     @Value("${file.upload.tmp.path:/tmp/takin/}")
     private String tmpFilePath;
 
+
+    @Value("${takin.data.path}")
+    private String baseNfsPath;
+
     @Autowired
     private ReportService reportService;
 
@@ -88,7 +92,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
                 jmxs.forEach(jmx -> {
                     //处理文件路径,改成控制台可用的路径
-                    String path = tmpFilePath + "/" + jmx.getPath();
+                    String path = baseNfsPath + "/" + jmx.getPath();
                     String uid = UUID.randomUUID().toString();
                     String sourcePath = tmpFilePath + "/" + uid + "/" + jmx.getName();
                     FileUtil.copy(path, sourcePath, false);

@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Slf4j
 public class FileUtils {
+    public static final String UTF8_BOM = "\uFEFF";
     private static ThreadLocal<CsvReader> csvReaderThreadLocal = ThreadLocal.withInitial(() -> CsvUtil.getReader());
 
     /**
@@ -75,7 +77,6 @@ public class FileUtils {
         List<CsvRow> csvRows = csvData.getRows();
         // 将column和rows做一个映射
         Map<String, String> columnRowMap = Maps.newLinkedHashMap();
-        boolean isFirstColumn = true;
         for (int i = 0; i < csvRows.size(); i++) {
             int index = 1;
             // 获取第一行
@@ -85,11 +86,9 @@ public class FileUtils {
                 Object obj = it.next();
                 // 表示为第一行，第一样是key,设置为column
                 if (i == 0) {
-                    // TODO 这里有个很难受的事情，第一行,第一列读取的时候，有个点，这里去掉
                     String columnKey = String.valueOf(obj).trim();
-                    if (isFirstColumn) {
+                    if (columnKey.startsWith(UTF8_BOM)) {
                         columnKey = columnKey.substring(1);
-                        isFirstColumn = false;
                     }
                     dataMap.put(columnKey, Lists.newArrayList());
                     // 每一列对应的column是啥
@@ -118,16 +117,13 @@ public class FileUtils {
         CsvData csvData = csvReaderThreadLocal.get().read(FileUtil.file(path));
         // 获取第一行
         CsvRow csvRow = csvData.getRow(0);
-        boolean isFirstColumn = true;
         Iterator it = csvRow.stream().iterator();
         while (it.hasNext()) {
             Object obj = it.next();
             // 表示为第一行，第一样是key,设置为column
-            // TODO 这里有个很难受的事情，第一行,第一列读取的时候，有个点，这里去掉
             String columnKey = String.valueOf(obj).trim();
-            if (isFirstColumn) {
+            if (columnKey.startsWith(UTF8_BOM)) {
                 columnKey = columnKey.substring(1);
-                isFirstColumn = false;
             }
             dataMap.put(columnKey, "");
         }

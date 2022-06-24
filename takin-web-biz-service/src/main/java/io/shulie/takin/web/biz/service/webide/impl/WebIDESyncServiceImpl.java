@@ -23,6 +23,8 @@ import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.webide.WebIDESyncService;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.script.ScriptDebugStatusEnum;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,7 +69,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
         String url = request.getCallbackAddr();
         Integer workRecordId = request.getWorkRecordId();
-        Boolean initData = true;
+        boolean initData = true;
         try {
             List<WebIDESyncScriptRequest.ActivityFIle> flies = request.getFile();
             if (flies.size() > 0) {
@@ -129,8 +131,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             }
 
         } catch (Exception e) {
-            log.error("[创建业务场景失败] e", e);
+            log.error("[创建业务场景失败] request:{},workRecordId:{},e",JSON.toJSONString(request),workRecordId, e);
             initData = false;
+            throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR,"创建业务场景失败");
         } finally {
             log.info("[创建业务场景] 回调");
             String msg = initData ? "创建业务场景成功" : "创建业务场景失败";
@@ -143,16 +146,17 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
             List<Long> debugIds = new ArrayList<>();
             scriptDeploys.forEach(item -> {
-                Boolean debugFlag = true;
+                boolean debugFlag = true;
                 try {
                     ScriptDebugResponse debug = scriptDebugService.debug(item);
                     debugIds.add(debug.getScriptDebugId());
                 }catch (Exception e){
-                    log.error("[启动调试失败] e", e);
+                    log.error("[启动调试失败] request:{},workRecordId:{},e",JSON.toJSONString(request),workRecordId, e);
                     debugFlag = false;
+                    throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR,"启动调试异常");
                 }finally {
-                    log.info("[启动调试失败] 回调");
                     String msg = debugFlag ? "启动调试成功" : "启动调试失败";
+                    log.info("[启动调试回调] workRecordId,:{},状态 :{}",workRecordId,msg);
                     callback(url, msg, workRecordId,"FATAL");
                 }
             });
@@ -168,7 +172,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                             e.printStackTrace();
                         }
                         ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
-                        log.info("[debug状态] 回调,debugId:{},debugDetail:{}",debugId, JSON.toJSONString(debugDetail));
+                        log.info("[debug状态回调] workRecordId:{},debugId:{},debugDetail:{}",workRecordId,debugId, JSON.toJSONString(debugDetail));
                         if (Objects.isNull(debugDetail)) {
                             break;
                         }
@@ -183,7 +187,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                                 String errorFilePath = tmpFilePath+"/ptl/"+resourceId+"/"+jobId;
                                 if(FileUtil.exist(errorFilePath)){
                                     String errorContext = FileUtil.readUtf8String(errorFilePath);
-                                    log.info("[发送报告错误日志] resourceId:{},jobId:{}",resourceId,jobId);
+                                    log.info("[发送报告错误日志] workRecordId:{},resourceId:{},jobId:{}",workRecordId,resourceId,jobId);
                                     callback(url, errorContext, workRecordId,"ERROR");
                                 }
                             }

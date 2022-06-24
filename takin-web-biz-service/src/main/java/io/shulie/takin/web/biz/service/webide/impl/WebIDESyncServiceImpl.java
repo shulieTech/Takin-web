@@ -23,8 +23,6 @@ import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.webide.WebIDESyncService;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.script.ScriptDebugStatusEnum;
-import io.shulie.takin.web.common.exception.TakinWebException;
-import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.mapper.mysql.WebIdeSyncScriptMapper;
 import io.shulie.takin.web.data.model.mysql.WebIdeSyncScriptEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -75,12 +73,12 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
         String url = request.getCallbackAddr();
         Long workRecordId = request.getWorkRecordId();
-        boolean initData = true;
+        boolean initData = false;
         WebIdeSyncScriptEntity entity = new WebIdeSyncScriptEntity();
         entity.setWorkRecordId(workRecordId);
         entity.setRequest(JSON.toJSONString(request));
         try {
-            log.info("[webIDE同步开始] request:{},workRecordId:{}",JSON.toJSONString(request),workRecordId);
+            log.info("[webIDE同步开始] workRecordId:{}",  workRecordId);
             List<WebIDESyncScriptRequest.ActivityFIle> flies = request.getFile();
             if (flies.size() > 0) {
                 //todo 目前webIDE只会传jmx文件
@@ -90,10 +88,10 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
                 jmxs.forEach(jmx -> {
                     //处理文件路径,改成控制台可用的路径
-                    String path = tmpFilePath+"/"+jmx.getPath();
+                    String path = tmpFilePath + "/" + jmx.getPath();
                     String uid = UUID.randomUUID().toString();
                     String sourcePath = tmpFilePath + "/" + uid + "/" + jmx.getName();
-                    FileUtil.copy(path,sourcePath,false);
+                    FileUtil.copy(path, sourcePath, false);
 
                     BusinessFlowParseRequest bus = new BusinessFlowParseRequest();
                     FileManageUpdateRequest file = new FileManageUpdateRequest();
@@ -141,39 +139,40 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     }
                 });
             }
-
+            initData = true;
         } catch (Exception e) {
-            log.error("[创建业务场景失败] request:{},workRecordId:{},e",JSON.toJSONString(request),workRecordId, e);
-            initData = false;
+            log.error("[创建业务场景失败] workRecordId:{},e", workRecordId, e);
             entity.setErrorMsg(e.toString());
+            entity.setErrorStage("初始化数据阶段异常");
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         } finally {
             log.info("[创建业务场景] 回调");
             String msg = initData ? "创建业务场景成功" : "创建业务场景失败";
-            entity.setIsError(initData?0:1);
-            callback(url, msg, workRecordId,"FATAL");
+            entity.setIsError(initData ? 0 : 1);
+            callback(url, msg, workRecordId, "FATAL");
         }
 
 
         //启动调试
-        if (initData && scriptDeploys.size() > 0 ) {
+        if (initData && scriptDeploys.size() > 0) {
 
             List<Long> debugIds = new ArrayList<>();
             scriptDeploys.forEach(item -> {
-                boolean debugFlag = true;
+                boolean debugFlag = false;
                 try {
                     ScriptDebugResponse debug = scriptDebugService.debug(item);
                     entity.setScriptDebugId(debug.getScriptDebugId());
                     debugIds.add(debug.getScriptDebugId());
-                }catch (Exception e){
-                    log.error("[启动调试失败] request:{},workRecordId:{},e",JSON.toJSONString(request),workRecordId, e);
-                    debugFlag = false;
+                    debugFlag = true;
+                } catch (Exception e) {
+                    log.error("[启动调试失败] workRecordId:{},e", workRecordId, e);
                     entity.setErrorMsg(e.toString());
+                    entity.setErrorStage("启动调试异常");
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                }finally {
+                } finally {
                     String msg = debugFlag ? "启动调试成功" : "启动调试失败";
-                    log.info("[启动调试回调] workRecordId,:{},状态 :{}",workRecordId,msg);
-                    callback(url, msg, workRecordId,"FATAL");
+                    log.info("[启动调试回调] workRecordId,:{},状态 :{}", workRecordId, msg);
+                    callback(url, msg, workRecordId, "FATAL");
                 }
             });
 
@@ -188,28 +187,28 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                             e.printStackTrace();
                         }
                         ScriptDebugDetailResponse debugDetail = scriptDebugService.getById(debugId);
-                        log.info("[debug状态回调] workRecordId:{},debugId:{},debugDetail:{}",workRecordId,debugId, JSON.toJSONString(debugDetail));
+                        log.info("[debug状态回调] workRecordId:{},debugId:{}", workRecordId, debugId);
                         if (Objects.isNull(debugDetail)) {
                             break;
                         }
-                        callback(url, ScriptDebugStatusEnum.getDesc(debugDetail.getStatus()), workRecordId,"");
-                        if ( debugDetail.getStatus() == 5) {
+                        callback(url, ScriptDebugStatusEnum.getDesc(debugDetail.getStatus()), workRecordId, "");
+                        if (debugDetail.getStatus() == 5) {
                             //发送报告错误日志
                             Long cloudReportId = debugDetail.getCloudReportId();
                             ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
-                            if(Objects.nonNull(report)){
+                            if (Objects.nonNull(report)) {
                                 String resourceId = report.getResourceId();
                                 Long jobId = report.getJobId();
-                                String errorFilePath = tmpFilePath+"/ptl/"+resourceId+"/"+jobId;
-                                if(FileUtil.exist(errorFilePath)){
+                                String errorFilePath = tmpFilePath + "/ptl/" + resourceId + "/" + jobId;
+                                if (FileUtil.exist(errorFilePath)) {
                                     String errorContext = FileUtil.readUtf8String(errorFilePath);
-                                    log.info("[发送报告错误日志] workRecordId:{},resourceId:{},jobId:{}",workRecordId,resourceId,jobId);
-                                    callback(url, errorContext, workRecordId,"ERROR");
+                                    log.info("[发送报告错误日志] workRecordId:{},resourceId:{},jobId:{}", workRecordId, resourceId, jobId);
+                                    callback(url, errorContext, workRecordId, "ERROR");
                                 }
                             }
                             loop = false;
                         }
-                        if(debugDetail.getStatus() == 4 ){
+                        if (debugDetail.getStatus() == 4) {
                             loop = false;
                         }
                     } while (loop);
@@ -218,7 +217,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
         }
 
 
-        webIDESyncThreadPool.execute(() ->{
+        webIDESyncThreadPool.execute(() -> {
             saveSyncDetail(entity);
         });
     }
@@ -248,7 +247,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     request.setXpathMd5(node.getXpathMd5());
                     request.setTestName(node.getTestName());
                     request.setApplicationName(activity.getApplicationName());
-                    request.setEntrance(activity.getMethod()+"|"+activity.getServiceName() + "|" +activity.getRpcType());
+                    request.setEntrance(activity.getMethod() + "|" + activity.getServiceName() + "|" + activity.getRpcType());
                     request.setActivityName(activity.getActivityName());
                     request.setSamplerType(node.getSamplerType());
                     request.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
@@ -260,8 +259,8 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     }
 
 
-    private void callback(String url, String msg, Long workRecordId,String level) {
-        url = url + "?source=kzt&level="+level+"&work_record_id=" + workRecordId;
+    private void callback(String url, String msg, Long workRecordId, String level) {
+        url = url + "?source=kzt&level=" + level + "&work_record_id=" + workRecordId;
         new HttpRequest(url)
                 .method(Method.POST)
                 .contentType(RequestTypeEnum.TEXT.getDesc())
@@ -271,7 +270,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                 .body();
     }
 
-    private void saveSyncDetail(WebIdeSyncScriptEntity entity){
+    private void saveSyncDetail(WebIdeSyncScriptEntity entity) {
         webIdeSyncScriptMapper.insert(entity);
     }
 

@@ -36,6 +36,8 @@ public class WebIdeSyncScriptEntity extends TenantBaseEntity {
 
     private String errorMsg;
 
+    private String errorStage;
+
     @TableField(value = "CREATE_TIME")
     private LocalDateTime createTime;
 

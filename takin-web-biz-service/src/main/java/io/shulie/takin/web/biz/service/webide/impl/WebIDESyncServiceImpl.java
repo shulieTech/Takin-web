@@ -25,11 +25,14 @@ import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.script.ScriptDebugStatusEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
+import io.shulie.takin.web.data.mapper.mysql.WebIdeSyncScriptMapper;
+import io.shulie.takin.web.data.model.mysql.WebIdeSyncScriptEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -62,15 +65,22 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     @Autowired
     private ReportService reportService;
 
+    @Resource
+    private WebIdeSyncScriptMapper webIdeSyncScriptMapper;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void syncScript(WebIDESyncScriptRequest request) {
         List<ScriptDebugDoDebugRequest> scriptDeploys = new ArrayList<>();
 
         String url = request.getCallbackAddr();
-        Integer workRecordId = request.getWorkRecordId();
+        Long workRecordId = request.getWorkRecordId();
         boolean initData = true;
+        WebIdeSyncScriptEntity entity = new WebIdeSyncScriptEntity();
+        entity.setWorkRecordId(workRecordId);
+        entity.setRequest(JSON.toJSONString(request));
         try {
+            log.info("[webIDE同步开始] request:{},workRecordId:{}",JSON.toJSONString(request),workRecordId);
             List<WebIDESyncScriptRequest.ActivityFIle> flies = request.getFile();
             if (flies.size() > 0) {
                 //todo 目前webIDE只会传jmx文件
@@ -97,6 +107,8 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     BusinessFlowDetailResponse parseScriptAndSave = sceneService.parseScriptAndSave(bus);
                     BusinessFlowDetailResponse detail = sceneService.getBusinessFlowDetail(parseScriptAndSave.getId());
                     if (Objects.nonNull(detail)) {
+                        entity.setBusinessFlowId(parseScriptAndSave.getId());
+                        entity.setScriptDeployId(detail.getScriptDeployId());
                         ScriptDebugDoDebugRequest scriptDebugDoDebug = new ScriptDebugDoDebugRequest();
                         scriptDebugDoDebug.setScriptDeployId(detail.getScriptDeployId());
                         scriptDebugDoDebug.setConcurrencyNum(request.getConcurrencyNum());
@@ -133,27 +145,31 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
         } catch (Exception e) {
             log.error("[创建业务场景失败] request:{},workRecordId:{},e",JSON.toJSONString(request),workRecordId, e);
             initData = false;
-            throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR,"创建业务场景失败");
+            entity.setErrorMsg(e.toString());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         } finally {
             log.info("[创建业务场景] 回调");
             String msg = initData ? "创建业务场景成功" : "创建业务场景失败";
+            entity.setIsError(initData?0:1);
             callback(url, msg, workRecordId,"FATAL");
         }
 
 
         //启动调试
-        if (scriptDeploys.size() > 0) {
+        if (initData && scriptDeploys.size() > 0 ) {
 
             List<Long> debugIds = new ArrayList<>();
             scriptDeploys.forEach(item -> {
                 boolean debugFlag = true;
                 try {
                     ScriptDebugResponse debug = scriptDebugService.debug(item);
+                    entity.setScriptDebugId(debug.getScriptDebugId());
                     debugIds.add(debug.getScriptDebugId());
                 }catch (Exception e){
                     log.error("[启动调试失败] request:{},workRecordId:{},e",JSON.toJSONString(request),workRecordId, e);
                     debugFlag = false;
-                    throw new TakinWebException(TakinWebExceptionEnum.SCENE_VALIDATE_ERROR,"启动调试异常");
+                    entity.setErrorMsg(e.toString());
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 }finally {
                     String msg = debugFlag ? "启动调试成功" : "启动调试失败";
                     log.info("[启动调试回调] workRecordId,:{},状态 :{}",workRecordId,msg);
@@ -202,6 +218,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
         }
 
 
+        webIDESyncThreadPool.execute(() ->{
+            saveSyncDetail(entity);
+        });
     }
 
 
@@ -241,7 +260,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     }
 
 
-    private void callback(String url, String msg, Integer workRecordId,String level) {
+    private void callback(String url, String msg, Long workRecordId,String level) {
         url = url + "?source=kzt&level="+level+"&work_record_id=" + workRecordId;
         new HttpRequest(url)
                 .method(Method.POST)
@@ -251,4 +270,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                 .execute()
                 .body();
     }
+
+    private void saveSyncDetail(WebIdeSyncScriptEntity entity){
+        webIdeSyncScriptMapper.insert(entity);
+    }
+
 }

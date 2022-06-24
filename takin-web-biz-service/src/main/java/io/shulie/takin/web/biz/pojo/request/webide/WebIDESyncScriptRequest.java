@@ -21,7 +21,7 @@ public class WebIDESyncScriptRequest {
 
     private String callbackAddr;
 
-    private Integer workRecordId;
+    private Long workRecordId;
 
 
     @Data

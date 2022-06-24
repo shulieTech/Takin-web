@@ -627,6 +627,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     // 上报应用状态数据
     public void uploadAppStatus(NodeUploadDataDTO param) {
         // 补充header
+        param.setSource(ContextSourceEnum.AGENT.getCode());
         WebPluginUtils.setTraceTenantContext(param);
         if (param == null || StringUtil.isEmpty(param.getApplicationName()) || StringUtil.isEmpty(param.getNodeKey())) {
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_PUSH_APPLICATION_STATUS_VALIDATE_ERROR,
@@ -2747,6 +2748,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Boolean silenceSwitchStatusIsTrue(TenantCommonExt ext, AppSwitchEnum appSwitchEnum) {
         String status = this.getUserSilenceSwitchStatusForVo(WebPluginUtils.traceTenantCommonExt());
         return appSwitchEnum.getCode().equals(status);
+    }
+
+    @Override
+    public boolean existsApplication(Long tenantId, String envCode) {
+        return applicationDAO.existsApplication(tenantId, envCode);
     }
 
 }

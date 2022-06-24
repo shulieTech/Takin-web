@@ -34,6 +34,7 @@
         WHERE id = (SELECT MAX(id)
                     FROM t_application_plugin_upgrade
                     WHERE application_id = #{applicationId}
-                      AND plugin_upgrade_status = #{pluginUpgradeStatus})
+                      AND plugin_upgrade_status = #{pluginUpgradeStatus}
+                      AND type = 1)
     </select>
 </mapper>

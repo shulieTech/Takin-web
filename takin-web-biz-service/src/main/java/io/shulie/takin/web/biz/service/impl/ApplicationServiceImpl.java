@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.NumberUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -121,6 +122,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -625,7 +627,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     // 上报应用状态数据
     public void uploadAppStatus(NodeUploadDataDTO param) {
         // 补充header
-        param.setSource(ContextSourceEnum.AGENT.getCode());
         WebPluginUtils.setTraceTenantContext(param);
         if (param == null || StringUtil.isEmpty(param.getApplicationName()) || StringUtil.isEmpty(param.getNodeKey())) {
             throw new TakinWebException(TakinWebExceptionEnum.AGENT_PUSH_APPLICATION_STATUS_VALIDATE_ERROR,
@@ -666,7 +667,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public synchronized void syncApplicationAccessStatus() {
+        int count = 0;
         try {
+            log.info("------开始执行应用同步------执行线程:" + Thread.currentThread().getName());
             // 应用分页大小
             int pageSize = 20;
             // 查出的应用数量, 如果小于pageSize, 则无需下一页
@@ -686,27 +689,109 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 pageBaseDTO.setCurrent(pageBaseDTO.getCurrent() + 1);
                 // 赋值查询出的应用数量
                 applicationNumber = applicationList.size();
-                this.syncApplicationAccessStatus(applicationList);
+
+                // 收集应用名称
+                List<String> appNames = applicationList.stream()
+                        .map(ApplicationListResult::getApplicationName)
+                        .collect(Collectors.toList());
+
+                // 大数据应用的map, key 应用名称, value amdb应用实例
+                Map<String, ApplicationResult> amdbApplicationMap = this.getAmdbApplicationMap(appNames);
+
+                // 大数据应用节点的map, key 应用名称, value amdb节点列表
+                Map<String, List<ApplicationNodeResult>> amdbApplicationNodeMap = this.getAmdbApplicationNodeMap(
+                        appNames);
+
+                // 异常的应用
+                Set<Long> errorApplicationIdSet = new HashSet<>(20);
+                // 正常的应用
+                Set<Long> normalApplicationIdSet = new HashSet<>(20);
+
+                // 遍历比对
+                for (ApplicationListResult application : applicationList) {
+                    String applicationName = application.getApplicationName();
+                    Long applicationId = application.getApplicationId();
+                    Integer nodeNum = application.getNodeNum();
+
+                    // 该应用对应的大数据应用实例
+                    ApplicationResult amdbApplication;
+                    // 该应用对应的大数据节点列表
+                    List<ApplicationNodeResult> amdbApplicationNodeList;
+
+                    if (amdbApplicationMap.isEmpty()
+                            || (amdbApplication = amdbApplicationMap.get(applicationName)) == null
+                            || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
+                        // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
+                        errorApplicationIdSet.add(applicationId);
+
+                    } else if (!amdbApplicationMap.isEmpty()
+                            && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
+                            && amdbApplication.getAppIsException()) {
+                        // map 存在, map.get 存在, amdb应用为异常
+                        errorApplicationIdSet.add(applicationId);
+
+                    } else if (!amdbApplicationNodeMap.isEmpty()
+                            && CollectionUtil.isNotEmpty(
+                            amdbApplicationNodeList = amdbApplicationNodeMap.get(applicationName))
+                            && amdbApplicationNodeList.stream().map(ApplicationNodeResult::getAgentVersion).distinct()
+                            .count()
+                            > 1) {
+                        // 判断agent版本号是否一致
+                        errorApplicationIdSet.add(applicationId);
+
+                    } else {
+                        normalApplicationIdSet.add(applicationId);
+                    }
+                }
+
+                // 更新应用状态
+//                applicationDAO.updateStatusByApplicationIds(errorApplicationIdSet,
+//                        AppAccessStatusEnum.EXCEPTION.getCode());
+//                applicationDAO.updateStatusByApplicationIds(normalApplicationIdSet,
+//                        AppAccessStatusEnum.NORMAL.getCode());
+                count += applicationList.size();
+                this.syncApplicationAccessStatus(applicationList,errorApplicationIdSet);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
         } catch (Exception e) {
             log.error("定时同步应用状态错误, 错误信息: {}", e.getMessage(), e);
         }
-
+        log.info("------开始执行应用同步------执行线程:" + Thread.currentThread().getName() + "共执行了:" + count);
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList) {
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList,Set<Long> errorApplicationIdSet) {
         log.info("开始同步应用状态:" + applicationList);
         if (CollectionUtils.isNotEmpty(applicationList)) {
             applicationList.forEach(app -> {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
                 log.info("应用:" + app.getApplicationName() + "状态为:" + result);
                 long n = (long) result.get("n");
-                if (n != 0) {
+                if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
                     log.info("应用:"+app.getApplicationName()+"异常");
-                    applicationDAO.updateStatus(app.getApplicationId(), (String) result.get("e"));
+                    String e = (String) result.get("e");
+                    if (StringUtils.isBlank(e)) {
+                        String a = (String)result.get("a");
+                        e = "探针接入异常";
+                        if (StringUtils.isNotEmpty(a)) {
+                            e += "，agentId为"+a;
+                        }
+                    }
+                    applicationDAO.updateStatus(app.getApplicationId(), e);
+                    NodeUploadDataDTO param = new NodeUploadDataDTO();
+                    param.setApplicationName(app.getApplicationName());
+                    param.setAgentId((String) result.get("a"));
+                    param.setNodeKey(UUID.randomUUID().toString().replace("_", ""));
+                    param.setExceptionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                    HashMap map = new HashMap(1);
+                    ExceptionInfo exceptionInfo = new ExceptionInfo();
+                    exceptionInfo.setErrorCode("—");
+                    exceptionInfo.setMessage(e);
+                    exceptionInfo.setDetail(e);
+                    map.put("Agent异常:" + this.toString().hashCode(), JSON.toJSONString(exceptionInfo));
+                    param.setSwitchErrorMap(map);
+                    uploadAccessStatus(param);
                 } else {
                     log.info("应用:"+app.getApplicationName()+"正常");
                     applicationDAO.updateStatus(app.getApplicationId());}
@@ -2664,8 +2749,4 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         return appSwitchEnum.getCode().equals(status);
     }
 
-    @Override
-    public boolean existsApplication(Long tenantId, String envCode) {
-        return applicationDAO.existsApplication(tenantId, envCode);
-    }
 }

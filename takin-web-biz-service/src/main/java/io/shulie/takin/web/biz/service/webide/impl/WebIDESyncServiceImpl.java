@@ -159,7 +159,8 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             log.info("[创建业务场景] 回调");
             String msg = initData ? "创建业务场景成功" : "创建业务场景失败";
             entity.setIsError(initData ? 0 : 1);
-            callback(url, msg, workRecordId, "FATAL");
+            String level = initData ? "INFO":"FATAL";
+            callback(url, msg, workRecordId, level);
         }
 
 
@@ -182,7 +183,8 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                 } finally {
                     String msg = debugFlag ? "启动调试成功" : "启动调试失败";
                     log.info("[启动调试回调] workRecordId,:{},状态 :{}", workRecordId, msg);
-                    callback(url, msg, workRecordId, "FATAL");
+                    String level = debugFlag ? "INFO":"FATAL";
+                    callback(url, msg, workRecordId, level);
                 }
             });
 
@@ -201,8 +203,11 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                         if (Objects.isNull(debugDetail)) {
                             break;
                         }
-                        callback(url, ScriptDebugStatusEnum.getDesc(debugDetail.getStatus()), workRecordId, "");
+                        String level = "INFO";
+                        String msg = ScriptDebugStatusEnum.getDesc(debugDetail.getStatus());
                         if (debugDetail.getStatus() == 5) {
+                            level = "ERROR";
+                            msg = msg +", 失败原因:{"+debugDetail.getRemark()+"}";
                             //发送报告错误日志
                             Long cloudReportId = debugDetail.getCloudReportId();
                             ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
@@ -213,11 +218,12 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                                 if (FileUtil.exist(errorFilePath)) {
                                     String errorContext = FileUtil.readUtf8String(errorFilePath);
                                     log.info("[发送报告错误日志] workRecordId:{},resourceId:{},jobId:{}", workRecordId, resourceId, jobId);
-                                    callback(url, errorContext, workRecordId, "ERROR");
+                                    callback(url, errorContext, workRecordId, level);
                                 }
                             }
                             loop = false;
                         }
+                        callback(url, msg, workRecordId, level);
                         if (debugDetail.getStatus() == 4) {
                             loop = false;
                         }

@@ -8,15 +8,18 @@ import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.enums.fastdebug.RequestTypeEnum;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptDebugDoDebugRequest;
 import io.shulie.takin.web.biz.pojo.request.webide.WebIDESyncScriptRequest;
+import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
+import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
@@ -69,6 +72,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
     @Resource
     private WebIdeSyncScriptMapper webIdeSyncScriptMapper;
+
+    @Resource
+    private ActivityService activityService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -255,6 +261,14 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     request.setActivityName(activity.getActivityName());
                     request.setSamplerType(node.getSamplerType());
                     request.setBusinessType(BusinessTypeEnum.NORMAL_BUSINESS.getType());
+                    ActivityResultQueryRequest activityQuery = new ActivityResultQueryRequest();
+                    activityQuery.setApplicationName(request.getApplicationName());
+                    activityQuery.setEntrancePath(request.getEntrance());
+
+                    List<ActivityListResponse> responses = activityService.queryNormalActivities(activityQuery);
+                    if(responses.size()>0){
+                        request.setBusinessActivityId(responses.get(0).getActivityId());
+                    }
                     list.add(request);
                 }
             }

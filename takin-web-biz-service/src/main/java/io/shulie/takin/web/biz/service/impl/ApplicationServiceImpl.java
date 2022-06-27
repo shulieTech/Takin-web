@@ -702,13 +702,13 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (CollectionUtils.isNotEmpty(applicationList)) {
             applicationList.forEach(app -> {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
-                log.info("应用:" + app.getApplicationName() + "状态为:" + result);
+//                log.info("应用:" + app.getApplicationName() + "状态为:" + result);
                 long n = (long) result.get("n");
                 if (n != 0) {
-                    log.info("应用:"+app.getApplicationName()+"异常");
+//                    log.info("应用:"+app.getApplicationName()+"异常");
                     applicationDAO.updateStatus(app.getApplicationId(), (String) result.get("e"));
                 } else {
-                    log.info("应用:"+app.getApplicationName()+"正常");
+//                    log.info("应用:"+app.getApplicationName()+"正常");
                     applicationDAO.updateStatus(app.getApplicationId());}
             });
             log.info("结束同步应用状态!");

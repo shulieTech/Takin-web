@@ -117,9 +117,6 @@ public class SummaryService {
             businessCount = convertLong((Long)cloudMap.get("count"));
             passBusinessCount = convertBigDecimal((BigDecimal)cloudMap.get("passSum"));
         }
-        warnCount = warnCount != null ? warnCount : 0;
-        businessCount = businessCount != null ? businessCount : 0;
-        passBusinessCount = passBusinessCount != null ? passBusinessCount : 0;
 
         ReportSummaryCreateParam reportSummary = new ReportSummaryCreateParam();
         reportSummary.setReportId(reportId);

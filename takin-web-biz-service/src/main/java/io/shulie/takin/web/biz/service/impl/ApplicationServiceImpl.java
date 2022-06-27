@@ -698,7 +698,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList) {
-        log.info("开始同步应用状态:" + applicationList);
+        log.info("开始同步应用状态");
         if (CollectionUtils.isNotEmpty(applicationList)) {
             applicationList.forEach(app -> {
                 Map result = applicationDAO.getStatus(app.getApplicationName());

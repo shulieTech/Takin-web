@@ -771,7 +771,10 @@ public class SceneServiceImpl implements SceneService {
             List<FileManageUpdateRequest> updateFileManageRequests = new ArrayList<>();
             updateFileManageRequests.add(scriptFile);
             updateFileManageRequests.addAll(LinkManageConvert.INSTANCE.ofFileManageResponseList(dataFileManageResponseList));
+            // 增加附件
+            updateFileManageRequests.addAll(LinkManageConvert.INSTANCE.ofFileManageResponseList(result.getAttachmentManageResponseList()));
             updateRequest.setFileManageUpdateRequests(updateFileManageRequests);
+
         }
         // 设置插件信息
         if (CollectionUtils.isNotEmpty(pluginList)) {

@@ -67,7 +67,7 @@ public class DiffFileApiImpl implements DiffFileApi {
             }
             return true;
         } catch (Exception e) {
-            log.error("copyFile is fail ", ExceptionUtils.getStackTrace(e));
+            log.error("copyFile is fail " + ExceptionUtils.getStackTrace(e));
             // 这里直接抛异常处理,不能吃掉异常信息
             throw e;
         }

@@ -170,6 +170,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             List<Long> debugIds = new ArrayList<>();
             scriptDeploys.forEach(item -> {
                 boolean debugFlag = false;
+                String errorMsg = "";
                 try {
                     ScriptDebugResponse debug = scriptDebugService.debug(item);
                     entity.setScriptDebugId(debug.getScriptDebugId());
@@ -179,9 +180,10 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     log.error("[启动调试失败] workRecordId:{},e", workRecordId, e);
                     entity.setErrorMsg(e.toString());
                     entity.setErrorStage("启动调试异常");
+                    errorMsg = e.getMessage();
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 } finally {
-                    String msg = debugFlag ? "启动调试成功" : "启动调试失败";
+                    String msg = debugFlag ? "启动调试成功" : "启动调试失败, 失败原因:{"+errorMsg+"}";
                     log.info("[启动调试回调] workRecordId,:{},状态 :{}", workRecordId, msg);
                     String level = debugFlag ? "INFO":"FATAL";
                     callback(url, msg, workRecordId, level);

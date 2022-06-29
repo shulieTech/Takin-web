@@ -742,11 +742,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     }
                 }
 
-                // 更新应用状态
-                applicationDAO.updateStatusByApplicationIds(errorApplicationIdSet,
-                        AppAccessStatusEnum.EXCEPTION.getCode());
-                applicationDAO.updateStatusByApplicationIds(normalApplicationIdSet,
-                        AppAccessStatusEnum.NORMAL.getCode());
+
                 this.syncApplicationAccessStatus(applicationList,errorApplicationIdSet);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页

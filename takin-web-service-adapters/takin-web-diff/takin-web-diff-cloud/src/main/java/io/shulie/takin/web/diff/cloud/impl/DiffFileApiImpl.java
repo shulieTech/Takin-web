@@ -59,9 +59,12 @@ public class DiffFileApiImpl implements DiffFileApi {
         }
         try {
             if (!this.isExist(req.getSourcePaths())) {
-                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "文件校验失败！");
+                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "文件校验失败！请重试！");
             }
-            return cloudFileApi.copyFile(req);
+            if (!cloudFileApi.copyFile(req)) {
+                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "文件操作失败,请重试！");
+            }
+            return true;
         } catch (Exception e) {
             log.error("copyFile is fail ", ExceptionUtils.getStackTrace(e));
             // 这里直接抛异常处理,不能吃掉异常信息

@@ -173,9 +173,18 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                 String errorMsg = "";
                 try {
                     ScriptDebugResponse debug = scriptDebugService.debug(item);
-                    entity.setScriptDebugId(debug.getScriptDebugId());
-                    debugIds.add(debug.getScriptDebugId());
-                    debugFlag = true;
+                    if(debug.getScriptDebugId() != null){
+                        entity.setScriptDebugId(debug.getScriptDebugId());
+                        debugIds.add(debug.getScriptDebugId());
+                        debugFlag = true;
+                    }else{
+                        log.error("[启动调试失败] workRecordId:{},error:{}", workRecordId,debug.getErrorMessages().get(0));
+                        entity.setErrorMsg(debug.getErrorMessages().get(0));
+                        entity.setErrorStage("启动调试异常");
+                        errorMsg = entity.getErrorMsg();
+                    }
+
+
                 } catch (Exception e) {
                     log.error("[启动调试失败] workRecordId:{},e", workRecordId, e);
                     entity.setErrorMsg(e.toString());

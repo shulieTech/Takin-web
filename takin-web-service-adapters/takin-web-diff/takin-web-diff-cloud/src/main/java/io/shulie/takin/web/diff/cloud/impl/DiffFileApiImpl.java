@@ -1,5 +1,6 @@
 package io.shulie.takin.web.diff.cloud.impl;
 
+import com.alibaba.fastjson.JSON;
 import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
 import io.shulie.takin.cloud.sdk.model.request.filemanager.*;
 import io.shulie.takin.utils.string.StringUtil;
@@ -59,7 +60,7 @@ public class DiffFileApiImpl implements DiffFileApi {
         }
         try {
             if (!this.isExist(req.getSourcePaths())) {
-                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "文件校验失败！请重试！");
+                throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "关联的文件已丢失,请检查!!!");
             }
             if (!cloudFileApi.copyFile(req)) {
                 throw new TakinWebException(TakinWebExceptionEnum.SCRIPT_VALIDATE_ERROR, "文件操作失败,请重试！");
@@ -115,7 +116,7 @@ public class DiffFileApiImpl implements DiffFileApi {
                 // 继续验证下一个
             } else {
                 isExist = false;
-                log.error("复制的文件不存在,", pathList.get(i));
+                log.error("复制的文件不存在,请检查" + pathList.get(i));
                 break;
             }
         }

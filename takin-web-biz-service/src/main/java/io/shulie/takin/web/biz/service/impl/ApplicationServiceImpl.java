@@ -685,7 +685,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public synchronized void syncApplicationAccessStatus() {
-        int count = 0;
         try {
             // 应用分页大小
             int pageSize = 20;
@@ -761,12 +760,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     }
                 }
 
-                // 更新应用状态
-//                applicationDAO.updateStatusByApplicationIds(errorApplicationIdSet,
-//                        AppAccessStatusEnum.EXCEPTION.getCode());
-//                applicationDAO.updateStatusByApplicationIds(normalApplicationIdSet,
-//                        AppAccessStatusEnum.NORMAL.getCode());
-                count += applicationList.size();
+
                 this.syncApplicationAccessStatus(applicationList,errorApplicationIdSet);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
@@ -778,14 +772,11 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList,Set<Long> errorApplicationIdSet) {
-        log.info("开始同步应用状态:" + applicationList);
         if (CollectionUtils.isNotEmpty(applicationList)) {
             applicationList.forEach(app -> {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
-                log.info("应用:" + app.getApplicationName() + "状态为:" + result);
                 long n = (long) result.get("n");
                 if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
-                    log.info("应用:"+app.getApplicationName()+"异常");
                     String e = (String) result.get("e");
                     if (StringUtils.isBlank(e)) {
                         String a = (String)result.get("a");
@@ -809,10 +800,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     param.setSwitchErrorMap(map);
                     uploadAccessStatus(param);
                 } else {
-                    log.info("应用:"+app.getApplicationName()+"正常");
                     applicationDAO.updateStatus(app.getApplicationId());}
             });
-            log.info("结束同步应用状态!");
         }
     }
 

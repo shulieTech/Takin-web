@@ -122,9 +122,10 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
         boolean checkPass = false;
         String podNumber = String.valueOf(redisClientUtil.hmget(PressureStartCache.getResourceKey(resourceId),
             PressureStartCache.POD_NUM));
+        long startedPod = 0;
         while (currentTime <= pressureNodeStartExpireTime
             && !redisClientUtil.hasLockKey(PressureStartCache.getStopFlag(resourceId))) {
-            Long startedPod = redisClientUtil.getSetSize(PressureStartCache.getResourceJmeterSuccessKey(resourceId));
+            startedPod = redisClientUtil.getSetSize(PressureStartCache.getResourceJmeterSuccessKey(resourceId));
             try {
                 if (Long.parseLong(podNumber) == startedPod) {
                     checkPass = true;
@@ -144,8 +145,7 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
         //压力jmeter没有在设定时间内启动完毕，停止检测
         if (!checkPass) {
             String message = String.format("节点没有在设定时间【%s】s内启动，计划启动节点个数【%s】,实际启动节点个数【%s】,"
-                    + "导致压测停止", pressureNodeStartExpireTime, podNumber,
-                redisClientUtil.getSetSize(PressureStartCache.getResourceJmeterSuccessKey(resourceId)));
+                    + "导致压测停止", pressureNodeStartExpireTime, podNumber, startedPod);
             callStartFailedEvent(resourceId, message);
         } else {
             // 启动完成

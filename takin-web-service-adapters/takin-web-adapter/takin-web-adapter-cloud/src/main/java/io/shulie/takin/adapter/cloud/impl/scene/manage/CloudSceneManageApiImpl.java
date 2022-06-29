@@ -62,6 +62,7 @@ import io.shulie.takin.adapter.api.model.response.strategy.StrategyResp;
 import io.shulie.takin.utils.json.JsonHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -86,9 +87,9 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
     @Override
     public void updateSceneFileByScriptId(CloudUpdateSceneFileRequest request) {
         if (Objects.isNull(request.getNewScriptId())
-            || Objects.isNull(request.getOldScriptId())
-            || Objects.isNull(request.getScriptType())
-            || org.springframework.util.CollectionUtils.isEmpty(request.getUploadFiles())) {
+                || Objects.isNull(request.getOldScriptId())
+                || Objects.isNull(request.getScriptType())
+                || org.springframework.util.CollectionUtils.isEmpty(request.getUploadFiles())) {
             throw new IllegalArgumentException("缺少参数");
         }
         cloudSceneManageService.updateFileByScriptId(request);
@@ -323,9 +324,21 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
         return "恢复成功";
     }
 
-    @Override
-    public String archive(SceneManageDeleteReq vo) {
+	@Override
+	public String archive(SceneManageDeleteReq vo) {
         cloudSceneManageService.archive(vo.getId());
         return "归档成功";
+    }
+
+    @Override
+    public ResponseResult<List<SceneManageListResp>> querySceneByStatus(SceneManageQueryReq req) {
+        List<SceneManageListOutput> sceneManageListOutputs = cloudSceneManageService.getSceneByStatus(req.getStatus());
+        List<SceneManageListResp> list = sceneManageListOutputs.stream()
+                .map(output -> {
+                    SceneManageListResp resp = new SceneManageListResp();
+                    BeanUtils.copyProperties(output, resp);
+                    return resp;
+                }).collect(Collectors.toList());
+        return ResponseResult.success(list);
     }
 }

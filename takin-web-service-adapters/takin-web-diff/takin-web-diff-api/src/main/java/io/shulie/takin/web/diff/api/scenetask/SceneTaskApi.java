@@ -2,9 +2,7 @@ package io.shulie.takin.web.diff.api.scenetask;
 
 import io.shulie.takin.adapter.api.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.adapter.api.model.request.report.WarnCreateReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneStartPreCheckReq;
-import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptAssetBalanceReq;
+import io.shulie.takin.adapter.api.model.request.scenemanage.*;
 import io.shulie.takin.adapter.api.model.request.scenetask.SceneStartCheckResp;
 import io.shulie.takin.adapter.api.model.request.scenetask.SceneTryRunTaskCheckReq;
 import io.shulie.takin.adapter.api.model.request.scenetask.SceneTryRunTaskStartReq;
@@ -13,6 +11,8 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneTryRunTaskSta
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneJobStateResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+
+import java.util.List;
 
 /**
  * @author qianshui
@@ -68,5 +68,13 @@ public interface SceneTaskApi {
      * @return 结果
      */
     ResponseResult<?> preStopTask(SceneManageIdReq req);
+
+	/**
+     * 获得查询tps的参数
+     *
+     * @param reportDetailByIdsReq 入参
+     * @return 报告列表
+     */
+    ResponseResult<List<ReportActivityResp>> listQueryTpsParam(ReportDetailByIdsReq reportDetailByIdsReq);
 
 }

@@ -77,11 +77,11 @@ public class ReportDaoImpl implements ReportDao {
         }
         wrapper.isNotNull(param.isJobIdNotNull(), ReportEntity::getJobId);
 
-        if(Objects.nonNull(param.getPressureTypeRelation())){
+        if (Objects.nonNull(param.getPressureTypeRelation())) {
             PressureTypeRelation relation = param.getPressureTypeRelation();
-            if(relation.getHave()){
+            if (relation.getHave()) {
                 wrapper.eq(ReportEntity::getPressureType, relation.getPressureType());
-            }else{
+            } else {
                 wrapper.ne(ReportEntity::getPressureType, relation.getPressureType());
             }
         }
@@ -89,8 +89,8 @@ public class ReportDaoImpl implements ReportDao {
         List<ReportEntity> entities = reportMapper.selectList(wrapper);
         if (entities != null && entities.size() > 0) {
             return entities.stream()
-                .map(t -> BeanUtil.copyProperties(t, ReportResult.class))
-                .collect(Collectors.toList());
+                    .map(t -> BeanUtil.copyProperties(t, ReportResult.class))
+                    .collect(Collectors.toList());
         }
         return Lists.newArrayList();
     }
@@ -169,7 +169,7 @@ public class ReportDaoImpl implements ReportDao {
         wrapper.eq(ReportEntity::getSceneId, sceneId);
 
         Object reportId = redisClientUtil.hmget(PressureStartCache.getSceneResourceKey(sceneId),
-            PressureStartCache.REPORT_ID);
+                PressureStartCache.REPORT_ID);
         if (Objects.nonNull(reportId)) {
             wrapper.eq(ReportEntity::getId, Long.valueOf(String.valueOf(reportId)));
         }
@@ -241,7 +241,7 @@ public class ReportDaoImpl implements ReportDao {
 
     @Override
     public List<ReportBusinessActivityDetailEntity> getReportBusinessActivityDetailsByReportId(Long reportId,
-        NodeTypeEnum nodeType) {
+                                                                                               NodeTypeEnum nodeType) {
         LambdaQueryWrapper<ReportBusinessActivityDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ReportBusinessActivityDetailEntity::getReportId, reportId);
         queryWrapper.eq(ReportBusinessActivityDetailEntity::getIsDeleted, 0);
@@ -254,10 +254,10 @@ public class ReportDaoImpl implements ReportDao {
             List<ScriptNode> nodeList = JsonPathUtil.getNodeListByType(reportEntity.getScriptNodeTree(), nodeType);
             if (CollectionUtils.isNotEmpty(nodeList)) {
                 List<String> xpathMd5List = nodeList.stream().filter(Objects::nonNull)
-                    .map(ScriptNode::getXpathMd5).collect(Collectors.toList());
+                        .map(ScriptNode::getXpathMd5).collect(Collectors.toList());
                 return entities.stream().filter(Objects::nonNull)
-                    .filter(entity -> xpathMd5List.contains(entity.getBindRef()))
-                    .collect(Collectors.toList());
+                        .filter(entity -> xpathMd5List.contains(entity.getBindRef()))
+                        .collect(Collectors.toList());
             }
         }
         return null;
@@ -269,8 +269,8 @@ public class ReportDaoImpl implements ReportDao {
             return null;
         }
         ReportEntity entity = reportMapper.selectOne(
-            Wrappers.lambdaQuery(ReportEntity.class)
-                .eq(ReportEntity::getJobId, jobId)
+                Wrappers.lambdaQuery(ReportEntity.class)
+                        .eq(ReportEntity::getJobId, jobId)
         );
         return BeanUtil.copyProperties(entity, ReportResult.class);
     }
@@ -281,9 +281,24 @@ public class ReportDaoImpl implements ReportDao {
             return null;
         }
         ReportEntity entity = reportMapper.selectOne(
-            Wrappers.lambdaQuery(ReportEntity.class)
-                .eq(ReportEntity::getResourceId, resourceId)
+                Wrappers.lambdaQuery(ReportEntity.class)
+                        .eq(ReportEntity::getResourceId, resourceId)
         );
         return BeanUtil.copyProperties(entity, ReportResult.class);
+    }
+
+    @Override
+    public List<ReportEntity> queryReportBySceneIds(List<Long> sceneIds) {
+        if (CollectionUtils.isEmpty(sceneIds)) {
+            return null;
+        }
+        return reportMapper.queryBySceneIds(sceneIds);
+    }
+
+    @Override
+    public List<ReportBusinessActivityDetailEntity> getActivityByReportIds(List<Long> reportIds) {
+        LambdaQueryWrapper<ReportBusinessActivityDetailEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(ReportBusinessActivityDetailEntity::getReportId, reportIds);
+        return detailMapper.selectList(wrapper);
     }
 }

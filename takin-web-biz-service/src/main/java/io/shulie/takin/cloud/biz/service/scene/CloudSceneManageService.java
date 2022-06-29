@@ -155,5 +155,7 @@ public interface CloudSceneManageService {
      */
     void recovery(Long id);
 
-    void archive(Long id);
+	void archive(Long id);
+
+    List<SceneManageListOutput> getSceneByStatus(Integer status);
 }

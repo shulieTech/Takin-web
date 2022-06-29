@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
+import io.shulie.takin.cloud.data.model.mysql.ReportEntity;
 import io.shulie.takin.cloud.data.param.report.ReportInsertParam;
 import io.shulie.takin.cloud.data.param.report.ReportQueryParam;
 import io.shulie.takin.cloud.data.param.report.ReportUpdateConclusionParam;
@@ -138,4 +139,8 @@ public interface ReportDao {
     ReportResult selectByJobId(Long jobId);
 
     ReportResult selectByResourceId(String resourceId);
+
+    List<ReportEntity> queryReportBySceneIds(List<Long> sceneIds);
+
+    List<ReportBusinessActivityDetailEntity> getActivityByReportIds(List<Long> reportIds) ;
 }

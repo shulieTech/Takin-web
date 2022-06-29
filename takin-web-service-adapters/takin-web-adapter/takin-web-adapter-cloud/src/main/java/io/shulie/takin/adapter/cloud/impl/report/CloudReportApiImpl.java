@@ -11,10 +11,14 @@ import javax.annotation.Resource;
 import com.alibaba.fastjson.JSON;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.TypeReference;
 import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.cloud.entity.domain.dto.report.BusinessActivityDTO;
 import com.pamirs.takin.cloud.entity.domain.dto.report.CloudReportDTO;
 import com.pamirs.takin.cloud.entity.domain.dto.report.Metrices;
+import io.shulie.takin.adapter.api.constant.EntrypointUrl;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ReportActivityResp;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ReportDetailByIdsReq;
 import io.shulie.takin.cloud.biz.input.report.UpdateReportConclusionInput;
 import io.shulie.takin.cloud.biz.input.report.WarnCreateInput;
 import io.shulie.takin.cloud.biz.output.report.ReportDetailOutput;
@@ -319,15 +323,20 @@ public class CloudReportApiImpl implements CloudReportApi {
     @Override
     public Integer getReportStatusById(ReportDetailByIdReq req) {
         return cloudReportService.getReportStatusById(req.getReportId());
-
     }
 
-    @Override
+	@Override
     public ReportDetailResp getReportByResourceId(String resourceId) {
         ReportDetailOutput output = cloudReportService.getByResourceId(resourceId);
         if (Objects.isNull(output)) {
             return null;
         }
         return BeanUtil.copyProperties(output, ReportDetailResp.class);
+    }
+
+    @Override
+    public ResponseResult<List<ReportActivityResp>> getActivities(ReportDetailByIdsReq req) {
+        List<ReportActivityResp> result = cloudReportService.getActivities(req.getSceneIds());
+        return ResponseResult.success(result);
     }
 }

@@ -3,6 +3,8 @@ package io.shulie.takin.adapter.api.entrypoint.report;
 import java.util.List;
 import java.util.Map;
 
+import io.shulie.takin.adapter.api.model.request.scenemanage.ReportActivityResp;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ReportDetailByIdsReq;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.adapter.api.model.request.common.CloudCommonInfoWrapperReq;
@@ -209,5 +211,7 @@ public interface CloudReportApi {
      */
     Integer getReportStatusById(ReportDetailByIdReq req);
 
-    ReportDetailResp getReportByResourceId(String resourceId);
+	ReportDetailResp getReportByResourceId(String resourceId);
+
+    ResponseResult<List<ReportActivityResp>> getActivities(ReportDetailByIdsReq req);
 }

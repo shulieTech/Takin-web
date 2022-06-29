@@ -33,14 +33,14 @@ public class RedisClientUtil {
     private static final int EXPIREMSECS = 30;
 
     private static final String REENTRY_LOCK_SCRIPT =
-        " if redis.call('GET', KEYS[1]) == ARGV[1] then return '1' end;"
-        + " if redis.call('SETNX', KEYS[1], ARGV[1]) == 1 then return '1' else return '0' end";
+            " if redis.call('GET', KEYS[1]) == ARGV[1] then return '1' end;"
+                    + " if redis.call('SETNX', KEYS[1], ARGV[1]) == 1 then return '1' else return '0' end";
 
     private static final String UNLOCK_SCRIPT = "if redis.call('get',KEYS[1]) == ARGV[1] then "
-        + " redis.call('del',KEYS[1]) return '1' else return '0' end";
+            + " redis.call('del',KEYS[1]) return '1' else return '0' end";
 
     private static final String REM_RETURN_COUNT =
-        " redis.call('SREM', KEYS[1], ARGV[1]); return redis.call('SCARD', KEYS[1])";
+            " redis.call('SREM', KEYS[1], ARGV[1]); return redis.call('SCARD', KEYS[1])";
 
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
@@ -62,7 +62,7 @@ public class RedisClientUtil {
     }
 
     public void setString(final String key, final String value,
-        final int expire, TimeUnit timeUnit) {
+                          final int expire, TimeUnit timeUnit) {
         stringRedisTemplate.opsForValue().set(key, value, expire, timeUnit);
     }
 
@@ -92,7 +92,7 @@ public class RedisClientUtil {
 
     public boolean reentryLockNoExpire(String key, String value) {
         return "1".equals(String.valueOf(redisTemplate.execute(reentryLockRedisScript,
-            Lists.newArrayList(getLockPrefix(key)), value)));
+                Lists.newArrayList(getLockPrefix(key)), value)));
     }
 
     public boolean lockNoExpire(String key, String value) {
@@ -109,7 +109,7 @@ public class RedisClientUtil {
 
     public boolean unlock(String key, String value) {
         return "1".equals(String.valueOf(redisTemplate.execute(unlockRedisScript,
-            Lists.newArrayList(getLockPrefix(key)), value)));
+                Lists.newArrayList(getLockPrefix(key)), value)));
     }
 
     public Long increment(final String key, final long l) {
@@ -143,7 +143,7 @@ public class RedisClientUtil {
             return true;
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：redis命令执行失败 --> expire方法执行异常，异常信息: {}",
-                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -155,6 +155,16 @@ public class RedisClientUtil {
      * @return 值
      */
     public Object get(String key, int indexdb) {
+        return key == null ? null : redisTemplate.opsForValue().get(key);
+    }
+
+    /**
+     * 普通缓存获取
+     *
+     * @param key 键
+     * @return 值
+     */
+    public Object get(String key) {
         return key == null ? null : redisTemplate.opsForValue().get(key);
     }
 
@@ -171,7 +181,7 @@ public class RedisClientUtil {
             return true;
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：redis命令执行失败 --> set方法执行异常，异常信息: {}",
-                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
 
@@ -195,7 +205,7 @@ public class RedisClientUtil {
             return true;
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：redis命令执行失败 --> set with time方法执行异常，异常信息: {}",
-                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -213,7 +223,7 @@ public class RedisClientUtil {
             return true;
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset 方法执行异常，异常信息: {}",
-                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -224,7 +234,7 @@ public class RedisClientUtil {
             return true;
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset with time方法执行异常，异常信息: {}",
-                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -246,7 +256,7 @@ public class RedisClientUtil {
             return true;
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hmset map with time方法执行异常，异常信息: {}",
-                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -282,7 +292,7 @@ public class RedisClientUtil {
             return redisTemplate.hasKey(key);
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hasKey方法执行异常，异常信息: {}",
-                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -292,7 +302,7 @@ public class RedisClientUtil {
             return redisTemplate.hasKey(getLockPrefix(key));
         } catch (Exception e) {
             log.error("异常代码【{}】,异常内容：redis命令执行失败 --> hasKey方法执行异常，异常信息: {}",
-                TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
+                    TakinWebExceptionEnum.REDIS_CMD_EXECUTE_ERROR, e);
             return false;
         }
     }
@@ -413,9 +423,9 @@ public class RedisClientUtil {
      * @return -
      */
     public Set<ZSetOperations.TypedTuple<String>> zReverseRangeWithScores(String key,
-        long start, long end) {
+                                                                          long start, long end) {
         return redisTemplate.opsForZSet().reverseRangeWithScores(key, start,
-            end);
+                end);
     }
 
     /**
@@ -439,7 +449,7 @@ public class RedisClientUtil {
     public Long remSetValueAndReturnCount(String key, String value) {
         Object count = redisTemplate.execute(remAndCountScript, Lists.newArrayList(key), value);
         if (count instanceof List) {
-            return Long.valueOf(String.valueOf(((List<Object>)count).get(0)));
+            return Long.valueOf(String.valueOf(((List<Object>) count).get(0)));
         }
         return Long.valueOf(String.valueOf(count));
     }

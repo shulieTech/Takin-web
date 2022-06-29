@@ -180,7 +180,21 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      * 数据签名
      */
     DATA_SIGN_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据签名异常"),
-    DATA_SIGN_CLEAR_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据正在清理中,暂时无法开启"),
+
+	DATA_SIGN_CLEAR_ERROR("19800-" + ErrorConstant.DATA_SIGN_ERROR, "数据正在清理中,暂时无法开启"),
+
+	/**
+     * 接口压测
+     */
+    INTERFACE_PERFORMANCE_PARAM_ERROR("1900-" + ErrorConstant.DELETE_ERROR, "接口压测删除异常"),
+    INTERFACE_PERFORMANCE_CREATE_ERROR("1901-" + ErrorConstant.ADD_ERROR, "接口压测新增异常"),
+    INTERFACE_PERFORMANCE_QUERY_ERROR("1902-" + ErrorConstant.QUERY_ERROR, "接口压测查询异常"),
+    INTERFACE_PERFORMANCE_FILE_TYPE_ERROR("1903-" + ErrorConstant.ADD_ERROR, "不支持的文件类型"),
+    INTERFACE_PERFORMANCE_DEBUG_ERROR("1904-" + ErrorConstant.STATUS_ERROR, "当前场景已在调试中"),
+    INTERFACE_PERFORMANCE_FILE_PARAM_ERROR("1905-" + ErrorConstant.VALIDATE_ERROR, "参数存在重复"),
+    INTERFACE_PERFORMANCE_QUERY_PARAM_ERROR("1906-" + ErrorConstant.QUERY_ERROR, "获取入口参数异常"),
+    INTERFACE_PERFORMANCE_SCRIPT_CREATE_ERROR("1907-" + ErrorConstant.ADD_ERROR, "生成脚本异常"),
+    INTERFACE_PERFORMANCE_SCENE_OP_ERROR("1908-" + ErrorConstant.ADD_ERROR, "场景操作异常"),
 
     ;
     private final String errorCode;

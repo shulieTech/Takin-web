@@ -9,6 +9,7 @@ import com.pamirs.takin.cloud.entity.domain.dto.report.CloudReportDTO;
 import com.pamirs.takin.cloud.entity.domain.dto.report.Metrices;
 import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import io.shulie.takin.adapter.api.model.request.report.TrendRequest;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ReportActivityResp;
 import io.shulie.takin.cloud.biz.input.report.UpdateReportConclusionInput;
 import io.shulie.takin.cloud.biz.input.report.UpdateReportSlaDataInput;
 import io.shulie.takin.cloud.biz.input.report.WarnCreateInput;
@@ -261,5 +262,7 @@ public interface CloudReportService {
 
     boolean updateReportBusinessActivity(Long jobId, Long sceneId, Long reportId, Long tenantId);
 
-    ReportDetailOutput getByResourceId(String resourceId);
+    List<ReportActivityResp> getActivities(List<Long> sceneIds);
+
+	ReportDetailOutput getByResourceId(String resourceId);
 }

@@ -79,10 +79,10 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
     @Async("checkStartedPodPool")
     @Override
     public void checkPodStartedTask(StartConditionCheckerContext context) {
-        log.info("启动后台检查pod启动状态线程.....");
+        String resourceId = context.getResourceId();
+        log.info("启动[{}]后台检查pod启动状态线程.....", resourceId);
         int currentTime = 0;
         boolean checkPass = false;
-        String resourceId = context.getResourceId();
         Object totalPodNumber = redisClientUtil.hmget(PressureStartCache.getResourceKey(resourceId),
             PressureStartCache.POD_NUM);
         if (Objects.isNull(totalPodNumber)) {
@@ -115,10 +115,10 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
     @Async("checkStartedJmeterPool")
     @Override
     public void checkJmeterStartedTask(ResourceContext context) {
-        log.info("启动后台检查jmeter启动状态线程.....");
+        String resourceId = context.getResourceId();
+        log.info("启动[{}]后台检查jmeter启动状态线程.....", resourceId);
         int currentTime = 0;
         boolean checkPass = false;
-        String resourceId = context.getResourceId();
         String podNumber = String.valueOf(redisClientUtil.hmget(PressureStartCache.getResourceKey(resourceId),
             PressureStartCache.POD_NUM));
         while (currentTime <= pressureNodeStartExpireTime
@@ -155,8 +155,13 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
     @Async("checkJmeterHeartbeatPool")
     @Override
     public void checkJmeterHeartbeatTask(ResourceContext context) {
-        log.info("启动后台检查jmeter心跳状态线程.....");
         String resourceId = context.getResourceId();
+        if (Objects.equals(PressureSceneEnum.INSPECTION_MODE.getCode(), context.getPressureType())) {
+            // 如果是巡检任务，不进行心跳检测
+            log.info("巡检任务[{} - {} - {}]不启动jmeter心跳检测", context.getSceneId(), resourceId, context.getJobId());
+            return;
+        }
+        log.info("启动[{}]后台检查jmeter心跳状态线程.....", resourceId);
         int checkTime = pressureNodeHeartbeatExpireTime * 1000;
         while (!redisClientUtil.hasLockKey(PressureStartCache.getStopFlag(resourceId))) {
             Map<Object, Object> heartbeatMap = redisClientUtil.hmget(PressureStartCache.getJmeterHeartbeatKey(resourceId));
@@ -180,8 +185,8 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
     // @Async("checkPodHeartbeatPool")
     @Override
     public void checkPodHeartbeatTask(ResourceContext context) {
-        log.info("启动后台检查pod心跳状态线程.....");
         String resourceId = context.getResourceId();
+        log.info("启动[{}]后台检查pod心跳状态线程.....", resourceId);
         int checkTime = pressureNodeHeartbeatExpireTime * 1000;
         while (!redisClientUtil.hasLockKey(PressureStartCache.getStopFlag(resourceId))) {
             Map<Object, Object> heartbeatMap = redisClientUtil.hmget(PressureStartCache.getPodHeartbeatKey(resourceId));

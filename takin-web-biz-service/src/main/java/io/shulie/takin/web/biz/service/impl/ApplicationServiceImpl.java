@@ -1,5 +1,29 @@
 package io.shulie.takin.web.biz.service.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import cn.hutool.core.collection.ListUtil;
+import com.alibaba.fastjson.JSONObject;
+
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
@@ -118,17 +142,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import static io.shulie.takin.web.common.common.Response.PAGE_TOTAL_HEADER;
 
 /**
  * @author mubai<chengjiacai.shulie.io>
@@ -462,20 +476,23 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public Response<List<ApplicationVo>> getApplicationList() {
-        List<ApplicationVo> applicationVoList = Lists.newArrayList();
-        List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
-        List<ApplicationDetailResult> applicationDetailResultList = applicationDAO.getApplicationListByUserIds(
-                userIdList);
-        if (CollectionUtils.isNotEmpty(applicationDetailResultList)) {
-            applicationVoList = applicationDetailResultList.stream().map(applicationDetailResult -> {
-                ApplicationVo applicationVo = new ApplicationVo();
-                applicationVo.setId(String.valueOf(applicationDetailResult.getApplicationId()));
-                applicationVo.setApplicationName(applicationDetailResult.getApplicationName());
-                return applicationVo;
+    public Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequestV2 request) {
+        PagingList<ApplicationListResponseV2> paging = pageApplication(request);
+        List<ApplicationListResponseV2> applications = paging.getList();
+        List<ApplicationVo> resultList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(applications)) {
+            resultList = applications.stream().map(application -> {
+                ApplicationVo vo = new ApplicationVo();
+                vo.setId(application.getId());
+                vo.setApplicationName(application.getApplicationName());
+                return vo;
             }).collect(Collectors.toList());
         }
-        return Response.success(applicationVoList);
+        Response.setHeaders(
+            new HashMap<String, String>(1) {{
+                put(PAGE_TOTAL_HEADER, String.valueOf(paging.getTotal()));
+            }});
+        return Response.success(resultList);
     }
 
     @Override
@@ -670,7 +687,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public synchronized void syncApplicationAccessStatus() {
         int count = 0;
         try {
-            log.info("------开始执行应用同步------执行线程:" + Thread.currentThread().getName());
             // 应用分页大小
             int pageSize = 20;
             // 查出的应用数量, 如果小于pageSize, 则无需下一页
@@ -758,7 +774,6 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         } catch (Exception e) {
             log.error("定时同步应用状态错误, 错误信息: {}", e.getMessage(), e);
         }
-        log.info("------开始执行应用同步------执行线程:" + Thread.currentThread().getName() + "共执行了:" + count);
         log.debug("定时同步应用状态完成!");
     }
 
@@ -2754,5 +2769,4 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public boolean existsApplication(Long tenantId, String envCode) {
         return applicationDAO.existsApplication(tenantId, envCode);
     }
-
 }

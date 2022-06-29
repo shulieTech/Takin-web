@@ -12,6 +12,7 @@ import javax.annotation.Resource;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.notify.StartFailEventSource;
 import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
+import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
 import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;

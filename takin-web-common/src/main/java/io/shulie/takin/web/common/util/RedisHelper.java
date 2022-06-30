@@ -40,11 +40,12 @@ public class RedisHelper {
 
     /**
      * 赋值
+     *
      * @param redisKey
      * @param value
      */
-    public static void setValue(String redisKey,Object value) {
-        redisTemplate.opsForValue().set(redisKey,value);
+    public static void setValue(String redisKey, Object value) {
+        redisTemplate.opsForValue().set(redisKey, value);
     }
 
     /**
@@ -52,8 +53,8 @@ public class RedisHelper {
      * 单位： 天
      *
      * @param redisKey redis key
-     * @param timeout 时长
-     * @param unit 单位
+     * @param timeout  时长
+     * @param unit     单位
      */
     public static void expire(String redisKey, Long timeout, TimeUnit unit) {
         redisTemplate.expire(redisKey, timeout, unit);
@@ -64,7 +65,7 @@ public class RedisHelper {
      * 单位： 天
      *
      * @param redisKey redis key
-     * @param day 天数
+     * @param day      天数
      */
     public static void expireDay(String redisKey, Long day) {
         redisTemplate.expire(redisKey, day, TimeUnit.DAYS);
@@ -82,6 +83,7 @@ public class RedisHelper {
 
     /**
      * 根据 redis key, 获得所有 hash key
+     *
      * @param redisKey redisKey
      * @return hashKeys
      */
@@ -104,7 +106,7 @@ public class RedisHelper {
      * 或者全部
      *
      * @param redisKey redis key
-     * @param hashKey hash key, 不传则删除整个 hash
+     * @param hashKey  hash key, 不传则删除整个 hash
      */
     public static void hashDelete(String redisKey, Object... hashKey) {
         redisTemplate.opsForHash().delete(redisKey, hashKey);
@@ -112,9 +114,10 @@ public class RedisHelper {
 
     /**
      * hash 结构, put
+     *
      * @param redisKey redis key
-     * @param hashKey hash key
-     * @param value value
+     * @param hashKey  hash key
+     * @param value    value
      */
     public static void hashPut(String redisKey, Object hashKey, Object value) {
         redisTemplate.opsForHash().put(redisKey, hashKey, value);
@@ -122,8 +125,9 @@ public class RedisHelper {
 
     /**
      * hash 结构, putAll
+     *
      * @param redisKey redis key
-     * @param m map
+     * @param m        map
      */
     public static void hashPutAll(String redisKey, Map<?, ?> m) {
         redisTemplate.opsForHash().putAll(redisKey, m);
@@ -141,6 +145,7 @@ public class RedisHelper {
 
     /**
      * 删除 key
+     *
      * @param redisKey key
      * @return 是否成功
      */
@@ -150,6 +155,7 @@ public class RedisHelper {
 
     /**
      * 根据key 获取 value
+     *
      * @param redisKey
      * @return
      */
@@ -172,7 +178,7 @@ public class RedisHelper {
      * string 数据格式, set
      *
      * @param redisKey redisKey
-     * @param value value
+     * @param value    value
      */
     public static void stringSet(String redisKey, Object value) {
         redisTemplate.opsForValue().set(redisKey, value);
@@ -183,7 +189,7 @@ public class RedisHelper {
      * 有过期时间
      *
      * @param redisKey redisKey
-     * @param value value
+     * @param value    value
      */
     public static void stringExpireSet(String redisKey, Object value, Long timeout, TimeUnit timeUnit) {
         redisTemplate.opsForValue().set(redisKey, value, timeout, timeUnit);
@@ -191,18 +197,16 @@ public class RedisHelper {
 
     /**
      * 模糊查询
+     *
      * @param pattern
      * @param consumer
      */
     private static void scan(String pattern, Consumer<byte[]> consumer) {
         redisTemplate.execute((RedisConnection connection) -> {
             try (Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().count(Long.MAX_VALUE).match(pattern)
-                .build())) {
+                    .build())) {
                 cursor.forEachRemaining(consumer);
                 return null;
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
             }
         });
     }

@@ -1,9 +1,6 @@
 package io.shulie.takin.web.app.conf.mybatis;
 
-import java.util.Collection;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
@@ -26,13 +23,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 
 /**
@@ -50,162 +41,162 @@ import net.sf.jsqlparser.statement.update.Update;
 @Slf4j
 public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor {
 
-    private String[] tableArrWithoutTenantId = new String[] {
-        "t_user_third_party",
-        "t_third_party",
-        "t_dictionary_type",
-        "t_tc_sequence",
-        "t_tenant_info",
-        "t_tro_resource",
-        "t_config_server",
-        "t_pradar_zk_config",
-        "t_cache_config_template",
-        "t_connectpool_config_template",
-        "t_mq_config_template",
-        "t_agent_config",
-        "t_agent_version",
-        "t_exception_info",
-        "t_middleware_summary",
-        "t_agent_plugin",
-        "t_middleware_jar",
-        "t_agent_plugin_lib_support",
-        "t_plugin_library",
-        "t_plugin_dependent",
-        "t_plugin_tenant_ref",
-        "t_interface_type_main",
-        "t_interface_type_child",
-        "t_interface_type_config",
-        "t_remote_call_config",
-        "t_middleware_type",
-        "t_tro_version",
-        "t_user_config",
-        // cloud迁移
-        "t_ac_account",
-        "t_ac_account_balance",
-        "t_ac_account_book",
-        "t_engine_plugin_files_ref",
-        "t_engine_plugin_info",
-        "t_engine_plugin_supported_versions",
-        "t_report_business_activity_detail",
-        "t_scene_big_file_slice",
-        "t_scene_business_activity_ref",
-        "t_scene_script_ref",
-        "t_scene_sla_ref",
-        "t_schedule_record",
-        "t_schedule_record_engine_plugins_ref",
-        "t_strategy_config",
-        "t_warn_detail",
-        "t_pressure_task_variety",
-        "t_pressure_task_callback",
-        "t_interface_performance_result"
+    private String[] tableArrWithoutTenantId = new String[]{
+            "t_user_third_party",
+            "t_third_party",
+            "t_dictionary_type",
+            "t_tc_sequence",
+            "t_tenant_info",
+            "t_tro_resource",
+            "t_config_server",
+            "t_pradar_zk_config",
+            "t_cache_config_template",
+            "t_connectpool_config_template",
+            "t_mq_config_template",
+            "t_agent_config",
+            "t_agent_version",
+            "t_exception_info",
+            "t_middleware_summary",
+            "t_agent_plugin",
+            "t_middleware_jar",
+            "t_agent_plugin_lib_support",
+            "t_plugin_library",
+            "t_plugin_dependent",
+            "t_plugin_tenant_ref",
+            "t_interface_type_main",
+            "t_interface_type_child",
+            "t_interface_type_config",
+            "t_remote_call_config",
+            "t_middleware_type",
+            "t_tro_version",
+            "t_user_config",
+            // cloud迁移
+            "t_ac_account",
+            "t_ac_account_balance",
+            "t_ac_account_book",
+            "t_engine_plugin_files_ref",
+            "t_engine_plugin_info",
+            "t_engine_plugin_supported_versions",
+            "t_report_business_activity_detail",
+            "t_scene_big_file_slice",
+            "t_scene_business_activity_ref",
+            "t_scene_script_ref",
+            "t_scene_sla_ref",
+            "t_schedule_record",
+            "t_schedule_record_engine_plugins_ref",
+            "t_strategy_config",
+            "t_warn_detail",
+            "t_pressure_task_variety",
+            "t_pressure_task_callback",
+            "t_interface_performance_result"
     };
 
-    private String[] tableArrWithoutEnvCode = new String[] {
-        "t_user_third_party",
-        "t_third_party",
-        "t_tro_user",
-        "t_tro_dept",
-        "t_dictionary_type",
-        "t_tro_user_dept_relation",
-        "t_tc_sequence",
-        "t_tenant_info",
-        "t_tro_resource",
-        "t_config_server",
-        "t_pradar_zk_config",
-        "t_cache_config_template",
-        "t_connectpool_config_template",
-        "t_mq_config_template",
-        "t_agent_config",
-        "t_agent_version",
-        "t_exception_info",
-        "t_middleware_summary",
-        "t_agent_plugin",
-        "t_middleware_jar",
-        "t_agent_plugin_lib_support",
-        "t_plugin_library",
-        "t_plugin_dependent",
-        "t_plugin_tenant_ref",
-        "t_tenant_env_ref",
-        "t_interface_type_main",
-        "t_interface_type_child",
-        "t_remote_call_config",
-        "t_interface_type_config",
-        "t_middleware_type",
-        "t_tro_version",
-        "t_user_config",
-        // cloud迁移
-        "t_ac_account",
-        "t_ac_account_balance",
-        "t_ac_account_book",
-        "t_engine_plugin_files_ref",
-        "t_engine_plugin_info",
-        "t_engine_plugin_supported_versions",
-        "t_report_business_activity_detail",
-        "t_scene_big_file_slice",
-        "t_scene_business_activity_ref",
-        "t_scene_script_ref",
-        "t_scene_sla_ref",
-        "t_schedule_record",
-        "t_schedule_record_engine_plugins_ref",
-        "t_strategy_config",
-        "t_warn_detail",
-        "t_pressure_task_variety",
-        "t_pressure_task_callback",
-        "t_interface_performance_result"
+    private String[] tableArrWithoutEnvCode = new String[]{
+            "t_user_third_party",
+            "t_third_party",
+            "t_tro_user",
+            "t_tro_dept",
+            "t_dictionary_type",
+            "t_tro_user_dept_relation",
+            "t_tc_sequence",
+            "t_tenant_info",
+            "t_tro_resource",
+            "t_config_server",
+            "t_pradar_zk_config",
+            "t_cache_config_template",
+            "t_connectpool_config_template",
+            "t_mq_config_template",
+            "t_agent_config",
+            "t_agent_version",
+            "t_exception_info",
+            "t_middleware_summary",
+            "t_agent_plugin",
+            "t_middleware_jar",
+            "t_agent_plugin_lib_support",
+            "t_plugin_library",
+            "t_plugin_dependent",
+            "t_plugin_tenant_ref",
+            "t_tenant_env_ref",
+            "t_interface_type_main",
+            "t_interface_type_child",
+            "t_remote_call_config",
+            "t_interface_type_config",
+            "t_middleware_type",
+            "t_tro_version",
+            "t_user_config",
+            // cloud迁移
+            "t_ac_account",
+            "t_ac_account_balance",
+            "t_ac_account_book",
+            "t_engine_plugin_files_ref",
+            "t_engine_plugin_info",
+            "t_engine_plugin_supported_versions",
+            "t_report_business_activity_detail",
+            "t_scene_big_file_slice",
+            "t_scene_business_activity_ref",
+            "t_scene_script_ref",
+            "t_scene_sla_ref",
+            "t_schedule_record",
+            "t_schedule_record_engine_plugins_ref",
+            "t_strategy_config",
+            "t_warn_detail",
+            "t_pressure_task_variety",
+            "t_pressure_task_callback",
+            "t_interface_performance_result"
     };
 
-    private String[] tableArrWithoutUserId = new String[] {
-        "t_user_third_party",
-        "t_third_party",
-        "t_tro_user",
-        "t_tro_dept",
-        "t_dictionary_type",
-        "t_config_server",
-        "t_tc_sequence",
-        "t_tenant_info",
-        "t_tro_resource",
-        "t_config_server",
-        "t_pradar_zk_config",
-        "t_cache_config_template",
-        "t_connectpool_config_template",
-        "t_app_remote_call_template_mapping",
-        "t_mq_config_template",
-        "t_agent_config",
-        "t_agent_version",
-        "t_exception_info",
-        "t_middleware_summary",
-        "t_agent_plugin",
-        "t_middleware_jar",
-        "t_agent_plugin_lib_support",
-        "t_plugin_library",
-        "t_plugin_dependent",
-        "t_plugin_tenant_ref",
-        "t_interface_type_main",
-        "t_interface_type_child",
-        "t_interface_type_config",
-        "t_remote_call_config",
-        "t_middleware_type",
-        "t_tro_version",
-        "t_user_config",
-        // cloud迁移
-        "t_ac_account",
-        "t_ac_account_balance",
-        "t_ac_account_book",
-        "t_engine_plugin_files_ref",
-        "t_engine_plugin_info",
-        "t_engine_plugin_supported_versions",
-        "t_report_business_activity_detail",
-        "t_scene_big_file_slice",
-        "t_scene_business_activity_ref",
-        "t_scene_script_ref",
-        "t_scene_sla_ref",
-        "t_schedule_record",
-        "t_schedule_record_engine_plugins_ref",
-        "t_strategy_config",
-        "t_warn_detail",
-        "t_pressure_task_variety",
-        "t_pressure_task_callback",
-        "t_interface_performance_result"
+    private String[] tableArrWithoutUserId = new String[]{
+            "t_user_third_party",
+            "t_third_party",
+            "t_tro_user",
+            "t_tro_dept",
+            "t_dictionary_type",
+            "t_config_server",
+            "t_tc_sequence",
+            "t_tenant_info",
+            "t_tro_resource",
+            "t_config_server",
+            "t_pradar_zk_config",
+            "t_cache_config_template",
+            "t_connectpool_config_template",
+            "t_app_remote_call_template_mapping",
+            "t_mq_config_template",
+            "t_agent_config",
+            "t_agent_version",
+            "t_exception_info",
+            "t_middleware_summary",
+            "t_agent_plugin",
+            "t_middleware_jar",
+            "t_agent_plugin_lib_support",
+            "t_plugin_library",
+            "t_plugin_dependent",
+            "t_plugin_tenant_ref",
+            "t_interface_type_main",
+            "t_interface_type_child",
+            "t_interface_type_config",
+            "t_remote_call_config",
+            "t_middleware_type",
+            "t_tro_version",
+            "t_user_config",
+            // cloud迁移
+            "t_ac_account",
+            "t_ac_account_balance",
+            "t_ac_account_book",
+            "t_engine_plugin_files_ref",
+            "t_engine_plugin_info",
+            "t_engine_plugin_supported_versions",
+            "t_report_business_activity_detail",
+            "t_scene_big_file_slice",
+            "t_scene_business_activity_ref",
+            "t_scene_script_ref",
+            "t_scene_sla_ref",
+            "t_schedule_record",
+            "t_schedule_record_engine_plugins_ref",
+            "t_strategy_config",
+            "t_warn_detail",
+            "t_pressure_task_variety",
+            "t_pressure_task_callback",
+            "t_interface_performance_result"
     };
 
     /**
@@ -233,7 +224,6 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
     /**
      * 处理条件
      */
-    @Override
     protected Expression builderExpression(Expression currentExpression, Table table) {
         AndExpression tenantExpression = this.buildTenantExpression(table, currentExpression);
         // 没有租户的
@@ -280,13 +270,136 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         return tenantExpression;
     }
 
+    private List<Table> processFromItem(FromItem fromItem) {
+        while (fromItem instanceof ParenthesisFromItem) {
+            fromItem = ((ParenthesisFromItem) fromItem).getFromItem();
+        }
+
+        List<Table> mainTables = new ArrayList();
+        if (fromItem instanceof Table) {
+            Table fromTable = (Table) fromItem;
+            mainTables.add(fromTable);
+        } else if (fromItem instanceof SubJoin) {
+            List<Table> tables = this.processSubJoin((SubJoin) fromItem);
+            mainTables.addAll(tables);
+        } else {
+            this.processOtherFromItem(fromItem);
+        }
+
+        return mainTables;
+    }
+    private List<Table> processJoins(List<Table> mainTables, List<Join> joins) {
+        Table mainTable = null;
+        Table leftTable = null;
+        if (mainTables == null) {
+            mainTables = new ArrayList();
+        } else if (((List)mainTables).size() == 1) {
+            mainTable = (Table)((List)mainTables).get(0);
+            leftTable = mainTable;
+        }
+
+        Deque<List<Table>> onTableDeque = new LinkedList();
+        Iterator var6 = joins.iterator();
+
+        while(true) {
+            while(true) {
+                while(var6.hasNext()) {
+                    Join join = (Join)var6.next();
+                    FromItem joinItem = join.getRightItem();
+                    List<Table> joinTables = null;
+                    if (joinItem instanceof Table) {
+                        joinTables = new ArrayList();
+                        ((List)joinTables).add((Table)joinItem);
+                    } else if (joinItem instanceof SubJoin) {
+                        joinTables = this.processSubJoin((SubJoin)joinItem);
+                    }
+
+                    if (joinTables != null) {
+                        if (join.isSimple()) {
+                            ((List)mainTables).addAll((Collection)joinTables);
+                        } else {
+                            Table joinTable = (Table)((List)joinTables).get(0);
+                            List<Table> onTables = null;
+                            if (join.isRight()) {
+                                mainTable = joinTable;
+                                if (leftTable != null) {
+                                    onTables = Collections.singletonList(leftTable);
+                                }
+                            } else if (join.isLeft()) {
+                                onTables = Collections.singletonList(joinTable);
+                            } else if (join.isInner()) {
+                                if (mainTable == null) {
+                                    onTables = Collections.singletonList(joinTable);
+                                } else {
+                                    onTables = Arrays.asList(mainTable, joinTable);
+                                }
+
+                                mainTable = null;
+                            }
+
+                            mainTables = new ArrayList();
+                            if (mainTable != null) {
+                                ((List)mainTables).add(mainTable);
+                            }
+
+                            Collection<Expression> originOnExpressions = join.getOnExpressions();
+                            LinkedList onExpressions;
+                            if (originOnExpressions.size() == 1 && onTables != null) {
+                                onExpressions = new LinkedList();
+                                onExpressions.add(this.builderExpression((Expression)originOnExpressions.iterator().next(), onTables));
+                                join.setOnExpressions(onExpressions);
+                                leftTable = joinTable;
+                            } else {
+                                onTableDeque.push(onTables);
+                                if (originOnExpressions.size() > 1) {
+                                    onExpressions = new LinkedList();
+                                    Iterator var14 = originOnExpressions.iterator();
+
+                                    while(var14.hasNext()) {
+                                        Expression originOnExpression = (Expression)var14.next();
+                                        List<Table> currentTableList = (List)onTableDeque.poll();
+                                        if (CollectionUtils.isEmpty(currentTableList)) {
+                                            onExpressions.add(originOnExpression);
+                                        } else {
+                                            onExpressions.add(this.builderExpression(originOnExpression, currentTableList));
+                                        }
+                                    }
+
+                                    join.setOnExpressions(onExpressions);
+                                }
+
+                                leftTable = joinTable;
+                            }
+                        }
+                    } else {
+                        this.processOtherFromItem(joinItem);
+                        leftTable = null;
+                    }
+                }
+
+                return (List)mainTables;
+            }
+        }
+    }
+
+    private List<Table> processSubJoin(SubJoin subJoin) {
+        List<Table> mainTables = new ArrayList();
+        if (subJoin.getJoinList() != null) {
+            List<Table> list = this.processFromItem(subJoin.getLeft());
+            ((List) mainTables).addAll(list);
+            mainTables = processJoins((List) mainTables, subJoin.getJoinList());
+        }
+
+        return (List) mainTables;
+    }
+
     @Override
     protected void processPlainSelect(PlainSelect plainSelect) {
         FromItem fromItem = plainSelect.getFromItem();
         Expression where = plainSelect.getWhere();
         processWhereSubSelect(where);
         if (fromItem instanceof Table) {
-            Table fromTable = (Table)fromItem;
+            Table fromTable = (Table) fromItem;
             if (!tenantLineHandler.ignoreTable(fromTable.getName())) {
                 //#1186 github
                 plainSelect.setWhere(builderExpression(where, fromTable));
@@ -306,6 +419,21 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         log.debug("组装select的sql【{}】", plainSelect.toString());
     }
 
+    protected void processJoin(Join join) {
+        if (join.getRightItem() instanceof Table) {
+            Table fromTable = (Table) join.getRightItem();
+            if (this.tenantLineHandler.ignoreTable(fromTable.getName())) {
+                return;
+            }
+
+            Collection<Expression> originOnExpressions = join.getOnExpressions();
+            List<Expression> onExpressions = new LinkedList();
+            onExpressions.add(this.builderExpression((Expression) originOnExpressions.iterator().next(), fromTable));
+            join.setOnExpressions(onExpressions);
+        }
+
+    }
+
     private void processJoins(List<Join> joins) {
         //对于 on 表达式写在最后的 join，需要记录下前面多个 on 的表名
         Deque<Table> tables = new LinkedList<>();
@@ -313,7 +441,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
             // 处理 on 表达式
             FromItem fromItem = join.getRightItem();
             if (fromItem instanceof Table) {
-                Table fromTable = (Table)fromItem;
+                Table fromTable = (Table) fromItem;
                 // 获取 join 尾缀的 on 表达式列表
                 Collection<Expression> originOnExpressions = join.getOnExpressions();
                 // 正常 join on 表达式只有一个，立刻处理
@@ -490,7 +618,7 @@ public class TakinTenantLineInnerInterceptor extends TenantLineInnerInterceptor 
         } else if (tenantIdCondition != null) {
             // t_tro_user 只有 tenant_id
             tenantExpression = new AndExpression(equalsTo, tenantIdCondition);
-        }else if(envCodeCondition != null) {
+        } else if (envCodeCondition != null) {
             tenantExpression = new AndExpression(equalsTo, envCodeCondition);
         }
 

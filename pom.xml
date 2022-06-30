@@ -49,7 +49,8 @@
 
         <!-- 3rd libs version -->
         <commons-lang3.version>3.5</commons-lang3.version>
-        <spring.boot.version>2.3.0.RELEASE</spring.boot.version>
+        <spring.boot.version>2.5.11</spring.boot.version>
+        <spring.session.data.redis>2.7.0</spring.session.data.redis>
         <mysql-jdbc.version>8.0.26</mysql-jdbc.version>
         <druid.version>1.1.22</druid.version>
         <common-pools2.version>2.3</common-pools2.version>
@@ -63,7 +64,8 @@
         <influxdb.version>2.15</influxdb.version>
         <jedis.version>3.1.0</jedis.version>
         <!--版本升级 3.4.0 -> 3.4.3.4-->
-        <mybatis.plus.version>3.4.3.4</mybatis.plus.version>
+        <mybatis.plus.version>3.5.2</mybatis.plus.version>
+<!--        <mybatis.plus.version>3.4.3.4</mybatis.plus.version>-->
         <freemarker.version>2.3.31</freemarker.version>
         <mybatis.version>3.5.5</mybatis.version>
         <druid.stater.version>1.1.22</druid.stater.version>
@@ -177,7 +179,7 @@
             <dependency>
                 <groupId>org.springframework.session</groupId>
                 <artifactId>spring-session-data-redis</artifactId>
-                <version>${spring.boot.version}</version>
+                <version>${spring.session.data.redis}</version>
             </dependency>
 
             <dependency>

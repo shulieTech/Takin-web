@@ -199,9 +199,6 @@ public class AgentCommandFactory {
                 .build())) {
                 cursor.forEachRemaining(consumer);
                 return null;
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
             }
         });
     }

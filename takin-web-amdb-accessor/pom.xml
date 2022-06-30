@@ -74,12 +74,7 @@
             <groupId>io.shulie.takin</groupId>
             <artifactId>takin-common-utils</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.mortbay.jetty/jetty-util -->
-        <dependency>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty-util</artifactId>
-            <version>7.0.0.pre5</version>
-        </dependency>
+
 
         <dependency>
             <groupId>junit</groupId>

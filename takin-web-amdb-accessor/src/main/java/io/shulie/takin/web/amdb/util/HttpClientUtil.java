@@ -7,14 +7,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import org.mortbay.util.UrlEncoded;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,6 +84,51 @@ public class HttpClientUtil {
         return sb.toString();
     }
 
+    public static String encodeString(String string, Charset charset) {
+        if (charset == null) {
+            charset = Charset.defaultCharset();
+        }
+
+        byte[] bytes = string.getBytes(charset);
+        byte[] encoded = new byte[bytes.length * 3];
+        int n = 0;
+        boolean noEncode = true;
+        byte[] var6 = bytes;
+        int var7 = bytes.length;
+
+        for (int var8 = 0; var8 < var7; ++var8) {
+            byte b = var6[var8];
+            if (b == 32) {
+                noEncode = false;
+                encoded[n++] = 43;
+            } else if ((b < 97 || b > 122) && (b < 65 || b > 90) && (b < 48 || b > 57) && b != 45 && b != 46 && b != 95 && b != 126) {
+                noEncode = false;
+                encoded[n++] = 37;
+                byte nibble = (byte) ((b & 240) >> 4);
+                if (nibble >= 10) {
+                    encoded[n++] = (byte) (65 + nibble - 10);
+                } else {
+                    encoded[n++] = (byte) (48 + nibble);
+                }
+
+                nibble = (byte) (b & 15);
+                if (nibble >= 10) {
+                    encoded[n++] = (byte) (65 + nibble - 10);
+                } else {
+                    encoded[n++] = (byte) (48 + nibble);
+                }
+            } else {
+                encoded[n++] = b;
+            }
+        }
+
+        if (noEncode) {
+            return string;
+        } else {
+            return new String(encoded, 0, n, charset);
+        }
+    }
+
     public static String parseParams(Object object) {
         String s = JSON.toJSONString(object);
         JSONObject jsonObject = JSON.parseObject(s);
@@ -96,7 +140,7 @@ public class HttpClientUtil {
                 }
                 buffer.append(entry.getKey());
                 buffer.append("=");
-                buffer.append(UrlEncoded.encodeString(entry.getValue().toString(), "UTF-8"));
+                buffer.append(encodeString(entry.getValue().toString(), Charset.forName("UTF-8")));
                 buffer.append("&");
             }
         }

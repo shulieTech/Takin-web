@@ -233,8 +233,6 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                                 }
                             }
                             loop = false;
-                        }else{
-                            msg += ", 调试成功结果:{"+JSON.toJSONString(debugDetail)+"}";
                         }
                         callback(url, msg, workRecordId, level);
                         if (debugDetail.getStatus() == 4) {

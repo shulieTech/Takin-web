@@ -218,7 +218,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                         String msg = ScriptDebugStatusEnum.getDesc(debugDetail.getStatus());
                         if (debugDetail.getStatus() == 5) {
                             level = "ERROR";
-                            msg = msg +", 失败原因:{"+debugDetail.getRemark()+"}";
+                            msg = msg +", 调试失败原因:{"+debugDetail.getRemark()+"}";
                             //发送报告错误日志
                             Long cloudReportId = debugDetail.getCloudReportId();
                             ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
@@ -233,6 +233,8 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                                 }
                             }
                             loop = false;
+                        }else{
+                            msg += ", 调试成功结果:{"+JSON.toJSONString(debugDetail)+"}";
                         }
                         callback(url, msg, workRecordId, level);
                         if (debugDetail.getStatus() == 4) {

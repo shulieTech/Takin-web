@@ -7,17 +7,20 @@ import cn.hutool.http.Method;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
 import com.pamirs.takin.entity.domain.dto.linkmanage.mapping.enums.fastdebug.RequestTypeEnum;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PageScriptDebugRequestRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptDebugDoDebugRequest;
 import io.shulie.takin.web.biz.pojo.request.webide.WebIDESyncScriptRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.report.ReportService;
@@ -234,10 +237,20 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                             }
                             loop = false;
                         }
-                        callback(url, msg, workRecordId, level);
                         if (debugDetail.getStatus() == 4) {
                             loop = false;
+                            PageScriptDebugRequestRequest req = new PageScriptDebugRequestRequest();
+                            req.setScriptDebugId(debugId);
+                            req.setCurrent(0);
+                            req.setPageSize(10);
+                            PagingList<ScriptDebugRequestListResponse> pageDetail = scriptDebugService.pageScriptDebugRequest(req);
+                            if(pageDetail !=null){
+                                List<ScriptDebugRequestListResponse> list = pageDetail.getList();
+                                msg += ", 调试成功: {"+ JSON.toJSONString(list)+"}";
+                            }
+
                         }
+                        callback(url, msg, workRecordId, level);
                     } while (loop);
                 });
             });

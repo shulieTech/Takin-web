@@ -308,7 +308,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
 
     private void callback(String url, String msg, Long workRecordId, String level) {
-        url = url + "?source=kzt&level=" + level + "&work_record_id=" + workRecordId;
+        url = url + "?source=Takin控制台&level=" + level + "&work_record_id=" + workRecordId;
         new HttpRequest(url)
                 .method(Method.POST)
                 .contentType(RequestTypeEnum.TEXT.getDesc())

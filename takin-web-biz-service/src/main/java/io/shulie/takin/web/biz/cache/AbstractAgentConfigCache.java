@@ -48,7 +48,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      * 项目重启之后，缓存清空下
      */
     @PostConstruct
-    private void reset() {
+    public void reset() {
         String beClearKey = this.cacheName + "*";
         if (!"*".equals(beClearKey)) {
             Set<String> keys = redisTemplate.keys(beClearKey);

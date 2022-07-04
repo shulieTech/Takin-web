@@ -1,10 +1,14 @@
 package io.shulie.takin.web.app.conf;
 
+import io.shulie.takin.web.biz.cache.AbstractAgentConfigCache;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author by: hezhongqi
@@ -17,6 +21,8 @@ import org.springframework.stereotype.Component;
 public class AutowireStaticSmartInitializingSingleton implements SmartInitializingSingleton {
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
+    @Resource
+    private List<AbstractAgentConfigCache> cacheList;
 
     /**
      * 当所有的单例Bena初始化完成后，对static静态成员进行赋值
@@ -28,5 +34,8 @@ public class AutowireStaticSmartInitializingSingleton implements SmartInitializi
     public void afterSingletonsInstantiated() {
         // 因为是给static静态属性赋值，因此这里new一个实例做注入是可行的
         beanFactory.autowireBean(new WebPluginUtils());
+        // 因为某些未知原因导致偶尔重启时查不到数据，所以这里强制清空缓存，重新刷
+        cacheList.forEach(AbstractAgentConfigCache::reset);
+
     }
 }

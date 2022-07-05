@@ -759,7 +759,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             applicationList.forEach(app -> {
                 List<Map> list = applicationDAO.getStatus(app.getApplicationName());
                 AtomicReference<String> a = null;
-                AtomicReference<Map> result = null;
+                AtomicReference<Map> result = new AtomicReference<>();
                 list.forEach(l->{
                     int s = Integer.parseInt(l.get("s").toString());
                     if (s == 3) {
@@ -768,7 +768,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                         result.set(l);
                     }
                 });
-                if (null != result && (((long) result.get().get("n")) != 0 || (errorApplicationIdSet.contains(app.getApplicationId())))) {
+                if (null != result.get() && (((long) result.get().get("n")) != 0 || (errorApplicationIdSet.contains(app.getApplicationId())))) {
                     String e = (String) result.get().get("e");
                     if (StringUtils.isBlank(e)) {
                         e = "探针接入异常";

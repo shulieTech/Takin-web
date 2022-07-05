@@ -11,4 +11,11 @@ public class EntranceRuleDTO {
     private String appName;
     private Integer businessType;
     private String entrance;
+
+    public EntranceRuleDTO() {
+    }
+
+    public EntranceRuleDTO(String entrance) {
+        this.entrance = entrance;
+    }
 }

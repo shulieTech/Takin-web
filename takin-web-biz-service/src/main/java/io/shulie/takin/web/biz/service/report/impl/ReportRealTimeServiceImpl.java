@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import com.google.common.collect.HashBiMap;
 import org.apache.commons.lang3.StringUtils;
@@ -303,10 +304,14 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
 
     private PageInfo<ReportTraceDTO> getReportTraceDtoList(ReportTraceQueryDTO queryDTO) {
         // 查询场景下的业务活动信息
-        List<Long> businessActivityIdList = querySceneActivities(queryDTO);
+        Pair<List<Long>, List<String>> businessActivityPair = querySceneActivities(queryDTO);
 
         // entryList 获得
-        List<EntranceRuleDTO> entranceList = this.getEntryListByBusinessActivityIds(businessActivityIdList);
+        List<EntranceRuleDTO> entranceList = this.getEntryListByBusinessActivityIds(businessActivityPair.getLeft());
+        List<String> entrances = businessActivityPair.getRight();
+        if (CollectionUtils.isNotEmpty(entrances)) {
+            entranceList.addAll(entrances.stream().map(EntranceRuleDTO::new).collect(Collectors.toList()));
+        }
 
         // 如果压测引擎任务Id不为空，替换reportId，现在大数据taskId对应的是压测引擎任务Id
         Long taskId = queryDTO.getTaskId();
@@ -397,30 +402,33 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     }
 
     // 查询场景对应的业务活动Id
-    private List<Long> querySceneActivities(ReportTraceQueryDTO queryDTO) {
+    private Pair<List<Long>, List<String>> querySceneActivities(ReportTraceQueryDTO queryDTO) {
         String xpath = queryDTO.getXpathMd5();
-        if (StringUtils.isBlank(xpath)) {
-            SceneManageWrapperResp response = cloudSceneApi.getSceneDetail(new SceneManageIdReq() {{
-                setId(queryDTO.getSceneId());
-            }});
-            List<SceneBusinessActivityRefResp> businessActivityConfig = response.getBusinessActivityConfig();
-            return businessActivityConfig.stream().
-                map(SceneBusinessActivityRefResp::getBusinessActivityId).collect(Collectors.toList());
-        }
+        List<Long> activityIds = new ArrayList<>();
+        List<String> rule = new ArrayList<>();
         // 通过xpath递归node
         List<ScriptNodeTreeResp> nodeTree = reportApi.scriptNodeTree(
             new ScriptNodeTreeQueryReq() {{
                 setSceneId(queryDTO.getSceneId());
                 setReportId(queryDTO.getReportId());
             }});
-        List<Long> activityIds = new ArrayList<>();
-        boolean matchNext = true;
-        for (ScriptNodeTreeResp node : nodeTree) {
-            if (matchNext) {
-                matchNext = recursionMatchXpath(false, xpath, node, activityIds);
+        if (StringUtils.isBlank(xpath)) {
+            SceneManageWrapperResp response = cloudSceneApi.getSceneDetail(new SceneManageIdReq() {{
+                setId(queryDTO.getSceneId());
+            }});
+            List<SceneBusinessActivityRefResp> businessActivityConfig = response.getBusinessActivityConfig();
+            activityIds.addAll(businessActivityConfig.stream().
+                map(SceneBusinessActivityRefResp::getBusinessActivityId).collect(Collectors.toList()));
+            recursionAllPath(nodeTree, rule);
+        } else {
+            boolean matchNext = true;
+            for (ScriptNodeTreeResp node : nodeTree) {
+                if (matchNext) {
+                    matchNext = recursionMatchXpath(false, xpath, node, activityIds, rule);
+                }
             }
         }
-        return activityIds;
+        return Pair.of(activityIds, rule);
     }
 
     /**
@@ -430,22 +438,30 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
      * @param xpath         xpathMd5
      * @param node          节点
      * @param result        结果集
+     * @param rule          path结果集
      * @return 是否继续递归 true-继续
      */
-    private boolean recursionMatchXpath(boolean parentMatched, String xpath, ScriptNodeTreeResp node, List<Long> result) {
+    private boolean recursionMatchXpath(boolean parentMatched, String xpath, ScriptNodeTreeResp node,
+        List<Long> result, List<String> rule) {
         String xpathMd5 = node.getXpathMd5();
         boolean curMatched = xpath.equals(xpathMd5);
         // md5为空，代表旧版本数据，此时identification也为空，同时没有子节点(即：不存在父节点匹配情况)
         Long businessActivityId = node.getBusinessActivityId();
-        if (curMatched && (StringUtils.isBlank(node.getMd5()) || StringUtils.isNotBlank(node.getIdentification()))) {
+        String identification = node.getIdentification();
+        boolean identificationNotBlank = StringUtils.isNotBlank(identification);
+        if (curMatched && (StringUtils.isBlank(node.getMd5()) || identificationNotBlank)) {
             if (Objects.nonNull(businessActivityId)) {
                 result.add(businessActivityId);
+                if (identificationNotBlank) {
+                    rule.add(identification);
+                }
             }
             return false;
         }
-        if (parentMatched && StringUtils.isNotBlank(node.getIdentification())) {
+        if (parentMatched && identificationNotBlank) {
             if (Objects.nonNull(businessActivityId)) {
                 result.add(businessActivityId);
+                rule.add(identification);
             }
         }
         boolean matched = parentMatched || curMatched;
@@ -454,10 +470,23 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
         if (CollectionUtils.isNotEmpty(children)) {
             for (ScriptNodeTreeResp child : children) {
                 if (matchNext) {
-                    matchNext = recursionMatchXpath(matched, xpath, child, result);
+                    matchNext = recursionMatchXpath(matched, xpath, child, result, rule);
                 }
             }
         }
         return !curMatched && matchNext;
+    }
+
+    private void recursionAllPath(List<ScriptNodeTreeResp> nodeTree, List<String> rule) {
+        nodeTree.forEach(node -> {
+            String identification = node.getIdentification();
+            if (StringUtils.isNotBlank(identification)) {
+                rule.add(identification);
+            }
+            List<ScriptNodeTreeResp> children = node.getChildren();
+            if (CollectionUtils.isNotEmpty(children)) {
+                recursionAllPath(children, rule);
+            }
+        });
     }
 }

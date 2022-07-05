@@ -239,7 +239,7 @@ public class TraceClientImpl implements TraceClient {
                     StringUtils.defaultIfBlank(entranceJoinEntity.getMethodName(), ""), entranceJoinEntity.getRpcType());
             }
 
-        }).collect(Collectors.joining(AppConstants.COMMA));
+        }).distinct().collect(Collectors.joining(AppConstants.COMMA));
     }
 
     @Override

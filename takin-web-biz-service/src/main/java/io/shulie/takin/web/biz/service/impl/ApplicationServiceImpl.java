@@ -770,12 +770,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 });
                 if ((null != result.get() && ((long) result.get().get("n")) != 0) || (errorApplicationIdSet.contains(app.getApplicationId()))) {
                     String e = "";
-                    if (null == result || StringUtils.isBlank((String) result.get().get("e"))) {
+                    if (null == result.get() || StringUtils.isBlank((String) result.get().get("e"))) {
                         e = "探针接入异常";
                         if (null != a && StringUtils.isNotEmpty(a.get())) {
                             e += "，agentId为"+a.get();
                         }
-                    } else if (null != result && StringUtils.isNotBlank((String) result.get().get("e"))) {
+                    } else if (null != result.get() && StringUtils.isNotBlank((String) result.get().get("e"))) {
                         e = (String) result.get().get("e");
                     }
                     applicationDAO.updateStatus(app.getApplicationId(), e);

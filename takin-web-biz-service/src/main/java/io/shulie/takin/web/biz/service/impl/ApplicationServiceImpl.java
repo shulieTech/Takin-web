@@ -761,10 +761,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 AtomicReference<String> a = null;
                 AtomicReference<Map> result = null;
                 list.forEach(l->{
-                    String s = (String)l.get("s");
-                    if (org.apache.commons.lang3.StringUtils.equals(s,"3")) {
+                    int s = Integer.parseInt(l.get("s").toString());
+                    if (s == 3) {
                         a.set((String) l.get("a"));
-                    } else if (org.apache.commons.lang3.StringUtils.equals(s,"4")) {
+                    } else if (s == 4) {
                         result.set(l);
                     }
                 });

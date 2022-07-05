@@ -439,7 +439,8 @@
 
         ORDER BY a.id DESC
     </select>
-    <select id="getStatus" resultType="Map">
-        SELECT agent_error_info AS e,COUNT(*) AS n,agent_id AS a FROM t_agent_report WHERE application_name = #{name} AND `status` = 4
+    <select id="getStatus" resultType="java.util.Map">
+        SELECT agent_error_info AS e,COUNT(*) AS n,agent_id AS a,status AS s FROM t_agent_report WHERE application_name = #{name} GROUP BY `status`
     </select>
+
 </mapper>

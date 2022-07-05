@@ -30,7 +30,7 @@ import java.util.concurrent.*;
 @Component
 public class EsJobTaskListener implements ApplicationListener<ApplicationStartedEvent> {
     // 需要监听的任务信息,按逗号分割
-    @Value("${takin.listener.jobtask:MavenNewVersionPullJob,CalcApplicationSummaryJob,CalcTpsTargetJob,FinishReportJob,SyncMachineDataJob}")
+    @Value("${takin.listener.jobtask:calcApplicationSummaryJob,calcTpsTargetJob,finishReportJob,syncMachineDataJob}")
     private String jobTask;
 
     // 是否打印jstack,如果状态不对的时候
@@ -64,8 +64,7 @@ public class EsJobTaskListener implements ApplicationListener<ApplicationStarted
         try {
             log.info("EsJob 任务监听开启 ");
             if (StringUtils.isNotBlank(jobTask)) {
-                ScheduledExecutorService service =
-                        Executors.newScheduledThreadPool(1, new ThreadFactoryBuilder().setNameFormat("JobTaskListener-%d").build());
+                ScheduledExecutorService service = Executors.newScheduledThreadPool(1, new ThreadFactoryBuilder().setNameFormat("JobTaskListener-%d").build());
                 String esJobLock = "JobTaskListener_onApplicationEvent";
                 // 检查job任务状态
                 Runnable threadTask = new Runnable() {
@@ -86,13 +85,12 @@ public class EsJobTaskListener implements ApplicationListener<ApplicationStarted
                                 }
                                 // 任务状态非正常
                                 if (jobBriefInfo.getStatus() == JobBriefInfo.JobStatus.SHARDING_FLAG) {
-                                    log.error("当前任务状态不正常," + jobTaskArr[i]);
                                     // 打印下jstack,看下当前线程在干啥
                                     if (jstackEnable) {
                                         dumpJStack();
                                     }
-                                    // 点下触发，让他重试下
-                                    log.info("触发当前任务,{}", jobTaskArr[i]);
+                                    // 点下触发,让他重试下
+                                    log.info("当前任务状态为分片待调整,触发当前任务执行,{}", jobTaskArr[i]);
                                     jobOperateAPI.trigger(com.google.common.base.Optional.of(jobTaskArr[i]), null);
                                 }
                             }

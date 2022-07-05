@@ -24,17 +24,18 @@ import java.util.concurrent.*;
 /**
  * elasticjob 任务监听
  *
+ * @author zhouyuan
  * @Date 7月5号
  */
 @Slf4j
 @Component
 public class EsJobTaskListener implements ApplicationListener<ApplicationStartedEvent> {
     // 需要监听的任务信息,按逗号分割
-    @Value("${takin.listener.jobtask:calcApplicationSummaryJob,calcTpsTargetJob,finishReportJob,syncMachineDataJob}")
+    @Value("${takin.listener.jobtask}")
     private String jobTask;
 
     // 是否打印jstack,如果状态不对的时候
-    @Value("${takin.web.jstack.enable:true}")
+    @Value("${takin.web.jstack.enable}")
     private boolean jstackEnable;
 
     private static volatile long lastPrintTime = 0;
@@ -102,7 +103,7 @@ public class EsJobTaskListener implements ApplicationListener<ApplicationStarted
                     }
                 };
                 // 提交任务,10分钟以后，每隔30秒执行一次
-                service.scheduleAtFixedRate(threadTask, 10, 10, TimeUnit.SECONDS);
+                service.scheduleAtFixedRate(threadTask, 10 * 60, 30, TimeUnit.SECONDS);
             }
         } catch (Throwable e) {
             log.error("JobTaskListener is fail,{}" + ExceptionUtils.getStackTrace(e));

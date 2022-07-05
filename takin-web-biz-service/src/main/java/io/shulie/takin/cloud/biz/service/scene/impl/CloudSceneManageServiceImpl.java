@@ -25,6 +25,9 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -74,6 +77,7 @@ import io.shulie.takin.cloud.common.enums.PressureTaskStateEnum;
 import io.shulie.takin.cloud.common.enums.TimeUnitEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageErrorEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
+import io.shulie.takin.cloud.common.enums.scenemanage.SceneQueryStatusEnum;
 import io.shulie.takin.cloud.common.enums.scenemanage.SceneRunTaskStatusEnum;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
@@ -85,6 +89,7 @@ import io.shulie.takin.cloud.common.utils.LinuxUtil;
 import io.shulie.takin.cloud.common.utils.UrlUtil;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
+import io.shulie.takin.cloud.data.dao.scene.task.PressureTaskDAO;
 import io.shulie.takin.cloud.data.model.mysql.SceneManageEntity;
 import io.shulie.takin.cloud.data.param.scenemanage.SceneManageCreateOrUpdateParam;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
@@ -104,6 +109,7 @@ import io.shulie.takin.utils.PathFormatForTest;
 import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -112,6 +118,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author qianshui
@@ -1376,5 +1391,33 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         entity.setStatus(-1);
         entity.setIsArchive(1);
         sceneManageDAO.updateById(entity);
+    }
+
+    @Override
+    public List<SceneManageListOutput> getSceneByStatus(Integer status) {
+        if (Objects.isNull(status)){
+           return querySceneManageList();
+        }
+        SceneQueryStatusEnum statusByCode = SceneQueryStatusEnum.getStatusByCode(status);
+        if (statusByCode == SceneQueryStatusEnum.RUNNING){
+            List<SceneManageStatusEnum> working = SceneManageStatusEnum.getWorking();
+            List<Integer> statusCodeList = working.stream().map(SceneManageStatusEnum::getValue).collect(Collectors.toList());
+            SceneManageQueryBean queryBean = new SceneManageQueryBean();
+            queryBean.setStatusList(statusCodeList);
+            List<SceneManageEntity> sceneManageEntities = sceneManageDAO.queryScene(queryBean);
+            if (CollectionUtils.isNotEmpty(sceneManageEntities)){
+               return sceneManageEntities.stream().filter(Objects::nonNull)
+                    .map(entity ->{
+                        SceneManageListOutput output = new SceneManageListOutput();
+                        output.setId(entity.getId());
+                        output.setSceneName(entity.getSceneName());
+                        output.setStatus(entity.getStatus());
+                        return output;
+                    }).collect(Collectors.toList());
+            }else {
+                return Lists.newArrayList();
+            }
+        }
+        return Lists.newArrayList();
     }
 }

@@ -1,10 +1,37 @@
 package io.shulie.takin.web.biz.service.impl;
 
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import cn.hutool.core.collection.ListUtil;
+import com.alibaba.fastjson.JSONObject;
+
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.NumberUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -117,16 +144,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import static io.shulie.takin.web.common.common.Response.PAGE_TOTAL_HEADER;
 
 /**
  * @author mubai<chengjiacai.shulie.io>
@@ -460,20 +478,23 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     }
 
     @Override
-    public Response<List<ApplicationVo>> getApplicationList() {
-        List<ApplicationVo> applicationVoList = Lists.newArrayList();
-        List<Long> userIdList = WebPluginUtils.getQueryAllowUserIdList();
-        List<ApplicationDetailResult> applicationDetailResultList = applicationDAO.getApplicationListByUserIds(
-                userIdList);
-        if (CollectionUtils.isNotEmpty(applicationDetailResultList)) {
-            applicationVoList = applicationDetailResultList.stream().map(applicationDetailResult -> {
-                ApplicationVo applicationVo = new ApplicationVo();
-                applicationVo.setId(String.valueOf(applicationDetailResult.getApplicationId()));
-                applicationVo.setApplicationName(applicationDetailResult.getApplicationName());
-                return applicationVo;
+    public Response<List<ApplicationVo>> getApplicationList(ApplicationQueryRequestV2 request) {
+        PagingList<ApplicationListResponseV2> paging = pageApplication(request);
+        List<ApplicationListResponseV2> applications = paging.getList();
+        List<ApplicationVo> resultList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(applications)) {
+            resultList = applications.stream().map(application -> {
+                ApplicationVo vo = new ApplicationVo();
+                vo.setId(application.getId());
+                vo.setApplicationName(application.getApplicationName());
+                return vo;
             }).collect(Collectors.toList());
         }
-        return Response.success(applicationVoList);
+        Response.setHeaders(
+            new HashMap<String, String>(1) {{
+                put(PAGE_TOTAL_HEADER, String.valueOf(paging.getTotal()));
+            }});
+        return Response.success(resultList);
     }
 
     @Override
@@ -686,32 +707,103 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 pageBaseDTO.setCurrent(pageBaseDTO.getCurrent() + 1);
                 // 赋值查询出的应用数量
                 applicationNumber = applicationList.size();
-                this.syncApplicationAccessStatus(applicationList);
+
+                // 收集应用名称
+                List<String> appNames = applicationList.stream()
+                        .map(ApplicationListResult::getApplicationName)
+                        .collect(Collectors.toList());
+
+                // 大数据应用的map, key 应用名称, value amdb应用实例
+                Map<String, ApplicationResult> amdbApplicationMap = this.getAmdbApplicationMap(appNames);
+
+                // 大数据应用节点的map, key 应用名称, value amdb节点列表
+                Map<String, List<ApplicationNodeResult>> amdbApplicationNodeMap = this.getAmdbApplicationNodeMap(
+                        appNames);
+
+                // 异常的应用
+                Set<Long> errorApplicationIdSet = new HashSet<>(20);
+                // 正常的应用
+                Set<Long> normalApplicationIdSet = new HashSet<>(20);
+
+                // 遍历比对
+                for (ApplicationListResult application : applicationList) {
+                    String applicationName = application.getApplicationName();
+                    Long applicationId = application.getApplicationId();
+                    Integer nodeNum = application.getNodeNum();
+
+                    // 该应用对应的大数据应用实例
+                    ApplicationResult amdbApplication;
+                    // 该应用对应的大数据节点列表
+                    List<ApplicationNodeResult> amdbApplicationNodeList;
+
+                    if (amdbApplicationMap.isEmpty()
+                            || (amdbApplication = amdbApplicationMap.get(applicationName)) == null
+                            || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
+                        // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
+                        errorApplicationIdSet.add(applicationId);
+
+                    } else if (!amdbApplicationMap.isEmpty()
+                            && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
+                            && amdbApplication.getAppIsException()) {
+                        // map 存在, map.get 存在, amdb应用为异常
+                        errorApplicationIdSet.add(applicationId);
+
+                    } else if (!amdbApplicationNodeMap.isEmpty()
+                            && CollectionUtil.isNotEmpty(
+                            amdbApplicationNodeList = amdbApplicationNodeMap.get(applicationName))
+                            && amdbApplicationNodeList.stream().map(ApplicationNodeResult::getAgentVersion).distinct()
+                            .count()
+                            > 1) {
+                        // 判断agent版本号是否一致
+                        errorApplicationIdSet.add(applicationId);
+
+                    } else {
+                        normalApplicationIdSet.add(applicationId);
+                    }
+                }
+
+
+                this.syncApplicationAccessStatus(applicationList,errorApplicationIdSet);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
         } catch (Exception e) {
             log.error("定时同步应用状态错误, 错误信息: {}", e.getMessage(), e);
         }
-
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList) {
-        log.info("开始同步应用状态");
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList,Set<Long> errorApplicationIdSet) {
         if (CollectionUtils.isNotEmpty(applicationList)) {
             applicationList.forEach(app -> {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
-//                log.info("应用:" + app.getApplicationName() + "状态为:" + result);
                 long n = (long) result.get("n");
-                if (n != 0) {
-//                    log.info("应用:"+app.getApplicationName()+"异常");
-                    applicationDAO.updateStatus(app.getApplicationId(), (String) result.get("e"));
+                if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
+                    String e = (String) result.get("e");
+                    if (StringUtils.isBlank(e)) {
+                        String a = (String)result.get("a");
+                        e = "探针接入异常";
+                        if (StringUtils.isNotEmpty(a)) {
+                            e += "，agentId为"+a;
+                        }
+                    }
+                    applicationDAO.updateStatus(app.getApplicationId(), e);
+                    NodeUploadDataDTO param = new NodeUploadDataDTO();
+                    param.setApplicationName(app.getApplicationName());
+                    param.setAgentId((String) result.get("a"));
+                    param.setNodeKey(UUID.randomUUID().toString().replace("_", ""));
+                    param.setExceptionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                    HashMap map = new HashMap(1);
+                    ExceptionInfo exceptionInfo = new ExceptionInfo();
+                    exceptionInfo.setErrorCode("—");
+                    exceptionInfo.setMessage(e);
+                    exceptionInfo.setDetail(e);
+                    map.put("Agent异常:" + this.toString().hashCode(), JSON.toJSONString(exceptionInfo));
+                    param.setSwitchErrorMap(map);
+                    uploadAccessStatus(param);
                 } else {
-//                    log.info("应用:"+app.getApplicationName()+"正常");
                     applicationDAO.updateStatus(app.getApplicationId());}
             });
-            log.info("结束同步应用状态!");
         }
     }
 

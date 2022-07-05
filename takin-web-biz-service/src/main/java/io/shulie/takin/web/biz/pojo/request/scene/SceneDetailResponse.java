@@ -17,6 +17,7 @@ import lombok.Setter;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class SceneDetailResponse extends io.shulie.takin.adapter.api.model.response.scenemanage.SceneDetailV2Response {
+    private Long id;
     /**
      * 基础信息
      */

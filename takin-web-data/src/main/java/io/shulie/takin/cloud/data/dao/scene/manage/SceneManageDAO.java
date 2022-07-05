@@ -97,4 +97,11 @@ public interface SceneManageDAO extends IService<SceneManageEntity> {
      * @return 操作影响行数
      */
     int updateStatus(Long sceneId, Integer status, Integer compareStatus);
+
+    /**
+     * 根据条件查询
+     * @param param
+     * @return
+     */
+    List<SceneManageEntity> queryScene(SceneManageQueryBean param);
 }

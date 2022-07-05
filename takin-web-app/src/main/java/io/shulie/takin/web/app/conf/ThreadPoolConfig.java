@@ -405,4 +405,12 @@ public class ThreadPoolConfig {
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
+
+    @Bean(name = "performanceDebugThreadPool")
+    public ThreadPoolExecutor performanceDebugThreadPool() {
+        final int coreSize = Runtime.getRuntime().availableProcessors();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("middleware-resolver-%d").build();
+        return new ThreadPoolExecutor(coreSize, coreSize * 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100),
+            nameThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+    }
 }

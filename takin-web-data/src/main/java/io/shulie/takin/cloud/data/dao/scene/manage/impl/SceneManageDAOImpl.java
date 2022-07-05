@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.shulie.takin.cloud.common.bean.scenemanage.SceneManageQueryBean;
+import io.shulie.takin.cloud.common.enums.PressureSceneEnum;
 import io.shulie.takin.cloud.common.utils.CloudPluginUtils;
 import io.shulie.takin.cloud.data.converter.senemange.SceneManageEntityConverter;
 import io.shulie.takin.cloud.data.dao.scene.manage.SceneManageDAO;
@@ -68,12 +69,12 @@ public class SceneManageDAOImpl
             userIds = CloudPluginUtils.getContext().getFilterSql();
             // 去除左右的括号
             if (userIds.lastIndexOf("(") == 0
-                && userIds.lastIndexOf(")") == userIds.length() - 1) {
+                    && userIds.lastIndexOf(")") == userIds.length() - 1) {
                 userIds = userIds.substring(1, userIds.length() - 1);
             }
         }
         List<String> userIdList = Arrays.stream(userIds.split(","))
-            .filter(StrUtil::isNotBlank).collect(Collectors.toList());
+                .filter(StrUtil::isNotBlank).collect(Collectors.toList());
         // 组装查询条件
         LambdaQueryWrapper<SceneManageEntity> wrapper = Wrappers.lambdaQuery(SceneManageEntity.class)
             .eq(!Objects.isNull(queryBean.getSceneId()), SceneManageEntity::getId, queryBean.getSceneId())
@@ -157,5 +158,31 @@ public class SceneManageDAOImpl
             .eq(!Objects.isNull(sceneId), SceneManageEntity::getId, sceneId)
             .eq(!Objects.isNull(compareStatus), SceneManageEntity::getStatus, compareStatus);
         return this.baseMapper.update(new SceneManageEntity() {{setStatus(status);}}, wrapper);
+    }
+
+    @Override
+    public List<SceneManageEntity> queryScene(SceneManageQueryBean param) {
+        if (Objects.isNull(param)) {
+            log.error("查询压测场景参数未空！");
+            return null;
+        }
+        LambdaQueryWrapper<SceneManageEntity> wrapper = new LambdaQueryWrapper<>();
+        if (Objects.nonNull(param.getSceneId())) {
+            wrapper.eq(SceneManageEntity::getId, param.getSceneId());
+        } else if (CollectionUtils.isNotEmpty(param.getSceneIds())) {
+            wrapper.in(SceneManageEntity::getId, param.getSceneIds());
+        }
+        if (Objects.nonNull(param.getSceneName())) {
+            wrapper.eq(SceneManageEntity::getSceneName, param.getSceneName());
+        }
+        if (Objects.nonNull(param.getStatus())) {
+            wrapper.eq(SceneManageEntity::getStatus, param.getStatus());
+        } else if (CollectionUtils.isNotEmpty(param.getStatusList())) {
+            wrapper.in(SceneManageEntity::getStatus, param.getStatusList());
+        }
+        wrapper.eq(SceneManageEntity::getType, PressureSceneEnum.DEFAULT.getCode());
+        wrapper.eq(SceneManageEntity::getIsDeleted, 0);
+        wrapper.orderByDesc(SceneManageEntity::getLastPtTime);
+        return this.baseMapper.selectList(wrapper);
     }
 }

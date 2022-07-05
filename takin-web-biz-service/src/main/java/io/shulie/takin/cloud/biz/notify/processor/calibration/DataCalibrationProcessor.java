@@ -22,6 +22,7 @@ import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.web.biz.service.report.impl.SummaryService;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -45,6 +46,8 @@ public class DataCalibrationProcessor extends AbstractIndicators
     private PushWindowDataScheduled pushWindowDataScheduled;
     @Resource
     private PressureDataCalibration pressureDataCalibration;
+    @Resource
+    private SummaryService summaryService;
 
     @Override
     public CallbackType type() {
@@ -122,6 +125,7 @@ public class DataCalibrationProcessor extends AbstractIndicators
         Long sceneId = report.getSceneId();
         Long tenantId = report.getTenantId();
         cloudReportService.updateReportBusinessActivity(jobId, sceneId, reportId, tenantId);
+        summaryService.calcReportSummay(reportId);
         StatReportDTO statReport = cloudReportService.statReport(jobId, sceneId, reportId, tenantId, transaction);
         if (Objects.nonNull(statReport)) {
             log.info("cloud订正压测报告数据成功:jobId=[{}], requestCount=[{}]", jobId, statReport.getTotalRequest());

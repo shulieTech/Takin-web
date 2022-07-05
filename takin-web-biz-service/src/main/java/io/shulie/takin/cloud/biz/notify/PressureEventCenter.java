@@ -273,6 +273,9 @@ public class PressureEventCenter extends AbstractIndicators {
             redisClientUtil.hmset(resourceKey, param);
             redisClientUtil.expire(resourceKey, 60);
         }
+        Long reportId = context.getReportId();
+        setTryRunTaskFailInfo(sceneId, reportId, context.getTenantId(), message);
+        removeReportKey(reportId);
         PressureTaskEntity entity = new PressureTaskEntity();
         entity.setId(taskId);
         entity.setStatus(PressureTaskStateEnum.RESOURCE_LOCK_FAILED.ordinal());

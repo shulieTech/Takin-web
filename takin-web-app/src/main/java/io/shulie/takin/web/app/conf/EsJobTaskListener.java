@@ -34,6 +34,12 @@ public class EsJobTaskListener implements ApplicationListener<ApplicationStarted
     @Value("${takin.listener.jobtask}")
     private String jobTask;
 
+    @Value("${takin.listener.jobtask.initialDelay:600}")
+    private int initialDelay;
+
+    @Value("${takin.listener.jobtask.period:30}")
+    private int period;
+
     // 是否打印jstack,如果状态不对的时候
     @Value("${takin.web.jstack.enable:false}")
     private boolean jstackEnable;
@@ -102,8 +108,8 @@ public class EsJobTaskListener implements ApplicationListener<ApplicationStarted
                         }
                     }
                 };
-                // 提交任务,10分钟以后，每隔30秒执行一次
-                service.scheduleAtFixedRate(threadTask, 10 * 60, 30, TimeUnit.SECONDS);
+                // 提交任务,默认10分钟以后，每隔30秒执行一次
+                service.scheduleAtFixedRate(threadTask, initialDelay, period, TimeUnit.SECONDS);
             }
         } catch (Throwable e) {
             log.error("JobTaskListener is fail,{}" + ExceptionUtils.getStackTrace(e));

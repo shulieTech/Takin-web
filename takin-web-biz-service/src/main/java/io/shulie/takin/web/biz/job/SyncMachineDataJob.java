@@ -14,6 +14,7 @@ import io.shulie.takin.web.biz.service.report.ReportTaskService;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -24,11 +25,11 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ElasticSchedulerJob(jobName = "syncMachineDataJob",
-    // 分片序列号和参数用等号分隔 不需要参数可以不加
-    isSharding = true,
-    //shardingItemParameters = "0=0,1=1,2=2",
-    cron = "*/10 * * * * ?",
-    description = "同步应用基础信息")
+        // 分片序列号和参数用等号分隔 不需要参数可以不加
+        isSharding = true,
+        //shardingItemParameters = "0=0,1=1,2=2",
+        cron = "*/10 * * * * ?",
+        description = "同步应用基础信息")
 @Slf4j
 public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
 
@@ -45,13 +46,24 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
 
     @Override
     public void execute(ShardingContext shardingContext) {
+        try {
+            this.execute_ext(shardingContext);
+        } catch (Throwable e) {
+            // 捕捉全部异常,防止任务异常，导致esjob有问题
+            log.error("io.shulie.takin.web.biz.job.SyncMachineDataJob#execute error" + ExceptionUtils.getStackTrace(e));
+        }
+    }
+
+    public void execute_ext(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
         while (true) {
             List<SceneTaskDto> taskDtoList = getTaskFromRedis();
-            if (taskDtoList == null) { break; }
+            if (taskDtoList == null) {
+                break;
+            }
 
-            if (openVersion){
+            if (openVersion) {
                 for (SceneTaskDto taskDto : taskDtoList) {
                     Long reportId = taskDto.getReportId();
                     if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
@@ -70,8 +82,8 @@ public class SyncMachineDataJob extends AbstractSceneTask implements SimpleJob {
                     }
 
                 }
-            }else {
-                this.runTask(taskDtoList,shardingContext);
+            } else {
+                this.runTask(taskDtoList, shardingContext);
             }
         }
 

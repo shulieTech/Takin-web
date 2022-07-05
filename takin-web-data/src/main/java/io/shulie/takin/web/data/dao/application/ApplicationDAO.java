@@ -428,7 +428,7 @@ public interface ApplicationDAO {
     PagingList<ApplicationListResult> pageByApplicationNamesAndUserId(Collection<String> applicationNames,
         PageBaseDTO pageBaseDTO);
 
-    Map getStatus(String name);
+    List<Map> getStatus(String name);
 
     void updateStatus(Long applicationId, String e);
 

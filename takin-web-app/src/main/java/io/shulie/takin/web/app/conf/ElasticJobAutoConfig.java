@@ -57,7 +57,7 @@ public class ElasticJobAutoConfig {
     @Bean
     public CoordinatorRegistryCenter zkCenter() {
         ZookeeperConfiguration configuration = new
-                ZookeeperConfiguration("192.168.1.185:2181", "takin-web-job-" + env);
+                ZookeeperConfiguration("192.168.1.185:2181", "takin-web-job-" + "_dev_28");
         CoordinatorRegistryCenter center = new ZookeeperRegistryCenter(configuration);
         center.init();
         return center;

@@ -768,7 +768,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                         result.set(l);
                     }
                 });
-                if (null != result.get() && (((long) result.get().get("n")) != 0 || (errorApplicationIdSet.contains(app.getApplicationId())))) {
+                if ((null != result.get() && ((long) result.get().get("n")) != 0) || (errorApplicationIdSet.contains(app.getApplicationId()))) {
                     String e = (String) result.get().get("e");
                     if (StringUtils.isBlank(e)) {
                         e = "探针接入异常";

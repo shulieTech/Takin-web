@@ -16,6 +16,7 @@
 
 package io.shulie.takin.web.data.dao.application.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -209,7 +210,7 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         if (param.getIsSynchronize() != null) {
             lambdaQueryWrapper.eq(AppRemoteCallEntity::getIsSynchronize, param.getIsSynchronize());
         }
-        lambdaQueryWrapper.orderByDesc(AppRemoteCallEntity::getGmtModified);
+        //lambdaQueryWrapper.orderByDesc(AppRemoteCallEntity::getGmtModified);优化慢sql
         return lambdaQueryWrapper;
     }
 
@@ -309,7 +310,24 @@ public class AppRemoteCallDAOImpl extends ServiceImpl<AppRemoteCallMapper, AppRe
         LambdaQueryWrapper<AppRemoteCallEntity> lambdaQueryWrapper = this.getLambdaQueryWrapper()
             .eq(AppRemoteCallEntity::getIsDeleted, 0);
 
-        List<AppRemoteCallEntity> list = list(lambdaQueryWrapper);
+        //改分页查,优化慢sql
+        List<AppRemoteCallEntity> list = new ArrayList<>();
+        List<AppRemoteCallEntity> listTemp;
+        int i=1;
+        boolean doFlag;
+        do {
+            Page<AppRemoteCallEntity> page = new Page<>(i, 10000);
+            IPage<AppRemoteCallEntity> entityPageInfo = this.page(page, lambdaQueryWrapper);
+            if (CollectionUtils.isNotEmpty(entityPageInfo.getRecords())) {
+                doFlag = true;
+                listTemp = entityPageInfo.getRecords();
+                list.addAll(listTemp);
+                i++;
+            }else{
+                doFlag = false;
+            }
+        }while (doFlag);
+
         if (list.isEmpty()) {
             return Collections.emptyList();
         }

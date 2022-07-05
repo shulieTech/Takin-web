@@ -25,18 +25,25 @@ import io.shulie.takin.web.biz.pojo.request.application.AppRemoteCallConfigReque
 import io.shulie.takin.web.biz.pojo.request.datasource.DataSourceQueryRequest;
 import io.shulie.takin.web.biz.pojo.response.datasource.DatasourceListResponse;
 import io.shulie.takin.web.biz.service.DataSourceService;
+import io.shulie.takin.web.biz.service.async.AsyncService;
 import io.shulie.takin.web.biz.service.linkmanage.AppRemoteCallService;
 import io.shulie.takin.web.common.enums.application.AppRemoteCallConfigEnum;
+import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceBaseDataParam;
+import io.shulie.takin.web.data.param.perfomanceanaly.PerformanceThreadDataParam;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.security.core.parameters.P;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 说明:
@@ -66,14 +73,37 @@ public class AppRemoteCallServiceImplTest {
     @Autowired
     DataSourceService dataSourceService;
 
+    @Autowired
+    AsyncService asyncService;
+
+    @Test
+    public void zzTest(){
+        PerformanceBaseDataParam param = new PerformanceBaseDataParam();
+        param.setAgentId("11");
+        param.setTimestamp(System.currentTimeMillis());
+        List<PerformanceThreadDataParam> list = new ArrayList<>();
+        for(int i=0;i<50;i++){
+//            int i=9;
+            PerformanceThreadDataParam p1 = new PerformanceThreadDataParam();
+            p1.setThreadStackLink(1L);
+            p1.setThreadId(i+"1");
+            p1.setThreadName(i+"t1");
+            p1.setGroupName(i+"g1");
+            p1.setThreadCpuUsage(1D);
+            list.add(p1);
+        }
+        param.setThreadDataList(list);
+        asyncService.savePerformanceBaseData(param);
+    }
+
     @Test
     public void batchConfigTest(){
-        TransactionStatus transactionStatus = dataSourceTransactionManager.getTransaction(transactionDefinition);
-        AppRemoteCallConfigRequest request = new AppRemoteCallConfigRequest();
-        request.setType(AppRemoteCallConfigEnum.OPEN_WHITELIST.getType().shortValue());
-        request.setAppIds(Lists.newArrayList(6841250229157629952L,6846731729676275712L));
-        appRemoteCallService.batchConfig(request);
-        dataSourceTransactionManager.commit(transactionStatus);//提交
+//        TransactionStatus transactionStatus = dataSourceTransactionManager.getTransaction(transactionDefinition);
+//        AppRemoteCallConfigRequest request = new AppRemoteCallConfigRequest();
+//        request.setType(AppRemoteCallConfigEnum.OPEN_WHITELIST.getType().shortValue());
+//        request.setAppIds(Lists.newArrayList(6841250229157629952L,6846731729676275712L));
+//        appRemoteCallService.batchConfig(request);
+//        dataSourceTransactionManager.commit(transactionStatus);//提交
     }
 
     @Test
@@ -92,15 +122,15 @@ public class AppRemoteCallServiceImplTest {
         //System.out.println(completeSimulatorPath);
     }
 
-    @Test
-    public void like(){
-        final DataSourceQueryRequest request = new DataSourceQueryRequest();
-        request.setCurrent(0);
-        request.setPageSize(10);
-        //request.setDatasourceName("%");
-        request.setJdbcUrl("_0");
-        final PagingList<DatasourceListResponse> list = dataSourceService.listDatasource(
-            request);
-        System.out.println(JSON.toJSONString(list));
-    }
+//    @Test
+//    public void like(){
+//        final DataSourceQueryRequest request = new DataSourceQueryRequest();
+//        request.setCurrent(0);
+//        request.setPageSize(10);
+//        //request.setDatasourceName("%");
+//        request.setJdbcUrl("_0");
+//        final PagingList<DatasourceListResponse> list = dataSourceService.listDatasource(
+//            request);
+//        System.out.println(JSON.toJSONString(list));
+//    }
 }

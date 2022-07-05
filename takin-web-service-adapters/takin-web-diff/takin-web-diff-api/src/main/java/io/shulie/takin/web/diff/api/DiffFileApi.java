@@ -6,6 +6,8 @@ import io.shulie.takin.cloud.sdk.model.request.filemanager.FileCreateByStringPar
 import io.shulie.takin.cloud.sdk.model.request.filemanager.FileDeleteParamReq;
 import io.shulie.takin.cloud.sdk.model.request.filemanager.FileZipParamReq;
 
+import java.util.List;
+
 /**
  * @author shiyajian
  * create: 2020-10-19
@@ -46,4 +48,11 @@ public interface DiffFileApi {
      * @return 文件的MD5值
      */
     String createFileByPathAndString(FileCreateByStringParamReq req);
+
+    /**
+     * 判断文件是否存在,这里只校验file,不管path
+     * @param pathList
+     * @return
+     */
+    boolean isExist(List<String> pathList);
 }

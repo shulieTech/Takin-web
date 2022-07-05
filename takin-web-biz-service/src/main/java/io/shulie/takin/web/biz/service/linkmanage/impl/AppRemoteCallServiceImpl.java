@@ -95,6 +95,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -130,6 +131,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
 
     @Resource
     private ThreadPoolExecutor queryAsyncThreadPool;
+
+    @Value("${takin.job.app.limit:50}")
+    private int appSize = 0;
 
     @PostConstruct
     public void init() {
@@ -545,18 +549,17 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
         }
         List<TDictionaryVo> voList = dictionaryDataDAO.getDictByCode("REMOTE_CALL_TYPE");
 
-        int size = 50;
         // size个轮询一次
-        if (results.size() > size) {
+        if (results.size() > appSize) {
             int i = 1;
             boolean loop = true;
             do {
                 List<ApplicationDetailResult> subList;
                 //批量处理
-                if (results.size() > i * size) {
-                    subList = results.subList((i - 1) * size, i * size);
+                if (results.size() > i * appSize) {
+                    subList = results.subList((i - 1) * appSize, i * appSize);
                 } else {
-                    subList = results.subList((i - 1) * size, results.size());
+                    subList = results.subList((i - 1) * appSize, results.size());
                     loop = false;
                 }
                 i++;

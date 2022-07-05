@@ -820,6 +820,9 @@ public class AppRemoteCallServiceImpl implements AppRemoteCallService {
                     listVO.setInterfaceChildType(call.getMiddlewareDetail());
                 }
                 listVO.setMd5(RemoteCallUtils.buildRemoteCallName(listVO.getAppName(),listVO.getInterfaceName(),listVO.getInterfaceType()));
+                if(listVO.getUserId() ==null){
+                    listVO.setUserId(detailResult.getUserId());
+                }
                 // 权限问题
                 fillInPermissions(listVO, detailResult);
                 return listVO;

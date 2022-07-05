@@ -35,7 +35,7 @@ public class EsJobTaskListener implements ApplicationListener<ApplicationStarted
     private String jobTask;
 
     // 是否打印jstack,如果状态不对的时候
-    @Value("${takin.web.jstack.enable}")
+    @Value("${takin.web.jstack.enable:false}")
     private boolean jstackEnable;
 
     private static volatile long lastPrintTime = 0;

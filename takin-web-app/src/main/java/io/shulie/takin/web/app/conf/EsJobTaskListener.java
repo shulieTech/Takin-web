@@ -30,7 +30,7 @@ import java.util.concurrent.*;
 @Component
 public class EsJobTaskListener implements ApplicationListener<ApplicationStartedEvent> {
     // 需要监听的任务信息,按逗号分割
-    @Value("${takin.listener.jobtask:CalcApplicationSummaryJob,CalcTpsTargetJob,FinishReportJob,SyncMachineDataJob}")
+    @Value("${takin.listener.jobtask:MavenNewVersionPullJob,CalcApplicationSummaryJob,CalcTpsTargetJob,FinishReportJob,SyncMachineDataJob}")
     private String jobTask;
 
     // 是否打印jstack,如果状态不对的时候

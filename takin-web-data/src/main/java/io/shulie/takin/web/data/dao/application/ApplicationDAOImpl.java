@@ -720,7 +720,7 @@ public class ApplicationDAOImpl
     }
 
     @Override
-    public List<Map> getStatus(String name) {
+    public Map getStatus(String name) {
         return applicationMntMapper.getStatus(name);
     }
 

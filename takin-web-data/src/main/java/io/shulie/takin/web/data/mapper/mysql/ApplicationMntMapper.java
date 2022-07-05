@@ -232,5 +232,5 @@ public interface ApplicationMntMapper extends BaseMapper<ApplicationMntEntity> {
     IPage<ApplicationListResultByUpgrade> selectApplicationListByUpgrade(
             @Param("page") IPage<ApplicationMntEntity> page, @Param("param") QueryApplicationByUpgradeParam param);
 
-    List<Map> getStatus(@Param("name") String name);
+    Map getStatus(@Param("name") String name);
 }

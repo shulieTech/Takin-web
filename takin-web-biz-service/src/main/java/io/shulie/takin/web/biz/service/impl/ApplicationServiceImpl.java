@@ -757,29 +757,21 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList,Set<Long> errorApplicationIdSet) {
         if (CollectionUtils.isNotEmpty(applicationList)) {
             applicationList.forEach(app -> {
-                List<Map> list = applicationDAO.getStatus(app.getApplicationName());
-                AtomicReference<String> a = null;
-                AtomicReference<Map> result = null;
-                list.forEach(l->{
-                    String s = (String)l.get("s");
-                    if (org.apache.commons.lang3.StringUtils.equals(s,"3")) {
-                        a.set((String) l.get("a"));
-                    } else if (org.apache.commons.lang3.StringUtils.equals(s,"4")) {
-                        result.set(l);
-                    }
-                });
-                if (null != result && (((long) result.get().get("n")) != 0 || (errorApplicationIdSet.contains(app.getApplicationId())))) {
-                    String e = (String) result.get().get("e");
+                Map result = applicationDAO.getStatus(app.getApplicationName());
+                long n = (long) result.get("n");
+                if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
+                    String e = (String) result.get("e");
                     if (StringUtils.isBlank(e)) {
+                        String a = (String)result.get("a");
                         e = "探针接入异常";
-                        if (null != a && StringUtils.isNotEmpty(a.get())) {
-                            e += "，agentId为"+a.get();
+                        if (StringUtils.isNotEmpty(a)) {
+                            e += "，agentId为"+a;
                         }
                     }
                     applicationDAO.updateStatus(app.getApplicationId(), e);
                     NodeUploadDataDTO param = new NodeUploadDataDTO();
                     param.setApplicationName(app.getApplicationName());
-                    param.setAgentId((String) result.get().get("a"));
+                    param.setAgentId((String) result.get("a"));
                     param.setNodeKey(UUID.randomUUID().toString().replace("_", ""));
                     param.setExceptionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
                     HashMap map = new HashMap(1);
@@ -791,8 +783,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     param.setSwitchErrorMap(map);
                     uploadAccessStatus(param);
                 } else {
-                    applicationDAO.updateStatus(app.getApplicationId());
-                }
+                    applicationDAO.updateStatus(app.getApplicationId());}
             });
         }
     }

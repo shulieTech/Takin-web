@@ -1,6 +1,7 @@
 package io.shulie.takin.web.biz.cache;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -31,7 +32,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
         T result = (T)redisTemplate.opsForValue().get(getCacheKey(namespace));
         if (result == null) {
             result = queryValue(namespace);
-            redisTemplate.opsForValue().set(getCacheKey(namespace), result);
+            redisTemplate.opsForValue().set(getCacheKey(namespace), result,5, TimeUnit.MINUTES);
         }
         return result;
     }

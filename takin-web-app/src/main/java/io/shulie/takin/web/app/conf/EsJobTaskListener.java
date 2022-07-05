@@ -119,23 +119,17 @@ public class EsJobTaskListener implements ApplicationListener<ApplicationStarted
         if (!guard.tryAcquire()) {
             return;
         }
-        ExecutorService pool = Executors.newSingleThreadExecutor();
-        pool.execute(() -> {
-            String dumpPath = USER_HOME;
-            SimpleDateFormat sdf = new SimpleDateFormat(DEFAULT_DATETIME_FORMAT);
-            String dateStr = sdf.format(new Date());
-            //try-with-resources
-            try (FileOutputStream jStackStream = new FileOutputStream(
-                    new File(dumpPath, "Takin_web_JStack.log" + "." + dateStr))) {
-                JVMUtil.jstack(jStackStream);
-            } catch (Throwable t) {
-                log.error("dump jStack error", t);
-            } finally {
-                guard.release();
-            }
-            lastPrintTime = System.currentTimeMillis();
-        });
-        //must shutdown thread pool ,if not will lead to OOM
-        pool.shutdown();
+        String dumpPath = USER_HOME;
+        SimpleDateFormat sdf = new SimpleDateFormat(DEFAULT_DATETIME_FORMAT);
+        String dateStr = sdf.format(new Date());
+        try (FileOutputStream jStackStream = new FileOutputStream(
+                new File(dumpPath, "Takin_web_JStack.log" + "." + dateStr))) {
+            JVMUtil.jstack(jStackStream);
+        } catch (Throwable t) {
+            log.error("dump jStack error", t);
+        } finally {
+            guard.release();
+        }
+        lastPrintTime = System.currentTimeMillis();
     }
 }

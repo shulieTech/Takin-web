@@ -758,7 +758,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         if (CollectionUtils.isNotEmpty(applicationList)) {
             applicationList.forEach(app -> {
                 List<Map> list = applicationDAO.getStatus(app.getApplicationName());
-                AtomicReference<String> a = null;
+                AtomicReference<String> a = new AtomicReference<>();
                 AtomicReference<Map> result = new AtomicReference<>();
                 list.forEach(l->{
                     int s = Integer.parseInt(l.get("s").toString());
@@ -781,7 +781,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     applicationDAO.updateStatus(app.getApplicationId(), e);
                     NodeUploadDataDTO param = new NodeUploadDataDTO();
                     param.setApplicationName(app.getApplicationName());
-                    param.setAgentId((String) result.get().get("a"));
+                    param.setAgentId(a.get());
                     param.setNodeKey(UUID.randomUUID().toString().replace("_", ""));
                     param.setExceptionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
                     HashMap map = new HashMap(1);

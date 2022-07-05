@@ -62,6 +62,7 @@ public class EsJobTaskListener implements ApplicationListener<ApplicationStarted
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
         try {
+            log.info("EsJob 任务监听开启 ");
             if (StringUtils.isNotBlank(jobTask)) {
                 ScheduledExecutorService service =
                         Executors.newScheduledThreadPool(1, new ThreadFactoryBuilder().setNameFormat("JobTaskListener-%d").build());
@@ -79,14 +80,19 @@ public class EsJobTaskListener implements ApplicationListener<ApplicationStarted
                             for (int i = 0; i < jobTaskArr.length; i++) {
                                 // 获取任务状态
                                 JobBriefInfo jobBriefInfo = jobStatisticsAPI.getJobBriefInfo(jobTaskArr[i]);
+                                if (jobBriefInfo == null) {
+                                    log.error("获取任务信息为空,{}", jobTaskArr[i]);
+                                    continue;
+                                }
                                 // 任务状态非正常
-                                if (jobBriefInfo.getStatus() != JobBriefInfo.JobStatus.OK) {
+                                if (jobBriefInfo.getStatus() == JobBriefInfo.JobStatus.SHARDING_FLAG) {
                                     log.error("当前任务状态不正常," + jobTaskArr[i]);
                                     // 打印下jstack,看下当前线程在干啥
                                     if (jstackEnable) {
                                         dumpJStack();
                                     }
                                     // 点下触发，让他重试下
+                                    log.info("触发当前任务,{}", jobTaskArr[i]);
                                     jobOperateAPI.trigger(com.google.common.base.Optional.of(jobTaskArr[i]), null);
                                 }
                             }
@@ -98,7 +104,7 @@ public class EsJobTaskListener implements ApplicationListener<ApplicationStarted
                     }
                 };
                 // 提交任务,10分钟以后，每隔30秒执行一次
-                service.scheduleAtFixedRate(threadTask, 10 * 60, 10, TimeUnit.SECONDS);
+                service.scheduleAtFixedRate(threadTask, 10, 10, TimeUnit.SECONDS);
             }
         } catch (Throwable e) {
             log.error("JobTaskListener is fail,{}" + ExceptionUtils.getStackTrace(e));

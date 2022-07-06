@@ -264,13 +264,13 @@ public class ThreadPoolConfig {
             new ThreadPoolExecutor.AbortPolicy());
     }
 
-    @Value("${poolConfig.e2e.coreSize: 20}")
+    @Value("${poolConfig.e2e.coreSize: 50}")
     private Integer e2eCoreSize;
 
-    @Value("${poolConfig.e2e.maxSize: 20}")
+    @Value("${poolConfig.e2e.maxSize: 50}")
     private Integer e2eMaxSize;
 
-    @Value("${poolConfig.e2e.queueSize: 10000}")
+    @Value("${poolConfig.e2e.queueSize: 3000}")
     private Integer e2eQueueSize;
 
     /**
@@ -393,6 +393,18 @@ public class ThreadPoolConfig {
             }
         }
     }
+    /**
+     * webIDE数据入库处理线程池
+     *
+     * @return
+     */
+    @Bean(name = "webIDESyncThreadPool")
+    public ThreadPoolExecutor webIDESyncThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("web-ide-sync-%d").build();
+        return new ThreadPoolExecutor(5, 10, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
 
     @Bean(name = "performanceDebugThreadPool")
     public ThreadPoolExecutor performanceDebugThreadPool() {

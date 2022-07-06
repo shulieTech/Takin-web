@@ -261,7 +261,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
         ApplicationApiCreateParam manage = new ApplicationApiCreateParam();
         manage.setId(Long.parseLong(vo.getId()));
         manage.setApplicationName(vo.getApplicationName());
-        manage.setApi(vo.getApi());
+        manage.setApi(vo.getApi().trim());
         manage.setMethod(
                 DictionaryCache.getObjectByParam(HTTP_METHOD_TYPE, Integer.parseInt(vo.getMethod())).getLabel());
         manage.setUpdateTime(new Date());
@@ -277,7 +277,7 @@ public class ApplicationApiServiceImpl implements ApplicationApiService {
         //前端给的是字典中的枚举数据
         createParam.setMethod(
                 DictionaryCache.getObjectByParam(HTTP_METHOD_TYPE, Integer.parseInt(vo.getMethod())).getLabel());
-        createParam.setApi(vo.getApi());
+        createParam.setApi(vo.getApi().trim());
         createParam.setApplicationName(vo.getApplicationName());
         createParam.setIsDeleted((byte) 0);
         createParam.setUpdateTime(new Date());

@@ -264,13 +264,13 @@ public class ThreadPoolConfig {
             new ThreadPoolExecutor.AbortPolicy());
     }
 
-    @Value("${poolConfig.e2e.coreSize: 20}")
+    @Value("${poolConfig.e2e.coreSize: 50}")
     private Integer e2eCoreSize;
 
-    @Value("${poolConfig.e2e.maxSize: 20}")
+    @Value("${poolConfig.e2e.maxSize: 50}")
     private Integer e2eMaxSize;
 
-    @Value("${poolConfig.e2e.queueSize: 10000}")
+    @Value("${poolConfig.e2e.queueSize: 3000}")
     private Integer e2eQueueSize;
 
     /**

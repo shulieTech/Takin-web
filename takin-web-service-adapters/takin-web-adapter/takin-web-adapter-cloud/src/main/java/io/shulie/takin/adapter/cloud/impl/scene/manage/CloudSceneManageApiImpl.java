@@ -189,9 +189,7 @@ public class CloudSceneManageApiImpl implements CloudSceneManageApi {
 
     @Override
     public ScriptCheckResp checkAndUpdateScript(ScriptCheckAndUpdateReq request) {
-        ScriptVerityRespExt scriptVerityRespExt = cloudSceneManageService.checkAndUpdate(
-            request.getRequest(), request.getUploadPath(),
-            request.isAbsolutePath(), request.isUpdate(), request.getVersion());
+        ScriptVerityRespExt scriptVerityRespExt = cloudSceneManageService.checkAndUpdate(request);
         return SceneTaskOpenConverter.INSTANCE.ofScriptVerityRespExt(scriptVerityRespExt);
     }
 

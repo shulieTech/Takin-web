@@ -10,6 +10,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
+
+import io.shulie.takin.adapter.api.entrypoint.script.ScriptFileApi;
+import io.shulie.takin.adapter.api.model.request.script.ScriptVerifyRequest;
 import io.shulie.takin.cloud.biz.service.script.ScriptAnalyzeService;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.common.exception.TakinCloudExceptionEnum;
@@ -22,11 +26,16 @@ import io.shulie.takin.cloud.ext.content.script.ScriptParseExt;
 import io.shulie.takin.cloud.ext.content.script.ScriptUrlExt;
 import io.shulie.takin.cloud.ext.content.script.ScriptVerityExt;
 import io.shulie.takin.cloud.ext.content.script.ScriptVerityRespExt;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class ScriptAnalyzeServiceImpl implements ScriptAnalyzeService {
+
+    @Resource
+    private ScriptFileApi scriptFileApi;
 
     @Override
     public ScriptVerityRespExt verityScript(ScriptVerityExt scriptVerityExt) {
@@ -55,7 +64,20 @@ public class ScriptAnalyzeServiceImpl implements ScriptAnalyzeService {
                 scriptVerityExt.getRequest());
             if (oldErrorMsgList.size() > 0) {errorMsgList.addAll(oldErrorMsgList);}
         }
-
+        // 增加新版压测校验
+        if (scriptVerityExt.isUseNewVerify()) {
+            try {
+                ScriptVerifyRequest request = new ScriptVerifyRequest();
+                request.setScriptPath(scriptVerityExt.getScriptPaths());
+                request.setCsvPaths(scriptVerityExt.getCsvPaths());
+                request.setAttachments(scriptVerityExt.getAttachments());
+                request.setPluginPaths(scriptVerityExt.getPluginPaths());
+                scriptFileApi.verify(request);
+            } catch (Exception e) {
+                log.error("jmx校验异常", e);
+                errorMsgList.add(e.getMessage());
+            }
+        }
         {return scriptVerityRespExt;}
     }
 

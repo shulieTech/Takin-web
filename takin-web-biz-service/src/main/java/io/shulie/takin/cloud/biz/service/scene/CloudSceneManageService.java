@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import com.pamirs.takin.cloud.entity.domain.vo.scenemanage.SceneManageStartRecordVO;
+import io.shulie.takin.adapter.api.model.request.scenemanage.ScriptCheckAndUpdateReq;
 import io.shulie.takin.cloud.biz.input.scenemanage.SceneManageQueryInput;
 import io.shulie.takin.cloud.biz.input.scenemanage.SceneManageWrapperInput;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneManageListOutput;
@@ -140,14 +141,10 @@ public interface CloudSceneManageService {
      *     TODO
      * </p>
      *
-     * @param request        请求
-     * @param uploadPath     上传地址
-     * @param isAbsolutePath 是否绝对路径
-     * @param update         是否更新
-     * @param version        版本{@link io.shulie.takin.adapter.api.model.request.scenemanage.ScriptCheckAndUpdateReq#getVersion}
+     * @param updateReq        请求
      * @return 操作结果
      */
-    ScriptVerityRespExt checkAndUpdate(List<String> request, String uploadPath, boolean isAbsolutePath, boolean update, Integer version);
+    ScriptVerityRespExt checkAndUpdate(ScriptCheckAndUpdateReq updateReq);
 
     /**
      * 恢复

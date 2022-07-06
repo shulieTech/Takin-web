@@ -23,6 +23,7 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.amdb.common.dto.link.topology.LinkNodeDTO;
 import io.shulie.amdb.common.dto.link.topology.LinkTopologyDTO;
 import io.shulie.amdb.common.enums.NodeTypeEnum;
+import io.shulie.takin.cloud.common.constants.SceneManageConstant;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.adapter.api.entrypoint.scenetask.CloudTaskApi;
@@ -825,8 +826,7 @@ public class ActivityServiceImpl implements ActivityService {
                 scriptId);
         SceneManageWrapperVO vo = new SceneManageWrapperVO();
         vo.setScriptId(request.getScriptId());
-        vo.setPressureTestSceneName(
-                activityResult.getActivityName() + BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_SUFFIX);
+        vo.setPressureTestSceneName(SceneManageConstant.getFlowDebugSceneName(scriptId));
         vo.setIpNum(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_DEFAULT_IP_NUM);
         vo.setPressureTestTime(new TimeVO(1L, "m"));
         vo.setStopCondition(new ArrayList<>());

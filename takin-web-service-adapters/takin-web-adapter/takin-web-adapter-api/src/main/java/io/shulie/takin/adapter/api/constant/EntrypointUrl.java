@@ -64,6 +64,11 @@ public class EntrypointUrl {
     public final static String MODULE_EXCESS = "excess";
     public final static String METHOD_DATA_CALIBRATION = "job/dataCalibration";
 
+    /**
+     * 脚本
+     */
+    public final static String MODULE_SCRIPT = "script";
+    public final static String METHOD_SCRIPT_CHECK = "check";
 
     /**
      * 模块 - 文件管理

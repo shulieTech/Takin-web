@@ -108,4 +108,5 @@ public class SceneManageWrapperVO extends ContextExt implements Serializable {
     @ApiModelProperty("排除检查的应用ids")
     private List<Long> excludedApplicationIds;
 
+    private boolean isPressure;
 }

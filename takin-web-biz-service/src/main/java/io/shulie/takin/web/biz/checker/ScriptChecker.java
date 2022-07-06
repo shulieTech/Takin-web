@@ -77,7 +77,7 @@ public class ScriptChecker implements StartConditionChecker {
 
     private FileInfo getFilePath(SceneScriptRefOutput file) {
         FileSplitService.reWriteAttachmentSceneScriptRefOutput(file);
-        return new FileInfo(deduceFileType(file), pathPrefix + file.getUploadPath());
+        return new FileInfo(file.getFileType(), pathPrefix + file.getUploadPath());
     }
 
     private void checkExists(List<FileInfo> fileInfos) {
@@ -97,22 +97,14 @@ public class ScriptChecker implements StartConditionChecker {
     }
 
     private String buildNoExistsMessage(FileInfo fileInfo) {
-        if (fileInfo.getType() == FileTypeEnum.JMX.ordinal()) {
+        if (FileTypeBusinessUtil.isScript(fileInfo.getType())) {
             return "jmx脚本文件[" + fileInfo.getPath() + "]不存在";
-        } else if (fileInfo.getType() == FileTypeEnum.DATA.ordinal()) {
+        } else if (FileTypeBusinessUtil.isData(fileInfo.getType())) {
             return "数据文件[" + fileInfo.getPath() + "]不存在";
-        } else if (fileInfo.getType() == FileTypeEnum.ATTACHMENT.ordinal()) {
+        } else if (FileTypeBusinessUtil.isAttachment(fileInfo.getType())) {
             return "附件文件[" + fileInfo.getPath() + "]不存在";
         }
         return null;
-    }
-
-    private Integer deduceFileType(SceneScriptRefOutput file) {
-        Integer fileType = file.getFileType();
-        if (FileTypeBusinessUtil.isAttachment(fileType)) {
-            return FileTypeEnum.ATTACHMENT.ordinal();
-        }
-        return FileTypeBusinessUtil.isScript(fileType) ? FileTypeEnum.JMX.ordinal() : FileTypeEnum.DATA.ordinal();
     }
 
     private void checkSync(SceneManageWrapperOutput sceneData) {
@@ -154,13 +146,6 @@ public class ScriptChecker implements StartConditionChecker {
     @Override
     public int getOrder() {
         return 0;
-    }
-
-    public enum FileTypeEnum {
-        ATTACHMENT,
-        JMX,
-        DATA,
-        JAR
     }
 
     @Data

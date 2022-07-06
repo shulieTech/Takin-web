@@ -1,5 +1,7 @@
 package io.shulie.takin.cloud.common.constants;
 
+import io.shulie.takin.web.ext.util.WebPluginUtils;
+
 /**
  * @author qianshui
  * @date 2020/4/18 上午11:49
@@ -101,4 +103,17 @@ public class SceneManageConstant {
      * <p>运行中</p>
      */
     public static String SCENE_TASK_JOB_STATUS_RUNNING = "running";
+
+    public static String getTryRunSceneName(Long scriptDeployId) {
+        return SCENE_MANAGER_TRY_RUN + WebPluginUtils.traceTenantId() + "_" + scriptDeployId;
+    }
+
+    public static String getFlowDebugSceneName(Long scriptId) {
+        return SCENE_MANAGER_FLOW_DEBUG + WebPluginUtils.traceTenantId() + "_" + scriptId;
+
+    }
+
+    public static String getInspectSceneName(Long scriptId) {
+        return SCENE_MANAGER_INSPECT + WebPluginUtils.traceTenantId() + "_" + scriptId;
+    }
 }

@@ -2,10 +2,16 @@ package io.shulie.takin.cloud.biz.notify.processor.calibration;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Resource;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Maps;
 import com.pamirs.takin.cloud.entity.domain.dto.report.StatReportDTO;
 import io.shulie.takin.cloud.biz.collector.PushWindowDataScheduled;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
@@ -14,6 +20,7 @@ import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.common.constants.ReportConstants;
 import io.shulie.takin.cloud.common.influxdb.InfluxUtil;
 import io.shulie.takin.cloud.common.influxdb.InfluxWriter;
+import io.shulie.takin.cloud.common.utils.GsonUtil;
 import io.shulie.takin.cloud.common.utils.JsonPathUtil;
 import io.shulie.takin.cloud.constant.enums.CallbackType;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
@@ -22,6 +29,7 @@ import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.cloud.ext.content.enums.NodeTypeEnum;
 import io.shulie.takin.cloud.ext.content.script.ScriptNode;
+import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.service.report.impl.SummaryService;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -116,6 +124,7 @@ public class DataCalibrationProcessor extends AbstractIndicators
         }
     }
 
+    // copy from io.shulie.takin.cloud.biz.service.report.impl.CloudReportServiceImpl.saveReportResult
     private void updateReport(Long jobId) {
         ReportResult report = reportDao.selectByJobId(jobId);
         String testPlanXpathMd5 = getTestPlanXpathMd5(report.getScriptNodeTree());
@@ -124,13 +133,22 @@ public class DataCalibrationProcessor extends AbstractIndicators
         Long reportId = report.getId();
         Long sceneId = report.getSceneId();
         Long tenantId = report.getTenantId();
-        cloudReportService.updateReportBusinessActivity(jobId, sceneId, reportId, tenantId);
+        boolean isConclusion = cloudReportService.updateReportBusinessActivity(jobId, sceneId, reportId, tenantId);
+        if (isSla(report)) {
+            report.setConclusion(ReportConstants.FAIL);
+            getReportFeatures(report, ReportConstants.FEATURES_ERROR_MSG, "触发SLA终止规则");
+        } else if (!isConclusion) {
+            report.setConclusion(ReportConstants.FAIL);
+            getReportFeatures(report, ReportConstants.FEATURES_ERROR_MSG, "业务活动指标不达标");
+        } else {
+            report.setConclusion(ReportConstants.PASS);
+            getReportFeatures(report, ReportConstants.FEATURES_ERROR_MSG, "");
+        }
         summaryService.calcReportSummay(reportId);
         StatReportDTO statReport = cloudReportService.statReport(jobId, sceneId, reportId, tenantId, transaction);
+        ReportUpdateParam updateParam = new ReportUpdateParam();
         if (Objects.nonNull(statReport)) {
             log.info("cloud订正压测报告数据成功:jobId=[{}], requestCount=[{}]", jobId, statReport.getTotalRequest());
-            ReportUpdateParam updateParam = new ReportUpdateParam();
-            updateParam.setId(reportId);
             updateParam.setTotalRequest(statReport.getTotalRequest());
             updateParam.setAvgRt(statReport.getAvgRt());
             updateParam.setAvgTps(statReport.getTps());
@@ -138,9 +156,12 @@ public class DataCalibrationProcessor extends AbstractIndicators
             updateParam.setSa(statReport.getSa());
             updateParam.setAvgConcurrent(statReport.getAvgConcurrenceNum());
             updateParam.setConcurrent(statReport.getMaxConcurrenceNum());
-            updateParam.setGmtUpdate(new Date());
-            reportDao.updateReport(updateParam);
         }
+        updateParam.setId(reportId);
+        updateParam.setGmtUpdate(new Date());
+        updateParam.setFeatures(report.getFeatures());
+        updateParam.setConclusion(report.getConclusion());
+        reportDao.updateReport(updateParam);
     }
 
     private String getTestPlanXpathMd5(String scriptNodeTree) {
@@ -152,5 +173,35 @@ public class DataCalibrationProcessor extends AbstractIndicators
             return currentNode.get(0).getXpathMd5();
         }
         return null;
+    }
+
+    private boolean isSla(ReportResult reportResult) {
+        if (StringUtils.isBlank(reportResult.getFeatures())) {
+            return false;
+        }
+        JSONObject jsonObject = JSON.parseObject(reportResult.getFeatures());
+        // sla熔断数据
+        return jsonObject.containsKey(ReportConstants.SLA_ERROR_MSG)
+            && StringUtils.isNotEmpty(jsonObject.getString(ReportConstants.SLA_ERROR_MSG));
+    }
+
+    private void getReportFeatures(ReportResult reportResult, String errKey, String errMsg) {
+        Map<String, String> map = Maps.newHashMap();
+        if (StringUtils.isNotBlank(reportResult.getFeatures())) {
+            map = JsonHelper.string2Obj(reportResult.getFeatures(), new TypeReference<Map<String, String>>() {
+            });
+        }
+        if (StringUtils.isNotBlank(errKey)) {
+            if (StringUtils.isBlank(errMsg)) {
+                map.remove(errKey);
+            } else {
+                errMsg = StringUtils.trim(errMsg);
+                if (!errMsg.startsWith("[") && !errMsg.startsWith("{") && errMsg.length() > 100) {
+                    errMsg = errMsg.substring(0, 100);
+                }
+                map.put(errKey, errMsg);
+            }
+            reportResult.setFeatures(GsonUtil.gsonToString(map));
+        }
     }
 }

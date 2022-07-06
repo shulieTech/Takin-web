@@ -453,8 +453,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         Long sceneManageId;
         CloudPluginUtils.fillUserData(input);
         //首先根据脚本实例id构建压测场景名称
-        String pressureTestSceneName = SceneManageConstant.SCENE_MANAGER_FLOW_DEBUG + input.getTenantId() + "_"
-            + input.getScriptId();
+        String pressureTestSceneName = SceneManageConstant.getFlowDebugSceneName(input.getScriptId());
 
         //根据场景名称查询是否已经存在场景
         SceneManageListResult sceneManageResult = sceneManageDAO.queryBySceneName(pressureTestSceneName);
@@ -526,8 +525,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         SceneInspectTaskStartOutput startOutput = new SceneInspectTaskStartOutput();
         Long sceneManageId = null;
         //首先根据脚本实例id构建压测场景名称
-        String pressureTestSceneName = SceneManageConstant.SCENE_MANAGER_INSPECT + input.getTenantId() + "_"
-            + input.getScriptId();
+        String pressureTestSceneName = SceneManageConstant.getInspectSceneName(input.getScriptId());
 
         //根据场景名称查询是否已经存在场景
         SceneManageListResult sceneManageResult = sceneManageDAO.queryBySceneName(pressureTestSceneName);
@@ -668,8 +666,7 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
         Long sceneManageId;
         CloudPluginUtils.fillUserData(input);
         //首先根据脚本实例id构建压测场景名称
-        String pressureTestSceneName = SceneManageConstant.SCENE_MANAGER_TRY_RUN + input.getTenantId() + "_" + input
-            .getScriptDeployId();
+        String pressureTestSceneName = SceneManageConstant.getTryRunSceneName(input.getScriptDeployId());
         //根据场景名称查询是否已经存在场景
         SceneManageListResult sceneManageResult = sceneManageDAO.queryBySceneName(pressureTestSceneName);
         SceneTryRunTaskStartOutput sceneTryRunTaskStartOutput = new SceneTryRunTaskStartOutput();

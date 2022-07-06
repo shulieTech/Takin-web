@@ -50,6 +50,7 @@ import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperRe
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.web.biz.convert.scenemanage.SceneManageConvert;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scenemanage.SceneSchedulerTaskUpdateRequest;
@@ -863,6 +864,43 @@ public class SceneManageServiceImpl implements SceneManageService {
     @Override
     public String recoveryScene(SceneManageDeleteReq vo) {
         return cloudSceneManageApi.recovery(vo);
+    }
+
+    @Override
+    public void copyScene(SceneDetailResponse manageServiceById) {
+        SceneManageWrapperVO vo = new SceneManageWrapperVO();
+
+        vo.setPressureTestSceneName(manageServiceById.getPressureTestSceneName() + "_copy");
+        vo.setPressureType(manageServiceById.getPressureType());
+        vo.setConfigType(manageServiceById.getConfigType());
+        vo.setScriptId(manageServiceById.getScriptId());
+        vo.setBusinessActivityConfig(SceneManageConvert.INSTANCE.ofBusinessActivityConfig(manageServiceById.getBusinessActivityConfig()));
+        vo.setConcurrenceNum(manageServiceById.getConcurrenceNum());
+        vo.setIpNum(manageServiceById.getIpNum());
+        vo.setPressureTestTime(SceneManageConvert.INSTANCE.ofTimeVO(manageServiceById.getPressureTestTime()));
+        vo.setPressureMode(manageServiceById.getPressureMode());
+        vo.setIncreasingTime(SceneManageConvert.INSTANCE.ofTimeVO(manageServiceById.getIncreasingTime()));
+        vo.setStep(manageServiceById.getStep());
+        vo.setScriptType(manageServiceById.getScriptType());
+        vo.setUploadFile(SceneManageConvert.INSTANCE.ofSceneScriptRefVO(manageServiceById.getUploadFile()));
+        vo.setStopCondition(SceneManageConvert.INSTANCE.ofSceneSlaRefVO(manageServiceById.getStopCondition()));
+        vo.setWarningCondition(SceneManageConvert.INSTANCE.ofSceneSlaRefVO(manageServiceById.getWarningCondition()));
+        vo.setBusinessFlowId(Long.parseLong(manageServiceById.getBusinessFlowId()));
+        vo.setIsScheduler(manageServiceById.getIsScheduler());
+        vo.setExecuteTime(DateUtils.transferDate(manageServiceById.getExecuteTime(), DateUtils.FORMATE_YMDHMS,Date.class));
+        vo.setScheduleInterval(manageServiceById.getScheduleInterval());
+        vo.setScriptAnalysisResult(manageServiceById.getScriptAnalysisResult());
+        if (CollectionUtils.isNotEmpty(manageServiceById.getExcludedApplicationIds())){
+            List<Long> longList = manageServiceById.getExcludedApplicationIds().stream().map(Long::parseLong).collect(Collectors.toList());
+            vo.setExcludedApplicationIds(longList);
+        }
+        vo.setUserId(manageServiceById.getUserId());
+        vo.setTenantId(manageServiceById.getTenantId());
+        vo.setEnvCode(manageServiceById.getEnvCode());
+        vo.setFilterSql(manageServiceById.getFilterSql());
+        vo.setUserName(manageServiceById.getUserName());
+        vo.setTenantCode(manageServiceById.getTenantCode());
+        this.addScene(vo);
     }
 
 }

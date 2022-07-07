@@ -13,7 +13,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * @author xingchen
+ * 隔离任务线程池,相互之间不影响，彼此之间不影响
+ *
+ * @author
  * @description: TODO
  * @date 2022/7/7 9:32 AM
  */

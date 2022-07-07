@@ -282,6 +282,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         Map<Long, Date> sceneExecuteTimeMap = new HashMap<>(responseList.size());
         responseList.forEach(response -> sceneExecuteTimeMap.put(response.getSceneId(), response.getExecuteTime()));
         listData.forEach(t -> {
+            t.setProgress(29);//TODO:正在压测的任务，显示压测进度
             Date date = sceneExecuteTimeMap.get(t.getId());
             if (date != null) {
                 t.setIsScheduler(true);

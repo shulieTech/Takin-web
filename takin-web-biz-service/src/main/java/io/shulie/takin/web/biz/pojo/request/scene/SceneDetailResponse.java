@@ -22,6 +22,10 @@ public class SceneDetailResponse extends io.shulie.takin.cloud.sdk.model.respons
      */
     private BasicInfo basicInfo;
 
+    public String getNotifyEmails() {
+        return basicInfo.getNotifyEmails();
+    }
+
     /**
      * 验证信息
      */

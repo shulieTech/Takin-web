@@ -50,4 +50,7 @@ public class SceneManageListOutput extends AuthQueryResponseCommonExt {
     @ApiModelProperty(value = "是否存在脚本解析结果")
     private Boolean hasAnalysisResult;
 
+    @ApiModelProperty(value = "压测进度")
+    private Integer progress;
+
 }

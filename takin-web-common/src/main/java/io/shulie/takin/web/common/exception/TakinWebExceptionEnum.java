@@ -172,6 +172,12 @@ public enum TakinWebExceptionEnum implements ExceptionReadable {
      */
     APPLICATION_TAG_CREATE_ERROR("1800-"+ErrorConstant.ADD_ERROR,"应用标签创建异常"),
 
+    /**
+     * 占位符
+     */
+    PLACEHOLDER_MANAGE_UPDATE_ERROR("1900-"+ErrorConstant.UPDATE_ERROR,"占位符修改异常"),
+    PLACEHOLDER_MANAGE_CREATE_ERROR("1900-"+ErrorConstant.ADD_ERROR,"占位符新增异常"),
+
     REDIS_CMD_EXECUTE_ERROR("cloud-009-s0209", "REDIS命令执行异常"),
 
     ;

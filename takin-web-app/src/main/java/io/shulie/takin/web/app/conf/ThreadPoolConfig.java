@@ -64,28 +64,28 @@ public class ThreadPoolConfig {
     @Bean(name = "collectDataThreadPool")
     public ThreadPoolExecutor collectDataThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-%d").build();
-        return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+        return new ThreadPoolExecutor(10, 50, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "collectDataThreadPool_one")
     public ThreadPoolExecutor collectDataThreadPool_one() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-%d").build();
-        return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-two-%d").build();
+        return new ThreadPoolExecutor(10, 50, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "collectDataThreadPool_two")
     public ThreadPoolExecutor collectDataThreadPool_two() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-%d").build();
-        return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-two-%d").build();
+        return new ThreadPoolExecutor(10, 50, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "collectDataThreadPool_three")
     public ThreadPoolExecutor collectDataThreadPool_three() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-%d").build();
-        return new ThreadPoolExecutor(5, 10, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-collect-data-three-%d").build();
+        return new ThreadPoolExecutor(10, 50, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
@@ -113,21 +113,24 @@ public class ThreadPoolConfig {
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
+
     @Bean(name = "reportSummaryThreadPool_one")
     public ThreadPoolExecutor reportSummaryThreadPool_one() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-summary-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-summary_one-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
+
     @Bean(name = "reportSummaryThreadPool_two")
     public ThreadPoolExecutor reportSummaryThreadPool_two() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-summary-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-summary_two-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
+
     @Bean(name = "reportSummaryThreadPool_three")
     public ThreadPoolExecutor reportSummaryThreadPool_three() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-summary-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-summary_three-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
@@ -147,20 +150,14 @@ public class ThreadPoolConfig {
 
     @Bean(name = "reportTpsThreadPool_one")
     public ThreadPoolExecutor reportTpsThreadPool_one() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-tps-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-tps-one-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "reportTpsThreadPool_two")
     public ThreadPoolExecutor reportTpsThreadPool_two() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-tps-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
-    }
-    @Bean(name = "reportTpsThreadPool_three")
-    public ThreadPoolExecutor reportTpsThreadPool_three() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-tps-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-tps-two-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
@@ -174,26 +171,21 @@ public class ThreadPoolConfig {
     @Bean(name = "reportFinishThreadPool")
     public ThreadPoolExecutor reportFinishThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-finish-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
-    }
-    @Bean(name = "reportFinishThreadPool_one")
-    public ThreadPoolExecutor reportFinishThreadPool_one() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-finish-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
-    }
-    @Bean(name = "reportFinishThreadPool_two")
-    public ThreadPoolExecutor reportFinishThreadPool_two() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-finish-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
-    @Bean(name = "reportFinishThreadPool_three")
-    public ThreadPoolExecutor reportFinishThreadPool_three() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-finish-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000), nameThreadFactory,
+    @Bean(name = "reportFinishThreadPool_one")
+    public ThreadPoolExecutor reportFinishThreadPool_one() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-finish-one-%d").build();
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    @Bean(name = "reportFinishThreadPool_two")
+    public ThreadPoolExecutor reportFinishThreadPool_two() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-finish-two-%d").build();
+        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
@@ -212,21 +204,14 @@ public class ThreadPoolConfig {
 
     @Bean(name = "reportMachineThreadPool_one")
     public ThreadPoolExecutor reportMachineThreadPool_one() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-machine-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-machine-one-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Bean(name = "reportMachineThreadPool_two")
     public ThreadPoolExecutor reportMachineThreadPool_two() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-machine-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
-                new ThreadPoolExecutor.AbortPolicy());
-    }
-
-    @Bean(name = "reportMachineThreadPool_three")
-    public ThreadPoolExecutor reportMachineThreadPool_three() {
-        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-machine-%d").build();
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-report-machine-two-%d").build();
         return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }

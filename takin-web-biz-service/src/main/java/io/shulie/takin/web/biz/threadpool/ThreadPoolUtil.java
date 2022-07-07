@@ -24,26 +24,22 @@ public class ThreadPoolUtil implements ApplicationContextAware {
     List<String> syncMachineList =
             Arrays.asList("reportMachineThreadPool",
                     "reportMachineThreadPool_one",
-                    "reportMachineThreadPool_two",
-                    "reportMachineThreadPool_three");
+                    "reportMachineThreadPool_two");
 
     List<String> reportTpsList =
             Arrays.asList("reportTpsThreadPool",
                     "reportTpsThreadPool_one",
-                    "reportTpsThreadPool_two",
-                    "reportTpsThreadPool_three");
+                    "reportTpsThreadPool_two");
 
     List<String> reportSummaryList =
             Arrays.asList("reportSummaryThreadPool",
                     "reportSummaryThreadPool_one",
-                    "reportSummaryThreadPool_two",
-                    "reportSummaryThreadPool_three");
+                    "reportSummaryThreadPool_two");
 
     List<String> reportFinishList =
             Arrays.asList("reportFinishThreadPool",
                     "reportFinishThreadPool_one",
-                    "reportFinishThreadPool_two",
-                    "reportFinishThreadPool_three");
+                    "reportFinishThreadPool_two");
 
     List<String> collectDataList =
             Arrays.asList("collectDataThreadPool",
@@ -54,6 +50,8 @@ public class ThreadPoolUtil implements ApplicationContextAware {
     private static AtomicLong atomicMachine = new AtomicLong(0);
     private static AtomicLong atomicTps = new AtomicLong(0);
     private static AtomicLong atomicSummary = new AtomicLong(0);
+    private static AtomicLong atomicFinish = new AtomicLong(0);
+    private static AtomicLong atomicCollectData = new AtomicLong(0);
 
     static List<ThreadPoolExecutor> syncMachineDataJobThreadPools = new ArrayList<>();
     static List<ThreadPoolExecutor> reportTpsThreadPools = new ArrayList<>();
@@ -102,10 +100,10 @@ public class ThreadPoolUtil implements ApplicationContextAware {
     }
 
     public static ThreadPoolExecutor getReportFinishThreadPool() {
-        return reportFinishThreadPools.get((int) Math.abs(atomicSummary.getAndIncrement() % reportFinishThreadPools.size()));
+        return reportFinishThreadPools.get((int) Math.abs(atomicFinish.getAndIncrement() % reportFinishThreadPools.size()));
     }
 
     public static ThreadPoolExecutor getCollectDataThreadPool() {
-        return collectDataThreadPools.get((int) Math.abs(atomicSummary.getAndIncrement() % collectDataThreadPools.size()));
+        return collectDataThreadPools.get((int) Math.abs(atomicCollectData.getAndIncrement() % collectDataThreadPools.size()));
     }
 }

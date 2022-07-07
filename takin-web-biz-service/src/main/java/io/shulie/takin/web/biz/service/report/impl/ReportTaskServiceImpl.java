@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.service.report.impl;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSON;
@@ -13,6 +12,7 @@ import io.shulie.takin.cloud.common.redis.RedisClientUtils;
 import io.shulie.takin.cloud.sdk.model.request.report.UpdateReportConclusionReq;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.WebRedisKeyConstant;
+import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.report.ReportService;
@@ -41,7 +41,7 @@ import org.springframework.stereotype.Service;
  * - 风险机器
  * - 容量水位
  * 4、更新报告状态为已完成
- *
+ * <p>
  * 配合压测实况：容量水位
  * 1、压测中生成报告，执行 机器列表 tps汇总图 机器统计
  * 2、压测中时，别忘记解锁
@@ -78,8 +78,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
     private SceneTaskApi sceneTaskApi;
 
     @Autowired
-    @Qualifier("collectDataThreadPool")
-    private ThreadPoolExecutor collectDataThreadPool;
+    private ThreadPoolUtil threadPoolUtil;
 
     @Autowired
     @Qualifier("redisTemplate")
@@ -104,10 +103,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             }
             // 加锁
             // 分布式锁
-            String lockKey = JobRedisUtils.getRedisJobReport(WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(),reportId);
+            String lockKey = JobRedisUtils.getRedisJobReport(WebPluginUtils.traceTenantId(), WebPluginUtils.traceEnvCode(), reportId);
             if (!distributedLock.checkLock(lockKey)) {
                 // 收集数据 单独线程收集
-                collectDataThreadPool.execute(collectData(reportId,commonExt,lockKey));
+                threadPoolUtil.getCollectDataThreadPool().execute(collectData(reportId, commonExt, lockKey));
             }
             // 压测结束才锁报告
             Integer status = report.getTaskStatus();
@@ -116,12 +115,14 @@ public class ReportTaskServiceImpl implements ReportTaskService {
             }
             ReportDetailDTO reportDetailDTO = reportDataCache.getReportDetailDTO(reportId);
             if (reportDetailDTO == null) {
-                log.error("未查到报告明细！reportId={}",reportId);
+                log.error("未查到报告明细！reportId={}", reportId);
                 return false;
             }
             Date endTime = reportDetailDTO.getEndTime();
             //更新任务的结束时间
-            if (!this.updateTaskEndTime(reportId, commonExt, endTime)) { return false; }
+            if (!this.updateTaskEndTime(reportId, commonExt, endTime)) {
+                return false;
+            }
 
             // 解除 场景锁
             redisClientUtils.delete(SceneTaskUtils.getSceneTaskKey(reportDetailDTO.getSceneId()));
@@ -131,8 +132,8 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 redisClientUtils.del(WebRedisKeyConstant.REPORT_WARN_PREFIX + reportId);
                 // 删除key
                 String redisKey = CommonUtil.generateRedisKeyWithSeparator(Separator.Separator3,
-                    WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
-                    String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
+                        WebPluginUtils.traceTenantAppKey(), WebPluginUtils.traceEnvCode(),
+                        String.format(WebRedisKeyConstant.PTING_APPLICATION_KEY, reportId));
                 redisClientUtils.del(redisKey);
                 long startTime = System.currentTimeMillis();
                 Boolean lockResponse = reportService.lockReport(reportId);
@@ -168,7 +169,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
                 //压测结束，生成压测报告异常，解锁报告
                 Boolean unLockReportResult = reportService.unLockReport(reportId);
                 log.error("Unlock Report Success, reportId={} ,unLockReportResult= {}...", reportId, unLockReportResult,
-                    e);
+                        e);
             } finally {
                 removeReportKey(reportId, commonExt);
             }
@@ -215,10 +216,10 @@ public class ReportTaskServiceImpl implements ReportTaskService {
      * @param reportId 报告 id
      * @return 可运行
      */
-    private synchronized Runnable collectData(Long reportId, TenantCommonExt commonExt,String lockKey) {
+    private synchronized Runnable collectData(Long reportId, TenantCommonExt commonExt, String lockKey) {
         return () -> {
-            boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
-            if(!tryLock) {
+            boolean tryLock = distributedLock.tryLock(lockKey, 10L, 10L, TimeUnit.SECONDS);
+            if (!tryLock) {
                 return;
             }
             WebPluginUtils.setTraceTenantContext(commonExt);
@@ -253,7 +254,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         long startTime = System.currentTimeMillis();
         problemAnalysisService.syncMachineData(reportId);
         log.debug("reportId={} syncMachineData success，cost time={}s", reportId,
-            (System.currentTimeMillis() - startTime) / 1000);
+                (System.currentTimeMillis() - startTime) / 1000);
     }
 
     @Override
@@ -264,7 +265,7 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         //then tps指标图
         summaryService.calcTpsTarget(reportId);
         log.debug("reportId={} calcTpsTarget success，cost time={}s", reportId,
-            (System.currentTimeMillis() - startTime) / 1000);
+                (System.currentTimeMillis() - startTime) / 1000);
     }
 
     @Override
@@ -275,6 +276,6 @@ public class ReportTaskServiceImpl implements ReportTaskService {
         //汇总应用 机器数 风险机器数
         summaryService.calcApplicationSummary(reportId);
         log.debug("reportId={} calcApplicationSummary success，cost time={}s", reportId,
-            (System.currentTimeMillis() - startTime) / 1000);
+                (System.currentTimeMillis() - startTime) / 1000);
     }
 }

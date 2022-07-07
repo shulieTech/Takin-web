@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.job;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
@@ -11,12 +10,12 @@ import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
+import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,10 +34,6 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
     @Autowired
     private ReportTaskService reportTaskService;
 
-    @Autowired
-    @Qualifier("reportFinishThreadPool")
-    private ThreadPoolExecutor reportThreadPool;
-
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
 
@@ -56,49 +51,43 @@ public class FinishReportJob extends AbstractSceneTask implements SimpleJob {
         long start = System.currentTimeMillis();
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
         //任务开始
-        while (true) {
-            List<SceneTaskDto> taskDtoList = getTaskFromRedis();
-            if (taskDtoList == null) {
-                break;
-            }
-            if (openVersion) {
-                for (SceneTaskDto taskDto : taskDtoList) {
-                    Long reportId = taskDto.getReportId();
-                    // 私有化 + 开源 根据 报告id进行分片
-                    // 开始数据层分片
-                    if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        Object task = runningTasks.putIfAbsent(reportId, EMPTY);
-                        if (task == null) {
-                            reportThreadPool.execute(() -> {
-                                try {
-                                    reportTaskService.finishReport(reportId, taskDto);
-                                } catch (Throwable e) {
-                                    log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
-                                } finally {
-                                    runningTasks.remove(reportId);
-                                }
-                            });
-                        }
+        List<SceneTaskDto> taskDtoList = getTaskFromRedis();
+        if (taskDtoList == null) {
+            log.warn("TaskList is null");
+            return;
+        }
+        if (openVersion) {
+            for (SceneTaskDto taskDto : taskDtoList) {
+                Long reportId = taskDto.getReportId();
+                // 私有化 + 开源 根据 报告id进行分片
+                // 开始数据层分片
+                if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    Object task = runningTasks.putIfAbsent(reportId, EMPTY);
+                    if (task == null) {
+                        ThreadPoolUtil.getReportFinishThreadPool().execute(() -> {
+                            try {
+                                reportTaskService.finishReport(reportId, taskDto);
+                            } catch (Throwable e) {
+                                log.error("execute FinishReportJob occured error. reportId={}", reportId, e);
+                            } finally {
+                                runningTasks.remove(reportId);
+                            }
+                        });
                     }
                 }
-                this.cleanUnAvailableTasks(taskDtoList);
-            } else {
-                final List<SceneTaskDto> taskAlreadyRun = this.runTask(taskDtoList, shardingContext);
-                this.cleanUnAvailableTasks(taskAlreadyRun);
             }
+            this.cleanUnAvailableTasks(taskDtoList);
+        } else {
+            this.runTask_ext(taskDtoList, shardingContext);
+            this.cleanUnAvailableTasks(taskDtoList);
         }
         log.debug("finishReport 执行时间:{}", System.currentTimeMillis() - start);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
     protected void runTaskInTenantIfNecessary(SceneTaskDto tenantTask, Long reportId) {
         //将任务放入线程池
-        reportThreadPool.execute(() -> {
+        ThreadPoolUtil.getReportFinishThreadPool().execute(() -> {
             try {
                 WebPluginUtils.setTraceTenantContext(tenantTask);
                 reportTaskService.finishReport(reportId, tenantTask);

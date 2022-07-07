@@ -125,6 +125,7 @@ public final class BizOpConstants {
 
     public static class OpTypes {
         public static final String CREATE = "新增";
+        public static final String COPY = "新增";
         public static final String UPDATE = "编辑";
         public static final String DELETE = "删除";
         public static final String OPEN = "开启";
@@ -247,6 +248,7 @@ public final class BizOpConstants {
         public static final String MESSAGE_PRESSURE_TEST_SCENE_CREATE = "message.pressure_test_scene.create";
         public static final String MESSAGE_PRESSURE_TEST_SCENE_DELETE = "message.pressure_test_scene.delete";
         public static final String MESSAGE_PRESSURE_TEST_SCENE_UPDATE = "message.pressure_test_scene.update";
+        public static final String MESSAGE_PRESSURE_TEST_SCENE_COPY = "message.pressure_test_scene.copy";
         public static final String MESSAGE_PRESSURE_TEST_SCENE_START = "message.pressure_test_scene.start";
         public static final String MESSAGE_PRESSURE_TEST_SCENE_START_TRIAL_RUN
             = "message.pressure_test_scene.startTrialRun";

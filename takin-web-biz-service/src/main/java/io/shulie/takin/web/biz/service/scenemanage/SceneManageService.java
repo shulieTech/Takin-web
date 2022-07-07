@@ -83,4 +83,9 @@ public interface SceneManageService {
      */
     String recoveryScene(SceneManageDeleteReq deleteVO);
 
+    /**
+     * 复制压测场景
+     * @param manageServiceById
+     */
+    void copyScene(SceneDetailResponse manageServiceById);
 }

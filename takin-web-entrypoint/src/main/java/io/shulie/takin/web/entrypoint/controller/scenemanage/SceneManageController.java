@@ -13,10 +13,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneBusinessActivityRefVO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
-import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
+import com.pamirs.takin.entity.domain.vo.scenemanage.*;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
@@ -83,6 +80,32 @@ public class SceneManageController {
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.CREATE);
         OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, sceneVO.getPressureTestSceneName());
         return WebResponse.success();
+    }
+
+    @PostMapping("/copy")
+    @ApiOperation("复制压测场景")
+    @ModuleDef(
+            moduleName = BizOpConstants.Modules.PRESSURE_TEST_MANAGE,
+            subModuleName = BizOpConstants.SubModules.PRESSURE_TEST_SCENE,
+            logMsgKey = BizOpConstants.Message.MESSAGE_PRESSURE_TEST_SCENE_COPY
+    )
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE,
+            needAuth = ActionTypeEnum.CREATE
+    )
+    public ResponseResult<Object> copy(@RequestBody SceneManageCopyVO sceneManageCopyVO) throws TakinWebException {
+        SceneDetailResponse manageServiceById = sceneManageService.getById(sceneManageCopyVO.getId());
+        if (manageServiceById == null){
+            return ResponseResult.fail("找不到当前压测场景","请刷新页面再尝试");
+        }
+
+        if (manageServiceById.getPressureTestSceneName().length() >= 60){
+            return ResponseResult.fail("场景名称超出当前设定长度,","修改名称够再进行复制");
+        }
+        sceneManageService.copyScene(manageServiceById);
+        OperationLogContextHolder.operationType(BizOpConstants.OpTypes.COPY);
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, manageServiceById.getPressureTestSceneName());
+        return ResponseResult.success();
     }
 
     @PutMapping

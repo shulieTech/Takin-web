@@ -14,6 +14,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.shulie.takin.cloud.biz.cache.SceneTaskStatusCache;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
+import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
 import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.common.bean.scenemanage.UpdateStatusBean;
 import io.shulie.takin.cloud.common.bean.task.TaskResult;
@@ -74,6 +75,8 @@ public class PressureEventCenter extends AbstractIndicators {
     private PluginManager pluginManager;
     @Resource
     private SceneTaskService sceneTaskService;
+    @Resource
+    private CloudAsyncService cloudAsyncService;
 
     /**
      * 校验成功事件
@@ -89,6 +92,7 @@ public class PressureEventCenter extends AbstractIndicators {
         String resourceKey = PressureStartCache.getResourceKey(resourceId);
         redisClientUtil.hmset(resourceKey, PressureStartCache.CHECK_STATUS, CheckStatus.SUCCESS.ordinal());
         pressureTaskDAO.updateStatus(ext.getTaskId(), PressureTaskStateEnum.STARTING, null);
+        cloudAsyncService.checkStartTimeout(resourceId);
     }
 
     /**

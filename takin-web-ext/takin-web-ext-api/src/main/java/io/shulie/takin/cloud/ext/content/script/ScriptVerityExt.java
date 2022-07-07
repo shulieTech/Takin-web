@@ -1,5 +1,6 @@
 package io.shulie.takin.cloud.ext.content.script;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
@@ -28,11 +29,11 @@ public class ScriptVerityExt {
 
     private boolean useNewVerify;
     // 脚本文件路径, 此处是单个
-    private String scriptPaths;
+    private List<String> scriptPaths = new ArrayList<>();
     // 插件路径，多个按逗号分隔
-    private String pluginPaths;
+    private List<String> pluginPaths = new ArrayList<>();
     // 数据文件路径，多个按逗号分隔
-    private String csvPaths;
+    private List<String> csvPaths = new ArrayList<>();
     // 附件文件路径，多个按逗号分隔
-    private String attachments;
+    private List<String> attachments = new ArrayList<>();
 }

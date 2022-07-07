@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -24,14 +25,12 @@ import com.alibaba.fastjson.TypeReference;
 
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
-import com.pamirs.takin.cloud.entity.dao.report.TReportMapper;
 import com.pamirs.takin.cloud.entity.domain.entity.report.Report;
 import com.pamirs.takin.cloud.entity.domain.entity.report.ReportBusinessActivityDetail;
 import com.pamirs.takin.cloud.entity.domain.entity.scene.manage.SceneFileReadPosition;
 import com.pamirs.takin.cloud.entity.domain.vo.file.FileSliceRequest;
 import com.pamirs.takin.cloud.entity.domain.vo.report.SceneTaskNotifyParam;
 import io.shulie.takin.adapter.api.entrypoint.pressure.PressureTaskApi;
-import io.shulie.takin.adapter.api.entrypoint.resource.CloudResourceApi;
 import io.shulie.takin.adapter.api.model.common.RuleBean;
 import io.shulie.takin.adapter.api.model.common.TimeBean;
 import io.shulie.takin.adapter.api.model.request.pressure.PressureTaskStopReq;
@@ -63,7 +62,6 @@ import io.shulie.takin.cloud.biz.output.scenetask.SceneTaskStartCheckOutput.File
 import io.shulie.takin.cloud.biz.output.scenetask.SceneTaskStopOutput;
 import io.shulie.takin.cloud.biz.output.scenetask.SceneTryRunTaskStartOutput;
 import io.shulie.takin.cloud.biz.output.scenetask.SceneTryRunTaskStatusOutput;
-import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
 import io.shulie.takin.cloud.biz.service.report.CloudReportService;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneManageService;
 import io.shulie.takin.cloud.biz.service.scene.CloudSceneTaskService;
@@ -129,6 +127,9 @@ import io.shulie.takin.web.biz.checker.StartConditionChecker.CheckStatus;
 import io.shulie.takin.web.biz.checker.StartConditionCheckerContext;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.util.RedisClientUtil;
+import io.shulie.takin.web.data.dao.activity.ActivityDAO;
+import io.shulie.takin.web.data.param.activity.ActivityQueryParam;
+import io.shulie.takin.web.data.result.activity.ActivityListResult;
 import io.shulie.takin.web.ext.entity.tenant.TenantCommonExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -155,8 +156,6 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     private CloudReportService cloudReportService;
     @Resource
     private PluginManager pluginManager;
-    @Resource
-    private TReportMapper tReportMapper;
     @Resource
     private SceneManageDAO sceneManageDao;
     @Resource
@@ -188,11 +187,9 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
     @Resource
     private PressureTaskVarietyDAO pressureTaskVarietyDAO;
     @Resource
-    private CloudAsyncService cloudAsyncService;
-    @Resource
-    private CloudResourceApi cloudResourceApi;
-    @Resource
     private PressureTaskApi pressureTaskApi;
+    @Resource
+    private ActivityDAO activityDAO;
 
     private static final Long KB = 1024L;
     private static final Long MB = KB * 1024;
@@ -1164,7 +1161,8 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
                 report.setScriptId(features.getLong(SceneManageConstant.FEATURES_SCRIPT_ID));
             }
         }
-        Integer sumTps = CommonUtil.sum(scene.getBusinessActivityConfig(),
+        List<SceneBusinessActivityRefOutput> businessActivityConfig = scene.getBusinessActivityConfig();
+        Integer sumTps = CommonUtil.sum(businessActivityConfig,
             SceneBusinessActivityRefOutput::getTargetTPS);
 
         report.setTps(sumTps);
@@ -1174,10 +1172,17 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             report.setScriptNodeTree(JsonPathUtil.deleteNodes(scene.getScriptAnalysisResult()).jsonString());
         }
         report.setCalibrationStatus(0);
+        report.setPtConfig(scene.getPtConfig());
         reportMapper.insert(report);
         associateTaskAndReport(pressureTask, report);
         Long reportId = report.getId();
-        scene.getBusinessActivityConfig().forEach(activity -> {
+
+        ActivityQueryParam param = new ActivityQueryParam();
+        param.setActivityIds(businessActivityConfig.stream()
+            .map(SceneBusinessActivityRefOutput::getBusinessActivityId).collect(Collectors.toList()));
+        Map<Long, ActivityListResult> activityMap = activityDAO.getActivityList(param)
+            .stream().collect(Collectors.toMap(ActivityListResult::getActivityId, Function.identity()));
+        businessActivityConfig.forEach(activity -> {
             ReportBusinessActivityDetail reportBusinessActivityDetail = new ReportBusinessActivityDetail();
             reportBusinessActivityDetail.setReportId(reportId);
             reportBusinessActivityDetail.setSceneId(scene.getId());
@@ -1193,9 +1198,17 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             }
             reportBusinessActivityDetail.setTargetSuccessRate(activity.getTargetSuccessRate());
             reportBusinessActivityDetail.setTargetSa(activity.getTargetSA());
+
+            ActivityListResult activityListResult = activityMap.get(activity.getBusinessActivityId());
+            if (Objects.nonNull(activityListResult)) {
+                JSONObject futures = new JSONObject();
+                futures.put(ReportConstants.ACTIVITY_ENTRANCE, activityListResult.getEntrace());
+                futures.put(ReportConstants.ACTIVITY_TYPE, activityListResult.getBusinessType());
+                reportBusinessActivityDetail.setFeatures(futures.toJSONString());
+            }
             reportBusinessActivityDetailDao.insert(reportBusinessActivityDetail);
         });
-        saveNonTargetNode(scene.getId(), reportId, report.getScriptNodeTree(), scene.getBusinessActivityConfig());
+        saveNonTargetNode(scene.getId(), reportId, report.getScriptNodeTree(), businessActivityConfig);
         return report;
     }
 
@@ -1292,7 +1305,6 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             try {
                 SceneTaskStartInput input = JsonHelper.json2Bean(tryRun, SceneTaskStartInput.class);
                 fillContext(input);
-                cloudAsyncService.checkStartTimeout(sceneId);
                 startTask(input);
             } catch (Exception e) {
                 startFail(context.getResourceId(), e.getMessage());
@@ -1311,7 +1323,6 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             try {
                 SceneTaskStartInput input = JsonHelper.json2Bean(flowDebug, SceneTaskStartInput.class);
                 fillContext(input);
-                cloudAsyncService.checkStartTimeout(sceneId);
                 startTask(input);
             } catch (Exception e) {
                 startFail(context.getResourceId(), e.getMessage());
@@ -1330,7 +1341,6 @@ public class CloudSceneTaskServiceImpl extends AbstractIndicators implements Clo
             try {
                 SceneTaskStartInput input = JsonHelper.json2Bean(inspect, SceneTaskStartInput.class);
                 fillContext(input);
-                cloudAsyncService.checkStartTimeout(sceneId);
                 startTask(input);
             } catch (Exception e) {
                 startFail(context.getResourceId(), e.getMessage());

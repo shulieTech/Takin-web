@@ -1,5 +1,6 @@
 package io.shulie.takin.adapter.api.model.request.pressure;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,11 +52,11 @@ public class PressureTaskStartReq extends ContextExt {
     /**
      * 运行时依赖文件(插件)
      */
-    private List<StartRequest.FileInfo> dependencyFile;
+    private List<StartRequest.FileInfo> dependencyFile = new ArrayList<>();
     /**
      * 数据文件(csv)
      */
-    private List<StartRequest.FileInfo> dataFile;
+    private List<StartRequest.FileInfo> dataFile = new ArrayList<>();
     /**
      * 线程配置
      */

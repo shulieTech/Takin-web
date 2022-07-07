@@ -11,12 +11,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Resource;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 import com.pamirs.takin.entity.domain.dto.report.ReportTraceQueryDTO;
-import io.shulie.takin.adapter.api.entrypoint.scene.manage.CloudSceneManageApi;
 import io.shulie.takin.adapter.api.model.request.report.ScriptNodeTreeQueryReq;
 import io.shulie.takin.adapter.api.model.response.report.ScriptNodeTreeResp;
+import io.shulie.takin.cloud.common.constants.ReportConstants;
+import io.shulie.takin.cloud.data.dao.report.ReportBusinessActivityDetailDao;
 import io.shulie.takin.cloud.data.dao.report.ReportDao;
+import io.shulie.takin.cloud.data.model.mysql.ReportBusinessActivityDetailEntity;
 import io.shulie.takin.cloud.data.result.report.ReportResult;
 import io.shulie.takin.web.diff.api.report.ReportApi;
 import lombok.extern.slf4j.Slf4j;
@@ -51,11 +54,8 @@ import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
 import io.shulie.takin.web.biz.service.report.ReportRealTimeService;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
 import io.shulie.takin.web.biz.utils.business.script.ScriptDebugUtil;
-import io.shulie.takin.adapter.api.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.web.biz.pojo.response.report.ReportLinkDetailResponse;
-import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
-import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp.SceneBusinessActivityRefResp;
 
 /**
  * @author qianshui
@@ -64,8 +64,6 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapper
 @Service
 @Slf4j
 public class ReportRealTimeServiceImpl implements ReportRealTimeService {
-    @Resource
-    CloudSceneManageApi cloudSceneApi;
     @Resource
     private ReportDao reportDao;
     @Resource
@@ -76,6 +74,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     private BusinessLinkManageDAO businessLinkManageDAO;
     @Resource
     private ReportApi reportApi;
+    @Resource
+    private ReportBusinessActivityDetailDao businessActivityDetailDao;
 
     @Override
     public PageInfo<ReportTraceDTO> getReportLinkList(ReportTraceQueryDTO queryDTO) {
@@ -303,10 +303,8 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
 
     private PageInfo<ReportTraceDTO> getReportTraceDtoList(ReportTraceQueryDTO queryDTO) {
         // 查询场景下的业务活动信息
-        List<Long> businessActivityIdList = querySceneActivities(queryDTO);
+        List<EntranceRuleDTO> entranceList = querySceneActivities(queryDTO);
 
-        // entryList 获得
-        List<EntranceRuleDTO> entranceList = this.getEntryListByBusinessActivityIds(businessActivityIdList);
 
         // 如果压测引擎任务Id不为空，替换reportId，现在大数据taskId对应的是压测引擎任务Id
         Long taskId = queryDTO.getTaskId();
@@ -397,15 +395,16 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
     }
 
     // 查询场景对应的业务活动Id
-    private List<Long> querySceneActivities(ReportTraceQueryDTO queryDTO) {
+    private List<EntranceRuleDTO> querySceneActivities(ReportTraceQueryDTO queryDTO) {
         String xpath = queryDTO.getXpathMd5();
+        List<ReportBusinessActivityDetailEntity> detailEntities
+            = businessActivityDetailDao.selectDetailsByReportId(queryDTO.getReportId());
+        if (CollectionUtils.isEmpty(detailEntities)) {
+            return new ArrayList<>(0);
+        }
         if (StringUtils.isBlank(xpath)) {
-            SceneManageWrapperResp response = cloudSceneApi.getSceneDetail(new SceneManageIdReq() {{
-                setId(queryDTO.getSceneId());
-            }});
-            List<SceneBusinessActivityRefResp> businessActivityConfig = response.getBusinessActivityConfig();
-            return businessActivityConfig.stream().
-                map(SceneBusinessActivityRefResp::getBusinessActivityId).collect(Collectors.toList());
+            return detailEntities.stream().filter(detail -> StringUtils.isNotBlank(detail.getFeatures()))
+                .map(this::buildEntranceRule).collect(Collectors.toList());
         }
         // 通过xpath递归node
         List<ScriptNodeTreeResp> nodeTree = reportApi.scriptNodeTree(
@@ -420,7 +419,9 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
                 matchNext = recursionMatchXpath(false, xpath, node, activityIds);
             }
         }
-        return activityIds;
+        return detailEntities.stream().filter(detail ->
+                activityIds.contains(detail.getBusinessActivityId()) && StringUtils.isNotBlank(detail.getFeatures()))
+            .map(this::buildEntranceRule).collect(Collectors.toList());
     }
 
     /**
@@ -459,5 +460,14 @@ public class ReportRealTimeServiceImpl implements ReportRealTimeService {
             }
         }
         return !curMatched && matchNext;
+    }
+
+    private EntranceRuleDTO buildEntranceRule(ReportBusinessActivityDetailEntity entity) {
+        EntranceRuleDTO entrance = new EntranceRuleDTO();
+        String features = entity.getFeatures();
+        JSONObject jsonObject = JSON.parseObject(features);
+        entrance.setEntrance(jsonObject.getString(ReportConstants.ACTIVITY_ENTRANCE));
+        entrance.setBusinessType(jsonObject.getInteger(ReportConstants.ACTIVITY_TYPE));
+        return entrance;
     }
 }

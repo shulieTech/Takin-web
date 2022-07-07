@@ -67,6 +67,7 @@ import io.shulie.takin.web.biz.service.DataSourceService;
 import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
 import io.shulie.takin.web.biz.service.async.AsyncService;
+import io.shulie.takin.web.biz.service.placeholdermanage.PlaceholderManageService;
 import io.shulie.takin.web.biz.service.report.impl.ReportApplicationService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
@@ -147,7 +148,8 @@ public class SceneTaskServiceImpl implements SceneTaskService {
     private ApplicationDAO applicationDAO;
     @Resource
     private BaseConfigService baseConfigService;
-
+    @Resource
+    private PlaceholderManageService placeholderManageService;
     @Autowired
     private ScriptDebugService scriptDebugService;
 
@@ -289,6 +291,10 @@ public class SceneTaskServiceImpl implements SceneTaskService {
         SceneActionResp startResult;
         try {
             SceneTaskStartReq sceneTaskStartReq = BeanUtil.copyProperties(paramNew, SceneTaskStartReq.class);
+            //填充占位符字段
+            Map<String,String> placeholderMap = placeholderManageService.getKvValue();
+            sceneTaskStartReq.setPlaceholderMap(placeholderMap);
+
             startResult = cloudTaskApi.start(sceneTaskStartReq);
         } catch (Exception e) {
             log.error("takin-cloud启动压测场景返回错误，id={}", param.getSceneId(), e);

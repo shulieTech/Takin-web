@@ -517,6 +517,24 @@ public class SwaggerConfig {
     }
 
     /**
+     * 移动云
+     * @return
+     */
+    @Bean
+    public Docket api_yidongyun() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("移动云相关")
+                .select()
+                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+                .paths(getRegex("/api/(placeholderManage|/api/scenemanage/copy).*"))
+                .build()
+                .directModelSubstitute(LocalDate.class, String.class)
+                .useDefaultResponseMessages(false)
+                .apiInfo(apiInfo())
+                ;
+    }
+
+    /**
      * api info
      *
      * @return ApiInfo

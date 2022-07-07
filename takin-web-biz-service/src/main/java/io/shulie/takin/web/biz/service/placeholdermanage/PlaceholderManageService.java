@@ -5,6 +5,8 @@ import io.shulie.takin.web.biz.pojo.request.placeholdermanage.PlaceholderManageP
 import io.shulie.takin.web.biz.pojo.request.placeholdermanage.PlaceholderManageRequest;
 import io.shulie.takin.web.biz.pojo.response.placeholdermanage.PlaceholderManageResponse;
 
+import java.util.Map;
+
 public interface PlaceholderManageService {
 
     void createPlaceholder(PlaceholderManageRequest createRequest);
@@ -14,4 +16,6 @@ public interface PlaceholderManageService {
     void deletePlaceholder(Long id);
 
     PagingList<PlaceholderManageResponse> listPlaceholder(PlaceholderManagePageRequest request);
+
+    Map<String, String> getKvValue();
 }

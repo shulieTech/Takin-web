@@ -65,6 +65,7 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDeta
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.LinkTopologyService;
+import io.shulie.takin.web.biz.service.placeholdermanage.PlaceholderManageService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
@@ -109,6 +110,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+
 /**
  * @author shiyajian
  * create: 2020-12-30
@@ -144,7 +147,8 @@ public class ActivityServiceImpl implements ActivityService {
     private LinkManageTableMapper linkManageTableMapper;
     @Autowired
     private ApplicationEntranceClient applicationEntranceClient;
-
+    @Resource
+    private PlaceholderManageService placeholderManageService;
     @Autowired
     private ApplicationBusinessActivityService applicationBusinessActivityService;
 
@@ -875,6 +879,9 @@ public class ActivityServiceImpl implements ActivityService {
         //设置租户
         taskFlowDebugStartReq.setEnvCode(WebPluginUtils.traceEnvCode());
         taskFlowDebugStartReq.setTenantId(WebPluginUtils.traceTenantId());
+        //填充占位符字段
+        Map<String,String> placeholderMap = placeholderManageService.getKvValue();
+        taskFlowDebugStartReq.setPlaceholderMap(placeholderMap);
 
         log.info("流量验证参数：{}", taskFlowDebugStartReq);
         Long startResult = cloudTaskApi.startFlowDebugTask(taskFlowDebugStartReq);

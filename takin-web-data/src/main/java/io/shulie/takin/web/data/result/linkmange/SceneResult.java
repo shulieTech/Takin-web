@@ -63,6 +63,11 @@ public class SceneResult {
     private String scriptJmxNode;
 
     /**
+     * 存储树状结构
+     */
+    private String scriptJmxNodeView;
+
+    /**
      * 脚本实例id
      */
     private Long scriptDeployId;

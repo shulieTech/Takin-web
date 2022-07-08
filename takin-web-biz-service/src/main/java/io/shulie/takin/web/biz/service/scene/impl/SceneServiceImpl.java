@@ -409,7 +409,7 @@ public class SceneServiceImpl implements SceneService {
         if (sceneResult == null) {
             return response;
         }
-        List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNode(), ScriptNode.class);
+        List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNodeView(), ScriptNode.class);
         //将节点树处理成线程组在最外层的形式
         List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.THREAD_GROUP, scriptNodes);
         List<ScriptNode> scriptNodeList = scriptNodeByType.stream().filter(o -> o.getXpathMd5().equals(xpathMd5)).collect(Collectors.toList());
@@ -423,7 +423,6 @@ public class SceneServiceImpl implements SceneService {
         }
 
         List<ScriptJmxNode> scriptJmxNodes = LinkManageConvert.INSTANCE.ofScriptNodeList(scriptNodeList);
-
         SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
         sceneLinkRelateParam.setSceneIds(Collections.singletonList(id.toString()));
         List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
@@ -683,6 +682,11 @@ public class SceneServiceImpl implements SceneService {
             throw new TakinWebException(TakinWebExceptionEnum.ERROR_COMMON, "未获取到业务流程");
         }
         return scene;
+    }
+
+    @Override
+    public void businessActivityFlowUpdate(SceneEntity sceneEntity) {
+        sceneMapper.updateById(sceneEntity);
     }
 
     @Override

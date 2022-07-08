@@ -8,12 +8,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import cn.hutool.json.JSON;
+import com.jayway.jsonpath.JsonPath;
 import io.shulie.takin.web.biz.constant.BizOpConstants.Vars;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.*;
+import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import lombok.extern.slf4j.Slf4j;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -29,11 +35,7 @@ import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.web.common.context.OperationLogContextHolder;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 
 /**
  * @author 赵勇
@@ -189,6 +191,36 @@ public class BusinessFlowController {
     public ResponseResult<BusinessFlowThreadResponse> getThreadGroupDetail(@NotNull Long id, @NotNull String xpathMd5) {
         BusinessFlowThreadResponse response = sceneService.getThreadGroupDetail(id, xpathMd5);
         return ResponseResult.success(response);
+    }
+
+    @PostMapping("/scene/saveThreadGroup")
+    @ApiOperation("业务流程详情获取线程组内容详情")
+    @AuthVerification(
+            moduleCode = BizOpConstants.ModuleCode.BUSINESS_PROCESS,
+            needAuth = ActionTypeEnum.QUERY
+    )
+    public ResponseResult<Boolean> saveThreadGroup(@RequestBody BusinessFlowThreadRequest businessFlowThreadRequest) {
+        Long sceneId = businessFlowThreadRequest.getId();
+        String xpathMd5 = businessFlowThreadRequest.getXpathMd5();  //xPathMd5
+        String josnView = businessFlowThreadRequest.getJsonText();  //待替换json
+        //查询场景
+        SceneEntity sceneEntity = sceneService.businessActivityFlowDetail(sceneId);
+        String scriptJmxNode = sceneEntity.getScriptJmxNode();      //最原始Json
+        String scriptJmxNodeView = sceneEntity.getScriptJmxNode();  //最原始Json(假)
+        if(StringUtils.isBlank(scriptJmxNodeView)){
+            scriptJmxNodeView = scriptJmxNode;
+        }
+        //替换节点
+
+        Object read = JsonPath.parse(josnView).read("$..[?(@.xpathMd5=='" + xpathMd5 + "')].children[0]");
+
+        String children = JsonPath.parse(scriptJmxNodeView)
+                .put("$..[?(@.xpathMd5=='" + xpathMd5 + "')]", "children",
+                        read).jsonString();
+        sceneEntity.setScriptJmxNodeView(children);
+        //修改节点
+        sceneService.businessActivityFlowUpdate(sceneEntity);
+        return ResponseResult.success(Boolean.TRUE);
     }
 
     @GetMapping("/scene/list")

@@ -72,6 +72,8 @@ public interface SceneService {
      */
     SceneEntity businessActivityFlowDetail(long id);
 
+    void businessActivityFlowUpdate(SceneEntity sceneEntity);
+
     void updateBusinessFlow(BusinessFlowUpdateRequest businessFlowUpdateRequest);
 
     List<ApplicationDetailResult> getAppsByFlowId(Long flowId);

@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * 场景表
@@ -82,6 +83,12 @@ public class SceneEntity extends UserBaseEntity {
      */
     @TableField(value = "script_jmx_node")
     private String scriptJmxNode;
+
+    /**
+     * 存储树状结构显示数据
+     */
+    @TableField(value = "script_jmx_node_view")
+    private String scriptJmxNodeView;
 
     /**
      * 脚本实例id

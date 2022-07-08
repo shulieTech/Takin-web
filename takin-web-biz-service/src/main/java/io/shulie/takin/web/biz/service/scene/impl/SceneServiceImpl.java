@@ -409,7 +409,7 @@ public class SceneServiceImpl implements SceneService {
         if (sceneResult == null) {
             return response;
         }
-        List<ScriptNode> scriptNodes = JsonHelper.json2List(sceneResult.getScriptJmxNodeView(), ScriptNode.class);
+        List<ScriptNode> scriptNodes = JsonHelper.json2List(StringUtils.isBlank(sceneResult.getScriptJmxNodeView())?sceneResult.getScriptJmxNode():sceneResult.getScriptJmxNodeView(), ScriptNode.class);
         //将节点树处理成线程组在最外层的形式
         List<ScriptNode> scriptNodeByType = JmxUtil.getScriptNodeByType(NodeTypeEnum.THREAD_GROUP, scriptNodes);
         List<ScriptNode> scriptNodeList = scriptNodeByType.stream().filter(o -> o.getXpathMd5().equals(xpathMd5)).collect(Collectors.toList());

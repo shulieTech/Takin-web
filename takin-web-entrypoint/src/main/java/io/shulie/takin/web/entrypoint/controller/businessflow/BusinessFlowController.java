@@ -205,8 +205,8 @@ public class BusinessFlowController {
         String josnView = businessFlowThreadRequest.getJsonText();  //待替换json
         //查询场景
         SceneEntity sceneEntity = sceneService.businessActivityFlowDetail(sceneId);
-        String scriptJmxNode = sceneEntity.getScriptJmxNode();      //最原始Json
-        String scriptJmxNodeView = sceneEntity.getScriptJmxNode();  //最原始Json(假)
+        String scriptJmxNode = sceneEntity.getScriptJmxNode();          //最原始Json
+        String scriptJmxNodeView = sceneEntity.getScriptJmxNodeView();  //最原始Json(假)
         if(StringUtils.isBlank(scriptJmxNodeView)){
             scriptJmxNodeView = scriptJmxNode;
         }

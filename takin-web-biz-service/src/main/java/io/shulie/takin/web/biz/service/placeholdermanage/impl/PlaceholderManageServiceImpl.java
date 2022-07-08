@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 占位符管理
@@ -112,5 +114,13 @@ public class PlaceholderManageServiceImpl implements PlaceholderManageService {
         List<PlaceholderManageEntity> records = placeholderManageEntityPage.getRecords();
         List<PlaceholderManageResponse> placeholderManageResponses = PlaceholderManageConvert.INSTANCE.ofPlaceholderManageResponse(records);
         return PagingList.of(placeholderManageResponses, placeholderManageEntityPage.getTotal());
+    }
+
+    @Override
+    public Map<String, String> getKvValue() {
+        QueryWrapper<PlaceholderManageEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(PlaceholderManageEntity::getIsDeleted,0);
+        List<PlaceholderManageEntity> manageEntities = placeholderManageDAO.list(queryWrapper);
+        return manageEntities.stream().collect(Collectors.toMap(PlaceholderManageEntity::getKey, PlaceholderManageEntity::getValue));
     }
 }

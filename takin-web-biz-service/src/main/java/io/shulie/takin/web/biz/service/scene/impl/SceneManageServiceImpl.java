@@ -888,7 +888,9 @@ public class SceneManageServiceImpl implements SceneManageService {
         vo.setWarningCondition(SceneManageConvert.INSTANCE.ofSceneSlaRefVO(manageServiceById.getWarningCondition()));
         vo.setBusinessFlowId(Long.parseLong(manageServiceById.getBusinessFlowId()));
         vo.setIsScheduler(manageServiceById.getIsScheduler());
-        vo.setExecuteTime(DateUtils.transferDate(manageServiceById.getExecuteTime(), DateUtils.FORMATE_YMDHMS,Date.class));
+        if (manageServiceById.getExecuteTime() != null){
+            vo.setExecuteTime(DateUtils.transferDate(manageServiceById.getExecuteTime(), DateUtils.FORMATE_YMDHMS,Date.class));
+        }
         vo.setScheduleInterval(manageServiceById.getScheduleInterval());
         vo.setScriptAnalysisResult(manageServiceById.getScriptAnalysisResult());
         if (CollectionUtils.isNotEmpty(manageServiceById.getExcludedApplicationIds())){

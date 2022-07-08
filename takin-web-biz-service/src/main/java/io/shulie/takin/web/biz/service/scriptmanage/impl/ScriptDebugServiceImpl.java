@@ -75,6 +75,7 @@ import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.LeakSqlService;
 import io.shulie.takin.web.biz.service.VerifyTaskReportService;
 import io.shulie.takin.web.biz.service.VerifyTaskService;
+import io.shulie.takin.web.biz.service.placeholdermanage.PlaceholderManageService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTaskService;
@@ -201,6 +202,8 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
     private SceneService sceneService;
     @Resource
     private SceneManageService sceneManageService;
+    @Resource
+    private PlaceholderManageService placeholderManageService;
 
 
     @Override
@@ -317,6 +320,9 @@ public class ScriptDebugServiceImpl implements ScriptDebugService {
                 debugCloudRequest.setUserId(user.getId());
                 debugCloudRequest.setUserName(user.getName());
             }
+            //填充占位符字段
+            Map<String,String> placeholderMap = placeholderManageService.getKvValue();
+            debugCloudRequest.setPlaceholderMap(placeholderMap);
             // 启动调试
             SceneTryRunTaskStartResp cloudResponse = this.doDebug(debugCloudRequest);
 

@@ -1,7 +1,11 @@
 package io.shulie.takin.web.entrypoint.controller.shift;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
@@ -19,24 +23,27 @@ import io.shulie.takin.web.biz.service.UserService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.data.mapper.mysql.YVersionMapper;
+import io.shulie.takin.web.data.model.mysql.YVersionEntity;
 import io.shulie.takin.web.entrypoint.controller.report.ReportController;
 import io.shulie.takin.web.entrypoint.controller.report.ReportLocalController;
 import io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
+import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -50,6 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Api(tags = "移动云接口", value = "移动云接口")
 @RestController
@@ -74,6 +82,9 @@ public class ShiftCloudController {
     private ReportLocalController reportLocalController;
 
     private static final Map<Integer, String> TASK_CACHE = new ConcurrentHashMap();
+
+    @Autowired
+    private YVersionMapper yVersionMapper;
 
     //2.1
     @Deprecated
@@ -267,7 +278,13 @@ public class ShiftCloudController {
             data.put("task_progress", String.valueOf(tm).substring(0, String.valueOf(tm).indexOf(".")) + "%");//TODO testTotalTime is null?
             if (null != taskStatus && taskStatus == 2) {
                 Map analysis = new HashMap();
-                analysis.put("coverDemand", 0);
+                LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
+                wrapper.select(YVersionEntity::getDids,YVersionEntity::getVid);
+                wrapper.eq(YVersionEntity::getSid,sceneId);
+                YVersionEntity entity = yVersionMapper.selectOne(wrapper);
+                int coverDemand = 0;
+                if (null != entity) coverDemand = JSON.parseArray(entity.getDids()).size();
+                analysis.put("coverDemand", coverDemand);
                 if (null != reportCount && reportCount.getSuccess()) {
                     ReportCountDTO dto = reportCount.getData();
                     if (null != dto) {
@@ -338,5 +355,70 @@ public class ShiftCloudController {
                 ouputStream.close();
             }
         }
+    }
+
+    @GetMapping("/api/c/getVersion")
+    public ResponseResult<JSONObject> getVersion(){
+        String envCode = WebPluginUtils.traceEnvCode();
+        Map data = new HashMap();
+        data.put("userId","admin");
+        data.put("projectId",envCode);
+        String responseJson = HttpUtil.get("http://devops.testcloud.com/ms/vteam/api/service/issue_version/"+envCode+"/flat",data, 10000);
+        return ResponseResult.success(JSON.parseObject(responseJson));
+    }
+
+    @GetMapping("/api/c/getDemands")
+    public List getDemands(@RequestParam("versionId") String versionId){
+        String envCode = WebPluginUtils.traceEnvCode();
+        // 创建Httpclient对象
+
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        CloseableHttpResponse response = null;
+        String resultString = "";
+        try {
+            // 创建Http Post请求
+            HttpPost httpPost = new HttpPost("http://devops.testcloud.com/ms/vteam/api/service/issue/custom/"+envCode+"/version_iteration/VERSION/"+versionId);
+            httpPost.addHeader("X-DEVOPS-UID","admin");
+            // 创建请求内容
+            StringEntity entity = new StringEntity("[]", ContentType.APPLICATION_JSON);
+            httpPost.setEntity(entity);
+            // 执行http请求
+            response = httpClient.execute(httpPost);
+            resultString = EntityUtils.toString(response.getEntity(), "UTF8");
+            if (StringUtils.isNotBlank(resultString)) {
+                return JSON.parseArray(JSONObject.parseObject(resultString).getJSONObject("data").getString("records"), Property.class).stream().map(p->{
+                    Map m = new HashMap();
+                    m.put("id",p.getProperty().getId().getId());
+                    m.put("title",p.getProperty().getTitle().getDisplayValue());
+                    return m;
+                }).collect(Collectors.toList());
+            }
+        } catch (Exception e) {} finally {
+            try {
+                response.close();
+            } catch (IOException e) {}
+        }
+        return null;
+    }
+
+    @Data
+    private static class Property {
+        private Record property;
+    }
+
+    @Data
+    private static class Record {
+        private Id id;
+        private Title title;
+    }
+
+    @Data
+    private static class Id {
+        private String id;
+    }
+
+    @Data
+    private static class Title {
+        private String displayValue;
     }
 }

@@ -98,11 +98,11 @@ public class PlaceholderManageServiceImpl implements PlaceholderManageService {
     public PagingList<PlaceholderManageResponse> listPlaceholder(PlaceholderManagePageRequest request) {
         Page<PlaceholderManageEntity> page = new Page<>(request.getCurrent() + 1, request.getPageSize());
         QueryWrapper<PlaceholderManageEntity> wrapper = new QueryWrapper<>();
-        if (StringUtil.isNotEmpty(request.getKey())) {
-            wrapper.lambda().eq(PlaceholderManageEntity::getPlaceholderKey, request.getKey());
+        if (StringUtil.isNotEmpty(request.getPlaceholderKey())) {
+            wrapper.lambda().eq(PlaceholderManageEntity::getPlaceholderKey, request.getPlaceholderKey());
         }
-        if (StringUtil.isNotEmpty(request.getValue())) {
-            wrapper.lambda().like(PlaceholderManageEntity::getPlaceholderValue, request.getValue());
+        if (StringUtil.isNotEmpty(request.getPlaceholderValue())) {
+            wrapper.lambda().like(PlaceholderManageEntity::getPlaceholderValue, request.getPlaceholderValue());
         }
         if (StringUtil.isNotEmpty(request.getRemark())) {
             wrapper.lambda().like(PlaceholderManageEntity::getRemark, request.getRemark());

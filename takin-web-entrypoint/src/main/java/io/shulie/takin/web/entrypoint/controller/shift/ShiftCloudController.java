@@ -54,6 +54,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Api(tags = "移动云接口", value = "移动云接口")
 @RestController
@@ -345,19 +346,20 @@ public class ShiftCloudController {
     }
 
     @GetMapping("/api/c/getVersion")
-    public String getVersion(){
+    public ResponseResult<JSONObject> getVersion(){
         String envCode = WebPluginUtils.traceEnvCode();
         Map data = new HashMap();
         data.put("userId","admin");
         data.put("projectId",envCode);
-        String responseJson = HttpUtil.post("http://devops.testcloud.com/ms/vteam/api/service/issue_version/"+envCode+"/flat?projectId="+envCode+"&userId=admin", JSON.toJSONString(data), 10000);
-        return responseJson;
+        String responseJson = HttpUtil.get("http://devops.testcloud.com/ms/vteam/api/service/issue_version/"+envCode+"/flat",data, 10000);
+        return ResponseResult.success(JSON.parseObject(responseJson));
     }
 
     @GetMapping("/api/c/getDemands")
-    public List<Record> getDemands(@RequestParam("versionId") String versionId){
+    public List getDemands(@RequestParam("versionId") String versionId){
         String envCode = WebPluginUtils.traceEnvCode();
         // 创建Httpclient对象
+
         CloseableHttpClient httpClient = HttpClients.createDefault();
         CloseableHttpResponse response = null;
         String resultString = "";
@@ -372,7 +374,12 @@ public class ShiftCloudController {
             response = httpClient.execute(httpPost);
             resultString = EntityUtils.toString(response.getEntity(), "UTF8");
             if (StringUtils.isNotBlank(resultString)) {
-                return JSON.parseArray(JSONObject.parseObject(resultString).getJSONObject("data").getString("records"), Record.class);
+                return JSON.parseArray(JSONObject.parseObject(resultString).getJSONObject("data").getString("records"), Property.class).stream().map(p->{
+                    Map m = new HashMap();
+                    m.put("id",p.getProperty().getId().getId());
+                    m.put("title",p.getProperty().getTitle().getDisplayValue());
+                    return m;
+                }).collect(Collectors.toList());
             }
         } catch (Exception e) {} finally {
             try {
@@ -383,18 +390,23 @@ public class ShiftCloudController {
     }
 
     @Data
-    private class Record {
+    private static class Property {
+        private Record property;
+    }
+
+    @Data
+    private static class Record {
         private Id id;
         private Title title;
     }
 
     @Data
-    private class Id {
+    private static class Id {
         private String id;
     }
 
     @Data
-    private class Title {
+    private static class Title {
         private String displayValue;
     }
 }

@@ -23,6 +23,10 @@ import lombok.Setter;
 @Data
 @ApiModel(value = "创建/修改 场景 - 新")
 public class NewSceneRequest {
+    @ApiModelProperty(value = "版本Id")
+    private String versionId;
+    @ApiModelProperty(value = "需求Ids")
+    private String demandIds;
     @ApiModelProperty(value = "基础信息")
     @NotNull(message = "场景基础信息不能为空")
     private BasicInfo basicInfo;

@@ -1,6 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.shift;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
@@ -22,21 +23,21 @@ import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.entrypoint.controller.report.ReportController;
 import io.shulie.takin.web.entrypoint.controller.report.ReportLocalController;
 import io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -338,5 +339,44 @@ public class ShiftCloudController {
                 ouputStream.close();
             }
         }
+    }
+
+    @GetMapping("/api/c/getVersion")
+    public String getVersion(){
+        String envCode = WebPluginUtils.traceEnvCode();
+        Map data = new HashMap();
+        data.put("userId","admin");
+        data.put("projectId",envCode);
+        String responseJson = HttpUtil.post("http://devops.testcloud.com/ms/vteam/api/service/issue_version/"+envCode+"/flat?projectId="+envCode+"&userId=admin", JSON.toJSONString(data), 10000);
+        return responseJson;
+    }
+
+    @GetMapping("/api/c/getDemands")
+    public String getDemands(@RequestParam("versionId") String versionId){
+        String envCode = WebPluginUtils.traceEnvCode();
+        // 创建Httpclient对象
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        CloseableHttpResponse response = null;
+        String resultString = "";
+        try {
+            // 创建Http Post请求
+            HttpPost httpPost = new HttpPost("http://devops.testcloud.com/ms/vteam/api/service/issue/custom/"+envCode+"/version_iteration/VERSION/"+versionId);
+            httpPost.addHeader("X-DEVOPS-UID","admin");
+            // 创建请求内容
+            StringEntity entity = new StringEntity("[]", ContentType.APPLICATION_JSON);
+            httpPost.setEntity(entity);
+            // 执行http请求
+            response = httpClient.execute(httpPost);
+            resultString = EntityUtils.toString(response.getEntity(), "UTF8");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                response.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return resultString;
     }
 }

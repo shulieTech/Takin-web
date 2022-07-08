@@ -42,6 +42,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,9 +71,13 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
     @Autowired
     private MiddlewareJarService middlewareJarService;
 
+    //默认不处理中间件信息
+    @Value("${takin.enable.middlewareFlag:false}")
+    private boolean middlewareFlag;
+
     @Override
     public PagingList<ApplicationMiddlewareListResponse> page(
-        ListApplicationMiddlewareRequest listApplicationMiddlewareRequest) {
+            ListApplicationMiddlewareRequest listApplicationMiddlewareRequest) {
         PageApplicationMiddlewareParam pageApplicationMiddlewareParam = new PageApplicationMiddlewareParam();
         BeanUtils.copyProperties(listApplicationMiddlewareRequest, pageApplicationMiddlewareParam);
 
@@ -90,7 +95,7 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
 
             // 状态转换
             ApplicationMiddlewareStatusEnum applicationMiddlewareStatusEnum =
-                ApplicationMiddlewareStatusEnum.getByCode(result.getStatus());
+                    ApplicationMiddlewareStatusEnum.getByCode(result.getStatus());
             if (applicationMiddlewareStatusEnum != null) {
                 response.setStatusDesc(applicationMiddlewareStatusEnum.getDesc());
             }
@@ -104,7 +109,7 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
     public ApplicationMiddlewareCountResponse countSome(Long applicationId) {
         PageUtils.clearPageHelper();
         List<ApplicationMiddlewareStatusAboutCountResult> statusMapCountResultList = applicationMiddlewareDAO
-            .listCountByApplicationIdAndStatusAndGroupByStatus(applicationId, null);
+                .listCountByApplicationIdAndStatusAndGroupByStatus(applicationId, null);
 
         if (statusMapCountResultList.isEmpty()) {
             return new ApplicationMiddlewareCountResponse();
@@ -112,8 +117,8 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
 
         // 状态统计转为 状态 -> 统计个数 map
         Map<Integer, Integer> statusAboutCount = statusMapCountResultList.stream()
-            .collect(Collectors.toMap(ApplicationMiddlewareStatusAboutCountResult::getStatus,
-                ApplicationMiddlewareStatusAboutCountResult::getCount, (v1, v2) -> v2));
+                .collect(Collectors.toMap(ApplicationMiddlewareStatusAboutCountResult::getStatus,
+                        ApplicationMiddlewareStatusAboutCountResult::getCount, (v1, v2) -> v2));
 
         ApplicationMiddlewareCountResponse response = new ApplicationMiddlewareCountResponse();
         response.setTotalCount(applicationMiddlewareDAO.countByApplicationIdAndStatus(applicationId, null));
@@ -122,7 +127,7 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
         response.setNotSupportedCount(statusAboutCount.get(ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode()));
         response.setNoneCount(statusAboutCount.get(ApplicationMiddlewareStatusEnum.NONE.getCode()));
         response.setNoSupportRequiredCount(
-            statusAboutCount.get(ApplicationMiddlewareStatusEnum.NO_SUPPORT_REQUIRED.getCode()));
+                statusAboutCount.get(ApplicationMiddlewareStatusEnum.NO_SUPPORT_REQUIRED.getCode()));
 
         return response;
     }
@@ -156,7 +161,7 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
     public List<UpdateApplicationMiddlewareParam> doCompare(List<ApplicationMiddlewareListResult> results) {
         // 转 dto
         List<CompareApplicationMiddlewareDTO> compareApplicationMiddlewareList = DataTransformUtil.list2list(results,
-            CompareApplicationMiddlewareDTO.class);
+                CompareApplicationMiddlewareDTO.class);
 
         // 比对
         middlewareJarService.appCompare(compareApplicationMiddlewareList);
@@ -168,6 +173,9 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
     @Transactional(rollbackFor = Throwable.class)
     @Override
     public void pushMiddlewareList(PushMiddlewareRequest pushMiddlewareRequest) {
+        if (!middlewareFlag) {
+            return;
+        }
         List<PushMiddlewareListRequest> middlewareList = pushMiddlewareRequest.getMiddlewareList();
         if (middlewareList.isEmpty()) {
             return;
@@ -195,9 +203,9 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
             // 新的中间件插入
             log.info("应用中间件上报 --> 插入上报中间件");
             List<CreateApplicationMiddlewareParam> createApplicationMiddlewareParamList =
-                this.listCreateApplicationMiddlewareParam(middlewareList, application);
+                    this.listCreateApplicationMiddlewareParam(middlewareList, application);
             this.isPushError(!applicationMiddlewareDAO.insertBatch(createApplicationMiddlewareParamList),
-                "应用中间件报错失败!");
+                    "应用中间件报错失败!");
 
         } catch (Exception e) {
             // 发生错误, 解锁
@@ -221,20 +229,20 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
 
     @Override
     public Map<String, Map<Integer, Integer>> getApplicationNameAboutStatusCountMap(
-        List<Long> applicationIds) {
+            List<Long> applicationIds) {
         List<Integer> statusList = Arrays.asList(ApplicationMiddlewareStatusEnum.NONE.getCode(),
-            ApplicationMiddlewareStatusEnum.UNKNOWN.getCode(),
-            ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode());
+                ApplicationMiddlewareStatusEnum.UNKNOWN.getCode(),
+                ApplicationMiddlewareStatusEnum.NOT_SUPPORTED.getCode());
         List<ApplicationMiddlewareStatusAboutCountResult> results = applicationMiddlewareDAO
-            .listStatusCountByAndGroupByApplicationNameListAndStatus(applicationIds, statusList);
+                .listStatusCountByAndGroupByApplicationNameListAndStatus(applicationIds, statusList);
         if (results.isEmpty()) {
             return Collections.emptyMap();
         }
 
         return results.stream()
-            .collect(Collectors.groupingBy(ApplicationMiddlewareStatusAboutCountResult::getApplicationName,
-                Collectors.toMap(ApplicationMiddlewareStatusAboutCountResult::getStatus,
-                    ApplicationMiddlewareStatusAboutCountResult::getCount)));
+                .collect(Collectors.groupingBy(ApplicationMiddlewareStatusAboutCountResult::getApplicationName,
+                        Collectors.toMap(ApplicationMiddlewareStatusAboutCountResult::getStatus,
+                                ApplicationMiddlewareStatusAboutCountResult::getCount)));
     }
 
     /**
@@ -267,7 +275,7 @@ public class ApplicationMiddlewareServiceImpl implements ApplicationMiddlewareSe
      * @return 待新增的中间件对象列表
      */
     private List<CreateApplicationMiddlewareParam> listCreateApplicationMiddlewareParam(
-        List<PushMiddlewareListRequest> middlewareList, ApplicationDetailResult application) {
+            List<PushMiddlewareListRequest> middlewareList, ApplicationDetailResult application) {
         return middlewareList.stream().map(pushMiddlewareListRequest -> {
             CreateApplicationMiddlewareParam createParam = new CreateApplicationMiddlewareParam();
             createParam.setApplicationId(application.getApplicationId());

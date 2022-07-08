@@ -82,9 +82,11 @@ public class FileController {
                 throw new RuntimeException("上传文件不能为空");
             }
         }
-        return cloudFileApi.upload(new UploadRequest() {{
+        List<UploadResponse> response = cloudFileApi.upload(new UploadRequest() {{
             setFileList(FileUtil.convertMultipartFileList(file));
         }});
+        FileUtil.deleteTempFile(file);
+        return response;
     }
 
     @PostMapping("/attachment/upload")

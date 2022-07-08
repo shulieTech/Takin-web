@@ -3,6 +3,8 @@ package io.shulie.takin.web.entrypoint.controller.shift;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
@@ -25,6 +27,7 @@ import io.shulie.takin.web.entrypoint.controller.report.ReportLocalController;
 import io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
+import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -352,7 +355,7 @@ public class ShiftCloudController {
     }
 
     @GetMapping("/api/c/getDemands")
-    public String getDemands(@RequestParam("versionId") String versionId){
+    public List<Record> getDemands(@RequestParam("versionId") String versionId){
         String envCode = WebPluginUtils.traceEnvCode();
         // 创建Httpclient对象
         CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -368,15 +371,30 @@ public class ShiftCloudController {
             // 执行http请求
             response = httpClient.execute(httpPost);
             resultString = EntityUtils.toString(response.getEntity(), "UTF8");
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
+            if (StringUtils.isNotBlank(resultString)) {
+                return JSON.parseArray(JSONObject.parseObject(resultString).getJSONObject("data").getString("records"), Record.class);
+            }
+        } catch (Exception e) {} finally {
             try {
                 response.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            } catch (IOException e) {}
         }
-        return resultString;
+        return null;
+    }
+
+    @Data
+    private class Record {
+        private Id id;
+        private Title title;
+    }
+
+    @Data
+    private class Id {
+        private String id;
+    }
+
+    @Data
+    private class Title {
+        private String displayValue;
     }
 }

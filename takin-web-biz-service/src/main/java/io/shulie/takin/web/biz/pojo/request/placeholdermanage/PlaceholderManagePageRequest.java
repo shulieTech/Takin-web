@@ -10,10 +10,10 @@ import lombok.Data;
 @Data
 public class PlaceholderManagePageRequest extends PagingDevice {
 
-    private String key;
+    private String placeholderKey;
 
 
-    private String value;
+    private String placeholderValue;
 
 
     private String remark;

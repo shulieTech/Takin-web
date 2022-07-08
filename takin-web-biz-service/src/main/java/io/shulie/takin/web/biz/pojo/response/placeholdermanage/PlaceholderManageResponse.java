@@ -21,11 +21,10 @@ public class PlaceholderManageResponse extends AuthQueryResponseCommonExt implem
     @ApiModelProperty(value = "id")
     private Long id;
 
-    @ApiModelProperty(value = "占位符标识")
-    private String key;
+    private String placeholderKey;
 
-    @ApiModelProperty(value = "占位符替换内容")
-    private String value;
+    private String placeholderValue;
+
 
     @ApiModelProperty(value = "备注")
     private String remark;

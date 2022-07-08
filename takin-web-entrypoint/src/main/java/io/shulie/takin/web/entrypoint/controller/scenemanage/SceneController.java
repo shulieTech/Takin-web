@@ -13,6 +13,8 @@ import com.alibaba.fastjson.TypeReference;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.sun.jna.platform.win32.W32Errors;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.ext.content.enginecall.PtConfigExt;
@@ -45,8 +47,11 @@ import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
+import io.shulie.takin.web.data.mapper.mysql.YVersionMapper;
 import io.shulie.takin.web.data.model.mysql.ApplicationMntEntity;
 import io.shulie.takin.web.data.model.mysql.SceneEntity;
+import io.shulie.takin.web.data.model.mysql.ScriptFileRefEntity;
+import io.shulie.takin.web.data.model.mysql.YVersionEntity;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
@@ -55,6 +60,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -97,6 +103,9 @@ public class SceneController {
     @Autowired
     private SceneExcludedApplicationDAO excludedApplicationDAO;
 
+    @Autowired
+    private YVersionMapper yVersionMapper;
+
     /**
      * 创建压测场景 - 新
      *
@@ -128,7 +137,28 @@ public class SceneController {
         if (null != request.getBasicInfo() && null != request.getBasicInfo().getName()) {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
         }
+
+        String versionId = request.getVersionId();
+        if (StringUtils.isNotBlank(versionId)) {
+            String demandIds = request.getDemandIds();
+            createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),sceneId,false);
+        }
+
         return ResponseResult.success(sceneId);
+    }
+
+    private void createVersion(String versionId, String demandIds, String projectId,long sceneId,boolean delete) {
+        if (delete) {
+            LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(YVersionEntity::getSid,sceneId);
+            yVersionMapper.delete(wrapper);
+        }
+        YVersionEntity entity = new YVersionEntity();
+        entity.setPid(projectId);
+        entity.setDids(demandIds);
+        entity.setVid(versionId);
+        entity.setSid(sceneId);
+        yVersionMapper.insert(entity);
     }
 
     /**
@@ -168,6 +198,13 @@ public class SceneController {
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, request.getBasicInfo().getName());
             OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_SELECTIVE_CONTENT, "");
         }
+
+        String versionId = request.getVersionId();
+        if (StringUtils.isNotBlank(versionId)) {
+            String demandIds = request.getDemandIds();
+            createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),request.getBasicInfo().getSceneId(),false);
+        }
+
         return ResponseResult.success(updateResult);
     }
 
@@ -298,6 +335,16 @@ public class SceneController {
         // 添加排除的应用
         List<Long> excludedApplicationIds = excludedApplicationDAO.listApplicationIdsBySceneId(sceneId);
         copyDetailResult.getDataValidation().setExcludedApplicationIds(DataTransformUtil.list2list(excludedApplicationIds, String.class));
+
+        LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(YVersionEntity::getDids,YVersionEntity::getVid);
+        wrapper.eq(YVersionEntity::getSid,sceneId);
+        YVersionEntity entity = yVersionMapper.selectOne(wrapper);
+        if (null != entity) {
+            copyDetailResult.setDids(entity.getDids());
+            copyDetailResult.setVid(entity.getVid());
+        }
+
         return ResponseResult.success(copyDetailResult);
     }
 

@@ -58,7 +58,7 @@ public class PlaceholderManageController {
 
     @GetMapping("/list")
     @ApiOperation(value = "查询占位符")
-    public PagingList<PlaceholderManageResponse> listPlaceholder(@RequestBody @Valid PlaceholderManagePageRequest request){
+    public PagingList<PlaceholderManageResponse> listPlaceholder(PlaceholderManagePageRequest request){
         return placeholderManageService.listPlaceholder(request);
     }
 

@@ -5,6 +5,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
@@ -22,6 +23,8 @@ import io.shulie.takin.web.biz.service.UserService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.common.common.Response;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.data.mapper.mysql.YVersionMapper;
+import io.shulie.takin.web.data.model.mysql.YVersionEntity;
 import io.shulie.takin.web.entrypoint.controller.report.ReportController;
 import io.shulie.takin.web.entrypoint.controller.report.ReportLocalController;
 import io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController;
@@ -79,6 +82,9 @@ public class ShiftCloudController {
     private ReportLocalController reportLocalController;
 
     private static final Map<Integer, String> TASK_CACHE = new ConcurrentHashMap();
+
+    @Autowired
+    private YVersionMapper yVersionMapper;
 
     //2.1
     @Deprecated
@@ -272,7 +278,13 @@ public class ShiftCloudController {
             data.put("task_progress", String.valueOf(tm).substring(0, String.valueOf(tm).indexOf(".")) + "%");//TODO testTotalTime is null?
             if (null != taskStatus && taskStatus == 2) {
                 Map analysis = new HashMap();
-                analysis.put("coverDemand", 0);
+                LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
+                wrapper.select(YVersionEntity::getDids,YVersionEntity::getVid);
+                wrapper.eq(YVersionEntity::getSid,sceneId);
+                YVersionEntity entity = yVersionMapper.selectOne(wrapper);
+                int coverDemand = 0;
+                if (null != entity) coverDemand = JSON.parseArray(entity.getDids()).size();
+                analysis.put("coverDemand", coverDemand);
                 if (null != reportCount && reportCount.getSuccess()) {
                     ReportCountDTO dto = reportCount.getData();
                     if (null != dto) {

@@ -191,7 +191,7 @@
             <dependency>
                 <groupId>io.shulie.takin</groupId>
                 <artifactId>takin-cloud-sdk</artifactId>
-                <version>${takin.cloud.sdk.version}</version>
+                <version>${takin.cloud.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.shulie.takin</groupId>

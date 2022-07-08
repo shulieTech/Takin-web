@@ -16,11 +16,11 @@ public class PlaceholderManageEntity extends UserBaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @TableField(value = "key")
-    private String key;
+    @TableField(value = "placeholder_key")
+    private String placeholderKey;
 
-    @TableField(value = "value")
-    private String value;
+    @TableField(value = "placeholder_value")
+    private String placeholderValue;
 
     @TableField(value = "remark")
     private String remark;

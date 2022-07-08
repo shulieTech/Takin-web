@@ -23,6 +23,10 @@ import lombok.Setter;
 @Data
 @ApiModel(value = "创建/修改 场景 - 新")
 public class NewSceneRequest {
+    @ApiModelProperty(value = "版本Id")
+    private String versionId;
+    @ApiModelProperty(value = "需求Ids")
+    private String demandIds;
     @ApiModelProperty(value = "基础信息")
     @NotNull(message = "场景基础信息不能为空")
     private BasicInfo basicInfo;
@@ -41,6 +45,16 @@ public class NewSceneRequest {
     @ApiModelProperty(value = "数据验证配置")
     @NotNull(message = "数据验证配置不能为空")
     private DataValidation dataValidation;
+    @ApiModelProperty(value = "告警通知邮件")
+    private String notifyEmails;
+
+    public BasicInfo getBasicInfo() {
+        this.basicInfo.setNotifyEmails(this.getNotifyEmails());
+        return basicInfo;
+    }
+    public void setBasicInfo(BasicInfo basicInfo) {
+        this.basicInfo = basicInfo;
+    }
 
     @Getter
     @Setter
@@ -56,6 +70,8 @@ public class NewSceneRequest {
         @ApiModelProperty(value = "压测场景名称")
         @NotBlank(message = "压测场景名称不能为空")
         private String name;
+        @ApiModelProperty(value = "告警通知邮件")
+        private String notifyEmails;
         @NotNull(message = "业务流程主键不能为空")
         @ApiModelProperty(value = "业务流程主键")
         private Long businessFlowId;

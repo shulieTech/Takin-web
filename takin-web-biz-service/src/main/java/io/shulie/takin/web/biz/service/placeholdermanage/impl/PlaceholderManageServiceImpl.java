@@ -37,19 +37,19 @@ public class PlaceholderManageServiceImpl implements PlaceholderManageService {
 
     @Override
     public void createPlaceholder(PlaceholderManageRequest createRequest) {
-        if (!createRequest.getKey().startsWith(placeholderKeyPre)) {
+        if (!createRequest.getPlaceholderKey().startsWith(placeholderKeyPre)) {
             throw new TakinWebException(TakinWebExceptionEnum.PLACEHOLDER_MANAGE_CREATE_ERROR, "占位符的标识必须以" + placeholderKeyPre + "开头！");
         }
         QueryWrapper<PlaceholderManageEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(PlaceholderManageEntity::getKey, createRequest.getKey());
+        queryWrapper.lambda().eq(PlaceholderManageEntity::getPlaceholderKey, createRequest.getPlaceholderKey());
         List<PlaceholderManageEntity> list = placeholderManageDAO.list(queryWrapper);
         if (CollectionUtils.isNotEmpty(list)) {
             throw new TakinWebException(TakinWebExceptionEnum.PLACEHOLDER_MANAGE_CREATE_ERROR, "当前占位符的key已经被使用，请修改后再进行创建！");
         }
 
         PlaceholderManageEntity placeholderManageEntity = new PlaceholderManageEntity();
-        placeholderManageEntity.setKey(createRequest.getKey());
-        placeholderManageEntity.setValue(createRequest.getValue());
+        placeholderManageEntity.setPlaceholderKey(createRequest.getPlaceholderKey());
+        placeholderManageEntity.setPlaceholderValue(createRequest.getPlaceholderValue());
         placeholderManageEntity.setRemark(createRequest.getRemark());
         placeholderManageDAO.save(placeholderManageEntity);
     }
@@ -60,25 +60,25 @@ public class PlaceholderManageServiceImpl implements PlaceholderManageService {
         if (byId == null) {
             throw new TakinWebException(TakinWebExceptionEnum.PLACEHOLDER_MANAGE_UPDATE_ERROR, "修改的占位符不存在，请刷新页面后再试！");
         }
-        if (request.getKey() != null && !byId.getKey().equals(request.getKey())) {
+        if (request.getPlaceholderKey() != null && !byId.getPlaceholderKey().equals(request.getPlaceholderKey())) {
             QueryWrapper<PlaceholderManageEntity> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(PlaceholderManageEntity::getKey, request.getKey());
+            queryWrapper.lambda().eq(PlaceholderManageEntity::getPlaceholderKey, request.getPlaceholderKey());
             List<PlaceholderManageEntity> list = placeholderManageDAO.list(queryWrapper);
             if (CollectionUtils.isNotEmpty(list)) {
                 throw new TakinWebException(TakinWebExceptionEnum.PLACEHOLDER_MANAGE_UPDATE_ERROR, "当前占位符的key已经被使用！");
             }
         }
-        if (StringUtil.isNotEmpty(request.getKey())) {
-            if (!request.getKey().startsWith(placeholderKeyPre)) {
+        if (StringUtil.isNotEmpty(request.getPlaceholderKey())) {
+            if (!request.getPlaceholderKey().startsWith(placeholderKeyPre)) {
                 throw new TakinWebException(TakinWebExceptionEnum.PLACEHOLDER_MANAGE_UPDATE_ERROR, "占位符的标识必须以" + placeholderKeyPre + "开头！");
             }
-            byId.setKey(request.getKey());
+            byId.setPlaceholderKey(request.getPlaceholderKey());
         }
-        if (StringUtil.isNotEmpty(request.getValue())) {
-            byId.setKey(request.getValue());
+        if (StringUtil.isNotEmpty(request.getPlaceholderValue())) {
+            byId.setPlaceholderValue(request.getPlaceholderValue());
         }
         if (StringUtil.isNotEmpty(request.getRemark())) {
-            byId.setKey(request.getRemark());
+            byId.setRemark(request.getRemark());
         }
         byId.setUpdateTime(new Date());
         placeholderManageDAO.updateById(byId);
@@ -99,10 +99,10 @@ public class PlaceholderManageServiceImpl implements PlaceholderManageService {
         Page<PlaceholderManageEntity> page = new Page<>(request.getCurrent() + 1, request.getPageSize());
         QueryWrapper<PlaceholderManageEntity> wrapper = new QueryWrapper<>();
         if (StringUtil.isNotEmpty(request.getKey())) {
-            wrapper.lambda().eq(PlaceholderManageEntity::getKey, request.getKey());
+            wrapper.lambda().eq(PlaceholderManageEntity::getPlaceholderKey, request.getKey());
         }
         if (StringUtil.isNotEmpty(request.getValue())) {
-            wrapper.lambda().like(PlaceholderManageEntity::getValue, request.getValue());
+            wrapper.lambda().like(PlaceholderManageEntity::getPlaceholderValue, request.getValue());
         }
         if (StringUtil.isNotEmpty(request.getRemark())) {
             wrapper.lambda().like(PlaceholderManageEntity::getRemark, request.getRemark());
@@ -121,6 +121,6 @@ public class PlaceholderManageServiceImpl implements PlaceholderManageService {
         QueryWrapper<PlaceholderManageEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(PlaceholderManageEntity::getIsDeleted,0);
         List<PlaceholderManageEntity> manageEntities = placeholderManageDAO.list(queryWrapper);
-        return manageEntities.stream().collect(Collectors.toMap(PlaceholderManageEntity::getKey, PlaceholderManageEntity::getValue));
+        return manageEntities.stream().collect(Collectors.toMap(PlaceholderManageEntity::getPlaceholderKey, PlaceholderManageEntity::getPlaceholderValue));
     }
 }

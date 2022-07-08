@@ -12,10 +12,10 @@ public class PlaceholderManageRequest {
     private Long Id;
 
     @ApiModelProperty("占位符标识")
-    private String key;
+    private String placeholderKey;
 
     @ApiModelProperty("占位符替换值")
-    private String value;
+    private String placeholderValue;
 
     @ApiModelProperty("备注")
     private String remark;

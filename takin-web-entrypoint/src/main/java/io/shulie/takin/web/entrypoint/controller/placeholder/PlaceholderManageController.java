@@ -29,7 +29,7 @@ public class PlaceholderManageController {
     @PostMapping
     @ApiOperation(value = "创建占位符")
     public ResponseResult<String> createPlaceholder(@RequestBody @Valid PlaceholderManageRequest createRequest){
-        if (createRequest == null || StringUtils.isBlank(createRequest.getKey()) || StringUtils.isBlank(createRequest.getValue())){
+        if (createRequest == null || StringUtils.isBlank(createRequest.getPlaceholderKey()) || StringUtils.isBlank(createRequest.getPlaceholderValue())){
             return ResponseResult.fail("创建占位符失败,缺失关键参数","");
         }
         placeholderManageService.createPlaceholder(createRequest);

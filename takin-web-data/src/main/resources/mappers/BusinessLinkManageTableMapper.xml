@@ -47,4 +47,14 @@
             ENTRACE = #{param.entrace}
         WHERE LINK_ID = #{param.linkId}
     </update>
+
+    <update id="clearCategory" parameterType="java.lang.Long">
+        update t_business_link_manage_table set category = null
+        <where>
+            category in
+            <foreach collection="list" item="category" open="(" close=")" separator=",">
+                #{category}
+            </foreach>
+        </where>
+    </update>
 </mapper>

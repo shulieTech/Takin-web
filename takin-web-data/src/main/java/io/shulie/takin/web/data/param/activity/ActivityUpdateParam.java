@@ -65,4 +65,9 @@ public class ActivityUpdateParam extends UserCommonExt {
      * 虚拟业务mq类型
      */
     private EntranceTypeEnum serverMiddlewareType;
+
+    /**
+     * 业务分类Id
+     */
+    private Long category;
 }

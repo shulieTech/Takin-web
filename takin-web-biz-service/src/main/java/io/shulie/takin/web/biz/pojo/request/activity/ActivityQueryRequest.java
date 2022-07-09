@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.pojo.request.activity;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.shulie.takin.common.beans.page.PagingDevice;
 import io.shulie.takin.web.common.annocation.Trimmed;
@@ -32,4 +34,11 @@ public class ActivityQueryRequest extends PagingDevice {
 
     @ApiModelProperty(name= "type",value = "正常、虚拟:0:正常：1虚拟")
     private Integer type;
+
+    @ApiModelProperty(name= "category",value = "分类Id")
+    private Long category;
+
+    public Long getCategory() {
+        return Objects.isNull(category) || category < 0 ? 0L : category;
+    }
 }

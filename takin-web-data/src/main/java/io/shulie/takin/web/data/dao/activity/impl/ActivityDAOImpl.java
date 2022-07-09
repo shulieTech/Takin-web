@@ -146,6 +146,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
             businessLinkManageTableEntity.setBindBusinessId(param.getBindBusinessId());
         }
         businessLinkManageTableEntity.setPersistence(param.isPersistence());
+        businessLinkManageTableEntity.setCategory(param.getCategory());
         businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
         param.setLinkId(businessLinkManageTableEntity.getLinkId());
         return businessLinkManageTableEntity.getLinkId();
@@ -220,6 +221,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         result.setIsCore(businessLinkManageTableEntity.getIsCore());
         result.setBusinessDomain(businessLinkManageTableEntity.getBusinessDomain());
         result.setApplicationName(businessLinkManageTableEntity.getApplicationName());
+        result.setCategory(businessLinkManageTableEntity.getCategory());
         return result;
     }
 
@@ -280,6 +282,7 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         if(StringUtils.isNotBlank(updateParam.getActivityName())) {
             businessLinkManageTableEntity.setApplicationName(updateParam.getApplicationName());
         }
+        businessLinkManageTableEntity.setCategory(updateParam.getCategory());
         return businessLinkManageTableMapper.updateById(businessLinkManageTableEntity);
     }
 
@@ -329,6 +332,8 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
         if(param.getType() != null) {
             lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getType, param.getType());
         }
+        List<Long> categories = param.getCategories();
+        lambdaQueryWrapper.in(CollectionUtils.isNotEmpty(categories), BusinessLinkManageTableEntity::getCategory, categories);
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
         lambdaQueryWrapper.eq(BusinessLinkManageTableEntity::isPersistence, 1);
 

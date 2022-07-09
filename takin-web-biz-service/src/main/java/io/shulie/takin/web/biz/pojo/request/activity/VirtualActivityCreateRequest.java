@@ -44,4 +44,7 @@ public class VirtualActivityCreateRequest {
 
     @ApiModelProperty(name = "methodName", value = "请求方式：GET,PSOT")
     private String methodName;
+
+    @ApiModelProperty(name= "category",value = "分类Id")
+    private Long category;
 }

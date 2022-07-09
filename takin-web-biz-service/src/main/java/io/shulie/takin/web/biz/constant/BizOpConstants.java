@@ -80,6 +80,7 @@ public final class BizOpConstants {
         public static final String APPLICATION_MANAGE = "appManage";
         public static final String PRESSURE_TEST_MANAGE = "pressureTestManage";
         public static final String PRESSURE_TEST_SCENE = "pressureTestManage_pressureTestScene";
+        public static final String PRESSURE_TEST_MACHINE = "pressureTestManage_testMachines";
         public static final String PRESSURE_TEST_REPORT = "pressureTestManage_pressureTestReport";
         public static final String PRESSURE_STATISTIC = "pressureTestManage_pressureTestStatistic";
         public static final String CONFIG_CENTER = "configCenter_globalConfig";

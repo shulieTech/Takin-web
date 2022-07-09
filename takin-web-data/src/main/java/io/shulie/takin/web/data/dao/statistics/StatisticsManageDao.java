@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.dao.statistics;
 
 import java.util.List;
+import java.util.Map;
 
 import io.shulie.takin.web.data.result.statistics.PressureListTotalResult;
 import io.shulie.takin.web.data.result.statistics.PressurePieTotalResult;
@@ -79,6 +80,5 @@ public interface StatisticsManageDao {
         + " </script>")
     List<ScriptLabelListTotalResult> getScriptLabelListTotal(@Param("startTime") String startTime,
         @Param("endTime") String endTime);
-
 
 }

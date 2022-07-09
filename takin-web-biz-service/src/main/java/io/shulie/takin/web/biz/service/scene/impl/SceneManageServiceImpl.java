@@ -885,7 +885,7 @@ public class SceneManageServiceImpl implements SceneManageService {
         createReq.setBasicInfo(basicInfo);
         createReq.setAnalysisResult(detailResult.getAnalysisResult());
         if (detailResult.getContent() != null){
-            createReq.setContent((List<SceneRequest.Content>) detailResult.getContent().values());
+            createReq.setContent(new ArrayList<>(detailResult.getContent().values()));
         }
         createReq.setConfig(detailResult.getConfig());
         createReq.setGoal(detailResult.getGoal());

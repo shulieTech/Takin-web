@@ -10,6 +10,7 @@ import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryByIdsReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -85,7 +86,7 @@ public interface SceneManageService {
 
     /**
      * 复制压测场景
-     * @param manageServiceById
+     * @param detailResult
      */
-    void copyScene(SceneDetailResponse manageServiceById);
+    void copyScene(SceneDetailV2Response detailResult);
 }

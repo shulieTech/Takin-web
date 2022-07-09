@@ -16,6 +16,8 @@ import com.alibaba.fastjson.JSON;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.SceneManageConstant;
@@ -34,6 +36,7 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageQueryVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneManageWrapperVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.SceneScriptRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
+import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.sdk.model.common.TimeBean;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneIpNumReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
@@ -45,9 +48,7 @@ import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneStartPreCheckReq;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.ScriptCheckAndUpdateReq;
 import io.shulie.takin.cloud.sdk.model.request.scenetask.SceneStartCheckResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageListResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
-import io.shulie.takin.cloud.sdk.model.response.scenemanage.ScriptCheckResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.*;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.convert.scenemanage.SceneManageConvert;
@@ -80,10 +81,13 @@ import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import io.shulie.takin.web.common.util.DataTransformUtil;
 import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
+import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.param.CreateSceneExcludedApplicationParam;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
+import io.shulie.takin.web.data.result.scriptmanage.ScriptFileRefResult;
 import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.diff.api.scenetask.SceneTaskApi;
@@ -128,6 +132,12 @@ public class SceneManageServiceImpl implements SceneManageService {
 
     @Autowired
     private SceneExcludedApplicationDAO excludedApplicationDAO;
+    @Resource
+    private SceneMixApi multipleSceneApi;
+    @Resource
+    ScriptFileRefDAO scriptFileRefDao;
+    @Resource
+    FileManageDAO fileManageDao;
 
     @Override
     public SceneDetailResponse getById(Long sceneId) {
@@ -867,42 +877,61 @@ public class SceneManageServiceImpl implements SceneManageService {
     }
 
     @Override
-    public void copyScene(SceneDetailResponse manageServiceById) {
-        SceneManageWrapperVO vo = new SceneManageWrapperVO();
+    public void copyScene(SceneDetailV2Response detailResult) {
+        SceneRequest createReq = new SceneRequest();
+        SceneRequest.BasicInfo basicInfo = detailResult.getBasicInfo();
+        basicInfo.setSceneId(null);
+        basicInfo.setName(basicInfo.getName() + "_COPY");
+        createReq.setBasicInfo(basicInfo);
+        createReq.setAnalysisResult(detailResult.getAnalysisResult());
+        if (detailResult.getContent() != null){
+            createReq.setContent((List<SceneRequest.Content>) detailResult.getContent().values());
+        }
+        createReq.setConfig(detailResult.getConfig());
+        createReq.setGoal(detailResult.getGoal());
+        List<SceneRequest.MonitoringGoal> monitoringGoal = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(detailResult.getDestroyMonitoringGoal())){
+            detailResult.getDestroyMonitoringGoal().forEach(o -> {
+                o.setId(null);
+            });
+            monitoringGoal.addAll(detailResult.getDestroyMonitoringGoal());
+        }
+        if (CollectionUtils.isNotEmpty(detailResult.getWarnMonitoringGoal())){
+            detailResult.getWarnMonitoringGoal().forEach(o -> {
+                o.setId(null);
+            });
+            monitoringGoal.addAll(detailResult.getWarnMonitoringGoal());
+        }
+        createReq.setMonitoringGoal(monitoringGoal);
+        createReq.setDataValidation(detailResult.getDataValidation());
+        createReq.setFile(assembleFileList(detailResult.getBasicInfo().getScriptId()));
+        WebPluginUtils.fillCloudUserData(createReq);
+        multipleSceneApi.create(createReq);
 
-        vo.setPressureTestSceneName(manageServiceById.getPressureTestSceneName() + "_copy");
-        vo.setPressureType(manageServiceById.getPressureType());
-        vo.setConfigType(manageServiceById.getConfigType());
-        vo.setScriptId(manageServiceById.getScriptId());
-        vo.setBusinessActivityConfig(SceneManageConvert.INSTANCE.ofBusinessActivityConfig(manageServiceById.getBusinessActivityConfig()));
-        vo.setConcurrenceNum(manageServiceById.getConcurrenceNum());
-        vo.setIpNum(manageServiceById.getIpNum());
-        vo.setPressureTestTime(SceneManageConvert.INSTANCE.ofTimeVO(manageServiceById.getPressureTestTime()));
-        vo.setPressureMode(manageServiceById.getPressureMode());
-        vo.setIncreasingTime(SceneManageConvert.INSTANCE.ofTimeVO(manageServiceById.getIncreasingTime()));
-        vo.setStep(manageServiceById.getStep());
-        vo.setScriptType(manageServiceById.getScriptType());
-        vo.setUploadFile(SceneManageConvert.INSTANCE.ofSceneScriptRefVO(manageServiceById.getUploadFile()));
-        vo.setStopCondition(SceneManageConvert.INSTANCE.ofSceneSlaRefVO(manageServiceById.getStopCondition()));
-        vo.setWarningCondition(SceneManageConvert.INSTANCE.ofSceneSlaRefVO(manageServiceById.getWarningCondition()));
-        vo.setBusinessFlowId(Long.parseLong(manageServiceById.getBusinessFlowId()));
-        vo.setIsScheduler(manageServiceById.getIsScheduler());
-        if (manageServiceById.getExecuteTime() != null){
-            vo.setExecuteTime(DateUtils.transferDate(manageServiceById.getExecuteTime(), DateUtils.FORMATE_YMDHMS,Date.class));
-        }
-        vo.setScheduleInterval(manageServiceById.getScheduleInterval());
-        vo.setScriptAnalysisResult(manageServiceById.getScriptAnalysisResult());
-        if (CollectionUtils.isNotEmpty(manageServiceById.getExcludedApplicationIds())){
-            List<Long> longList = manageServiceById.getExcludedApplicationIds().stream().map(Long::parseLong).collect(Collectors.toList());
-            vo.setExcludedApplicationIds(longList);
-        }
-        vo.setUserId(manageServiceById.getUserId());
-        vo.setTenantId(manageServiceById.getTenantId());
-        vo.setEnvCode(manageServiceById.getEnvCode());
-        vo.setFilterSql(manageServiceById.getFilterSql());
-        vo.setUserName(manageServiceById.getUserName());
-        vo.setTenantCode(manageServiceById.getTenantCode());
-        this.addScene(vo);
+    }
+
+    /**
+     * 组装场景文件列表
+     *
+     * @param scriptId 脚本主键
+     * @return 文件列表
+     */
+    private List<SceneRequest.File> assembleFileList(long scriptId) {
+        // 根据脚本主键获取文件主键集合
+        List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDao.selectFileIdsByScriptDeployId(scriptId);
+        // 根据文件主键集合查询文件信息
+        List<Long> fileIds = scriptFileRefResults.stream().map(ScriptFileRefResult::getFileId).collect(Collectors.toList());
+        // 组装返回数据
+        return fileManageDao.selectFileManageByIds(fileIds).stream().map(t -> {
+            Map<String, Object> extend = JSONObject.parseObject(t.getFileExtend(), new TypeReference<Map<String, Object>>() {
+            });
+            return new SceneRequest.File() {{
+                setName(t.getFileName());
+                setPath(t.getUploadPath());
+                setType(t.getFileType());
+                setExtend(extend);
+            }};
+        }).collect(Collectors.toList());
     }
 
 }

@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 
 import com.alibaba.fastjson.JSON;
@@ -14,7 +15,10 @@ import com.pamirs.takin.entity.domain.dto.scenemanage.SceneBusinessActivityRefDT
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneManageWrapperDTO;
 import com.pamirs.takin.entity.domain.dto.scenemanage.SceneScriptRefDTO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.*;
+import io.shulie.takin.cloud.entrypoint.scene.mix.SceneMixApi;
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageDeleteReq;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
@@ -34,6 +38,7 @@ import io.shulie.takin.web.common.domain.WebResponse;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.JsonUtil;
+import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -62,6 +67,8 @@ public class SceneManageController {
 
     @Autowired
     private SceneSchedulerTaskService sceneSchedulerTaskService;
+    @Resource
+    private SceneMixApi multipleSceneApi;
 
     @PostMapping
     @ApiOperation("新增压测场景")
@@ -94,17 +101,23 @@ public class SceneManageController {
             needAuth = ActionTypeEnum.CREATE
     )
     public ResponseResult<Object> copy(@RequestBody SceneManageCopyVO sceneManageCopyVO) throws TakinWebException {
-        SceneDetailResponse manageServiceById = sceneManageService.getById(sceneManageCopyVO.getId());
-        if (manageServiceById == null){
+        SceneManageQueryReq request = new SceneManageQueryReq() {
+            {
+                setSceneId(sceneManageCopyVO.getId());
+            }
+        };
+        WebPluginUtils.fillCloudUserData(request);
+        SceneDetailV2Response detailResult = multipleSceneApi.detail(request);
+        if (detailResult == null || detailResult.getBasicInfo() == null){
             return ResponseResult.fail("找不到当前压测场景","请刷新页面再尝试");
         }
 
-        if (manageServiceById.getPressureTestSceneName().length() >= 60){
+        if (detailResult.getBasicInfo().getName().length() >= 60){
             return ResponseResult.fail("场景名称超出当前设定长度,","修改名称够再进行复制");
         }
-        sceneManageService.copyScene(manageServiceById);
+        sceneManageService.copyScene(detailResult);
         OperationLogContextHolder.operationType(BizOpConstants.OpTypes.COPY);
-        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, manageServiceById.getPressureTestSceneName());
+        OperationLogContextHolder.addVars(BizOpConstants.Vars.SCENE_NAME, detailResult.getBasicInfo().getName());
         return ResponseResult.success();
     }
 

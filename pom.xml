@@ -42,8 +42,8 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <!-- biz version -->
         <takin.web.version>takin-web-5.5.1.1</takin.web.version>
-        <takin.cloud.sdk.version>5.2.8</takin.cloud.sdk.version>
-        <takin.cloud.version>5.2.8</takin.cloud.version>
+        <takin.cloud.sdk.version>5.2.8.2</takin.cloud.sdk.version>
+        <takin.cloud.version>5.2.8.2</takin.cloud.version>
         <takin.common.version>common-2.0.2-SNAPSHOT</takin.common.version>
         <command.channel>common-2.0.0-SNAPSHOT</command.channel>
         <pardar.log.protocol.version>2.0.6.2</pardar.log.protocol.version>

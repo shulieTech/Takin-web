@@ -239,6 +239,7 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
         scriptFile.setFileType(FileTypeEnum.SCRIPT.getCode());
         scriptFile.setUploadTime(new Date());
         scriptFile.setDownloadUrl(uploadResponse.getDownloadUrl());
+        scriptFile.setIsDeleted(0);
         businessFlowParseRequest.setScriptFile(scriptFile);
 
         //todo 后面可以把插件也加上

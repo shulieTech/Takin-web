@@ -916,7 +916,8 @@ public class SceneManageServiceImpl implements SceneManageService {
      * @param scriptId 脚本主键
      * @return 文件列表
      */
-    private List<SceneRequest.File> assembleFileList(long scriptId) {
+    @Override
+    public List<SceneRequest.File> assembleFileList(long scriptId) {
         // 根据脚本主键获取文件主键集合
         List<ScriptFileRefResult> scriptFileRefResults = scriptFileRefDao.selectFileIdsByScriptDeployId(scriptId);
         // 根据文件主键集合查询文件信息

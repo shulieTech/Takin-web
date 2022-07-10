@@ -26,7 +26,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/pressureMachine")
 @Api(tags = "压力机管理", value = "压力机管理")
-public class PressureMachineController {
+public class PressureTestMachineController {
 
     @Resource
     private CloudMachineApi cloudMachineApi;

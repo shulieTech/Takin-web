@@ -16,16 +16,16 @@ public class GlobalSceneManageEntity extends UserBaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @TableId(value = "scene_manage_id")
+    @TableField(value = "scene_manage_id")
     private Long sceneManageId;
 
-    @TableId(value = "scene_name")
+    @TableField(value = "scene_name")
     private String sceneName;
 
-    @TableId(value = "scene_detail")
+    @TableField(value = "scene_detail")
     private String sceneDetail;
 
-    @TableId(value = "file_content")
+    @TableField(value = "file_content")
     private String fileContent;
     /**
      * 创建时间

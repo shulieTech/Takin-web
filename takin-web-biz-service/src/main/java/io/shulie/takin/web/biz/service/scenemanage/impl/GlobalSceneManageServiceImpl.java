@@ -3,6 +3,8 @@ package io.shulie.takin.web.biz.service.scenemanage.impl;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pamirs.takin.common.constant.TakinErrorEnum;
 import io.shulie.takin.cloud.common.utils.JmxUtil;
 import io.shulie.takin.cloud.entrypoint.file.CloudFileApi;
@@ -14,13 +16,19 @@ import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageQueryReq;
 import io.shulie.takin.cloud.sdk.model.response.file.UploadResponse;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.file.FileManagerHelper;
 import io.shulie.takin.utils.json.JsonHelper;
+import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.biz.convert.placeholdermanage.PlaceholderManageConvert;
+import io.shulie.takin.web.biz.convert.scenemanage.SceneManageConvert;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.placeholdermanage.PlaceholderManageResponse;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.GlobalSceneManageResponse;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scenemanage.GlobalSceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
@@ -33,6 +41,7 @@ import io.shulie.takin.web.data.dao.scene.SceneLinkRelateDAO;
 import io.shulie.takin.web.data.dao.scenemanage.GlobalSceneManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
 import io.shulie.takin.web.data.model.mysql.GlobalSceneManageEntity;
+import io.shulie.takin.web.data.model.mysql.PlaceholderManageEntity;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateParam;
 import io.shulie.takin.web.data.result.filemanage.FileManageResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
@@ -180,6 +189,24 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
         createReq.setFile(sceneManageService.assembleFileList(businessFlow.getScriptDeployId()));
         WebPluginUtils.fillCloudUserData(createReq);
         sceneMixApi.create(createReq);
+    }
+
+    @Override
+    public PagingList<GlobalSceneManageResponse> list(Integer current, Integer pageSize, String name) {
+
+        Page<GlobalSceneManageEntity> page = new Page<>(current + 1, pageSize);
+        QueryWrapper<GlobalSceneManageEntity> wrapper = new QueryWrapper<>();
+        if (StringUtil.isNotEmpty(name)) {
+            wrapper.lambda().like(GlobalSceneManageEntity::getSceneName, name);
+        }
+
+        Page<GlobalSceneManageEntity> globalSceneManageEntityPage = globalSceneManageDAO.page(page, wrapper);
+        if (globalSceneManageEntityPage == null) {
+            return PagingList.empty();
+        }
+        List<GlobalSceneManageEntity> records = globalSceneManageEntityPage.getRecords();
+        List<GlobalSceneManageResponse> globalSceneManageResponses = SceneManageConvert.INSTANCE.ofGlobalSceneManageResponse(records);
+        return PagingList.of(globalSceneManageResponses, globalSceneManageEntityPage.getTotal());
     }
 
     private SceneResult createBusinessFlow(GlobalSceneManageEntity globalSceneManageEntity){

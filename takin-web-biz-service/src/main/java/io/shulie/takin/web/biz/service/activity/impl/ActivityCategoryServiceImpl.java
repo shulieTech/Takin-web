@@ -171,19 +171,22 @@ public class ActivityCategoryServiceImpl implements ActivityCategoryService {
         if (descendantIds.contains(destCategoryId)) {
             throw new RuntimeException("不允许移动到子级中");
         }
+        String sourceNewPath = destRelationPath + sourceCategoryId;
+        String sourceNewRelationPath = ActivityCategoryDAO.completedEndIfNecessary(sourceNewPath);
         // 递归子级
         descendantIds.remove(sourceCategoryId);
+        sourceCategory.setGmtUpdate(date);
+        sourceCategory.setParentId(destCategoryId);
+        sourceCategory.setRelationPath(sourceNewPath);
         if (!CollectionUtils.isEmpty(descendantIds)) {
+            // 递归子级替换为直接子级的relationPath
             List<ActivityCategoryEntity> descendants = activityCategoryDAO.findByIds(descendantIds);
             descendants.forEach(category -> {
-                category.setRelationPath(category.getRelationPath().replaceFirst(sourceRelationPath, destRelationPath));
+                category.setRelationPath(category.getRelationPath().replaceFirst(sourceRelationPath, sourceNewRelationPath));
                 category.setGmtUpdate(date);
             });
             updateCategory.addAll(descendants);
         }
-        sourceCategory.setGmtUpdate(date);
-        sourceCategory.setParentId(destCategoryId);
-        sourceCategory.setRelationPath(destRelationPath + sourceCategoryId);
         updateCategory.add(sourceCategory);
         activityCategoryDAO.updateBatchById(updateCategory);
     }

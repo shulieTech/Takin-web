@@ -74,5 +74,5 @@ public class ActivityResult {
      */
     private String serverMiddlewareType;
 
-
+    private Long category;
 }

@@ -94,4 +94,7 @@ public class ActivityResponse {
     @ApiModelProperty(name = "businessType", value = "业务活动类型，正常：0，虚拟：1")
     private Integer businessType;
 
+    @ApiModelProperty(name= "category",value = "分类Id")
+    private Long category;
+
 }

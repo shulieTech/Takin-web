@@ -67,4 +67,9 @@ public class ActivityCreateParam extends UserCommonExt {
     private EntranceTypeEnum serverMiddlewareType;
 
     private boolean persistence = true;
+
+    /**
+     * 业务分类Id
+     */
+    private Long category;
 }

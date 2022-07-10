@@ -21,4 +21,6 @@ public interface BusinessLinkManageTableMapper extends BaseMapper<BusinessLinkMa
 
     @InterceptorIgnore(tenantLine = "true")
     int updateIgnoreInterceptorById(@Param("param") BusinessLinkManageTableEntity param);
+
+    void clearCategory(List<Long> categoryIds);
 }

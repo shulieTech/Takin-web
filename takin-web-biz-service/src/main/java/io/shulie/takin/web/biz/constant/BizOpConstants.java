@@ -161,6 +161,14 @@ public final class BizOpConstants {
         public static final String MESSAGE_BUSINESS_ACTIVITY_CREATE = "message.business_activity.create";
         public static final String MESSAGE_BUSINESS_ACTIVITY_DELETE = "message.business_activity.delete";
         public static final String MESSAGE_BUSINESS_ACTIVITY_UPDATE = "message.business_activity.update";
+
+        /**
+         * 业务活动分类
+         */
+        public static final String MESSAGE_BUSINESS_ACTIVITY_CATEGORY_CREATE = "message.business_activity.category.create";
+        public static final String MESSAGE_BUSINESS_ACTIVITY_CATEGORY_DELETE = "message.business_activity.category.delete";
+        public static final String MESSAGE_BUSINESS_ACTIVITY_CATEGORY_UPDATE = "message.business_activity.category.update";
+
         /**
          * 虚拟业务活动
          */
@@ -547,5 +555,12 @@ public final class BizOpConstants {
 
         public static final String CONFIG_NAME = "configName";
         public static final String CONFIG_VALUE = "configValue";
+
+        /**
+         * 业务活动分类
+         */
+        public static final String CATEGORY_ID = "category_id";
+        public static final String CATEGORY_NAME = "category_name";
+        public static final String CATEGORY_PARENT_ID = "category_parent_id";
     }
 }

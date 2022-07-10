@@ -47,4 +47,7 @@ public class ActivityUpdateRequest {
     private String extend;
 
     private String serviceName;
+
+    @ApiModelProperty(name = "category", value = "分类Id")
+    private Long category;
 }

@@ -57,4 +57,7 @@ public class ActivityCreateRequest {
 
     @ApiModelProperty(name = "label", value = "服务名称")
     private String label;
+
+    @ApiModelProperty(name = "category", value = "分类Id")
+    private Long category;
 }

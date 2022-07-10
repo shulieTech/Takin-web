@@ -46,4 +46,6 @@ public class ActivityQueryParam extends AuthQueryParamCommonExt {
      * 类型
      */
     private Integer type;
+
+    private List<Long> categories;
 }

@@ -65,6 +65,7 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDeta
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.ApplicationService;
 import io.shulie.takin.web.biz.service.LinkTopologyService;
+import io.shulie.takin.web.biz.service.activity.ActivityCategoryService;
 import io.shulie.takin.web.biz.service.placeholdermanage.PlaceholderManageService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
@@ -157,6 +158,8 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Autowired
     private ApplicationService applicationService;
+    @Resource
+    private ActivityCategoryService activityCategoryService;
 
     @Override
     public List<BusinessApplicationListResponse> listApplicationByBusinessActivityIds(List<Long> businessActivityIds,
@@ -241,6 +244,7 @@ public class ActivityServiceImpl implements ActivityService {
         }
         createParam.setEntrance(
                 ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
+        createParam.setCategory(request.getCategory());
         activityDAO.createActivity(createParam);
         notifyClient.startApplicationEntrancesCalculate(request.getApplicationName(), request.getServiceName(),
                 request.getMethod(), request.getRpcType(), request.getExtend());
@@ -321,6 +325,7 @@ public class ActivityServiceImpl implements ActivityService {
                         EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType()));
         //单独字段存中间软件类型
         createParam.setServerMiddlewareType(request.getType());
+        createParam.setCategory(request.getCategory());
         activityDAO.createActivityNew(createParam);
         return createParam.getLinkId();
     }
@@ -365,6 +370,7 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setEntrance(
                 ActivityUtil.buildVirtualEntrance(request.getMethodName(), request.getVirtualEntrance(),
                         EntranceTypeUtils.getRpcType(request.getType().getType()).getRpcType()));
+        updateParam.setCategory(request.getCategory());
         activityDAO.updateActivityNew(updateParam);
     }
 
@@ -453,6 +459,7 @@ public class ActivityServiceImpl implements ActivityService {
         updateParam.setEntrance(ActivityUtil.buildEntrance(request.getMethod(), request.getServiceName(), request.getRpcType()));
         // 技术链路id
         updateParam.setLinkId(oldActivity.getLinkId());
+        updateParam.setCategory(request.getCategory());
         activityDAO.updateActivity(updateParam);
 
         // 非核心字段变动，不需要重建链路
@@ -535,6 +542,7 @@ public class ActivityServiceImpl implements ActivityService {
         param.setCurrent(request.getCurrent());
         param.setPageSize(request.getPageSize());
         param.setType(request.getType());
+        param.setCategories(activityCategoryService.findDescendants(request.getCategory()));
         WebPluginUtils.fillQueryParam(param);
 
         PagingList<ActivityListResult> activityListResultPagingList = activityDAO.pageActivities(param);
@@ -765,6 +773,7 @@ public class ActivityServiceImpl implements ActivityService {
         activityResponse.setVerifyStatus(verifyStatus);
         activityResponse.setVerifiedFlag(
                 verifyStatus.equals(BusinessActivityRedisKeyConstant.ACTIVITY_VERIFY_VERIFIED));
+        activityResponse.setCategory(result.getCategory());
         return activityResponse;
     }
 
@@ -1086,5 +1095,11 @@ public class ActivityServiceImpl implements ActivityService {
         return false;
     }
 
+    @Override
+    public void clearCategory(List<Long> categoryIds) {
+        if (CollectionUtils.isNotEmpty(categoryIds)) {
+            businessLinkManageTableMapper.clearCategory(categoryIds);
+        }
+    }
 }
 

@@ -139,4 +139,6 @@ public interface ActivityService {
      * @return 应用列表
      */
     PagingList<BusinessApplicationListResponse> listApplicationByBusinessFlowIds(ListApplicationRequest listApplicationRequest);
+
+    void clearCategory(List<Long> categoryIds);
 }

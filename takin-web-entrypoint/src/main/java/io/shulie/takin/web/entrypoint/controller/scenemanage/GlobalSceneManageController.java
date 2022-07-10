@@ -12,10 +12,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -49,7 +46,7 @@ public class GlobalSceneManageController {
     }
 
     @ApiOperation("共享场景列表")
-    @PostMapping("/list")
+    @GetMapping("/list")
     @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public PagingList<GlobalSceneManageResponse> list(@ApiParam(name = "current", value = "页码", required = true) Integer current,
                                                       @ApiParam(name = "pageSize", value = "页大小", required = true) Integer pageSize,

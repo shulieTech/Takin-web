@@ -100,7 +100,7 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
         };
         WebPluginUtils.fillCloudUserData(request);
         SceneDetailV2Response detail = sceneMixApi.detail(request);
-        if (detail == null){
+        if (detail == null) {
             return;
         }
 
@@ -124,7 +124,7 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
             //将原本的脚本复制到另外的位置
             String targetPath = scriptFilePath + File.separator + "global" + File.separator + globalSceneManageEntity.getId()
                     + File.separator + t.getFileName();
-            FileUtil.copy(t.getUploadPath(), targetPath,true);
+            FileUtil.copy(t.getUploadPath(), targetPath, true);
             setPath(targetPath);
             setType(t.getFileType());
             setExtend(extend);
@@ -138,11 +138,11 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
     public void globalToScene(Long id) {
         GlobalSceneManageEntity globalSceneManageEntity = globalSceneManageDAO.getById(id);
         String sceneDetail = globalSceneManageEntity.getSceneDetail();
-        SceneDetailV2Response detailResult = JSONObject.parseObject(sceneDetail,SceneDetailV2Response.class);
+        SceneDetailV2Response detailResult = JSONObject.parseObject(sceneDetail, SceneDetailV2Response.class);
         //创建业务流程，同时获取业务流程id
         SceneResult businessFlow = createBusinessFlow(globalSceneManageEntity);
-        if (businessFlow == null){
-            throw new TakinWebException(TakinErrorEnum.GOLBAL_SCENE_COPY_EXCEPTION,"场景业务流程失败");
+        if (businessFlow == null) {
+            throw new TakinWebException(TakinErrorEnum.GOLBAL_SCENE_COPY_EXCEPTION, "场景业务流程失败");
         }
         //查询已有的匹配关系
         SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
@@ -159,11 +159,11 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
         basicInfo.setName(basicInfo.getName() + "_Global");
         createReq.setBasicInfo(basicInfo);
         createReq.setAnalysisResult(detailResult.getAnalysisResult());
-        if (detailResult.getContent() != null){
+        if (detailResult.getContent() != null) {
             ArrayList<SceneRequest.Content> contents = new ArrayList<>(detailResult.getContent().values());
             contents.forEach(o -> {
                 List<SceneLinkRelateResult> sceneLinkRelateResults = stringListMap.get(o.getPathMd5());
-                if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)){
+                if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)) {
                     o.setBusinessActivityId(Long.parseLong(sceneLinkRelateResults.get(0).getBusinessLinkId()));
                 }
             });
@@ -172,13 +172,13 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
         createReq.setConfig(detailResult.getConfig());
         createReq.setGoal(detailResult.getGoal());
         List<SceneRequest.MonitoringGoal> monitoringGoal = new ArrayList<>();
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(detailResult.getDestroyMonitoringGoal())){
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(detailResult.getDestroyMonitoringGoal())) {
             detailResult.getDestroyMonitoringGoal().forEach(o -> {
                 o.setId(null);
             });
             monitoringGoal.addAll(detailResult.getDestroyMonitoringGoal());
         }
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(detailResult.getWarnMonitoringGoal())){
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(detailResult.getWarnMonitoringGoal())) {
             detailResult.getWarnMonitoringGoal().forEach(o -> {
                 o.setId(null);
             });
@@ -193,6 +193,12 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
 
     @Override
     public PagingList<GlobalSceneManageResponse> list(Integer current, Integer pageSize, String name) {
+        if (current == null) {
+            current = 0;
+        }
+        if (pageSize == null) {
+            pageSize = 10;
+        }
 
         Page<GlobalSceneManageEntity> page = new Page<>(current + 1, pageSize);
         QueryWrapper<GlobalSceneManageEntity> wrapper = new QueryWrapper<>();
@@ -209,13 +215,13 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
         return PagingList.of(globalSceneManageResponses, globalSceneManageEntityPage.getTotal());
     }
 
-    private SceneResult createBusinessFlow(GlobalSceneManageEntity globalSceneManageEntity){
+    private SceneResult createBusinessFlow(GlobalSceneManageEntity globalSceneManageEntity) {
         //上传jmx脚本文件
         String fileContent = globalSceneManageEntity.getFileContent();
         List<SceneRequest.File> files = JSONObject.parseArray(fileContent, SceneRequest.File.class);
         //todo 后面考虑其他文件的存储,当前先满足最简单的逻辑
         List<SceneRequest.File> scriptFileList = files.stream().filter(o -> o.getType().equals(FileTypeEnum.SCRIPT.getCode())).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(scriptFileList)){
+        if (CollectionUtils.isEmpty(scriptFileList)) {
             log.warn("公共数据存在问题，没有对应的脚本文件");
             return null;
         }

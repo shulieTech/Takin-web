@@ -9,7 +9,7 @@ import lombok.Data;
 public class SceneManagerResult {
 
     @ApiModelProperty(name = "id", value = "ID")
-    private Long id;
+    private String id;
 
     @ApiModelProperty(value = "场景名称")
     private String name;

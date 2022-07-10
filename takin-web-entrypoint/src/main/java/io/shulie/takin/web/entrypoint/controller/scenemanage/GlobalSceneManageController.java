@@ -13,6 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,7 +30,7 @@ public class GlobalSceneManageController {
     @ApiOperation("将场景共享")
     @PostMapping("/sceneToGlobal")
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
-    public ResponseResult<String> sceneToGlobal(GlobalSceneManageRequest request) throws TakinWebException {
+    public ResponseResult<String> sceneToGlobal(@RequestBody GlobalSceneManageRequest request) throws TakinWebException {
         if (request == null || request.getSceneManageId() == null) {
             return ResponseResult.fail("必要参数不能为空", "场景id不能为空");
         }
@@ -39,7 +40,7 @@ public class GlobalSceneManageController {
 
     @ApiOperation("将共享场景私有化")
     @PostMapping("/globalToScene")
-    public ResponseResult<String> globalToScene(GlobalSceneManageRequest request) throws TakinWebException {
+    public ResponseResult<String> globalToScene(@RequestBody GlobalSceneManageRequest request) throws TakinWebException {
         if (request == null || request.getId() == null) {
             return ResponseResult.fail("必要参数不能为空", "共享id不能为空");
         }

@@ -1,7 +1,5 @@
 package io.shulie.takin.web.amdb.api;
 
-import java.util.List;
-
 import com.pamirs.pradar.log.parser.trace.RpcBased;
 import com.pamirs.pradar.log.parser.trace.RpcStack;
 import io.shulie.surge.data.deploy.pradar.link.model.TTrackClickhouseModel;
@@ -11,6 +9,8 @@ import io.shulie.takin.web.amdb.bean.query.trace.DataCalibrationDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceLogQueryDTO;
 import io.shulie.takin.web.amdb.bean.result.trace.EntryTraceInfoDTO;
+
+import java.util.List;
 
 /**
  * @author shiyajian
@@ -31,6 +31,15 @@ public interface TraceClient {
      * 用于压测实况，还有压测报告中的请求流量明细功能
      */
     PagingList<EntryTraceInfoDTO> listEntryTraceInfo(TraceInfoQueryDTO query);
+
+
+    /**
+     * webIde使用
+     * 根据业务活动获取对应的最新的trace
+     * @param query
+     * @return
+     */
+    EntryTraceInfoDTO getEntryTraceInfo(TraceInfoQueryDTO query);
 
     /**
      * 根据 traceId 查询Trace的调用栈

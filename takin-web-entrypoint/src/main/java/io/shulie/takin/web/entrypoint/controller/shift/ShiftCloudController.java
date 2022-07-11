@@ -4,6 +4,10 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pamirs.takin.entity.domain.dto.report.ReportCountDTO;
 import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
@@ -29,6 +33,7 @@ import io.shulie.takin.web.entrypoint.controller.report.ReportLocalController;
 import io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +56,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -282,37 +288,39 @@ public class ShiftCloudController {
 
     //2.5
     public boolean pushStatus(String rd) {
+        Map data = new HashMap();
         if (isWeb(rd)) {
             long reportId = Long.parseLong(rd.replaceFirst(WEB, ""));
-            CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-            HttpPost httpPost = new HttpPost("http://devops.testcloud.com/ms/testcloudplatform/api/service/test/plan/task/status");
-            CloseableHttpResponse response = null;
             try {
-                Map data = this.getData(reportId);
-                StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
-                httpPost.setEntity(stringEntity);
-                httpPost.setHeader("Content-Type", "application/json");
-                response = httpClient.execute(httpPost);
-                Object task_status = data.remove("task_status");
-                return task_status != null && (Integer.parseInt(task_status.toString()) == 1 || Integer.parseInt(task_status.toString()) == 3);
-            } catch (Exception e) {
-                //Ignore
-                return false;
-            } finally {
-                try {
-                    if (null != response) {
-                        response.close();
-                    }
-                    httpClient.close();
-                } catch (IOException e) {
-                    //Ignore
-                }
-            }
+                data = this.getData(reportId);
+            }catch (Exception e) {}
         } else {
             //TODO bench
             return false;
         }
-
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpPost httpPost = new HttpPost("http://devops.testcloud.com/ms/testcloudplatform/api/service/test/plan/task/status");
+        CloseableHttpResponse response = null;
+        try {
+            StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
+            httpPost.setEntity(stringEntity);
+            httpPost.setHeader("Content-Type", "application/json");
+            response = httpClient.execute(httpPost);
+            Object task_status = data.remove("task_status");
+            return task_status != null && (Integer.parseInt(task_status.toString()) == 1 || Integer.parseInt(task_status.toString()) == 3);
+        } catch (Exception e) {
+            //Ignore
+            return false;
+        } finally {
+            try {
+                if (null != response) {
+                    response.close();
+                }
+                httpClient.close();
+            } catch (IOException e) {
+                //Ignore
+            }
+        }
     }
 
     //2.6
@@ -324,7 +332,50 @@ public class ShiftCloudController {
                 Map data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")));
                 baseResult.setData(data);
             } else {
-                //TODO bench
+                HashMap data = new HashMap();
+                data.put("tool_execute_id", shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, ""));
+                Map result = new HashMap();
+                String responseJson = HttpUtil.get(path + "/api/task", result, 10000);
+                int s = 0;
+                int c1 = 0;
+                int c3 = 0;
+                long r = 0;
+                if (StringUtils.isNotBlank(responseJson)) {
+                    PressureTask pressureTask = JSON.parseObject(responseJson, PressureTask.class);
+                    r = pressureTask.getRunTime();
+                    data.put("tool_task_id", pressureTask.getSceneId());
+                    int status = pressureTask.getStatus();
+                    data.put("task_progress","50%");
+                    if (status == 2) {
+                        data.put("task_progress","100%");
+                        String taskResponseJson = HttpUtil.get(path + "/api/task/task", result, 10000);
+                        if (StringUtils.isNotBlank(responseJson)) {
+                            List<PressureTaskResult> pressureTaskResults = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
+                            for (PressureTaskResult p : pressureTaskResults) {
+                                if (StringUtils.isNotBlank(p.getTestResult())) c1+=1;
+                                else c3+=1;
+                            }
+                        }
+                    }
+                   if (c3>0) status = 3;
+                   else status = 1;
+                    data.put("task_status",status);
+                    String startParam = pressureTask.getStartParam();
+                    if (StringUtils.isNotBlank(startParam)) {
+                        s = JSON.parseArray(startParam).size();
+                    }
+                }
+                data.put("tool_code", "Performance");
+                String taskResponseJson = HttpUtil.get(path + "/api/task/n", result, 10000);
+                Map analysis = new HashMap();
+                if (StringUtils.isNotBlank(taskResponseJson)) analysis.put("coverDemand", Integer.parseInt(taskResponseJson));
+                analysis.put("totalCase",s);
+                analysis.put("executedCase",s);
+                analysis.put("succeedCase",c1);
+                analysis.put("failedCase",c3);
+                //TODO failedCaseInfo?
+                analysis.put("executeDuration",r);
+                data.put("last_analysis_result_list", JSON.toJSONString(analysis));
             }
         }
 
@@ -513,5 +564,126 @@ public class ShiftCloudController {
     @Data
     private static class Title {
         private String displayValue;
+    }
+
+    @Data
+    class PressureTask implements Serializable {
+        private static final long serialVersionUID = -1513967790213880569L;
+
+        @TableId(type = IdType.AUTO)
+        private Long id;
+
+        /**
+         * 用户ID
+         */
+        @TableField(fill = FieldFill.INSERT)
+        private Long userId;
+
+        /**
+         * 压测机器ID
+         */
+        private Long machineId;
+        /**
+         * 机器md5
+         */
+        @TableField(exist = false)
+        private String machineMac;
+        /**
+         * 压测场景ID
+         */
+        private Long sceneId;
+        /**
+         * 压测场景类型：0普通压测场景，1基准测试场景
+         */
+        private Integer sceneType;
+        /**
+         * 压测任务状态{1,2}
+         */
+        private int status;
+        /**
+         * 开始发压时间
+         */
+        private LocalDateTime startTime;
+        /**
+         * 压测任务停止时间
+         */
+        private LocalDateTime stopTime;
+        /**
+         * 压测任务运行时间
+         */
+        private Long runTime;
+        /**
+         * 压测脚本路径
+         */
+        private String jmxUrl;
+        /**
+         * 压测数据路径
+         */
+        private String dataUrl;
+        /**
+         * 压测插件路径
+         */
+        private String jarUrl;
+
+        /**
+         * 压测启动参数
+         */
+        private String startParam;
+
+        /**
+         * 压测启动异常信息
+         */
+        private String errorMsg;
+        /**
+         * 创建时间
+         */
+        @TableField(fill = FieldFill.INSERT)
+        private LocalDateTime createTime;
+        /**
+         * 修改时间
+         */
+        @TableField(fill = FieldFill.INSERT_UPDATE)
+        private LocalDateTime updateTime;
+    }
+
+    @Data
+    class PressureTaskResult {
+        /**
+         * 任务ID
+         */
+        private Long taskId;
+        /**
+         * 场景ID
+         */
+        private Long sceneId;
+        /**
+         * 用户ID
+         */
+        private Long userId;
+        /**
+         * 压力机ID
+         */
+        private Long machineId;
+        /**
+         * 压力机信息
+         */
+        private String machine;
+        /**
+         * 基准测试名称
+         */
+        private String suite;
+        /**
+         * 测试结果，json字符串
+         */
+        private String testResult;
+        /**
+         * 测试开始时间
+         */
+        private LocalDateTime startTime;
+        /**
+         * 测试结束时间
+         */
+        private LocalDateTime endTime;
+
     }
 }

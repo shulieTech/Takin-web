@@ -45,6 +45,7 @@ import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -367,6 +368,8 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
         List<BusinessFlowListWebIDEResponse> collect = flowList.stream().map(item -> {
             List<BusinessActivityNameResponse> activesByFlowId = linkManageService.getBusinessActiveByFlowId(item.getId());
             BusinessFlowListWebIDEResponse convert = Convert.convert(BusinessFlowListWebIDEResponse.class, item);
+            convert.setVirtualNum(0);
+            convert.setNormalNum(0);
             if (CollectionUtils.isEmpty(activesByFlowId)) {
                 return convert;
             }
@@ -392,6 +395,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
         return activesByFlowId.stream().map(item -> {
             BusinessActivityInfoResponse convert = Convert.convert(BusinessActivityInfoResponse.class, item);
+            if(StringUtils.isBlank(convert.getEntrace())){
+                return convert;
+            }
             ActivityUtil.EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(convert.getEntrace());
             convert.setServiceName(entranceJoinEntity.getServiceName());
             convert.setMethodName(entranceJoinEntity.getMethodName());

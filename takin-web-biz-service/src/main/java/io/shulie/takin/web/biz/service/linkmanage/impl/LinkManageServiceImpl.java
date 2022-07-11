@@ -1276,6 +1276,7 @@ public class LinkManageServiceImpl implements LinkManageService {
                     businessActivityNameResponse.setType(linkManageTable.getType());
                     businessActivityNameResponse.setApplicationId(linkManageTable.getApplicationId());
                     businessActivityNameResponse.setBusinessActivityName(linkManageTable.getApplicationName());
+                    businessActivityNameResponse.setEntrace(linkManageTable.getEntrace());
                 }
                 return businessActivityNameResponse;
             }).collect(Collectors.toList());

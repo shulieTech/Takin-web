@@ -395,6 +395,8 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
         return activesByFlowId.stream().map(item -> {
             BusinessActivityInfoResponse convert = Convert.convert(BusinessActivityInfoResponse.class, item);
+            convert.setActivityId(item.getBusinessActivityId());
+            convert.setActivityName(item.getBusinessActivityName());
             if(StringUtils.isBlank(convert.getEntrace())){
                 return convert;
             }

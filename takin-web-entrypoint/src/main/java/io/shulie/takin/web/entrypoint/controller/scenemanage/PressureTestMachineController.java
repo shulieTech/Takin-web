@@ -1,6 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
 import io.shulie.takin.cloud.entrypoint.machine.CloudMachineApi;
+import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.sdk.model.request.machine.MachineAddReq;
 import io.shulie.takin.cloud.sdk.model.request.machine.MachineBaseReq;
 import io.shulie.takin.cloud.sdk.model.request.machine.MachineUpdateReq;
@@ -50,7 +51,9 @@ public class PressureTestMachineController {
     @ApiOperation("压力机列表")
     @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<List<PressureMachineResponse>> list() {
-        ResponseResult<List<NodeMetricsResp>> list = cloudMachineApi.list();
+        ContextExt req = new ContextExt();
+        WebPluginUtils.fillCloudUserData(req);
+        ResponseResult<List<NodeMetricsResp>> list = cloudMachineApi.list(req);
         List<PressureMachineResponse> pressureMachineResponses = BeanCopyUtils.copyList(list.getData(), PressureMachineResponse.class);
         return ResponseResult.success(pressureMachineResponses);
     }

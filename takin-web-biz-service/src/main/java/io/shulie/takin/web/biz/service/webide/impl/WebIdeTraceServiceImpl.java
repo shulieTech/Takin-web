@@ -45,7 +45,7 @@ public class WebIdeTraceServiceImpl implements WebIdeTraceService {
         TraceInfoQueryDTO traceInfoQueryDTO = new TraceInfoQueryDTO();
         traceInfoQueryDTO.setEntranceRuleDTOS(entranceList);
         traceInfoQueryDTO.setPageNum(0);
-        traceInfoQueryDTO.setQueryType(2);
+        traceInfoQueryDTO.setQueryType(1);
         EntryTraceInfoDTO entryTraceInfo = traceClient.getEntryTraceInfo(traceInfoQueryDTO);
         if (entryTraceInfo != null) {
             return getRcpDetailFromAmdb(entryTraceInfo.getTraceId());

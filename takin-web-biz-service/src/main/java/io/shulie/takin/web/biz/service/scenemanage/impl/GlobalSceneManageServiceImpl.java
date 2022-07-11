@@ -215,6 +215,17 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
         return PagingList.of(globalSceneManageResponses, globalSceneManageEntityPage.getTotal());
     }
 
+    @Override
+    public void cancelSceneToGlobal(Long sceneManageId) {
+        QueryWrapper<GlobalSceneManageEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(GlobalSceneManageEntity::getSceneManageId,sceneManageId);
+        List<GlobalSceneManageEntity> sceneManageEntities = globalSceneManageDAO.list(queryWrapper);
+        if (CollectionUtils.isNotEmpty(sceneManageEntities)){
+            List<Long> collect = sceneManageEntities.stream().map(GlobalSceneManageEntity::getId).collect(Collectors.toList());
+            globalSceneManageDAO.removeByIds(collect);
+        }
+    }
+
     private SceneResult createBusinessFlow(GlobalSceneManageEntity globalSceneManageEntity) {
         //上传jmx脚本文件
         String fileContent = globalSceneManageEntity.getFileContent();

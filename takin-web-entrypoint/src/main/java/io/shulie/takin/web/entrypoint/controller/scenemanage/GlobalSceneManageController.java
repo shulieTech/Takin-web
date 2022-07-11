@@ -35,6 +35,17 @@ public class GlobalSceneManageController {
         return ResponseResult.success("共享成功");
     }
 
+    @ApiOperation("将场景共享")
+    @PostMapping("/cancelSceneToGlobal")
+    @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
+    public ResponseResult<String> cancelSceneToGlobal(@RequestBody GlobalSceneManageRequest request) throws TakinWebException {
+        if (request == null || request.getSceneManageId() == null) {
+            return ResponseResult.fail("必要参数不能为空", "场景id不能为空");
+        }
+        globalSceneManageService.cancelSceneToGlobal(request.getSceneManageId());
+        return ResponseResult.success("取消共享成功");
+    }
+
     @ApiOperation("将共享场景私有化")
     @PostMapping("/globalToScene")
     public ResponseResult<String> globalToScene(@RequestBody GlobalSceneManageRequest request) throws TakinWebException {

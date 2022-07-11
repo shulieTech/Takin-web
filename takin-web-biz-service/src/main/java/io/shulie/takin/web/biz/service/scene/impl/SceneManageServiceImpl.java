@@ -18,6 +18,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.takin.common.constant.SceneManageConstant;
@@ -63,6 +64,7 @@ import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDeta
 import io.shulie.takin.web.biz.pojo.response.tagmanage.TagManageResponse;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.biz.service.scenemanage.GlobalSceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneSchedulerTaskService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneTagService;
@@ -83,7 +85,9 @@ import io.shulie.takin.web.data.dao.SceneExcludedApplicationDAO;
 import io.shulie.takin.web.data.dao.application.ApplicationDAO;
 import io.shulie.takin.web.data.dao.filemanage.FileManageDAO;
 import io.shulie.takin.web.data.dao.linkmanage.BusinessLinkManageDAO;
+import io.shulie.takin.web.data.dao.scenemanage.GlobalSceneManageDAO;
 import io.shulie.takin.web.data.dao.scriptmanage.ScriptFileRefDAO;
+import io.shulie.takin.web.data.model.mysql.GlobalSceneManageEntity;
 import io.shulie.takin.web.data.param.CreateSceneExcludedApplicationParam;
 import io.shulie.takin.web.data.result.linkmange.BusinessLinkResult;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
@@ -138,6 +142,8 @@ public class SceneManageServiceImpl implements SceneManageService {
     ScriptFileRefDAO scriptFileRefDao;
     @Resource
     FileManageDAO fileManageDao;
+    @Resource
+    private GlobalSceneManageDAO globalSceneManageDAO;
 
     @Override
     public SceneDetailResponse getById(Long sceneId) {
@@ -292,12 +298,25 @@ public class SceneManageServiceImpl implements SceneManageService {
         List<SceneSchedulerTaskResponse> responseList = sceneSchedulerTaskService.selectBySceneIds(sceneIds);
         Map<Long, Date> sceneExecuteTimeMap = new HashMap<>(responseList.size());
         responseList.forEach(response -> sceneExecuteTimeMap.put(response.getSceneId(), response.getExecuteTime()));
+
+        //查询是否存在共享场景
+        List<Long> hasGlobal = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(sceneIds)){
+            QueryWrapper<GlobalSceneManageEntity> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(GlobalSceneManageEntity::getIsDeleted, 0);
+            queryWrapper.lambda().in(GlobalSceneManageEntity::getSceneManageId, sceneIds);
+            List<GlobalSceneManageEntity> globalSceneManageEntities = globalSceneManageDAO.list(queryWrapper);
+            hasGlobal = globalSceneManageEntities.stream().map(GlobalSceneManageEntity::getSceneManageId).collect(Collectors.toList());
+        }
+
+        List<Long> finalHasGlobal = hasGlobal;
         listData.forEach(t -> {
             Date date = sceneExecuteTimeMap.get(t.getId());
             if (date != null) {
                 t.setIsScheduler(true);
                 t.setScheduleExecuteTime(DateUtil.formatDateTime(date));
             }
+            t.setHasGlobalScene(finalHasGlobal.contains(t.getId()));
         });
         return ResponseResult.success(listData, sceneList.getTotalNum());
     }

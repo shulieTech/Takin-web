@@ -10,4 +10,6 @@ public interface GlobalSceneManageService {
     void globalToScene(Long id);
 
     PagingList<GlobalSceneManageResponse> list(Integer current, Integer pageSize, String name);
+
+    void cancelSceneToGlobal(Long sceneManageId);
 }

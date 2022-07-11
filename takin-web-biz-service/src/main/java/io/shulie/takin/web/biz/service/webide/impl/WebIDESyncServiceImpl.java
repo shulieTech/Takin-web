@@ -39,6 +39,7 @@ import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.script.ScriptDebugStatusEnum;
 import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
+import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.mapper.mysql.WebIdeSyncScriptMapper;
 import io.shulie.takin.web.data.model.mysql.WebIdeSyncScriptEntity;
 import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
@@ -99,6 +100,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
 
     @Resource
     private SceneDAO sceneDAO;
+
+    @Resource
+    private ApplicationMntMapper mntMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -397,6 +401,9 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             BusinessActivityInfoResponse convert = Convert.convert(BusinessActivityInfoResponse.class, item);
             convert.setActivityId(item.getBusinessActivityId());
             convert.setActivityName(item.getBusinessActivityName());
+            if(Objects.nonNull(item.getApplicationId()) && StringUtils.isBlank(item.getApplicationName())){
+                item.setApplicationName(mntMapper.selectApplicationName(String.valueOf(item.getApplicationId())));
+            }
             if(StringUtils.isBlank(convert.getEntrace())){
                 return convert;
             }

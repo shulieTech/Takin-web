@@ -55,7 +55,7 @@ public class ThreadPoolConfig {
     @Bean(name = "remoteCallThreadPool")
     public ThreadPoolExecutor remoteCallThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("remotecall-job-%d").build();
-        return new ThreadPoolExecutor(10, 20, 20L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+        return new ThreadPoolExecutor(5, 10, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
 

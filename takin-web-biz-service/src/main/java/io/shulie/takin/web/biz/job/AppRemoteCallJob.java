@@ -78,7 +78,7 @@ public class AppRemoteCallJob implements SimpleJob {
                             continue;
                         }
                         remoteCallThreadPool.execute(() -> {
-                            boolean tryLock = distributedLock.tryLock(lockKey, 2L, 60L, TimeUnit.SECONDS);
+                            boolean tryLock = distributedLock.tryLock(lockKey, 0L, 60L, TimeUnit.SECONDS);
                             if (!tryLock) {
                                 return;
                             }

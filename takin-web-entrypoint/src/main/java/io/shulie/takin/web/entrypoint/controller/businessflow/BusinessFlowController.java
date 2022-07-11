@@ -212,11 +212,10 @@ public class BusinessFlowController {
         }
         //替换节点
 
-        Object read = JsonPath.parse(josnView).read("$..[?(@.xpathMd5=='" + xpathMd5 + "')].children[0]");
+        Object read = JsonPath.parse(josnView).read("$..[?(@.xpathMd5=='" + xpathMd5 + "')].children.[0]");
 
         String children = JsonPath.parse(scriptJmxNodeView)
-                .put("$..[?(@.xpathMd5=='" + xpathMd5 + "')]", "children",
-                        read).jsonString();
+                .put("$..[?(@.xpathMd5=='" + xpathMd5 + "')].children.[0]", "children", read).jsonString();
         sceneEntity.setScriptJmxNodeView(children);
         //修改节点
         sceneService.businessActivityFlowUpdate(sceneEntity);

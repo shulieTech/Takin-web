@@ -1,6 +1,5 @@
 package io.shulie.takin.web.biz.service.webide.dto;
 
-import com.pamirs.pradar.log.parser.utils.PradarUtils;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -114,16 +113,4 @@ public class TraceRespDTO implements Serializable {
 
 
     private int[] invokeIdArray;
-
-
-    public int[] getInvokeIdArray() {
-        if (invokeIdArray == null) {
-            invokeIdArray = PradarUtils.parseVersion(invokeId);
-            if (invokeIdArray.length >= 1) {
-                // 修正部分 trace 不是以 0 作根的问题
-                invokeIdArray[0] = 0;
-            }
-        }
-        return invokeIdArray;
-    }
 }

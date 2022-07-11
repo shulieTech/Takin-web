@@ -4,10 +4,7 @@ import io.shulie.takin.web.biz.service.webide.WebIdeTraceService;
 import io.shulie.takin.web.biz.service.webide.dto.TraceRespDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -25,14 +22,14 @@ public class WebIdeTraceServiceController {
 
 
     @ApiOperation("根据业务id查询trace详情")
-    @GetMapping("/business")
+    @PostMapping("/business")
     public List<TraceRespDTO> getTraceDetailByBusinessActivityId(@RequestParam("businessActivityId") Long businessActivityId){
         return webIdeTraceService.getLastTraceDetailByBusinessActivityId(businessActivityId);
     }
 
 
     @ApiOperation("根据traceId查询trace详情")
-    @GetMapping("")
+    @PostMapping("")
     public List<TraceRespDTO> getTraceDetailByTraceId(@RequestParam("traceId") String traceId){
         return webIdeTraceService.getTraceDetailByTraceId(traceId);
     }

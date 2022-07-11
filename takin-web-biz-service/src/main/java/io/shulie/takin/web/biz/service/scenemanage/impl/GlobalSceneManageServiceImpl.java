@@ -269,12 +269,16 @@ public class GlobalSceneManageServiceImpl implements GlobalSceneManageService {
         SceneLinkRelateParam sceneLinkRelateParam = new SceneLinkRelateParam();
         sceneLinkRelateParam.setSceneIds(Collections.singletonList(sceneDetailDto.getId().toString()));
         List<SceneLinkRelateResult> sceneLinkRelateList = sceneLinkRelateDao.getList(sceneLinkRelateParam);
-        Map<String, List<SceneLinkRelateResult>> stringListMap = sceneLinkRelateList.stream().collect(Collectors.groupingBy(SceneLinkRelateResult::getScriptXpathMd5));
+        Map<String, List<SceneLinkRelateResult>> stringListMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateList)){
+            stringListMap = sceneLinkRelateList.stream().collect(Collectors.groupingBy(SceneLinkRelateResult::getScriptXpathMd5));
+        }
 
         List<ScriptNode> samplerScriptNodeList = JmxUtil.getScriptNodeByType(NodeTypeEnum.SAMPLER, scriptNodes);
 
         if (CollectionUtils.isNotEmpty(samplerScriptNodeList)) {
-            List<ScriptNode> nodeList = samplerScriptNodeList.stream().filter(o -> !stringListMap.containsKey(o.getXpathMd5()))
+            Map<String, List<SceneLinkRelateResult>> finalStringListMap = stringListMap;
+            List<ScriptNode> nodeList = samplerScriptNodeList.stream().filter(o -> !finalStringListMap.containsKey(o.getXpathMd5()))
                     .collect(Collectors.toList());
             //找到没有自动匹配成功的数据，进行新增并匹配虚拟业务活动
             nodeList.forEach(scriptNode -> {

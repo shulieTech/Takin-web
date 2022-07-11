@@ -14,6 +14,9 @@
         <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime"/>
         <result column="BUSINESS_DOMAIN" property="businessDomain"/>
+        <result column="TYPE" property="type"/>
+        <result column="application_name" property="applicationName"/>
+        <result column="application_id" property="applicationId"/>
     </resultMap>
 
     <resultMap id="BusinessActiveIdAndNameDtoMap"
@@ -309,7 +312,7 @@
     </select>
 
     <select id="selectBussinessLinkByIdList" resultMap="BaseResultMap">
-        SELECT LINK_ID,LINK_NAME,ENTRACE FROM t_business_link_manage_table
+        SELECT LINK_ID,LINK_NAME,ENTRACE, TYPE , application_mame,application_id FROM t_business_link_manage_table
         WHERE LINK_ID in
         <foreach item="item" collection="list" open="(" separator="," close=")">
             #{item}

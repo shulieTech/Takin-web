@@ -1273,6 +1273,9 @@ public class LinkManageServiceImpl implements LinkManageService {
                     link -> activityId.equals(link.getLinkId())).findFirst().orElse(null);
                 if (Objects.nonNull(linkManageTable)) {
                     businessActivityNameResponse.setBusinessActivityName(linkManageTable.getLinkName());
+                    businessActivityNameResponse.setType(linkManageTable.getType());
+                    businessActivityNameResponse.setApplicationId(linkManageTable.getApplicationId());
+                    businessActivityNameResponse.setBusinessActivityName(linkManageTable.getApplicationName());
                 }
                 return businessActivityNameResponse;
             }).collect(Collectors.toList());

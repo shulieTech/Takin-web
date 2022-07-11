@@ -1,9 +1,7 @@
 package io.shulie.takin.web.biz.service.webide.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.pamirs.pradar.log.parser.trace.RpcEntry;
-import com.pamirs.pradar.log.parser.trace.RpcStack;
-import io.shulie.takin.common.beans.page.PagingList;
+import com.pamirs.pradar.log.parser.trace.RpcBased;
 import io.shulie.takin.web.amdb.api.TraceClient;
 import io.shulie.takin.web.amdb.bean.query.trace.EntranceRuleDTO;
 import io.shulie.takin.web.amdb.bean.query.trace.TraceInfoQueryDTO;
@@ -48,26 +46,23 @@ public class WebIdeTraceServiceImpl implements WebIdeTraceService {
         traceInfoQueryDTO.setEntranceRuleDTOS(entranceList);
         traceInfoQueryDTO.setPageNum(0);
         traceInfoQueryDTO.setQueryType(2);
-
-        PagingList<EntryTraceInfoDTO> entryTraceInfoDtoPagingList = traceClient.listEntryTraceInfo(traceInfoQueryDTO);
-
-        if (entryTraceInfoDtoPagingList == null ||
-                CollectionUtils.isEmpty(entryTraceInfoDtoPagingList.getList()) || entryTraceInfoDtoPagingList.getList().get(0) == null) {
-            return Collections.emptyList();
+        EntryTraceInfoDTO entryTraceInfo = traceClient.getEntryTraceInfo(traceInfoQueryDTO);
+        if (entryTraceInfo != null) {
+            return getRcpDetailFromAmdb(entryTraceInfo.getTraceId());
         }
+        return Collections.emptyList();
 
-        return getRcpDetailFromAmdb(entryTraceInfoDtoPagingList.getList().get(0).getTraceId());
     }
 
     private List<TraceRespDTO> getRcpDetailFromAmdb(String traceId) {
-        RpcStack rpcStack = traceClient.getTraceDetailById(traceId);
-        if (rpcStack == null || CollectionUtils.isEmpty(rpcStack.getRpcEntries())) {
+        List<RpcBased> rpcBasedList = traceClient.getTraceBaseById(traceId);
+        if (CollectionUtils.isEmpty(rpcBasedList)) {
             return Collections.emptyList();
         }
 
         List<TraceRespDTO> traceRespDTOS = new ArrayList<>();
-        rpcStack.getRpcEntries().stream().forEach(rpcEntry -> {
-            traceRespDTOS.add(rpcEntry2TraceRespDTO(rpcEntry));
+        rpcBasedList.stream().forEach(rpcBased -> {
+            traceRespDTOS.add(rpcEntry2TraceRespDTO(rpcBased));
         });
         return traceRespDTOS;
     }
@@ -89,19 +84,20 @@ public class WebIdeTraceServiceImpl implements WebIdeTraceService {
     private EntranceRuleDTO getEntryByBusinessActivityId(Long businessActivityId) {
         // 查询入口集合
         BusinessLinkResult businessLinkResult = businessLinkManageDAO.selectBussinessLinkById(businessActivityId);
-        if (businessLinkResult != null) {
+        if (businessLinkResult != null && businessLinkResult.getEntrace() != null) {
             EntranceRuleDTO dto = new EntranceRuleDTO();
             dto.setEntrance(businessLinkResult.getEntrace());
             dto.setBusinessType(businessLinkResult.getType());
+            dto.setAppName(businessLinkResult.getApplicationName());
             return dto;
         }
         return null;
     }
 
-    private TraceRespDTO rpcEntry2TraceRespDTO(RpcEntry rpcEntry) {
+    private TraceRespDTO rpcEntry2TraceRespDTO(RpcBased rpcEntry) {
         TraceRespDTO traceRespDTO = new TraceRespDTO();
         traceRespDTO.setTraceId(rpcEntry.getTraceId());
-        traceRespDTO.setAgentId(rpcEntry.getClientAgentId());
+        traceRespDTO.setAgentId(rpcEntry.getAgentId());
         traceRespDTO.setAppName(rpcEntry.getAppName());
         traceRespDTO.setClusterTest(rpcEntry.isClusterTest() ? 1 : 0);
         traceRespDTO.setService(rpcEntry.getServiceName());
@@ -114,11 +110,11 @@ public class WebIdeTraceServiceImpl implements WebIdeTraceService {
         traceRespDTO.setResultCode(rpcEntry.getResultCode());
         traceRespDTO.setRequestSize(rpcEntry.getRequestSize());
         traceRespDTO.setResponseSize(rpcEntry.getResponseSize());
-        traceRespDTO.setHostIp(rpcEntry.getClientIp());
-        traceRespDTO.setPort(rpcEntry.getClientPort());
+        traceRespDTO.setHostIp(rpcEntry.getHostIp());
+        traceRespDTO.setPort(rpcEntry.getPort());
         traceRespDTO.setAttributes(rpcEntry.getAttributes() != null ? JSON.toJSONString(rpcEntry.getAttributes()) : null);
         traceRespDTO.setStartTime(rpcEntry.getStartTime());
-        traceRespDTO.setComment(rpcEntry.getClientCallbackMsg());
+        traceRespDTO.setComment(rpcEntry.getCallbackMsg());
         return traceRespDTO;
     }
 

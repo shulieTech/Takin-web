@@ -18,12 +18,6 @@ public class TraceRespDTO implements Serializable {
     private String traceId;
 
 
-
-    /**
-     * 服务编码/服务唯一标识
-     */
-    private String serviceCode;
-
     /**
      * 应用名称
      */

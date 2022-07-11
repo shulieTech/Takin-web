@@ -137,6 +137,49 @@ public class TraceClientImpl implements TraceClient {
     }
 
     @Override
+    public EntryTraceInfoDTO getEntryTraceInfo(TraceInfoQueryDTO query) {
+        String url = properties.getUrl().getAmdb() + ENTRY_TRACE_PATH;
+        try {
+            QueryLinkDetailDTO dto = new QueryLinkDetailDTO();
+            BeanUtils.copyProperties(query, dto);
+            if (query.getReportId() != null) {
+                dto.setTaskId(query.getReportId().toString());
+            }
+            dto.setEntranceList(this.getEntryListString(query.getEntranceRuleDTOS()));
+            dto.setCurrentPage(query.getPageNum());
+            dto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            dto.setEnvCode(WebPluginUtils.traceEnvCode());
+            dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
+            //固定查询影子链路明细数据
+            dto.setQueryType(query.getQueryType());
+            //压测流量明细查询，去掉固定查压测流量
+            //dto.setClusterTest(1);
+            dto.setTraceIdList(query.getTraceId());
+            dto.setPageSize(1);
+            AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.builder().url(url)
+                    .param(dto)
+                    .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
+                    .eventName("查询链路列表")
+                    .list(EntryTraceInfoDTO.class);
+            List<EntryTraceInfoDTO> list = response.getData();
+            if (CollUtil.isNotEmpty(list)) {
+                list.forEach(entry -> {
+                    entry.setEntry(entry.getServiceName());
+                    entry.setMethod(entry.getMethodName());
+                    entry.setProcessTime(entry.getCost());
+                    entry.setId("0");
+                    entry.setEndTime(entry.getEndTime());
+                    entry.setStatus(entry.getResultCode());
+                });
+                return list.get(0);
+            }
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
     public RpcStack getTraceDetailById(String traceId, String... times) {
         try {
             String url = properties.getUrl().getAmdb() + QUERY_TRACE_PATH.replace("@TraceId@", traceId);

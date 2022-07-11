@@ -506,7 +506,7 @@ public class ShiftCloudController {
         data.put("userId", "admin");
         data.put("projectId", envCode);
         String responseJson = HttpUtil.get("http://devops.testcloud.com/ms/vteam/api/service/issue_version/" + envCode + "/flat", data, 10000);
-        return ResponseResult.success(JSON.parseObject(responseJson));
+        return ResponseResult.success(JSON.parseObject(responseJson).getJSONObject("data"));
     }
 
     @GetMapping("/api/c/getDemands")

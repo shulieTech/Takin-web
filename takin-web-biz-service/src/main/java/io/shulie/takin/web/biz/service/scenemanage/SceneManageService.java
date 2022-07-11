@@ -12,6 +12,7 @@ import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageWrapperReq
 import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneScriptRefOpen;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneDetailV2Response;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneRequest;
 import io.shulie.takin.cloud.sdk.model.response.strategy.StrategyResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
@@ -89,4 +90,6 @@ public interface SceneManageService {
      * @param detailResult
      */
     void copyScene(SceneDetailV2Response detailResult);
+
+    List<SceneRequest.File> assembleFileList(long scriptId);
 }

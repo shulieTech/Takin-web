@@ -53,4 +53,6 @@ public class SceneManageListOutput extends AuthQueryResponseCommonExt {
     @ApiModelProperty(value = "压测进度")
     private Integer progress;
 
+    @ApiModelProperty(name = "hasGlobalScene", value = "存在共享场景")
+    private Boolean hasGlobalScene;
 }

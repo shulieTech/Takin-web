@@ -430,6 +430,9 @@ public enum TakinErrorEnum implements ExceptionReadable {
 
     CHAOS_HOST_RECORD_EXCEPTION(1070601001, "主机下发记录查询异常"),
 
+    //公共任务
+    GOLBAL_SCENE_COPY_EXCEPTION(1070701001, "公共任务复制异常"),
+
     ;
 
     /**

@@ -6,6 +6,8 @@ import com.pamirs.takin.entity.domain.vo.scenemanage.SceneSlaRefVO;
 import com.pamirs.takin.entity.domain.vo.scenemanage.TimeVO;
 import io.shulie.takin.cloud.sdk.model.common.TimeBean;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
+import io.shulie.takin.web.biz.pojo.response.scenemanage.GlobalSceneManageResponse;
+import io.shulie.takin.web.data.model.mysql.GlobalSceneManageEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -22,4 +24,6 @@ public interface SceneManageConvert {
     List<SceneScriptRefVO> ofSceneScriptRefVO(List<SceneManageWrapperResp.SceneScriptRefResp> uploadFile);
 
     List<SceneSlaRefVO> ofSceneSlaRefVO(List<SceneManageWrapperResp.SceneSlaRefResp> stopCondition);
+
+    List<GlobalSceneManageResponse> ofGlobalSceneManageResponse(List<GlobalSceneManageEntity> records);
 }

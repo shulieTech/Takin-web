@@ -402,7 +402,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             convert.setActivityId(item.getBusinessActivityId());
             convert.setActivityName(item.getBusinessActivityName());
             if(Objects.nonNull(item.getApplicationId()) && StringUtils.isBlank(item.getApplicationName())){
-                item.setApplicationName(mntMapper.selectApplicationName(String.valueOf(item.getApplicationId())));
+                convert.setApplicationName(mntMapper.selectApplicationName(String.valueOf(item.getApplicationId())));
             }
             if(StringUtils.isBlank(convert.getEntrace())){
                 return convert;

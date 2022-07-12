@@ -24,6 +24,8 @@ import io.shulie.takin.web.data.model.mysql.MachineManageEntity;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -34,9 +36,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class MachineManageServiceImpl implements MachineManageService {
+public class MachineManageServiceImpl implements MachineManageService, InitializingBean {
 
-    private static SymmetricCrypto des = new SymmetricCrypto(SymmetricAlgorithm.DES, "djlafeowqjndkfankfneioqn".getBytes());
+    @Value("${machine.password.sale.pre: machinePasswordSaltPre}")
+    private String machinePasswordSaltPre;
+
+    private SymmetricCrypto des;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        //这样需要同时拿到数据库，代码，配置文件密码才会泄露
+        des = new SymmetricCrypto(SymmetricAlgorithm.DES, (machinePasswordSaltPre + "fankfneioqn").getBytes());
+    }
 
     @Resource
     private MachineManageDAO machineManageDAO;
@@ -179,4 +190,6 @@ public class MachineManageServiceImpl implements MachineManageService {
     public void syncMachine() {
         //todo 同步机器逻辑，先找到客户机器，新增到当前机器列表
     }
+
+
 }

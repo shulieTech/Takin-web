@@ -95,7 +95,7 @@ public class PressureTestMachineController {
     }
 
     @GetMapping("/syncMachine")
-    @ApiOperation("添加压力机")
+    @ApiOperation("同步机器信息")
     @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<String> syncMachine() {
         machineManageService.syncMachine();

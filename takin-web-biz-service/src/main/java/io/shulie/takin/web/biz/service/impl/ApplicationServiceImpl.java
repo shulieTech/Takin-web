@@ -764,12 +764,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     //不知道异常和Ip就别展示出来误导了
                     if (StringUtils.isBlank(e)) {
                         String a = (String) result.get("a");
-//                        e = "探针接入异常";
-//                        if (StringUtils.isNotEmpty(a)) {
-//                            e += "，agentId为" + a;
-//                        }
                         if (StringUtils.isEmpty(a)) {
                             continue;
+                        }
+                        e = "探针接入异常";
+                        if (StringUtils.isNotEmpty(a)) {
+                            e += "，agentId为" + a;
                         }
                     }
                     applicationDAO.updateStatus(app.getApplicationId(), e);

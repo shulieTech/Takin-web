@@ -773,18 +773,22 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList,Set<Long> errorApplicationIdSet) {
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList, Set<Long> errorApplicationIdSet) {
         if (CollectionUtils.isNotEmpty(applicationList)) {
-            applicationList.forEach(app -> {
+            for (ApplicationListResult app : applicationList) {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
                 long n = (long) result.get("n");
                 if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
                     String e = (String) result.get("e");
+                    //不知道异常和Ip就别展示出来误导了
                     if (StringUtils.isBlank(e)) {
-                        String a = (String)result.get("a");
-                        e = "探针接入异常";
-                        if (StringUtils.isNotEmpty(a)) {
-                            e += "，agentId为"+a;
+                        String a = (String) result.get("a");
+//                        e = "探针接入异常";
+//                        if (StringUtils.isNotEmpty(a)) {
+//                            e += "，agentId为" + a;
+//                        }
+                        if (StringUtils.isEmpty(a)) {
+                            continue;
                         }
                     }
                     applicationDAO.updateStatus(app.getApplicationId(), e);
@@ -802,8 +806,10 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     param.setSwitchErrorMap(map);
                     uploadAccessStatus(param);
                 } else {
-                    applicationDAO.updateStatus(app.getApplicationId());}
-            });
+                    applicationDAO.updateStatus(app.getApplicationId());
+                }
+
+            }
         }
     }
 

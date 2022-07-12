@@ -278,9 +278,21 @@ public class ShadowConsumerServiceImpl implements ShadowConsumerService {
     }
 
     private PagingList<ShadowConsumerOutput> splitPage(
-        ShadowConsumerQueryInput request,
-        List<ShadowConsumerOutput> responses) {
+            ShadowConsumerQueryInput request,
+            List<ShadowConsumerOutput> responses) {
         responses.sort((o1, o2) -> {
+            boolean o1InValid = o1.getGmtCreate() == null;
+            boolean o2Invalid = o2.getGmtCreate() == null;
+            boolean bothInvalid = o1InValid && o2Invalid;
+            if (bothInvalid) {
+                return 0;
+            }
+            if (o1InValid) {
+                return -1;
+            }
+            if (o2Invalid) {
+                return 1;
+            }
             if (o1.getGmtCreate() != null && o2.getGmtCreate() != null) {
                 int firstSort = -o1.getGmtCreate().compareTo(o2.getGmtCreate());
                 if (firstSort == 0) {

@@ -790,11 +790,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 long n = (long) result.get("n");
                 if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
                     String e = (String) result.get("e");
+                    //不知道异常和Ip就别展示出来误导了
                     if (StringUtils.isBlank(e)) {
-                        String a = (String)result.get("a");
+                        String a = (String) result.get("a");
+                        if (StringUtils.isEmpty(a)) {
+                            continue;
+                        }
                         e = "探针接入异常";
                         if (StringUtils.isNotEmpty(a)) {
-                            e += "，agentId为"+a;
+                            e += "，agentId为" + a;
                         }
                     }
                     applicationDAO.updateStatus(app.getApplicationId(), e);

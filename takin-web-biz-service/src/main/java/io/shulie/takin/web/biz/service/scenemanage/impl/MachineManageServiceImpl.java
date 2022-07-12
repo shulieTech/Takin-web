@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.scenemanage.impl;
 
+import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
+import cn.hutool.crypto.symmetric.SymmetricCrypto;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.cloud.entrypoint.machine.CloudMachineApi;
@@ -34,6 +36,8 @@ import java.util.stream.Collectors;
 @Component
 public class MachineManageServiceImpl implements MachineManageService {
 
+    private static SymmetricCrypto des = new SymmetricCrypto(SymmetricAlgorithm.DES, "djlafeowqjndkfankfneioqn".getBytes());
+
     @Resource
     private MachineManageDAO machineManageDAO;
 
@@ -60,7 +64,7 @@ public class MachineManageServiceImpl implements MachineManageService {
         machineManageEntity.setMachineName(request.getMachineName());
         machineManageEntity.setMachineIp(request.getMachineIp());
         machineManageEntity.setUserName(request.getUserName());
-        machineManageEntity.setPassword(request.getPassword());
+        machineManageEntity.setPassword(des.encryptHex(request.getPassword()));
         machineManageEntity.setStatus(0);
         machineManageDAO.save(machineManageEntity);
         return null;
@@ -99,7 +103,7 @@ public class MachineManageServiceImpl implements MachineManageService {
             return;
         }
         if (StringUtil.isNotEmpty(request.getPassword())){
-            manageDAOById.setPassword(request.getPassword());
+            manageDAOById.setPassword(des.encryptHex(request.getPassword()));
         }
         if (StringUtil.isNotEmpty(request.getUserName())){
             manageDAOById.setUserName(request.getUserName());
@@ -142,7 +146,7 @@ public class MachineManageServiceImpl implements MachineManageService {
         }
         MachineAddReq machineAddReq = new MachineAddReq();
         machineAddReq.setNodeIp(manageDAOById.getMachineIp());
-        machineAddReq.setPassword(manageDAOById.getPassword());
+        machineAddReq.setPassword(des.decryptStr(manageDAOById.getPassword()));
         machineAddReq.setUserName(manageDAOById.getUserName());
         machineAddReq.setName(manageDAOById.getMachineName());
         WebPluginUtils.fillCloudUserData(machineAddReq);

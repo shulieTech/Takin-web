@@ -1,5 +1,7 @@
 package io.shulie.takin.web.entrypoint.controller.scenemanage;
 
+import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
+import cn.hutool.crypto.symmetric.SymmetricCrypto;
 import io.shulie.takin.cloud.entrypoint.machine.CloudMachineApi;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.sdk.model.request.machine.MachineAddReq;

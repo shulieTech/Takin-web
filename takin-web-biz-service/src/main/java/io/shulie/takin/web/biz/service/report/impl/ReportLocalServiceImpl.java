@@ -82,7 +82,15 @@ public class ReportLocalServiceImpl implements ReportLocalService {
     public ReportCountDTO getReportCount(Long reportId) {
         ReportSummaryResult data = reportSummaryDAO.selectOneByReportId(reportId);
         if (data == null) {
-            return new ReportCountDTO();
+            ReportCountDTO dto = new ReportCountDTO();
+            dto.setRiskMachineCount(0);
+            dto.setApplicationCount(0);
+            dto.setMachineCount(0);
+            dto.setWarnCount(0);
+            dto.setBottleneckInterfaceCount(0);
+            dto.setBusinessActivityCount(0);
+            dto.setNotpassBusinessActivityCount(0);
+            return dto;
         }
         return convert2ReportCountDTO(data);
     }
@@ -428,7 +436,7 @@ public class ReportLocalServiceImpl implements ReportLocalService {
                 continue;
             }
 
-            if(min == null || min.length > array.getTime().length) {
+            if (min == null || min.length > array.getTime().length) {
                 min = array.getTime();
             }
         }

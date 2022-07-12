@@ -491,9 +491,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
             }).collect(Collectors.toList());
         }
         Response.setHeaders(
-            new HashMap<String, String>(1) {{
-                put(PAGE_TOTAL_HEADER, String.valueOf(paging.getTotal()));
-            }});
+                new HashMap<String, String>(1) {{
+                    put(PAGE_TOTAL_HEADER, String.valueOf(paging.getTotal()));
+                }});
         return Response.success(resultList);
     }
 
@@ -763,7 +763,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 }
 
 
-                this.syncApplicationAccessStatus(applicationList,errorApplicationIdSet);
+                this.syncApplicationAccessStatus(applicationList, errorApplicationIdSet);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
@@ -783,12 +783,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                     //不知道异常和Ip就别展示出来误导了
                     if (StringUtils.isBlank(e)) {
                         String a = (String) result.get("a");
-//                        e = "探针接入异常";
-//                        if (StringUtils.isNotEmpty(a)) {
-//                            e += "，agentId为" + a;
-//                        }
                         if (StringUtils.isEmpty(a)) {
                             continue;
+                        }
+                        e = "探针接入异常";
+                        if (StringUtils.isNotEmpty(a)) {
+                            e += "，agentId为" + a;
                         }
                     }
                     applicationDAO.updateStatus(app.getApplicationId(), e);
@@ -1212,8 +1212,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void uninstallAllAgent(List<String> appIds) {
         try {
-            appIds = this.filterAppIds(appIds,AgentConstants.UNINSTALL);
-            if (CollectionUtils.isEmpty(appIds)){
+            appIds = this.filterAppIds(appIds, AgentConstants.UNINSTALL);
+            if (CollectionUtils.isEmpty(appIds)) {
                 log.info("所有需要卸载的应用都被过滤掉了");
                 return;
             }
@@ -1330,7 +1330,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         queryApplicationParam.setUpdateStartTime(request.getUpdateStartTime());
         queryApplicationParam.setUpdateEndTime(request.getUpdateEndTime());
         IPage<ApplicationListResult> applicationListResultPage = applicationDAO.pageByParam(queryApplicationParam);
-        if (org.springframework.util.CollectionUtils.isEmpty(applicationListResultPage.getRecords())){
+        if (org.springframework.util.CollectionUtils.isEmpty(applicationListResultPage.getRecords())) {
             return PagingList.empty();
         }
 //        if (applicationListResultPage.getTotal() == 0) {
@@ -1369,7 +1369,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public Response<String> operateCheck(List<String> appIds, String operate) {
-        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)){
+        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)) {
             return Response.fail("参数异常");
         }
 
@@ -1385,25 +1385,25 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<String> appNames = applicationList.stream().map(ApplicationDetailResult::getApplicationName).collect(
                 Collectors.toList());
         List<ApplicationNodeProbeResult> applicationNodeProbeResults = applicationNodeProbeDAO.listByAppNameAndOperate(ApplicationNodeProbeOperateEnum.UNINSTALL.getCode(), appNames);
-        long count = applicationNodeProbeResults == null ?  0 : applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().count();
-        if (AgentConstants.UNINSTALL.equals(operate)){
-            if (count > 0){
+        long count = applicationNodeProbeResults == null ? 0 : applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().count();
+        if (AgentConstants.UNINSTALL.equals(operate)) {
+            if (count > 0) {
                 //构建返回数据
                 List<String> distinct = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().collect(Collectors.toList());
                 StringBuilder sb = new StringBuilder();
                 distinct.forEach(s -> {
                     sb.append(s).append("\n");
                 });
-                return Response.success(String.format("已选择%d个应用,%d个应用已处于卸载状态\n应用名称为:",appIds.size(),count) + sb);
-            }else {
-                return Response.success(String.format("已选择%d个应用,点击继续卸载",appIds.size()));
+                return Response.success(String.format("已选择%d个应用,%d个应用已处于卸载状态\n应用名称为:", appIds.size(), count) + sb);
+            } else {
+                return Response.success(String.format("已选择%d个应用,点击继续卸载", appIds.size()));
             }
         }
-        if (AgentConstants.RESUME.equals(operate)){
-            if (appIds.size() > count){
+        if (AgentConstants.RESUME.equals(operate)) {
+            if (appIds.size() > count) {
                 //构建返回数据
                 List<String> result = appNames;
-                if (count != 0){
+                if (count != 0) {
                     List<String> distinct = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName).distinct().collect(Collectors.toList());
                     result = result.stream().filter(o -> !distinct.contains(o)).collect(Collectors.toList());
                 }
@@ -1411,9 +1411,9 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 result.forEach(s -> {
                     sb.append(s).append("\n");
                 });
-                return Response.success(String.format("已选择%d个应用,%d个应用处于非卸载状态\n应用名称为:",appIds.size(), appIds.size() - count) + sb);
-            }else {
-                return Response.success(String.format("已选择%d个应用,点击继续",appIds.size()));
+                return Response.success(String.format("已选择%d个应用,%d个应用处于非卸载状态\n应用名称为:", appIds.size(), appIds.size() - count) + sb);
+            } else {
+                return Response.success(String.format("已选择%d个应用,点击继续", appIds.size()));
             }
         }
         return Response.fail("上传的状态当前不支持校验");
@@ -1421,7 +1421,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public List<String> filterAppIds(List<String> appIds, String operate) {
-        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)){
+        if (CollectionUtils.isEmpty(appIds) || StringUtil.isEmpty(operate)) {
             return null;
         }
 
@@ -1441,12 +1441,12 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<String> uninstallAppNames = applicationNodeProbeResults.stream().map(ApplicationNodeProbeResult::getApplicationName)
                 .collect(Collectors.toList());
         //需要卸载的数据，需要不存在卸载的数据
-        if (AgentConstants.UNINSTALL.equals(operate)){
+        if (AgentConstants.UNINSTALL.equals(operate)) {
             return applicationList.stream().filter(o -> !uninstallAppNames.contains(o.getApplicationName())).map(o ->
                     o.getApplicationId().toString()).collect(Collectors.toList());
         }
         //需要恢复的数据，需要是已经卸载的数据
-        if (AgentConstants.RESUME.equals(operate)){
+        if (AgentConstants.RESUME.equals(operate)) {
             return applicationList.stream().filter(o -> uninstallAppNames.contains(o.getApplicationName())).map(o ->
                     o.getApplicationId().toString()).collect(Collectors.toList());
         }
@@ -2477,8 +2477,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     @Override
     public void resumeAllAgent(List<String> appIds) {
         try {
-            appIds = this.filterAppIds(appIds,AgentConstants.RESUME);
-            if (CollectionUtils.isEmpty(appIds)){
+            appIds = this.filterAppIds(appIds, AgentConstants.RESUME);
+            if (CollectionUtils.isEmpty(appIds)) {
                 log.info("所有需要恢复的应用都被过滤掉了");
                 return;
             }

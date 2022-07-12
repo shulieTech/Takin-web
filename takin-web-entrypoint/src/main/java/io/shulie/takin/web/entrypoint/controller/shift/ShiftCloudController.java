@@ -16,16 +16,23 @@ import com.pamirs.takin.entity.domain.vo.shift.BaseResult;
 import com.pamirs.takin.entity.domain.vo.shift.SceneManagerResult;
 import com.pamirs.takin.entity.domain.vo.shift.ShiftCloudVO;
 import io.shulie.takin.cloud.sdk.model.common.DataBean;
+import io.shulie.takin.cloud.sdk.model.response.report.NodeTreeSummaryResp;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.BusinessActivitySummaryBean;
 import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
+import io.shulie.takin.web.biz.pojo.output.report.ReportDownLoadOutput;
+import io.shulie.takin.web.biz.service.DistributedLock;
 import io.shulie.takin.web.biz.service.TagService;
 import io.shulie.takin.web.biz.service.UserService;
 import io.shulie.takin.web.biz.service.scenemanage.SceneManageService;
+import io.shulie.takin.web.biz.utils.PDFUtil;
 import io.shulie.takin.web.common.common.Response;
+import io.shulie.takin.web.common.constant.LockKeyConstants;
 import io.shulie.takin.web.common.domain.WebResponse;
+import io.shulie.takin.web.common.exception.TakinWebException;
+import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.mapper.mysql.YVersionMapper;
 import io.shulie.takin.web.data.model.mysql.YVersionEntity;
 import io.shulie.takin.web.entrypoint.controller.report.ReportController;
@@ -33,7 +40,7 @@ import io.shulie.takin.web.entrypoint.controller.report.ReportLocalController;
 import io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
-import jdk.nashorn.internal.ir.annotations.Ignore;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -98,6 +105,12 @@ public class ShiftCloudController {
 
     @Value("${benchmark.path}")
     private String path;
+
+    @Autowired
+    private PDFUtil pdfUtil;
+
+    @Autowired
+    private DistributedLock distributedLock;
 
     //2.1
     @Deprecated
@@ -427,6 +440,7 @@ public class ShiftCloudController {
         else {
             data.put("tool_execute_id", reportId);
             Map result = new HashMap();
+            result.put("id",reportId);
             String responseJson = HttpUtil.get(path + "/api/task", result, 10000);
             int s = 0;
             int c1 = 0;
@@ -478,32 +492,70 @@ public class ShiftCloudController {
     @GetMapping("/api/c/report/export")
     public void export(@RequestBody ShiftCloudVO shiftCloudVO, HttpServletResponse response) throws Exception {
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
+            String path = null;
             if (isWeb(shiftCloudVO.getTool_execute_id())) {
                 ResponseResult<String> url = reportController.getExportDownLoadUrl(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")));
                 if (url.getSuccess()) {
-                    String path = url.getData();
-                    File file = FileUtil.file(path);
-                    String filename = file.getName();
-                    // 以流的形式下载文件。
-                    InputStream fis = new BufferedInputStream(new FileInputStream(path));
-                    byte[] buffer = new byte[fis.available()];
-                    fis.read(buffer);
-                    fis.close();
-                    // 清空response
-                    response.reset();
-                    response.setContentType("application/octet-stream;charset=UTF-8");
-                    String fileName = new String(filename.getBytes("gb2312"), "iso8859-1");
-                    response.setHeader("Content-disposition", "attachment;filename=" + fileName);
-                    OutputStream ouputStream = response.getOutputStream();
-                    ouputStream.write(buffer);
-                    ouputStream.flush();
-                    ouputStream.close();
+                    path = url.getData();
                 }
             } else {
-                //TODO bench
+                path = benchExport(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")));
             }
+            File file = FileUtil.file(path);
+            String filename = file.getName();
+            // 以流的形式下载文件。
+            InputStream fis = new BufferedInputStream(new FileInputStream(path));
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer);
+            fis.close();
+            // 清空response
+            response.reset();
+            response.setContentType("application/octet-stream;charset=UTF-8");
+            String fileName = new String(filename.getBytes("gb2312"), "iso8859-1");
+            response.setHeader("Content-disposition", "attachment;filename=" + fileName);
+            OutputStream ouputStream = response.getOutputStream();
+            ouputStream.write(buffer);
+            ouputStream.flush();
+            ouputStream.close();
         }
     }
+
+    private String benchExport(long reportId) {
+        String lockKey = String.format(LockKeyConstants.LOCK_REPORT_EXPORT,reportId);
+        if(!distributedLock.tryLockSecondsTimeUnit(lockKey, 0L, 30L)){
+            throw  new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, "操作太频繁!");
+        }
+        Map result = new HashMap();
+        result.put("id",reportId);
+        String taskResponseJson = HttpUtil.get(path + "/api/task/task", result, 10000);
+        String responseJson = HttpUtil.get(path + "/api/task", result, 10000);
+        if (StringUtils.isNotBlank(taskResponseJson) && StringUtils.isNotBlank(responseJson)) {
+            Map<String, Object> dataModel = new HashMap<>();
+            List<PressureTaskResult> t = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
+            PressureTask pressureTask = JSON.parseObject(responseJson, PressureTask.class);
+            result.put("id",pressureTask.getSceneId());
+            String sceneJson = HttpUtil.get(path + "/api/scene/select", result, 10000);
+            AppSceneVO vo = JSON.parseObject(sceneJson).getObject("data", AppSceneVO.class);
+            if (CollectionUtils.isNotEmpty(t)) {
+                Map m = new HashMap();
+                m.put("sceneName",vo.getSceneName());
+                m.put("sceneId",pressureTask.getSceneId());
+                dataModel.put("data", m);
+                String content = pdfUtil.parseFreemarker("report/tpl.html", dataModel);
+                String pdf = "report_" + reportId + "_" + ".pdf";
+                try {
+                    String path = pdfUtil.exportPDF(content, pdf);
+                    while (!(FileUtil.exist(path))) {
+                        //一直等待文件生成成功
+                    }
+                    return path;
+
+        }catch (IOException e){
+            throw  new TakinWebException(TakinWebExceptionEnum.SCENE_REPORT_EXPORT_ERROR, e.getMessage(), e);
+        }finally {
+            distributedLock.unLock(lockKey);
+        }}
+    }}
 
     @GetMapping("/api/c/getVersion")
     public ResponseResult<JSONObject> getVersion() {
@@ -691,5 +743,40 @@ public class ShiftCloudController {
          */
         private LocalDateTime endTime;
 
+    }
+
+    @Data
+    class AppSceneVO {
+
+        private String dids;
+
+        private String vid;
+
+        @ApiModelProperty("id")
+        private Long id;
+
+        @ApiModelProperty("场景名称")
+        private String sceneName;
+
+        @ApiModelProperty("压测类型:0:自动摸高 1：手工设置")
+        private String pressureType;
+
+        @ApiModelProperty("压测时间")
+        private Integer time;
+
+        @ApiModelProperty("场景线程组")
+        private List groupSetting;
+
+        @ApiModelProperty("压测活动")
+        private List<SceneActivitiesVO> sceneActivities;
+
+        @ApiModelProperty("场景文件信息")
+        private List<SceneFileVO> sceneFiles;
+
+        @ApiModelProperty("脚本线程组")
+        private List<JmxThreadGroupVO> jmxThreadGroup;
+
+        @ApiModelProperty("脚本活动")
+        private List<JmxActivitiesVO> jmxActivities;
     }
 }

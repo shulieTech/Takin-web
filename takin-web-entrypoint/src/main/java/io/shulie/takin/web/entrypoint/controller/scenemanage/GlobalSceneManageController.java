@@ -35,7 +35,7 @@ public class GlobalSceneManageController {
         return ResponseResult.success("共享成功");
     }
 
-    @ApiOperation("将场景共享")
+    @ApiOperation("停止场景共享")
     @PostMapping("/cancelSceneToGlobal")
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_SCENE)
     public ResponseResult<String> cancelSceneToGlobal(@RequestBody GlobalSceneManageRequest request) throws TakinWebException {

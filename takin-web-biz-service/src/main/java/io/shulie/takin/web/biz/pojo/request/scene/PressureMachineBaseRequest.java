@@ -8,7 +8,7 @@ import java.io.Serializable;
 @Data
 public class PressureMachineBaseRequest implements Serializable {
 
-    @NotNull(message = "节点名称不能为空")
-    private String name;
+    @NotNull(message = "id不能为空")
+    private Long id;
 
 }

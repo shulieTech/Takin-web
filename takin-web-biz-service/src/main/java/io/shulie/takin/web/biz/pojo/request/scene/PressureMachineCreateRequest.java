@@ -7,9 +7,12 @@ import lombok.Data;
 @ApiModel(value = "创建 压力机")
 public class PressureMachineCreateRequest {
 
-    private String nodeIp;
+    private String machineName;
 
-    private String name;
+    private String machineIp;
+
+    private String userName;
 
     private String password;
+
 }

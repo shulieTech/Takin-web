@@ -526,7 +526,7 @@ public class SwaggerConfig {
                 .groupName("移动云相关")
                 .select()
                 .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-                .paths(getRegex("/api/(placeholderManage|/api/scenemanage/copy).*"))
+                .paths(getRegex("/api/(placeholderManage|pressureMachine).*"))
                 .build()
                 .directModelSubstitute(LocalDate.class, String.class)
                 .useDefaultResponseMessages(false)

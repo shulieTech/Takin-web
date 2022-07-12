@@ -292,11 +292,13 @@ public class ShiftCloudController {
         if (isWeb(rd)) {
             long reportId = Long.parseLong(rd.replaceFirst(WEB, ""));
             try {
-                data = this.getData(reportId);
+                data = this.getData(reportId,true);
             }catch (Exception e) {}
         } else {
-            //TODO bench
-            return false;
+            long reportId = Long.parseLong(rd.replaceFirst(BENCH, ""));
+            try {
+                data = this.getData(reportId,false);
+            }catch (Exception e) {}
         }
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpPost httpPost = new HttpPost("http://devops.testcloud.com/ms/testcloudplatform/api/service/test/plan/task/status");
@@ -327,143 +329,147 @@ public class ShiftCloudController {
     @PostMapping("/ms/task/api/service/task/sdk/log")
     public BaseResult log(@RequestBody ShiftCloudVO shiftCloudVO) throws Exception {
         BaseResult baseResult = new BaseResult();
+        Map data;
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
-            if (isWeb(shiftCloudVO.getTool_execute_id())) {
-                Map data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")));
-                baseResult.setData(data);
-            } else {
-                HashMap data = new HashMap();
-                data.put("tool_execute_id", shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, ""));
-                Map result = new HashMap();
-                String responseJson = HttpUtil.get(path + "/api/task", result, 10000);
-                int s = 0;
-                int c1 = 0;
-                int c3 = 0;
-                long r = 0;
-                if (StringUtils.isNotBlank(responseJson)) {
-                    PressureTask pressureTask = JSON.parseObject(responseJson, PressureTask.class);
-                    r = pressureTask.getRunTime();
-                    data.put("tool_task_id", pressureTask.getSceneId());
-                    int status = pressureTask.getStatus();
-                    data.put("task_progress","50%");
-                    if (status == 2) {
-                        data.put("task_progress","100%");
-                        String taskResponseJson = HttpUtil.get(path + "/api/task/task", result, 10000);
-                        if (StringUtils.isNotBlank(responseJson)) {
-                            List<PressureTaskResult> pressureTaskResults = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
-                            for (PressureTaskResult p : pressureTaskResults) {
-                                if (StringUtils.isNotBlank(p.getTestResult())) c1+=1;
-                                else c3+=1;
-                            }
-                        }
-                    }
-                   if (c3>0) status = 3;
-                   else status = 1;
-                    data.put("task_status",status);
-                    String startParam = pressureTask.getStartParam();
-                    if (StringUtils.isNotBlank(startParam)) {
-                        s = JSON.parseArray(startParam).size();
-                    }
-                }
-                data.put("tool_code", "Performance");
-                String taskResponseJson = HttpUtil.get(path + "/api/task/n", result, 10000);
-                Map analysis = new HashMap();
-                if (StringUtils.isNotBlank(taskResponseJson)) analysis.put("coverDemand", Integer.parseInt(taskResponseJson));
-                analysis.put("totalCase",s);
-                analysis.put("executedCase",s);
-                analysis.put("succeedCase",c1);
-                analysis.put("failedCase",c3);
-                //TODO failedCaseInfo?
-                analysis.put("executeDuration",r);
-                data.put("last_analysis_result_list", JSON.toJSONString(analysis));
-            }
+            data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")),true);
+        } else {
+            data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")),false);
         }
-
+        baseResult.setData(data);
         return baseResult;
     }
 
-    private Map getData(long reportId) throws ParseException {
+    private Map getData(long reportId,boolean isWeb) throws ParseException {
         HashMap data = new HashMap();
-        ResponseResult<ReportDetailOutput> responseResult = reportController.getReportByReportId(reportId);
-        Response<ReportCountDTO> reportCount = reportLocalController.getReportCount(reportId);
-        if (null != responseResult && responseResult.getSuccess()) {
-            ReportDetailOutput output = responseResult.getData();
-            Long id = output.getId();
-            Long sceneId = output.getSceneId();
-            Integer conclusion = output.getConclusion();
-            String conclusionRemark = output.getConclusionRemark();
-            Integer taskStatus = output.getTaskStatus();
-            String testTotalTime = output.getTestTotalTime();
-            List<BusinessActivitySummaryBean> businessActivity = output.getBusinessActivity();
-            Long totalRequest = output.getTotalRequest();
-            data.put("tool_execute_id", String.valueOf(id));
-            data.put("tool_task_id", String.valueOf(sceneId));
-            data.put("tool_code", "Performance");
-            int ts = 0;
-            if (null != conclusion && 1 == conclusion) ts = 1;
-            else if (null != conclusion && 0 == conclusion && 1 == taskStatus) ts = 2;
-            else if (null != conclusion && 0 == conclusion && 2 == taskStatus) ts = 3;
-            data.put("task_status", ts);
-            data.put("task_message", conclusionRemark);
-            String startTime = output.getStartTime();
-            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startTime);
-            long min = ChronoUnit.MINUTES.between(Instant.ofEpochMilli(date.getTime()), Instant.ofEpochMilli(System.currentTimeMillis()));
-            int i1 = testTotalTime.indexOf(" ");
-            int i2 = testTotalTime.indexOf("'");
-            String ms = testTotalTime.substring(i1 + 1, i2);
-            Double mi = Double.valueOf(ms);
-            double tm = min / mi * 100 > 100 ? 100 : min / mi * 100;
-            data.put("task_progress", String.valueOf(tm).substring(0, String.valueOf(tm).indexOf(".")) + "%");//TODO testTotalTime is null?
-            if (null != taskStatus && taskStatus == 2) {
-                Map analysis = new HashMap();
-                LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
-                wrapper.select(YVersionEntity::getDids, YVersionEntity::getVid);
-                wrapper.eq(YVersionEntity::getSid, sceneId);
-                YVersionEntity entity = yVersionMapper.selectOne(wrapper);
-                int coverDemand = 0;
-                if (null != entity) coverDemand = JSON.parseArray(entity.getDids()).size();
-                analysis.put("coverDemand", coverDemand);
-                if (null != reportCount && reportCount.getSuccess()) {
-                    ReportCountDTO dto = reportCount.getData();
-                    if (null != dto) {
-                        analysis.put("totalCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() : 0);
-                        analysis.put("executedCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() : 0);
-                        analysis.put("succeedCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() - (null != dto.getNotpassBusinessActivityCount() ? dto.getNotpassBusinessActivityCount() : 0) : 0);
-                        analysis.put("failedCase", null != dto.getNotpassBusinessActivityCount() ? dto.getNotpassBusinessActivityCount() : 0);
+        if (isWeb) {
+            ResponseResult<ReportDetailOutput> responseResult = reportController.getReportByReportId(reportId);
+            Response<ReportCountDTO> reportCount = reportLocalController.getReportCount(reportId);
+            if (null != responseResult && responseResult.getSuccess()) {
+                ReportDetailOutput output = responseResult.getData();
+                Long id = output.getId();
+                Long sceneId = output.getSceneId();
+                Integer conclusion = output.getConclusion();
+                String conclusionRemark = output.getConclusionRemark();
+                Integer taskStatus = output.getTaskStatus();
+                String testTotalTime = output.getTestTotalTime();
+                List<BusinessActivitySummaryBean> businessActivity = output.getBusinessActivity();
+                Long totalRequest = output.getTotalRequest();
+                data.put("tool_execute_id", String.valueOf(id));
+                data.put("tool_task_id", String.valueOf(sceneId));
+                data.put("tool_code", "Performance");
+                int ts = 0;
+                if (null != conclusion && 1 == conclusion) ts = 1;
+                else if (null != conclusion && 0 == conclusion && 1 == taskStatus) ts = 2;
+                else if (null != conclusion && 0 == conclusion && 2 == taskStatus) ts = 3;
+                data.put("task_status", ts);
+                data.put("task_message", conclusionRemark);
+                String startTime = output.getStartTime();
+                Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startTime);
+                long min = ChronoUnit.MINUTES.between(Instant.ofEpochMilli(date.getTime()), Instant.ofEpochMilli(System.currentTimeMillis()));
+                int i1 = testTotalTime.indexOf(" ");
+                int i2 = testTotalTime.indexOf("'");
+                String ms = testTotalTime.substring(i1 + 1, i2);
+                Double mi = Double.valueOf(ms);
+                double tm = min / mi * 100 > 100 ? 100 : min / mi * 100;
+                data.put("task_progress", String.valueOf(tm).substring(0, String.valueOf(tm).indexOf(".")) + "%");//TODO testTotalTime is null?
+                if (null != taskStatus && taskStatus == 2) {
+                    Map analysis = new HashMap();
+                    LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
+                    wrapper.select(YVersionEntity::getDids, YVersionEntity::getVid);
+                    wrapper.eq(YVersionEntity::getSid, sceneId);
+                    YVersionEntity entity = yVersionMapper.selectOne(wrapper);
+                    int coverDemand = 0;
+                    if (null != entity) coverDemand = JSON.parseArray(entity.getDids()).size();
+                    analysis.put("coverDemand", coverDemand);
+                    if (null != reportCount && reportCount.getSuccess()) {
+                        ReportCountDTO dto = reportCount.getData();
+                        if (null != dto) {
+                            analysis.put("totalCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() : 0);
+                            analysis.put("executedCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() : 0);
+                            analysis.put("succeedCase", null != dto.getBusinessActivityCount() ? dto.getBusinessActivityCount() - (null != dto.getNotpassBusinessActivityCount() ? dto.getNotpassBusinessActivityCount() : 0) : 0);
+                            analysis.put("failedCase", null != dto.getNotpassBusinessActivityCount() ? dto.getNotpassBusinessActivityCount() : 0);
+                        }
                     }
-                }
-                analysis.put("performanceResult", null != conclusion && 1 == conclusion ? true : false);
-                String a = testTotalTime.substring(0, testTotalTime.indexOf("h"));
-                String b = testTotalTime.substring(i1 + 1, i2);
-                String c = testTotalTime.substring(i2 + 1, testTotalTime.length() - 1);
-                int ti = Integer.parseInt(a) * 3600 + Integer.parseInt(b) * 60 + Integer.parseInt(c);
-                analysis.put("executeDuration", ti);
-                List list = new ArrayList();
-                if (CollectionUtils.isNotEmpty(businessActivity)) {
-                    for (int i = 0; i < businessActivity.size(); i++) {
-                        if (businessActivity.get(i).getPassFlag() == 0) {
-                            Map failedCaseInfo = new HashMap();
-                            failedCaseInfo.put("name", businessActivity.get(i).getBusinessActivityName());
-                            Long t = businessActivity.get(i).getTotalRequest();
-                            int failCount = 0;
-                            DataBean successRate = businessActivity.get(i).getSuccessRate();
-                            if (null != successRate) {
-                                BigDecimal value = (BigDecimal) successRate.getValue();
-                                if (null != value) {
-                                    failCount = (int) (t * (100 - value.intValue()) / 100);
+                    analysis.put("performanceResult", null != conclusion && 1 == conclusion ? true : false);
+                    String a = testTotalTime.substring(0, testTotalTime.indexOf("h"));
+                    String b = testTotalTime.substring(i1 + 1, i2);
+                    String c = testTotalTime.substring(i2 + 1, testTotalTime.length() - 1);
+                    int ti = Integer.parseInt(a) * 3600 + Integer.parseInt(b) * 60 + Integer.parseInt(c);
+                    analysis.put("executeDuration", ti);
+                    List list = new ArrayList();
+                    if (CollectionUtils.isNotEmpty(businessActivity)) {
+                        for (int i = 0; i < businessActivity.size(); i++) {
+                            if (businessActivity.get(i).getPassFlag() == 0) {
+                                Map failedCaseInfo = new HashMap();
+                                failedCaseInfo.put("name", businessActivity.get(i).getBusinessActivityName());
+                                Long t = businessActivity.get(i).getTotalRequest();
+                                int failCount = 0;
+                                DataBean successRate = businessActivity.get(i).getSuccessRate();
+                                if (null != successRate) {
+                                    BigDecimal value = (BigDecimal) successRate.getValue();
+                                    if (null != value) {
+                                        failCount = (int) (t * (100 - value.intValue()) / 100);
+                                    }
                                 }
+                                failedCaseInfo.put("reason", JSON.toJSONString(businessActivity.get(i)));
+                                failedCaseInfo.put("failCount", failCount);
+                                list.add(failedCaseInfo);
                             }
-                            failedCaseInfo.put("reason", JSON.toJSONString(businessActivity.get(i)));
-                            failedCaseInfo.put("failCount", failCount);
-                            list.add(failedCaseInfo);
+                        }
+                    }
+                    analysis.put("failedCaseInfo", list);
+                    data.put("last_analysis_result_list", JSON.toJSONString(analysis));
+                } else {
+                    data.put("last_analysis_result_list", null);
+                }
+            }
+        }
+        else {
+            data.put("tool_execute_id", reportId);
+            Map result = new HashMap();
+            String responseJson = HttpUtil.get(path + "/api/task", result, 10000);
+            int s = 0;
+            int c1 = 0;
+            int c3 = 0;
+            long r = 0;
+            List l = new ArrayList();
+            if (StringUtils.isNotBlank(responseJson)) {
+                PressureTask pressureTask = JSON.parseObject(responseJson, PressureTask.class);
+                r = pressureTask.getRunTime();
+                data.put("tool_task_id", pressureTask.getSceneId());
+                int status = pressureTask.getStatus();
+                data.put("task_progress","50%");
+                if (status == 2) {
+                    data.put("task_progress","100%");
+                    String taskResponseJson = HttpUtil.get(path + "/api/task/task", result, 10000);
+                    if (StringUtils.isNotBlank(responseJson)) {
+                        List<PressureTaskResult> pressureTaskResults = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
+                        for (PressureTaskResult p : pressureTaskResults) {
+                            if (StringUtils.isNotBlank(p.getTestResult()) && l.add(p.getTestResult())) c1+=1;
+                            else c3+=1;
                         }
                     }
                 }
-                analysis.put("failedCaseInfo", list);
-                data.put("last_analysis_result_list", JSON.toJSONString(analysis));
-            } else {
-                data.put("last_analysis_result_list", null);
+                if (c3>0) status = 3;
+                else status = 1;
+                data.put("task_status",status);
+                String startParam = pressureTask.getStartParam();
+                if (StringUtils.isNotBlank(startParam)) {
+                    s = JSON.parseArray(startParam).size();
+                }
             }
+            data.put("tool_code", "Performance");
+            String taskResponseJson = HttpUtil.get(path + "/api/task/n", result, 10000);
+            Map analysis = new HashMap();
+            if (StringUtils.isNotBlank(taskResponseJson)) analysis.put("coverDemand", Integer.parseInt(taskResponseJson));
+            analysis.put("totalCase",s);
+            analysis.put("executedCase",s);
+            analysis.put("succeedCase",c1);
+            analysis.put("failedCase",c3);
+            //TODO failedCaseInfo?
+            analysis.put("executeDuration",r);
+            analysis.put("task_message","test result "+JSON.toJSONString(l));
+            data.put("last_analysis_result_list", JSON.toJSONString(analysis));
         }
         return data;
     }

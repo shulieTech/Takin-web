@@ -9,9 +9,13 @@ import io.shulie.takin.cloud.sdk.model.response.machine.NodeMetricsResp;
 import io.shulie.takin.common.beans.annotation.ActionTypeEnum;
 import io.shulie.takin.common.beans.annotation.AuthVerification;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
+import io.shulie.takin.common.beans.page.PagingDevice;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.scene.*;
+import io.shulie.takin.web.biz.pojo.response.placeholdermanage.PlaceholderManageResponse;
+import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
 import io.shulie.takin.web.common.util.BeanCopyUtils;
 import io.shulie.takin.web.data.param.machine.PressureMachineUpdateParam;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
@@ -30,77 +34,71 @@ import java.util.List;
 public class PressureTestMachineController {
 
     @Resource
-    private CloudMachineApi cloudMachineApi;
+    private MachineManageService machineManageService;
 
     @PostMapping()
     @ApiOperation("添加压力机")
     @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
     public ResponseResult<String> create(@RequestBody @Valid PressureMachineCreateRequest request) {
-        MachineAddReq addReq = new MachineAddReq();
-        addReq.setNodeIp(request.getNodeIp());
-        addReq.setName(request.getName());
-        addReq.setPassword(request.getPassword());
-        WebPluginUtils.fillCloudUserData(addReq);
-
-        String add = cloudMachineApi.add(addReq);
-        return ResponseResult.success(add);
+        String failContent = machineManageService.create(request);
+        if (failContent != null){
+            return ResponseResult.fail("添加失败",failContent);
+        }
+        return ResponseResult.success("添加成功");
     }
 
 
     @GetMapping("/list")
     @ApiOperation("压力机列表")
     @AuthVerification(needAuth = ActionTypeEnum.QUERY, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<List<PressureMachineResponse>> list() {
-        ContextExt req = new ContextExt();
-        WebPluginUtils.fillCloudUserData(req);
-        ResponseResult<List<NodeMetricsResp>> list = cloudMachineApi.list(req);
-        List<PressureMachineResponse> pressureMachineResponses = BeanCopyUtils.copyList(list.getData(), PressureMachineResponse.class);
-        return ResponseResult.success(pressureMachineResponses);
+    public PagingList<PressureMachineResponse> list(PagingDevice pagingDevice) {
+        return machineManageService.list(pagingDevice);
     }
 
 
     @PutMapping()
     @ApiOperation("修改压力机")
     @AuthVerification(needAuth = ActionTypeEnum.UPDATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<Boolean> create(@RequestBody @Valid PressureMachineUpdateRequest request) {
-        MachineUpdateReq updateReq = new MachineUpdateReq();
-        updateReq.setNodeName(request.getName());
-        updateReq.setUpdateName(request.getUpdateName());
-        WebPluginUtils.fillCloudUserData(updateReq);
-        Boolean update = cloudMachineApi.update(updateReq);
-        return ResponseResult.success(update);
+    public ResponseResult<String> update(@RequestBody @Valid PressureMachineUpdateRequest request) {
+        machineManageService.update(request);
+        return ResponseResult.success("更新成功");
     }
 
     @DeleteMapping()
     @ApiOperation("删除压力机")
     @AuthVerification(needAuth = ActionTypeEnum.DELETE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<Boolean> delete(@RequestBody @Valid PressureMachineBaseRequest request) {
-        MachineBaseReq baseReq = new MachineBaseReq();
-        baseReq.setNodeName(request.getName());
-        WebPluginUtils.fillCloudUserData(baseReq);
-        Boolean update = cloudMachineApi.delete(baseReq);
-        return ResponseResult.success(update);
+    public ResponseResult<String> delete(@RequestBody @Valid PressureMachineBaseRequest request) {
+        machineManageService.delete(request);
+        return ResponseResult.success("删除成功");
     }
 
     @PostMapping("/enable")
-    @ApiOperation("启用压力机")
+    @ApiOperation("部署压力机")
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<Boolean> enable(@RequestBody @Valid PressureMachineBaseRequest request) {
-        MachineBaseReq baseReq = new MachineBaseReq();
-        baseReq.setNodeName(request.getName());
-        WebPluginUtils.fillCloudUserData(baseReq);
-        Boolean enable = cloudMachineApi.enable(baseReq);
-        return ResponseResult.success(enable);
+    public ResponseResult<String> enable(@RequestBody @Valid PressureMachineBaseRequest request) {
+        String failContent = machineManageService.enable(request);
+        if (failContent != null){
+            return ResponseResult.fail("部署失败",failContent);
+        }
+        return ResponseResult.success("部署成功");
     }
 
     @PostMapping("/disable")
-    @ApiOperation("禁用压力机")
+    @ApiOperation("卸载压力机")
     @AuthVerification(needAuth = ActionTypeEnum.ENABLE_DISABLE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
-    public ResponseResult<Boolean> disable(@RequestBody @Valid PressureMachineBaseRequest request) {
-        MachineBaseReq baseReq = new MachineBaseReq();
-        baseReq.setNodeName(request.getName());
-        WebPluginUtils.fillCloudUserData(baseReq);
-        Boolean disable = cloudMachineApi.disable(baseReq);
-        return ResponseResult.success(disable);
+    public ResponseResult<String> disable(@RequestBody @Valid PressureMachineBaseRequest request) {
+        String failContent = machineManageService.disable(request);
+        if (failContent != null){
+            return ResponseResult.fail("卸载失败",failContent);
+        }
+        return ResponseResult.success("卸载成功");
+    }
+
+    @GetMapping("/syncMachine")
+    @ApiOperation("添加压力机")
+    @AuthVerification(needAuth = ActionTypeEnum.CREATE, moduleCode = BizOpConstants.ModuleCode.PRESSURE_TEST_MACHINE)
+    public ResponseResult<String> syncMachine() {
+        machineManageService.syncMachine();
+        return ResponseResult.success("同步成功");
     }
 }

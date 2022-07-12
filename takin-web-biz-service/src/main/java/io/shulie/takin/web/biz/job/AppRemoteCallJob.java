@@ -70,7 +70,7 @@ public class AppRemoteCallJob implements SimpleJob {
                 // 开始数据层分片
                 for (TenantEnv e : ext.getEnvs()) {
                     // 分片key
-                    int shardKey = (e.getTenantId() + e.getEnvCode()).hashCode();
+                    int shardKey = (e.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
                     if (shardKey % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                         // 分布式锁
                         String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());

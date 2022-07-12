@@ -29,6 +29,7 @@ import io.shulie.takin.web.data.result.statistics.PressurePieTotalResult;
 import io.shulie.takin.web.data.result.statistics.ScriptLabelListTotalResult;
 import io.shulie.takin.web.diff.api.statistics.PressureStatisticsApi;
 import io.shulie.takin.web.ext.entity.UserExt;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -116,7 +117,7 @@ public class PressureStatisticsServiceImpl implements PressureStatisticsService 
                     }
                     // 创建人根据id查
                     if (StringUtils.isNotBlank(output.getCreateName())) {
-                        UserExt userExt = userMap.get(output.getCreateName());
+                        UserExt userExt = userMap.get(NumberUtils.toLong(output.getCreateName(),0));
                         if (userExt != null) {
                             output.setCreateName(userExt.getName());
                         }

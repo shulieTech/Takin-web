@@ -312,7 +312,7 @@
     </select>
 
     <select id="selectBussinessLinkByIdList" resultMap="BaseResultMap">
-        SELECT LINK_ID,LINK_NAME,ENTRACE, TYPE , application_mame,application_id FROM t_business_link_manage_table
+        SELECT LINK_ID,LINK_NAME,ENTRACE, TYPE , application_name,application_id FROM t_business_link_manage_table
         WHERE LINK_ID in
         <foreach item="item" collection="list" open="(" separator="," close=")">
             #{item}

@@ -1,8 +1,5 @@
 package io.shulie.takin.web.amdb.api.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.collect.Sets;
@@ -29,6 +26,7 @@ import io.shulie.takin.web.common.util.ActivityUtil;
 import io.shulie.takin.web.common.util.ActivityUtil.EntranceJoinEntity;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +34,9 @@ import org.springframework.boot.autoconfigure.takin.properties.AmdbClientPropert
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author shiyajian
@@ -136,6 +137,49 @@ public class TraceClientImpl implements TraceClient {
     }
 
     @Override
+    public EntryTraceInfoDTO getEntryTraceInfo(TraceInfoQueryDTO query) {
+        String url = properties.getUrl().getAmdb() + ENTRY_TRACE_PATH;
+        try {
+            QueryLinkDetailDTO dto = new QueryLinkDetailDTO();
+            BeanUtils.copyProperties(query, dto);
+            if (query.getReportId() != null) {
+                dto.setTaskId(query.getReportId().toString());
+            }
+            dto.setEntranceList(this.getEntryListString(query.getEntranceRuleDTOS()));
+            dto.setCurrentPage(query.getPageNum());
+            dto.setTenantAppKey(WebPluginUtils.traceTenantAppKey());
+            dto.setEnvCode(WebPluginUtils.traceEnvCode());
+            dto.setFieldNames("appName,serviceName,methodName,remoteIp,port,resultCode,cost,startTime,traceId");
+            //固定查询影子链路明细数据
+            dto.setQueryType(query.getQueryType());
+            //压测流量明细查询，去掉固定查压测流量
+            //dto.setClusterTest(1);
+            dto.setTraceIdList(query.getTraceId());
+            dto.setPageSize(1);
+            AmdbResult<List<EntryTraceInfoDTO>> response = AmdbHelper.builder().url(url)
+                    .param(dto)
+                    .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
+                    .eventName("查询链路列表")
+                    .list(EntryTraceInfoDTO.class);
+            List<EntryTraceInfoDTO> list = response.getData();
+            if (CollUtil.isNotEmpty(list)) {
+                list.forEach(entry -> {
+                    entry.setEntry(entry.getServiceName());
+                    entry.setMethod(entry.getMethodName());
+                    entry.setProcessTime(entry.getCost());
+                    entry.setId("0");
+                    entry.setEndTime(entry.getEndTime());
+                    entry.setStatus(entry.getResultCode());
+                });
+                return list.get(0);
+            }
+        } catch (Exception e) {
+            throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
     public RpcStack getTraceDetailById(String traceId, String... times) {
         try {
             String url = properties.getUrl().getAmdb() + QUERY_TRACE_PATH.replace("@TraceId@", traceId);
@@ -147,6 +191,9 @@ public class TraceClientImpl implements TraceClient {
                     .eventName("查询Trace调用栈明细")
                     .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
                     .list(RpcBased.class);
+            if (CollectionUtils.isEmpty(amdbResponse.getData())) {
+                return null;
+            }
             return ProtocolParserFactory.getFactory().parseRpcStackByRpcBase(traceId, amdbResponse.getData());
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(), e);

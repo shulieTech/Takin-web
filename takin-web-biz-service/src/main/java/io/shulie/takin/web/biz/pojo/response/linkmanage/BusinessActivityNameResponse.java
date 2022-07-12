@@ -43,4 +43,6 @@ public class BusinessActivityNameResponse implements Serializable {
     private String applicationName;
 
     private Long applicationId;
+
+    private String entrace;
 }

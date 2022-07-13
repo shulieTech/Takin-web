@@ -31,6 +31,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -65,6 +66,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     @Resource
     private CloudMachineApi cloudMachineApi;
 
+    @Resource
     private WebUserExtApi webUserExtApi;
 
     @Override
@@ -221,6 +223,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         MachineManageEntity machineManageEntity = new MachineManageEntity();
                         machineManageEntity.setMachineIp(json.get("ip").toString());
                         machineManageEntity.setMachineName(json.get("name").toString());
+                        machineManageEntity.setStatus(0);
                         manageEntities.add(machineManageEntity);
                     }
                 }

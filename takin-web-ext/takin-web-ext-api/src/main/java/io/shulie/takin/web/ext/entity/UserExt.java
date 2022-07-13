@@ -74,4 +74,15 @@ public class UserExt {
      * 是否有超级管理员的权限(创建租户)
      */
     private Integer isSuper;
+
+    /**
+     * 第三方用户的唯一标识
+     */
+    private String externalId;
+
+    /**
+     * 第三方用户的登录名
+     */
+    private String externalName;
+
 }

@@ -48,7 +48,7 @@ public class NoAuthController {
     @Value("${page.report.bench}")
     private String pageBench;
 
-    @GetMapping("/parsePage")
+    @GetMapping("/parsepage")
     public void parsePage(HttpServletRequest req, HttpServletResponse response) {
         String baseURL = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath();
 

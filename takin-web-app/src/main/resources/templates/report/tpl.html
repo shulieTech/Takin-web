@@ -202,9 +202,12 @@
       <#if data.testResult??>
       <#list data.testResult?keys as key>
       <#if key != "results" && key != "systems">
+      <#if data.testResult[key]?is_string>
       <div class="mb-2">
         <span class="text-gray">${key!}：</span>
+        <span>${data.testResult[key]!}</span>
       </div>
+    </#if>
     </#if>
   </#list>
 </#if>

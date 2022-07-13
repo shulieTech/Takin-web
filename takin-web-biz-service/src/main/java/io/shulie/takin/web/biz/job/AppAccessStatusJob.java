@@ -61,7 +61,7 @@ public class AppAccessStatusJob implements SimpleJob {
             }
             // 根据环境 分线程
             for (TenantEnv e : ext.getEnvs()) {
-                int shardKey = (e.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
+                int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
                 if (shardKey % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
                     String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
                     if (distributedLock.checkLock(lockKey)) {

@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang.StringUtils;
@@ -21,10 +22,11 @@ import org.apache.commons.lang.StringUtils;
 public class SceneEntity extends UserBaseEntity {
 
     @TableField(exist = false)
-    private List dids;
+    private List demandIds;
 
     @TableField(exist = false)
-    private String vid;
+    private String versionId;
+
 
 
     /**

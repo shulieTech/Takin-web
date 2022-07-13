@@ -2,6 +2,9 @@ package io.shulie.takin.web.biz.service.scenemanage.impl;
 
 import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.shulie.takin.cloud.entrypoint.machine.CloudMachineApi;
@@ -13,6 +16,7 @@ import io.shulie.takin.common.beans.page.PagingDevice;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.string.StringUtil;
+import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineBaseRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineResponse;
@@ -21,6 +25,8 @@ import io.shulie.takin.web.biz.service.scenemanage.MachineManageService;
 import io.shulie.takin.web.common.util.BeanCopyUtils;
 import io.shulie.takin.web.data.dao.scenemanage.MachineManageDAO;
 import io.shulie.takin.web.data.model.mysql.MachineManageEntity;
+import io.shulie.takin.web.ext.api.user.WebUserExtApi;
+import io.shulie.takin.web.ext.entity.UserExt;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +47,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     @Value("${machine.password.sale.pre: machinePasswordSaltPre}")
     private String machinePasswordSaltPre;
+
+    @Value("${yidongyun.user.machine.url: http://devops.testcloud.com/ms/testcloudplatform/api/service/user/host?X-DEVOPS-UID=}")
+    private String url;
 
     private SymmetricCrypto des;
 
@@ -55,19 +65,21 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     @Resource
     private CloudMachineApi cloudMachineApi;
 
+    private WebUserExtApi webUserExtApi;
+
     @Override
     public String create(PressureMachineCreateRequest request) {
         QueryWrapper<MachineManageEntity> nameQueryWrapper = new QueryWrapper<>();
-        nameQueryWrapper.lambda().eq(MachineManageEntity::getMachineName,request.getMachineName());
+        nameQueryWrapper.lambda().eq(MachineManageEntity::getMachineName, request.getMachineName());
         List<MachineManageEntity> nameList = machineManageDAO.list(nameQueryWrapper);
-        if (CollectionUtils.isNotEmpty(nameList)){
+        if (CollectionUtils.isNotEmpty(nameList)) {
             return "机器名称已存在";
         }
 
         QueryWrapper<MachineManageEntity> ipQueryWrapper = new QueryWrapper<>();
-        ipQueryWrapper.lambda().eq(MachineManageEntity::getMachineIp,request.getMachineIp());
+        ipQueryWrapper.lambda().eq(MachineManageEntity::getMachineIp, request.getMachineIp());
         List<MachineManageEntity> ipList = machineManageDAO.list(ipQueryWrapper);
-        if (CollectionUtils.isNotEmpty(ipList)){
+        if (CollectionUtils.isNotEmpty(ipList)) {
             return "机器ip已存在";
         }
 
@@ -110,13 +122,13 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     @Override
     public void update(PressureMachineUpdateRequest request) {
         MachineManageEntity manageDAOById = machineManageDAO.getById(request.getId());
-        if (manageDAOById == null){
+        if (manageDAOById == null) {
             return;
         }
-        if (StringUtil.isNotEmpty(request.getPassword())){
+        if (StringUtil.isNotEmpty(request.getPassword())) {
             manageDAOById.setPassword(des.encryptHex(request.getPassword()));
         }
-        if (StringUtil.isNotEmpty(request.getUserName())){
+        if (StringUtil.isNotEmpty(request.getUserName())) {
             manageDAOById.setUserName(request.getUserName());
         }
         manageDAOById.setUpdateTime(new Date());
@@ -126,15 +138,15 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     @Override
     public void delete(PressureMachineBaseRequest request) {
         MachineManageEntity manageDAOById = machineManageDAO.getById(request.getId());
-        if (manageDAOById == null){
+        if (manageDAOById == null) {
             return;
         }
         //部署中的内容不能删除
-        if (manageDAOById.getStatus() == 1){
+        if (manageDAOById.getStatus() == 1) {
             return;
         }
         //已部署的节点需要先进行卸载
-        if (manageDAOById.getStatus() == 2){
+        if (manageDAOById.getStatus() == 2) {
             //卸载已部署的节点
             MachineBaseReq baseReq = new MachineBaseReq();
             baseReq.setNodeName(manageDAOById.getMachineName());
@@ -146,13 +158,14 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     /**
      * 返回失败原因
+     *
      * @param request
      * @return
      */
     @Override
     public String enable(PressureMachineBaseRequest request) {
         MachineManageEntity manageDAOById = machineManageDAO.getById(request.getId());
-        if (manageDAOById == null){
+        if (manageDAOById == null) {
             return "没有找到对应机器数据，请刷新页面再试";
         }
         MachineAddReq machineAddReq = new MachineAddReq();
@@ -172,7 +185,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     @Override
     public String disable(PressureMachineBaseRequest request) {
         MachineManageEntity manageDAOById = machineManageDAO.getById(request.getId());
-        if (manageDAOById == null){
+        if (manageDAOById == null) {
             return "没有找到对应机器数据，请刷新页面再试";
         }
         //卸载已部署的节点
@@ -188,7 +201,57 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     @Override
     public void syncMachine() {
-        //todo 同步机器逻辑，先找到客户机器，新增到当前机器列表
+        UserExt userExt = webUserExtApi.traceUser();
+        String externalId = userExt.getExternalId();
+        log.info("开始调用获取{}用户的机器信息,用户id为:{}", url, externalId);
+        String result = HttpUtil.get(url + externalId);
+        log.info("获取到结果为:{}",result);
+        if (StringUtil.isNotEmpty(result)){
+            List<MachineManageEntity> manageEntities = new ArrayList<>();
+            try {
+                JSONObject jsonObject = JSONObject.parseObject(result);
+                Object data = jsonObject.get("data");
+                if (data == null){
+                    return;
+                }
+                JSONArray jsonArray = JSONObject.parseArray(data.toString());
+                if (CollectionUtils.isNotEmpty(jsonArray)){
+                    for (Object o : jsonArray){
+                        JSONObject json = JSONObject.parseObject(o.toString());
+                        MachineManageEntity machineManageEntity = new MachineManageEntity();
+                        machineManageEntity.setMachineIp(json.get("ip").toString());
+                        machineManageEntity.setMachineName(json.get("name").toString());
+                        manageEntities.add(machineManageEntity);
+                    }
+                }
+            }catch (Exception e){
+                log.error("结果解析出现异常",e);
+            }
+            if (CollectionUtils.isNotEmpty(manageEntities)){
+                List<String> ipList = manageEntities.stream().map(MachineManageEntity::getMachineIp).collect(Collectors.toList());
+                QueryWrapper<MachineManageEntity> ipListQuery = new QueryWrapper<>();
+                ipListQuery.lambda().in(MachineManageEntity::getMachineIp,ipList);
+                List<MachineManageEntity> machineManageEntities = machineManageDAO.list(ipListQuery);
+                if (CollectionUtils.isNotEmpty(machineManageEntities)){
+                    List<String> ipStringList = machineManageEntities.stream().map(MachineManageEntity::getMachineIp).collect(Collectors.toList());
+                    log.info("同步过来的机器出现ip相同的机器，过滤掉这部分数据" + ipStringList);
+                    manageEntities = manageEntities.stream().filter(o -> !ipStringList.contains(o.getMachineIp())).collect(Collectors.toList());
+                }
+
+                List<String> nameList = manageEntities.stream().map(MachineManageEntity::getMachineName).collect(Collectors.toList());
+                QueryWrapper<MachineManageEntity> nameListQuery = new QueryWrapper<>();
+                nameListQuery.lambda().in(MachineManageEntity::getMachineName,nameList);
+                List<MachineManageEntity> nameMachineManageEntities = machineManageDAO.list(nameListQuery);
+                if (CollectionUtils.isNotEmpty(nameMachineManageEntities)){
+                    List<String> nameStringList = nameMachineManageEntities.stream().map(MachineManageEntity::getMachineName).collect(Collectors.toList());
+                    log.info("同步过来的机器出现名称相同的机器，过滤掉这部分数据" + nameStringList);
+                    manageEntities = manageEntities.stream().filter(o -> !nameStringList.contains(o.getMachineName())).collect(Collectors.toList());
+                }
+                if (CollectionUtils.isNotEmpty(manageEntities)){
+                    machineManageDAO.saveBatch(manageEntities);
+                }
+            }
+        }
     }
 
 

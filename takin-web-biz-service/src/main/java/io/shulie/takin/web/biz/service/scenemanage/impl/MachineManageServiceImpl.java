@@ -205,9 +205,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     public void syncMachine() {
         WebUserExtApi userExtApi = pluginManager.getExtension(WebUserExtApi.class);
         UserExt userExt = userExtApi.traceUser();
-        String externalId = userExt.getExternalId();
-        log.info("开始调用获取{}用户的机器信息,用户id为:{}", url, externalId);
-        String result = HttpUtil.get(url + externalId);
+        String externalName = userExt.getExternalName();
+        log.info("开始调用获取{}用户的机器信息,用户名为:{}", url, externalName);
+        String result = HttpUtil.get(url + externalName);
         log.info("获取到结果为:{}",result);
         if (StringUtil.isNotEmpty(result)){
             List<MachineManageEntity> manageEntities = new ArrayList<>();

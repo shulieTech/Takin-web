@@ -194,7 +194,8 @@ public class ShiftCloudController {
                 if (StringUtils.isNotBlank(responseJson)) {
                     Long finalId = id;
                     JSONArray ja = JSON.parseObject(responseJson).getJSONObject("data").getJSONArray("records");
-                    for (int i = 0; i < (ja.size() > shiftCloudVO.getPage_size() - list.size()?shiftCloudVO.getPage_size() - list.size() :ja.size()); i++) {
+                    int size = ja.size() > shiftCloudVO.getPage_size() - list.size()?shiftCloudVO.getPage_size() - list.size() :ja.size();
+                    for (int i = 0; i < size; i++) {
                         JSONObject j = JSON.parseObject(ja.get(i).toString());
                         list.add(new SceneManagerResult(BENCH + j.getString("id"), j.getString("sceneName"), finalId, null));
                     }

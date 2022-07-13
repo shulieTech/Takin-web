@@ -177,7 +177,7 @@ public class PressureEventCenter extends AbstractIndicators {
         String resourceId = context.getResourceId();
         String message = context.getMessage();
         Object job = redisClientUtil.hmget(PressureStartCache.getResourceKey(resourceId), PressureStartCache.JOB_ID);
-        if (Objects.nonNull(job)) {
+        if (redisClientUtil.hasKey(PressureStartCache.getJmeterStartFirstKey(resourceId))) {
             context.setJobId(Long.valueOf(String.valueOf(job)));
             Event failEvent = new Event();
             StopEventSource source = new StopEventSource();

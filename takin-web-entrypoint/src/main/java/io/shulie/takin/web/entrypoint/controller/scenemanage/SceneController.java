@@ -141,7 +141,7 @@ public class SceneController {
 
         String versionId = request.getVersionId();
         if (StringUtils.isNotBlank(versionId)) {
-            String demandIds = request.getDemandIds().toString();
+            String demandIds = JSON.toJSONString(request.getDemandIds().toString());
             createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),sceneId,false);
         }
 
@@ -202,7 +202,7 @@ public class SceneController {
 
         String versionId = request.getVersionId();
         if (StringUtils.isNotBlank(versionId)) {
-            String demandIds = request.getDemandIds().toString();
+            String demandIds = JSON.toJSONString(request.getDemandIds());
             createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),request.getBasicInfo().getSceneId(),false);
         }
 

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 
@@ -140,7 +141,7 @@ public class SceneController {
 
         String versionId = request.getVersionId();
         if (StringUtils.isNotBlank(versionId)) {
-            String demandIds = request.getDemandIds();
+            String demandIds = request.getDemandIds().toString();
             createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),sceneId,false);
         }
 
@@ -201,7 +202,7 @@ public class SceneController {
 
         String versionId = request.getVersionId();
         if (StringUtils.isNotBlank(versionId)) {
-            String demandIds = request.getDemandIds();
+            String demandIds = request.getDemandIds().toString();
             createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),request.getBasicInfo().getSceneId(),false);
         }
 
@@ -341,7 +342,7 @@ public class SceneController {
         wrapper.eq(YVersionEntity::getSid,sceneId);
         YVersionEntity entity = yVersionMapper.selectOne(wrapper);
         if (null != entity) {
-            copyDetailResult.setDids(entity.getDids());
+            copyDetailResult.setDids(JSON.parseArray(entity.getDids()));
             copyDetailResult.setVid(entity.getVid());
         }
 

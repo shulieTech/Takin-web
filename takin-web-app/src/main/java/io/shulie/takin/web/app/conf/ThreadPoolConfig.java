@@ -60,6 +60,18 @@ public class ThreadPoolConfig {
     }
 
     /**
+     * 远程调用job
+     *
+     * @return
+     */
+    @Bean(name = "remoteApiThreadPool")
+    public ThreadPoolExecutor remoteApiThreadPool() {
+        ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("remoteApi-job-%d").build();
+        return new ThreadPoolExecutor(5, 10, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
      * 方法追踪超时检测
      *
      * @return

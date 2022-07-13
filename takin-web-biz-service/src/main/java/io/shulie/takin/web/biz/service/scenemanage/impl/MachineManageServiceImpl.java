@@ -88,6 +88,17 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         machineManageEntity.setUserName(request.getUserName());
         machineManageEntity.setPassword(des.encryptHex(request.getPassword()));
         machineManageEntity.setStatus(0);
+        //查询这个机器是否已经是节点机器
+        ContextExt req = new ContextExt();
+        WebPluginUtils.fillCloudUserData(req);
+        ResponseResult<List<NodeMetricsResp>> list = cloudMachineApi.list(req);
+        if (list!= null && CollectionUtils.isNotEmpty(list.getData())){
+            List<NodeMetricsResp> nodeMetrics = list.getData().stream().filter(o -> o.getNodeIp().equals(request.getMachineIp())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(nodeMetrics)){
+                machineManageEntity.setStatus(2);
+                machineManageEntity.setMachineName(nodeMetrics.get(0).getName());
+            }
+        }
         machineManageDAO.save(machineManageEntity);
         return null;
     }

@@ -262,7 +262,34 @@ public class ShiftCloudController {
                     data.put("machineType", type);
                     data.put("sceneId", taskId.replaceFirst(BENCH, ""));
                     data.put("type", "BENCHMARK");
-                    String responseJson = HttpUtil.post(path + "api/pressure/start", data, 10000);
+
+
+                    CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+                    HttpPost httpPost = new HttpPost(path + "api/pressure/start");
+                    CloseableHttpResponse response = null;
+                    String responseJson = null;
+                    try {
+                        StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
+                        httpPost.setEntity(stringEntity);
+                        httpPost.setHeader("Content-Type", "application/json");
+                        response = httpClient.execute(httpPost);
+                        responseJson = response.getEntity().toString();
+                    } catch (Exception e) {
+                        //Ignore
+                    } finally {
+                        try {
+                            if (null != response) {
+                                response.close();
+                            }
+                            httpClient.close();
+                        } catch (IOException e) {
+                            //Ignore
+                        }
+                    }
+
+
+
+
                     if (StringUtils.isNotBlank(responseJson)) {
                         Integer code = JSON.parseObject(responseJson).getInteger("code");
                         if (null == code || 200 != code)
@@ -271,8 +298,9 @@ public class ShiftCloudController {
                             Map result = new HashMap(1);
                             result.put("tool_execute_id", BENCH + JSON.parseObject(responseJson).getLong("data"));
                             ScheduledExecutorService pool = Executors.newScheduledThreadPool(4);
+                            String finalResponseJson = responseJson;
                             pool.scheduleWithFixedDelay(() -> {
-                                boolean status = this.pushStatus(BENCH + JSON.parseObject(responseJson).getLong("data"));
+                                boolean status = this.pushStatus(BENCH + JSON.parseObject(finalResponseJson).getLong("data"));
                                 if (status) {
                                     pool.shutdown();
                                 }

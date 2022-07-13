@@ -42,7 +42,11 @@ import io.shulie.takin.web.common.vo.application.ApplicationApiManageVO;
 
 @Slf4j
 @Component
-@ElasticSchedulerJob(jobName = "appRemoteApiFilterJob", cron = "0 0/5 * * * ? *", description = "远程调用restful风格api合并")
+@ElasticSchedulerJob(
+        jobName = "appRemoteApiFilterJob",
+        cron = "0 0/5 * * * ? *",
+        isSharding = true,
+        description = "远程调用restful风格api合并")
 public class AppRemoteApiFilterJob implements SimpleJob {
 
     @Resource
@@ -50,8 +54,8 @@ public class AppRemoteApiFilterJob implements SimpleJob {
     @Resource
     private ApplicationApiService apiService;
     @Resource
-    @Qualifier("jobThreadPool")
-    private ThreadPoolExecutor jobThreadPool;
+    @Qualifier("remoteApiThreadPool")
+    private ThreadPoolExecutor remoteApiThreadPool;
     @Resource
     private DistributedLock distributedLock;
 
@@ -64,31 +68,35 @@ public class AppRemoteApiFilterJob implements SimpleJob {
         } else {
             List<TenantInfoExt> tenantInfoExtList = WebPluginUtils.getTenantInfoList();
             for (TenantInfoExt ext : tenantInfoExtList) {
-                if(CollectionUtils.isEmpty(ext.getEnvs())) {
+                if (CollectionUtils.isEmpty(ext.getEnvs())) {
                     continue;
                 }
                 // 根据环境 分线程
                 for (TenantEnv e : ext.getEnvs()) {
-                    // 分布式锁
-                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
-                    if (distributedLock.checkLock(lockKey)) {
-                        continue;
+                    // 分片key
+                    int shardKey = (ext.getTenantId() + e.getEnvCode()).hashCode() & Integer.MAX_VALUE;
+                    if (shardKey % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                        // 分布式锁
+                        String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
+                        if (distributedLock.checkLock(lockKey)) {
+                            continue;
+                        }
+                        remoteApiThreadPool.execute(() -> {
+                            boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
+                            if (!tryLock) {
+                                return;
+                            }
+                            try {
+                                WebPluginUtils.setTraceTenantContext(
+                                        new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
+                                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                                this.appRemoteApiFilter();
+                                WebPluginUtils.removeTraceContext();
+                            } finally {
+                                distributedLock.unLockSafely(lockKey);
+                            }
+                        });
                     }
-                    jobThreadPool.execute(() -> {
-                        boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
-                        if (!tryLock) {
-                            return;
-                        }
-                        try {
-                            WebPluginUtils.setTraceTenantContext(
-                                new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                    ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
-                            this.appRemoteApiFilter();
-                            WebPluginUtils.removeTraceContext();
-                        } finally {
-                            distributedLock.unLockSafely(lockKey);
-                        }
-                    });
                 }
             }
         }
@@ -121,7 +129,7 @@ public class AppRemoteApiFilterJob implements SimpleJob {
                 }
                 delList.addAll(appRemoteCallFilterList);
                 // 唯一
-                filterMap.put(apiManage.getApplicationId()+"##" +apiManage.getApi(), appRemoteCallFilterList);
+                filterMap.put(apiManage.getApplicationId() + "##" + apiManage.getApi(), appRemoteCallFilterList);
             });
         });
 
@@ -132,7 +140,7 @@ public class AppRemoteApiFilterJob implements SimpleJob {
         List<AppRemoteCallResult> save = Lists.newArrayList();
         filterMap.forEach((k, v) -> {
             String[] temp = k.split("##");
-            if(temp.length != 2) {
+            if (temp.length != 2) {
                 return;
             }
             String interfaceName = temp[1];

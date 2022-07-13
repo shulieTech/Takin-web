@@ -20,8 +20,10 @@ import org.apache.commons.lang.StringUtils;
 @EqualsAndHashCode(callSuper = true)
 public class SceneEntity extends UserBaseEntity {
 
+    @TableField(exist = false)
     private List dids;
 
+    @TableField(exist = false)
     private String vid;
 
 

@@ -15,6 +15,7 @@ import io.shulie.takin.cloud.sdk.model.response.machine.NodeMetricsResp;
 import io.shulie.takin.common.beans.page.PagingDevice;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
+import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineBaseRequest;
@@ -65,9 +66,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     @Resource
     private CloudMachineApi cloudMachineApi;
-
     @Resource
-    private WebUserExtApi webUserExtApi;
+    private PluginManager pluginManager;
 
     @Override
     public String create(PressureMachineCreateRequest request) {
@@ -203,7 +203,8 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
 
     @Override
     public void syncMachine() {
-        UserExt userExt = webUserExtApi.traceUser();
+        WebUserExtApi userExtApi = pluginManager.getExtension(WebUserExtApi.class);
+        UserExt userExt = userExtApi.traceUser();
         String externalId = userExt.getExternalId();
         log.info("开始调用获取{}用户的机器信息,用户id为:{}", url, externalId);
         String result = HttpUtil.get(url + externalId);

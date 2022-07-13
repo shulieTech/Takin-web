@@ -1,6 +1,7 @@
 package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
+import java.util.List;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -18,6 +19,12 @@ import org.apache.commons.lang.StringUtils;
 @TableName(value = "t_scene")
 @EqualsAndHashCode(callSuper = true)
 public class SceneEntity extends UserBaseEntity {
+
+    private List dids;
+
+    private String vid;
+
+
     /**
      * 主键
      */

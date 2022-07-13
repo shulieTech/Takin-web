@@ -369,7 +369,18 @@ public class SceneController {
     @GetMapping("business_activity_flow/detail")
     @ApiOperation("获取业务流程详情 - 压测场景用")
     public ResponseResult<SceneEntity> businessActivityFlowDetail(@RequestParam(name = "id", required = false) Long id) {
-        return ResponseResult.success(sceneService.businessActivityFlowDetail(id));
+        SceneEntity entity = sceneService.businessActivityFlowDetail(id);
+
+        LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(YVersionEntity::getDids,YVersionEntity::getVid);
+        wrapper.eq(YVersionEntity::getSid,id);
+        YVersionEntity e = yVersionMapper.selectOne(wrapper);
+        if (null != entity) {
+            entity.setDids(JSON.parseArray(e.getDids()));
+            entity.setVid(entity.getVid());
+        }
+
+        return ResponseResult.success(entity);
     }
 
     /**

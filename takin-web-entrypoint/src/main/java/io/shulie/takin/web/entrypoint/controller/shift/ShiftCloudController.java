@@ -3,6 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.shift;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -173,19 +174,30 @@ public class ShiftCloudController {
             Map<String, List> map = new HashMap<>(1);
             List<SceneManagerResult> list = new ArrayList<>();
             map.put("task_list", list);
+            long total = 0;
             if (null != responseResult && CollectionUtils.isNotEmpty(responseResult.getData())) {
                 responseResult.getData().forEach(r -> list.add(new SceneManagerResult(WEB + r.getId(), r.getSceneName(), r.getUserId(), r.getUserName())));
+                total = responseResult.getTotalNum();
             }
             if (list.size() < shiftCloudVO.getPage_size()) {
+                int current = 0;
+                int pageSize = shiftCloudVO.getPage_size();
+                if (total != 0) {
+                   int n =  shiftCloudVO.getPage_index() * shiftCloudVO.getPage_size();
+                   if (n - total > 10) {
+                       current = shiftCloudVO.getPage_index() - (int)(total / 10) - 1;
+                   }
+                }
                 //TODO 数据不足是拿基准测试补齐
                 Map data = new HashMap();
-                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?userId=" + id + "&current=" + shiftCloudVO.getPage_index() + "&pageSize=" + shiftCloudVO.getPage_size() + "&status=", data, 10000);
+                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?userId=" + id + "&current=" + current + "&pageSize=" + pageSize + "&status=", data, 10000);
                 if (StringUtils.isNotBlank(responseJson)) {
                     Long finalId = id;
-                    JSON.parseObject(responseJson).getJSONObject("data").getJSONArray("records").forEach(o -> {
-                        JSONObject j = JSON.parseObject(o.toString());
+                    JSONArray ja = JSON.parseObject(responseJson).getJSONObject("data").getJSONArray("records");
+                    for (int i = 0; i < (ja.size() > shiftCloudVO.getPage_size() - list.size()?shiftCloudVO.getPage_size() - list.size() :ja.size()); i++) {
+                        JSONObject j = JSON.parseObject(ja.get(i).toString());
                         list.add(new SceneManagerResult(BENCH + j.getString("id"), j.getString("sceneName"), finalId, null));
-                    });
+                    }
                 }
             }
             result.setData(map);

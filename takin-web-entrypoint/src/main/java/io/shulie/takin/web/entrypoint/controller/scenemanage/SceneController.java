@@ -342,8 +342,8 @@ public class SceneController {
         wrapper.eq(YVersionEntity::getSid,sceneId);
         YVersionEntity entity = yVersionMapper.selectOne(wrapper);
         if (null != entity) {
-            copyDetailResult.setDids(JSON.parseArray(entity.getDids()));
-            copyDetailResult.setVid(entity.getVid());
+            copyDetailResult.setDemandIds(JSON.parseArray(entity.getDids()));
+            copyDetailResult.setVersionId(entity.getVid());
         }
 
         return ResponseResult.success(copyDetailResult);

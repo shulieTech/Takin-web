@@ -203,7 +203,7 @@ public class SceneController {
         String versionId = request.getVersionId();
         if (StringUtils.isNotBlank(versionId)) {
             String demandIds = JSON.toJSONString(request.getDemandIds());
-            createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),request.getBasicInfo().getSceneId(),false);
+            createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),request.getBasicInfo().getSceneId(),true);
         }
 
         return ResponseResult.success(updateResult);

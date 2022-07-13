@@ -4,7 +4,6 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -39,7 +38,6 @@ import io.shulie.takin.web.entrypoint.controller.report.ReportLocalController;
 import io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -544,7 +542,7 @@ public class ShiftCloudController {
             List<PressureTaskResult> t = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
             if (CollectionUtils.isNotEmpty(t)) {
                 for (PressureTaskResult p : t) {
-                    result.put("reportId", p.id);
+                    result.put("reportId", p.getId());
                     String d = HttpUtil.get(path + "/api/benchmark/result/detail", result, 10000);
                     if (StringUtils.isNotBlank(d)) {
                         dataModel.put("data", JSON.parseObject(d).getObject("data", PressureTaskResultVO.class));
@@ -600,7 +598,7 @@ public class ShiftCloudController {
             if (StringUtils.isNotBlank(resultString)) {
                 return JSON.parseArray(JSONObject.parseObject(resultString).getJSONObject("data").getString("records"), Property.class).stream().map(p -> {
                     Map m = new HashMap();
-                    m.put("id", p.getProperty().getId().getId());
+                    m.put("id", p.getProperty().getId().getValue());
                     m.put("title", p.getProperty().getTitle().getDisplayValue());
                     return m;
                 }).collect(Collectors.toList());
@@ -628,7 +626,7 @@ public class ShiftCloudController {
 
     @Data
     private static class Id {
-        private String id;
+        private String value;
     }
 
     @Data
@@ -716,161 +714,5 @@ public class ShiftCloudController {
         private LocalDateTime updateTime;
     }
 
-    @Data
-    static class PressureTaskResult {
-        private Long id;
-        /**
-         * 任务ID
-         */
-        private Long taskId;
-        /**
-         * 场景ID
-         */
-        private Long sceneId;
-        /**
-         * 用户ID
-         */
-        private Long userId;
-        /**
-         * 压力机ID
-         */
-        private Long machineId;
-        /**
-         * 压力机信息
-         */
-        private String machine;
-        /**
-         * 基准测试名称
-         */
-        private String suite;
-        /**
-         * 测试结果，json字符串
-         */
-        private String testResult;
-        /**
-         * 测试开始时间
-         */
-        private LocalDateTime startTime;
-        /**
-         * 测试结束时间
-         */
-        private LocalDateTime endTime;
 
-    }
-
-    @Data
-    static class AppSceneVO {
-
-        private String dids;
-
-        private String vid;
-
-        @ApiModelProperty("id")
-        private Long id;
-
-        @ApiModelProperty("场景名称")
-        private String sceneName;
-
-        @ApiModelProperty("压测类型:0:自动摸高 1：手工设置")
-        private String pressureType;
-
-        @ApiModelProperty("压测时间")
-        private Integer time;
-
-        @ApiModelProperty("场景线程组")
-        private List groupSetting;
-
-        @ApiModelProperty("压测活动")
-        private List sceneActivities;
-
-        @ApiModelProperty("场景文件信息")
-        private List sceneFiles;
-
-        @ApiModelProperty("脚本线程组")
-        private List jmxThreadGroup;
-
-        @ApiModelProperty("脚本活动")
-        private List jmxActivities;
-    }
-
-    @Data
-    static class PressureTaskResultVO extends PressureTaskResultListVO {
-        @ApiModelProperty("本子报告执行时长")
-        private Long runTime;
-
-        @ApiModelProperty("主任务执行时长")
-        private Long taskRunTime;
-
-        private PressureMachineVO machineDetail;
-
-        @ApiModelProperty("测试结果")
-        private BenchmarkResultVO testResult;
-    }
-
-    @Data
-    static class PressureTaskResultListVO {
-        @ApiModelProperty("报告id")
-        private Long id;
-        /**
-         * 任务ID
-         */
-        @ApiModelProperty("任务ID")
-        private Long taskId;
-        /**
-         * 场景ID
-         */
-        @ApiModelProperty("场景ID")
-        private Long sceneId;
-
-        @ApiModelProperty("场景名称")
-        private String sceneName;
-        /**
-         * 压力机ID
-         */
-        @ApiModelProperty("基准测试名称")
-        private String suite;
-
-        @ApiModelProperty("压力机ID")
-        private Long machineId;
-        /**
-         * 压力机ID
-         */
-        @ApiModelProperty("压力机")
-        private String machine;
-
-        @ApiModelProperty("测试开始时间")
-        private LocalDateTime startTime;
-
-        @ApiModelProperty("测试结束时间")
-        private LocalDateTime endTime;
-    }
-
-    @Data
-    static class PressureMachineVO {
-
-        @ApiModelProperty("压测机器ID")
-        private Long id;
-        @ApiModelProperty("主机IP")
-        private String ip;
-        @ApiModelProperty("主机Mac")
-        private String macAddr;
-        @ApiModelProperty("CPU")
-        private int cpuNum;
-        @ApiModelProperty("内存")
-        private String memory;
-        @ApiModelProperty("交换内存")
-        private String swap;
-        @ApiModelProperty("压测机器状态{0:空闲;1:压测中(繁忙);2:压力机停止服务，不会出现在列表}")
-        private Integer status;
-
-    }
-
-    @Data
-    static class BenchmarkResultVO {
-        private String title;
-        private String lastModified;
-        private String description;
-        private List systems;
-        private List results;
-    }
 }

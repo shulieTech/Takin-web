@@ -1,265 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-      .w-full {
-        width: 100%;
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        color: rgba(0, 0, 0, 0.65);
-        font-size: 13px;
-        font-family: 'Microsoft YaHei';
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    .w-full {
+      width: 100%;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      color: rgba(0, 0, 0, 0.65);
+      font-size: 13px;
+      font-family: 'Microsoft YaHei';
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-      th,
-      td {
-        padding: 8px;
-        border: 1px solid #e8e8e8;
-      }
-      .b-0,
-      .b-0-table td,
-      .b-0-table th {
-        border-width: 0;
-      }
+    th,
+    td {
+      padding: 8px;
+      border: 1px solid #e8e8e8;
+    }
+    .b-0,
+    .b-0-table td,
+    .b-0-table th {
+      border-width: 0;
+    }
 
-      .text-sm {
-        font-size: 12px;
-      }
+    .text-sm {
+      font-size: 12px;
+    }
 
-      .text-md {
-        font-size: 14px;
-      }
+    .text-md {
+      font-size: 14px;
+    }
 
-      .text-lg {
-        font-size: 16px;
-      }
+    .text-lg {
+      font-size: 16px;
+    }
 
-      .text-xl {
-        font-size: 18px;
-      }
+    .text-xl {
+      font-size: 18px;
+    }
 
-      .text-2xl {
-        font-size: 20px;
-      }
-      th {
-        background-color: #f7f8f9;
-      }
-      .normal,
-      .normal-th th {
-        font-weight: normal;
-      }
+    .text-2xl {
+      font-size: 20px;
+    }
+    th {
+      background-color: #f7f8f9;
+    }
+    .normal,
+    .normal-th th {
+      font-weight: normal;
+    }
 
-      .bold {
-        font-weight: bold;
-      }
+    .bold {
+      font-weight: bold;
+    }
 
-      .p-4 {
-        padding: 16px;
-      }
-      .px-4 {
-        padding-left: 16px;
-        padding-right: 16px;
-      }
+    .p-4 {
+      padding: 16px;
+    }
+    .px-4 {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
 
-      .py-4 {
-        padding-top: 16px;
-        padding-bottom: 16px;
-      }
+    .py-4 {
+      padding-top: 16px;
+      padding-bottom: 16px;
+    }
 
-      .mt-4 {
-        margin-top: 16px;
-      }
+    .mt-4 {
+      margin-top: 16px;
+    }
 
-      .mb-2 {
-        margin-bottom: 8px;
-      }
+    .mb-2 {
+      margin-bottom: 8px;
+    }
 
-      .mb-4 {
-        margin-bottom: 16px;
-      }
+    .mb-4 {
+      margin-bottom: 16px;
+    }
 
-      .ml-4 {
-        margin-left: 16px;
-      }
+    .ml-4 {
+      margin-left: 16px;
+    }
 
-      .mr-4 {
-        margin-right: 16px;
-      }
+    .mr-4 {
+      margin-right: 16px;
+    }
 
-      .r-2 {
-        border-radius: 8px;
-      }
+    .r-2 {
+      border-radius: 8px;
+    }
 
-      .text-white {
-        color: #fff;
-      }
+    .text-white {
+      color: #fff;
+    }
 
-      .text-gray {
-        color: rgb(162, 166, 177);
-      }
+    .text-gray {
+      color: rgb(162, 166, 177);
+    }
 
-      .text-red {
-        color: rgb(254, 125, 97);
-      }
+    .text-red {
+      color: rgb(254, 125, 97);
+    }
 
-      .bg-white {
-        background-color: #fff;
-      }
+    .bg-white {
+      background-color: #fff;
+    }
 
-      .text-center,
-      .center-td td {
-        text-align: center;
-      }
+    .text-center,
+    .center-td td {
+      text-align: center;
+    }
 
-      .text-left,
-      .left-td td,
-      .left-th th {
-        text-align: left;
-      }
+    .text-left,
+    .left-td td,
+    .left-th th {
+      text-align: left;
+    }
 
-      .b-b {
-        border-bottom: 1px solid #e8e8e8;
-      }
-      .float-left {
-        float: left;
-      }
-      .expand-icon {
-        display: inline-block;
-        width: 14px;
-        margin-right: 2px;
-        font-style: normal;
-        line-height: 14px;
-        text-align: center;
-        vertical-align: middle;
-        border: 1px solid #e8e8e8;
-      }
-    </style>
-  </head>
+    .b-b {
+      border-bottom: 1px solid #e8e8e8;
+    }
+    .float-left {
+      float: left;
+    }
+    .expand-icon {
+      display: inline-block;
+      width: 14px;
+      margin-right: 2px;
+      font-style: normal;
+      line-height: 14px;
+      text-align: center;
+      vertical-align: middle;
+      border: 1px solid #e8e8e8;
+    }
+  </style>
+</head>
 
-  <#--data 详情接口/api/benchmark/result/detail -->
+<#--data 详情接口/api/benchmark/result/detail -->
 
 
-  <body>
-    <div class="p-4 w-full">
-      <div class="py-4 b-b text-2xl bold">${data.sceneName}</div>
-      <div class="py-4">
-        <div class="mb-2">
-          <span class="text-gray">SceneId：</span>
-          <span>${data.sceneId}</span>
-        </div>
-        <div class="mb-2">
-          <span class="text-gray">基准测试名：</span>
-          <span>${data.suite}</span>
-        </div>
-        <div class="mb-2">
-          <span class="text-gray">任务ID：</span>
-          <span>${data.taskId}</span>
-        </div>
-        <div class="mb-2">
-          <span class="text-gray">测试时长：</span>
-          <span>${data.runTime} (${data.startTime}-${data.endTime})</span>
-        </div>
-        <div class="mb-2">
-          <span class="text-gray">任务时长：</span>
-          <span>${data.taskRunTime}</span>
-        </div>
-        <div class="mb-2">
-          <span class="text-gray">压力机：</span>
-          <span>${data.machine}</span>
-        </div>
-      </div>
-      <table>
-        <tr>
-          <th>ID</th>
-          <th>IP/Host</th>
-          <th>主机Mac</th>
-          <th>CPU</th>
-          <th>内存</th>
-          <th>交换内存</th>
-        </tr>
-        <tr class="text-center bold text-lg">
-          <td>${data.machineDetail.id}</td>
-          <td>${data.machineDetail.ip}</td>
-          <td>${data.machineDetail.macAddr}</td>
-          <td>${data.machineDetail.cpuNum}</td>
-          <td>${data.machineDetail.memory}</td>
-          <td>${data.machineDetail.swap}</td>
-        </tr>
-      </table>
-
-      <div class="py-4">
-        <div class="py-4 b-b text-2xl bold">执行情况</div>
-        <div class="py-4">
-          <#list data.testResult?keys as key>
-            <#if key != "results" && key != "systems">
-              <div class="mb-2">
-                <span class="text-gray">${key}：</span>
-                <span>${data.testResult[key]!}</span>
-              </div>
-            </#if>
-          </#list>
-        </div>
-      </div>
-
-      <div>
-        <div class="py-4 b-b text-2xl bold">最终结果</div>
-        <div class="py-4 px-4">
-          <#list data.testResult.results as item>
-            <div class="mb-2">
-              <span class="text-gray">${item.scale}：</span>
-              <span>${item.description!}</span>
-              <div class="bold text-lg mb-2 py-4 b-b">
-                ${item.data.value}
-              </div>
-            </div>
-            <div class="mb-2">
-              ${item.title} ${item.appVersion}
-            </div>
-            <div class="mb-2">
-              <span class="text-gray">命令：</span>
-              <span>${item.identifier}</span>
-            </div>
-            <div class="mb-2">
-              <span class="text-gray">参数：</span>
-              <span>${item.arguments!}</span>
-            </div>
-          </#list>
-        </div>
-      </div>
-
-      <div>
-        <div class="py-4 b-b text-2xl bold">服务器信息</div>
-        <div class="py-4">
-          <table>
-            <tr>
-              <th>组件类型</th>
-              <th>组件名</th>
-            </tr>
-            <#list data.testResult.systems as item1>
-              <#list item1?keys as item2>
-                  <#list item1[item2]?keys as item3>
-                    <tr class="text-center bold text-lg">
-                      <td>${item3!}</td>
-                      <td>${item1[item2][item3]}</td>
-                    </tr>
-                </#list>
-              </#list>
-            </#list>
-            
-          </table>
-          
-        </div>
-      </div>
-
+<body>
+<div class="p-4 w-full">
+  <div class="py-4 b-b text-2xl bold">${data.sceneName!}</div>
+  <div class="py-4">
+    <div class="mb-2">
+      <span class="text-gray">SceneId：</span>
+      <span>${data.sceneId!}</span>
     </div>
-  </body>
+    <div class="mb-2">
+      <span class="text-gray">基准测试名：</span>
+      <span>${data.suite!}</span>
+    </div>
+    <div class="mb-2">
+      <span class="text-gray">任务ID：</span>
+      <span>${data.taskId!}</span>
+    </div>
+    <div class="mb-2">
+      <span class="text-gray">测试时长：</span>
+      <span>${data.runTime!}s (${data.startTime!}-${data.endTime!})</span>
+    </div>
+    <div class="mb-2">
+      <span class="text-gray">任务时长：</span>
+      <span>${data.taskRunTime!}</span>
+    </div>
+    <div class="mb-2">
+      <span class="text-gray">压力机：</span>
+      <span>${data.machine!}</span>
+    </div>
+  </div>
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>IP/Host</th>
+      <th>主机Mac</th>
+      <th>CPU</th>
+      <th>内存</th>
+      <th>交换内存</th>
+    </tr>
+    <tr class="text-center bold text-lg">
+      <td>${data.machineDetail.id!}</td>
+      <td>${data.machineDetail.ip!}</td>
+      <td>${data.machineDetail.macAddr!}</td>
+      <td>${data.machineDetail.cpuNum!}</td>
+      <td>${data.machineDetail.memory!}</td>
+      <td>${data.machineDetail.swap!}</td>
+    </tr>
+  </table>
+
+  <div class="py-4">
+    <div class="py-4 b-b text-2xl bold">执行情况</div>
+    <div class="py-4">
+      <#if data.testResult??>
+      <#list data.testResult?keys as key>
+      <#if key != "results" && key != "systems">
+      <div class="mb-2">
+        <span class="text-gray">${key!}：</span>
+      </div>
+    </#if>
+  </#list>
+</#if>
+</div>
+</div>
+
+<div>
+  <div class="py-4 b-b text-2xl bold">最终结果</div>
+  <div class="py-4 px-4">
+    <#if data.testResult?? && data.testResult.results??>
+    <#list data.testResult.results as item>
+    <div class="mb-2">
+      <span class="text-gray">${item.scale}：</span>
+      <span>${item.description!}</span>
+      <div class="bold text-lg mb-2 py-4 b-b">
+        ${item.data.value!}
+      </div>
+    </div>
+    <div class="mb-2">
+      ${item.title!} ${item.appVersion!}
+    </div>
+    <div class="mb-2">
+      <span class="text-gray">命令：</span>
+      <span>${item.identifier!}</span>
+    </div>
+    <div class="mb-2">
+      <span class="text-gray">参数：</span>
+      <span>${item.arguments!}</span>
+    </div>
+  </#list>
+  </#if>
+</div>
+</div>
+
+<div>
+  <div class="py-4 b-b text-2xl bold">服务器信息</div>
+  <div class="py-4">
+    <table>
+      <tr>
+        <th>组件类型</th>
+        <th>组件名</th>
+      </tr>
+      <#if data.testResult?? && data.testResult.systems??>
+      <#list data.testResult.systems as item1>
+      <#list item1?keys as item2>
+      <#list item1[item2]?keys as item3>
+      <tr class="text-center bold text-lg">
+        <td>${item3!}</td>
+        <td>${item1[item2][item3]!}</td>
+      </tr>
+    </#list>
+  </#list>
+</#list>
+</#if>
+</table>
+
+</div>
+</div>
+
+</div>
+</body>
 </html>

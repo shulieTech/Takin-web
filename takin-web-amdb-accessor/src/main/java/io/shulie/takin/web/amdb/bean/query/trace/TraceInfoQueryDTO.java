@@ -1,9 +1,9 @@
 package io.shulie.takin.web.amdb.bean.query.trace;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.List;
-
-import lombok.Data;
 
 /**
  * @author shiyajian
@@ -84,4 +84,6 @@ public class TraceInfoQueryDTO implements Serializable {
      * 2-压测报告请求trace明细
      */
     private Integer queryType;
+
+    private Integer clusterTest;
 }

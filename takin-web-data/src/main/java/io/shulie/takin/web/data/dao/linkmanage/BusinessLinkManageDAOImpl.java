@@ -1,13 +1,7 @@
 package io.shulie.takin.web.data.dao.linkmanage;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import com.alibaba.excel.util.StringUtils;
-
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.excel.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
@@ -28,6 +22,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 /**
@@ -64,7 +63,9 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<
             BusinessLinkManageTableEntity::getRelatedTechLink,
             BusinessLinkManageTableEntity::getTenantId,
             BusinessLinkManageTableEntity::getEnvCode,
-            BusinessLinkManageTableEntity::getUserId
+            BusinessLinkManageTableEntity::getUserId,
+            BusinessLinkManageTableEntity::getApplicationName,
+            BusinessLinkManageTableEntity::getType
         );
         businessLinkManageWrapper.eq(BusinessLinkManageTableEntity::getLinkId, id);
         businessLinkManageWrapper.eq(BusinessLinkManageTableEntity::getIsDeleted, 0);
@@ -85,6 +86,8 @@ public class BusinessLinkManageDAOImpl implements BusinessLinkManageDAO, MPUtil<
             businessLinkResult.setTenantId(businessLinkManageTableEntity.getTenantId());
             businessLinkResult.setEnvCode(businessLinkManageTableEntity.getEnvCode());
             businessLinkResult.setUserId(businessLinkManageTableEntity.getUserId());
+            businessLinkResult.setApplicationName(businessLinkManageTableEntity.getApplicationName());
+            businessLinkResult.setType(businessLinkManageTableEntity.getType());
         }
 
         LambdaQueryWrapper<LinkManageTableEntity> linkManageWrapper = new LambdaQueryWrapper<>();

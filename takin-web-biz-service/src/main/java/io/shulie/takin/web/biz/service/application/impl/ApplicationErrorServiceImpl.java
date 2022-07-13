@@ -18,6 +18,7 @@ import com.google.common.collect.Lists;
 import com.pamirs.takin.common.util.DateUtils;
 import com.pamirs.takin.entity.domain.dto.NodeUploadDataDTO;
 import com.pamirs.takin.entity.domain.entity.ExceptionInfo;
+import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.biz.pojo.input.application.ApplicationErrorQueryInput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationErrorOutput;
 import io.shulie.takin.web.biz.pojo.output.application.ApplicationExceptionOutput;
@@ -143,13 +144,16 @@ public class ApplicationErrorServiceImpl implements ApplicationErrorService {
                             log.error("异常转换失败：错误信息: {},异常内容{}", message, e.getMessage());
                         }
                         ApplicationErrorOutput applicationErrorResponse
-                            = new ApplicationErrorOutput()
-                            .setExceptionId(exceptionInfo != null ? exceptionInfo.getErrorCode() : "web-异常原文显示")
-                            .setAgentIdList(Collections.singletonList(nodeUploadDataDTO.getAgentId()))
-                            .setDescription(exceptionInfo != null ? exceptionInfo.getMessage() : message)
-                            .setDetail(exceptionInfo != null ? exceptionInfo.getDetail() : message)
-                            .setTime(nodeUploadDataDTO.getExceptionTime());
-                        responseList.add(applicationErrorResponse);
+                                = new ApplicationErrorOutput()
+                                .setExceptionId(exceptionInfo != null ? exceptionInfo.getErrorCode() : "web-异常原文显示")
+                                .setAgentIdList(Collections.singletonList(nodeUploadDataDTO.getAgentId()))
+                                .setDescription(exceptionInfo != null ? exceptionInfo.getMessage() : message)
+                                .setDetail(exceptionInfo != null ? exceptionInfo.getDetail() : message)
+                                .setTime(nodeUploadDataDTO.getExceptionTime());
+                        if (!StringUtil.equals("探针接入异常", applicationErrorResponse.getDetail())
+                                || !StringUtil.equals("探针接入异常", applicationErrorResponse.getDescription())) {
+                            responseList.add(applicationErrorResponse);
+                        }
                     }
                 }
             }

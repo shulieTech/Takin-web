@@ -1,5 +1,7 @@
 package io.shulie.takin.web.biz.service.webide.impl;
 
+import cn.hutool.core.collection.CollStreamUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpGlobalConfig;
 import cn.hutool.http.HttpRequest;
@@ -11,27 +13,40 @@ import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.web.biz.pojo.output.report.ReportDetailOutput;
 import io.shulie.takin.web.biz.pojo.request.activity.ActivityResultQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
+import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowPageQueryRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.BusinessFlowParseRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PageScriptDebugRequestRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptDebugDoDebugRequest;
 import io.shulie.takin.web.biz.pojo.request.webide.WebIDESyncScriptRequest;
 import io.shulie.takin.web.biz.pojo.response.activity.ActivityListResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityInfoResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessActivityNameResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListWebIDEResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
+import io.shulie.takin.web.biz.service.linkmanage.LinkManageService;
 import io.shulie.takin.web.biz.service.report.ReportService;
 import io.shulie.takin.web.biz.service.scene.SceneService;
 import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.biz.service.webide.WebIDESyncService;
 import io.shulie.takin.web.common.enums.activity.BusinessTypeEnum;
 import io.shulie.takin.web.common.enums.script.ScriptDebugStatusEnum;
+import io.shulie.takin.web.common.util.ActivityUtil;
+import io.shulie.takin.web.data.dao.linkmanage.SceneDAO;
+import io.shulie.takin.web.data.mapper.mysql.ApplicationMntMapper;
 import io.shulie.takin.web.data.mapper.mysql.WebIdeSyncScriptMapper;
 import io.shulie.takin.web.data.model.mysql.WebIdeSyncScriptEntity;
+import io.shulie.takin.web.data.param.linkmanage.SceneUpdateParam;
+import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -41,6 +56,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -79,6 +95,15 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
     @Resource
     private ActivityService activityService;
 
+    @Resource
+    private LinkManageService linkManageService;
+
+    @Resource
+    private SceneDAO sceneDAO;
+
+    @Resource
+    private ApplicationMntMapper mntMapper;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void syncScript(WebIDESyncScriptRequest request) {
@@ -91,7 +116,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
         entity.setWorkRecordId(workRecordId);
         entity.setRequest(JSON.toJSONString(request));
         try {
-            log.info("[webIDE同步开始] workRecordId:{}",  workRecordId);
+            log.info("[webIDE同步开始] workRecordId:{}", workRecordId);
             List<WebIDESyncScriptRequest.ActivityFIle> flies = request.getFile();
             if (flies.size() > 0) {
                 //todo 目前webIDE只会传jmx文件
@@ -162,7 +187,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
             log.info("[创建业务场景] 回调");
             String msg = initData ? "创建业务场景成功" : "创建业务场景失败";
             entity.setIsError(initData ? 0 : 1);
-            String level = initData ? "INFO":"FATAL";
+            String level = initData ? "INFO" : "FATAL";
             callback(url, msg, workRecordId, level);
         }
 
@@ -176,12 +201,12 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                 String errorMsg = "";
                 try {
                     ScriptDebugResponse debug = scriptDebugService.debug(item);
-                    if(debug.getScriptDebugId() != null){
+                    if (debug.getScriptDebugId() != null) {
                         entity.setScriptDebugId(debug.getScriptDebugId());
                         debugIds.add(debug.getScriptDebugId());
                         debugFlag = true;
-                    }else{
-                        log.error("[启动调试失败] workRecordId:{},error:{}", workRecordId,debug.getErrorMessages().get(0));
+                    } else {
+                        log.error("[启动调试失败] workRecordId:{},error:{}", workRecordId, debug.getErrorMessages().get(0));
                         entity.setErrorMsg(debug.getErrorMessages().get(0));
                         entity.setErrorStage("启动调试异常");
                         errorMsg = entity.getErrorMsg();
@@ -194,11 +219,15 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     entity.setErrorStage("启动调试异常");
                     errorMsg = e.getMessage();
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+
                 } finally {
-                    String msg = debugFlag ? "启动调试成功" : "启动调试失败, 失败原因:{"+errorMsg+"}";
+                    String msg = debugFlag ? "启动调试成功" : "启动调试失败, 失败原因:{" + errorMsg + "}";
                     log.info("[启动调试回调] workRecordId,:{},状态 :{}", workRecordId, msg);
-                    String level = debugFlag ? "INFO":"FATAL";
+                    String level = debugFlag ? "INFO" : "FATAL";
                     callback(url, msg, workRecordId, level);
+                    if(!debugFlag){
+                        delScene(entity.getBusinessFlowId());
+                    }
                 }
             });
 
@@ -221,7 +250,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                         String msg = ScriptDebugStatusEnum.getDesc(debugDetail.getStatus());
                         if (debugDetail.getStatus() == 5) {
                             level = "ERROR";
-                            msg = msg +", 调试失败原因:{"+debugDetail.getRemark()+"}";
+                            msg = msg + ", 调试失败原因:{" + debugDetail.getRemark() + "}";
                             //发送报告错误日志
                             Long cloudReportId = debugDetail.getCloudReportId();
                             ReportDetailOutput report = reportService.getReportByReportId(cloudReportId);
@@ -244,22 +273,21 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                             req.setCurrent(0);
                             req.setPageSize(10);
                             PagingList<ScriptDebugRequestListResponse> pageDetail = scriptDebugService.pageScriptDebugRequest(req);
-                            if(pageDetail !=null){
+                            if (pageDetail != null) {
                                 List<ScriptDebugRequestListResponse> list = pageDetail.getList();
-                                msg += ", 调试成功: {"+ JSON.toJSONString(list)+"}";
+                                msg += ", 调试成功: {" + JSON.toJSONString(list) + "}";
                             }
 
                         }
                         callback(url, msg, workRecordId, level);
                     } while (loop);
+                    delScene(entity.getBusinessFlowId());
                 });
             });
         }
 
 
-        webIDESyncThreadPool.execute(() -> {
-            saveSyncDetail(entity);
-        });
+        webIDESyncThreadPool.execute(() -> saveSyncDetail(entity));
     }
 
 
@@ -296,7 +324,7 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                     activityQuery.setEntrancePath(request.getEntrance());
 
                     List<ActivityListResponse> responses = activityService.queryNormalActivities(activityQuery);
-                    if(responses.size()>0){
+                    if (responses.size() > 0) {
                         request.setBusinessActivityId(responses.get(0).getActivityId());
                     }
                     list.add(request);
@@ -318,8 +346,71 @@ public class WebIDESyncServiceImpl implements WebIDESyncService {
                 .body();
     }
 
+    private void delScene(Long businessFlowId){
+        SceneResult sceneDetail = sceneDAO.getSceneDetail(businessFlowId);
+        if(Objects.isNull(sceneDetail)){
+            return;
+        }
+        SceneUpdateParam update = new SceneUpdateParam();
+        update.setId(businessFlowId);
+        update.setIsDeleted(1);
+        sceneDAO.update(update);
+    }
+
     private void saveSyncDetail(WebIdeSyncScriptEntity entity) {
         webIdeSyncScriptMapper.insert(entity);
     }
 
+
+    @Override
+    public PagingList<BusinessFlowListWebIDEResponse> sceneList(BusinessFlowPageQueryRequest queryRequest) {
+        PagingList<BusinessFlowListResponse> list = sceneService.getBusinessFlowList(queryRequest);
+        List<BusinessFlowListResponse> flowList = list.getList();
+        if (flowList.isEmpty()) {
+            return PagingList.of(new ArrayList<>(), list.getTotal());
+        }
+        List<BusinessFlowListWebIDEResponse> collect = flowList.stream().map(item -> {
+            List<BusinessActivityNameResponse> activesByFlowId = linkManageService.getBusinessActiveByFlowId(item.getId());
+            BusinessFlowListWebIDEResponse convert = Convert.convert(BusinessFlowListWebIDEResponse.class, item);
+            convert.setVirtualNum(0);
+            convert.setNormalNum(0);
+            if (CollectionUtils.isEmpty(activesByFlowId)) {
+                return convert;
+            }
+            Map<Integer, List<BusinessActivityNameResponse>> map = CollStreamUtil.groupByKey(activesByFlowId, BusinessActivityNameResponse::getType);
+            if (map.containsKey(BusinessTypeEnum.NORMAL_BUSINESS.getType())) {
+                convert.setNormalNum(map.get(BusinessTypeEnum.NORMAL_BUSINESS.getType()).size());
+            }
+            if (map.containsKey(BusinessTypeEnum.VIRTUAL_BUSINESS.getType())) {
+                convert.setNormalNum(map.get(BusinessTypeEnum.VIRTUAL_BUSINESS.getType()).size());
+            }
+
+            return convert;
+        }).collect(Collectors.toList());
+        return PagingList.of(collect, list.getTotal());
+    }
+
+    @Override
+    public List<BusinessActivityInfoResponse> activityList(Long businessFlowId) {
+        List<BusinessActivityNameResponse> activesByFlowId = linkManageService.getBusinessActiveByFlowId(businessFlowId);
+        if(CollectionUtils.isEmpty(activesByFlowId)){
+            return new ArrayList<>();
+        }
+
+        return activesByFlowId.stream().map(item -> {
+            BusinessActivityInfoResponse convert = Convert.convert(BusinessActivityInfoResponse.class, item);
+            convert.setActivityId(item.getBusinessActivityId());
+            convert.setActivityName(item.getBusinessActivityName());
+            if(Objects.nonNull(item.getApplicationId()) && StringUtils.isBlank(item.getApplicationName())){
+                convert.setApplicationName(mntMapper.selectApplicationName(String.valueOf(item.getApplicationId())));
+            }
+            if(StringUtils.isBlank(convert.getEntrace())){
+                return convert;
+            }
+            ActivityUtil.EntranceJoinEntity entranceJoinEntity = ActivityUtil.covertEntrance(convert.getEntrace());
+            convert.setServiceName(entranceJoinEntity.getServiceName());
+            convert.setMethodName(entranceJoinEntity.getMethodName());
+            return convert;
+        }).collect(Collectors.toList());
+    }
 }

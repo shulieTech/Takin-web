@@ -273,7 +273,10 @@ public class ShiftCloudController {
                         httpPost.setEntity(stringEntity);
                         httpPost.setHeader("Content-Type", "application/json");
                         response = httpClient.execute(httpPost);
-                        responseJson = response.getEntity().toString();
+                        HttpEntity entity = response.getEntity();
+                        if (null != entity) {
+                            responseJson = EntityUtils.toString(response.getEntity());
+                        }
                     } catch (Exception e) {
                         //Ignore
                     } finally {

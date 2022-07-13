@@ -375,9 +375,9 @@ public class SceneController {
         wrapper.select(YVersionEntity::getDids,YVersionEntity::getVid);
         wrapper.eq(YVersionEntity::getSid,id);
         YVersionEntity e = yVersionMapper.selectOne(wrapper);
-        if (null != entity) {
+        if (null != e) {
             entity.setDids(JSON.parseArray(e.getDids()));
-            entity.setVid(entity.getVid());
+            entity.setVid(e.getVid());
         }
 
         return ResponseResult.success(entity);

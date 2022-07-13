@@ -37,10 +37,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,7 +47,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     @Value("${machine.password.sale.pre: machinePasswordSaltPre}")
     private String machinePasswordSaltPre;
 
-    @Value("${yidongyun.user.machine.url: http://devops.testcloud.com/ms/testcloudplatform/api/service/user/host?X-DEVOPS-UID=}")
+    @Value("${yidongyun.user.machine.url: http://devops.testcloud.com/ms/testcloudplatform/api/service/user/host}")
     private String url;
 
     private SymmetricCrypto des;
@@ -207,7 +204,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         UserExt userExt = userExtApi.traceUser();
         String externalName = userExt.getExternalName();
         log.info("开始调用获取{}用户的机器信息,用户名为:{}", url, externalName);
-        String result = HttpUtil.get(url + externalName);
+        Map<String,String> header = new HashMap<>();
+        header.put("X-DEVOPS-UID",externalName);
+        String result = HttpClientUtil.sendGet(url, header);
         log.info("获取到结果为:{}",result);
         if (StringUtil.isNotEmpty(result)){
             List<MachineManageEntity> manageEntities = new ArrayList<>();

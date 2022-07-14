@@ -22,7 +22,7 @@ public class ClearDsDataConfig implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        log.info("spring启动成功后重新清理缓存");
-        cacheList.forEach(AbstractAgentConfigCache::reset);
+        //log.info("spring启动成功后重新清理缓存");
+        //cacheList.forEach(AbstractAgentConfigCache::reset);
     }
 }

@@ -3,7 +3,9 @@ package io.shulie.takin.web.biz.init.sync;
 import java.util.List;
 
 import io.shulie.takin.web.biz.service.ApplicationService;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.result.application.ApplicationDetailResult;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -32,28 +34,34 @@ public class ConfigSynchronizer {
         if (WebPluginUtils.checkUserPlugin()) {
             return;
         }
-        log.info("项目启动，重新同步信息去配置中心");
-        List<ApplicationDetailResult> applications = applicationService.getAllApplications();
-        if (CollectionUtils.isEmpty(applications)) {
-            return;
+        // 是否需要同步数据到配置中心
+        if (!ConfigServerHelper.getBooleanValueByKey(ConfigServerKeyEnum.TAKIN_ENABLE_SYN_CONFIG)) {
+            log.warn("项目启动，应用相关配置不同步");
         } else {
-            for (ApplicationDetailResult application : applications) {
-                configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
-                    application.getApplicationName());
-                sleep();
-                configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
-                    application.getApplicationName());
-                sleep();
-                configSyncService.syncAllowList(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
-                    application.getApplicationName());
-                sleep();
-                configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
-                    application.getApplicationName());
-                sleep();
-                configSyncService.syncShadowConsumer(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
-                    application.getApplicationName());
+            log.info("项目启动，重新同步信息去配置中心");
+            List<ApplicationDetailResult> applications = applicationService.getAllApplications();
+            if (CollectionUtils.isEmpty(applications)) {
+                return;
+            } else {
+                for (ApplicationDetailResult application : applications) {
+                    configSyncService.syncGuard(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
+                            application.getApplicationName());
+                    sleep();
+                    configSyncService.syncShadowDB(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
+                            application.getApplicationName());
+                    sleep();
+                    configSyncService.syncAllowList(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
+                            application.getApplicationName());
+                    sleep();
+                    configSyncService.syncShadowJob(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
+                            application.getApplicationName());
+                    sleep();
+                    configSyncService.syncShadowConsumer(WebPluginUtils.traceTenantCommonExt(), application.getApplicationId(),
+                            application.getApplicationName());
+                }
             }
         }
+        log.info("项目启动，重新同步信息去配置中心");
         configSyncService.syncClusterTestSwitch(WebPluginUtils.traceTenantCommonExt());
         sleep();
         configSyncService.syncAllowListSwitch(WebPluginUtils.traceTenantCommonExt());

@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.cloud.entrypoint.machine.CloudMachineApi;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.sdk.model.request.machine.MachineAddReq;
@@ -15,7 +16,7 @@ import io.shulie.takin.cloud.sdk.model.response.machine.NodeMetricsResp;
 import io.shulie.takin.common.beans.page.PagingDevice;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.plugin.framework.core.PluginManager;
+
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineBaseRequest;
@@ -37,10 +38,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,7 +48,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     @Value("${machine.password.sale.pre: machinePasswordSaltPre}")
     private String machinePasswordSaltPre;
 
-    @Value("${yidongyun.user.machine.url: http://devops.testcloud.com/ms/testcloudplatform/api/service/user/host?X-DEVOPS-UID=}")
+    @Value("${yidongyun.user.machine.url: http://devops.testcloud.com/ms/testcloudplatform/api/service/user/host}")
     private String url;
 
     private SymmetricCrypto des;
@@ -91,6 +89,17 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         machineManageEntity.setUserName(request.getUserName());
         machineManageEntity.setPassword(des.encryptHex(request.getPassword()));
         machineManageEntity.setStatus(0);
+        //查询这个机器是否已经是节点机器
+        ContextExt req = new ContextExt();
+        WebPluginUtils.fillCloudUserData(req);
+        ResponseResult<List<NodeMetricsResp>> list = cloudMachineApi.list(req);
+        if (list!= null && CollectionUtils.isNotEmpty(list.getData())){
+            List<NodeMetricsResp> nodeMetrics = list.getData().stream().filter(o -> o.getNodeIp().equals(request.getMachineIp())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(nodeMetrics)){
+                machineManageEntity.setStatus(2);
+                machineManageEntity.setMachineName(nodeMetrics.get(0).getName());
+            }
+        }
         machineManageDAO.save(machineManageEntity);
         return null;
     }
@@ -173,7 +182,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         MachineAddReq machineAddReq = new MachineAddReq();
         machineAddReq.setNodeIp(manageDAOById.getMachineIp());
         machineAddReq.setPassword(des.decryptStr(manageDAOById.getPassword()));
-        machineAddReq.setUserName(manageDAOById.getUserName());
+        machineAddReq.setUsername(manageDAOById.getUserName());
         machineAddReq.setName(manageDAOById.getMachineName());
         WebPluginUtils.fillCloudUserData(machineAddReq);
         cloudMachineApi.add(machineAddReq);
@@ -205,9 +214,11 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
     public void syncMachine() {
         WebUserExtApi userExtApi = pluginManager.getExtension(WebUserExtApi.class);
         UserExt userExt = userExtApi.traceUser();
-        String externalId = userExt.getExternalId();
-        log.info("开始调用获取{}用户的机器信息,用户id为:{}", url, externalId);
-        String result = HttpUtil.get(url + externalId);
+        String externalName = userExt.getExternalName();
+        log.info("开始调用获取{}用户的机器信息,用户名为:{}", url, externalName);
+        Map<String,String> header = new HashMap<>();
+        header.put("X-DEVOPS-UID",externalName);
+        String result = HttpClientUtil.sendGet(url, header);
         log.info("获取到结果为:{}",result);
         if (StringUtil.isNotEmpty(result)){
             List<MachineManageEntity> manageEntities = new ArrayList<>();

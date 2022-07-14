@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 
@@ -140,7 +141,7 @@ public class SceneController {
 
         String versionId = request.getVersionId();
         if (StringUtils.isNotBlank(versionId)) {
-            String demandIds = request.getDemandIds();
+            String demandIds = JSON.toJSONString(request.getDemandIds().toString());
             createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),sceneId,false);
         }
 
@@ -201,8 +202,8 @@ public class SceneController {
 
         String versionId = request.getVersionId();
         if (StringUtils.isNotBlank(versionId)) {
-            String demandIds = request.getDemandIds();
-            createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),request.getBasicInfo().getSceneId(),false);
+            String demandIds = JSON.toJSONString(request.getDemandIds());
+            createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),request.getBasicInfo().getSceneId(),true);
         }
 
         return ResponseResult.success(updateResult);
@@ -341,8 +342,8 @@ public class SceneController {
         wrapper.eq(YVersionEntity::getSid,sceneId);
         YVersionEntity entity = yVersionMapper.selectOne(wrapper);
         if (null != entity) {
-            copyDetailResult.setDids(entity.getDids());
-            copyDetailResult.setVid(entity.getVid());
+            copyDetailResult.setDemandIds(JSON.parseArray(entity.getDids()));
+            copyDetailResult.setVersionId(entity.getVid());
         }
 
         return ResponseResult.success(copyDetailResult);
@@ -368,7 +369,18 @@ public class SceneController {
     @GetMapping("business_activity_flow/detail")
     @ApiOperation("获取业务流程详情 - 压测场景用")
     public ResponseResult<SceneEntity> businessActivityFlowDetail(@RequestParam(name = "id", required = false) Long id) {
-        return ResponseResult.success(sceneService.businessActivityFlowDetail(id));
+        SceneEntity entity = sceneService.businessActivityFlowDetail(id);
+
+        LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(YVersionEntity::getDids,YVersionEntity::getVid);
+        wrapper.eq(YVersionEntity::getSid,id);
+        YVersionEntity e = yVersionMapper.selectOne(wrapper);
+        if (null != e) {
+            entity.setDemandIds(JSON.parseArray(e.getDids()));
+            entity.setVersionId(e.getVid());
+        }
+
+        return ResponseResult.success(entity);
     }
 
     /**

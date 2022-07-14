@@ -26,7 +26,7 @@ public class NewSceneRequest {
     @ApiModelProperty(value = "版本Id")
     private String versionId;
     @ApiModelProperty(value = "需求Ids")
-    private String demandIds;
+    private List demandIds;
     @ApiModelProperty(value = "基础信息")
     @NotNull(message = "场景基础信息不能为空")
     private BasicInfo basicInfo;

@@ -3,6 +3,7 @@ package io.shulie.takin.web.entrypoint.controller.shift;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -173,19 +174,31 @@ public class ShiftCloudController {
             Map<String, List> map = new HashMap<>(1);
             List<SceneManagerResult> list = new ArrayList<>();
             map.put("task_list", list);
+            long total = 0;
             if (null != responseResult && CollectionUtils.isNotEmpty(responseResult.getData())) {
                 responseResult.getData().forEach(r -> list.add(new SceneManagerResult(WEB + r.getId(), r.getSceneName(), r.getUserId(), r.getUserName())));
+                total = responseResult.getTotalNum();
             }
             if (list.size() < shiftCloudVO.getPage_size()) {
+                int current = 0;
+                int pageSize = shiftCloudVO.getPage_size();
+                if (total != 0) {
+                   int n =  shiftCloudVO.getPage_index() * shiftCloudVO.getPage_size();
+                   if (n - total > 10) {
+                       current = shiftCloudVO.getPage_index() - (int)(total / 10) - 1;
+                   }
+                }
                 //TODO 数据不足是拿基准测试补齐
                 Map data = new HashMap();
-                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?userId=" + id + "&current=" + shiftCloudVO.getPage_index() + "&pageSize=" + shiftCloudVO.getPage_size() + "&status=", data, 10000);
+                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?userId=" + id + "&current=" + current + "&pageSize=" + pageSize + "&status=", data, 10000);
                 if (StringUtils.isNotBlank(responseJson)) {
                     Long finalId = id;
-                    JSON.parseObject(responseJson).getJSONObject("data").getJSONArray("records").forEach(o -> {
-                        JSONObject j = JSON.parseObject(o.toString());
+                    JSONArray ja = JSON.parseObject(responseJson).getJSONObject("data").getJSONArray("records");
+                    int size = ja.size() > shiftCloudVO.getPage_size() - list.size()?shiftCloudVO.getPage_size() - list.size() :ja.size();
+                    for (int i = 0; i < size; i++) {
+                        JSONObject j = JSON.parseObject(ja.get(i).toString());
                         list.add(new SceneManagerResult(BENCH + j.getString("id"), j.getString("sceneName"), finalId, null));
-                    });
+                    }
                 }
             }
             result.setData(map);
@@ -249,7 +262,37 @@ public class ShiftCloudController {
                     data.put("machineType", type);
                     data.put("sceneId", taskId.replaceFirst(BENCH, ""));
                     data.put("type", "BENCHMARK");
-                    String responseJson = HttpUtil.post(path + "api/pressure/start", data, 10000);
+
+
+                    CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+                    HttpPost httpPost = new HttpPost(path + "api/pressure/start");
+                    CloseableHttpResponse response = null;
+                    String responseJson = null;
+                    try {
+                        StringEntity stringEntity = new StringEntity(JSON.toJSONString(data), "UTF-8");
+                        httpPost.setEntity(stringEntity);
+                        httpPost.setHeader("Content-Type", "application/json");
+                        response = httpClient.execute(httpPost);
+                        HttpEntity entity = response.getEntity();
+                        if (null != entity) {
+                            responseJson = EntityUtils.toString(response.getEntity());
+                        }
+                    } catch (Exception e) {
+                        //Ignore
+                    } finally {
+                        try {
+                            if (null != response) {
+                                response.close();
+                            }
+                            httpClient.close();
+                        } catch (IOException e) {
+                            //Ignore
+                        }
+                    }
+
+
+
+
                     if (StringUtils.isNotBlank(responseJson)) {
                         Integer code = JSON.parseObject(responseJson).getInteger("code");
                         if (null == code || 200 != code)
@@ -258,8 +301,9 @@ public class ShiftCloudController {
                             Map result = new HashMap(1);
                             result.put("tool_execute_id", BENCH + JSON.parseObject(responseJson).getLong("data"));
                             ScheduledExecutorService pool = Executors.newScheduledThreadPool(4);
+                            String finalResponseJson = responseJson;
                             pool.scheduleWithFixedDelay(() -> {
-                                boolean status = this.pushStatus(BENCH + JSON.parseObject(responseJson).getLong("data"));
+                                boolean status = this.pushStatus(BENCH + JSON.parseObject(finalResponseJson).getLong("data"));
                                 if (status) {
                                     pool.shutdown();
                                 }

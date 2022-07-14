@@ -1,12 +1,14 @@
 package io.shulie.takin.web.data.model.mysql;
 
 import java.util.Date;
+import java.util.List;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.shulie.takin.web.data.model.mysql.base.UserBaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang.StringUtils;
@@ -18,6 +20,15 @@ import org.apache.commons.lang.StringUtils;
 @TableName(value = "t_scene")
 @EqualsAndHashCode(callSuper = true)
 public class SceneEntity extends UserBaseEntity {
+
+    @TableField(exist = false)
+    private List demandIds;
+
+    @TableField(exist = false)
+    private String versionId;
+
+
+
     /**
      * 主键
      */

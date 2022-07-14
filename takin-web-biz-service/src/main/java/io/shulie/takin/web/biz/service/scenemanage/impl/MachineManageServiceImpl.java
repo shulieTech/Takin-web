@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.shulie.takin.plugin.framework.core.PluginManager;
 import io.shulie.takin.cloud.entrypoint.machine.CloudMachineApi;
 import io.shulie.takin.cloud.ext.content.trace.ContextExt;
 import io.shulie.takin.cloud.sdk.model.request.machine.MachineAddReq;
@@ -15,7 +16,7 @@ import io.shulie.takin.cloud.sdk.model.response.machine.NodeMetricsResp;
 import io.shulie.takin.common.beans.page.PagingDevice;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.plugin.framework.core.PluginManager;
+
 import io.shulie.takin.utils.string.StringUtil;
 import io.shulie.takin.web.amdb.util.HttpClientUtil;
 import io.shulie.takin.web.biz.pojo.request.scene.PressureMachineBaseRequest;
@@ -181,7 +182,7 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         MachineAddReq machineAddReq = new MachineAddReq();
         machineAddReq.setNodeIp(manageDAOById.getMachineIp());
         machineAddReq.setPassword(des.decryptStr(manageDAOById.getPassword()));
-        machineAddReq.setUserName(manageDAOById.getUserName());
+        machineAddReq.setUsername(manageDAOById.getUserName());
         machineAddReq.setName(manageDAOById.getMachineName());
         WebPluginUtils.fillCloudUserData(machineAddReq);
         cloudMachineApi.add(machineAddReq);

@@ -31,6 +31,10 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
     @Value("${takin.enable.clearDsDataConfig:false}")
     private boolean isClear;
 
+    // 应用相关配置的失效时间
+    @Value("${takin.app.config.expire:5}")
+    private long app_config_expire;
+
     // 加锁处理
     @Value("${takin.enable.configDataLock:true}")
     private boolean configDataLock;
@@ -66,7 +70,7 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
      */
     public T getLock(String namespace, int count) {
         // 增加一个计数器,防止线程一直读取不到,递归退出,1s就退出，等待下次处理
-        if (count > 50) {
+        if (count > 10) {
             log.warn("已超过递归次数,但还是未获取到值,namespace:", namespace);
             return null;
         }
@@ -75,12 +79,12 @@ public abstract class AbstractAgentConfigCache<T> implements AgentCacheSupport<T
         if (result == null) {
             // 单独走一个查询的分布式key
             String queryLockKey = "t:data:query:" + cacheKey;
-            // 10ms去拿一次,操作很快会完成
-            boolean isLock = distributedLock.tryLock(queryLockKey, 20L, 1000L, TimeUnit.MILLISECONDS);
+            // 多等待下再去获取值,读取数据也不是那么快
+            boolean isLock = distributedLock.tryLock(queryLockKey, 100L, 1000L, TimeUnit.MILLISECONDS);
             if (isLock) {
                 try {
                     result = queryValue(namespace);
-                    redisTemplate.opsForValue().set(cacheKey, result, 5, TimeUnit.MINUTES);
+                    redisTemplate.opsForValue().set(cacheKey, result, app_config_expire, TimeUnit.MINUTES);
                 } catch (Throwable e) {
                     log.error("数据操作失败 " + ExceptionUtils.getStackTrace(e));
                 } finally {

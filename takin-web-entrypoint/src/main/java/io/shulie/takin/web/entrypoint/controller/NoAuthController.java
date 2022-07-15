@@ -55,9 +55,9 @@ public class NoAuthController {
         String id = req.getParameter("id");
         try {
             if(id.startsWith("web-")){
-                response.sendRedirect(pageTakin+"?id="+id.replace("web-", ""));
+                response.sendRedirect(pageTakin+"?bare=1&id="+id.replace("web-", ""));
             }else if(id.startsWith("bench-")){
-                response.sendRedirect(pageBench+"?reportId="+id.replace("bench-", ""));
+                response.sendRedirect(pageBench+"?bare=1&reportId="+id.replace("bench-", ""));
             }else {
                 return;
             }

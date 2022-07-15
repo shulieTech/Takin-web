@@ -187,7 +187,7 @@ public class ShiftCloudController {
                 if (total != 0) {
                    int n =  shiftCloudVO.getPage_index() * shiftCloudVO.getPage_size();
                    if (n - total > 10) {
-                       current = shiftCloudVO.getPage_index() - (int)(total / 10) - 1;
+                       current = shiftCloudVO.getPage_index() - (int)(total / 10) - 1 < 0 ? 0 : shiftCloudVO.getPage_index() - (int)(total / 10) - 1;
                    }
                 }
                 //TODO 数据不足是拿基准测试补齐

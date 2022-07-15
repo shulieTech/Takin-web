@@ -177,4 +177,10 @@ public class ReportController {
         return ResponseResult.success(reportService.downloadPDFPath(reportId));
     }
 
+    @GetMapping("/reportId")
+    @ApiOperation("reportId")
+    public ResponseResult<Long> reportId(Long sceneId) {
+        return ResponseResult.success(reportService.getReportId(sceneId));
+    }
+
 }

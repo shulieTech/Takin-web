@@ -389,11 +389,13 @@ public class ShiftCloudController {
     @PostMapping("/ms/task/api/service/task/sdk/log")
     public BaseResult log(@RequestBody ShiftCloudVO shiftCloudVO) throws Exception {
         BaseResult baseResult = new BaseResult();
-        Map data;
+        Map data = new HashMap();
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
-            data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")), true);
-        } else {
-            data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")), false);
+            if (isWeb(shiftCloudVO.getTool_execute_id())) {
+                data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")), true);
+            } else {
+                data = this.getData(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(BENCH, "")), false);
+            }
         }
         baseResult.setData(data);
         return baseResult;
@@ -471,7 +473,7 @@ public class ShiftCloudController {
                                 Long t = businessActivity.get(i).getTotalRequest();
                                 int failCount = 0;
                                 DataBean successRate = businessActivity.get(i).getSuccessRate();
-                                if (null != successRate) {
+                                if (null != successRate && null != t) {
                                     BigDecimal value = (BigDecimal) successRate.getValue();
                                     if (null != value) {
                                         failCount = (int) (t * (100 - value.intValue()) / 100);

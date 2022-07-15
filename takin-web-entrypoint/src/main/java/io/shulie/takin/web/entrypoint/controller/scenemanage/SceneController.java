@@ -141,7 +141,7 @@ public class SceneController {
 
         String versionId = request.getVersionId();
         if (StringUtils.isNotBlank(versionId)) {
-            String demandIds = JSON.toJSONString(request.getDemandIds().toString());
+            String demandIds = JSON.toJSONString(request.getDemandIds());
             createVersion(versionId,demandIds, WebPluginUtils.traceEnvCode(),sceneId,false);
         }
 

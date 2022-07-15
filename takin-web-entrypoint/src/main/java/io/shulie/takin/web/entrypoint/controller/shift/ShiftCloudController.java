@@ -40,6 +40,7 @@ import io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import io.swagger.annotations.Api;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -73,6 +74,7 @@ import java.util.stream.Collectors;
 
 @Api(tags = "移动云接口", value = "移动云接口")
 @RestController
+@Slf4j
 public class ShiftCloudController {
 
     private static final String WEB = "web-";
@@ -348,12 +350,14 @@ public class ShiftCloudController {
             try {
                 data = this.getData(reportId, true);
             } catch (Exception e) {
+                log.error(e.getStackTrace().toString());
             }
         } else {
             long reportId = Long.parseLong(rd.replaceFirst(BENCH, ""));
             try {
                 data = this.getData(reportId, false);
             } catch (Exception e) {
+                log.error(e.getStackTrace().toString());
             }
         }
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
@@ -367,7 +371,7 @@ public class ShiftCloudController {
             Object task_status = data.remove("task_status");
             return task_status != null && (Integer.parseInt(task_status.toString()) == 1 || Integer.parseInt(task_status.toString()) == 3);
         } catch (Exception e) {
-            //Ignore
+            log.error(e.getStackTrace().toString());
             return false;
         } finally {
             try {
@@ -422,12 +426,16 @@ public class ShiftCloudController {
                 String startTime = output.getStartTime();
                 Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startTime);
                 long min = ChronoUnit.MINUTES.between(Instant.ofEpochMilli(date.getTime()), Instant.ofEpochMilli(System.currentTimeMillis()));
-                int i1 = testTotalTime.indexOf(" ");
-                int i2 = testTotalTime.indexOf("'");
-                String ms = testTotalTime.substring(i1 + 1, i2);
-                Double mi = Double.valueOf(ms);
-                double tm = min / mi * 100 > 100 ? 100 : min / mi * 100;
-                data.put("task_progress", String.valueOf(tm).substring(0, String.valueOf(tm).indexOf(".")) + "%");//TODO testTotalTime is null?
+                int i1 = 0;
+                int i2 = 0;
+                if (null != testTotalTime) {
+                    i1 = testTotalTime.indexOf(" ");
+                    i2 = testTotalTime.indexOf("'");
+                    String ms = testTotalTime.substring(i1 + 1, i2);
+                    Double mi = Double.valueOf(ms);
+                    double tm = min / mi * 100 > 100 ? 100 : min / mi * 100;
+                    data.put("task_progress", String.valueOf(tm).substring(0, String.valueOf(tm).indexOf(".")) + "%");//TODO testTotalTime is null?
+                }else data.put("task_progress","50%");
                 if (null != taskStatus && taskStatus == 2) {
                     Map analysis = new HashMap();
                     LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
@@ -447,11 +455,13 @@ public class ShiftCloudController {
                         }
                     }
                     analysis.put("performanceResult", null != conclusion && 1 == conclusion ? true : false);
-                    String a = testTotalTime.substring(0, testTotalTime.indexOf("h"));
-                    String b = testTotalTime.substring(i1 + 1, i2);
-                    String c = testTotalTime.substring(i2 + 1, testTotalTime.length() - 1);
-                    int ti = Integer.parseInt(a) * 3600 + Integer.parseInt(b) * 60 + Integer.parseInt(c);
-                    analysis.put("executeDuration", ti);
+                    if (null != testTotalTime) {
+                        String a = testTotalTime.substring(0, testTotalTime.indexOf("h"));
+                        String b = testTotalTime.substring(i1 + 1, i2);
+                        String c = testTotalTime.substring(i2 + 1, testTotalTime.length() - 1);
+                        int ti = Integer.parseInt(a) * 3600 + Integer.parseInt(b) * 60 + Integer.parseInt(c);
+                        analysis.put("executeDuration", ti);
+                    } else analysis.put("executeDuration", 0);
                     List list = new ArrayList();
                     if (CollectionUtils.isNotEmpty(businessActivity)) {
                         for (int i = 0; i < businessActivity.size(); i++) {

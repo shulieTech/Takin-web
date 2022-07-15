@@ -438,7 +438,7 @@ public class ShiftCloudController {
                     double tm = min / mi * 100 > 100 ? 100 : min / mi * 100;
                     data.put("task_progress", String.valueOf(tm).substring(0, String.valueOf(tm).indexOf(".")) + "%");//TODO testTotalTime is null?
                 }else data.put("task_progress","50%");
-                if (null != taskStatus && taskStatus == 2) {
+                if (null != taskStatus) {
                     Map analysis = new HashMap();
                     LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();
                     wrapper.select(YVersionEntity::getDids, YVersionEntity::getVid);

@@ -190,7 +190,7 @@ public class ShiftCloudController {
                 }
                 //TODO 数据不足是拿基准测试补齐
                 Map data = new HashMap();
-                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?userId=" + id + "&current=" + current + "&pageSize=" + pageSize + "&status=", data, 10000);
+                String responseJson = HttpUtil.get(path + "/api/benchmark/scene/query?ignore=true&userId=" + id + "&current=" + current + "&pageSize=" + pageSize + "&status=", data, 10000);
                 if (StringUtils.isNotBlank(responseJson)) {
                     Long finalId = id;
                     JSONArray ja = JSON.parseObject(responseJson).getJSONObject("data").getJSONArray("records");
@@ -265,7 +265,7 @@ public class ShiftCloudController {
 
 
                     CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-                    HttpPost httpPost = new HttpPost(path + "api/pressure/start");
+                    HttpPost httpPost = new HttpPost(path + "api/pressure/start?ignore=true");
                     CloseableHttpResponse response = null;
                     String responseJson = null;
                     try {
@@ -322,7 +322,7 @@ public class ShiftCloudController {
 
     private void getId(final boolean[] flag, final AtomicLong id, int i) {
         Map data = new HashMap();
-        String responseJson = HttpUtil.get(path + "/api/machine/list?type=" + i, data, 10000);
+        String responseJson = HttpUtil.get(path + "/api/machine/list?ignore=true&type=" + i, data, 10000);
         if (StringUtils.isNotBlank(responseJson)) {
             JSON.parseObject(responseJson).getJSONArray("data").forEach(o -> {
                 if (!flag[0]) {
@@ -483,7 +483,7 @@ public class ShiftCloudController {
             data.put("tool_execute_id", reportId);
             Map result = new HashMap();
             result.put("id", reportId);
-            String responseJson = HttpUtil.get(path + "/api/task", result, 10000);
+            String responseJson = HttpUtil.get(path + "/api/task?ignore=true", result, 10000);
             int s = 0;
             int c1 = 0;
             int c3 = 0;
@@ -497,7 +497,7 @@ public class ShiftCloudController {
                 data.put("task_progress", "50%");
                 if (status == 2) {
                     data.put("task_progress", "100%");
-                    String taskResponseJson = HttpUtil.get(path + "/api/task/task", result, 10000);
+                    String taskResponseJson = HttpUtil.get(path + "/api/task/task?ignore=true", result, 10000);
                     if (StringUtils.isNotBlank(responseJson)) {
                         List<PressureTaskResult> pressureTaskResults = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
                         for (PressureTaskResult p : pressureTaskResults) {
@@ -515,7 +515,7 @@ public class ShiftCloudController {
                 }
             }
             data.put("tool_code", "Performance");
-            String taskResponseJson = HttpUtil.get(path + "/api/task/n", result, 10000);
+            String taskResponseJson = HttpUtil.get(path + "/api/task/n?ignore=true", result, 10000);
             Map analysis = new HashMap();
             if (StringUtils.isNotBlank(taskResponseJson))
                 analysis.put("coverDemand", Integer.parseInt(taskResponseJson));
@@ -580,14 +580,14 @@ public class ShiftCloudController {
         List paths = new ArrayList();
         Map result = new HashMap();
         result.put("id", reportId);
-        String taskResponseJson = HttpUtil.get(path + "/api/task/task", result, 10000);
+        String taskResponseJson = HttpUtil.get(path + "/api/task/task?ignore=true", result, 10000);
         if (StringUtils.isNotBlank(taskResponseJson)) {
             Map<String, Object> dataModel = new HashMap<>();
             List<PressureTaskResult> t = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
             if (CollectionUtils.isNotEmpty(t)) {
                 for (PressureTaskResult p : t) {
                     result.put("reportId", p.getId());
-                    String d = HttpUtil.get(path + "/api/benchmark/result/detail", result, 10000);
+                    String d = HttpUtil.get(path + "/api/benchmark/result/detail?ignore=true", result, 10000);
                     if (StringUtils.isNotBlank(d)) {
                         dataModel.put("data", JSON.parseObject(d).getObject("data", PressureTaskResultVO.class));
                         String content = pdfUtil.parseFreemarker("report/tpl.html", dataModel);

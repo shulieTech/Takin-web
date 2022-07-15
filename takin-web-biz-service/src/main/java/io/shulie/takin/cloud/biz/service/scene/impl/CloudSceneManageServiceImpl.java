@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -120,6 +121,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static io.shulie.takin.cloud.common.constants.FileConstants.JAR_SUFFIX;
 
 /**
  * @author qianshui
@@ -1014,8 +1017,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         scriptVerityExt.setRequest(updateReq.getRequest());
         scriptVerityExt.setVersion(updateReq.getVersion());
         scriptVerityExt.setScriptPath(path);
-        scriptVerityExt.setUseNewVerify(updateReq.isPressure());
-        completedScriptVerityIfNecessary(scriptVerityExt, updateReq);
+        completedByNewVerify(scriptVerityExt, updateReq);
         ScriptVerityRespExt scriptVerityRespExt = scriptAnalyzeService.verityScript(scriptVerityExt);
         if (scriptVerityRespExt != null && CollectionUtils.isNotEmpty(scriptVerityRespExt.getErrorMsg())) {
             return scriptVerityRespExt;
@@ -1084,6 +1086,7 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         }
         wrapperOutput.setFeatures(sceneManageResult.getFeatures());
         wrapperOutput.setScriptAnalysisResult(sceneManageResult.getScriptAnalysisResult());
+        wrapperOutput.setPtConfig(sceneManageResult.getPtConfig());
     }
 
     /**
@@ -1420,8 +1423,23 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
         return Lists.newArrayList();
     }
 
+    private void completedByNewVerify(ScriptVerityExt scriptVerityExt, ScriptCheckAndUpdateReq updateReq) {
+        scriptVerityExt.setUseNewVerify(updateReq.isPressure());
+        completedScriptVerityIfNecessary(scriptVerityExt, updateReq);
+        dealJarsIfNecessary(scriptVerityExt);
+    }
+
     private void completedScriptVerityIfNecessary(ScriptVerityExt scriptVerityExt, ScriptCheckAndUpdateReq updateReq) {
-        if (updateReq.isPressure()) {
+        if (scriptVerityExt.isUseNewVerify()) {
+            List<EnginePlugin> plugins = updateReq.getPlugins();
+            if (CollectionUtils.isNotEmpty(plugins)) {
+                List<EnginePluginRefOutput> refOutputs = plugins.stream()
+                    .map(plugin -> EnginePluginRefOutput.create(plugin.getPluginId(), plugin.getPluginVersion()))
+                    .collect(Collectors.toList());
+                List<String> pluginPaths = enginePluginFilesService.findPluginFilesPathByPluginIdAndVersion(refOutputs)
+                    .stream().filter(Objects::nonNull).collect(Collectors.toList());
+                scriptVerityExt.getPluginPaths().addAll(pluginPaths);
+            }
             Long sceneId = updateReq.getSceneId();
             String sceneName;
             if (Objects.isNull(sceneId) && StringUtils.isNotBlank(sceneName = updateReq.getSceneName())) {
@@ -1456,15 +1474,6 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
                     reWritePathIfNecessary(attachmentPaths, FileTypeEnum.ATTACHMENT.getCode(), true));
             }
         }
-        List<EnginePlugin> plugins = updateReq.getPlugins();
-        if (CollectionUtils.isNotEmpty(plugins)) {
-            List<EnginePluginRefOutput> refOutputs = plugins.stream()
-                .map(plugin -> EnginePluginRefOutput.create(plugin.getPluginId(), plugin.getPluginVersion()))
-                .collect(Collectors.toList());
-            String pluginPaths = enginePluginFilesService.findPluginFilesPathByPluginIdAndVersion(refOutputs)
-                .stream().filter(Objects::nonNull).collect(Collectors.joining(","));
-            scriptVerityExt.setPluginPaths(pluginPaths);
-        }
     }
 
     private void completedScriptVerityBySceneId(ScriptVerityExt scriptVerityExt, ScriptCheckAndUpdateReq updateReq) {
@@ -1479,26 +1488,41 @@ public class CloudSceneManageServiceImpl extends AbstractIndicators implements C
             Integer scriptCode = FileTypeEnum.SCRIPT.getCode();
             List<SceneScriptRefOutput> scriptFiles = filesMap.get(scriptCode);
             List<String> scriptPaths = Collections.singletonList(scriptFiles.get(0).getUploadPath());
-            scriptVerityExt.setScriptPaths(reWritePathIfNecessary(scriptPaths, scriptCode, false));
+            scriptVerityExt.getScriptPaths().addAll(reWritePathIfNecessary(scriptPaths, scriptCode, false));
             Integer dataCode = FileTypeEnum.DATA.getCode();
             List<SceneScriptRefOutput> csvFiles = filesMap.get(dataCode);
             if (CollectionUtils.isNotEmpty(csvFiles)) {
                 List<String> csvPaths = csvFiles.stream().map(SceneScriptRefOutput::getUploadPath)
                     .filter(Objects::nonNull).collect(Collectors.toList());
-                scriptVerityExt.setCsvPaths(reWritePathIfNecessary(csvPaths, dataCode, false));
+                scriptVerityExt.getCsvPaths().addAll(reWritePathIfNecessary(csvPaths, dataCode, false));
             }
             Integer attachmentCode = FileTypeEnum.ATTACHMENT.getCode();
             List<SceneScriptRefOutput> attachmentFiles = filesMap.get(attachmentCode);
             if (CollectionUtils.isNotEmpty(attachmentFiles)) {
                 List<String> attachmentPaths = attachmentFiles.stream().map(SceneScriptRefOutput::getUploadPath)
                     .filter(Objects::nonNull).collect(Collectors.toList());
-                scriptVerityExt.setAttachments(reWritePathIfNecessary(attachmentPaths, attachmentCode, false));
+                scriptVerityExt.getAttachments().addAll(reWritePathIfNecessary(attachmentPaths, attachmentCode, false));
             }
         }
     }
 
-    private String reWritePathIfNecessary(List<String> paths, Integer fileType, boolean absolutePath) {
+    private List<String> reWritePathIfNecessary(List<String> paths, Integer fileType, boolean absolutePath) {
         return paths.stream().map(path -> appConfig.reWritePathByNfsRelative(path, fileType, absolutePath))
-            .collect(Collectors.joining(","));
+            .collect(Collectors.toList());
+    }
+
+    private void dealJarsIfNecessary(ScriptVerityExt scriptVerityExt) {
+        if (scriptVerityExt.isUseNewVerify()) {
+            List<String> pluginPaths = scriptVerityExt.getPluginPaths();
+            List<String> csvPaths = scriptVerityExt.getCsvPaths();
+            Iterator<String> csvIterator = csvPaths.iterator();
+            while (csvIterator.hasNext()) {
+                String csv = csvIterator.next();
+                if (StringUtils.endsWith(csv, JAR_SUFFIX)) {
+                    pluginPaths.add(csv);
+                    csvIterator.remove();
+                }
+            }
+        }
     }
 }

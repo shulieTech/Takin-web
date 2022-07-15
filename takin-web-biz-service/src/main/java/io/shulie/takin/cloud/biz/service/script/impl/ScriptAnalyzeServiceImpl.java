@@ -28,6 +28,7 @@ import io.shulie.takin.cloud.ext.content.script.ScriptVerityExt;
 import io.shulie.takin.cloud.ext.content.script.ScriptVerityRespExt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -68,10 +69,10 @@ public class ScriptAnalyzeServiceImpl implements ScriptAnalyzeService {
         if (scriptVerityExt.isUseNewVerify()) {
             try {
                 ScriptVerifyRequest request = new ScriptVerifyRequest();
-                request.setScriptPath(scriptVerityExt.getScriptPaths());
-                request.setCsvPaths(scriptVerityExt.getCsvPaths());
-                request.setAttachments(scriptVerityExt.getAttachments());
-                request.setPluginPaths(scriptVerityExt.getPluginPaths());
+                request.setScriptPath(StringUtils.join(scriptVerityExt.getScriptPaths(), ","));
+                request.setCsvPaths(StringUtils.join(scriptVerityExt.getCsvPaths(), ","));
+                request.setAttachments(StringUtils.join(scriptVerityExt.getAttachments(), ","));
+                request.setPluginPaths(StringUtils.join(scriptVerityExt.getPluginPaths(), ","));
                 scriptFileApi.verify(request);
             } catch (Exception e) {
                 log.error("jmx校验异常", e);

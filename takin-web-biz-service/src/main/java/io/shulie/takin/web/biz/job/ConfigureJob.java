@@ -59,7 +59,7 @@ public class ConfigureJob implements SimpleJob {
                         continue;
                     }
                     jobThreadPool.execute(() -> {
-                        boolean tryLock = distributedLock.tryLock(lockKey, 1L, 1L, TimeUnit.MINUTES);
+                        boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
                         if(!tryLock) {
                             return;
                         }

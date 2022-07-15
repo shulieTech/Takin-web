@@ -140,6 +140,8 @@ public class SceneManageWrapperOutput extends ContextExt {
 
     private String resourceId;
 
+    private String ptConfig;
+
     @Data
     @EqualsAndHashCode(callSuper = true)
     public static class SceneBusinessActivityRefOutput extends SceneBusinessActivityRefBean {

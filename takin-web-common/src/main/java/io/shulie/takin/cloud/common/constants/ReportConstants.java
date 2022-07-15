@@ -65,4 +65,7 @@ public class ReportConstants {
      */
     public static final String TEST_PLAN_MD5 = "0f1a197a2040e645dcdb4dfff8a3f960";
 
+    public static final String ACTIVITY_ENTRANCE = "entrance";
+    public static final String ACTIVITY_TYPE = "type";
+
 }

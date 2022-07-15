@@ -14,4 +14,6 @@ public class FileConstants {
      * 回车符
      */
     public static final char ENTER_KEY = '\r';
+
+    public static final String JAR_SUFFIX = ".jar";
 }

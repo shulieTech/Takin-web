@@ -1508,14 +1508,18 @@ public class CloudReportServiceImpl extends AbstractIndicators implements CloudR
                     });
             List<ScriptNodeTreeResp> result = JSONArray.parseArray(context.jsonString(), ScriptNodeTreeResp.class);
             if (result.size() == 1) {
-                // 获取场景
-                SceneManageEntity scene = sceneManageDao.getSceneById(reportResult.getSceneId());
-                // 校验场景是否存在
-                if (scene == null) {
-                    throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, "压测不存在:" + reportResult.getSceneId());
+                String ptConfigCopy = reportResult.getPtConfig();
+                if (StringUtils.isBlank(ptConfigCopy)) {
+                    // 获取场景
+                    SceneManageEntity scene = sceneManageDao.getSceneById(reportResult.getSceneId());
+                    // 校验场景是否存在
+                    if (scene == null) {
+                        throw new TakinCloudException(TakinCloudExceptionEnum.SCENE_MANAGE_GET_ERROR, "压测不存在:" + reportResult.getSceneId());
+                    }
+                    ptConfigCopy = scene.getPtConfig();
                 }
                 // 获取施压配置
-                PtConfigExt ptConfig = JSON.parseObject(scene.getPtConfig(), PtConfigExt.class);
+                PtConfigExt ptConfig = JSON.parseObject(ptConfigCopy, PtConfigExt.class);
                 // 遍历填充压力模式
                 result.get(0).getChildren().forEach(t -> {
                     // 根据MD5获取线程组配置

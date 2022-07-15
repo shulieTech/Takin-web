@@ -31,6 +31,7 @@ import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.takin.properties.AmdbClientProperties;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,9 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     public static final String QUERY_TEMP_ACTIVITY_METRICS_STEP2 = "/amdb/db/api/metrics/metricFromChickHouse";
     public static final String QUERY_METRICS = "/amdb/db/api/metrics/metricFromInfluxdb";
 
+
+    @Value("${takin.metrics.edgeId.count:50}")
+    private int metricsEdgeIdCount;
 
     @Autowired
     private AmdbClientProperties properties;
@@ -84,14 +88,14 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         }
         try {
             AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
-                .param(entranceQueryParam)
-                .eventName("查询入口信息")
-                .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
-                .list(ServiceInfoDTO.class);
+                    .param(entranceQueryParam)
+                    .eventName("查询入口信息")
+                    .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
+                    .list(ServiceInfoDTO.class);
             return amdbResponse.getData();
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),
-                e);
+                    e);
         }
     }
 
@@ -101,18 +105,18 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         this.populateTenantDTO(tempTopologyQuery1);
         try {
             AmdbResult<String> amdbResponse = AmdbHelper.builder().url(url)
-                .httpMethod(HttpMethod.POST)
-                .param(tempTopologyQuery1)
-                .eventName("查询临时业务活动指标step1")
-                .exception(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP1_ERROR)
-                .one(String.class);
+                    .httpMethod(HttpMethod.POST)
+                    .param(tempTopologyQuery1)
+                    .eventName("查询临时业务活动指标step1")
+                    .exception(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP1_ERROR)
+                    .one(String.class);
 
             String data = amdbResponse.getData();
             return data;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP1_ERROR,
-                e.getMessage());
+                    e.getMessage());
         }
     }
 
@@ -122,18 +126,18 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         this.populateTenantDTO(tempTopologyQuery2);
         try {
             AmdbResult<JSONObject> amdbResponse = AmdbHelper.builder().url(url)
-                .httpMethod(HttpMethod.POST)
-                .param(tempTopologyQuery2)
-                .eventName("查询临时业务活动指标step2")
-                .exception(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP2_ERROR)
-                .one(JSONObject.class);
+                    .httpMethod(HttpMethod.POST)
+                    .param(tempTopologyQuery2)
+                    .eventName("查询临时业务活动指标step2")
+                    .exception(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP2_ERROR)
+                    .one(JSONObject.class);
 
             JSONObject data = amdbResponse.getData();
             return data;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_TEMP_ACTIVITY_METRICS_STEP2_ERROR,
-                e.getMessage());
+                    e.getMessage());
         }
     }
 
@@ -158,15 +162,16 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
     }
 
     ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+
     @Override
     public List<JSONObject> queryBatchMetrics(QueryMetricsFromAMDB queryMetricsFromAMDB) {
         String url = properties.getUrl().getAmdb() + QUERY_METRICS;
         AmdbResult<List<JSONObject>> amdbResponseObj = new AmdbResult<>();
         amdbResponseObj.setData(new ArrayList<>());
-        List<List<String>> resultList = Lists.partition(queryMetricsFromAMDB.getEagleIds(), 300);
+        List<List<String>> resultList = Lists.partition(queryMetricsFromAMDB.getEagleIds(), metricsEdgeIdCount);
         List<CompletableFuture<Void>> futures = resultList.stream().map(result -> {
             Runnable runnableTask = () -> {
-                QueryMetricsFromAMDB tempObj = BeanUtil.copyProperties(queryMetricsFromAMDB,QueryMetricsFromAMDB.class, "eagleIds");
+                QueryMetricsFromAMDB tempObj = BeanUtil.copyProperties(queryMetricsFromAMDB, QueryMetricsFromAMDB.class, "eagleIds");
                 tempObj.setEagleIds(result);
                 AmdbResult<List<JSONObject>> amdbResponse = AmdbHelper.builder().url(url)
                         .httpMethod(HttpMethod.POST)
@@ -181,7 +186,7 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         try {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get();
             return amdbResponseObj.getData();
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_QUERY_METRICS_ERROR, e.getMessage());
         }
@@ -189,8 +194,8 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
 
     @Override
     public LinkTopologyDTO getApplicationEntrancesTopology(boolean tempActivity, String applicationName, String linkId,
-        String serviceName,
-        String method, String rpcType, String extend) {
+                                                           String serviceName,
+                                                           String method, String rpcType, String extend) {
         String url;
         if (tempActivity) {
             url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_TOPOLOGY_PATH_TEMP;
@@ -215,10 +220,10 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         topologyQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
             AmdbResult<LinkTopologyDTO> amdbResponse = AmdbHelper.builder().url(url)
-                .param(topologyQueryParam)
-                .eventName("查询拓扑图信息")
-                .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
-                .one(LinkTopologyDTO.class);
+                    .param(topologyQueryParam)
+                    .eventName("查询拓扑图信息")
+                    .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
+                    .one(LinkTopologyDTO.class);
 
             LinkTopologyDTO data = amdbResponse.getData();
             if (data == null) {
@@ -232,13 +237,13 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
             return data;
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),
-                e);
+                    e);
         }
     }
 
     @Override
     public Boolean updateUnknownNodeToOuter(String applicationName, String linkId, String serviceName, String method,
-        String rpcType, String extend, String nodeId) {
+                                            String rpcType, String extend, String nodeId) {
         String url = properties.getUrl().getAmdb() + APPLICATION_ENTRANCES_UNKNOWN_UPDATE_TO_OUTER;
         TopologyQueryParam topologyQueryParam = new TopologyQueryParam();
         topologyQueryParam.setAppName(applicationName);
@@ -259,14 +264,14 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         topologyQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
             AmdbResult<Object> amdbResponse = AmdbHelper.builder().url(url)
-                .param(topologyQueryParam)
-                .eventName("更新未知应用")
-                .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
-                .one(Object.class);
+                    .param(topologyQueryParam)
+                    .eventName("更新未知应用")
+                    .exception(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR)
+                    .one(Object.class);
             return amdbResponse.getSuccess();
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_ENTRANCE_THIRD_PARTY_ERROR, e.getMessage(),
-                e);
+                    e);
         }
     }
 
@@ -280,10 +285,10 @@ public class ApplicationEntranceClientImpl implements ApplicationEntranceClient 
         entranceQueryParam.setEnvCode(WebPluginUtils.traceEnvCode());
         try {
             AmdbResult<List<ServiceInfoDTO>> amdbResponse = AmdbHelper.builder().url(url)
-                .param(entranceQueryParam)
-                .eventName("查询MQ消费者")
-                .exception(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR)
-                .list(ServiceInfoDTO.class);
+                    .param(entranceQueryParam)
+                    .eventName("查询MQ消费者")
+                    .exception(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR)
+                    .list(ServiceInfoDTO.class);
             return amdbResponse.getData();
         } catch (Exception e) {
             throw new TakinWebException(TakinWebExceptionEnum.APPLICATION_SHADOW_THIRD_PARTY_ERROR, e.getMessage(), e);

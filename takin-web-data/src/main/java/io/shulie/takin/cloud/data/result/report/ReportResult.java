@@ -147,6 +147,8 @@ public class ReportResult extends ContextExt {
 
     private String calibrationMessage;
 
+    private String ptConfig;
+
     public Date getStartTime() {
         if (startTime == null) {
             return new Date();

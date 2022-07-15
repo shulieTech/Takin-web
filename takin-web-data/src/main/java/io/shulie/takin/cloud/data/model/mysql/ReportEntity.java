@@ -219,7 +219,9 @@ public class ReportEntity {
 //    @TableField(value = "customer_id")
 //    private Long customerId;
 
-
+    // from SceneManageEntity
+    @TableField(value = "pt_config")
+    private String ptConfig;
 
 
 }

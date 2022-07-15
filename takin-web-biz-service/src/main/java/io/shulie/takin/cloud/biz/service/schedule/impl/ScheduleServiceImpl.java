@@ -190,10 +190,10 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
             if (Objects.isNull(stopTaskMessage)) {
                 stopTaskMessage = "停止调度";
             }
-            if (!redisClientUtil.hasLockKey(PressureStartCache.getStartFlag(resourceId))) {
-                callStartFailedEvent(resourceId, stopTaskMessage); // 取消压测触发
-            } else {
+            if (redisClientUtil.hasLockKey(PressureStartCache.getJmeterStartFirstKey(resourceId))) {
                 callRunningFailedEvent(resourceId, stopTaskMessage);
+            } else {
+                callStartFailedEvent(resourceId, stopTaskMessage);
             }
         } else {
             // 直接标记场景为停止状态,报告为完成状态
@@ -352,19 +352,14 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
             if (!CollectionUtils.isEmpty(fileTypeMap)) {
                 List<DataFile> dataFiles = fileTypeMap.get(FileSplitConstants.FILE_TYPE_DATA_FILE);
                 if (!CollectionUtils.isEmpty(dataFiles)) {
-                    req.setDataFile(dataFiles.stream()
+                    req.getDataFile().addAll(dataFiles.stream()
                         .map(ScheduleServiceImpl::convertFile).collect(Collectors.toList()));
                 }
                 List<DataFile> attachmentFiles = fileTypeMap.get(FileSplitConstants.FILE_TYPE_EXTRA_FILE);
                 if (!CollectionUtils.isEmpty(attachmentFiles)) {
                     List<FileInfo> dependencies = attachmentFiles.stream()
                         .map(ScheduleServiceImpl::convertFile).collect(Collectors.toList());
-                    List<FileInfo> dependencyFile = req.getDependencyFile();
-                    if (dependencyFile == null) {
-                        req.setDependencyFile(dependencies);
-                    } else {
-                        dependencyFile.addAll(dependencies);
-                    }
+                    req.getDependencyFile().addAll(dependencies);
                 }
             }
         }
@@ -375,12 +370,7 @@ public class ScheduleServiceImpl extends AbstractIndicators implements ScheduleS
                 info.setUri(path);
                 return info;
             }).collect(Collectors.toList());
-            List<FileInfo> dependencyFile = req.getDependencyFile();
-            if (dependencyFile == null) {
-                req.setDependencyFile(dependencies);
-            } else {
-                dependencyFile.addAll(dependencies);
-            }
+            req.getDependencyFile().addAll(dependencies);
         }
     }
 

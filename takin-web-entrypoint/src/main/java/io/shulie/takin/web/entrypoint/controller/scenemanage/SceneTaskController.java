@@ -22,14 +22,12 @@ import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapper
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.output.scene.manage.SceneContactFileOutput;
-import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
 import io.shulie.takin.cloud.biz.service.schedule.FileSliceService;
 import io.shulie.takin.cloud.common.exception.TakinCloudException;
 import io.shulie.takin.cloud.data.param.scenemanage.SceneBigFileSliceParam;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.common.beans.annotation.ModuleDef;
 import io.shulie.takin.common.beans.response.ResponseResult;
-import io.shulie.takin.eventcenter.EventCenterTemplate;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.constant.BizOpConstants;
 import io.shulie.takin.web.biz.pojo.request.leakverify.LeakVerifyTaskStartRequest;
@@ -83,10 +81,6 @@ public class SceneTaskController extends AbstractIndicators {
     private RedisClientUtil redisClientUtil;
     @Resource
     private FileSliceService fileSliceService;
-    @Resource
-    private EventCenterTemplate eventCenterTemplate;
-    @Resource
-    private CloudAsyncService cloudAsyncService;
 
     @ApiOperation("|_ 启动时停止")
     @PutMapping("/preStop")
@@ -117,7 +111,6 @@ public class SceneTaskController extends AbstractIndicators {
         try {
             // 标记压测启动
             redisClientUtil.hmset(PressureStartCache.getSceneResourceKey(sceneId), PressureStartCache.START_FLAG, "1");
-            cloudAsyncService.checkStartTimeout(sceneId);
             ResponseResult<SceneManageWrapperResp> webResponse = sceneManageService.detailScene(sceneId);
             OperationLogContextHolder.operationType(BizOpConstants.OpTypes.START);
 

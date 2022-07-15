@@ -22,6 +22,7 @@ import io.shulie.takin.eventcenter.EventCenterTemplate;
 import io.shulie.takin.web.biz.checker.StartConditionCheckerContext;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Async;
@@ -64,7 +65,7 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
     private Integer pressureNodeHeartbeatExpireTime;
 
     /**
-     * 压测启动超时时间 单位分钟 [ 调用了task/start接口后，多久没有调用到cloud的start接口触发失败 ]
+     * 压测启动超时时间 单位分钟 [ pod启动成功后，多久没有调用cloud启动接口 ]
      */
     @Value("${pressure.start.expireTime: 3}")
     private Integer startTimeout;
@@ -209,26 +210,21 @@ public class CloudAsyncServiceImpl extends AbstractIndicators implements CloudAs
     }
 
     @Override
-    public void checkStartTimeout(Long sceneId) {
-        if (Objects.nonNull(sceneId)) {
-            // 先拿出resourceId
-            Object resource = redisClientUtil.hmget(PressureStartCache.getSceneResourceKey(sceneId), PressureStartCache.RESOURCE_ID);
-            if (Objects.nonNull(resource)) {
-                String resourceId = String.valueOf(resource);
-                taskScheduler.schedule(() -> {
-                    ResourceContext context = getResourceContext(resourceId);
-                    // 还未被取消且没有job数据
-                    if (Objects.nonNull(context) && Objects.isNull(context.getJobId())) {
-                        Event event = new Event();
-                        StartFailEventSource source = new StartFailEventSource();
-                        source.setContext(context);
-                        source.setMessage("压测启动超时");
-                        event.setEventName(PressureStartCache.START_FAILED);
-                        event.setExt(source);
-                        eventCenterTemplate.doEvents(event);
-                    }
-                }, new Date(System.currentTimeMillis() + startTimeout * 60 * 1000));
-            }
+    public void checkStartTimeout(String resourceId) {
+        if (StringUtils.isNotBlank(resourceId)) {
+            taskScheduler.schedule(() -> {
+                ResourceContext context = getResourceContext(resourceId);
+                // 还未被取消且没有job数据
+                if (Objects.nonNull(context) && Objects.isNull(context.getJobId())) {
+                    Event event = new Event();
+                    StartFailEventSource source = new StartFailEventSource();
+                    source.setContext(context);
+                    source.setMessage("压测启动超时");
+                    event.setEventName(PressureStartCache.START_FAILED);
+                    event.setExt(source);
+                    eventCenterTemplate.doEvents(event);
+                }
+            }, new Date(System.currentTimeMillis() + startTimeout * 60 * 1000));
         }
     }
 

@@ -6,7 +6,6 @@ import javax.annotation.Resource;
 
 import io.shulie.takin.cloud.biz.collector.collector.AbstractIndicators;
 import io.shulie.takin.cloud.biz.notify.CloudNotifyProcessor;
-import io.shulie.takin.cloud.biz.service.async.CloudAsyncService;
 import io.shulie.takin.cloud.constant.enums.CallbackType;
 import io.shulie.takin.cloud.data.util.PressureStartCache;
 import io.shulie.takin.cloud.model.callback.basic.ResourceExample;
@@ -19,9 +18,6 @@ public class PodStartNotifyProcessor extends AbstractIndicators implements Cloud
 
     @Resource
     private RedisClientUtil redisClientUtil;
-
-    @Resource
-    private CloudAsyncService cloudAsyncService;
 
     @Override
     public CallbackType type() {

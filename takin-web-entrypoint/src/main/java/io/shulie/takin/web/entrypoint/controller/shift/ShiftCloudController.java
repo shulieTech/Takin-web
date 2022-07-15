@@ -533,7 +533,7 @@ public class ShiftCloudController {
 
     //2.7
     @GetMapping("/api/c/report/export")
-    public void export(@RequestBody ShiftCloudVO shiftCloudVO, HttpServletResponse response) throws Exception {
+    public void export(ShiftCloudVO shiftCloudVO, HttpServletResponse response) throws Exception {
         if (StringUtils.isNotBlank(shiftCloudVO.getTool_execute_id())) {
             if (isWeb(shiftCloudVO.getTool_execute_id())) {
                 ResponseResult<String> url = reportController.getExportDownLoadUrl(Long.parseLong(shiftCloudVO.getTool_execute_id().replaceFirst(WEB, "")));

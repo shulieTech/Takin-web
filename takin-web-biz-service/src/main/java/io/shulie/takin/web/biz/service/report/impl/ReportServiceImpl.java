@@ -15,6 +15,7 @@ import javax.annotation.Resource;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import com.pamirs.takin.cloud.entity.dao.report.TReportMapper;
 import com.pamirs.takin.common.constant.VerifyResultStatusEnum;
 import com.pamirs.takin.entity.domain.dto.report.LeakVerifyResult;
 import com.pamirs.takin.entity.domain.dto.report.ReportDTO;
@@ -87,6 +88,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private DistributedLock distributedLock;
+
+    @Resource
+    TReportMapper tReportMapper;
 
     @Override
     public ResponseResult<List<ReportDTO>> listReport(ReportQueryParam param) {
@@ -327,6 +331,11 @@ public class ReportServiceImpl implements ReportService {
         }finally {
             distributedLock.unLock(lockKey);
         }
+    }
+
+    @Override
+    public Long getReportId(Long sceneId) {
+        return tReportMapper.getReportBySceneId(sceneId) == null ? 0l: tReportMapper.getReportBySceneId(sceneId).getId();
     }
 
 }

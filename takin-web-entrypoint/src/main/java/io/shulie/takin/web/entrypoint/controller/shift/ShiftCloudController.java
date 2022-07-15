@@ -519,7 +519,7 @@ public class ShiftCloudController {
                 }
                 if (c3 > 0) status = 3;
                 else status = 1;
-                data.put("task_status", status);
+                data.put("task_status", pressureTask.runStatus);
                 String startParam = pressureTask.getStartParam();
                 if (StringUtils.isNotBlank(startParam)) {
                     s = JSON.parseArray(startParam).size();
@@ -767,6 +767,8 @@ public class ShiftCloudController {
          */
         @TableField(fill = FieldFill.INSERT_UPDATE)
         private LocalDateTime updateTime;
+
+        private int runStatus;
     }
 
 

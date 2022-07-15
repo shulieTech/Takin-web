@@ -93,9 +93,9 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         ContextExt req = new ContextExt();
         WebPluginUtils.fillCloudUserData(req);
         ResponseResult<List<NodeMetricsResp>> list = cloudMachineApi.list(req);
-        if (list!= null && CollectionUtils.isNotEmpty(list.getData())){
+        if (list != null && CollectionUtils.isNotEmpty(list.getData())) {
             List<NodeMetricsResp> nodeMetrics = list.getData().stream().filter(o -> o.getNodeIp().equals(request.getMachineIp())).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(nodeMetrics)){
+            if (CollectionUtils.isNotEmpty(nodeMetrics)) {
                 machineManageEntity.setStatus(2);
                 machineManageEntity.setMachineName(nodeMetrics.get(0).getName());
             }
@@ -216,21 +216,21 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
         UserExt userExt = userExtApi.traceUser();
         String externalName = userExt.getExternalName();
         log.info("开始调用获取{}用户的机器信息,用户名为:{}", url, externalName);
-        Map<String,String> header = new HashMap<>();
-        header.put("X-DEVOPS-UID",externalName);
+        Map<String, String> header = new HashMap<>();
+        header.put("X-DEVOPS-UID", externalName);
         String result = HttpClientUtil.sendGet(url, header);
-        log.info("获取到结果为:{}",result);
-        if (StringUtil.isNotEmpty(result)){
+        log.info("获取到结果为:{}", result);
+        if (StringUtil.isNotEmpty(result)) {
             List<MachineManageEntity> manageEntities = new ArrayList<>();
             try {
                 JSONObject jsonObject = JSONObject.parseObject(result);
                 Object data = jsonObject.get("data");
-                if (data == null){
+                if (data == null) {
                     return;
                 }
                 JSONArray jsonArray = JSONObject.parseArray(data.toString());
-                if (CollectionUtils.isNotEmpty(jsonArray)){
-                    for (Object o : jsonArray){
+                if (CollectionUtils.isNotEmpty(jsonArray)) {
+                    for (Object o : jsonArray) {
                         JSONObject json = JSONObject.parseObject(o.toString());
                         MachineManageEntity machineManageEntity = new MachineManageEntity();
                         machineManageEntity.setMachineIp(json.get("ip").toString());
@@ -239,30 +239,33 @@ public class MachineManageServiceImpl implements MachineManageService, Initializ
                         manageEntities.add(machineManageEntity);
                     }
                 }
-            }catch (Exception e){
-                log.error("结果解析出现异常",e);
+            } catch (Exception e) {
+                log.error("结果解析出现异常", e);
             }
-            if (CollectionUtils.isNotEmpty(manageEntities)){
+            if (CollectionUtils.isNotEmpty(manageEntities)) {
                 List<String> ipList = manageEntities.stream().map(MachineManageEntity::getMachineIp).collect(Collectors.toList());
                 QueryWrapper<MachineManageEntity> ipListQuery = new QueryWrapper<>();
-                ipListQuery.lambda().in(MachineManageEntity::getMachineIp,ipList);
+                ipListQuery.lambda().in(MachineManageEntity::getMachineIp, ipList);
                 List<MachineManageEntity> machineManageEntities = machineManageDAO.list(ipListQuery);
-                if (CollectionUtils.isNotEmpty(machineManageEntities)){
+                if (CollectionUtils.isNotEmpty(machineManageEntities)) {
                     List<String> ipStringList = machineManageEntities.stream().map(MachineManageEntity::getMachineIp).collect(Collectors.toList());
                     log.info("同步过来的机器出现ip相同的机器，过滤掉这部分数据" + ipStringList);
                     manageEntities = manageEntities.stream().filter(o -> !ipStringList.contains(o.getMachineIp())).collect(Collectors.toList());
                 }
 
-                List<String> nameList = manageEntities.stream().map(MachineManageEntity::getMachineName).collect(Collectors.toList());
-                QueryWrapper<MachineManageEntity> nameListQuery = new QueryWrapper<>();
-                nameListQuery.lambda().in(MachineManageEntity::getMachineName,nameList);
-                List<MachineManageEntity> nameMachineManageEntities = machineManageDAO.list(nameListQuery);
-                if (CollectionUtils.isNotEmpty(nameMachineManageEntities)){
-                    List<String> nameStringList = nameMachineManageEntities.stream().map(MachineManageEntity::getMachineName).collect(Collectors.toList());
-                    log.info("同步过来的机器出现名称相同的机器，过滤掉这部分数据" + nameStringList);
-                    manageEntities = manageEntities.stream().filter(o -> !nameStringList.contains(o.getMachineName())).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(manageEntities)) {
+                    List<String> nameList = manageEntities.stream().map(MachineManageEntity::getMachineName).collect(Collectors.toList());
+                    QueryWrapper<MachineManageEntity> nameListQuery = new QueryWrapper<>();
+                    nameListQuery.lambda().in(MachineManageEntity::getMachineName, nameList);
+                    List<MachineManageEntity> nameMachineManageEntities = machineManageDAO.list(nameListQuery);
+                    if (CollectionUtils.isNotEmpty(nameMachineManageEntities)) {
+                        List<String> nameStringList = nameMachineManageEntities.stream().map(MachineManageEntity::getMachineName).collect(Collectors.toList());
+                        log.info("同步过来的机器出现名称相同的机器，过滤掉这部分数据" + nameStringList);
+                        manageEntities = manageEntities.stream().filter(o -> !nameStringList.contains(o.getMachineName())).collect(Collectors.toList());
+                    }
                 }
-                if (CollectionUtils.isNotEmpty(manageEntities)){
+
+                if (CollectionUtils.isNotEmpty(manageEntities)) {
                     machineManageDAO.saveBatch(manageEntities);
                 }
             }

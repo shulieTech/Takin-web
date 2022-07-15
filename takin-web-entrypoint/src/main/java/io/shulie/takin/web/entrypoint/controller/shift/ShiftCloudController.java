@@ -503,6 +503,7 @@ public class ShiftCloudController {
                 PressureTask pressureTask = JSON.parseObject(responseJson, PressureTask.class);
                 r = pressureTask.getRunTime();
                 data.put("tool_task_id", pressureTask.getSceneId());
+                result.put("sceneId", pressureTask.getSceneId());
                 int status = pressureTask.getStatus();
                 data.put("task_progress", "50%");
                 if (status == 2) {

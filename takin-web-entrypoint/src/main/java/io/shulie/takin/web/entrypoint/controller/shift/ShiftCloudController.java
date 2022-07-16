@@ -17,7 +17,9 @@ import com.pamirs.takin.entity.domain.vo.shift.BaseResult;
 import com.pamirs.takin.entity.domain.vo.shift.SceneManagerResult;
 import com.pamirs.takin.entity.domain.vo.shift.ShiftCloudVO;
 import io.shulie.takin.cloud.sdk.model.common.DataBean;
+import io.shulie.takin.cloud.sdk.model.request.scenemanage.SceneManageIdReq;
 import io.shulie.takin.cloud.sdk.model.response.scenemanage.BusinessActivitySummaryBean;
+import io.shulie.takin.cloud.sdk.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.cloud.sdk.model.response.scenetask.SceneActionResp;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.web.biz.pojo.input.scenemanage.SceneManageListOutput;
@@ -34,6 +36,7 @@ import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.data.mapper.mysql.YVersionMapper;
 import io.shulie.takin.web.data.model.mysql.YVersionEntity;
+import io.shulie.takin.web.diff.api.scenemanage.SceneManageApi;
 import io.shulie.takin.web.entrypoint.controller.report.ReportController;
 import io.shulie.takin.web.entrypoint.controller.report.ReportLocalController;
 import io.shulie.takin.web.entrypoint.controller.scenemanage.SceneTaskController;
@@ -112,6 +115,9 @@ public class ShiftCloudController {
     @Autowired
     private DistributedLock distributedLock;
 
+    @Autowired
+    private SceneManageApi sceneManageApi;
+
     //2.1
     @Deprecated
     public void getProjects() {
@@ -185,10 +191,10 @@ public class ShiftCloudController {
                 int current = 0;
                 int pageSize = shiftCloudVO.getPage_size();
                 if (total != 0) {
-                   int n =  shiftCloudVO.getPage_index() * shiftCloudVO.getPage_size();
-                   if (n - total > 10) {
-                       current = shiftCloudVO.getPage_index() - (int)(total / 10) - 1 < 0 ? 0 : shiftCloudVO.getPage_index() - (int)(total / 10) - 1;
-                   }
+                    int n =  shiftCloudVO.getPage_index() * shiftCloudVO.getPage_size();
+                    if (n - total > 10) {
+                        current = shiftCloudVO.getPage_index() - (int)(total / 10) - 1 < 0 ? 0 : shiftCloudVO.getPage_index() - (int)(total / 10) - 1;
+                    }
                 }
                 //TODO 数据不足是拿基准测试补齐
                 Map data = new HashMap();
@@ -406,6 +412,9 @@ public class ShiftCloudController {
         if (isWeb) {
             ResponseResult<ReportDetailOutput> responseResult = reportController.getReportByReportId(reportId);
             Response<ReportCountDTO> reportCount = reportLocalController.getReportCount(reportId);
+            SceneManageIdReq r = new SceneManageIdReq();
+            r.setReportId(reportId);
+            ResponseResult<SceneManageWrapperResp> d = sceneManageApi.getSceneDetail(r);
             if (null != responseResult && responseResult.getSuccess()) {
                 ReportDetailOutput output = responseResult.getData();
                 Long id = output.getId();
@@ -427,16 +436,14 @@ public class ShiftCloudController {
                 data.put("task_message", conclusionRemark);
                 String startTime = output.getStartTime();
                 Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startTime);
-                long min = ChronoUnit.MINUTES.between(Instant.ofEpochMilli(date.getTime()), Instant.ofEpochMilli(System.currentTimeMillis()));
+                long min = ChronoUnit.SECONDS.between(Instant.ofEpochMilli(date.getTime()), Instant.ofEpochMilli(System.currentTimeMillis()));
                 int i1 = 0;
                 int i2 = 0;
-                if (null != testTotalTime) {
-                    i1 = testTotalTime.indexOf(" ");
-                    i2 = testTotalTime.indexOf("'");
-                    String ms = testTotalTime.substring(i1 + 1, i2);
-                    Double mi = Double.valueOf(ms);
-                    double tm = min / mi * 100 > 100 ? 100 : min / mi * 100;
-                    data.put("task_progress", String.valueOf(tm).substring(0, String.valueOf(tm).indexOf(".")) + "%");//TODO testTotalTime is null?
+                Long ps = 0l;
+                if (null != d&&d.getSuccess() && null != d.getData()) {
+                    ps = d.getData().getPressureTestSecond();
+                    int ratio = (int) (min / ps);
+                    data.put("task_progress", ratio + "%");//TODO testTotalTime is null?
                 }else data.put("task_progress","50%");
                 if (null != taskStatus) {
                     Map analysis = new HashMap();
@@ -457,13 +464,7 @@ public class ShiftCloudController {
                         }
                     }
                     analysis.put("performanceResult", null != conclusion && 1 == conclusion ? true : false);
-                    if (null != testTotalTime) {
-                        String a = testTotalTime.substring(0, testTotalTime.indexOf("h"));
-                        String b = testTotalTime.substring(i1 + 1, i2);
-                        String c = testTotalTime.substring(i2 + 1, testTotalTime.length() - 1);
-                        int ti = Integer.parseInt(a) * 3600 + Integer.parseInt(b) * 60 + Integer.parseInt(c);
-                        analysis.put("executeDuration", ti);
-                    } else analysis.put("executeDuration", 0);
+                    analysis.put("executeDuration", ps);
                     List list = new ArrayList();
                     if (CollectionUtils.isNotEmpty(businessActivity)) {
                         for (int i = 0; i < businessActivity.size(); i++) {

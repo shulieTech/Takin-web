@@ -416,8 +416,8 @@ public class ShiftCloudController {
                 String testTotalTime = output.getTestTotalTime();
                 List<BusinessActivitySummaryBean> businessActivity = output.getBusinessActivity();
                 Long totalRequest = output.getTotalRequest();
-                data.put("tool_execute_id", String.valueOf(id));
-                data.put("tool_task_id", String.valueOf(sceneId));
+                data.put("tool_execute_id", WEB+id);
+                data.put("tool_task_id", WEB+sceneId);
                 data.put("tool_code", "Performance");
                 int ts = 0;
                 if (null != conclusion && 1 == conclusion) ts = 1;
@@ -488,11 +488,11 @@ public class ShiftCloudController {
                     analysis.put("failedCaseInfo", list);
                     data.put("last_analysis_result_list", JSON.toJSONString(analysis));
                 } else {
-                    data.put("last_analysis_result_list", null);
+                    data.put("last_analysis_result_list", "{}");
                 }
             }
         } else {
-            data.put("tool_execute_id", reportId);
+            data.put("tool_execute_id", BENCH + reportId);
             Map result = new HashMap();
             result.put("id", reportId);
             String responseJson = HttpUtil.get(path + "/api/task?ignore=true", result, 10000);
@@ -504,7 +504,7 @@ public class ShiftCloudController {
             if (StringUtils.isNotBlank(responseJson)) {
                 PressureTask pressureTask = JSON.parseObject(responseJson, PressureTask.class);
                 r = pressureTask.getRunTime();
-                data.put("tool_task_id", pressureTask.getSceneId());
+                data.put("tool_task_id", BENCH + pressureTask.getSceneId());
                 result.put("sceneId", pressureTask.getSceneId());
                 int status = pressureTask.getStatus();
                 data.put("task_progress", "50%");

@@ -263,7 +263,7 @@ public class ShiftCloudController {
                 int type;
                 String suites = null;
 
-                String rj = HttpUtil.get(path + "/api/benchmark/scene/detail?ignore=true&userId=" + id, 10000);
+                String rj = HttpUtil.get(path + "/api/benchmark/scene/detail?ignore=true&id=" + taskId.replaceFirst(BENCH, ""), 10000);
                 if (StringUtils.isNotBlank(rj)) {
                     BenchmarkSceneDetailVO b = JSON.parseObject(rj).getObject("data", BenchmarkSceneDetailVO.class);
                     suites = b.getSuites();

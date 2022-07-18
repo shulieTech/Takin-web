@@ -191,9 +191,9 @@ public class ShiftCloudController {
                 int current = 0;
                 int pageSize = shiftCloudVO.getPage_size();
                 if (total != 0) {
-                    int n =  shiftCloudVO.getPage_index() * shiftCloudVO.getPage_size();
+                    int n = shiftCloudVO.getPage_index() * shiftCloudVO.getPage_size();
                     if (n - total > 10) {
-                        current = shiftCloudVO.getPage_index() - (int)(total / 10) - 1 < 0 ? 0 : shiftCloudVO.getPage_index() - (int)(total / 10) - 1;
+                        current = shiftCloudVO.getPage_index() - (int) (total / 10) - 1 < 0 ? 0 : shiftCloudVO.getPage_index() - (int) (total / 10) - 1;
                     }
                 }
                 //TODO 数据不足是拿基准测试补齐
@@ -202,7 +202,7 @@ public class ShiftCloudController {
                 if (StringUtils.isNotBlank(responseJson)) {
                     Long finalId = id;
                     JSONArray ja = JSON.parseObject(responseJson).getJSONObject("data").getJSONArray("records");
-                    int size = ja.size() > shiftCloudVO.getPage_size() - list.size()?shiftCloudVO.getPage_size() - list.size() :ja.size();
+                    int size = ja.size() > shiftCloudVO.getPage_size() - list.size() ? shiftCloudVO.getPage_size() - list.size() : ja.size();
                     for (int i = 0; i < size; i++) {
                         JSONObject j = JSON.parseObject(ja.get(i).toString());
                         list.add(new SceneManagerResult(BENCH + j.getString("id"), j.getString("sceneName"), finalId, null));
@@ -261,8 +261,15 @@ public class ShiftCloudController {
                 final boolean[] flag = {false};
                 AtomicLong id = new AtomicLong();
                 int type;
-                getId(flag, id, type = 1);
-                if (!flag[0]) getId(flag, id, type = 2);
+                String suites = null;
+
+                String rj = HttpUtil.get(path + "/api/benchmark/scene/detail?ignore=true&userId=" + id, 10000);
+                if (StringUtils.isNotBlank(rj)) {
+                    BenchmarkSceneDetailVO b = JSON.parseObject(rj).getObject("data", BenchmarkSceneDetailVO.class);
+                    suites = b.getSuites();
+                }
+                getId(flag, id, type = 1, suites);
+                if (!flag[0]) getId(flag, id, type = 2, suites);
                 if (!flag[0]) baseResult.fail("压力机繁忙");
                 else {
                     Map data = new HashMap();
@@ -299,8 +306,6 @@ public class ShiftCloudController {
                     }
 
 
-
-
                     if (StringUtils.isNotBlank(responseJson)) {
                         Integer code = JSON.parseObject(responseJson).getInteger("code");
                         if (null == code || 200 != code)
@@ -328,7 +333,7 @@ public class ShiftCloudController {
         }
     }
 
-    private void getId(final boolean[] flag, final AtomicLong id, int i) {
+    private void getId(final boolean[] flag, final AtomicLong id, int i, String suite) {
         Map data = new HashMap();
         String responseJson = HttpUtil.get(path + "/api/machine/list?ignore=true&type=" + i, data, 10000);
         if (StringUtils.isNotBlank(responseJson)) {
@@ -336,8 +341,18 @@ public class ShiftCloudController {
                 if (!flag[0]) {
                     JSONObject j = JSON.parseObject(o.toString());
                     if (StringUtils.equals(j.getString("status"), "0")) {
-                        flag[0] = true;
-                        id.set(j.getInteger("id"));
+                        if (StringUtils.isBlank(suite) || StringUtils.isBlank(j.getString("typeMachine"))) {
+                            flag[0] = true;
+                            id.set(j.getInteger("id"));
+                        } else {
+                            String typeMachine = j.getString("typeMachine");
+                            String[] split = typeMachine.split(",");
+                            List<String> list = Arrays.asList(split);
+                            if (list.contains(suite)) {
+                                flag[0] = true;
+                                id.set(j.getInteger("id"));
+                            }
+                        }
                     }
                 }
             });
@@ -425,13 +440,13 @@ public class ShiftCloudController {
                 String testTotalTime = output.getTestTotalTime();
                 List<BusinessActivitySummaryBean> businessActivity = output.getBusinessActivity();
                 Long totalRequest = output.getTotalRequest();
-                data.put("tool_execute_id", WEB+id);
-                data.put("tool_task_id", WEB+sceneId);
+                data.put("tool_execute_id", WEB + id);
+                data.put("tool_task_id", WEB + sceneId);
                 data.put("tool_code", "Performance");
                 int ts = 0;
                 if (null != conclusion && 1 == conclusion) ts = 1;
                 else if (null != conclusion && 0 == conclusion && 1 == taskStatus) ts = 2;
-                else if (null != conclusion && 0 == conclusion && 2 == taskStatus) ts = 3;
+                else if (null != conclusion && 0 == conclusion && 2 == taskStatus) ts = 1;
                 data.put("task_status", ts);
                 data.put("task_message", conclusionRemark);
                 String startTime = output.getStartTime();
@@ -440,11 +455,11 @@ public class ShiftCloudController {
                 int i1 = 0;
                 int i2 = 0;
                 Long ps = 0l;
-                if (null != d&&d.getSuccess() && null != d.getData()) {
+                if (null != d && d.getSuccess() && null != d.getData()) {
                     ps = d.getData().getPressureTestSecond();
                     int ratio = (int) (min / ps);
                     data.put("task_progress", ratio + "%");//TODO testTotalTime is null?
-                }else data.put("task_progress","50%");
+                } else data.put("task_progress", "50%");
                 if (null != taskStatus) {
                     Map analysis = new HashMap();
                     LambdaQueryWrapper<YVersionEntity> wrapper = new LambdaQueryWrapper<>();

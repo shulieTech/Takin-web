@@ -270,6 +270,8 @@ public class ShiftCloudController {
                 }
                 getId(flag, id, type = 1, suites);
                 if (!flag[0]) getId(flag, id, type = 2, suites);
+                if (!flag[0]) getId(flag, id, type = 1, null);
+                if (!flag[0]) getId(flag, id, type = 2, null);
                 if (!flag[0]) baseResult.fail("压力机繁忙");
                 else {
                     Map data = new HashMap();
@@ -341,16 +343,18 @@ public class ShiftCloudController {
                 if (!flag[0]) {
                     JSONObject j = JSON.parseObject(o.toString());
                     if (StringUtils.equals(j.getString("status"), "0")) {
-                        if (StringUtils.isBlank(suite) || StringUtils.isBlank(j.getString("typeMachine"))) {
+                        if (StringUtils.isBlank(suite)) {
                             flag[0] = true;
                             id.set(j.getInteger("id"));
                         } else {
-                            String typeMachine = j.getString("typeMachine");
-                            String[] split = typeMachine.split(",");
-                            List<String> list = Arrays.asList(split);
-                            if (list.contains(suite)) {
-                                flag[0] = true;
-                                id.set(j.getInteger("id"));
+                            if (StringUtils.isNotBlank(j.getString("typeMachine"))) {
+                                String typeMachine = j.getString("typeMachine");
+                                String[] split = typeMachine.split(",");
+                                List<String> list = Arrays.asList(split);
+                                if (list.contains(suite)) {
+                                    flag[0] = true;
+                                    id.set(j.getInteger("id"));
+                                }
                             }
                         }
                     }

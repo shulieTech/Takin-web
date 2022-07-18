@@ -457,7 +457,8 @@ public class ShiftCloudController {
                 Long ps = 0l;
                 if (null != d && d.getSuccess() && null != d.getData()) {
                     ps = d.getData().getPressureTestSecond();
-                    int ratio = (int) (min / ps);
+                    int ratio = (int) (((float)min / ps) * 100);
+                    ratio=ratio>100?100:ratio;
                     data.put("task_progress", ratio + "%");//TODO testTotalTime is null?
                 } else data.put("task_progress", "50%");
                 if (null != taskStatus) {

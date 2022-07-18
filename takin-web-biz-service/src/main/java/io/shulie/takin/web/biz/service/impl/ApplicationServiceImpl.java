@@ -390,50 +390,57 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
 
     @Override
     public Long getAccessErrorNum() {
-        List<ApplicationDetailResult> results = applicationDAO.getDashboardAppData();
-        // 通过amdb查询状态
-        if (results == null || results.size() == 0) {
-            return 0L;
-        }
-        //取应用节点数信息
-        List<String> appNameList = results.stream().map(ApplicationDetailResult::getApplicationName).collect(
-                Collectors.toList());
-        List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNameList);
-        if (CollectionUtil.isEmpty(applicationResultList)) {
-            return (long) results.size();
-        }
-        Map<String, List<ApplicationResult>> appResultMap = applicationResultList.stream()
-                .collect(Collectors.groupingBy(ApplicationResult::getAppName));
-        //取应用节点版本信息
-        ApplicationNodeQueryParam queryParam = new ApplicationNodeQueryParam();
-        queryParam.setCurrent(0);
-        queryParam.setPageSize(99999);
-        queryParam.setApplicationNames(appNameList);
-        PagingList<ApplicationNodeResult> applicationNodes = applicationNodeDAO.pageNodes(queryParam);
-        if (CollectionUtil.isEmpty(applicationResultList)) {
-            return (long) results.size();
-        }
-
-        List<ApplicationNodeResult> applicationNodeResultList = applicationNodes.getList();
-        Map<String, List<ApplicationNodeResult>> applicationNodeResultMap = applicationNodeResultList
-                .stream().collect(Collectors.groupingBy(ApplicationNodeResult::getAppName));
-        return results.stream().filter(result -> {
-            List<ApplicationNodeResult> nodeResults = applicationNodeResultMap.get(result.getApplicationName());
-            List<ApplicationResult> appResults = appResultMap.get(result.getApplicationName());
-            if (CollectionUtils.isEmpty(nodeResults) || CollectionUtils.isEmpty(appResults)) {
-                return true;
-            }
-            if (!appResults.get(0).getInstanceInfo().getInstanceOnlineAmount().equals(result.getNodeNum())
-                    || nodeResults.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count() > 1) {
-                return true;
-            }
-            // 自身异常
-            if (AppAccessStatusEnum.EXCEPTION.getCode().equals(result.getAccessStatus())) {
-                return true;
-            }
-            return false;
-        }).count();
+        ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
+        requestV2.setAccessStatus(3);
+     return this.pageApplication(requestV2).getTotal();
     }
+
+//    @Override
+//    public Long getAccessErrorNum() {
+//        List<ApplicationDetailResult> results = applicationDAO.getDashboardAppData();
+//        // 通过amdb查询状态
+//        if (results == null || results.size() == 0) {
+//            return 0L;
+//        }
+//        //取应用节点数信息
+//        List<String> appNameList = results.stream().map(ApplicationDetailResult::getApplicationName).collect(
+//                Collectors.toList());
+//        List<ApplicationResult> applicationResultList = applicationDAO.getApplicationByName(appNameList);
+//        if (CollectionUtil.isEmpty(applicationResultList)) {
+//            return (long) results.size();
+//        }
+//        Map<String, List<ApplicationResult>> appResultMap = applicationResultList.stream()
+//                .collect(Collectors.groupingBy(ApplicationResult::getAppName));
+//        //取应用节点版本信息
+//        ApplicationNodeQueryParam queryParam = new ApplicationNodeQueryParam();
+//        queryParam.setCurrent(0);
+//        queryParam.setPageSize(99999);
+//        queryParam.setApplicationNames(appNameList);
+//        PagingList<ApplicationNodeResult> applicationNodes = applicationNodeDAO.pageNodes(queryParam);
+//        if (CollectionUtil.isEmpty(applicationResultList)) {
+//            return (long) results.size();
+//        }
+//
+//        List<ApplicationNodeResult> applicationNodeResultList = applicationNodes.getList();
+//        Map<String, List<ApplicationNodeResult>> applicationNodeResultMap = applicationNodeResultList
+//                .stream().collect(Collectors.groupingBy(ApplicationNodeResult::getAppName));
+//        return results.stream().filter(result -> {
+//            List<ApplicationNodeResult> nodeResults = applicationNodeResultMap.get(result.getApplicationName());
+//            List<ApplicationResult> appResults = appResultMap.get(result.getApplicationName());
+//            if (CollectionUtils.isEmpty(nodeResults) || CollectionUtils.isEmpty(appResults)) {
+//                return true;
+//            }
+//            if (!appResults.get(0).getInstanceInfo().getInstanceOnlineAmount().equals(result.getNodeNum())
+//                    || nodeResults.stream().map(ApplicationNodeResult::getAgentVersion).distinct().count() > 1) {
+//                return true;
+//            }
+//            // 自身异常
+//            if (AppAccessStatusEnum.EXCEPTION.getCode().equals(result.getAccessStatus())) {
+//                return true;
+//            }
+//            return false;
+//        }).count();
+//    }
 
     @Override
     public List<ApplicationVo> getApplicationListVo(ApplicationQueryRequest queryParam) {

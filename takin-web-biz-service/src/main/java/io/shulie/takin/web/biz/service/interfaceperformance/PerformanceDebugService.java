@@ -17,4 +17,11 @@ public interface PerformanceDebugService {
      * @param request
      */
     String simple_debug(PerformanceDebugRequest request);
+
+    /**
+     * 调试，走脚本调试功能
+     *
+     * @param request
+     */
+    String simple_debug_ext(PerformanceDebugRequest request);
 }

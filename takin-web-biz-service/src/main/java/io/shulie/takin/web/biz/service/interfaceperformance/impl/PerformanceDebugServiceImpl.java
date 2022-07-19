@@ -1,14 +1,24 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
 import io.shulie.takin.cloud.common.utils.Md5Util;
+import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.*;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PageScriptDebugRequestRequest;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptDebugDoDebugRequest;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugDetailResponse;
+import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
+import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceDebugService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceParamService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceResultService;
+import io.shulie.takin.web.biz.service.scene.SceneService;
+import io.shulie.takin.web.biz.service.scriptmanage.ScriptDebugService;
 import io.shulie.takin.web.common.enums.interfaceperformance.PerformanceDebugErrorEnum;
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
@@ -16,8 +26,10 @@ import io.shulie.takin.web.common.util.FileUtils;
 import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
+import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceRelateshipDAO;
 import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
+import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResponse;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +37,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -68,6 +78,15 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
     @Resource
     private RedisClientUtil redisClientUtil;
 
+    @Resource
+    private PerformanceRelateshipDAO performanceRelateshipDAO;
+
+    @Resource
+    private SceneService sceneService;
+
+    @Autowired
+    private ScriptDebugService scriptDebugService;
+
     /**
      * 开启调试功能
      *
@@ -106,11 +125,11 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         request.setResultId(uuId);
         // 5、发起请求
         CompletableFuture.runAsync(() -> processRequest(
-                fileIdDataMap,
-                request,
-                queryEntity,
-                detailResponse,
-                false),
+                        fileIdDataMap,
+                        request,
+                        queryEntity,
+                        detailResponse,
+                        false),
                 performanceDebugThreadPool);
         return uuId;
     }
@@ -140,13 +159,151 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         // 4、发起请求
         PerformanceParamDetailResponse finalDetailResponse = detailResponse;
         CompletableFuture.runAsync(() -> processRequest(
-                fileIdDataMap,
-                request,
-                queryEntity,
-                finalDetailResponse,
-                true),
+                        fileIdDataMap,
+                        request,
+                        queryEntity,
+                        finalDetailResponse,
+                        true),
                 performanceDebugThreadPool);
         return uuId;
+    }
+
+    /**
+     * 调试，走脚本调试功能
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public String simple_debug_ext(PerformanceDebugRequest request) {
+        // 找到业务流程
+        Long configId = request.getId();
+        // 生成一个临时的配置ID,给前端查询使用,config表Id
+        String uuId = UUID.randomUUID().toString();
+        try {
+            InterfacePerformanceConfigEntity configEntity = interfacePerformanceConfigMapper.selectById(configId);
+            InterfacePerformanceConfigSceneRelateShipEntity shipEntity = performanceRelateshipDAO.relationShipEntityById(configId);
+            // 获取业务流程Id
+            Long flowId = shipEntity.getFlowId();
+            // 获取业务流程详情
+            BusinessFlowDetailResponse detailResponse = sceneService.getBusinessFlowDetail(flowId);
+            // 找到关联信息
+            ScriptDebugDoDebugRequest debugDoDebugRequest = new ScriptDebugDoDebugRequest();
+            debugDoDebugRequest.setRequestNum(request.getRequestCount());
+            debugDoDebugRequest.setConcurrencyNum(1);
+            debugDoDebugRequest.setScriptDeployId(detailResponse.getScriptDeployId());
+            ScriptDebugResponse scriptDebugResponse = scriptDebugService.debug(debugDoDebugRequest);
+
+            // 是否存在错误信息
+            List<String> errorMessages = scriptDebugResponse.getErrorMessages();
+            if (CollectionUtils.isNotEmpty(errorMessages)) {
+                // 保存信息到结果表
+                PerformanceResultCreateInput insertResult = new PerformanceResultCreateInput();
+                insertResult.setConfigId(configEntity.getId());
+                insertResult.setRequestUrl(configEntity.getRequestUrl());
+                insertResult.setHttpMethod(configEntity.getHttpMethod());
+
+                insertResult.setStatus(400);
+                insertResult.setErrorMessage(JSON.toJSONString(errorMessages));
+                insertResult.setResultId(request.getResultId());
+                // 保存请求结果
+                performanceResultService.add(insertResult);
+            } else {
+                redisClientUtil.setString(uuId, "", 480, TimeUnit.SECONDS);
+                // 异步转换下脚本调试结果和原来的takin压测结果
+                CompletableFuture.runAsync(() -> convertDebugResult(
+                        uuId,
+                        scriptDebugResponse.getScriptDebugId(),
+                        configEntity), performanceDebugThreadPool);
+            }
+        } catch (Throwable e) {
+            log.error("调试异常" + ExceptionUtils.getStackTrace(e));
+            throw new RuntimeException("调试异常,当前场景或保存失败,请重新保存后调试!!!");
+        }
+        return uuId;
+    }
+
+    public void convertDebugResult(String resultId,
+                                   Long scriptDebugId,
+                                   InterfacePerformanceConfigEntity configEntity) {
+        try {
+            ContentTypeVO contentTypeVO = Optional.ofNullable(JsonHelper.json2Bean(
+                    configEntity.getContentType(), ContentTypeVO.class)).orElse(new ContentTypeVO());
+            while (true) {
+                // 获取脚本调试详情
+                // 脚本调试记录状态, 0 未启动, 1 启动中,2 请求中, 3 请求结束, 4 调试成功, 5 调试失败"
+                // "失败类型, 10 启动通知超时失败, 20 漏数失败, 30 非200检查失败, 后面会扩展"
+                ScriptDebugDetailResponse detailResponse = scriptDebugService.getById(scriptDebugId);
+                // 5结束，4是200毫秒后跳转
+                if (detailResponse.getStatus() == 4 ||
+                        (detailResponse.getStatus() == 5 && detailResponse.getFailedType() >= 20)) {
+                    // 调试成功了,去读取请求信息
+                    PageScriptDebugRequestRequest request = new PageScriptDebugRequestRequest();
+                    request.setScriptDebugId(scriptDebugId);
+                    request.setCurrent(0);
+                    // 全部查出来
+                    request.setPageSize(10000);
+                    PagingList<ScriptDebugRequestListResponse> pageList = scriptDebugService.pageScriptDebugRequest(request);
+                    if (pageList != null && !pageList.isEmpty()) {
+                        List<ScriptDebugRequestListResponse> responseList = pageList.getList();
+                        // 转换到调试结果表
+                        for (int i = 0; i < responseList.size(); i++) {
+                            ScriptDebugRequestListResponse response = responseList.get(i);
+                            // 保存信息到结果表
+                            PerformanceResultCreateInput insertResult = new PerformanceResultCreateInput();
+                            insertResult.setConfigId(configEntity.getId());
+                            insertResult.setRequestUrl(configEntity.getRequestUrl());
+                            insertResult.setHttpMethod(configEntity.getHttpMethod());
+
+                            // 请求头
+                            HttpHeaders headers = performanceDebugUtil.buildHeader(
+                                    configEntity.getHeaders(),
+                                    configEntity.getCookies(),
+                                    contentTypeVO);
+                            insertResult.setResultId(resultId);
+                            HttpEntity<?> requeryEntity = new HttpEntity<>(response.getRequestBody(), headers);
+                            insertResult.setRequest(JsonHelper.bean2Json(requeryEntity));
+                            // 0就是正常,1是失败
+                            insertResult.setStatus(response.getResponseStatus() == 0 ? 200 : 500);
+                            HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+                            if (response.getResponseStatus() == 0) {
+                                httpStatus = HttpStatus.OK;
+                            }
+                            ResponseEntity responseEntity = new ResponseEntity(response.getResponseBody(), httpStatus);
+                            insertResult.setResponse(JsonHelper.bean2Json(responseEntity));
+                            // 保存请求结果
+                            performanceResultService.add(insertResult);
+                        }
+                    }
+                    // 结束循环
+                    break;
+                }
+                // 内部异常,记录失败信息
+                if (detailResponse.getStatus() == 5) {
+                    // 保存信息到结果表
+                    PerformanceResultCreateInput insertResult = new PerformanceResultCreateInput();
+                    insertResult.setConfigId(configEntity.getId());
+                    insertResult.setRequestUrl(configEntity.getRequestUrl());
+                    insertResult.setHttpMethod(configEntity.getHttpMethod());
+
+                    insertResult.setResultId(resultId);
+                    // 0就是正常,1是失败
+                    insertResult.setStatus(400);
+                    ResponseEntity responseEntity = new ResponseEntity(detailResponse.getRemark(), HttpStatus.INTERNAL_SERVER_ERROR);
+                    insertResult.setResponse(JsonHelper.bean2Json(responseEntity));
+                    // 保存请求结果
+                    performanceResultService.add(insertResult);
+                    // 结束循环
+                    break;
+                }
+                // 1s循环一次
+                TimeUnit.SECONDS.toSeconds(1);
+            }
+        } catch (Throwable e) {
+            log.error("获取结果失败" + ExceptionUtils.getStackTrace(e));
+        } finally {
+            redisClientUtil.delete(resultId);
+        }
     }
 
     /**
@@ -185,9 +342,9 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     // 设置值
                     fileIdDataMap.put(String.valueOf(fileId), fileData);
                     // 设置一个文件最大条数
-                    Long maxCount = request.getRelateFileMaxCount() == null ? 0 : request.getRelateFileMaxCount();
+                    Integer maxCount = request.getRelateFileMaxCount() == null ? 0 : request.getRelateFileMaxCount();
                     // 文件中的条数
-                    Long fileCount = 0L;
+                    Integer fileCount = 0;
                     // 找当前文件中的最大条数
                     for (Map.Entry<String, List<Object>> entry : fileData.entrySet()) {
                         fileCount = fileCount > entry.getValue().size() ? fileCount : entry.getValue().size();
@@ -209,8 +366,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                                 PerformanceParamDetailResponse detailResponse,
                                 boolean isSimpleDebug) {
         // 获取请求文件最大条数,把所有文件数据跑完
-        Long requestCount = request.getRequestCount();
-        Long relateFileMaxCount = request.getRelateFileMaxCount();
+        Integer requestCount = request.getRequestCount();
+        Integer relateFileMaxCount = request.getRelateFileMaxCount();
         if (relateFileMaxCount > 0) {
             // 请求条数大于文件条数,则用请求条数
             requestCount = requestCount > relateFileMaxCount ? relateFileMaxCount : requestCount;

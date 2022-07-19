@@ -69,7 +69,14 @@ public class PerformanceDebugController {
     @ApiOperation("简单调试,不保存数据，也不更新数据")
     @RequestMapping(value = "/start", method = RequestMethod.POST)
     public ResponseResult simpleDebug(@RequestBody PerformanceDebugRequest request) {
-        String resultId = performanceDebugService.simple_debug(request);
+        String resultId = "";
+        if (request.getId() == null) {
+            // 未保存，走简单的调试功能
+            resultId = performanceDebugService.simple_debug(request);
+        } else {
+            // 保存以后，走脚本调试
+            resultId = performanceDebugService.simple_debug_ext(request);
+        }
         return ResponseResult.success(resultId);
     }
 

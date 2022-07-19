@@ -43,7 +43,7 @@ public class ThreadPoolConfig {
     @Bean(name = "jobThreadPool")
     public ThreadPoolExecutor jobThreadPool() {
         ThreadFactory nameThreadFactory = new ThreadFactoryBuilder().setNameFormat("job-%d").build();
-        return new ThreadPoolExecutor(5, 10, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
+        return new ThreadPoolExecutor(20, 40, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5000), nameThreadFactory,
             new ThreadPoolExecutor.AbortPolicy());
     }
 

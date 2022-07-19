@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.job;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -48,6 +50,7 @@ public class ConfigureJob implements SimpleJob {
             applicationService.configureTasks();
         } else {
             List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
+            List<CompletableFuture<Void>> futureList = new ArrayList<>(tenantInfoExts.size() << 1);
             for (TenantInfoExt ext : tenantInfoExts) {
                 if (CollectionUtils.isEmpty(ext.getEnvs())) {
                     continue;
@@ -58,7 +61,7 @@ public class ConfigureJob implements SimpleJob {
                     if (distributedLock.checkLock(lockKey)) {
                         continue;
                     }
-                    jobThreadPool.execute(() -> {
+                    Runnable r = () -> {
                         boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
                         if (!tryLock) {
                             return;
@@ -71,9 +74,13 @@ public class ConfigureJob implements SimpleJob {
                         } finally {
                             distributedLock.unLockSafely(lockKey);
                         }
-                    });
+                    };
+                    futureList.add(CompletableFuture.runAsync(r, jobThreadPool));
                 }
             }
+            try {
+                CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0])).get();
+            } catch (Exception ignore) {}
         }
     }
 }

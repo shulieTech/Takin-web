@@ -528,21 +528,14 @@ public class ShiftCloudController {
                 data.put("tool_task_id", BENCH + pressureTask.getSceneId());
                 result.put("sceneId", pressureTask.getSceneId());
                 int status = pressureTask.getStatus();
+                int runStatus = pressureTask.getRunStatus();
                 data.put("task_progress", "50%");
-                if (status == 2) {
+                if (runStatus != 2) {
                     data.put("task_progress", "100%");
-                    String taskResponseJson = HttpUtil.get(path + "/api/task/task?ignore=true", result, 10000);
-                    if (StringUtils.isNotBlank(responseJson)) {
-                        List<PressureTaskResult> pressureTaskResults = JSON.parseArray(taskResponseJson, PressureTaskResult.class);
-                        for (PressureTaskResult p : pressureTaskResults) {
-                            if (StringUtils.isNotBlank(p.getTestResult()) && l.add(p.getTestResult())) c1 += 1;
-                            else c3 += 1;
-                        }
-                    }
                 }
                 if (c3 > 0) status = 3;
                 else status = 1;
-                data.put("task_status", pressureTask.runStatus);
+                data.put("task_status", runStatus);
                 String startParam = pressureTask.getStartParam();
                 if (StringUtils.isNotBlank(startParam)) {
                     s = JSON.parseArray(startParam).size();

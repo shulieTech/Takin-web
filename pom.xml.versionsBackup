@@ -10,6 +10,13 @@
     <url>https://github.com/shulieTech/Takin-web.git</url>
     <description>控制台，用于agent交互，大数据交互，云控制台（cloud）交互</description>
     <name>takin-web</name>
+    <developers>
+        <developer>
+            <name>shulie</name>
+            <email>shulie@shulie.io</email>
+            <organization>数列科技</organization>
+            <organizationUrl>https://news.shulie.io/</organizationUrl>
+        </developer>
     </developers>
     <licenses>
         <license>

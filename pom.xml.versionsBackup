@@ -10,7 +10,6 @@
     <url>https://github.com/shulieTech/Takin-web.git</url>
     <description>控制台，用于agent交互，大数据交互，云控制台（cloud）交互</description>
     <name>takin-web</name>
-    t>
     </developers>
     <licenses>
         <license>

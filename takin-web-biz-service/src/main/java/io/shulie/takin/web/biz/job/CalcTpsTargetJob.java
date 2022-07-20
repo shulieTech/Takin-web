@@ -3,7 +3,6 @@ package io.shulie.takin.web.biz.job;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.dangdang.ddframe.job.api.ShardingContext;
@@ -11,12 +10,13 @@ import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import io.shulie.takin.job.annotation.ElasticSchedulerJob;
 import io.shulie.takin.web.biz.common.AbstractSceneTask;
 import io.shulie.takin.web.biz.service.report.ReportTaskService;
+import io.shulie.takin.web.biz.threadpool.ThreadPoolUtil;
 import io.shulie.takin.web.common.enums.ContextSourceEnum;
 import io.shulie.takin.web.common.pojo.dto.SceneTaskDto;
 import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -37,57 +37,58 @@ public class CalcTpsTargetJob extends AbstractSceneTask implements SimpleJob {
     private ReportTaskService reportTaskService;
 
     @Autowired
-    @Qualifier("reportTpsThreadPool")
-    private ThreadPoolExecutor reportThreadPool;
+    private ThreadPoolUtil threadPoolUtil;
 
     private static Map<Long, AtomicInteger> runningTasks = new ConcurrentHashMap<>();
     private static AtomicInteger EMPTY = new AtomicInteger();
 
     @Override
     public void execute(ShardingContext shardingContext) {
+        try {
+            this.execute_ext(shardingContext);
+        } catch (Throwable e) {
+            // 捕捉全部异常,防止任务异常，导致esjob有问题
+            log.error("io.shulie.takin.web.biz.job.CalcTpsTargetJob#execute error" + ExceptionUtils.getStackTrace(e));
+        }
+    }
+
+    public void execute_ext(ShardingContext shardingContext) {
         long start = System.currentTimeMillis();
         final Boolean openVersion = WebPluginUtils.isOpenVersion();
-        while (true) {
-            List<SceneTaskDto> taskDtoList = getTaskFromRedis();
-            if (taskDtoList == null) { break; }
-            if (openVersion) {
-                for (SceneTaskDto taskDto : taskDtoList) {
-                    Long reportId = taskDto.getReportId();
-                    // 开始数据层分片
-                    if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
-                        Object task = runningTasks.putIfAbsent(reportId, EMPTY);
-                        if (task == null) {
-                            reportThreadPool.execute(() -> {
-                                try {
-                                    taskDto.setSource(ContextSourceEnum.JOB.getCode());
-                                    WebPluginUtils.setTraceTenantContext(taskDto);
-                                    reportTaskService.calcTpsTarget(reportId);
-                                } catch (Throwable e) {
-                                    log.error("execute CalcTpsTargetJob occured error. reportId={}", reportId, e);
-                                } finally {
-                                    runningTasks.remove(reportId);
-                                }
-
-                            });
-                        }
+        List<SceneTaskDto> taskDtoList = getTaskFromRedis();
+        if (taskDtoList == null) {
+            log.warn("current task is null ");
+            return;
+        }
+        if (openVersion) {
+            for (SceneTaskDto taskDto : taskDtoList) {
+                Long reportId = taskDto.getReportId();
+                // 开始数据层分片
+                if (reportId % shardingContext.getShardingTotalCount() == shardingContext.getShardingItem()) {
+                    Object task = runningTasks.putIfAbsent(reportId, EMPTY);
+                    if (task == null) {
+                        ThreadPoolUtil.getReportTpsThreadPool().execute(() -> {
+                            try {
+                                reportTaskService.calcTpsTarget(reportId);
+                            } catch (Throwable e) {
+                                log.error("execute CalcTpsTargetJob occured error. reportId={}", reportId, e);
+                            } finally {
+                                runningTasks.remove(reportId);
+                            }
+                        });
                     }
                 }
-            } else {
-                this.runTask(taskDtoList,shardingContext);
             }
+        } else {
+            this.runTask_ext(taskDtoList, shardingContext);
         }
         log.debug("calcTpsTargetJob 执行时间:{}", System.currentTimeMillis() - start);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
     protected void runTaskInTenantIfNecessary(SceneTaskDto tenantTask, Long reportId) {
         //将任务放入线程池
-        reportThreadPool.execute(() -> {
+        threadPoolUtil.getReportTpsThreadPool().execute(() -> {
             try {
                 tenantTask.setSource(ContextSourceEnum.JOB.getCode());
                 WebPluginUtils.setTraceTenantContext(tenantTask);

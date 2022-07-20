@@ -79,13 +79,21 @@ public class WhiteListFileService {
     @Autowired
     private WhiteListService whiteListService;
 
+    // 是否默认初始化白名单
+    @Value("${takin.enable.initWhiteList:false}")
+    private boolean initWhiteList;
+
     @PostConstruct
     public void init() {
+        if (!initWhiteList) {
+            log.info("不初始化白名单到文件");
+            return;
+        }
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
-            0, 1,
-            0, TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<>(1),
-            r -> new Thread(r, "初始化白名单"), new CallerRunsPolicy());
+                0, 1,
+                0, TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<>(1),
+                r -> new Thread(r, "初始化白名单"), new CallerRunsPolicy());
         threadPoolExecutor.submit(() -> {
             log.info("开始初始化白名单");
             // 老版本 agent 新版本agent 已转到远程调用模块

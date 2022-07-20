@@ -278,6 +278,10 @@ public enum ConfigServerKeyEnum implements AppConstants {
      */
     TAKIN_TENANT_DEFAULT_PASSWORD("", "takin.tenant.default.password", YES),
 
+    /**
+     * 是否同步数据到zk
+     */
+    TAKIN_ENABLE_SYN_CONFIG("", "takin.enable.syn.config", NO),
     ;
 
     /**

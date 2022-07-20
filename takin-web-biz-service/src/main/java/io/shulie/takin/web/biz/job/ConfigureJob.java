@@ -43,29 +43,29 @@ public class ConfigureJob implements SimpleJob {
     @Override
     public void execute(ShardingContext shardingContext) {
 
-        if(WebPluginUtils.isOpenVersion()) {
+        if (WebPluginUtils.isOpenVersion()) {
             // 私有化 + 开源
             applicationService.configureTasks();
-        }else {
+        } else {
             List<TenantInfoExt> tenantInfoExts = WebPluginUtils.getTenantInfoList();
             for (TenantInfoExt ext : tenantInfoExts) {
-                if(CollectionUtils.isEmpty(ext.getEnvs())) {
+                if (CollectionUtils.isEmpty(ext.getEnvs())) {
                     continue;
                 }
                 for (TenantEnv e : ext.getEnvs()) {
                     // 分布式锁
-                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(),e.getEnvCode(),shardingContext.getJobName());
+                    String lockKey = JobRedisUtils.getJobRedis(ext.getTenantId(), e.getEnvCode(), shardingContext.getJobName());
                     if (distributedLock.checkLock(lockKey)) {
                         continue;
                     }
                     jobThreadPool.execute(() -> {
                         boolean tryLock = distributedLock.tryLock(lockKey, 0L, 1L, TimeUnit.MINUTES);
-                        if(!tryLock) {
+                        if (!tryLock) {
                             return;
                         }
                         try {
                             WebPluginUtils.setTraceTenantContext(new TenantCommonExt(ext.getTenantId(), ext.getTenantAppKey(), e.getEnvCode(),
-                                ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
+                                    ext.getTenantCode(), ContextSourceEnum.JOB.getCode()));
                             applicationService.configureTasks();
                             WebPluginUtils.removeTraceContext();
                         } finally {

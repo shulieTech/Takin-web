@@ -183,6 +183,17 @@
             <artifactId>ganymed-ssh2</artifactId>
             <version>262</version>
         </dependency>
+	<dependency>
+            <groupId>com.dangdang</groupId>
+            <artifactId>elastic-job-lite-lifecycle</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.aggregate</groupId>
+                    <artifactId>jetty-all-server</artifactId>
+                </exclusion>
+            </exclusions>
+            <version>2.1.5</version>
+        </dependency>
     </dependencies>
 
 

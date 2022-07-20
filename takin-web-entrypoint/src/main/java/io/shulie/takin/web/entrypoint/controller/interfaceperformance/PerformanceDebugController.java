@@ -13,11 +13,13 @@ import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -69,15 +71,7 @@ public class PerformanceDebugController {
     @ApiOperation("简单调试,不保存数据，也不更新数据")
     @RequestMapping(value = "/start", method = RequestMethod.POST)
     public ResponseResult simpleDebug(@RequestBody PerformanceDebugRequest request) {
-        String resultId = "";
-        if (request.getId() == null) {
-            // 未保存，走简单的调试功能
-            resultId = performanceDebugService.simple_debug(request);
-        } else {
-            // 保存以后，走脚本调试
-            resultId = performanceDebugService.simple_debug_ext(request);
-        }
-        return ResponseResult.success(resultId);
+        return ResponseResult.success(performanceDebugService.start(request));
     }
 
     @ApiOperation("获取调试结果")

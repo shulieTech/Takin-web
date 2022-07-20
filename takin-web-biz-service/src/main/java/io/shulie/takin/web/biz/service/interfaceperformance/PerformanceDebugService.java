@@ -24,4 +24,12 @@ public interface PerformanceDebugService {
      * @param request
      */
     String simple_debug_ext(PerformanceDebugRequest request);
+
+    /**
+     * 启动调试
+     *
+     * @param request
+     * @return
+     */
+    String start(PerformanceDebugRequest request);
 }

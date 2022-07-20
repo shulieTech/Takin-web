@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
 import io.shulie.takin.cloud.common.utils.Md5Util;
 import io.shulie.takin.common.beans.page.PagingList;
+import io.shulie.takin.jmeter.JmeterFunctionFactory;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.*;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PageScriptDebugRequestRequest;
@@ -37,6 +38,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.jmeter.functions.AbstractFunction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -202,7 +204,17 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                 insertResult.setConfigId(configEntity.getId());
                 insertResult.setRequestUrl(configEntity.getRequestUrl());
                 insertResult.setHttpMethod(configEntity.getHttpMethod());
+                ContentTypeVO contentTypeVO = Optional.ofNullable(JsonHelper.json2Bean(
+                        configEntity.getContentType(), ContentTypeVO.class)).orElse(new ContentTypeVO());
+                HttpHeaders headers = performanceDebugUtil.buildHeader(
+                        configEntity.getHeaders(),
+                        configEntity.getCookies(),
+                        contentTypeVO);
+                HttpEntity<?> requeryEntity = new HttpEntity<>("", headers);
+                insertResult.setRequest(JsonHelper.bean2Json(requeryEntity));
 
+                ResponseEntity responseEntity = new ResponseEntity("", HttpStatus.BAD_REQUEST);
+                insertResult.setResponse(JsonHelper.bean2Json(responseEntity));
                 insertResult.setStatus(400);
                 insertResult.setErrorMessage(JSON.toJSONString(errorMessages));
                 insertResult.setResultId(request.getResultId());
@@ -221,6 +233,42 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             throw new RuntimeException("调试异常,当前场景或保存失败,请重新保存后调试!!!");
         }
         return uuId;
+    }
+
+    @Override
+    public String start(PerformanceDebugRequest request) {
+        /**
+         * 1、判断当前要调试的内容里面是否存在函数
+         */
+        int debugType = 1; // 默认走简单调试功能
+        // 判断下body里面是否存在函数，如果存在是否都支持此类jmeter函数
+        List<String> funPatternList = performanceDebugUtil.generateFunPattern(request.getBody());
+        if (!CollectionUtils.isEmpty(funPatternList)) {
+            // 判断下这些函数是否支持简单调试功能
+            Map<String, AbstractFunction> functionMap = JmeterFunctionFactory.functionMap;
+            for (int i = 0; i < funPatternList.size(); i++) {
+                String fun = funPatternList.get(i);
+                if (fun.contains("(") && fun.contains(")")) {
+                    // RandomString
+                    fun = fun.substring(0, fun.indexOf("("));
+                }
+                fun = "__" + fun;
+                // 有一个不支持的话,所有的都不支持
+                if (!functionMap.containsKey(fun)) {
+                    debugType = 2; // 走脚本调试功能
+                    break;
+                }
+            }
+        }
+        if (debugType == 1) {
+            return this.simple_debug(request);
+        } else {
+            if (request.getId() == null) {
+                //
+                throw new RuntimeException("当前场景消息体存在Jmeter函数,请先保存再继续调试!");
+            }
+            return this.simple_debug_ext(request);
+        }
     }
 
     public void convertDebugResult(String resultId,
@@ -287,6 +335,12 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     insertResult.setHttpMethod(configEntity.getHttpMethod());
 
                     insertResult.setResultId(resultId);
+                    HttpHeaders headers = performanceDebugUtil.buildHeader(
+                            configEntity.getHeaders(),
+                            configEntity.getCookies(),
+                            contentTypeVO);
+                    HttpEntity<?> requeryEntity = new HttpEntity<>("", headers);
+                    insertResult.setRequest(JsonHelper.bean2Json(requeryEntity));
                     // 0就是正常,1是失败
                     insertResult.setStatus(400);
                     ResponseEntity responseEntity = new ResponseEntity(detailResponse.getRemark(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -395,6 +449,9 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                 // 替换参数
                 String body = configEntity.getBody();
                 body = performanceDebugUtil.generateBasicResult(fileIdDataMap, body, idx, detailResponse);
+                // body中的函数替换
+                body = performanceDebugUtil.generateJmeterResult(body);
+
                 configEntity.setBody(body);
 
                 // 1、请求参数

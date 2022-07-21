@@ -713,6 +713,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 // 正常的应用
                 Set<Long> normalApplicationIdSet = new HashSet<>(20);
 
+                Map<Long, String> errorInfo = Maps.newHashMap();
                 // 遍历比对
                 for (ApplicationListResult application : applicationList) {
                     String applicationName = application.getApplicationName();
@@ -729,6 +730,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                             || !Objects.equals(amdbApplication.getInstanceInfo().getInstanceOnlineAmount(), nodeNum)) {
                         // amdbApplicationMap 不存在, map.get 不存在, 或者节点数不一致
                         errorApplicationIdSet.add(applicationId);
+                        errorInfo.put(applicationId, "节点数不一致");
+
 
                     } else if (!amdbApplicationMap.isEmpty()
                             && (amdbApplication = amdbApplicationMap.get(applicationName)) != null
@@ -751,7 +754,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
                 }
 
 
-                this.syncApplicationAccessStatus(applicationList, errorApplicationIdSet);
+                this.syncApplicationAccessStatus(applicationList, errorApplicationIdSet, errorInfo);
             } while (applicationNumber == pageSize);
             // 先执行一遍, 然后如果分页应用数量等于pageSize, 那么查询下一页
 
@@ -761,13 +764,18 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         log.debug("定时同步应用状态完成!");
     }
 
-    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList, Set<Long> errorApplicationIdSet) {
+    private void syncApplicationAccessStatus(List<ApplicationListResult> applicationList
+            , Set<Long> errorApplicationIdSet
+            , Map<Long, String> errorInfo) {
         if (CollectionUtils.isNotEmpty(applicationList)) {
             for (ApplicationListResult app : applicationList) {
                 Map result = applicationDAO.getStatus(app.getApplicationName());
                 long n = (long) result.get("n");
                 if (n != 0 || (errorApplicationIdSet.contains(app.getApplicationId()))) {
                     String e = (String) result.get("e");
+                    if (io.shulie.takin.utils.string.StringUtil.isEmpty(e)) {
+                        e = errorInfo.get(app.getApplicationId());
+                    }
                     //不知道异常和Ip就别展示出来误导了
                     if (StringUtils.isBlank(e)) {
                         String a = (String) result.get("a");
@@ -1326,15 +1334,8 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<ApplicationListResponseV2> responseList = records.stream().map(result -> {
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
-            String name = result.getApplicationName();
-            Map map = applicationDAO.getStatus(name);
-            long n = (long) map.get("n");
-            if (n != 0) {
-                result.setAccessStatus(3);
-            }
             return response;
         }).collect(Collectors.toList());
-
         return PagingList.of(responseList, applicationListResultPage.getTotal());
     }
 

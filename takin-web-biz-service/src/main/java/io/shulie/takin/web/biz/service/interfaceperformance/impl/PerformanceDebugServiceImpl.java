@@ -281,10 +281,6 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                 throw new RuntimeException("当前场景消息体存在Jmeter函数,请先保存再继续调试!");
             }
             // 保存最新脚本
-            // ConfigId不为空,保存下当前配置信息
-            PerformanceConfigCreateInput input = new PerformanceConfigCreateInput();
-            BeanUtils.copyProperties(request, input);
-            performanceConfigService.update(input);
             return this.simple_debug_ext(request);
         }
 

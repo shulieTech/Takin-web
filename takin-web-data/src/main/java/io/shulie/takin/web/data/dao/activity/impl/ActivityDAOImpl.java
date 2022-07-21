@@ -1,9 +1,6 @@
 package io.shulie.takin.web.data.dao.activity.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -500,5 +497,18 @@ public class ActivityDAOImpl implements ActivityDAO, MPUtil<BusinessLinkManageTa
     @Override
     public List<BusinessLinkManageTableEntity> findActivityAppName(String appName, String entrace) {
         return businessLinkManageTableMapper.findActivityAppName(appName, entrace);
+    }
+
+    @Override
+    public void copyActivity(Long activityId) {
+        BusinessLinkManageTableEntity businessLinkManageTableEntity = businessLinkManageTableMapper.selectById(activityId);
+        if (businessLinkManageTableEntity == null){
+            return;
+        }
+        businessLinkManageTableEntity.setLinkId(null);
+        businessLinkManageTableEntity.setLinkName(businessLinkManageTableEntity.getLinkName() + "_COPY");
+        businessLinkManageTableEntity.setCreateTime(new Date());
+        businessLinkManageTableEntity.setUpdateTime(new Date());
+        businessLinkManageTableMapper.insert(businessLinkManageTableEntity);
     }
 }

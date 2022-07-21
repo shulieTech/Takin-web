@@ -445,25 +445,28 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     configEntity.getIsRedirect(),
                     configEntity.getTimeout(),
                     contentTypeVO);
+
+            // 临时变量
+            String requestUrlStr = configEntity.getRequestUrl();
+            String headerStr = configEntity.getHeaders();
+            String bodyStr = configEntity.getBody();
+
             for (int idx = 0; idx < requestCount; idx++) {
                 // 替换url
-                String requestUrl = configEntity.getRequestUrl();
-                requestUrl = performanceDebugUtil.generateBasicResult(fileIdDataMap, requestUrl, idx, detailResponse);
-                requestUrl = performanceDebugUtil.generateJmeterResult(requestUrl);
-                configEntity.setRequestUrl(requestUrl);
+                String tmpRequestUrl = performanceDebugUtil.generateBasicResult(fileIdDataMap, requestUrlStr, idx, detailResponse);
+                tmpRequestUrl = performanceDebugUtil.generateJmeterResult(tmpRequestUrl);
+                configEntity.setRequestUrl(tmpRequestUrl);
 
                 // 替换header
-                String header = configEntity.getHeaders();
-                header = performanceDebugUtil.generateBasicResult(fileIdDataMap, header, idx, detailResponse);
-                header = performanceDebugUtil.generateJmeterResult(header);
-                configEntity.setHeaders(header);
+                String tmpHeader = performanceDebugUtil.generateBasicResult(fileIdDataMap, headerStr, idx, detailResponse);
+                tmpHeader = performanceDebugUtil.generateJmeterResult(tmpHeader);
+                configEntity.setHeaders(tmpHeader);
 
                 // 替换参数
-                String body = configEntity.getBody();
-                body = performanceDebugUtil.generateBasicResult(fileIdDataMap, body, idx, detailResponse);
+                String tmpBody = performanceDebugUtil.generateBasicResult(fileIdDataMap, bodyStr, idx, detailResponse);
                 // body中的函数替换
-                body = performanceDebugUtil.generateJmeterResult(body);
-                configEntity.setBody(body);
+                tmpBody = performanceDebugUtil.generateJmeterResult(tmpBody);
+                configEntity.setBody(tmpBody);
 
                 // 1、请求参数
                 PerformanceResultCreateInput insertResult = new PerformanceResultCreateInput();

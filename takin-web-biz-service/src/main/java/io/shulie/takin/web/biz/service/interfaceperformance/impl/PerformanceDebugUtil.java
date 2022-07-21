@@ -61,10 +61,10 @@ public class PerformanceDebugUtil {
      * key
      */
     // 已${开头,已}结尾
-    private static final String PARAM_REGEX = "\\$\\{([^_}]*)}";
+    private static final String PARAM_REGEX = "\\$\\{([^}]*)}";
 
     // 已${__ 开头,已)}结尾
-    private static final String FUN_PARAM_REGEX = "\\$\\{__([^*]*)\\)}";
+    private static final String FUN_PARAM_REGEX = "\\$\\{__([^}]*)}";
 
     private static final Pattern java_Pattern = Pattern.compile(PARAM_REGEX);
 
@@ -278,7 +278,7 @@ public class PerformanceDebugUtil {
         //RandomString(10,abcdefghigklmnopqrstuvwxyz,)
 
         new PerformanceDebugUtil().generateJavaPattern("${__eval(name=${id}&column=age)}");
-        new PerformanceDebugUtil().generateFunPattern("${__eval(name=${id}&column=age)}");
+        new PerformanceDebugUtil().generateFunPattern("");
 
         Map<String, Map<String, List<Object>>> fileIdDataMap = new HashMap<>();
         Map<String, List<Object>> data = new HashMap<>();

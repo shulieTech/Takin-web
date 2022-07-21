@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
-import io.shulie.takin.cloud.common.utils.Md5Util;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.jmeter.JmeterFunctionFactory;
 import io.shulie.takin.utils.json.JsonHelper;
@@ -24,7 +23,6 @@ import io.shulie.takin.web.common.enums.interfaceperformance.PerformanceDebugErr
 import io.shulie.takin.web.common.exception.TakinWebException;
 import io.shulie.takin.web.common.exception.TakinWebExceptionEnum;
 import io.shulie.takin.web.common.util.FileUtils;
-import io.shulie.takin.web.common.util.MD5Tool;
 import io.shulie.takin.web.common.util.RedisClientUtil;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceConfigDAO;
 import io.shulie.takin.web.data.dao.interfaceperformance.PerformanceRelateshipDAO;
@@ -32,10 +30,8 @@ import io.shulie.takin.web.data.mapper.mysql.InterfacePerformanceConfigMapper;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigEntity;
 import io.shulie.takin.web.data.model.mysql.InterfacePerformanceConfigSceneRelateShipEntity;
 import io.shulie.takin.web.data.result.filemanage.FileManageResponse;
-import io.shulie.takin.web.ext.util.WebPluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jmeter.functions.AbstractFunction;
@@ -240,16 +236,16 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         return uuId;
     }
 
+    /**
+     * 需要判断走web调试还是脚本调试
+     *
+     * @param request
+     * @return
+     */
     @Override
     public String start(PerformanceDebugRequest request) {
-        /**
-         * 1、判断当前要调试的内容里面是否存在函数
-         */
-        int debugType = 1; // 默认走简单调试功能
-        // 配置优先
-        if (takin_debug_type == 2) {
-            debugType = 2; // 走脚本调试功能
-        } else {
+        // 配置优先,开关,优先走web调试
+        if (takin_debug_type == 1) {
             // 判断下body里面是否存在函数，如果存在是否都支持此类jmeter函数
             List<String> funPatternList = performanceDebugUtil.generateFunPattern(request.getBody());
             if (!CollectionUtils.isEmpty(funPatternList)) {
@@ -264,13 +260,13 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     fun = "__" + fun;
                     // 有一个不支持的话,所有的都不支持
                     if (!functionMap.containsKey(fun)) {
-                        debugType = 2; // 走脚本调试功能
+                        takin_debug_type = 2; // 走脚本调试功能
                         break;
                     }
                 }
             }
         }
-        if (debugType == 1) {
+        if (takin_debug_type == 1) {
             return this.simple_debug(request);
         } else {
             if (request.getId() == null) {
@@ -279,6 +275,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             }
             return this.simple_debug_ext(request);
         }
+
     }
 
     public void convertDebugResult(String resultId,

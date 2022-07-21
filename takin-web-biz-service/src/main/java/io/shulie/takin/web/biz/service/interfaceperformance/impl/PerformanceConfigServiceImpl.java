@@ -8,6 +8,7 @@ import com.pamirs.takin.entity.domain.vo.report.SceneActionParam;
 import io.shulie.amdb.common.dto.trace.EntryTraceInfoDTO;
 import io.shulie.takin.adapter.api.model.response.scenemanage.SceneManageWrapperResp;
 import io.shulie.takin.adapter.api.model.response.scenetask.SceneActionResp;
+import io.shulie.takin.cloud.common.enums.scenemanage.SceneManageStatusEnum;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.common.beans.response.ResponseResult;
 import io.shulie.takin.utils.json.JsonHelper;
@@ -239,9 +240,18 @@ public class PerformanceConfigServiceImpl implements PerformanceConfigService {
         doAction(configId, result, Action.ActionEnum.detail);
 
         Long sceneId = result.getBindSceneId();
-        ResponseResult<SceneManageWrapperResp> responseResult = sceneManageService.detailScene(sceneId);
-        if (Objects.nonNull(responseResult.getData())) {
-            result.setPressureStatus(responseResult.getData().getStatus());
+        try {
+            result.setPressureStatus(SceneManageStatusEnum.WAIT.getValue());
+            if (sceneId == null) {
+                log.error("场景未生成,需重新保存");
+            } else {
+                ResponseResult<SceneManageWrapperResp> responseResult = sceneManageService.detailScene(sceneId);
+                if (Objects.nonNull(responseResult.getData())) {
+                    result.setPressureStatus(responseResult.getData().getStatus());
+                }
+            }
+        } catch (Throwable e) {
+            log.error("查询异常,等待重新保存以后重新生成!");
         }
         return result;
     }

@@ -267,6 +267,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     fun = "__" + fun;
                     // 有一个不支持的话,所有的都不支持
                     if (!JmeterFunctionAdapter.getInstance().supportFunction(fun)) {
+                        log.warn("当前函数不支持", fun);
                         debug_type = 2; // 走脚本调试功能
                         break;
                     }
@@ -283,7 +284,6 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             // 保存最新脚本
             return this.simple_debug_ext(request);
         }
-
     }
 
     public void convertDebugResult(String resultId,

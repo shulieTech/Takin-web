@@ -62,9 +62,13 @@ public class PerformanceDebugUtil {
      */
     private static final String PARAM_REGEX = "\\$\\{([^}]*)}";
 
-    private static final String FUN_PARAM_REGEX = "\\$\\{__([^}]*)}";
+    // 已${开头,已}结尾
+    private static final String PARAM_REGEX1 = "\\$\\{([^_}]*)}";
 
-    private static final Pattern java_Pattern = Pattern.compile(PARAM_REGEX);
+    // 已${__ 开头,已)}结尾
+    private static final String FUN_PARAM_REGEX = "\\$\\{__([^*]*)\\)}";
+
+    private static final Pattern java_Pattern = Pattern.compile(PARAM_REGEX1);
 
     private static final Pattern fun_Pattern = Pattern.compile(FUN_PARAM_REGEX);
 
@@ -275,7 +279,8 @@ public class PerformanceDebugUtil {
         //List<String> list = new PerformanceDebugUtil().generateFunPattern("{\"name\":\"${__RandomString(10,abcdefghigklmnopqrstuvwxyz,)}\"}");
         //RandomString(10,abcdefghigklmnopqrstuvwxyz,)
 
-        String st = new PerformanceDebugUtil().generateJmeterResult("{name:${__RandomString(10,abcdefghigklmnopqrstuvwxyz,)}}");
+        new PerformanceDebugUtil().generateJavaPattern("${__eval(name=${id}&column=age)}");
+        new PerformanceDebugUtil().generateFunPattern("${__eval(name=${id}&column=age)}");
 
         Map<String, Map<String, List<Object>>> fileIdDataMap = new HashMap<>();
         Map<String, List<Object>> data = new HashMap<>();

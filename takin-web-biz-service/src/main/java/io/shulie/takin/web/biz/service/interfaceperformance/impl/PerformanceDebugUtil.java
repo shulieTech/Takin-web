@@ -60,15 +60,13 @@ public class PerformanceDebugUtil {
      * hello
      * key
      */
-    private static final String PARAM_REGEX = "\\$\\{([^}]*)}";
-
     // 已${开头,已}结尾
-    private static final String PARAM_REGEX1 = "\\$\\{([^_}]*)}";
+    private static final String PARAM_REGEX = "\\$\\{([^_}]*)}";
 
     // 已${__ 开头,已)}结尾
     private static final String FUN_PARAM_REGEX = "\\$\\{__([^*]*)\\)}";
 
-    private static final Pattern java_Pattern = Pattern.compile(PARAM_REGEX1);
+    private static final Pattern java_Pattern = Pattern.compile(PARAM_REGEX);
 
     private static final Pattern fun_Pattern = Pattern.compile(FUN_PARAM_REGEX);
 

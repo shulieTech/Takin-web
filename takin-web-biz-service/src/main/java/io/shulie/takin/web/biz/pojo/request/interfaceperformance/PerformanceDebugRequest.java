@@ -7,10 +7,10 @@ public class PerformanceDebugRequest extends PerformanceConfigDebugInput {
     /**
      * 请求条数
      */
-    private Long requestCount;
+    private Integer requestCount;
 
     /**
      * 关联文件的最大条数
      */
-    private Long relateFileMaxCount = 0L;
+    private Integer relateFileMaxCount = 0;
 }

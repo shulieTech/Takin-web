@@ -301,7 +301,7 @@ public class SceneServiceImpl implements SceneService {
         sceneCreateParam.setLinkRelateNum(0);
         sceneCreateParam.setScriptJmxNode(JsonHelper.bean2Json(data));
         sceneCreateParam.setTotalNodeNum(JmxUtil.getNodeNumByType(NodeTypeEnum.SAMPLER, data));
-        sceneCreateParam.setType(SceneTypeEnum.JMETER_UPLOAD_SCENE.getType());
+        sceneCreateParam.setType(SceneTypeEnum.PERFORMANCE_AUTO_SCENE.getType());
         WebPluginUtils.fillCloudUserData(sceneCreateParam);
         sceneDao.insert(sceneCreateParam);
 
@@ -625,6 +625,7 @@ public class SceneServiceImpl implements SceneService {
         queryParam.setCurrent(queryRequest.getCurrent());
         queryParam.setPageSize(queryRequest.getPageSize());
         WebPluginUtils.fillQueryParam(queryParam);
+        queryParam.setIgnoreType(SceneTypeEnum.PERFORMANCE_AUTO_SCENE.getType());
         PagingList<SceneResult> pageList = sceneDao.selectPageList(queryParam);
         List<BusinessFlowListResponse> responses = LinkManageConvert.INSTANCE.ofSceneResultList(pageList.getList());
         List<Long> userIds = CommonUtil.getList(responses, BusinessFlowListResponse::getUserId);

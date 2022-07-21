@@ -11,4 +11,5 @@ public class ScenePageQueryParam extends AuthQueryParamCommonExt {
 
     private String sceneName;
 
+    private Integer ignoreType;
 }

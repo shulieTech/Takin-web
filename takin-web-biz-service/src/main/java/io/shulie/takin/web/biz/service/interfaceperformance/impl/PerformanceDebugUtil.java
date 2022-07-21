@@ -1,6 +1,8 @@
 package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
+import io.shulie.takin.jmeter.adapter.JmeterFunctionAdapter;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.ContentTypeVO;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamDetailResponse;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.PerformanceParamRequest;
@@ -19,6 +21,7 @@ import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.ssl.TrustStrategy;
+import org.apache.jmeter.functions.InvalidVariableException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,8 +41,7 @@ import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,7 +61,12 @@ public class PerformanceDebugUtil {
      * key
      */
     private static final String PARAM_REGEX = "\\$\\{([^}]*)}";
+
+    private static final String FUN_PARAM_REGEX = "\\$\\{__([^}]*)}";
+
     private static final Pattern java_Pattern = Pattern.compile(PARAM_REGEX);
+
+    private static final Pattern fun_Pattern = Pattern.compile(FUN_PARAM_REGEX);
 
     /**
      * 获取RestTemplate
@@ -264,6 +271,50 @@ public class PerformanceDebugUtil {
         return groups;
     }
 
+    public static void main(String[] args) throws InvalidVariableException {
+        //List<String> list = new PerformanceDebugUtil().generateFunPattern("{\"name\":\"${__RandomString(10,abcdefghigklmnopqrstuvwxyz,)}\"}");
+        //RandomString(10,abcdefghigklmnopqrstuvwxyz,)
+
+        String st = new PerformanceDebugUtil().generateJmeterResult("{name:${__RandomString(10,abcdefghigklmnopqrstuvwxyz,)}}");
+
+        Map<String, Map<String, List<Object>>> fileIdDataMap = new HashMap<>();
+        Map<String, List<Object>> data = new HashMap<>();
+        data.put("name", Arrays.asList("zhagnsan"));
+        fileIdDataMap.put("1", data);
+
+        PerformanceParamDetailResponse response = new PerformanceParamDetailResponse();
+        List<PerformanceParamRequest> paramList = new ArrayList<>();
+        PerformanceParamRequest request = new PerformanceParamRequest();
+        request.setFileId(1L);
+        request.setParamName("name");
+        paramList.add(request);
+        response.setParamList(paramList);
+
+        String st2 = new PerformanceDebugUtil().generateBasicResult(fileIdDataMap,
+                "{name:${name}}", 1, response);
+        //System.out.println(list);
+    }
+
+    /**
+     * 获取jmeter函数匹配
+     *
+     * @param inputStr
+     * @return
+     */
+    public List<String> generateFunPattern(String inputStr) {
+        List<String> groups = Lists.newArrayList();
+        try {
+            Matcher matcher = fun_Pattern.matcher(inputStr);
+            while (matcher.find()) {
+                // 标记不要了后面拼接上${key}->key
+                groups.add(matcher.group(1));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return groups;
+    }
+
     /**
      * 替换基础参数，主要是url
      *
@@ -313,8 +364,34 @@ public class PerformanceDebugUtil {
                 }
             }
             if (StringUtils.isNotBlank(tmpStr)) {
+                String reg = "${" + group + "}";
                 // group没有了${}，拼接以后替换
-                regexStr = regexStr.replaceAll("\\$\\{" + group + "}", tmpStr);
+                regexStr = StrUtil.replace(regexStr, reg, tmpStr);
+            }
+        }
+        return regexStr;
+    }
+
+    /**
+     * 替换jmeter函数
+     *
+     * @param regexStr 需要替换的字符串
+     * @return
+     */
+    public String generateJmeterResult(String regexStr) throws InvalidVariableException {
+        List<String> groups = this.generateFunPattern(regexStr);
+        // 无需匹配，直接返回
+        if (CollectionUtils.isEmpty(groups)) {
+            return regexStr;
+        }
+        // 遍历替换
+        for (int groupIdx = 0; groupIdx < groups.size(); groupIdx++) {
+            // 拼接原有的函数
+            String group = groups.get(groupIdx);
+            String regStr = "${__" + group + "}";
+            String rsStr = JmeterFunctionAdapter.getInstance().execute(regStr);
+            if (StringUtils.isNotBlank(rsStr)) {
+                regexStr = StrUtil.replace(regexStr, regStr, rsStr);
             }
         }
         return regexStr;

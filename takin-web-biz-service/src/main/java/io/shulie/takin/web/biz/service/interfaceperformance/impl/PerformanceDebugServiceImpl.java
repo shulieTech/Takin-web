@@ -40,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jmeter.functions.AbstractFunction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -88,6 +89,10 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
 
     @Autowired
     private ScriptDebugService scriptDebugService;
+
+    // 调试走web还是压力引擎(1-web,2-压力引擎)
+    @Value("${takin.interface.debug.type:1}")
+    private Integer takin_debug_type;
 
     /**
      * 开启调试功能
@@ -241,22 +246,27 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
          * 1、判断当前要调试的内容里面是否存在函数
          */
         int debugType = 1; // 默认走简单调试功能
-        // 判断下body里面是否存在函数，如果存在是否都支持此类jmeter函数
-        List<String> funPatternList = performanceDebugUtil.generateFunPattern(request.getBody());
-        if (!CollectionUtils.isEmpty(funPatternList)) {
-            // 判断下这些函数是否支持简单调试功能
-            Map<String, AbstractFunction> functionMap = JmeterFunctionFactory.functionMap;
-            for (int i = 0; i < funPatternList.size(); i++) {
-                String fun = funPatternList.get(i);
-                if (fun.contains("(") && fun.contains(")")) {
-                    // RandomString
-                    fun = fun.substring(0, fun.indexOf("("));
-                }
-                fun = "__" + fun;
-                // 有一个不支持的话,所有的都不支持
-                if (!functionMap.containsKey(fun)) {
-                    debugType = 2; // 走脚本调试功能
-                    break;
+        // 配置优先
+        if (takin_debug_type == 2) {
+            debugType = 2; // 走脚本调试功能
+        } else {
+            // 判断下body里面是否存在函数，如果存在是否都支持此类jmeter函数
+            List<String> funPatternList = performanceDebugUtil.generateFunPattern(request.getBody());
+            if (!CollectionUtils.isEmpty(funPatternList)) {
+                // 判断下这些函数是否支持简单调试功能
+                Map<String, AbstractFunction> functionMap = JmeterFunctionFactory.functionMap;
+                for (int i = 0; i < funPatternList.size(); i++) {
+                    String fun = funPatternList.get(i);
+                    if (fun.contains("(") && fun.contains(")")) {
+                        // RandomString
+                        fun = fun.substring(0, fun.indexOf("("));
+                    }
+                    fun = "__" + fun;
+                    // 有一个不支持的话,所有的都不支持
+                    if (!functionMap.containsKey(fun)) {
+                        debugType = 2; // 走脚本调试功能
+                        break;
+                    }
                 }
             }
         }

@@ -625,7 +625,8 @@ public class SceneServiceImpl implements SceneService {
         queryParam.setCurrent(queryRequest.getCurrent());
         queryParam.setPageSize(queryRequest.getPageSize());
         WebPluginUtils.fillQueryParam(queryParam);
-        queryParam.setIgnoreType(SceneTypeEnum.PERFORMANCE_AUTO_SCENE.getType());
+        //queryParam.setIgnoreType(SceneTypeEnum.PERFORMANCE_AUTO_SCENE.getType());
+
         PagingList<SceneResult> pageList = sceneDao.selectPageList(queryParam);
         List<BusinessFlowListResponse> responses = LinkManageConvert.INSTANCE.ofSceneResultList(pageList.getList());
         List<Long> userIds = CommonUtil.getList(responses, BusinessFlowListResponse::getUserId);

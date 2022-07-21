@@ -16,6 +16,7 @@ import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailRespon
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugRequestListResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptDebugResponse;
+import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceConfigService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceDebugService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceParamService;
 import io.shulie.takin.web.biz.service.interfaceperformance.PerformanceResultService;
@@ -37,6 +38,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jmeter.functions.AbstractFunction;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -60,6 +62,9 @@ import java.util.stream.Collectors;
 public class PerformanceDebugServiceImpl implements PerformanceDebugService {
     @Resource
     private PerformanceConfigDAO performanceConfigDAO;
+
+    @Resource
+    private PerformanceConfigService performanceConfigService;
 
     @Resource
     private InterfacePerformanceConfigMapper interfacePerformanceConfigMapper;
@@ -247,6 +252,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
     @Override
     public String start(PerformanceDebugRequest request) {
         // 配置优先,开关,优先走web调试
+        int debug_type = 1;
         if (takin_debug_type == 1) {
             // 判断下body里面是否存在函数，如果存在是否都支持此类jmeter函数
             String patternStr = request.getRequestUrl() + "&" + request.getHeaders() + "&" + request.getBody();
@@ -261,19 +267,24 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     fun = "__" + fun;
                     // 有一个不支持的话,所有的都不支持
                     if (!JmeterFunctionAdapter.getInstance().supportFunction(fun)) {
-                        takin_debug_type = 2; // 走脚本调试功能
+                        debug_type = 2; // 走脚本调试功能
                         break;
                     }
                 }
             }
         }
-        if (takin_debug_type == 1) {
+        if (debug_type == 1) {
             return this.simple_debug(request);
         } else {
             if (request.getId() == null) {
                 //
                 throw new RuntimeException("当前场景消息体存在Jmeter函数,请先保存再继续调试!");
             }
+            // 保存最新脚本
+            // ConfigId不为空,保存下当前配置信息
+            PerformanceConfigCreateInput input = new PerformanceConfigCreateInput();
+            BeanUtils.copyProperties(request, input);
+            performanceConfigService.update(input);
             return this.simple_debug_ext(request);
         }
 

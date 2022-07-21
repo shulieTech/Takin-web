@@ -253,11 +253,14 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
     public String start(PerformanceDebugRequest request) {
         // 配置优先,开关,优先走web调试
         int debug_type = 1;
-        if (takin_debug_type == 1) {
-            // 判断下body里面是否存在函数，如果存在是否都支持此类jmeter函数
-            String patternStr = request.getRequestUrl() + "&" + request.getHeaders() + "&" + request.getBody();
-            List<String> funPatternList = performanceDebugUtil.generateFunPattern(patternStr);
-            if (!CollectionUtils.isEmpty(funPatternList)) {
+        // 判断下url,header,body里面是否存在函数,如果不存在函数的话,走web调试
+        String patternStr = request.getRequestUrl() + "&" + request.getHeaders() + "&" + request.getBody();
+        List<String> funPatternList = performanceDebugUtil.generateFunPattern(patternStr);
+        if (CollectionUtils.isEmpty(funPatternList)) {
+            debug_type = 1;
+        } else {
+            // 如果存在函数,判断函数是否支持，如果有一个不支持的话,走脚本调试
+            if (takin_debug_type == 1) {
                 for (int i = 0; i < funPatternList.size(); i++) {
                     String fun = funPatternList.get(i);
                     if (fun.contains("(") && fun.contains(")")) {
@@ -272,6 +275,10 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                         break;
                     }
                 }
+            } else if (takin_debug_type == 2) {
+                debug_type = 2; // 走脚本调试
+            } else {
+                log.warn("UnKnow_Type", takin_debug_type);
             }
         }
         if (debug_type == 1) {

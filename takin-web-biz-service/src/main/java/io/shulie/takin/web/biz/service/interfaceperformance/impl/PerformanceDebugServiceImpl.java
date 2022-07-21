@@ -263,7 +263,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             if (takin_debug_type == 1) {
                 for (int i = 0; i < funPatternList.size(); i++) {
                     String fun = funPatternList.get(i);
-                    if (fun.contains("(") && fun.contains(")")) {
+                    if (fun.contains("(")) {
                         // RandomString
                         fun = fun.substring(0, fun.indexOf("("));
                     }

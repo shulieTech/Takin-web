@@ -201,25 +201,7 @@ public class BusinessFlowController {
             needAuth = ActionTypeEnum.QUERY
     )
     public ResponseResult<Boolean> saveThreadGroup(@RequestBody BusinessFlowThreadRequest businessFlowThreadRequest) {
-        Long sceneId = businessFlowThreadRequest.getId();
-        String xpathMd5 = businessFlowThreadRequest.getXpathMd5();  //xPathMd5
-        String josnView = businessFlowThreadRequest.getJsonText();  //待替换json
-        //查询场景
-        SceneEntity sceneEntity = sceneService.businessActivityFlowDetail(sceneId);
-        String scriptJmxNode = sceneEntity.getScriptJmxNode();          //最原始Json
-        String scriptJmxNodeView = sceneEntity.getScriptJmxNodeView();  //最原始Json(假)
-        if(StringUtils.isBlank(scriptJmxNodeView)){
-            scriptJmxNodeView = scriptJmxNode;
-        }
-        //替换节点
-
-        Object read = JsonPath.parse(josnView).read("$..[?(@.xpathMd5=='" + xpathMd5 + "')].children", JSONArray.class).get(0);
-
-        String children = JsonPath.parse(scriptJmxNodeView)
-                .put("$..[?(@.xpathMd5=='" + xpathMd5 + "')]", "children", read).jsonString();
-        sceneEntity.setScriptJmxNodeView(children);
-        //修改节点
-        sceneService.businessActivityFlowUpdate(sceneEntity);
+        sceneService.saveThreadGroup(businessFlowThreadRequest);
         return ResponseResult.success(Boolean.TRUE);
     }
 

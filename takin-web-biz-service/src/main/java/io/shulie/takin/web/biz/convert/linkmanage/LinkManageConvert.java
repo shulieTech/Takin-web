@@ -1,5 +1,6 @@
 package io.shulie.takin.web.biz.convert.linkmanage;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.pamirs.takin.entity.domain.dto.linkmanage.ScriptJmxNode;
@@ -10,10 +11,13 @@ import io.shulie.takin.web.biz.pojo.request.activity.VirtualActivityCreateReques
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.filemanage.FileManageUpdateRequest;
 import io.shulie.takin.web.biz.pojo.request.linkmanage.SceneLinkRelateRequest;
+import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateRequest;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
+import io.shulie.takin.web.biz.pojo.response.scriptmanage.PluginConfigDetailResponse;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
+import io.shulie.takin.web.data.model.mysql.SceneLinkRelateEntity;
 import io.shulie.takin.web.data.param.scene.SceneLinkRelateSaveParam;
 import io.shulie.takin.web.data.result.linkmange.SceneResult;
 import io.shulie.takin.web.data.result.scene.SceneLinkRelateResult;
@@ -64,4 +68,12 @@ public interface LinkManageConvert {
         content.setBusinessActivityId(NumberUtils.toLong(sceneLinkRelateResult.getBusinessLinkId()));
         return content;
     }
+
+    ScriptNode ofScriptJmxNode(ScriptJmxNode scriptJmxNode);
+
+    FileManageUpdateRequest ofFileManageUpdateRequestbyFileManageResponse(FileManageResponse scriptFile);
+
+    List<PluginConfigCreateRequest> ofPluginConfigDetailResponseList(List<PluginConfigDetailResponse> pluginConfigDetailResponseList);
+
+    List<SceneLinkRelateEntity> ofSceneLinkRelateEntity(List<SceneLinkRelateResult> sceneLinkRelateResults);
 }

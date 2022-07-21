@@ -35,10 +35,7 @@ import io.shulie.takin.web.biz.pojo.request.scriptmanage.PluginConfigCreateReque
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployCreateRequest;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.ScriptManageDeployUpdateRequest;
 import io.shulie.takin.web.biz.pojo.response.filemanage.FileManageResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowDetailResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowListResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowMatchResponse;
-import io.shulie.takin.web.biz.pojo.response.linkmanage.BusinessFlowThreadResponse;
+import io.shulie.takin.web.biz.pojo.response.linkmanage.*;
 import io.shulie.takin.web.biz.pojo.response.scriptmanage.ScriptManageDeployDetailResponse;
 import io.shulie.takin.web.biz.service.ActivityService;
 import io.shulie.takin.web.biz.service.scene.ApplicationBusinessActivityService;
@@ -891,5 +888,67 @@ public class SceneServiceImpl implements SceneService {
         // 根据应用名称, 用户id, 获得应用列表
         List<ApplicationDetailResult> applicationPage = applicationDAO.getApplicationList(new ArrayList<>(applicationNames));
         return applicationPage;
+    }
+
+    /**
+     * 1.查询业务流程详情
+     * 2.查询业务流程和节点关联关系
+     * 3.根据前端传来的结果，重新构建脚本内容(脚本内容的更换：1.不需要的内容进行删除，2.子元素跟随父元素一起移动；3.不考虑脚本的其他原件)
+     * 4.重新匹配业务流程和节点的关联关系(因为保存业务流程接口有自动匹配逻辑，所以提交进行匹配修改)
+     * 5.调用根据脚本内容修改业务流程的接口
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveThreadGroup(BusinessFlowThreadRequest businessFlowThreadRequest) {
+        //查询业务流程详情
+        BusinessFlowDetailResponse businessFlowDetail = getBusinessFlowDetail(businessFlowThreadRequest.getId());
+        if (businessFlowDetail == null){
+            return;
+        }
+
+        //查询业务流程和节点关联关系
+        SceneLinkRelateQuery sceneLinkRelateQuery = new SceneLinkRelateQuery();
+        sceneLinkRelateQuery.setSceneId(businessFlowThreadRequest.getId());
+        List<SceneLinkRelateResult> sceneLinkRelateResults = sceneLinkRelateDao.query(sceneLinkRelateQuery);
+
+        //根据前端传来的结果，重新构建脚本内容
+        ScriptJmxNode scriptJmxNode = businessFlowThreadRequest.getThreadScriptJmxNodes().get(0);
+        ScriptNode scriptNode = LinkManageConvert.INSTANCE.ofScriptJmxNode(scriptJmxNode);
+        Map<String, String> stringStringMap = JmxUtil.replaceJmxContent(businessFlowDetail.getScriptFile().getUploadPath(), scriptNode);
+        if (stringStringMap == null || stringStringMap.size() < 1){
+            return;
+        }
+        String content = stringStringMap.get("xmlContent");
+
+        //重新匹配业务流程和节点的关联关系
+        if (CollectionUtils.isNotEmpty(sceneLinkRelateResults)){
+            //查询已有的匹配关系,删除现在所有的关联关系
+            List<SceneLinkRelateResult> needDel = sceneLinkRelateResults.stream().filter(o -> !stringStringMap.containsKey(o.getScriptXpathMd5())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(needDel)){
+                List<Long> oldIds = needDel.stream().map(SceneLinkRelateResult::getId).collect(Collectors.toList());
+                sceneLinkRelateDao.deleteByIds(oldIds);
+            }
+            List<SceneLinkRelateResult> needUpdate = sceneLinkRelateResults.stream().filter(o -> stringStringMap.containsKey(o.getScriptXpathMd5())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(needUpdate)) {
+                needUpdate.forEach(sceneLinkRelateResult -> {
+                    String s = stringStringMap.get(sceneLinkRelateResult.getScriptXpathMd5());
+                    sceneLinkRelateResult.setScriptXpathMd5(s);
+                });
+                sceneLinkRelateDao.updateBatchById(LinkManageConvert.INSTANCE.ofSceneLinkRelateEntity(needUpdate));
+            }
+        }
+
+        //调用根据脚本内容修改业务流程的接口
+        BusinessFlowParseRequest businessFlowParseRequest = new BusinessFlowParseRequest();
+        businessFlowParseRequest.setId(businessFlowDetail.getId());
+        FileManageResponse scriptFile = businessFlowDetail.getScriptFile();
+        FileManageUpdateRequest fileManageUpdateRequest = LinkManageConvert.INSTANCE.ofFileManageUpdateRequestbyFileManageResponse(scriptFile);
+        fileManageUpdateRequest.setScriptContent(content);
+        fileManageUpdateRequest.setDownloadUrl(scriptFile.getUploadPath());
+        businessFlowParseRequest.setScriptFile(fileManageUpdateRequest);
+        List<PluginConfigCreateRequest> pluginList = LinkManageConvert.INSTANCE.ofPluginConfigDetailResponseList(businessFlowDetail.getPluginConfigDetailResponseList());
+        businessFlowParseRequest.setPluginList(pluginList);
+
+        parseScriptAndSave(businessFlowParseRequest);
     }
 }

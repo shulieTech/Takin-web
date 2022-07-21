@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
 import io.shulie.takin.common.beans.page.PagingList;
 import io.shulie.takin.jmeter.JmeterFunctionFactory;
+import io.shulie.takin.jmeter.adapter.JmeterFunctionAdapter;
 import io.shulie.takin.utils.json.JsonHelper;
 import io.shulie.takin.web.biz.pojo.request.interfaceperformance.*;
 import io.shulie.takin.web.biz.pojo.request.scriptmanage.PageScriptDebugRequestRequest;
@@ -249,8 +250,6 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
             // 判断下body里面是否存在函数，如果存在是否都支持此类jmeter函数
             List<String> funPatternList = performanceDebugUtil.generateFunPattern(request.getBody());
             if (!CollectionUtils.isEmpty(funPatternList)) {
-                // 判断下这些函数是否支持简单调试功能
-                Map<String, AbstractFunction> functionMap = JmeterFunctionFactory.functionMap;
                 for (int i = 0; i < funPatternList.size(); i++) {
                     String fun = funPatternList.get(i);
                     if (fun.contains("(") && fun.contains(")")) {
@@ -259,7 +258,7 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                     }
                     fun = "__" + fun;
                     // 有一个不支持的话,所有的都不支持
-                    if (!functionMap.containsKey(fun)) {
+                    if (!JmeterFunctionAdapter.getInstance().supportFunction(fun)) {
                         takin_debug_type = 2; // 走脚本调试功能
                         break;
                     }

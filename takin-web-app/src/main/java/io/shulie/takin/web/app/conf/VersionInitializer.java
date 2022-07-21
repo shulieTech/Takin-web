@@ -5,7 +5,9 @@ import java.util.Date;
 import javax.annotation.Resource;
 
 import io.shulie.takin.web.biz.service.sys.VersionService;
+import io.shulie.takin.web.common.enums.config.ConfigServerKeyEnum;
 import io.shulie.takin.web.data.model.mysql.VersionEntity;
+import io.shulie.takin.web.data.util.ConfigServerHelper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
@@ -20,9 +22,6 @@ public class VersionInitializer implements ApplicationListener<ApplicationStarte
     @Value("${takin.web.version:}")
     private String version;
 
-    @Value("${takin.web.upgrade.addr:}")
-    private String url;
-
     @Resource
     private VersionService versionService;
 
@@ -36,7 +35,7 @@ public class VersionInitializer implements ApplicationListener<ApplicationStarte
         if (!versionService.ignore()) {
             VersionEntity entity = new VersionEntity();
             entity.setVersion(version);
-            entity.setUrl(url);
+            entity.setUrl(ConfigServerHelper.getValueByKey(ConfigServerKeyEnum.TAKIN_UPGRADE_DOCUMENT_URL));
             entity.setCreateTime(new Date());
             versionService.publish(entity);
         }

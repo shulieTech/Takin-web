@@ -99,12 +99,14 @@ public class DataCalibrationProcessor extends AbstractIndicators
     }
 
     private void processAmdb(DataCalibrationNotifyParam param, Runnable finalAction) {
+        log.info("amdb数据订正[{}]", param.getJobId());
         pressureDataCalibration.processCalibrationStatus(param.getJobId(),
             Boolean.TRUE.equals(param.getCompleted()), param.getContent(), false);
         finalAction.run();
     }
 
     private void processCloud(DataCalibrationNotifyParam param, Runnable finalAction) {
+        log.info("cloud数据订正[{}]", param.getJobId());
         boolean success = Boolean.TRUE.equals(param.getCompleted());
         long jobId = param.getJobId();
         if (success) {

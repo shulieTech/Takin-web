@@ -2,6 +2,7 @@ package io.shulie.takin.web.biz.service.interfaceperformance.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pamirs.pradar.log.parser.utils.ResultCodeUtils;
 import io.shulie.takin.common.beans.page.PagingList;
@@ -248,7 +249,8 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
         // 配置优先,开关,优先走web调试
         if (takin_debug_type == 1) {
             // 判断下body里面是否存在函数，如果存在是否都支持此类jmeter函数
-            List<String> funPatternList = performanceDebugUtil.generateFunPattern(request.getBody());
+            String patternStr = request.getRequestUrl() + "&" + request.getHeaders() + "&" + request.getBody();
+            List<String> funPatternList = performanceDebugUtil.generateFunPattern(patternStr);
             if (!CollectionUtils.isEmpty(funPatternList)) {
                 for (int i = 0; i < funPatternList.size(); i++) {
                     String fun = funPatternList.get(i);
@@ -447,17 +449,20 @@ public class PerformanceDebugServiceImpl implements PerformanceDebugService {
                 // 替换url
                 String requestUrl = configEntity.getRequestUrl();
                 requestUrl = performanceDebugUtil.generateBasicResult(fileIdDataMap, requestUrl, idx, detailResponse);
+                requestUrl = performanceDebugUtil.generateJmeterResult(requestUrl);
                 configEntity.setRequestUrl(requestUrl);
+
                 // 替换header
                 String header = configEntity.getHeaders();
                 header = performanceDebugUtil.generateBasicResult(fileIdDataMap, header, idx, detailResponse);
+                header = performanceDebugUtil.generateJmeterResult(header);
                 configEntity.setHeaders(header);
+
                 // 替换参数
                 String body = configEntity.getBody();
                 body = performanceDebugUtil.generateBasicResult(fileIdDataMap, body, idx, detailResponse);
                 // body中的函数替换
                 body = performanceDebugUtil.generateJmeterResult(body);
-
                 configEntity.setBody(body);
 
                 // 1、请求参数

@@ -367,7 +367,7 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
     public Long getAccessErrorNum() {
         ApplicationQueryRequestV2 requestV2 = new ApplicationQueryRequestV2();
         requestV2.setAccessStatus(3);
-     return this.pageApplication(requestV2).getTotal();
+        return this.pageApplication(requestV2).getTotal();
     }
 
 //    @Override
@@ -1326,8 +1326,15 @@ public class ApplicationServiceImpl implements ApplicationService, WhiteListCons
         List<ApplicationListResponseV2> responseList = records.stream().map(result -> {
             ApplicationListResponseV2 response = BeanUtil.copyProperties(result, ApplicationListResponseV2.class);
             response.setId(result.getApplicationId().toString());
+            String name = result.getApplicationName();
+            Map map = applicationDAO.getStatus(name);
+            long n = (long) map.get("n");
+            if (n != 0) {
+                result.setAccessStatus(3);
+            }
             return response;
         }).collect(Collectors.toList());
+
         return PagingList.of(responseList, applicationListResultPage.getTotal());
     }
 
